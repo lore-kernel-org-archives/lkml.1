@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762520AbZLKEnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761741AbZLKEhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762520AbZLKEnF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbZLKEnC
+	id S1761741AbZLKEhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:37:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762403AbZLKEhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:43:02 -0500
-Received: from kroah.org ([198.145.64.141]:37165 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:37:34 -0500
+Received: from kroah.org ([198.145.64.141]:37173 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762293AbZLKEgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:47 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:28:19 2009
-Message-Id: <20091211042819.212643394@linux.site>
+	id S1762183AbZLKEgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:48 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:28:20 2009
+Message-Id: <20091211042819.790485160@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:26:01 -0800
+Date: Thu, 10 Dec 2009 20:26:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dmitry Monakhov <dmonakhov@openvz.org>, "Theodore Tso" <tytso@mit.edu>,
+       Jan Kara <jack@suse.cz>, "Theodore Tso" <tytso@mit.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [83/90] ext4: fix incorrect block reservation on quota transfer.
+Subject: [84/90] ext4: Wait for proper transaction commit on fsync
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0083-ext4-fix-incorrect-block-reservation-on-quota-transf.patch
+Content-Disposition: inline; filename=0084-ext4-Wait-for-proper-transaction-commit-on-fsync.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,31 +30,256 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 194074acacebc169ded90a4657193f5180015051)
+(cherry picked from commit b436b9bef84de6893e86346d8fbf7104bc520645)
 
-Inside ->setattr() call both ATTR_UID and ATTR_GID may be valid
-This means that we may end-up with transferring all quotas. Add
-we have to reserve QUOTA_DEL_BLOCKS for all quotas, as we do in
-case of QUOTA_INIT_BLOCKS.
+We cannot rely on buffer dirty bits during fsync because pdflush can come
+before fsync is called and clear dirty bits without forcing a transaction
+commit. What we do is that we track which transaction has last changed
+the inode and which transaction last changed allocation and force it to
+disk on fsync.
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-Reviewed-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/inode.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext4/ext4.h      |    7 +++++++
+ fs/ext4/ext4_jbd2.h |   13 +++++++++++++
+ fs/ext4/extents.c   |   14 ++++++++++++--
+ fs/ext4/fsync.c     |   46 +++++++++++++++++-----------------------------
+ fs/ext4/inode.c     |   29 +++++++++++++++++++++++++++++
+ fs/ext4/super.c     |    2 ++
+ fs/jbd2/journal.c   |    1 +
+ 7 files changed, 81 insertions(+), 31 deletions(-)
 
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -700,6 +700,13 @@ struct ext4_inode_info {
+ 	struct list_head i_aio_dio_complete_list;
+ 	/* current io_end structure for async DIO write*/
+ 	ext4_io_end_t *cur_aio_dio;
++
++	/*
++	 * Transactions that contain inode's metadata needed to complete
++	 * fsync and fdatasync, respectively.
++	 */
++	tid_t i_sync_tid;
++	tid_t i_datasync_tid;
+ };
+ 
+ /*
+--- a/fs/ext4/ext4_jbd2.h
++++ b/fs/ext4/ext4_jbd2.h
+@@ -258,6 +258,19 @@ static inline int ext4_jbd2_file_inode(h
+ 	return 0;
+ }
+ 
++static inline void ext4_update_inode_fsync_trans(handle_t *handle,
++						 struct inode *inode,
++						 int datasync)
++{
++	struct ext4_inode_info *ei = EXT4_I(inode);
++
++	if (ext4_handle_valid(handle)) {
++		ei->i_sync_tid = handle->h_transaction->t_tid;
++		if (datasync)
++			ei->i_datasync_tid = handle->h_transaction->t_tid;
++	}
++}
++
+ /* super.c */
+ int ext4_force_commit(struct super_block *sb);
+ 
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -3041,6 +3041,8 @@ ext4_ext_handle_uninitialized_extents(ha
+ 	if (flags == EXT4_GET_BLOCKS_DIO_CONVERT_EXT) {
+ 		ret = ext4_convert_unwritten_extents_dio(handle, inode,
+ 							path);
++		if (ret >= 0)
++			ext4_update_inode_fsync_trans(handle, inode, 1);
+ 		goto out2;
+ 	}
+ 	/* buffered IO case */
+@@ -3068,6 +3070,8 @@ ext4_ext_handle_uninitialized_extents(ha
+ 	ret = ext4_ext_convert_to_initialized(handle, inode,
+ 						path, iblock,
+ 						max_blocks);
++	if (ret >= 0)
++		ext4_update_inode_fsync_trans(handle, inode, 1);
+ out:
+ 	if (ret <= 0) {
+ 		err = ret;
+@@ -3306,10 +3310,16 @@ int ext4_ext_get_blocks(handle_t *handle
+ 	allocated = ext4_ext_get_actual_len(&newex);
+ 	set_buffer_new(bh_result);
+ 
+-	/* Cache only when it is _not_ an uninitialized extent */
+-	if ((flags & EXT4_GET_BLOCKS_UNINIT_EXT) == 0)
++	/*
++	 * Cache the extent and update transaction to commit on fdatasync only
++	 * when it is _not_ an uninitialized extent.
++	 */
++	if ((flags & EXT4_GET_BLOCKS_UNINIT_EXT) == 0) {
+ 		ext4_ext_put_in_cache(inode, iblock, allocated, newblock,
+ 						EXT4_EXT_CACHE_EXTENT);
++		ext4_update_inode_fsync_trans(handle, inode, 1);
++	} else
++		ext4_update_inode_fsync_trans(handle, inode, 0);
+ out:
+ 	if (allocated > max_blocks)
+ 		allocated = max_blocks;
+--- a/fs/ext4/fsync.c
++++ b/fs/ext4/fsync.c
+@@ -51,25 +51,30 @@
+ int ext4_sync_file(struct file *file, struct dentry *dentry, int datasync)
+ {
+ 	struct inode *inode = dentry->d_inode;
++	struct ext4_inode_info *ei = EXT4_I(inode);
+ 	journal_t *journal = EXT4_SB(inode->i_sb)->s_journal;
+-	int err, ret = 0;
++	int ret;
++	tid_t commit_tid;
+ 
+ 	J_ASSERT(ext4_journal_current_handle() == NULL);
+ 
+ 	trace_ext4_sync_file(file, dentry, datasync);
+ 
++	if (inode->i_sb->s_flags & MS_RDONLY)
++		return 0;
++
+ 	ret = flush_aio_dio_completed_IO(inode);
+ 	if (ret < 0)
+ 		return ret;
++
++	if (!journal)
++		return simple_fsync(file, dentry, datasync);
++
+ 	/*
+-	 * data=writeback:
++	 * data=writeback,ordered:
+ 	 *  The caller's filemap_fdatawrite()/wait will sync the data.
+-	 *  sync_inode() will sync the metadata
+-	 *
+-	 * data=ordered:
+-	 *  The caller's filemap_fdatawrite() will write the data and
+-	 *  sync_inode() will write the inode if it is dirty.  Then the caller's
+-	 *  filemap_fdatawait() will wait on the pages.
++	 *  Metadata is in the journal, we wait for proper transaction to
++	 *  commit here.
+ 	 *
+ 	 * data=journal:
+ 	 *  filemap_fdatawrite won't do anything (the buffers are clean).
+@@ -82,27 +87,10 @@ int ext4_sync_file(struct file *file, st
+ 	if (ext4_should_journal_data(inode))
+ 		return ext4_force_commit(inode->i_sb);
+ 
+-	if (!journal)
+-		ret = sync_mapping_buffers(inode->i_mapping);
+-
+-	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+-		goto out;
+-
+-	/*
+-	 * The VFS has written the file data.  If the inode is unaltered
+-	 * then we need not start a commit.
+-	 */
+-	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+-		struct writeback_control wbc = {
+-			.sync_mode = WB_SYNC_ALL,
+-			.nr_to_write = 0, /* sys_fsync did this */
+-		};
+-		err = sync_inode(inode, &wbc);
+-		if (ret == 0)
+-			ret = err;
+-	}
+-out:
+-	if (journal && (journal->j_flags & JBD2_BARRIER))
++	commit_tid = datasync ? ei->i_datasync_tid : ei->i_sync_tid;
++	if (jbd2_log_start_commit(journal, commit_tid))
++		jbd2_log_wait_commit(journal, commit_tid);
++	else if (journal->j_flags & JBD2_BARRIER)
+ 		blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+ 	return ret;
+ }
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -5222,7 +5222,7 @@ int ext4_setattr(struct dentry *dentry,
- 		/* (user+group)*(old+new) structure, inode write (sb,
- 		 * inode block, ? - but truncate inode update has it) */
- 		handle = ext4_journal_start(inode, (EXT4_MAXQUOTAS_INIT_BLOCKS(inode->i_sb)+
--					EXT4_QUOTA_DEL_BLOCKS(inode->i_sb))+3);
-+					EXT4_MAXQUOTAS_DEL_BLOCKS(inode->i_sb))+3);
- 		if (IS_ERR(handle)) {
- 			error = PTR_ERR(handle);
- 			goto err_out;
+@@ -1026,6 +1026,8 @@ static int ext4_ind_get_blocks(handle_t
+ 		goto cleanup;
+ 
+ 	set_buffer_new(bh_result);
++
++	ext4_update_inode_fsync_trans(handle, inode, 1);
+ got_it:
+ 	map_bh(bh_result, inode->i_sb, le32_to_cpu(chain[depth-1].key));
+ 	if (count > blocks_to_boundary)
+@@ -4784,6 +4786,7 @@ struct inode *ext4_iget(struct super_blo
+ 	struct ext4_inode *raw_inode;
+ 	struct ext4_inode_info *ei;
+ 	struct inode *inode;
++	journal_t *journal = EXT4_SB(sb)->s_journal;
+ 	long ret;
+ 	int block;
+ 
+@@ -4848,6 +4851,31 @@ struct inode *ext4_iget(struct super_blo
+ 		ei->i_data[block] = raw_inode->i_block[block];
+ 	INIT_LIST_HEAD(&ei->i_orphan);
+ 
++	/*
++	 * Set transaction id's of transactions that have to be committed
++	 * to finish f[data]sync. We set them to currently running transaction
++	 * as we cannot be sure that the inode or some of its metadata isn't
++	 * part of the transaction - the inode could have been reclaimed and
++	 * now it is reread from disk.
++	 */
++	if (journal) {
++		transaction_t *transaction;
++		tid_t tid;
++
++		spin_lock(&journal->j_state_lock);
++		if (journal->j_running_transaction)
++			transaction = journal->j_running_transaction;
++		else
++			transaction = journal->j_committing_transaction;
++		if (transaction)
++			tid = transaction->t_tid;
++		else
++			tid = journal->j_commit_sequence;
++		spin_unlock(&journal->j_state_lock);
++		ei->i_sync_tid = tid;
++		ei->i_datasync_tid = tid;
++	}
++
+ 	if (EXT4_INODE_SIZE(inode->i_sb) > EXT4_GOOD_OLD_INODE_SIZE) {
+ 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
+ 		if (EXT4_GOOD_OLD_INODE_SIZE + ei->i_extra_isize >
+@@ -5102,6 +5130,7 @@ static int ext4_do_update_inode(handle_t
+ 		err = rc;
+ 	ei->i_state &= ~EXT4_STATE_NEW;
+ 
++	ext4_update_inode_fsync_trans(handle, inode, 0);
+ out_brelse:
+ 	brelse(bh);
+ 	ext4_std_error(inode->i_sb, err);
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -713,6 +713,8 @@ static struct inode *ext4_alloc_inode(st
+ 	spin_lock_init(&(ei->i_block_reservation_lock));
+ 	INIT_LIST_HEAD(&ei->i_aio_dio_complete_list);
+ 	ei->cur_aio_dio = NULL;
++	ei->i_sync_tid = 0;
++	ei->i_datasync_tid = 0;
+ 
+ 	return &ei->vfs_inode;
+ }
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -78,6 +78,7 @@ EXPORT_SYMBOL(jbd2_journal_errno);
+ EXPORT_SYMBOL(jbd2_journal_ack_err);
+ EXPORT_SYMBOL(jbd2_journal_clear_err);
+ EXPORT_SYMBOL(jbd2_log_wait_commit);
++EXPORT_SYMBOL(jbd2_log_start_commit);
+ EXPORT_SYMBOL(jbd2_journal_start_commit);
+ EXPORT_SYMBOL(jbd2_journal_force_commit_nested);
+ EXPORT_SYMBOL(jbd2_journal_wipe);
 
 
