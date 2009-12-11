@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933354AbZLKEod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762577AbZLKEoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933354AbZLKEod (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762271AbZLKEgm
+	id S1762577AbZLKEoF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762276AbZLKEgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:36:42 -0500
-Received: from kroah.org ([198.145.64.141]:36787 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:36:43 -0500
+Received: from kroah.org ([198.145.64.141]:36791 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760515AbZLKEf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:35:56 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:46 2009
-Message-Id: <20091211042745.672220552@linux.site>
+	id S1760572AbZLKEf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:35:57 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:47 2009
+Message-Id: <20091211042746.862451041@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:25:05 -0800
+Date: Thu, 10 Dec 2009 20:25:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [27/90] ext4: Dont update superblock write time when filesystem is read-only
+       Andreas Schlick <schlick@lavabit.com>, "Theodore Tso" <tytso@mit.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [28/90] ext4: Always set dx_nodes fake_dirent explicitly.
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0027-ext4-Don-t-update-superblock-write-time-when-filesys.patch
+Content-Disposition: inline; filename=0028-ext4-Always-set-dx_node-s-fake_dirent-explicitly.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,41 +30,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 71290b368ad5e1e0b0b300c9d5638490a9fd1a2d)
+(cherry picked from commit 1f7bebb9e911d870fa8f997ddff838e82b5715ea)
 
-This avoids updating the superblock write time when we are mounting
-the root file system read/only but we need to replay the journal; at
-that point, for people who are east of GMT and who make their clock
-tick in localtime for Windows bug-for-bug compatibility, and this will
-cause e2fsck to complain and force a full file system check.
+When ext4_dx_add_entry() has to split an index node, it has to ensure that
+name_len of dx_node's fake_dirent is also zero, because otherwise e2fsck
+won't recognise it as an intermediate htree node and consider the htree to
+be corrupted.
 
+Signed-off-by: Andreas Schlick <schlick@lavabit.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/super.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ fs/ext4/namei.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -3230,7 +3230,18 @@ static int ext4_commit_super(struct supe
- 		clear_buffer_write_io_error(sbh);
- 		set_buffer_uptodate(sbh);
- 	}
--	es->s_wtime = cpu_to_le32(get_seconds());
-+	/*
-+	 * If the file system is mounted read-only, don't update the
-+	 * superblock write time.  This avoids updating the superblock
-+	 * write time when we are mounting the root file system
-+	 * read/only but we need to replay the journal; at that point,
-+	 * for people who are east of GMT and who make their clock
-+	 * tick in localtime for Windows bug-for-bug compatibility,
-+	 * the clock is set in the future, and this will cause e2fsck
-+	 * to complain and force a full file system check.
-+	 */
-+	if (!(sb->s_flags & MS_RDONLY))
-+		es->s_wtime = cpu_to_le32(get_seconds());
- 	es->s_kbytes_written =
- 		cpu_to_le64(EXT4_SB(sb)->s_kbytes_written + 
- 			    ((part_stat_read(sb->s_bdev->bd_part, sectors[1]) -
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1590,9 +1590,9 @@ static int ext4_dx_add_entry(handle_t *h
+ 			goto cleanup;
+ 		node2 = (struct dx_node *)(bh2->b_data);
+ 		entries2 = node2->entries;
++		memset(&node2->fake, 0, sizeof(struct fake_dirent));
+ 		node2->fake.rec_len = ext4_rec_len_to_disk(sb->s_blocksize,
+ 							   sb->s_blocksize);
+-		node2->fake.inode = 0;
+ 		BUFFER_TRACE(frame->bh, "get_write_access");
+ 		err = ext4_journal_get_write_access(handle, frame->bh);
+ 		if (err)
 
 
