@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZLKFgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbZLKF3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbZLKFgh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZLKFgf
+	id S1753334AbZLKF3p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZLKF3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:36:35 -0500
-Received: from kroah.org ([198.145.64.141]:53433 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 00:29:41 -0500
+Received: from kroah.org ([198.145.64.141]:53439 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751365AbZLKF3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:29:39 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:41 2009
-Message-Id: <20091211052540.941627509@linux.site>
+	id S1752544AbZLKF3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:29:40 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:42 2009
+Message-Id: <20091211052541.550415868@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 21:23:14 -0800
+Date: Thu, 10 Dec 2009 21:23:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       James Smart <james.smart@emulex.com>,
+       Martin Michlmayr <tbm@cyrius.com>, Boaz Harrosh <bharrosh@panasas.com>,
        James Bottomley <James.Bottomley@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [02/34] SCSI: scsi_lib_dma: fix bug with dma maps on nested scsi objects
+Subject: [03/34] SCSI: osd_protocol.h: Add missing #include
 References: <20091211052312.805428372@linux.site>
-Content-Disposition: inline; filename=scsi-scsi_lib_dma-fix-bug-with-dma-maps-on-nested-scsi-objects.patch
+Content-Disposition: inline; filename=scsi-osd_protocol.h-add-missing-include.patch
 In-Reply-To: <20091211052858.GA23229@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,153 +32,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: James Bottomley <James.Bottomley@suse.de>
+From: Martin Michlmayr <tbm@cyrius.com>
 
-commit d139b9bd0e52dda14fd13412e7096e68b56d0076 upstream.
+commit 0899638688f223fd9e9fee60d662665e11693d12 upstream.
 
-Some of our virtual SCSI hosts don't have a proper bus parent at the
-top, which can be a problem for doing DMA on them
+include/scsi/osd_protocol.h uses ALIGN() without an #include
+<linux/kernel.h>, leading to:
+| include/scsi/osd_protocol.h:362: error: implicit declaration of function 'ALIGN'
 
-This patch makes the host device cache a pointer to the physical bus
-device and provides an extra API for setting it (the normal API picks
-it up from the parent).  This patch also modifies the qla2xxx and lpfc
-vport logic to use the new DMA host setting API.
-
-Acked-By: James Smart  <james.smart@emulex.com>
+Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/scsi/hosts.c            |   13 ++++++++++---
- drivers/scsi/lpfc/lpfc_init.c   |    2 +-
- drivers/scsi/qla2xxx/qla_attr.c |    3 ++-
- drivers/scsi/scsi_lib_dma.c     |    4 ++--
- include/scsi/scsi_host.h        |   16 +++++++++++++++-
- 5 files changed, 30 insertions(+), 8 deletions(-)
-
---- a/drivers/scsi/hosts.c
-+++ b/drivers/scsi/hosts.c
-@@ -180,14 +180,20 @@ void scsi_remove_host(struct Scsi_Host *
- EXPORT_SYMBOL(scsi_remove_host);
+--- a/include/scsi/osd_protocol.h
++++ b/include/scsi/osd_protocol.h
+@@ -17,6 +17,7 @@
+ #define __OSD_PROTOCOL_H__
  
- /**
-- * scsi_add_host - add a scsi host
-+ * scsi_add_host_with_dma - add a scsi host with dma device
-  * @shost:	scsi host pointer to add
-  * @dev:	a struct device of type scsi class
-+ * @dma_dev:	dma device for the host
-+ *
-+ * Note: You rarely need to worry about this unless you're in a
-+ * virtualised host environments, so use the simpler scsi_add_host()
-+ * function instead.
-  *
-  * Return value: 
-  * 	0 on success / != 0 for error
-  **/
--int scsi_add_host(struct Scsi_Host *shost, struct device *dev)
-+int scsi_add_host_with_dma(struct Scsi_Host *shost, struct device *dev,
-+			   struct device *dma_dev)
- {
- 	struct scsi_host_template *sht = shost->hostt;
- 	int error = -EINVAL;
-@@ -207,6 +213,7 @@ int scsi_add_host(struct Scsi_Host *shos
+ #include <linux/types.h>
++#include <linux/kernel.h>
+ #include <asm/unaligned.h>
+ #include <scsi/scsi.h>
  
- 	if (!shost->shost_gendev.parent)
- 		shost->shost_gendev.parent = dev ? dev : &platform_bus;
-+	shost->dma_dev = dma_dev;
- 
- 	error = device_add(&shost->shost_gendev);
- 	if (error)
-@@ -262,7 +269,7 @@ int scsi_add_host(struct Scsi_Host *shos
-  fail:
- 	return error;
- }
--EXPORT_SYMBOL(scsi_add_host);
-+EXPORT_SYMBOL(scsi_add_host_with_dma);
- 
- static void scsi_host_dev_release(struct device *dev)
- {
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -2408,7 +2408,7 @@ lpfc_create_port(struct lpfc_hba *phba,
- 	vport->els_tmofunc.function = lpfc_els_timeout;
- 	vport->els_tmofunc.data = (unsigned long)vport;
- 
--	error = scsi_add_host(shost, dev);
-+	error = scsi_add_host_with_dma(shost, dev, &phba->pcidev->dev);
- 	if (error)
- 		goto out_put_shost;
- 
---- a/drivers/scsi/qla2xxx/qla_attr.c
-+++ b/drivers/scsi/qla2xxx/qla_attr.c
-@@ -1654,7 +1654,8 @@ qla24xx_vport_create(struct fc_vport *fc
- 			fc_vport_set_state(fc_vport, FC_VPORT_LINKDOWN);
- 	}
- 
--	if (scsi_add_host(vha->host, &fc_vport->dev)) {
-+	if (scsi_add_host_with_dma(vha->host, &fc_vport->dev,
-+				   &ha->pdev->dev)) {
- 		DEBUG15(printk("scsi(%ld): scsi_add_host failure for VP[%d].\n",
- 			vha->host_no, vha->vp_idx));
- 		goto vport_create_failed_2;
---- a/drivers/scsi/scsi_lib_dma.c
-+++ b/drivers/scsi/scsi_lib_dma.c
-@@ -23,7 +23,7 @@ int scsi_dma_map(struct scsi_cmnd *cmd)
- 	int nseg = 0;
- 
- 	if (scsi_sg_count(cmd)) {
--		struct device *dev = cmd->device->host->shost_gendev.parent;
-+		struct device *dev = cmd->device->host->dma_dev;
- 
- 		nseg = dma_map_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
- 				  cmd->sc_data_direction);
-@@ -41,7 +41,7 @@ EXPORT_SYMBOL(scsi_dma_map);
- void scsi_dma_unmap(struct scsi_cmnd *cmd)
- {
- 	if (scsi_sg_count(cmd)) {
--		struct device *dev = cmd->device->host->shost_gendev.parent;
-+		struct device *dev = cmd->device->host->dma_dev;
- 
- 		dma_unmap_sg(dev, scsi_sglist(cmd), scsi_sg_count(cmd),
- 			     cmd->sc_data_direction);
---- a/include/scsi/scsi_host.h
-+++ b/include/scsi/scsi_host.h
-@@ -677,6 +677,12 @@ struct Scsi_Host {
- 	void *shost_data;
- 
- 	/*
-+	 * Points to the physical bus device we'd use to do DMA
-+	 * Needed just in case we have virtual hosts.
-+	 */
-+	struct device *dma_dev;
-+
-+	/*
- 	 * We should ensure that this is aligned, both for better performance
- 	 * and also because some compilers (m68k) don't automatically force
- 	 * alignment to a long boundary.
-@@ -720,7 +726,9 @@ extern int scsi_queue_work(struct Scsi_H
- extern void scsi_flush_work(struct Scsi_Host *);
- 
- extern struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *, int);
--extern int __must_check scsi_add_host(struct Scsi_Host *, struct device *);
-+extern int __must_check scsi_add_host_with_dma(struct Scsi_Host *,
-+					       struct device *,
-+					       struct device *);
- extern void scsi_scan_host(struct Scsi_Host *);
- extern void scsi_rescan_device(struct device *);
- extern void scsi_remove_host(struct Scsi_Host *);
-@@ -731,6 +739,12 @@ extern const char *scsi_host_state_name(
- 
- extern u64 scsi_calculate_bounce_limit(struct Scsi_Host *);
- 
-+static inline int __must_check scsi_add_host(struct Scsi_Host *host,
-+					     struct device *dev)
-+{
-+	return scsi_add_host_with_dma(host, dev, dev);
-+}
-+
- static inline struct device *scsi_get_device(struct Scsi_Host *shost)
- {
-         return shost->shost_gendev.parent;
 
 
