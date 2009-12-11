@@ -1,127 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZLKKOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZLKKTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbZLKKOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 05:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbZLKKOQ
+	id S1756853AbZLKKTf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 05:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbZLKKT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 05:14:16 -0500
-Received: from mga05.intel.com ([192.55.52.89]:43373 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754802AbZLKKOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 05:14:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,381,1257148800"; 
-   d="scan'208";a="521972414"
-Date: Fri, 11 Dec 2009 11:15:56 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-Cc: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       peter.de-schrijver@nokia.com, eduardo.valentin@nokia.com
-Subject: Re: [PATCHv2 1/1] twl4030-mfd: Add all twl4030 regulators to the
- twl4030 mfd driver
-Message-ID: <20091211101555.GA5863@sortiz.org>
-References: <1259144042-9662-1-git-send-email-ext-juha.1.keski-saari@nokia.com>
- <1259144042-9662-2-git-send-email-ext-juha.1.keski-saari@nokia.com>
+	Fri, 11 Dec 2009 05:19:29 -0500
+Received: from mail.gmx.net ([213.165.64.20]:34982 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754802AbZLKKT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 05:19:28 -0500
+X-Authenticated: #2813124
+X-Provags-ID: V01U2FsdGVkX1+cjmV7buacVtgb5nxyrgL27YcLxCdbxAF+OgQz5j
+	iPyrAnvcfMiIIB
+Message-ID: <4B221CB1.9060003@gmx.ch>
+Date: Fri, 11 Dec 2009 11:19:29 +0100
+From: Daniel Ritz <daniel.ritz@gmx.ch>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259144042-9662-2-git-send-email-ext-juha.1.keski-saari@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] uvcvideo: add another YUYV format GUID
+References: <1259711324.13720.20.camel@MacRitz2> <200912100246.27827.laurent.pinchart@ideasonboard.com> <1260462865.2138.8.camel@MacRitz2> <200912110221.31086.laurent.pinchart@ideasonboard.com>
+In-Reply-To: <200912110221.31086.laurent.pinchart@ideasonboard.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Juha,
-
-On Wed, Nov 25, 2009 at 12:14:02PM +0200, Juha Keski-Saari wrote:
-> Add all twl4030 regulators to the twl4030 mfd driver and
-> twl4030_platform_data
-Patch applied, thanks.
-
-Cheers,
-Samuel.
-
-
-> Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> Acked-by: Samuel Ortiz <sameo@linux.intel.com>
-> ---
->  drivers/mfd/twl4030-core.c  |   26 ++++++++++++++++++++++++--
->  include/linux/i2c/twl4030.h |    8 ++++++--
->  2 files changed, 30 insertions(+), 4 deletions(-)
+On 11.12.2009 02:21, Laurent Pinchart wrote:
+> On Thursday 10 December 2009 17:34:25 Daniel Ritz wrote:
+>> On Thu, 2009-12-10 at 02:46 +0100, Laurent Pinchart wrote:
+>>> Hi Daniel,
+>>>
+>>> On Friday 04 December 2009 03:05:37 Daniel Ritz wrote:
+>>>> Hi Laurent
+>>>>
+>>>> On Thu, 2009-12-03 at 21:15 +0100, Laurent Pinchart wrote:
+>>>>> Hi Daniel,
+>>>>>
+>>>>> On Wednesday 02 December 2009 00:48:44 Daniel Ritz wrote:
+>>>>>> For some unknown reason, on a MacBookPro5,3 the iSight
+>>>>>
+>>>>> Could you please send me the output of lsusb -v both with the correct
+>>>>> and wrong GUID ?
+>>>>
+>>>> sure. i attached three files:
+>>>>   isight-good.txt, isight-bad.txt, isight-good2.txt
+>>>>
+>>>> this is three reboots in a row from like 10 minutes ago. the first
+>>>> boot into linux was actually rebooting from OSX...first cold boot
+>>>> today directly into linux had the right GUID.
+>>>
+>>> Thanks. diff'ing the descriptors shows something interesting (from good
+>>> to good2):
+>>>
+>>> @@ -264,7 +264,7 @@
+>>>          dwMaxVideoFrameBufferSize      614400
+>>>          dwDefaultFrameInterval         333333
+>>>          bFrameIntervalType                 11
+>>> -        dwFrameInterval( 0)         3758429717
+>>> +        dwFrameInterval( 0)            333333
+>>>          dwFrameInterval( 1)            363636
+>>>          dwFrameInterval( 2)            400000
+>>>          dwFrameInterval( 3)            444444
+>>>
+>>> 3758429717 is 0xe0051615 in hex, and 333333 is 0x00051615.
+>>>
+>>> I wonder what other parts of the descriptors could get corrupted that
+>>> way.
+>>
+>> hmm..dunno..but even with this it just worked.
+>>
+>>>>>> _sometimes_ report a different video format GUID.
+>>>>>
+>>>>> Sometimes only ? Now that's weird. Is that completely random ?
+>>>>
+>>>> yes, sometimes only. it seems to be related to reboots, but i don't
+>>>> know what exactly triggers it. rmmod/modprobe doesn't trigger it.
+>>>> also, when the wrong GUID is reported, the only way of fixing it is
+>>>> to reboot. it really is just the GUID. even when the wrong one is
+>>>> reported, the device works just fine.
+>>>>
+>>>> i started with a plain ubuntu 9.10, kernel 2.6.31 which was supposed
+>>>> to fail, so i upgraded to a 2.6.32-rc8 to fix the iSight and some other
+>>>> things, just to see it fail again. a reboot later and it worked, some
+>>>> time and reboot later it failed again...
+>>>
+>>> All of those are warm reboots, and you don't boot any alternative OS in-
+>>> between, right ?
+>>
+>> yes, linux only.
+>>
+>>> Does Linux reload the iSight firmware at every boot ? If it does, could
+>>> you try to reload the firmware manually when you get a "bad" GUID to see
+>>> if it helps ? You will probably need to unload the uvcvideo driver before
+>>> reloading the firmware.
+>>
+>> linux does not load isight firmware at all. the new macbooks don't
+>> require to load FW the device just "works".
+>> FW loading is only required for the devices with ID 0x05AC:0x8300,
+>> what i have is 05ac:8507....
 > 
-> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-> index 0ee81e4..2d659e6 100644
-> --- a/drivers/mfd/twl4030-core.c
-> +++ b/drivers/mfd/twl4030-core.c
-> @@ -572,11 +572,21 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
->  	}
->  
->  	if (twl_has_regulator()) {
-> -		/*
->  		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
->  		if (IS_ERR(child))
->  			return PTR_ERR(child);
-> -		*/
-> +
-> +		child = add_regulator(TWL4030_REG_VIO, pdata->vio);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
-> +
-> +		child = add_regulator(TWL4030_REG_VDD1, pdata->vdd1);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
-> +
-> +		child = add_regulator(TWL4030_REG_VDD2, pdata->vdd2);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
->  
->  		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
->  		if (IS_ERR(child))
-> @@ -592,6 +602,18 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
->  				pdata->vaux2);
->  		if (IS_ERR(child))
->  			return PTR_ERR(child);
-> +
-> +		child = add_regulator(TWL4030_REG_VINTANA1, pdata->vintana1);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
-> +
-> +		child = add_regulator(TWL4030_REG_VINTANA2, pdata->vintana2);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
-> +
-> +		child = add_regulator(TWL4030_REG_VINTDIG, pdata->vintdig);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
->  	}
->  
->  	if (twl_has_regulator() && usb_transceiver) {
-> diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
-> index c188961..bf143d8 100644
-> --- a/include/linux/i2c/twl4030.h
-> +++ b/include/linux/i2c/twl4030.h
-> @@ -440,8 +440,12 @@ struct twl4030_platform_data {
->  	struct regulator_init_data		*vaux2;
->  	struct regulator_init_data		*vaux3;
->  	struct regulator_init_data		*vaux4;
-> -
-> -	/* REVISIT more to come ... _nothing_ should be hard-wired */
-> +	struct regulator_init_data		*vio;
-> +	struct regulator_init_data		*vdd1;
-> +	struct regulator_init_data		*vdd2;
-> +	struct regulator_init_data		*vintana1;
-> +	struct regulator_init_data		*vintana2;
-> +	struct regulator_init_data		*vintdig;
->  };
->  
->  /*----------------------------------------------------------------------*/
-> -- 
-> 1.6.3.3
+> Ok, thanks for the information.
 > 
+> I guess the camera is really broken. As MacOSX probably doesn't even try to 
+> parse the USB descriptors, the Apple developers never noticed.
+> 
+> Anyway, I'll apply your patch. Can I still keep your SoB line if I rename 
+> YUY2_2 to YUY2_ISIGHT ?
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+sure.
+
+thanks, rgds
+-daniel
+
+
