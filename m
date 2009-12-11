@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbZLKEgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbZLKEgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760614AbZLKEgB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:36:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760465AbZLKEf6
+	id S1760669AbZLKEgE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbZLKEgC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:35:58 -0500
-Received: from kroah.org ([198.145.64.141]:52872 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:36:02 -0500
+Received: from kroah.org ([198.145.64.141]:52878 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758955AbZLKEfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:35:38 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:28 2009
-Message-Id: <20091211042728.124212000@linux.site>
+	id S1759073AbZLKEfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:35:39 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:29 2009
+Message-Id: <20091211042728.672704124@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:24:45 -0800
+Date: Thu, 10 Dec 2009 20:24:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [07/90] ext4: Avoid group preallocation for closed files
+       Jan Kara <jack@suse.cz>, "Theodore Tso" <tytso@mit.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [08/90] jbd2: Annotate transaction start also for jbd2_journal_restart()
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0007-ext4-Avoid-group-preallocation-for-closed-files.patch
+Content-Disposition: inline; filename=0008-jbd2-Annotate-transaction-start-also-for-jbd2_journa.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,107 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 50797481a7bdee548589506d7d7b48b08bc14dcd)
+(cherry picked from commit 9599b0e597d810be9b8f759ea6e9619c4f983c5e)
 
-Currently the group preallocation code tries to find a large (512)
-free block from which to do per-cpu group allocation for small files.
-The problem with this scheme is that it leaves the filesystem horribly
-fragmented.  In the worst case, if the filesystem is unmounted and
-remounted (after a system shutdown, for example) we forget the fact
-that wee were using a particular (now-partially filled) 512 block
-extent.  So the next time we try to allocate space for a small file,
-we will find *another* completely free 512 block chunk to allocate
-small files.  Given that there are 32,768 blocks in a block group,
-after 64 iterations of "mount, write one 4k file in a directory,
-unmount", the block group will have 64 files, each separated by 511
-blocks, and the block group will no longer have any free 512
-completely free chunks of blocks for group preallocation space.
+lockdep annotation for a transaction start has been at the end of
+jbd2_journal_start(). But a transaction is also started from
+jbd2_journal_restart(). Move the lockdep annotation to start_this_handle()
+which covers both cases.
 
-So if we try to allocate blocks for a file that has been closed, such
-that we know the final size of the file, and the filesystem is not
-busy, avoid using group preallocation.
-
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h    |   30 +++++++++++++++++++++++++++++-
- fs/ext4/mballoc.c |   10 +++++++++-
- 2 files changed, 38 insertions(+), 2 deletions(-)
+ fs/jbd2/transaction.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -952,6 +952,7 @@ struct ext4_sb_info {
- 	atomic_t s_mb_lost_chunks;
- 	atomic_t s_mb_preallocated;
- 	atomic_t s_mb_discarded;
-+	atomic_t s_lock_busy;
- 
- 	/* locality groups */
- 	struct ext4_locality_group *s_locality_groups;
-@@ -1593,15 +1594,42 @@ struct ext4_group_info {
- #define EXT4_MB_GRP_NEED_INIT(grp)	\
- 	(test_bit(EXT4_GROUP_INFO_NEED_INIT_BIT, &((grp)->bb_state)))
- 
-+#define EXT4_MAX_CONTENTION		8
-+#define EXT4_CONTENTION_THRESHOLD	2
+--- a/fs/jbd2/transaction.c
++++ b/fs/jbd2/transaction.c
+@@ -238,6 +238,8 @@ repeat_locked:
+ 		  __jbd2_log_space_left(journal));
+ 	spin_unlock(&transaction->t_handle_lock);
+ 	spin_unlock(&journal->j_state_lock);
 +
- static inline spinlock_t *ext4_group_lock_ptr(struct super_block *sb,
- 					      ext4_group_t group)
- {
- 	return bgl_lock_ptr(EXT4_SB(sb)->s_blockgroup_lock, group);
++	lock_map_acquire(&handle->h_lockdep_map);
+ out:
+ 	if (unlikely(new_transaction))		/* It's usually NULL */
+ 		kfree(new_transaction);
+@@ -303,8 +305,6 @@ handle_t *jbd2_journal_start(journal_t *
+ 		handle = ERR_PTR(err);
+ 		goto out;
+ 	}
+-
+-	lock_map_acquire(&handle->h_lockdep_map);
+ out:
+ 	return handle;
  }
+@@ -426,6 +426,7 @@ int jbd2_journal_restart(handle_t *handl
+ 	__jbd2_log_start_commit(journal, transaction->t_tid);
+ 	spin_unlock(&journal->j_state_lock);
  
-+/*
-+ * Returns true if the filesystem is busy enough that attempts to
-+ * access the block group locks has run into contention.
-+ */
-+static inline int ext4_fs_is_busy(struct ext4_sb_info *sbi)
-+{
-+	return (atomic_read(&sbi->s_lock_busy) > EXT4_CONTENTION_THRESHOLD);
-+}
-+
- static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
- {
--	spin_lock(ext4_group_lock_ptr(sb, group));
-+	spinlock_t *lock = ext4_group_lock_ptr(sb, group);
-+	if (spin_trylock(lock))
-+		/*
-+		 * We're able to grab the lock right away, so drop the
-+		 * lock contention counter.
-+		 */
-+		atomic_add_unless(&EXT4_SB(sb)->s_lock_busy, -1, 0);
-+	else {
-+		/*
-+		 * The lock is busy, so bump the contention counter,
-+		 * and then wait on the spin lock.
-+		 */
-+		atomic_add_unless(&EXT4_SB(sb)->s_lock_busy, 1,
-+				  EXT4_MAX_CONTENTION);
-+		spin_lock(lock);
-+	}
- }
- 
- static inline void ext4_unlock_group(struct super_block *sb,
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -4154,9 +4154,17 @@ static void ext4_mb_group_or_file(struct
- 		return;
- 
- 	size = ac->ac_o_ex.fe_logical + ac->ac_o_ex.fe_len;
--	isize = i_size_read(ac->ac_inode) >> bsbits;
-+	isize = (i_size_read(ac->ac_inode) + ac->ac_sb->s_blocksize - 1)
-+		>> bsbits;
- 	size = max(size, isize);
- 
-+	if ((size == isize) &&
-+	    !ext4_fs_is_busy(sbi) &&
-+	    (atomic_read(&ac->ac_inode->i_writecount) == 0)) {
-+		ac->ac_flags |= EXT4_MB_HINT_NOPREALLOC;
-+		return;
-+	}
-+
- 	/* don't use group allocation for large files */
- 	if (size >= sbi->s_mb_stream_request) {
- 		ac->ac_flags |= EXT4_MB_STREAM_ALLOC;
++	lock_map_release(&handle->h_lockdep_map);
+ 	handle->h_buffer_credits = nblocks;
+ 	ret = start_this_handle(journal, handle);
+ 	return ret;
 
 
