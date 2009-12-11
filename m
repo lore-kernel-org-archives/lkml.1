@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762786AbZLKWZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934217AbZLKWeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762786AbZLKWZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 17:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762711AbZLKWZY
+	id S934217AbZLKWeN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 17:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934173AbZLKWdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 17:25:24 -0500
-Received: from kroah.org ([198.145.64.141]:32793 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 17:33:55 -0500
+Received: from kroah.org ([198.145.64.141]:32795 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762715AbZLKWZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762701AbZLKWZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Dec 2009 17:25:02 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, stable <stable@kernel.org>,
+Cc: "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 11/27] debugfs: fix create mutex racy fops and private data
-Date: Fri, 11 Dec 2009 14:24:33 -0800
-Message-Id: <1260570289-6997-11-git-send-email-gregkh@suse.de>
+Subject: [PATCH 12/27] sysfs: Update sysfs_setxattr so it updates secdata under the sysfs_mutex
+Date: Fri, 11 Dec 2009 14:24:34 -0800
+Message-Id: <1260570289-6997-12-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211212642.GA6624@kroah.com>
 References: <20091211212642.GA6624@kroah.com>
@@ -24,170 +24,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+From: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
 
-Setting fops and private data outside of the mutex at debugfs file
-creation introduces a race where the files can be opened with the wrong
-file operations and private data.  It is easy to trigger with a process
-waiting on file creation notification.
+The sysfs_mutex is required to ensure updates are and will remain
+atomic with respect to other inode iattr updates, that do not happen
+through the filesystem.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: stable <stable@kernel.org>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/debugfs/inode.c |   55 ++++++++++++++++++++++++++++++---------------------
- 1 files changed, 32 insertions(+), 23 deletions(-)
+ fs/sysfs/inode.c |   41 +++++++++++++++++++++++++++++------------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
 
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index 0d23b52..b486169 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -32,7 +32,9 @@ static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
- static bool debugfs_registered;
- 
--static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev)
-+static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev,
-+				       void *data, const struct file_operations *fops)
-+
- {
- 	struct inode *inode = new_inode(sb);
- 
-@@ -44,14 +46,18 @@ static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t d
- 			init_special_inode(inode, mode, dev);
- 			break;
- 		case S_IFREG:
--			inode->i_fop = &debugfs_file_operations;
-+			inode->i_fop = fops ? fops : &debugfs_file_operations;
-+			inode->i_private = data;
- 			break;
- 		case S_IFLNK:
- 			inode->i_op = &debugfs_link_operations;
-+			inode->i_fop = fops;
-+			inode->i_private = data;
- 			break;
- 		case S_IFDIR:
- 			inode->i_op = &simple_dir_inode_operations;
--			inode->i_fop = &simple_dir_operations;
-+			inode->i_fop = fops ? fops : &simple_dir_operations;
-+			inode->i_private = data;
- 
- 			/* directory inodes start off with i_nlink == 2
- 			 * (for "." entry) */
-@@ -64,7 +70,8 @@ static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t d
- 
- /* SMP-safe */
- static int debugfs_mknod(struct inode *dir, struct dentry *dentry,
--			 int mode, dev_t dev)
-+			 int mode, dev_t dev, void *data,
-+			 const struct file_operations *fops)
- {
- 	struct inode *inode;
- 	int error = -EPERM;
-@@ -72,7 +79,7 @@ static int debugfs_mknod(struct inode *dir, struct dentry *dentry,
- 	if (dentry->d_inode)
- 		return -EEXIST;
- 
--	inode = debugfs_get_inode(dir->i_sb, mode, dev);
-+	inode = debugfs_get_inode(dir->i_sb, mode, dev, data, fops);
- 	if (inode) {
- 		d_instantiate(dentry, inode);
- 		dget(dentry);
-@@ -81,12 +88,13 @@ static int debugfs_mknod(struct inode *dir, struct dentry *dentry,
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index e144351..000bd98 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -123,23 +123,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
  	return error;
  }
  
--static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
-+			 void *data, const struct file_operations *fops)
++static int sysfs_sd_setsecdata(struct sysfs_dirent *sd, void **secdata, u32 *secdata_len)
++{
++	struct sysfs_inode_attrs *iattrs;
++	void *old_secdata;
++	size_t old_secdata_len;
++
++	iattrs = sd->s_iattr;
++	if (!iattrs)
++		iattrs = sysfs_init_inode_attrs(sd);
++	if (!iattrs)
++		return -ENOMEM;
++
++	old_secdata = iattrs->ia_secdata;
++	old_secdata_len = iattrs->ia_secdata_len;
++
++	iattrs->ia_secdata = *secdata;
++	iattrs->ia_secdata_len = *secdata_len;
++
++	*secdata = old_secdata;
++	*secdata_len = old_secdata_len;
++	return 0;
++}
++
+ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+ 		size_t size, int flags)
  {
- 	int res;
+ 	struct sysfs_dirent *sd = dentry->d_fsdata;
+-	struct sysfs_inode_attrs *iattrs;
+ 	void *secdata;
+ 	int error;
+ 	u32 secdata_len = 0;
  
- 	mode = (mode & (S_IRWXUGO | S_ISVTX)) | S_IFDIR;
--	res = debugfs_mknod(dir, dentry, mode, 0);
-+	res = debugfs_mknod(dir, dentry, mode, 0, data, fops);
- 	if (!res) {
- 		inc_nlink(dir);
- 		fsnotify_mkdir(dir, dentry);
-@@ -94,18 +102,20 @@ static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 	return res;
- }
- 
--static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode)
-+static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode,
-+			void *data, const struct file_operations *fops)
- {
- 	mode = (mode & S_IALLUGO) | S_IFLNK;
--	return debugfs_mknod(dir, dentry, mode, 0);
-+	return debugfs_mknod(dir, dentry, mode, 0, data, fops);
- }
- 
--static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode)
-+static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode,
-+			  void *data, const struct file_operations *fops)
- {
- 	int res;
- 
- 	mode = (mode & S_IALLUGO) | S_IFREG;
--	res = debugfs_mknod(dir, dentry, mode, 0);
-+	res = debugfs_mknod(dir, dentry, mode, 0, data, fops);
- 	if (!res)
- 		fsnotify_create(dir, dentry);
- 	return res;
-@@ -139,7 +149,9 @@ static struct file_system_type debug_fs_type = {
- 
- static int debugfs_create_by_name(const char *name, mode_t mode,
- 				  struct dentry *parent,
--				  struct dentry **dentry)
-+				  struct dentry **dentry,
-+				  void *data,
-+				  const struct file_operations *fops)
- {
- 	int error = 0;
- 
-@@ -164,13 +176,16 @@ static int debugfs_create_by_name(const char *name, mode_t mode,
- 	if (!IS_ERR(*dentry)) {
- 		switch (mode & S_IFMT) {
- 		case S_IFDIR:
--			error = debugfs_mkdir(parent->d_inode, *dentry, mode);
-+			error = debugfs_mkdir(parent->d_inode, *dentry, mode,
-+					      data, fops);
- 			break;
- 		case S_IFLNK:
--			error = debugfs_link(parent->d_inode, *dentry, mode);
-+			error = debugfs_link(parent->d_inode, *dentry, mode,
-+					     data, fops);
- 			break;
- 		default:
--			error = debugfs_create(parent->d_inode, *dentry, mode);
-+			error = debugfs_create(parent->d_inode, *dentry, mode,
-+					       data, fops);
- 			break;
- 		}
- 		dput(*dentry);
-@@ -221,19 +236,13 @@ struct dentry *debugfs_create_file(const char *name, mode_t mode,
- 	if (error)
- 		goto exit;
- 
--	error = debugfs_create_by_name(name, mode, parent, &dentry);
-+	error = debugfs_create_by_name(name, mode, parent, &dentry,
-+				       data, fops);
- 	if (error) {
- 		dentry = NULL;
- 		simple_release_fs(&debugfs_mount, &debugfs_mount_count);
- 		goto exit;
- 	}
+ 	if (!sd)
+ 		return -EINVAL;
+-	if (!sd->s_iattr)
+-		sd->s_iattr = sysfs_init_inode_attrs(sd);
+-	if (!sd->s_iattr)
+-		return -ENOMEM;
 -
--	if (dentry->d_inode) {
--		if (data)
--			dentry->d_inode->i_private = data;
--		if (fops)
--			dentry->d_inode->i_fop = fops;
--	}
- exit:
- 	return dentry;
- }
+-	iattrs = sd->s_iattr;
+ 
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
+ 		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
+@@ -151,12 +167,13 @@ int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+ 						&secdata, &secdata_len);
+ 		if (error)
+ 			goto out;
+-		if (iattrs->ia_secdata)
+-			security_release_secctx(iattrs->ia_secdata,
+-						iattrs->ia_secdata_len);
+-		iattrs->ia_secdata = secdata;
+-		iattrs->ia_secdata_len = secdata_len;
+ 
++		mutex_lock(&sysfs_mutex);
++		error = sysfs_sd_setsecdata(sd, &secdata, &secdata_len);
++		mutex_unlock(&sysfs_mutex);
++
++		if (secdata)
++			security_release_secctx(secdata, secdata_len);
+ 	} else
+ 		return -EINVAL;
+ out:
 -- 
 1.6.5.5
 
