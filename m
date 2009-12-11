@@ -1,182 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZLKAda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762005AbZLKAdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbZLKAda (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 19:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbZLKAd0
+	id S1762005AbZLKAdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 19:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbZLKAdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 19:33:26 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40909 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757023AbZLKAd0 (ORCPT
+	Thu, 10 Dec 2009 19:33:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40762 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757364AbZLKAds (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 19:33:26 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 11 Dec 2009 09:30:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com, mingo@elte.hu
-Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
-Message-Id: <20091211093032.db7fdd91.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0912101136110.5481@router.home>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0912101136110.5481@router.home>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 19:33:48 -0500
+Date: Thu, 10 Dec 2009 16:32:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-15?Q?=22C=2E_Bergstr=F6m=22?= <cbergstrom@pathscale.com>
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm
+In-Reply-To: <4B219046.3080908@pathscale.com>
+Message-ID: <alpine.LFD.2.00.0912101623010.3560@localhost.localdomain>
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie> <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain> <1260459601.18520.26.camel@skunk> <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain> <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
+ <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain> <6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com> <alpine.LFD.2.00.0912101531180.3560@localhost.localdomain> <20091210235835.20e2269d@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain>
+ <4B219046.3080908@pathscale.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-thank you for review.
 
-On Thu, 10 Dec 2009 11:51:24 -0600 (CST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
-
-> On Thu, 10 Dec 2009, KAMEZAWA Hiroyuki wrote:
+On Thu, 10 Dec 2009, "C. Bergström" wrote:
+>   
+> Thanks for the rather lengthly explanation, but in case you missed what people
+> are trying to say here..
 > 
-> > Now, mm's counter information is updated by atomic_long_xxx() functions if
-> > USE_SPLIT_PTLOCKS is defined. This causes cache-miss when page faults happens
-> > simultaneously in prural cpus. (Almost all process-shared objects is...)
+> With all due respect Linus..
 > 
-> s/prural cpus/multiple cpus simultaneously/?
-> 
-Ah, I see..I often does this misuse, sorry.
+> "patches welcome"
 
-> > This patch implements per-cpu mm cache. This per-cpu cache is loosely
-> > synchronized with mm's counter. Current design is..
-> 
-> Some more explanation about the role of the per cpu data would be useful.
-> 
-I see.
-> For each cpu we keep a set of counters that can be incremented using per
-> cpu operations. curr_mc points to the mm struct that is currently using
-> the per cpu counters on a specific cpu?
-> 
-yes. Precisely. per-cpu curr_mmc.mm points to mm_struct of current thread
-if a page fault occurs since last schedule().
+The problem is that I have never even heard a Red Hat or Fedora person 
+actually acknoledge that yes, they should be trying to upstream it.
 
+Have Red Hat and Fedora just decided that "upstream first" simply doesn't 
+matter any more? Because quite frankly, that was kind of the feeling I 
+came away with from the Kernel summit.
 
-> >   - prepare per-cpu object curr_mmc. curr_mmc containes pointer to mm and
-> >     array of counters.
-> >   - At page fault,
-> >      * if curr_mmc.mm != NULL, update curr_mmc.mm counter.
-> >      * if curr_mmc.mm == NULL, fill curr_mmc.mm = current->mm and account 1.
-> >   - At schedule()
-> >      * if curr_mm.mm != NULL, synchronize and invalidate cached information.
-> >      * if curr_mmc.mm == NULL, nothing to do.
-> 
-> Sounds like a very good idea that could be expanded and used for other
-> things like tracking the amount of memory used on a specific NUMA node in
-> the future. Through that we may get to a schedule that can schedule with
-> an awareness where the memory of a process is actually located.
-> 
-Hmm. Expanding as per-node stat ?
+It's like they _want_ to keep it internal.
 
->  > By this.
-> >   - no atomic ops, which tends to cache-miss, under page table lock.
-> >   - mm->counters are synchronized when schedule() is called.
-> >   - No bad thing to read-side.
-> >
-> > Concern:
-> >   - added cost to schedule().
-> 
-> That is only a simple check right?
-yes.
-
-> Are we already touching that cacheline in schedule?
-
-0000000000010040 l     O .data.percpu   0000000000000050 vmstat_work
-00000000000100a0 g     O .data.percpu   0000000000000030 curr_mmc
-00000000000100e0 l     O .data.percpu   0000000000000030 vmap_block_queue
-
-Hmm...not touched unless a page fault occurs.
-
-> Or place that structure near other stuff touched by the scheduer?
-> 
-
-I'll think about that.
-
-
-> >
-> > +#if USE_SPLIT_PTLOCKS
-> > +
-> > +DEFINE_PER_CPU(struct pcp_mm_cache, curr_mmc);
-> > +
-> > +void __sync_mm_counters(struct mm_struct *mm)
-> > +{
-> > +	struct pcp_mm_cache *mmc = &per_cpu(curr_mmc, smp_processor_id());
-> > +	int i;
-> > +
-> > +	for (i = 0; i < NR_MM_COUNTERS; i++) {
-> > +		if (mmc->counters[i] != 0) {
-> 
-> Omit != 0?
-> 
-> if you change mmc->curr_mc then there is no need to set mmc->counters[0]
-> to zero right? add_mm_counter_fast will set the counter to 1 next?
-> 
-yes. I can omit that.
-
-
-> > +static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
-> > +{
-> > +	struct mm_struct *cached = percpu_read(curr_mmc.mm);
-> > +
-> > +	if (likely(cached == mm)) { /* fast path */
-> > +		percpu_add(curr_mmc.counters[member], val);
-> > +	} else if (mm == current->mm) { /* 1st page fault in this period */
-> > +		percpu_write(curr_mmc.mm, mm);
-> > +		percpu_write(curr_mmc.counters[member], val);
-> > +	} else /* page fault via side-path context (get_user_pages()) */
-> > +		add_mm_counter(mm, member, val);
-> 
-> So get_user pages will not be accellerated.
-> 
-Yes. but I guess it's not fast path. I'll mention about that in patch description.
-
-
-> > Index: mmotm-2.6.32-Dec8/kernel/sched.c
-> > ===================================================================
-> > --- mmotm-2.6.32-Dec8.orig/kernel/sched.c
-> > +++ mmotm-2.6.32-Dec8/kernel/sched.c
-> > @@ -2858,6 +2858,7 @@ context_switch(struct rq *rq, struct tas
-> >  	trace_sched_switch(rq, prev, next);
-> >  	mm = next->mm;
-> >  	oldmm = prev->active_mm;
-> > +
-> >  	/*
-> >  	 * For paravirt, this is coupled with an exit in switch_to to
-> >  	 * combine the page table reload and the switch backend into
-> 
-> Extraneous new line.
-> 
-will fix.
-
-> > @@ -5477,6 +5478,11 @@ need_resched_nonpreemptible:
-> >
-> >  	if (sched_feat(HRTICK))
-> >  		hrtick_clear(rq);
-> > +	/*
-> > +	 * sync/invaldidate per-cpu cached mm related information
-> > +	 * before taling rq->lock. (see include/linux/mm.h)
-> > +	 */
-> > +	sync_mm_counters_atomic();
-> >
-> >  	spin_lock_irq(&rq->lock);
-> >  	update_rq_clock(rq);
-> 
-> Could the per cpu counter stuff be placed into rq to avoid
-> touching another cacheline?
-> 
-I will try and check how it can be done without annoyting people.
-
-Thanks,
--Kame
-
+			Linus
