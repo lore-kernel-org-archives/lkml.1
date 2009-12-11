@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZLKMyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZLKM46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbZLKMyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZLKMx5
+	id S1754515AbZLKM46 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbZLKM4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:53:57 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:50953 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919AbZLKMx4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:53:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=iasiJmENLMnDXTNRNCMTPX+VoAjcGWnRFiYX4nyR22g8f0Ygt6UII+3oTu1sUuTead
-         Vfqvp1AV3rN/GTRaeEYYN4NSxV8z4h9AcNMi3JsvN3HbPJ2KNUxC7UbjdTK9qSEzHIDk
-         DxeWILidnPgu0uPTGhvWekIHT6zWIoWyyG1io=
+	Fri, 11 Dec 2009 07:56:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48511 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbZLKM4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 07:56:52 -0500
+Date: Fri, 11 Dec 2009 12:54:33 GMT
+From: tip-bot for Jamie Iles <jamie.iles@picochip.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, jamie.iles@picochip.com, mikpe@it.uu.se,
+       linux@arm.linux.org.uk, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, jamie.iles@picochip.com, mikpe@it.uu.se,
+       linux@arm.linux.org.uk, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1260534009-5394-1-git-send-email-jamie.iles@picochip.com>
+References: <1260534009-5394-1-git-send-email-jamie.iles@picochip.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Allow building for ARM
+Message-ID: <tip-58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f@git.kernel.org>
+Git-Commit-ID: 58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <200912102225.05280.arnd@arndb.de>
-References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com>
-	 <200912102210.12124.arnd@arndb.de>
-	 <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
-	 <200912102225.05280.arnd@arndb.de>
-Date: Fri, 11 Dec 2009 13:54:01 +0100
-X-Google-Sender-Auth: 3c572297862ec66b
-Message-ID: <10f740e80912110454u172fc2cfye30da6ca0e0f0af0@mail.gmail.com>
-Subject: Re: What's in asm-generic.git
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, liqin.chen@sunplusct.com,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 22:25, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thursday 10 December 2009, Mike Frysinger wrote:
->> > I have found now that sys_accept4 was missing. sys_set_thread_area however
->> > is only defined on x86 and mips. Since you don't currently implement this
->> > on score, maybe it would be more appropriate to handle it like the other
->> > architectures do, rather than adding it to asm-generic/unistd.h?
->>
->> isnt the point of asm-generic/unistd.h to collect all common syscalls
->> ?  if there's syscalls that ideally should be handled by everyone but
->> currently doesnt, then it's easy to define it in the header but have
->> the actual entry.S leave it as a hole ...
->
-> Well, sys_thread_area is not a common syscall but rather an exception.
-> I haven't looked at how glibc does implents TLS on different architectures,
-> but I think this is commonly done purely in user space without the
-> need for a syscall.
+Commit-ID:  58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
+Gitweb:     http://git.kernel.org/tip/58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
+Author:     Jamie Iles <jamie.iles@picochip.com>
+AuthorDate: Fri, 11 Dec 2009 12:20:09 +0000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 11 Dec 2009 13:50:21 +0100
 
-10+ architectures already have sys_[sg]et_thread_area of have reserved
-entries for it.
+perf tools: Allow building for ARM
 
-Gr{oetje,eeting}s,
+Add definitions of rmb() and cpu_relax() and include the ARM
+unistd.h header. The __kuser_memory_barrier helper in the helper
+page is used to provide the correct memory barrier depending on
+the CPU type.
 
-						Geert
+[ The rmb() will work on v6 and v7, segfault on v5. Dynamic
+  detection to add v5 support will be added later. ]
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Signed-off-by: Jamie Iles <jamie.iles@picochip.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>
+LKML-Reference: <1260534009-5394-1-git-send-email-jamie.iles@picochip.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/perf.h |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index 454d5d5..75f941b 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -59,6 +59,18 @@
+ #define cpu_relax()	asm volatile ("hint @pause" ::: "memory")
+ #endif
+ 
++#ifdef __arm__
++#include "../../arch/arm/include/asm/unistd.h"
++/*
++ * Use the __kuser_memory_barrier helper in the CPU helper page. See
++ * arch/arm/kernel/entry-armv.S in the kernel source for details.
++ */
++#define rmb()		asm volatile("mov r0, #0xffff0fff; mov lr, pc;" \
++				     "sub pc, r0, #95" ::: "r0", "lr", "cc", \
++				     "memory")
++#define cpu_relax()	asm volatile("":::"memory")
++#endif
++
+ #include <time.h>
+ #include <unistd.h>
+ #include <sys/types.h>
