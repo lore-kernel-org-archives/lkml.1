@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZLKQZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZLKQ2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbZLKQZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 11:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZLKQZe
+	id S1754391AbZLKQ2i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbZLKQ2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 11:25:34 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:56544 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753405AbZLKQZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 11:25:26 -0500
-Date: Fri, 11 Dec 2009 10:25:32 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Miller <davem@davemloft.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] Expose the irq_desc node in proc/irq
-Message-ID: <20091211162532.GA2716@sgi.com>
+	Fri, 11 Dec 2009 11:28:32 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:52208 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbZLKQ2b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 11:28:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=hXljfjAdQf4bOrlzyyFxub84GipWtXGEPxQBv3sfkv3gzetAh87KgOI/ezG3E7h6UL
+         jvBVkvrFtEco0HKnc+dzlPf59ZdxQhKEs00AuAaeCJLCPYy14Z/AuVAQTiDj26iljbWv
+         V5uBtrhF6GHuIa2RRWZeFxhMpT+MwqJO+1MP0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1260546750-6206-1-git-send-email-mjg@redhat.com>
+References: <1260546750-6206-1-git-send-email-mjg@redhat.com>
+Date: Fri, 11 Dec 2009 17:28:37 +0100
+Message-ID: <68676e00912110828q26e511edt52546f09490c9431@mail.gmail.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for intel PCI thermal 
+	subsystem
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose the irq_desc node as /proc/irq/*/node.
+On Fri, Dec 11, 2009 at 4:52 PM, Matthew Garrett <mjg@redhat.com> wrote:
+> Recent Intel chipsets have support for a PCI device providing access
+> to on-board thermal monitoring. Previous versions have merely used this
+> to allow the BIOS to set trip points, but Ibex Peak documents a set of
+> registers to read values. This driver implements an hwmon interface to
+> read them.
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Does it plays nice with other drivers?
+More specifically: is it possible to load the native driver and this
+one (which I presume pokes at the same chip) at the same time?
 
----
-
- kernel/irq/proc.c |   23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
-
-Index: linux/kernel/irq/proc.c
-===================================================================
---- linux.orig/kernel/irq/proc.c	2009-12-11 10:09:31.000000000 -0600
-+++ linux/kernel/irq/proc.c	2009-12-11 10:15:28.000000000 -0600
-@@ -146,6 +146,26 @@ static const struct file_operations defa
- 	.release	= single_release,
- 	.write		= default_affinity_write,
- };
-+
-+static int irq_node_proc_show(struct seq_file *m, void *v)
-+{
-+	struct irq_desc *desc = irq_to_desc((long) m->private);
-+
-+	seq_printf(m, "%d\n", desc->node);
-+	return 0;
-+}
-+
-+static int irq_node_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, irq_node_proc_show,  PDE(inode)->data);
-+}
-+
-+static const struct file_operations irq_node_proc_fops = {
-+	.open		= irq_node_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
- #endif
- 
- static int irq_spurious_proc_show(struct seq_file *m, void *v)
-@@ -230,6 +250,9 @@ void register_irq_proc(unsigned int irq,
- 	/* create /proc/irq/<irq>/smp_affinity */
- 	proc_create_data("smp_affinity", 0600, desc->dir,
- 			 &irq_affinity_proc_fops, (void *)(long)irq);
-+
-+	proc_create_data("node", 0444, desc->dir,
-+			 &irq_node_proc_fops, (void *)(long)irq);
- #endif
- 
- 	proc_create_data("spurious", 0444, desc->dir,
+Luca
