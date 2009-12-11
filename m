@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934954AbZLKXgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934902AbZLKXhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934954AbZLKXgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934940AbZLKXgM
+	id S934902AbZLKXhH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934338AbZLKXgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:36:12 -0500
-Received: from kroah.org ([198.145.64.141]:50440 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 18:36:10 -0500
+Received: from kroah.org ([198.145.64.141]:50479 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934315AbZLKX3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:29:15 -0500
+	id S934277AbZLKX3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:29:16 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 32/58] tty: sdio_uart: Style fixes
-Date: Fri, 11 Dec 2009 15:28:16 -0800
-Message-Id: <1260574122-10676-32-git-send-email-gregkh@suse.de>
+Subject: [PATCH 33/58] tty: sdio_uart: add modem functionality
+Date: Fri, 11 Dec 2009 15:28:17 -0800
+Message-Id: <1260574122-10676-33-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211232805.GA10652@kroah.com>
 References: <20091211232805.GA10652@kroah.com>
@@ -24,119 +24,96 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-Running the current code through checkpatch shows a few bits of noise
-mostly but not entirely from before the changes.
+Add the POSIX block for carrier
+
+Linux TIOCMIWAIT functionality is still lacking from the driver.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/mmc/card/sdio_uart.c |   23 ++++++++++++-----------
- 1 files changed, 12 insertions(+), 11 deletions(-)
+ drivers/mmc/card/sdio_uart.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 32 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index 2104397..b999972 100644
+index b999972..2a13db5 100644
 --- a/drivers/mmc/card/sdio_uart.c
 +++ b/drivers/mmc/card/sdio_uart.c
-@@ -465,7 +465,8 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
+@@ -29,6 +29,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/mutex.h>
+ #include <linux/seq_file.h>
+ #include <linux/serial_reg.h>
+@@ -86,6 +87,7 @@ struct sdio_uart_port {
+ 	struct uart_icount	icount;
+ 	unsigned int		uartclk;
+ 	unsigned int		mctrl;
++	unsigned int		rx_mctrl;
+ 	unsigned int		read_status_mask;
+ 	unsigned int		ignore_status_mask;
+ 	unsigned char		x_char;
+@@ -220,6 +222,8 @@ static unsigned int sdio_uart_get_mctrl(struct sdio_uart_port *port)
+ 	unsigned char status;
+ 	unsigned int ret;
  
- 	tty = tty_port_tty_get(&port->port);
++	/* FIXME: What stops this losing the delta bits and breaking
++	   sdio_uart_check_modem_status ? */
+ 	status = sdio_in(port, UART_MSR);
  
--	if (tty == NULL || circ_empty(xmit) || tty->stopped || tty->hw_stopped) {
-+	if (tty == NULL || circ_empty(xmit) ||
-+				tty->stopped || tty->hw_stopped) {
- 		sdio_uart_stop_tx(port);
- 		tty_kref_put(tty);
- 		return;
-@@ -645,7 +646,7 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- 	 */
- 	sdio_out(port, UART_LCR, UART_LCR_WLEN8);
- 
--	port->ier = UART_IER_RLSI | UART_IER_RDI | UART_IER_RTOIE | UART_IER_UUE;
-+	port->ier = UART_IER_RLSI|UART_IER_RDI|UART_IER_RTOIE|UART_IER_UUE;
- 	port->mctrl = TIOCM_OUT2;
- 
- 	sdio_uart_change_speed(port, tty->termios, NULL);
-@@ -674,7 +675,6 @@ err1:
- 	return ret;
+ 	ret = 0;
+@@ -503,8 +507,20 @@ static void sdio_uart_check_modem_status(struct sdio_uart_port *port)
+ 		port->icount.rng++;
+ 	if (status & UART_MSR_DDSR)
+ 		port->icount.dsr++;
+-	if (status & UART_MSR_DDCD)
++	if (status & UART_MSR_DDCD) {
+ 		port->icount.dcd++;
++		/* DCD raise - wake for open */
++		if (status & UART_MSR_DCD)
++			wake_up_interruptible(&port->port.open_wait);
++		else {
++			/* DCD drop - hang up if tty attached */
++			tty = tty_port_tty_get(&port->port);
++			if (tty) {
++				tty_hangup(tty);
++				tty_kref_put(tty);
++			}
++		}
++	}
+ 	if (status & UART_MSR_DCTS) {
+ 		port->icount.cts++;
+ 		tty = tty_port_tty_get(&port->port);
+@@ -560,6 +576,20 @@ static void sdio_uart_irq(struct sdio_func *func)
+ 	port->in_sdio_uart_irq = NULL;
  }
  
--
++static int uart_carrier_raised(struct tty_port *tport)
++{
++	struct sdio_uart_port *port =
++			container_of(tport, struct sdio_uart_port, port);
++	unsigned int ret = sdio_uart_claim_func(port);
++	if (ret)	/* Missing hardware shoudn't block for carrier */
++		return 1;
++	ret = sdio_uart_get_mctrl(port);
++	sdio_uart_release_func(port);
++	if (ret & TIOCM_CAR)
++		return 1;
++	return 0;
++}
++
  /**
-  *	sdio_uart_shutdown	-	stop hardware
-  *	@tport: tty port to shut down
-@@ -745,7 +745,6 @@ static int sdio_uart_install(struct tty_driver *driver, struct tty_struct *tty)
- 	} else
- 		sdio_uart_port_put(port);
- 	return ret;
--
- }
+  *	uart_dtr_rts		-	 port helper to set uart signals
+  *	@tport: tty port to be updated
+@@ -1044,6 +1074,7 @@ static const struct file_operations sdio_uart_proc_fops = {
  
- /**
-@@ -785,7 +784,7 @@ static void sdio_uart_hangup(struct tty_struct *tty)
- 	tty_port_hangup(&port->port);
- }
- 
--static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
-+static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
- 			   int count)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
-@@ -810,7 +809,7 @@ static int sdio_uart_write(struct tty_struct * tty, const unsigned char *buf,
- 	}
- 	spin_unlock(&port->write_lock);
- 
--	if ( !(port->ier & UART_IER_THRI)) {
-+	if (!(port->ier & UART_IER_THRI)) {
- 		int err = sdio_uart_claim_func(port);
- 		if (!err) {
- 			sdio_uart_start_tx(port);
-@@ -897,7 +896,8 @@ static void sdio_uart_unthrottle(struct tty_struct *tty)
- 	sdio_uart_release_func(port);
- }
- 
--static void sdio_uart_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
-+static void sdio_uart_set_termios(struct tty_struct *tty,
-+						struct ktermios *old_termios)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
- 	unsigned int cflag = tty->termios->c_cflag;
-@@ -976,7 +976,7 @@ static int sdio_uart_tiocmset(struct tty_struct *tty, struct file *file,
- 	int result;
- 
- 	result = sdio_uart_claim_func(port);
--	if(!result) {
-+	if (!result) {
- 		sdio_uart_update_mctrl(port, set, clear);
- 		sdio_uart_release_func(port);
- 	}
-@@ -994,7 +994,7 @@ static int sdio_uart_proc_show(struct seq_file *m, void *v)
- 		struct sdio_uart_port *port = sdio_uart_port_get(i);
- 		if (port) {
- 			seq_printf(m, "%d: uart:SDIO", i);
--			if(capable(CAP_SYS_ADMIN)) {
-+			if (capable(CAP_SYS_ADMIN)) {
- 				seq_printf(m, " tx:%d rx:%d",
- 					      port->icount.tx, port->icount.rx);
- 				if (port->icount.frame)
-@@ -1100,7 +1100,7 @@ static int sdio_uart_probe(struct sdio_func *func,
- 		}
- 		if (!tpl) {
- 			printk(KERN_WARNING
--			       "%s: can't find tuple 0x91 subtuple 0 (SUBTPL_SIOREG) for GPS class\n",
-+       "%s: can't find tuple 0x91 subtuple 0 (SUBTPL_SIOREG) for GPS class\n",
- 			       sdio_func_id(func));
- 			kfree(port);
- 			return -EINVAL;
-@@ -1133,7 +1133,8 @@ static int sdio_uart_probe(struct sdio_func *func,
- 		kfree(port);
- 	} else {
- 		struct device *dev;
--		dev = tty_register_device(sdio_uart_tty_driver, port->index, &func->dev);
-+		dev = tty_register_device(sdio_uart_tty_driver,
-+						port->index, &func->dev);
- 		if (IS_ERR(dev)) {
- 			sdio_uart_port_remove(port);
- 			ret = PTR_ERR(dev);
+ static const struct tty_port_operations sdio_uart_port_ops = {
+ 	.dtr_rts = uart_dtr_rts,
++	.carrier_raised = uart_carrier_raised,
+ 	.shutdown = sdio_uart_shutdown,
+ 	.activate = sdio_uart_activate,
+ };
 -- 
 1.6.5.5
 
