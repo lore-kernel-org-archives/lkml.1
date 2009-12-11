@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbZLKThF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbZLKTFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbZLKThF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 14:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761133AbZLKThA
+	id S1761454AbZLKTFJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 14:05:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761222AbZLKTFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 14:37:00 -0500
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:17932
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761571AbZLKTg7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 14:36:59 -0500
-X-SpamScore: -29
-X-BigFish: VPS-29(zz1432R98dN936eM9371P103dKzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KUI4WC-01-NFJ-02
-X-M-MSG: 
-Date: Fri, 11 Dec 2009 20:02:42 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Aristeu Rozanski <aris@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-       x86 <x86@kernel.org>
-Subject: Re: [PATCH v2] x86, msr: add support for non-contiguous cpumasks
-Message-ID: <20091211190242.GA25195@aftab>
-References: <20091207122133.GA24877@aftab>
- <4B21A50E.5090801@zytor.com>
- <20091211171440.GD31998@aftab>
- <4B228902.7010609@zytor.com>
- <20091211183635.GE31998@aftab>
- <4B229351.3030405@zytor.com>
+	Fri, 11 Dec 2009 14:05:06 -0500
+Received: from kroah.org ([198.145.64.141]:60677 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761133AbZLKTFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 14:05:04 -0500
+Date: Fri, 11 Dec 2009 11:04:30 -0800
+From: Greg KH <greg@kroah.com>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Linux <linux-kernel@vger.kernel.org>,
+       Linux Input <linux-input@vger.kernel.org>,
+       Linux USB <linux-usb@vger.kernel.org>
+Subject: Re: Logitech G13 driver + user-space libraries available
+Message-ID: <20091211190430.GB22482@kroah.com>
+References: <d4690bfe19cee0dc8c5355a684fa7e09.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B229351.3030405@zytor.com>
+In-Reply-To: <d4690bfe19cee0dc8c5355a684fa7e09.squirrel@intranet.cs.nmsu.edu>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Dec 2009 19:02:38.0226 (UTC) FILETIME=[81A45720:01CA7A94]
-X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 10:45:37AM -0800, H. Peter Anvin wrote:
-> On 12/11/2009 10:36 AM, Borislav Petkov wrote:
-> > On Fri, Dec 11, 2009 at 10:01:38AM -0800, H. Peter Anvin wrote:
-> >> On 12/11/2009 09:14 AM, Borislav Petkov wrote:
-> >>> Ok, here's a second (and much leaner, removing a bunch of code) version.
-> >>> Tested on K8 and F10h machines here.
-> >>
-> >> Much better, thanks!
-> > 
-> > Ok, cool. Should I send it to Linus or would you like to do it?
-> > 
+On Fri, Dec 11, 2009 at 10:24:52AM -0700, Rick L. Vinyard, Jr. wrote:
+> Here's a first look at the G13 driver I've been playing around with:
+>      git://g13.git.sourceforge.net/gitroot/g13/g13
 > 
-> I am just in the process of putting it into -tip, but if you prefer to
-> send it directly you can have my
+> I've been building the driver out-of-tree and this is my first (untested)
+> shot at moving it in-tree. There are still a number of things to do (and
+> clean up) in the driver but it is rather functional.
 > 
-> 	Acked-by: H. Peter Anvin <hpa@zytor.com>
-> 
-> Whichever way is easier for you is fine with me.
+> I'll test it later today and update the repo as necessary, but I thought
+> I'd throw it out there now.
 
-I doesn't matter to me either. It touches x86-related code, so it makes
-sense to go through you, besides you've already started it :).
+Nice, but sending a patch to review it is best, don't point people at a
+random git tree and expect they will look at the code.
 
-My only concern is that it should go in now since it got caught couple
-of days before 2.6.32 got released. A proper fix wouldn't have made it
-in at that late in the release cycle (-rc8), therefore, I'll be at least
-able to backport it now as soon as it hits mainline so that at least
-2.6.32.2 has the proper fix.
+Also, please run the driver through the scripts/checkpatch.pl script,
+and fix all of the things it reports, before submitting it.
 
-Thanks.
+thanks,
 
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+greg k-h
