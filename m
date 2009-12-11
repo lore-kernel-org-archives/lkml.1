@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934576AbZLKX34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934668AbZLKXbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934576AbZLKX34 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934507AbZLKX3l
+	id S934668AbZLKXbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934414AbZLKX3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:29:41 -0500
-Received: from kroah.org ([198.145.64.141]:50524 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 18:29:46 -0500
+Received: from kroah.org ([198.145.64.141]:50535 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934460AbZLKX3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:29:33 -0500
+	id S934462AbZLKX3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:29:35 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 51/58] tty: moxa: Fix modem op locking
-Date: Fri, 11 Dec 2009 15:28:35 -0800
-Message-Id: <1260574122-10676-51-git-send-email-gregkh@suse.de>
+Subject: [PATCH 52/58] tty: moxa: Kill the use of lock_kernel
+Date: Fri, 11 Dec 2009 15:28:36 -0800
+Message-Id: <1260574122-10676-52-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211232805.GA10652@kroah.com>
 References: <20091211232805.GA10652@kroah.com>
@@ -24,97 +24,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-This is overkill and mostly not needed
+It isn't needed here any more
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/moxa.c |   25 ++++++++++---------------
- 1 files changed, 10 insertions(+), 15 deletions(-)
+ drivers/char/moxa.c |   16 ++--------------
+ 1 files changed, 2 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index d180aa9..ac06d01 100644
+index ac06d01..d53fac5 100644
 --- a/drivers/char/moxa.c
 +++ b/drivers/char/moxa.c
-@@ -139,7 +139,7 @@ struct moxa_port {
- 	int cflag;
- 	unsigned long statusflags;
+@@ -34,7 +34,6 @@
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
+ #include <linux/major.h>
+-#include <linux/smp_lock.h>
+ #include <linux/string.h>
+ #include <linux/fcntl.h>
+ #include <linux/ptrace.h>
+@@ -202,7 +201,6 @@ static int moxa_tiocmset(struct tty_struct *tty, struct file *file,
+ 			 unsigned int set, unsigned int clear);
+ static void moxa_poll(unsigned long);
+ static void moxa_set_tty_param(struct tty_struct *, struct ktermios *);
+-static void moxa_setup_empty_event(struct tty_struct *);
+ static void moxa_shutdown(struct tty_port *);
+ static int moxa_carrier_raised(struct tty_port *);
+ static void moxa_dtr_rts(struct tty_port *, int);
+@@ -1251,17 +1249,13 @@ static int moxa_chars_in_buffer(struct tty_struct *tty)
+ 	struct moxa_port *ch = tty->driver_data;
+ 	int chars;
  
--	u8 DCDState;
-+	u8 DCDState;		/* Protected by the port lock */
- 	u8 lineCtrl;
- 	u8 lowChkFlag;
- };
-@@ -1141,9 +1141,9 @@ static int moxa_carrier_raised(struct tty_port *port)
- 	struct moxa_port *ch = container_of(port, struct moxa_port, port);
- 	int dcd;
- 
--	spin_lock_bh(&moxa_lock);
-+	spin_lock_irq(&port->lock);
- 	dcd = ch->DCDState;
--	spin_unlock_bh(&moxa_lock);
-+	spin_unlock_irq(&port->lock);
- 	return dcd;
- }
- 
-@@ -1267,16 +1267,9 @@ static int moxa_chars_in_buffer(struct tty_struct *tty)
- 
- static int moxa_tiocmget(struct tty_struct *tty, struct file *file)
- {
--	struct moxa_port *ch;
-+	struct moxa_port *ch = tty->driver_data;
- 	int flag = 0, dtr, rts;
- 
--	mutex_lock(&moxa_openlock);
--	ch = tty->driver_data;
--	if (!ch) {
--		mutex_unlock(&moxa_openlock);
--		return -EINVAL;
+-	lock_kernel();
+ 	chars = MoxaPortTxQueue(ch);
+-	if (chars) {
++	if (chars)
+ 		/*
+ 		 * Make it possible to wakeup anything waiting for output
+ 		 * in tty_ioctl.c, etc.
+ 		 */
+-		if (!test_bit(EMPTYWAIT, &ch->statusflags))
+-			moxa_setup_empty_event(tty);
 -	}
+-	unlock_kernel();
++        	set_bit(EMPTYWAIT, &ch->statusflags);
+ 	return chars;
+ }
+ 
+@@ -1503,12 +1497,6 @@ static void moxa_set_tty_param(struct tty_struct *tty, struct ktermios *old_term
+ 	tty_encode_baud_rate(tty, baud, baud);
+ }
+ 
+-static void moxa_setup_empty_event(struct tty_struct *tty)
+-{
+-	struct moxa_port *ch = tty->driver_data;
+-	set_bit(EMPTYWAIT, &ch->statusflags);
+-}
 -
- 	MoxaPortGetLineOut(ch, &dtr, &rts);
- 	if (dtr)
- 		flag |= TIOCM_DTR;
-@@ -1289,7 +1282,6 @@ static int moxa_tiocmget(struct tty_struct *tty, struct file *file)
- 		flag |= TIOCM_DSR;
- 	if (dtr & 4)
- 		flag |= TIOCM_CD;
--	mutex_unlock(&moxa_openlock);
- 	return flag;
- }
- 
-@@ -1368,15 +1360,20 @@ static void moxa_hangup(struct tty_struct *tty)
- static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
- {
- 	struct tty_struct *tty;
-+	unsigned long flags;
- 	dcd = !!dcd;
- 
-+	spin_lock_irqsave(&p->port.lock, flags);
- 	if (dcd != p->DCDState) {
-+        	p->DCDState = dcd;
-+        	spin_unlock_irqrestore(&p->port.lock, flags);
- 		tty = tty_port_tty_get(&p->port);
- 		if (tty && C_CLOCAL(tty) && !dcd)
- 			tty_hangup(tty);
- 		tty_kref_put(tty);
- 	}
--	p->DCDState = dcd;
-+	else
-+		spin_unlock_irqrestore(&p->port.lock, flags);
- }
- 
- static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
-@@ -1878,9 +1875,7 @@ static int MoxaPortLineStatus(struct moxa_port *port)
- 	val &= 0x0B;
- 	if (val & 8)
- 		val |= 4;
--	spin_lock_bh(&moxa_lock);
- 	moxa_new_dcdstate(port, val & 8);
--	spin_unlock_bh(&moxa_lock);
- 	val &= 7;
- 	return val;
- }
+ /*****************************************************************************
+  *	Driver level functions: 					     *
+  *****************************************************************************/
 -- 
 1.6.5.5
 
