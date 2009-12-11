@@ -1,178 +1,634 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZLKMnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbZLKMof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbZLKMnM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZLKMnK
+	id S1755085AbZLKMof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZLKMo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:43:10 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34702 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbZLKMnI (ORCPT
+	Fri, 11 Dec 2009 07:44:29 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:51132 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbZLKMo2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:43:08 -0500
-Subject: [PATCH v2 2/4] Defer skb allocation -- new skb_set calls & chain
- pages in virtio_net
-From: Shirley Ma <mashirle@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-In-Reply-To: <1260534506.30371.6.camel@localhost.localdomain>
-References: <1258697359.7416.14.camel@localhost.localdomain>
-	 <200911231123.18898.rusty@rustcorp.com.au>
-	 <20091208122134.GA17286@redhat.com>
-	 <1260534506.30371.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 11 Dec 2009 04:43:02 -0800
-Message-Id: <1260535382.30371.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Fri, 11 Dec 2009 07:44:28 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B223EE4.5010203@cam.ac.uk>
+Date: Fri, 11 Dec 2009 12:45:24 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
+MIME-Version: 1.0
+To: Steven King <sfking@fdwdc.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][input] add Honeywell hmc5843 3-Axis Magnetometer (digital
+ compass)  driver.
+References: <200912102250.12853.sfking@fdwdc.com>
+In-Reply-To: <200912102250.12853.sfking@fdwdc.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Shirley Ma <xma@us.ibm.com>
---------------
+Dear Steven,
 
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index bb5eb7b..100b4b9 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -80,29 +80,25 @@ static inline struct skb_vnet_hdr *skb_vnet_hdr(struct sk_buff *skb)
- 	return (struct skb_vnet_hdr *)skb->cb;
- }
- 
--static void give_a_page(struct virtnet_info *vi, struct page *page)
-+static void give_pages(struct virtnet_info *vi, struct page *page)
- {
--	page->private = (unsigned long)vi->pages;
--	vi->pages = page;
--}
-+	struct page *end;
- 
--static void trim_pages(struct virtnet_info *vi, struct sk_buff *skb)
--{
--	unsigned int i;
--
--	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
--		give_a_page(vi, skb_shinfo(skb)->frags[i].page);
--	skb_shinfo(skb)->nr_frags = 0;
--	skb->data_len = 0;
-+	/* Find end of list, sew whole thing into vi->pages. */
-+	for (end = page; end->private; end = (struct page *)end->private);
-+	end->private = (unsigned long)vi->pages;
-+	vi->pages = page;
- }
- 
- static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
- {
- 	struct page *p = vi->pages;
- 
--	if (p)
-+	if (p) {
- 		vi->pages = (struct page *)p->private;
--	else
-+		/* use private to chain pages for big packets */
-+		p->private = 0;
-+	} else
- 		p = alloc_page(gfp_mask);
- 	return p;
- }
-@@ -128,6 +124,85 @@ static void skb_xmit_done(struct virtqueue *svq)
- 	netif_wake_queue(vi->dev);
- }
- 
-+static int skb_set_frag(struct sk_buff *skb, struct page *page,
-+				int offset, int len)
-+{
-+	int i = skb_shinfo(skb)->nr_frags;
-+	skb_frag_t *f;
-+
-+	i = skb_shinfo(skb)->nr_frags;
-+	f = &skb_shinfo(skb)->frags[i];
-+	f->page = page;
-+	f->page_offset = offset;
-+
-+	if (len > PAGE_SIZE - f->page_offset)
-+		f->size = PAGE_SIZE - f->page_offset;
-+	else
-+		f->size = len;
-+
-+	skb_shinfo(skb)->nr_frags++;
-+	skb->data_len += f->size;
-+	skb->len += f->size;
-+
-+	len -= f->size;
-+	return len;
-+}
-+
-+static struct sk_buff *skb_goodcopy(struct virtnet_info *vi, struct page **page,
-+				    unsigned int *len)
-+{
-+	struct sk_buff *skb;
-+	struct skb_vnet_hdr *hdr;
-+	int copy, hdr_len, offset;
-+	char *p;
-+
-+	p = page_address(*page);
-+
-+	skb = netdev_alloc_skb(vi->dev, GOOD_COPY_LEN + NET_IP_ALIGN);
-+	if (unlikely(!skb))
-+		return NULL;
-+
-+	skb_reserve(skb, NET_IP_ALIGN);
-+	hdr = skb_vnet_hdr(skb);
-+
-+	if (vi->mergeable_rx_bufs) {
-+		hdr_len = sizeof(hdr->mhdr);
-+		offset = hdr_len;
-+	} else {
-+		/* share one page between virtio_net header and data */
-+		struct padded_vnet_hdr {
-+			struct virtio_net_hdr hdr;
-+			/* This padding makes our data 16 byte aligned */
-+			char padding[6];
-+		};
-+		hdr_len = sizeof(hdr->hdr);
-+		offset = sizeof(struct padded_vnet_hdr);
-+	}
-+
-+	memcpy(hdr, p, hdr_len);
-+
-+	*len -= hdr_len;
-+	p += offset;
-+
-+	copy = *len;
-+	if (copy > skb_tailroom(skb))
-+		copy = skb_tailroom(skb);
-+	memcpy(skb_put(skb, copy), p, copy);
-+
-+	*len -= copy;
-+	offset += copy;
-+
-+	if (*len) {
-+		*len = skb_set_frag(skb, *page, offset, *len);
-+		*page = (struct page *)(*page)->private;
-+	} else {
-+		give_pages(vi, *page);
-+		*page = NULL;
-+	}
-+
-+	return skb;
-+}
-+
- static void receive_skb(struct net_device *dev, struct sk_buff *skb,
- 			unsigned len)
- {
-@@ -162,7 +237,7 @@ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
- 		len -= copy;
- 
- 		if (!len) {
--			give_a_page(vi, skb_shinfo(skb)->frags[0].page);
-+			give_pages(vi, skb_shinfo(skb)->frags[0].page);
- 			skb_shinfo(skb)->nr_frags--;
- 		} else {
- 			skb_shinfo(skb)->frags[0].page_offset +=
+Mostly looks good to me.  Couple of minor comments inline below.
 
+I'd also like to see some documentation for this chip.  We don't really
+want people to have to read the data sheet in order to find out what the
+various modes and frequency settings are for example. Datasheets have
+a nasty habit of disappearing in the long run.  Probably needs something
+in Documentation directory rather than merely comments in the code.
+
+Only one I'm really fussy about is making sure you use the unsigned
+strict_strtoul where appropriate.  Fix that and you can add
+Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+
+I'm not entirely convinced this one should be in input as I can't really believe
+it is commonly used as an input device?  Over to Dmitry and others for that
+though.   We can always move it at a later date. The requirements of a chip
+this simple (interface wise) would make that trivial.
+
+Jonathan
+> Signed-off-by: Steven King <sfking@fdwdc.com>
+> 
+> ---
+> 
+>  drivers/input/misc/Kconfig   |   10 +
+>  drivers/input/misc/Makefile  |    1 +
+>  drivers/input/misc/hmc5843.c |  515 ++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 526 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/input/misc/hmc5843.c
+> 
+> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+> index a9bb254..7564b96 100644
+> --- a/drivers/input/misc/Kconfig
+> +++ b/drivers/input/misc/Kconfig
+> @@ -317,4 +317,14 @@ config INPUT_PCAP
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called pcap_keys.
+>  
+> +config INPUT_HMC5843
+> +	tristate "Honeywell HMC5843 3-Axis Magnetometer"
+> +	depends on I2C && SYSFS
+> +	select INPUT_POLLDEV
+> +	help
+> +	  Say Y here to add support for the Honeywell HMC 5843 3-Axis
+> +	  Magnetometer (digital compass).
+> +
+> +	  To compile this driver as a module, choose M here: the module
+> +	  will be called hmc5843.
+>  endif
+> diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+> index a8b8485..825b70c 100644
+> --- a/drivers/input/misc/Makefile
+> +++ b/drivers/input/misc/Makefile
+> @@ -30,4 +30,5 @@ obj-$(CONFIG_INPUT_WINBOND_CIR)		+= winbond-cir.o
+>  obj-$(CONFIG_INPUT_WISTRON_BTNS)	+= wistron_btns.o
+>  obj-$(CONFIG_INPUT_WM831X_ON)		+= wm831x-on.o
+>  obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
+> +obj-$(CONFIG_INPUT_HMC5843)		+= hmc5843.o
+>  
+> diff --git a/drivers/input/misc/hmc5843.c b/drivers/input/misc/hmc5843.c
+> new file mode 100644
+> index 0000000..51bb86c
+> --- /dev/null
+> +++ b/drivers/input/misc/hmc5843.c
+> @@ -0,0 +1,515 @@
+> +/*
+> + * Driver for the Honeywell HMC5843 3-Axis Magnetometer.
+> + *
+> + * Author: Steven King <sfking@fdwdc.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/jiffies.h>
+> +#include <linux/err.h>
+> +#include <linux/i2c.h>
+> +#include <linux/input-polldev.h>
+> +
+> +#define	HMC5843_CFG_A_REG			0
+> +#define		HMC5843_CFG_A_BIAS_MASK		0x03
+> +#define		HMC5843_CFG_A_RATE_MASK		0x1c
+> +#define		HMC5843_CFG_A_RATE_SHIFT	2
+> +#define	HMC5843_CFG_B_REG			1
+> +#define		MMC5843_CFG_B_GAIN_MASK		0xe0
+> +#define		MMC5843_CFG_B_GAIN_SHIFT	5
+> +#define	HMC5843_MODE_REG			2
+> +#define		HMC5843_MODE_REPEAT		0
+> +#define		HMC5843_MODE_ONCE		1
+> +#define		HMC5843_MODE_IDLE		2
+> +#define		HMC5843_MODE_SLEEP		3
+> +#define	HMC5843_X_DATA_REG			3
+> +#define	HMC5843_Y_DATA_REG			5
+> +#define	HMC5843_Z_DATA_REG			7
+> +#define	HMC5843_STATUS_REG			9
+> +#define		HMC5843_STATUS_REN		0x04
+> +#define		HMC5843_STATUS_LOCK		0x02
+> +#define		HMC5843_STATUS_RDY		0x01
+> +#define	HMC5843_ID_REG_A			10
+> +#define	HMC5843_ID_REG_B			11
+> +#define	HMC5843_ID_REG_C			12
+> +#define	HMC5843_LAST_REG			12
+> +#define	HMC5843_NUM_REG				13
+> +
+> +struct hmc5843 {
+> +	struct i2c_client	*client;
+> +	struct mutex		lock;
+> +	struct input_polled_dev	*ipdev;
+Size is of this is rather large given it can only be 0,1,2. U8 would
+make more sense. Same is true of the other elements here.  It's a small
+saving, but why bloat the kernel for no gain?
+> +	int			bias;
+> +	int			gain;
+rate is only between 0 and 6 so again U8. On this element, might it be
+better to go with meaningful readings rather than an index? Not sure what
+similar drivers do. 
+> +	int			rate;
+
+> +	int			mode;
+> +	int			index;
+> +};
+> +
+> +/* interval between samples for the different rates, in msecs */
+> +static const unsigned int hmc5843_sample_interval[] = {
+> +	1000 * 2,	1000,		1000 / 2,	1000 / 5,
+> +	1000 / 10,	1000 / 20,	1000 / 50,
+> +};
+> +
+> +/*
+> + * From the datasheet:
+> + *
+> + * The devices uses an address pointer to indicate which register location is
+> + * to be read from or written to. These pointer locations are sent from the
+> + * master to this slave device and succeed the 7-bit address plus 1 bit
+> + * read/write identifier.
+> + *
+> + * To minimize the communication between the master and this device, the
+> + * address pointer updated automatically without master intervention. This
+> + * automatic address pointer update has two additional features. First when
+> + * address 12 or higher is accessed the pointer updates to address 00 and
+> + * secondly when address 09 is reached, the pointer rolls back to address 03.
+> + * Logically, the address pointer operation functions as shown below.
+> + *
+> + * If (address pointer = 09) then address pointer = 03
+> + * Else if (address pointer >= 12) then address pointer = 0
+> + * Else (address pointer) = (address pointer) + 1
+> + *
+> + * Since the set of operations performed by this driver is pretty simple,
+> + * we keep track of the register being written to when updating the
+> + * configuration and when reading data only update the address ptr when its not
+> + * pointing to the first data register.
+> +*/
+> +
+> +static int hmc5843_write_register(struct hmc5843 *hmc5843, int index)
+> +{
+> +	u8 buf[2];
+> +	int result;
+> +
+> +	buf[0] = index;
+A switch statement might make this easier to read.
+> +	if (index == HMC5843_CFG_A_REG)
+> +		buf[1] = hmc5843->bias |
+> +			(hmc5843->rate << HMC5843_CFG_A_RATE_SHIFT);
+> +	else if (index == HMC5843_CFG_B_REG)
+> +		buf[1] = hmc5843->gain << MMC5843_CFG_B_GAIN_SHIFT;
+> +	else if (index == HMC5843_MODE_REG)
+> +		buf[1] = hmc5843->mode;
+> +	else
+> +		return -EINVAL;
+> +	result = i2c_master_send(hmc5843->client, buf, sizeof(buf));
+> +
+Blank line here is a bit unconventional. (feel free to ignore this sort of comment!)
+> +	if (result != 2) {
+> +		hmc5843->index = -1;
+> +		return result;
+> +	}
+> +	hmc5843->index = index + 1;
+Fussy formatting puts a blank line here.
+> +	return 0;
+> +}
+> +
+> +static int hmc5843_read_xyz(struct hmc5843 *hmc5843, int *x, int *y, int *z)
+> +{
+> +	struct i2c_msg msgs[2];
+> +	u8 buf[6];
+> +	int n = 0;
+> +	int result;
+> +
+> +	if (hmc5843->index != HMC5843_X_DATA_REG) {
+> +		buf[0]		= HMC5843_X_DATA_REG;
+> +
+> +		msgs[0].addr	= hmc5843->client->addr;
+> +		msgs[0].flags	= 0;
+> +		msgs[0].buf	= buf;
+> +		msgs[0].len	= 1;
+> +
+> +		hmc5843->index	= HMC5843_X_DATA_REG;
+> +		n = 1;
+> +	}
+> +	msgs[n].addr	= hmc5843->client->addr;
+> +	msgs[n].flags	= I2C_M_RD;
+> +	msgs[n].buf	= buf;
+> +	msgs[n].len	= 6;
+> +	++n;
+> +
+> +	result = i2c_transfer(hmc5843->client->adapter, msgs, n);
+> +	if (result != n) {
+> +		hmc5843->index = -1;
+> +		return result;
+> +	}
+> +
+> +	*x = (((int)((s8)buf[0])) << 8) | buf[1];
+> +	*y = (((int)((s8)buf[2])) << 8) | buf[3];
+> +	*z = (((int)((s8)buf[4])) << 8) | buf[5];
+> +	return 0;
+> +}
+> +
+> +/* sysfs stuff */
+> +
+> +/* bias */
+> +static ssize_t hmc5843_show_bias(struct device *dev,
+> +				 struct device_attribute *attr,
+> +				 char *buf)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	return sprintf(buf, "%d\n", hmc5843->bias);
+> +}
+> +
+> +static ssize_t hmc5843_store_bias(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  const char *buf, size_t count)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +	unsigned long val;
+> +	int status = count;
+> +
+> +	if ((strict_strtol(buf, 10, &val) < 0) || (val > 2))
+> +		return -EINVAL;
+> +	mutex_lock(&hmc5843->lock);
+> +	if (hmc5843->bias != val) {
+> +		hmc5843->bias = val;
+> +		status = hmc5843_write_register(hmc5843, HMC5843_CFG_A_REG);
+> +	}
+> +	mutex_unlock(&hmc5843->lock);
+> +	return status;
+> +}
+> +
+> +static DEVICE_ATTR(bias, S_IWUSR | S_IRUGO, hmc5843_show_bias,
+> +		hmc5843_store_bias);
+> +
+> +/* rate */
+> +static ssize_t hmc5843_show_rate(struct device *dev,
+> +				 struct device_attribute *attr,
+> +				 char *buf)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	return sprintf(buf, "%d\n", hmc5843->rate);
+> +}
+> +
+> +static ssize_t hmc5843_store_rate(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  const char *buf, size_t count)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +	unsigned long val;
+> +	int status = count;
+> +	if ((strict_strtol(buf, 10, &val) < 0) || (val > 6))
+> +		return -EINVAL;
+> +	mutex_lock(&hmc5843->lock);
+> +	if (hmc5843->rate != val) {
+> +		hmc5843->rate = val;
+> +		hmc5843->ipdev->poll_interval = hmc5843_sample_interval[val];
+> +		status = hmc5843_write_register(hmc5843, HMC5843_CFG_A_REG);
+> +	}
+> +	mutex_unlock(&hmc5843->lock);
+> +	return status;
+> +}
+> +
+> +static DEVICE_ATTR(rate, S_IWUSR | S_IRUGO, hmc5843_show_rate,
+> +		hmc5843_store_rate);
+> +
+> +/* gain */
+> +static ssize_t hmc5843_show_gain(struct device *dev,
+> +				 struct device_attribute *attr,
+> +				 char *buf)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	return sprintf(buf, "%d\n", hmc5843->gain);
+> +}
+> +
+> +static ssize_t hmc5843_store_gain(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  const char *buf, size_t count)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +	unsigned long val;
+> +	int status = count;
+You want strict_strtoul as it is unsigned. (probably true elsewhere in driver
+I just noticed it here!)
+> +	if ((strict_strtol(buf, 10, &val) < 0) || (val > 6))
+> +		return -EINVAL;
+> +	mutex_lock(&hmc5843->lock);
+> +	if (hmc5843->gain != val) {
+> +		hmc5843->gain = val;
+> +		status = hmc5843_write_register(hmc5843, HMC5843_CFG_B_REG);
+> +	}
+> +	mutex_unlock(&hmc5843->lock);
+> +	return status;
+> +}
+> +
+> +static DEVICE_ATTR(gain, S_IWUSR | S_IRUGO, hmc5843_show_gain,
+> +		hmc5843_store_gain);
+> +
+> +/* mode */
+> +static ssize_t hmc5843_show_mode(struct device *dev,
+> +				 struct device_attribute *attr,
+> +				 char *buf)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	return sprintf(buf, "%d\n", hmc5843->mode);
+> +}
+> +
+> +static ssize_t hmc5843_store_mode(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  const char *buf, size_t count)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +	unsigned long val;
+> +	int status = count;
+> +
+strict_strtoul
+> +	if ((strict_strtol(buf, 10, &val) < 0) || (val > 3))
+> +		return -EINVAL;
+> +	mutex_lock(&hmc5843->lock);
+> +	if (hmc5843->mode != val) {
+> +		hmc5843->mode = val;
+> +		status = hmc5843_write_register(hmc5843, HMC5843_MODE_REG);
+> +	}
+> +	mutex_unlock(&hmc5843->lock);
+> +	return status;
+> +}
+> +
+> +static DEVICE_ATTR(mode, S_IWUSR | S_IRUGO, hmc5843_show_mode,
+> +		hmc5843_store_mode);
+> +
+> +static struct attribute *hmc5843_attributes[] = {
+> +	&dev_attr_bias.attr,
+> +	&dev_attr_rate.attr,
+> +	&dev_attr_gain.attr,
+> +	&dev_attr_mode.attr,
+> +	NULL,
+> +};
+> +
+> +static const struct attribute_group hmc5843_attr_group = {
+> +	.attrs = hmc5843_attributes,
+> +};
+> +
+> +/* use polled input device */
+> +
+> +static void hmc5843_poll(struct input_polled_dev *ipdev)
+> +{
+> +	struct hmc5843 *hmc5843 = ipdev->private;
+> +	int x, y, z;
+> +
+> +	mutex_lock(&hmc5843->lock);
+> +	if (!hmc5843_read_xyz(hmc5843, &x, &y, &z)) {
+> +		input_report_abs(ipdev->input, ABS_X, x);
+> +		input_report_abs(ipdev->input, ABS_Y, y);
+> +		input_report_abs(ipdev->input, ABS_Z, z);
+> +		input_sync(ipdev->input);
+> +	}
+> +	mutex_unlock(&hmc5843->lock);
+> +}
+> +
+> +static int __devinit hmc5843_input_init(struct hmc5843 *hmc5843)
+> +{
+> +	int status;
+> +	struct input_polled_dev *ipdev;
+> +
+> +	ipdev = input_allocate_polled_device();
+> +	if (!ipdev) {
+> +		dev_dbg(&hmc5843->client->dev, "error creating input device\n");
+> +		return -ENOMEM;
+> +	}
+> +	ipdev->poll = hmc5843_poll;
+> +	ipdev->poll_interval = hmc5843_sample_interval[hmc5843->rate];
+> +	ipdev->private = hmc5843;
+> +
+> +	ipdev->input->name = "Honeywell HMC5843 3-Axis Magnetometer";
+> +	ipdev->input->phys = "hmc5843/input0";
+> +	ipdev->input->id.bustype = BUS_HOST;
+> +
+> +	set_bit(EV_ABS, ipdev->input->evbit);
+> +
+> +	input_set_abs_params(ipdev->input, ABS_X, -2047, 2047, 0, 0);
+> +	input_set_abs_params(ipdev->input, ABS_Y, -2047, 2047, 0, 0);
+> +	input_set_abs_params(ipdev->input, ABS_Z, -2047, 2047, 0, 0);
+> +
+> +	status = input_register_polled_device(ipdev);
+> +	if (status) {
+> +		dev_dbg(&hmc5843->client->dev,
+> +				"error registering input device\n");
+> +		input_free_polled_device(ipdev);
+> +		goto exit;
+> +	}
+> +	hmc5843->ipdev = ipdev;
+> +exit:
+> +	return status;
+> +}
+> +
+> +static int __devinit hmc5843_device_init(struct hmc5843 *hmc5843)
+> +{
+> +	struct i2c_client *client = hmc5843->client;
+> +	int status;
+> +
+> +	struct i2c_msg msgs[2];
+> +	u8 buf[6] = { HMC5843_ID_REG_A }; /* start reading at 1st id reg */
+> +
+> +	msgs[0].addr = client->addr;
+> +	msgs[0].flags = 0;
+> +	msgs[0].buf = buf;
+> +	msgs[0].len = 1;
+> +	msgs[1].addr = client->addr;
+> +	msgs[1].flags = I2C_M_RD;
+> +	msgs[1].buf = buf; /* overwrite sent address on read */
+> +	msgs[1].len = 6; /* 3 id regs + cfg_a, cfg_b & mode reg */
+> +
+> +	status = i2c_transfer(client->adapter, msgs, 2);
+> +	if (status != 2) {
+> +		dev_dbg(&client->dev, "unable to contact device\n");
+> +		return status;
+> +	}
+> +	if (strncmp(buf, "H43", 3)) {
+> +		dev_dbg(&client->dev, "incorrect device id %-3.3s", buf);
+> +		return -EINVAL;
+> +	}
+> +	/* the read will have wrapped to 0, bytes 3-6 are cfg_a, cfg_b, mode */
+> +	hmc5843->bias = buf[3] & HMC5843_CFG_A_BIAS_MASK;
+> +	hmc5843->rate = buf[3] >> HMC5843_CFG_A_RATE_SHIFT;
+> +	hmc5843->gain = buf[4] >> MMC5843_CFG_B_GAIN_SHIFT;
+> +	hmc5843->mode = buf[5];
+> +
+> +	hmc5843->index = 3;
+> +	mutex_init(&hmc5843->lock);
+> +	return 0;
+> +}
+> +
+> +static int __devinit hmc5843_i2c_probe(struct i2c_client *client,
+> +					const struct i2c_device_id *id)
+> +{
+> +	int status;
+> +	struct hmc5843 *hmc5843;
+> +
+> +	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
+> +		dev_dbg(&client->dev, "adapter doesn't support I2C\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	hmc5843 = kzalloc(sizeof(*hmc5843), GFP_KERNEL);
+> +	if (!hmc5843) {
+> +		dev_dbg(&client->dev, "unable to allocate memory\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	hmc5843->client = client;
+> +	i2c_set_clientdata(client, hmc5843);
+> +
+> +	status = hmc5843_device_init(hmc5843);
+> +	if (status)
+> +		goto fail0;
+> +
+> +	status = hmc5843_input_init(hmc5843);
+> +	if (status)
+> +		goto fail0;
+> +
+> +	status = sysfs_create_group(&client->dev.kobj, &hmc5843_attr_group);
+> +	if (status) {
+> +		dev_dbg(&client->dev, "could not create sysfs files\n");
+> +		goto fail1;
+> +	}
+> +	return 0;
+> +fail1:
+> +	input_unregister_polled_device(hmc5843->ipdev);
+> +fail0:
+> +	kfree(hmc5843);
+> +	return status;
+> +}
+> +
+> +static int __devexit hmc5843_i2c_remove(struct i2c_client *client)
+> +{
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	sysfs_remove_group(&client->dev.kobj, &hmc5843_attr_group);
+> +	input_unregister_polled_device(hmc5843->ipdev);
+> +	i2c_set_clientdata(client, NULL);
+> +	kfree(hmc5843);
+> +	return 0;
+> +}
+> +
+> +#ifdef CONFIG_PM
+> +static int hmc5843_suspend(struct device *dev)
+> +{
+> +	struct i2c_client *client = dev_get_drvdata(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	/* save our current mode for resume and put device to sleep */
+> +	int m = hmc5843->mode;
+Not entirely certain but perhaps need a lock here to prevent user
+changing mode just as suspend occurs? I haven't worked out what exactly
+happens in that case though.
+> +	hmc5843->mode = HMC5843_MODE_SLEEP;
+> +	hmc5843_write_register(hmc5843, HMC5843_MODE_REG);
+> +	hmc5843->mode = m;
+> +	return 0;
+> +}
+> +
+> +static int hmc5843_resume(struct device *dev)
+> +{
+> +	struct i2c_client *client = dev_get_drvdata(dev);
+> +	struct hmc5843 *hmc5843 = i2c_get_clientdata(client);
+> +
+> +	/* restore whatever mode we were in before suspending */
+> +	hmc5843_write_register(hmc5843, HMC5843_MODE_REG);
+> +	return 0;
+> +}
+> +
+> +static struct dev_pm_ops hmc5843_dev_pm_ops = {
+> +	.suspend	= hmc5843_suspend,
+> +	.resume		= hmc5843_resume,
+> +};
+> +
+> +#define HMC5843_DEV_PM_OPS (&hmc5843_dev_pm_ops)
+> +#else
+> +#define	HMC5843_DEV_PM_OPS NULL
+> +#endif
+> +
+> +static const struct i2c_device_id hmc5843_id[] = {
+> +	{ "hmc5843", 0 },
+> +	{ },
+> +};
+> +
+> +MODULE_DEVICE_TABLE(i2c, hmc5843_id);
+> +
+> +static struct i2c_driver hmc5843_i2c_driver = {
+> +	.driver		= {
+> +		.name	= "hmc5843",
+> +		.owner	= THIS_MODULE,
+> +		.pm	= HMC5843_DEV_PM_OPS,
+> +	},
+> +	.probe		= hmc5843_i2c_probe,
+> +	.remove		= __devexit_p(hmc5843_i2c_remove),
+> +	.id_table	= hmc5843_id,
+> +};
+> +
+> +static int __init hmc5843_init(void)
+> +{
+> +	return i2c_add_driver(&hmc5843_i2c_driver);
+> +}
+> +module_init(hmc5843_init);
+> +
+> +static void __exit hmc5843_exit(void)
+> +{
+> +	i2c_del_driver(&hmc5843_i2c_driver);
+> +}
+> +module_exit(hmc5843_exit);
+> +
+> +MODULE_AUTHOR("Steven King <sfking@fdwdc.com>");
+> +MODULE_DESCRIPTION("Honeywell HMC5843 3-Axis Magnetometer driver");
+> +MODULE_LICENSE("GPL");
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
