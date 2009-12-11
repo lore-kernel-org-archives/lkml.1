@@ -1,295 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZLKRO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbZLKRPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbZLKRO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 12:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZLKROw
+	id S1756407AbZLKRPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 12:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZLKRPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 12:14:52 -0500
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:8538 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbZLKROv convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 12:15:15 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:57988 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754050AbZLKRPO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 12:14:51 -0500
-X-SpamScore: 3
-X-BigFish: VPS3(zzab9bhzz1202hzzz32i6bh43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KUHZWB-01-J7Q-02
-X-M-MSG: 
-Date: Fri, 11 Dec 2009 18:14:40 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Aristeu Rozanski <aris@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-       x86 <x86@kernel.org>
-Subject: [PATCH v2] x86, msr: add support for non-contiguous cpumasks
-Message-ID: <20091211171440.GD31998@aftab>
-References: <20091207122133.GA24877@aftab>
- <4B21A50E.5090801@zytor.com>
+	Fri, 11 Dec 2009 12:15:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=snNzb/HsARfgULOHi/HmUopyFZ4AeFoEmpifz3L2LfYTWRbTvhPkoEGeg4ShYM9Cku
+         +UGYXBeJzIdT+vaC7p0JAAtn5zfpHGikU2kkDYYfc+349xfE49wk7EFcmDUx+rVu0qvd
+         ubqJLbd85/UlyR/Qx+wdAOUDkhBNeq+owv/d0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <4B21A50E.5090801@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <x49ocm8nhn6.fsf@segfault.boston.devel.redhat.com>
+References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
+	 <4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
+	 <4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
+	 <x49ein6nx9k.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b0912081243ra071947if9a3edae77fb3861@mail.gmail.com>
+	 <x49ocm8nhn6.fsf@segfault.boston.devel.redhat.com>
+Date: Fri, 11 Dec 2009 18:15:20 +0100
+Message-ID: <4e5e476b0912110915u209b8923m359d9147cc229fea@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Dec 2009 17:14:36.0887 (UTC) FILETIME=[6A767E70:01CA7A85]
-X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, here's a second (and much leaner, removing a bunch of code) version.
-Tested on K8 and F10h machines here.
+Hi Jeff,
+On Wed, Dec 9, 2009 at 7:09 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
+>
+>> The numbers look good. Now, there is no penalty in having low_latency
+>> set for sequential writes, and just a small penalty for random ones.
+>> The fact that random reads are faster with low_latency set is interesting.
+>> Is the test is running with your patched tiobench (so that the number
+>> of random operations is comparable with sequential ones)?
+>
+> No, I forgot all about that. Â The number of random operations defaults
+> to 4000, which is pretty low. Â I'll re-run the tests with a number
+> comparable to the sequential runs. Â Sorry about that.
+>
+N.P.
+if you have time, can you also re-run the test changing:
+iosched/fifo_expire_async to 8 ?
+I hope that reducing the expire_async, will make cfq quicker at switching
+between the different threads, allowing more parallelism for seq
+writers on your hw.
+If this is the case, I think I can try to estimate the
+fifo_expire_async in the autotuning patch.
 
---
-From: Borislav Petkov <borislav.petkov@amd.com>
-Date: Fri Dec 11 18:08:51 CET 2009
-Date: Sun, 6 Dec 2009 13:43:43 +0100
-Subject: [PATCH v2] x86, msr: add support for non-contiguous cpumasks
+> Cheers,
+> Jeff
+>
 
-The current rd/wrmsr_on_cpus helpers assume that the supplied
-cpumasks are contiguous. However, there are machines out there
-like some K8 multinode Opterons which have a non-contiguous core
-enumeration on each node (e.g. cores 0,2 on node 0 instead of 0,1), see
-http://www.gossamer-threads.com/lists/linux/kernel/1160268.
-
-This patch fixes out-of-bounds writes (see URL above) by adding per-CPU
-msr structs which are used on the respective cores.
-
-Additionally, two helpers, msrs_{alloc,free}, are provided for use by
-the callers of the MSR accessors.
-
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Aristeu Rozanski <aris@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- arch/x86/include/asm/msr.h |    3 ++
- arch/x86/lib/msr.c         |   26 +++++++++++++++++++++---
- drivers/edac/amd64_edac.c  |   46 ++++++++++++++++---------------------------
- 3 files changed, 42 insertions(+), 33 deletions(-)
-
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index 5bef931..2d228fc 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -244,6 +244,9 @@ do {                                                            \
- 
- #define write_rdtscp_aux(val) wrmsr(0xc0000103, (val), 0)
- 
-+struct msr *msrs_alloc(void);
-+void msrs_free(struct msr *msrs);
-+
- #ifdef CONFIG_SMP
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
-index 41628b1..8728341 100644
---- a/arch/x86/lib/msr.c
-+++ b/arch/x86/lib/msr.c
-@@ -7,7 +7,6 @@ struct msr_info {
- 	u32 msr_no;
- 	struct msr reg;
- 	struct msr *msrs;
--	int off;
- 	int err;
- };
- 
-@@ -18,7 +17,7 @@ static void __rdmsr_on_cpu(void *info)
- 	int this_cpu = raw_smp_processor_id();
- 
- 	if (rv->msrs)
--		reg = &rv->msrs[this_cpu - rv->off];
-+		reg = per_cpu_ptr(rv->msrs, this_cpu);
- 	else
- 		reg = &rv->reg;
- 
-@@ -32,7 +31,7 @@ static void __wrmsr_on_cpu(void *info)
- 	int this_cpu = raw_smp_processor_id();
- 
- 	if (rv->msrs)
--		reg = &rv->msrs[this_cpu - rv->off];
-+		reg = per_cpu_ptr(rv->msrs, this_cpu);
- 	else
- 		reg = &rv->reg;
- 
-@@ -80,7 +79,6 @@ static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
- 
- 	memset(&rv, 0, sizeof(rv));
- 
--	rv.off    = cpumask_first(mask);
- 	rv.msrs	  = msrs;
- 	rv.msr_no = msr_no;
- 
-@@ -120,6 +118,26 @@ void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
- }
- EXPORT_SYMBOL(wrmsr_on_cpus);
- 
-+struct msr *msrs_alloc(void)
-+{
-+	struct msr *msrs = NULL;
-+
-+	msrs = alloc_percpu(struct msr);
-+	if (!msrs) {
-+		pr_warning("%s: error allocating msrs\n", __func__);
-+		return NULL;
-+	}
-+
-+	return msrs;
-+}
-+EXPORT_SYMBOL(msrs_alloc);
-+
-+void msrs_free(struct msr *msrs)
-+{
-+	free_percpu(msrs);
-+}
-+EXPORT_SYMBOL(msrs_free);
-+
- /* These "safe" variants are slower and should be used when the target MSR
-    may not actually exist. */
- static void __rdmsr_safe_on_cpu(void *info)
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 5fdd6da..df5b684 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -13,6 +13,8 @@ module_param(report_gart_errors, int, 0644);
- static int ecc_enable_override;
- module_param(ecc_enable_override, int, 0644);
- 
-+static struct msr *msrs;
-+
- /* Lookup table for all possible MC control instances */
- struct amd64_pvt;
- static struct mem_ctl_info *mci_lookup[EDAC_MAX_NUMNODES];
-@@ -2495,8 +2497,7 @@ static void get_cpus_on_this_dct_cpumask(struct cpumask *mask, int nid)
- static bool amd64_nb_mce_bank_enabled_on_node(int nid)
- {
- 	cpumask_var_t mask;
--	struct msr *msrs;
--	int cpu, nbe, idx = 0;
-+	int cpu, nbe;
- 	bool ret = false;
- 
- 	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
-@@ -2507,32 +2508,22 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
- 
- 	get_cpus_on_this_dct_cpumask(mask, nid);
- 
--	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
--	if (!msrs) {
--		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
--			      __func__);
--		free_cpumask_var(mask);
--		 return false;
--	}
--
- 	rdmsr_on_cpus(mask, MSR_IA32_MCG_CTL, msrs);
- 
- 	for_each_cpu(cpu, mask) {
--		nbe = msrs[idx].l & K8_MSR_MCGCTL_NBE;
-+		struct msr *reg = per_cpu_ptr(msrs, cpu);
-+		nbe = reg->l & K8_MSR_MCGCTL_NBE;
- 
- 		debugf0("core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
--			cpu, msrs[idx].q,
-+			cpu, reg->q,
- 			(nbe ? "enabled" : "disabled"));
- 
- 		if (!nbe)
- 			goto out;
--
--		idx++;
- 	}
- 	ret = true;
- 
- out:
--	kfree(msrs);
- 	free_cpumask_var(mask);
- 	return ret;
- }
-@@ -2540,8 +2531,7 @@ out:
- static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
- {
- 	cpumask_var_t cmask;
--	struct msr *msrs = NULL;
--	int cpu, idx = 0;
-+	int cpu;
- 
- 	if (!zalloc_cpumask_var(&cmask, GFP_KERNEL)) {
- 		amd64_printk(KERN_WARNING, "%s: error allocating mask\n",
-@@ -2551,34 +2541,27 @@ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
- 
- 	get_cpus_on_this_dct_cpumask(cmask, pvt->mc_node_id);
- 
--	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(cmask), GFP_KERNEL);
--	if (!msrs) {
--		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
--			     __func__);
--		return -ENOMEM;
--	}
--
- 	rdmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
- 
- 	for_each_cpu(cpu, cmask) {
- 
-+		struct msr *reg = per_cpu_ptr(msrs, cpu);
-+
- 		if (on) {
--			if (msrs[idx].l & K8_MSR_MCGCTL_NBE)
-+			if (reg->l & K8_MSR_MCGCTL_NBE)
- 				pvt->flags.ecc_report = 1;
- 
--			msrs[idx].l |= K8_MSR_MCGCTL_NBE;
-+			reg->l |= K8_MSR_MCGCTL_NBE;
- 		} else {
- 			/*
- 			 * Turn off ECC reporting only when it was off before
- 			 */
- 			if (!pvt->flags.ecc_report)
--				msrs[idx].l &= ~K8_MSR_MCGCTL_NBE;
-+				reg->l &= ~K8_MSR_MCGCTL_NBE;
- 		}
--		idx++;
- 	}
- 	wrmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
- 
--	kfree(msrs);
- 	free_cpumask_var(cmask);
- 
- 	return 0;
-@@ -3036,6 +3019,8 @@ static int __init amd64_edac_init(void)
- 	if (cache_k8_northbridges() < 0)
- 		return err;
- 
-+	msrs = msrs_alloc();
-+
- 	err = pci_register_driver(&amd64_pci_driver);
- 	if (err)
- 		return err;
-@@ -3071,6 +3056,9 @@ static void __exit amd64_edac_exit(void)
- 		edac_pci_release_generic_ctl(amd64_ctl_pci);
- 
- 	pci_unregister_driver(&amd64_pci_driver);
-+
-+	msrs_free(msrs);
-+	msrs = NULL;
- }
- 
- module_init(amd64_edac_init);
--- 
-1.6.5.4
-
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Thanks
+Corrado
