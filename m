@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762620AbZLKEyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762517AbZLKElb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762620AbZLKEyE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760775AbZLKEyB
+	id S1762517AbZLKElb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761687AbZLKEgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:54:01 -0500
-Received: from kroah.org ([198.145.64.141]:36846 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:36:53 -0500
+Received: from kroah.org ([198.145.64.141]:36851 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759073AbZLKEgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:03 -0500
+	id S1760465AbZLKEgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:04 -0500
 X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:52 2009
-Message-Id: <20091211042751.864763427@linux.site>
+Message-Id: <20091211042752.421711582@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:25:13 -0800
+Date: Thu, 10 Dec 2009 20:25:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Akira Fujita <a-fujita@rs.jp.nec.com>, "Theodore Tso" <tytso@mit.edu>,
+       Eric Sandeen <sandeen@redhat.com>, "Theodore Tso" <tytso@mit.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [35/90] ext4: Fix different block exchange issue in EXT4_IOC_MOVE_EXT
+Subject: [36/90] ext4: limit block allocations for indirect-block files to < 2^32
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0035-ext4-Fix-different-block-exchange-issue-in-EXT4_IOC_.patch
+Content-Disposition: inline; filename=0036-ext4-limit-block-allocations-for-indirect-block-file.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,126 +30,178 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit c40ce3c9ea97425a12d7e44031a98fe50add6fc1)
+(cherry picked from commit fb0a387dcdcd21aab1b09ee7fd80b7c979bdbbfd)
 
-If logical block offset of original file which is passed to
-EXT4_IOC_MOVE_EXT is different from donor file's,
-a calculation error occurs in ext4_calc_swap_extents(),
-therefore wrong block is exchanged between original file and donor file.
-As a result, we hit ext4_error() in check_block_validity().
-To detect the logical offset difference in EXT4_IOC_MOVE_EXT,
-add checks to mext_calc_swap_extents() and handle it as error,
-since data exchange must be done between the same blocks in EXT4_IOC_MOVE_EXT.
+Today, the ext4 allocator will happily allocate blocks past
+2^32 for indirect-block files, which results in the block
+numbers getting truncated, and corruption ensues.
 
-Reported-by: Peng Tao <bergwolf@gmail.com>
-Signed-off-by: Akira Fujita <a-fujita@rs.jp.nec.com>
+This patch limits such allocations to < 2^32, and adds
+BUG_ONs if we do get blocks larger than that.
+
+This should address RH Bug 519471, ext4 bitmap allocator
+must limit blocks to < 2^32
+
+* ext4_find_goal() is modified to choose a goal < UINT_MAX,
+  so that our starting point is in an acceptable range.
+
+* ext4_xattr_block_set() is modified such that the goal block
+  is < UINT_MAX, as above.
+
+* ext4_mb_regular_allocator() is modified so that the group
+  search does not continue into groups which are too high
+
+* ext4_mb_use_preallocated() has a check that we don't use
+  preallocated space which is too far out
+
+* ext4_alloc_blocks() and ext4_xattr_block_set() add some BUG_ONs
+
+No attempt has been made to limit inode locations to < 2^32,
+so we may wind up with blocks far from their inodes.  Doing
+this much already will lead to some odd ENOSPC issues when the
+"lower 32" gets full, and further restricting inodes could
+make that even weirder.
+
+For high inodes, choosing a goal of the original, % UINT_MAX,
+may be a bit odd, but then we're in an odd situation anyway,
+and I don't know of a better heuristic.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/move_extent.c |   46 +++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 37 insertions(+), 9 deletions(-)
+ fs/ext4/ext4.h    |    4 ++++
+ fs/ext4/inode.c   |   11 ++++++++++-
+ fs/ext4/mballoc.c |    9 +++++++++
+ fs/ext4/super.c   |    2 ++
+ fs/ext4/xattr.c   |   15 +++++++++++++--
+ 5 files changed, 38 insertions(+), 3 deletions(-)
 
---- a/fs/ext4/move_extent.c
-+++ b/fs/ext4/move_extent.c
-@@ -597,8 +597,10 @@ out:
-  * @orig_off:		block offset of original inode
-  * @donor_off:		block offset of donor inode
-  * @max_count:		the maximun length of extents
-+ *
-+ * Return 0 on success, or a negative error value on failure.
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -388,6 +388,9 @@ struct ext4_mount_options {
+ #endif
+ };
+ 
++/* Max physical block we can addres w/o extents */
++#define EXT4_MAX_BLOCK_FILE_PHYS	0xFFFFFFFF
++
+ /*
+  * Structure of an inode on the disk
   */
--static void
-+static int
- mext_calc_swap_extents(struct ext4_extent *tmp_dext,
- 			      struct ext4_extent *tmp_oext,
- 			      ext4_lblk_t orig_off, ext4_lblk_t donor_off,
-@@ -607,6 +609,19 @@ mext_calc_swap_extents(struct ext4_exten
- 	ext4_lblk_t diff, orig_diff;
- 	struct ext4_extent dext_old, oext_old;
+@@ -843,6 +846,7 @@ struct ext4_sb_info {
+ 	unsigned long s_gdb_count;	/* Number of group descriptor blocks */
+ 	unsigned long s_desc_per_block;	/* Number of group descriptors per block */
+ 	ext4_group_t s_groups_count;	/* Number of groups in the fs */
++	ext4_group_t s_blockfile_groups;/* Groups acceptable for non-extent files */
+ 	unsigned long s_overhead_last;  /* Last calculated overhead */
+ 	unsigned long s_blocks_last;    /* Last seen block count */
+ 	loff_t s_bitmap_maxbytes;	/* max bytes for bitmap files */
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -564,15 +564,21 @@ static ext4_fsblk_t ext4_find_near(struc
+  *
+  *	Normally this function find the preferred place for block allocation,
+  *	returns it.
++ *	Because this is only used for non-extent files, we limit the block nr
++ *	to 32 bits.
+  */
+ static ext4_fsblk_t ext4_find_goal(struct inode *inode, ext4_lblk_t block,
+ 				   Indirect *partial)
+ {
++	ext4_fsblk_t goal;
++
+ 	/*
+ 	 * XXX need to get goal block from mballoc's data structures
+ 	 */
  
-+	BUG_ON(orig_off != donor_off);
-+
-+	/* original and donor extents have to cover the same block offset */
-+	if (orig_off < le32_to_cpu(tmp_oext->ee_block) ||
-+	    le32_to_cpu(tmp_oext->ee_block) +
-+			ext4_ext_get_actual_len(tmp_oext) - 1 < orig_off)
-+		return -ENODATA;
-+
-+	if (orig_off < le32_to_cpu(tmp_dext->ee_block) ||
-+	    le32_to_cpu(tmp_dext->ee_block) +
-+			ext4_ext_get_actual_len(tmp_dext) - 1 < orig_off)
-+		return -ENODATA;
-+
- 	dext_old = *tmp_dext;
- 	oext_old = *tmp_oext;
- 
-@@ -634,6 +649,8 @@ mext_calc_swap_extents(struct ext4_exten
- 
- 	copy_extent_status(&oext_old, tmp_dext);
- 	copy_extent_status(&dext_old, tmp_oext);
-+
-+	return 0;
+-	return ext4_find_near(inode, partial);
++	goal = ext4_find_near(inode, partial);
++	goal = goal & EXT4_MAX_BLOCK_FILE_PHYS;
++	return goal;
  }
  
  /**
-@@ -690,8 +707,10 @@ mext_replace_branches(handle_t *handle,
- 	dext = donor_path[depth].p_ext;
- 	tmp_dext = *dext;
+@@ -653,6 +659,8 @@ static int ext4_alloc_blocks(handle_t *h
+ 		if (*err)
+ 			goto failed_out;
  
--	mext_calc_swap_extents(&tmp_dext, &tmp_oext, orig_off,
-+	err = mext_calc_swap_extents(&tmp_dext, &tmp_oext, orig_off,
- 				      donor_off, count);
-+	if (err)
-+		goto out;
++		BUG_ON(current_block + count > EXT4_MAX_BLOCK_FILE_PHYS);
++
+ 		target -= count;
+ 		/* allocate blocks for indirect blocks */
+ 		while (index < indirect_blks && count) {
+@@ -687,6 +695,7 @@ static int ext4_alloc_blocks(handle_t *h
+ 		ar.flags = EXT4_MB_HINT_DATA;
  
- 	/* Loop for the donor extents */
- 	while (1) {
-@@ -760,9 +779,10 @@ mext_replace_branches(handle_t *handle,
- 		}
- 		tmp_dext = *dext;
+ 	current_block = ext4_mb_new_blocks(handle, &ar, err);
++	BUG_ON(current_block + ar.len > EXT4_MAX_BLOCK_FILE_PHYS);
  
--		mext_calc_swap_extents(&tmp_dext, &tmp_oext, orig_off,
--					      donor_off,
--					      count - replaced_count);
-+		err = mext_calc_swap_extents(&tmp_dext, &tmp_oext, orig_off,
-+					   donor_off, count - replaced_count);
-+		if (err)
-+			goto out;
+ 	if (*err && (target == blks)) {
+ 		/*
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -1960,6 +1960,10 @@ ext4_mb_regular_allocator(struct ext4_al
+ 	sb = ac->ac_sb;
+ 	sbi = EXT4_SB(sb);
+ 	ngroups = ext4_get_groups_count(sb);
++	/* non-extent files are limited to low blocks/groups */
++	if (!(EXT4_I(ac->ac_inode)->i_flags & EXT4_EXTENTS_FL))
++		ngroups = sbi->s_blockfile_groups;
++
+ 	BUG_ON(ac->ac_status == AC_STATUS_FOUND);
+ 
+ 	/* first, try the goal */
+@@ -3355,6 +3359,11 @@ ext4_mb_use_preallocated(struct ext4_all
+ 			ac->ac_o_ex.fe_logical >= pa->pa_lstart + pa->pa_len)
+ 			continue;
+ 
++		/* non-extent files can't have physical blocks past 2^32 */
++		if (!(EXT4_I(ac->ac_inode)->i_flags & EXT4_EXTENTS_FL) &&
++			pa->pa_pstart + pa->pa_len > EXT4_MAX_BLOCK_FILE_PHYS)
++			continue;
++
+ 		/* found preallocated blocks, use them */
+ 		spin_lock(&pa->pa_lock);
+ 		if (pa->pa_deleted == 0 && pa->pa_free) {
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2618,6 +2618,8 @@ static int ext4_fill_super(struct super_
+ 		goto failed_mount;
  	}
+ 	sbi->s_groups_count = blocks_count;
++	sbi->s_blockfile_groups = min_t(ext4_group_t, sbi->s_groups_count,
++			(EXT4_MAX_BLOCK_FILE_PHYS / EXT4_BLOCKS_PER_GROUP(sb)));
+ 	db_count = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) /
+ 		   EXT4_DESC_PER_BLOCK(sb);
+ 	sbi->s_group_desc = kmalloc(db_count * sizeof(struct buffer_head *),
+--- a/fs/ext4/xattr.c
++++ b/fs/ext4/xattr.c
+@@ -810,12 +810,23 @@ inserted:
+ 			get_bh(new_bh);
+ 		} else {
+ 			/* We need to allocate a new block */
+-			ext4_fsblk_t goal = ext4_group_first_block_no(sb,
++			ext4_fsblk_t goal, block;
++
++			goal = ext4_group_first_block_no(sb,
+ 						EXT4_I(inode)->i_block_group);
+-			ext4_fsblk_t block = ext4_new_meta_blocks(handle, inode,
++
++			/* non-extent files can't have physical blocks past 2^32 */
++			if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
++				goal = goal & EXT4_MAX_BLOCK_FILE_PHYS;
++
++			block = ext4_new_meta_blocks(handle, inode,
+ 						  goal, NULL, &error);
+ 			if (error)
+ 				goto cleanup;
++
++			if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
++				BUG_ON(block > EXT4_MAX_BLOCK_FILE_PHYS);
++
+ 			ea_idebug(inode, "creating block %d", block);
  
- out:
-@@ -1243,11 +1263,15 @@ ext4_move_extents(struct file *o_filp, s
- 	ext_cur = holecheck_path[depth].p_ext;
- 
- 	/*
--	 * Get proper extent whose ee_block is beyond block_start
--	 * if block_start was within the hole.
-+	 * Get proper starting location of block replacement if block_start was
-+	 * within the hole.
- 	 */
- 	if (le32_to_cpu(ext_cur->ee_block) +
- 		ext4_ext_get_actual_len(ext_cur) - 1 < block_start) {
-+		/*
-+		 * The hole exists between extents or the tail of
-+		 * original file.
-+		 */
- 		last_extent = mext_next_extent(orig_inode,
- 					holecheck_path, &ext_cur);
- 		if (last_extent < 0) {
-@@ -1260,8 +1284,12 @@ ext4_move_extents(struct file *o_filp, s
- 			ret1 = last_extent;
- 			goto out;
- 		}
--	}
--	seq_start = block_start;
-+		seq_start = le32_to_cpu(ext_cur->ee_block);
-+	} else if (le32_to_cpu(ext_cur->ee_block) > block_start)
-+		/* The hole exists at the beginning of original file. */
-+		seq_start = le32_to_cpu(ext_cur->ee_block);
-+	else
-+		seq_start = block_start;
- 
- 	/* No blocks within the specified range. */
- 	if (le32_to_cpu(ext_cur->ee_block) > block_end) {
+ 			new_bh = sb_getblk(sb, block);
 
 
