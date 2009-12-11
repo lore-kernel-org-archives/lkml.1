@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762074AbZLKAm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762060AbZLKApt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762074AbZLKAm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 19:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761813AbZLKAmz
+	id S1762060AbZLKApt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 19:45:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761765AbZLKApq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 19:42:55 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:52704 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761823AbZLKAmx convert rfc822-to-8bit (ORCPT
+	Thu, 10 Dec 2009 19:45:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60097 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761718AbZLKApp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 19:42:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=q+NBKdnxL86fSgfzsD4mEEC2sDu3N2lgke1GTIUJAd7NXnp0nDrdCuK086ghAJ3CfF
-         XGSgJEcmRn1cipLluutqEXPHmKYq7Xhc+7E7st9w7GxtesWgf/egOZTqG5BvHe00nFvY
-         Mk+lkRhw8uV3irzKNRVhNdy/kgYgJ8zYjCr4g=
+	Thu, 10 Dec 2009 19:45:45 -0500
+Date: Thu, 10 Dec 2009 16:45:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@gmail.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Stephane Marchesin <stephane.marchesin@gmail.com>,
+       Maarten Maathuis <madman2003@gmail.com>,
+       Xavier Bestel <xavier.bestel@free.fr>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm
+In-Reply-To: <21d7e9970912101621q7aafbd14g8a34bedb75b6c177@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0912101633480.3560@localhost.localdomain>
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>  <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>  <1260459601.18520.26.camel@skunk>  <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>  <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
+  <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>  <6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com>  <alpine.LFD.2.00.0912101531180.3560@localhost.localdomain>  <20091210235835.20e2269d@lxorguk.ukuu.org.uk> 
+ <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain> <21d7e9970912101621q7aafbd14g8a34bedb75b6c177@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1260466101-17545-4-git-send-email-ddaney@caviumnetworks.com>
-References: <4B212EEC.3060808@caviumnetworks.com>
-	 <1260466101-17545-4-git-send-email-ddaney@caviumnetworks.com>
-Date: Thu, 10 Dec 2009 19:42:59 -0500
-Message-ID: <b4198de60912101642u147f4592r9337dd9b7d7c604b@mail.gmail.com>
-Subject: Re: [PATCH 4/5] alpha: Convert BUG() to use unreachable()
-From: Matt Turner <mattst88@gmail.com>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 12:28 PM, David Daney <ddaney@caviumnetworks.com> wrote:
-> Use the new unreachable() macro instead of for(;;);
->
-> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-> CC: Richard Henderson <rth@twiddle.net>
-> CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> CC: Matt Turner <mattst88@gmail.com>
-> CC: linux-alpha@vger.kernel.org
-> ---
->  arch/alpha/include/asm/bug.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/alpha/include/asm/bug.h b/arch/alpha/include/asm/bug.h
-> index 1720c8a..f091682 100644
-> --- a/arch/alpha/include/asm/bug.h
-> +++ b/arch/alpha/include/asm/bug.h
-> @@ -13,7 +13,8 @@
->                "call_pal %0  # bugchk\n\t"                             \
->                ".long %1\n\t.8byte %2"                                 \
->                : : "i"(PAL_bugchk), "i"(__LINE__), "i"(__FILE__));     \
-> -       for ( ; ; ); } while (0)
-> +       unreachable();                                                  \
-> +  } while (0)
->
->  #define HAVE_ARCH_BUG
->  #endif
-> --
-> 1.6.2.5
 
-Thanks David. I've pushed this into my tree.
 
-Matt
+On Fri, 11 Dec 2009, Dave Airlie wrote:
+> 
+> I'm going to see what Ben can do with a firmware loader and the ctxprogs,
+> we can send a patch that contains all the other bits of the driver, however
+> since the ctxprogs aren't currently something we can add Signed-off-by to,
+> someone else will have to endeavour to provide them some other way.
+
+Hey, thanks. This was actually the first time I got the feeling that you 
+acknowledged that we should strive for it to be merged at all. I literally 
+feel better for just that.
+
+			Linus
