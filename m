@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZLKJls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZLKJzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbZLKJls (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 04:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbZLKJlm
+	id S1755386AbZLKJzI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 04:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZLKJzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 04:41:42 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:28753 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754086AbZLKJll (ORCPT
+	Fri, 11 Dec 2009 04:55:05 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:42757 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958AbZLKJzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 04:41:41 -0500
-From: Wenji Huang <wenji.huang@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: rostedt@goodmis.org, fweisbec@gmail.com,
-       Wenji Huang <wenji.huang@oracle.com>
-Subject: [PATCH] tracing: add checks for printing graph irq
-Date: Fri, 11 Dec 2009 17:38:35 +0800
-Message-Id: <1260524315-17807-1-git-send-email-wenji.huang@oracle.com>
-X-Mailer: git-send-email 1.5.6
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B2213D1.0061:SCFMA4539814,ss=1,fgs=0
+	Fri, 11 Dec 2009 04:55:04 -0500
+Subject: Re: [PATCH 0/2] [RESEND] Amstrad Delta: add support for LCD
+ contrast
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: ext Tony Lindgren <tony@atomide.com>
+Cc: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       "Deak Imre (Nokia-D/Helsinki)" <imre.deak@nokia.com>,
+       "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091207213250.GI24013@atomide.com>
+References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
+	 <200912051454.52966.jkrzyszt@tis.icnet.pl>
+	 <20091207213250.GI24013@atomide.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 11 Dec 2009 11:53:43 +0200
+Message-ID: <1260525223.9700.86.camel@tubuntu.research.nokia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 11 Dec 2009 09:53:45.0482 (UTC) FILETIME=[D43266A0:01CA7A47]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check return value of trace_seq_printf.
+On Mon, 2009-12-07 at 22:32 +0100, ext Tony Lindgren wrote:
+> * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091205 05:54]:
+> > Monday 23 November 2009 18:57:51 Janusz Krzysztofik napisał(a):
+> > > Initialy submitted on 2009-11-16
+> > > (http://www.spinics.net/lists/linux-omap/msg20629.html).
+> > > Resendig due to fbdev mailing list address changed.
+> > >
+> > > The series consists of 2 patches:
+> > >
+> > >  [PATCH 1/2] omapfb: lcd_ams_delta: add support for contrast control
+> > >  [PATCH 2/2] OMAP: ams_delta_defconfig: enable LCD class device support
+> > >
+> > > It is intended for 2.6.33, if it's not too late.
+> > 
+> > Hi,
+> > 
+> > Now that Tony has changed the series status from New to Awaiting Upstream in 
+> > his patchwork queue[1][2], chances of getting it in throungh linux-omap tree, 
+> > like a few other omapfb related patches managed to do lately, seem falling 
+> > down drastically to me if still not answered by anyone involved in omapfb 
+> > development.
+> > 
+> > Imre,
+> > Could you please take the patches, or give your ack for Tony to take them, or 
+> > just point me on the right way to the get them integrated or NAKed, if none 
+> > of the former is?
+> > 
+> > Tomi,
+> > I am not sure if you are the right person for bothering here, but maybe you 
+> > could give your comments that would help pushing it forward?
+> 
+> I'd prefer Tomi to merge all the drivers/video/omap code rather
+> than merge it via linux-omap tree. Ideally with an ack from
+> Imre where possible.
 
-Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
----
- kernel/trace/trace_functions_graph.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+I talked with Imre, and he's not too keen on maintaining the old omapfb,
+so I'll take over it. And perhaps it's easier to have all omap display
+related patches in one place.
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 45e6c01..3fa4055 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -555,8 +555,11 @@ print_graph_irq(struct trace_iterator *iter, unsigned long addr,
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	/* Don't close the duration column if haven't one */
--	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
--		trace_seq_printf(s, " |");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION) {
-+		ret = trace_seq_printf(s, " |");
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
- 	ret = trace_seq_printf(s, "\n");
- 
- 	if (!ret)
--- 
-1.5.6
+ Tomi
+
 
