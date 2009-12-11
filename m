@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbZLKEf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbZLKEgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760544AbZLKEf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760465AbZLKEfy
+	id S1760614AbZLKEgB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:36:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760465AbZLKEf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:35:54 -0500
-Received: from kroah.org ([198.145.64.141]:52868 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:35:58 -0500
+Received: from kroah.org ([198.145.64.141]:52872 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758935AbZLKEfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:35:37 -0500
+	id S1758955AbZLKEfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:35:38 -0500
 X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:28 2009
-Message-Id: <20091211042727.486958503@linux.site>
+Message-Id: <20091211042728.124212000@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:24:44 -0800
+Date: Thu, 10 Dec 2009 20:24:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [06/90] ext4: Fix bugs in mballocs stream allocation mode
+Subject: [07/90] ext4: Avoid group preallocation for closed files
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0006-ext4-Fix-bugs-in-mballoc-s-stream-allocation-mode.patch
+Content-Disposition: inline; filename=0007-ext4-Avoid-group-preallocation-for-closed-files.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,103 +29,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 4ba74d00a20256e22f159cb288ff34b587608917)
+(cherry picked from commit 50797481a7bdee548589506d7d7b48b08bc14dcd)
 
-The logic around sbi->s_mb_last_group and sbi->s_mb_last_start was all
-screwed up.  These fields were getting unconditionally all the time,
-set even when stream allocation had not taken place, and if they were
-being used when the file was smaller than s_mb_stream_request, which
-is when the allocation should _not_ be doing stream allocation.
+Currently the group preallocation code tries to find a large (512)
+free block from which to do per-cpu group allocation for small files.
+The problem with this scheme is that it leaves the filesystem horribly
+fragmented.  In the worst case, if the filesystem is unmounted and
+remounted (after a system shutdown, for example) we forget the fact
+that wee were using a particular (now-partially filled) 512 block
+extent.  So the next time we try to allocate space for a small file,
+we will find *another* completely free 512 block chunk to allocate
+small files.  Given that there are 32,768 blocks in a block group,
+after 64 iterations of "mount, write one 4k file in a directory,
+unmount", the block group will have 64 files, each separated by 511
+blocks, and the block group will no longer have any free 512
+completely free chunks of blocks for group preallocation space.
 
-Fix this by determining whether or not we stream allocation should
-take place once, in ext4_mb_group_or_file(), and setting a flag which
-gets used in ext4_mb_regular_allocator() and ext4_mb_use_best_found().
-This simplifies the code and assures that we are consistently using
-(or not using) the stream allocation logic.
+So if we try to allocate blocks for a file that has been closed, such
+that we know the final size of the file, and the filesystem is not
+busy, avoid using group preallocation.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h    |    2 ++
- fs/ext4/mballoc.c |   23 ++++++++++-------------
- 2 files changed, 12 insertions(+), 13 deletions(-)
+ fs/ext4/ext4.h    |   30 +++++++++++++++++++++++++++++-
+ fs/ext4/mballoc.c |   10 +++++++++-
+ 2 files changed, 38 insertions(+), 2 deletions(-)
 
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -88,6 +88,8 @@ typedef unsigned int ext4_group_t;
- #define EXT4_MB_HINT_TRY_GOAL		512
- /* blocks already pre-reserved by delayed allocation */
- #define EXT4_MB_DELALLOC_RESERVED      1024
-+/* We are doing stream allocation */
-+#define EXT4_MB_STREAM_ALLOC		2048
+@@ -952,6 +952,7 @@ struct ext4_sb_info {
+ 	atomic_t s_mb_lost_chunks;
+ 	atomic_t s_mb_preallocated;
+ 	atomic_t s_mb_discarded;
++	atomic_t s_lock_busy;
  
+ 	/* locality groups */
+ 	struct ext4_locality_group *s_locality_groups;
+@@ -1593,15 +1594,42 @@ struct ext4_group_info {
+ #define EXT4_MB_GRP_NEED_INIT(grp)	\
+ 	(test_bit(EXT4_GROUP_INFO_NEED_INIT_BIT, &((grp)->bb_state)))
  
- struct ext4_allocation_request {
++#define EXT4_MAX_CONTENTION		8
++#define EXT4_CONTENTION_THRESHOLD	2
++
+ static inline spinlock_t *ext4_group_lock_ptr(struct super_block *sb,
+ 					      ext4_group_t group)
+ {
+ 	return bgl_lock_ptr(EXT4_SB(sb)->s_blockgroup_lock, group);
+ }
+ 
++/*
++ * Returns true if the filesystem is busy enough that attempts to
++ * access the block group locks has run into contention.
++ */
++static inline int ext4_fs_is_busy(struct ext4_sb_info *sbi)
++{
++	return (atomic_read(&sbi->s_lock_busy) > EXT4_CONTENTION_THRESHOLD);
++}
++
+ static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
+ {
+-	spin_lock(ext4_group_lock_ptr(sb, group));
++	spinlock_t *lock = ext4_group_lock_ptr(sb, group);
++	if (spin_trylock(lock))
++		/*
++		 * We're able to grab the lock right away, so drop the
++		 * lock contention counter.
++		 */
++		atomic_add_unless(&EXT4_SB(sb)->s_lock_busy, -1, 0);
++	else {
++		/*
++		 * The lock is busy, so bump the contention counter,
++		 * and then wait on the spin lock.
++		 */
++		atomic_add_unless(&EXT4_SB(sb)->s_lock_busy, 1,
++				  EXT4_MAX_CONTENTION);
++		spin_lock(lock);
++	}
+ }
+ 
+ static inline void ext4_unlock_group(struct super_block *sb,
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -1360,7 +1360,7 @@ static void ext4_mb_use_best_found(struc
- 	ac->alloc_semp =  e4b->alloc_semp;
- 	e4b->alloc_semp = NULL;
- 	/* store last allocated for subsequent stream allocation */
--	if ((ac->ac_flags & EXT4_MB_HINT_DATA)) {
-+	if (ac->ac_flags & EXT4_MB_STREAM_ALLOC) {
- 		spin_lock(&sbi->s_md_lock);
- 		sbi->s_mb_last_group = ac->ac_f_ex.fe_group;
- 		sbi->s_mb_last_start = ac->ac_f_ex.fe_start;
-@@ -1938,7 +1938,6 @@ ext4_mb_regular_allocator(struct ext4_al
- 	struct ext4_sb_info *sbi;
- 	struct super_block *sb;
- 	struct ext4_buddy e4b;
--	loff_t size, isize;
- 
- 	sb = ac->ac_sb;
- 	sbi = EXT4_SB(sb);
-@@ -1974,20 +1973,16 @@ ext4_mb_regular_allocator(struct ext4_al
- 	}
- 
- 	bsbits = ac->ac_sb->s_blocksize_bits;
--	/* if stream allocation is enabled, use global goal */
--	size = ac->ac_o_ex.fe_logical + ac->ac_o_ex.fe_len;
--	isize = i_size_read(ac->ac_inode) >> bsbits;
--	if (size < isize)
--		size = isize;
- 
--	if (size < sbi->s_mb_stream_request &&
--			(ac->ac_flags & EXT4_MB_HINT_DATA)) {
-+	/* if stream allocation is enabled, use global goal */
-+	if (ac->ac_flags & EXT4_MB_STREAM_ALLOC) {
- 		/* TBD: may be hot point */
- 		spin_lock(&sbi->s_md_lock);
- 		ac->ac_g_ex.fe_group = sbi->s_mb_last_group;
- 		ac->ac_g_ex.fe_start = sbi->s_mb_last_start;
- 		spin_unlock(&sbi->s_md_lock);
- 	}
-+
- 	/* Let's just scan groups to find more-less suitable blocks */
- 	cr = ac->ac_2order ? 0 : 1;
- 	/*
-@@ -4155,16 +4150,18 @@ static void ext4_mb_group_or_file(struct
- 	if (!(ac->ac_flags & EXT4_MB_HINT_DATA))
+@@ -4154,9 +4154,17 @@ static void ext4_mb_group_or_file(struct
  		return;
  
-+	if (unlikely(ac->ac_flags & EXT4_MB_HINT_GOAL_ONLY))
-+		return;
-+
  	size = ac->ac_o_ex.fe_logical + ac->ac_o_ex.fe_len;
- 	isize = i_size_read(ac->ac_inode) >> bsbits;
+-	isize = i_size_read(ac->ac_inode) >> bsbits;
++	isize = (i_size_read(ac->ac_inode) + ac->ac_sb->s_blocksize - 1)
++		>> bsbits;
  	size = max(size, isize);
  
- 	/* don't use group allocation for large files */
--	if (size >= sbi->s_mb_stream_request)
--		return;
--
--	if (unlikely(ac->ac_flags & EXT4_MB_HINT_GOAL_ONLY))
-+	if (size >= sbi->s_mb_stream_request) {
-+		ac->ac_flags |= EXT4_MB_STREAM_ALLOC;
- 		return;
++	if ((size == isize) &&
++	    !ext4_fs_is_busy(sbi) &&
++	    (atomic_read(&ac->ac_inode->i_writecount) == 0)) {
++		ac->ac_flags |= EXT4_MB_HINT_NOPREALLOC;
++		return;
 +	}
- 
- 	BUG_ON(ac->ac_lg != NULL);
- 	/*
++
+ 	/* don't use group allocation for large files */
+ 	if (size >= sbi->s_mb_stream_request) {
+ 		ac->ac_flags |= EXT4_MB_STREAM_ALLOC;
 
 
