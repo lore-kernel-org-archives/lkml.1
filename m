@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934643AbZLKXb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934815AbZLKXda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934643AbZLKXb3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934369AbZLKX3i
+	id S934815AbZLKXda (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934734AbZLKXc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:29:38 -0500
-Received: from kroah.org ([198.145.64.141]:50466 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 18:32:58 -0500
+Received: from kroah.org ([198.145.64.141]:50437 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934445AbZLKX33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:29:29 -0500
+	id S934451AbZLKX3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:29:30 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 46/58] tty: isicom: fix deadlock on shutdown
-Date: Fri, 11 Dec 2009 15:28:30 -0800
-Message-Id: <1260574122-10676-46-git-send-email-gregkh@suse.de>
+Subject: [PATCH 47/58] tty: moxa: Use more tty_port ops
+Date: Fri, 11 Dec 2009 15:28:31 -0800
+Message-Id: <1260574122-10676-47-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211232805.GA10652@kroah.com>
 References: <20091211232805.GA10652@kroah.com>
@@ -24,59 +24,233 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-Alexander Strakh <strakh@ispras.ru> reported
+Rework a few bits of this into tty_port format
 
-	KERNEL_VERSION: 2.6.31
-	DESCRIBE:
-Driver drivers/char/isicom.c might sleep in atomic  context, because it
-calls
-tty_port_xmit_buf under spin_lock.
-
-./drivers/char/isicom.c:
-1307 static void isicom_hangup(struct tty_struct *tty)
-1308 {
-...
-1315         spin_lock_irqsave(&port->card->card_lock, flags);
-1316         isicom_shutdown_port(port);
-...
-
-Path to might_sleep macro from isicom_hangup:
-1. isicom_hangup calls spin_lock_irqsave (drivers/char/isicom.c:1315) and
-then
-calls isicom_shutdown_port.
-2. isiscom_shutdown_port calls tty_port_free_xmit_buf at
-drivers/char/isicom.c:906
-3. tty_port_free_xmit_buf calls mutex_lock at drivers/char/tty_port:48
-
-Found by Linux Driver Verification Project.
-
-Reported-by: Alexander Strakh <strakh@ispras.ru>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/isicom.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/char/moxa.c |  137 ++++++++-------------------------------------------
+ 1 files changed, 21 insertions(+), 116 deletions(-)
 
-diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
-index 1e91c30..300d5bd 100644
---- a/drivers/char/isicom.c
-+++ b/drivers/char/isicom.c
-@@ -887,7 +887,6 @@ static void isicom_shutdown_port(struct isi_port *port)
- {
- 	struct isi_board *card = port->card;
+diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+index dd0083b..d8bcbed 100644
+--- a/drivers/char/moxa.c
++++ b/drivers/char/moxa.c
+@@ -206,8 +206,9 @@ static int moxa_tiocmset(struct tty_struct *tty, struct file *file,
+ static void moxa_poll(unsigned long);
+ static void moxa_set_tty_param(struct tty_struct *, struct ktermios *);
+ static void moxa_setup_empty_event(struct tty_struct *);
+-static void moxa_shut_down(struct tty_struct *);
++static void moxa_shutdown(struct tty_port *);
+ static int moxa_carrier_raised(struct tty_port *);
++static void moxa_dtr_rts(struct tty_port *, int);
+ /*
+  * moxa board interface functions:
+  */
+@@ -409,6 +410,8 @@ static const struct tty_operations moxa_ops = {
  
--	tty_port_free_xmit_buf(&port->port);
- 	if (--card->count < 0) {
- 		pr_dbg("isicom_shutdown_port: bad board(0x%lx) count %d.\n",
- 			card->base, card->count);
-@@ -927,6 +926,7 @@ static void isicom_shutdown(struct tty_port *port)
- 	outw(card->port_status, card->base + 0x02);
- 	isicom_shutdown_port(ip);
- 	spin_unlock_irqrestore(&card->card_lock, flags);
-+	tty_port_free_xmit_buf(port);
+ static const struct tty_port_operations moxa_port_ops = {
+ 	.carrier_raised = moxa_carrier_raised,
++	.dtr_rts = moxa_dtr_rts,
++	.shutdown = moxa_shutdown,
+ };
+ 
+ static struct tty_driver *moxaDriver;
+@@ -1112,14 +1115,12 @@ static void __exit moxa_exit(void)
+ module_init(moxa_init);
+ module_exit(moxa_exit);
+ 
+-static void moxa_close_port(struct tty_struct *tty)
++static void moxa_shutdown(struct tty_port *port)
+ {
+-	struct moxa_port *ch = tty->driver_data;
+-	moxa_shut_down(tty);
++	struct moxa_port *ch = container_of(port, struct moxa_port, port);
++        MoxaPortDisable(ch);
+ 	MoxaPortFlushData(ch, 2);
+-	ch->port.flags &= ~ASYNC_NORMAL_ACTIVE;
+-	tty->driver_data = NULL;
+-	tty_port_tty_set(&ch->port, NULL);
++	clear_bit(ASYNCB_NORMAL_ACTIVE, &port->flags);
  }
  
- static void isicom_close(struct tty_struct *tty, struct file *filp)
+ static int moxa_carrier_raised(struct tty_port *port)
+@@ -1133,39 +1134,13 @@ static int moxa_carrier_raised(struct tty_port *port)
+ 	return dcd;
+ }
+ 
+-static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
+-			    struct moxa_port *ch)
++static void moxa_dtr_rts(struct tty_port *port, int onoff)
+ {
+-	struct tty_port *port = &ch->port;
+-	DEFINE_WAIT(wait);
+-	int retval = 0;
+-	u8 dcd;
+-
+-	while (1) {
+-		prepare_to_wait(&port->open_wait, &wait, TASK_INTERRUPTIBLE);
+-		if (tty_hung_up_p(filp)) {
+-#ifdef SERIAL_DO_RESTART
+-			retval = -ERESTARTSYS;
+-#else
+-			retval = -EAGAIN;
+-#endif
+-			break;
+-		}
+-		dcd = tty_port_carrier_raised(port);
+-		if (dcd)
+-			break;
+-
+-		if (signal_pending(current)) {
+-			retval = -ERESTARTSYS;
+-			break;
+-		}
+-		schedule();
+-	}
+-	finish_wait(&port->open_wait, &wait);
+-
+-	return retval;
++	struct moxa_port *ch = container_of(port, struct moxa_port, port);
++	MoxaPortLineCtrl(ch, onoff, onoff);
+ }
+ 
++
+ static int moxa_open(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct moxa_board_conf *brd;
+@@ -1194,6 +1169,7 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
+ 	ch->port.count++;
+ 	tty->driver_data = ch;
+ 	tty_port_tty_set(&ch->port, tty);
++	mutex_lock(&ch->port.mutex);
+ 	if (!(ch->port.flags & ASYNC_INITIALIZED)) {
+ 		ch->statusflags = 0;
+ 		moxa_set_tty_param(tty, tty->termios);
+@@ -1202,57 +1178,21 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
+ 		MoxaSetFifo(ch, ch->type == PORT_16550A);
+ 		ch->port.flags |= ASYNC_INITIALIZED;
+ 	}
++	mutex_unlock(&ch->port.mutex);
+ 	mutex_unlock(&moxa_openlock);
+ 
+-	retval = 0;
+-	if (!(filp->f_flags & O_NONBLOCK) && !C_CLOCAL(tty))
+-		retval = moxa_block_till_ready(tty, filp, ch);
+-	mutex_lock(&moxa_openlock);
+-	if (retval) {
+-		if (ch->port.count) /* 0 means already hung up... */
+-			if (--ch->port.count == 0)
+-				moxa_close_port(tty);
+-	} else
+-		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+-	mutex_unlock(&moxa_openlock);
+-
++	retval = tty_port_block_til_ready(&ch->port, tty, filp);
++	if (retval == 0)
++	        set_bit(ASYNCB_NORMAL_ACTIVE, &ch->port.flags);
+ 	return retval;
+ }
+ 
+ static void moxa_close(struct tty_struct *tty, struct file *filp)
+ {
+-	struct moxa_port *ch;
+-	int port;
+-
+-	port = tty->index;
+-	if (port == MAX_PORTS || tty_hung_up_p(filp))
+-		return;
+-
+-	mutex_lock(&moxa_openlock);
+-	ch = tty->driver_data;
+-	if (ch == NULL)
+-		goto unlock;
+-	if (tty->count == 1 && ch->port.count != 1) {
+-		printk(KERN_WARNING "moxa_close: bad serial port count; "
+-			"tty->count is 1, ch->port.count is %d\n", ch->port.count);
+-		ch->port.count = 1;
+-	}
+-	if (--ch->port.count < 0) {
+-		printk(KERN_WARNING "moxa_close: bad serial port count, "
+-			"device=%s\n", tty->name);
+-		ch->port.count = 0;
+-	}
+-	if (ch->port.count)
+-		goto unlock;
+-
++	struct moxa_port *ch = tty->driver_data;
+ 	ch->cflag = tty->termios->c_cflag;
+-	if (ch->port.flags & ASYNC_INITIALIZED) {
+-		moxa_setup_empty_event(tty);
+-		tty_wait_until_sent(tty, 30 * HZ);	/* 30 seconds timeout */
+-	}
+-
+-	moxa_close_port(tty);
+-unlock:
++	mutex_lock(&moxa_openlock);
++	tty_port_close(&ch->port, tty, filp);
+ 	mutex_unlock(&moxa_openlock);
+ }
+ 
+@@ -1300,14 +1240,6 @@ static int moxa_chars_in_buffer(struct tty_struct *tty)
+ 	struct moxa_port *ch = tty->driver_data;
+ 	int chars;
+ 
+-	/*
+-	 * Sigh...I have to check if driver_data is NULL here, because
+-	 * if an open() fails, the TTY subsystem eventually calls
+-	 * tty_wait_until_sent(), which calls the driver's chars_in_buffer()
+-	 * routine.  And since the open() failed, we return 0 here.  TDJ
+-	 */
+-	if (ch == NULL)
+-		return 0;
+ 	lock_kernel();
+ 	chars = MoxaPortTxQueue(ch);
+ 	if (chars) {
+@@ -1436,15 +1368,8 @@ static void moxa_hangup(struct tty_struct *tty)
+ 
+ 	mutex_lock(&moxa_openlock);
+ 	ch = tty->driver_data;
+-	if (ch == NULL) {
+-		mutex_unlock(&moxa_openlock);
+-		return;
+-	}
+-	ch->port.count = 0;
+-	moxa_close_port(tty);
++	tty_port_hangup(&ch->port);
+ 	mutex_unlock(&moxa_openlock);
+-
+-	wake_up_interruptible(&ch->port.open_wait);
+ }
+ 
+ static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
+@@ -1597,26 +1522,6 @@ static void moxa_setup_empty_event(struct tty_struct *tty)
+ 	spin_unlock_bh(&moxa_lock);
+ }
+ 
+-static void moxa_shut_down(struct tty_struct *tty)
+-{
+-	struct moxa_port *ch = tty->driver_data;
+-
+-	if (!(ch->port.flags & ASYNC_INITIALIZED))
+-		return;
+-
+-	MoxaPortDisable(ch);
+-
+-	/*
+-	 * If we're a modem control device and HUPCL is on, drop RTS & DTR.
+-	 */
+-	if (C_HUPCL(tty))
+-		MoxaPortLineCtrl(ch, 0, 0);
+-
+-	spin_lock_bh(&moxa_lock);
+-	ch->port.flags &= ~ASYNC_INITIALIZED;
+-	spin_unlock_bh(&moxa_lock);
+-}
+-
+ /*****************************************************************************
+  *	Driver level functions: 					     *
+  *****************************************************************************/
 -- 
 1.6.5.5
 
