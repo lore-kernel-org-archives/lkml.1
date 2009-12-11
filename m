@@ -1,639 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZLKDWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZLKDZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbZLKDWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 22:22:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZLKDWK
+	id S1756237AbZLKDZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 22:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZLKDZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 22:22:10 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:48267 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753597AbZLKDWG convert rfc822-to-8bit (ORCPT
+	Thu, 10 Dec 2009 22:25:42 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:53932 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbZLKDZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 22:22:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hD+YFafadCSgefjzq9GESbY9ImgkEskDyYt3TQFLBGc96eB1btL98zRwt3e/nR42dz
-         Qdx/FurV7RrFPaCxevP2zay1kYNHKCd8V9Urq3pWz1n/SW0QtJwItYgZcIi1ejdY58GX
-         TJxc6eugF8cGpXCeJEqScBiuxgLfUwRXt4mpA=
+	Thu, 10 Dec 2009 22:25:41 -0500
+Message-Id: <200912110325.nBB3PCw6030361@www262.sakura.ne.jp>
+Subject: Re: [patch 1/9] sys: Fix missing rcu protection for __task_cred()access
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: tglx@linutronix.de
+Cc: oleg@redhat.com, linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       linux-security-module@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0912100951130.31654@sister.anvils>
-References: <2375c9f90912090238u7487019eq2458210aac4b602@mail.gmail.com>
-	 <Pine.LNX.4.64.0912091442360.30748@sister.anvils>
-	 <2375c9f90912092259pe86356cvb716232ba7a4d604@mail.gmail.com>
-	 <Pine.LNX.4.64.0912100951130.31654@sister.anvils>
-Date: Fri, 11 Dec 2009 11:22:11 +0800
-Message-ID: <2375c9f90912101922g5b31e5c9gceeca299b9c2b656@mail.gmail.com>
-Subject: Re: An mm bug in today's 2.6.32 git tree
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Date: Fri, 11 Dec 2009 12:25:12 +0900
+References: <20091210001308.247025548@linutronix.de> <20091210004703.029784964@linutronix.de> <20091210142036.GA8226@redhat.com> <200912110008.BEJ00511.FVOJLtSMOFHOQF@I-love.SAKURA.ne.jp> <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 10122009 #3111939, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 5:56 PM, Hugh Dickins
-<hugh.dickins@tiscali.co.uk> wrote:
-> On Thu, 10 Dec 2009, Américo Wang wrote:
->> On Wed, Dec 9, 2009 at 10:49 PM, Hugh Dickins
->> >
->> > Thanks for the report.  Not known to me.
->> > It looks like something has corrupted the start of a pagetable.
->                                  no, not the start
->> > No idea what that something might be, but probably not bad RAM.
->> >
->> >>
->> >> Please feel free to let me know if you need more info.
->> >
->> > You say you saw it twice: please post what the other occasion
->> > showed (unless the first six lines were identical to this and it
->> > occurred around the same time i.e. separate report of the same).
->> >
->>
->> Yes, the rest are almost the same, the only difference is the 'addr'
->> shows different addresses.
->
-> Please post what this other occasion showed, if you still have the log.
+Thomas Gleixner wrote:
+> On Fri, 11 Dec 2009, Tetsuo Handa wrote:
+> > > Usually tasklist gives enough protection, but if copy_process() fails
+> > > it calls free_pid() lockless and does call_rcu(delayed_put_pid().
+> > > This means, without rcu lock find_pid_ns() can't scan the hash table
+> > > safely.
+> > 
+> > So, we need to change below comment from "or" to "and" ?
+> 
+> No, both functions must be called with rcu_read_lock()
+> 
+> tasklist_lock read-held is not protecting the rcu lists and does not
+> protect against a concurrent update. It merily protects against tasks
+> going away or being added while we look up the lists.
 
-Sure, below is the whole thing.
+So, rcu_read_lock() is mandatory.
+But I couldn't understand why tasklist_lock being held is not mandatory.
+
+Caller of these functions will use "struct task_struct" and expect that values
+and pointers retrieved by dereferencing returned pointer are valid.
+
+If "struct task_struct" was removed from the list due to missing tasklist_lock
+between returning from find_task_by_pid_ns() and dereferencing, I worry that
+values and pointers retrieved by dereferencing are invalid.
+
+rcu_read_lock() being held will prevent the returned "struct task_struct" from
+being kfree()d, but I think rcu_read_lock() being held does not prevent values
+and pointers of "struct task_struct" from being invalidated.
 
 
-Dec  9 17:36:31 dhcp-66-70-5 kernel: swap_free: Bad swap offset entry
-7d80002f000080
-Dec  9 17:36:31 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:fb00005e00010000 pmd:22f221067
-Dec  9 17:36:31 dhcp-66-70-5 kernel: addr:000000319ce04000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:4
-Dec  9 17:36:31 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:31 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:31 dhcp-66-70-5 kernel: Pid: 659, comm: vim Not tainted 2.6.32 #55
-Dec  9 17:36:31 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81118550>] ?
-unmap_vmas+0x8bc/0xbd5
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:31 dhcp-66-70-5 kernel: Disabling lock debugging due to
-kernel taint
-Dec  9 17:36:31 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:8f3271e161f00 pmd:22f221067
-Dec  9 17:36:31 dhcp-66-70-5 kernel: addr:000000319ce05000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:5
-Dec  9 17:36:31 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:31 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:31 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:31 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:31 dhcp-66-70-5 kernel:  [<ffffffff81116dab>] ?
-vm_normal_page+0x52/0x9f
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:32 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:4000008b000045 pmd:22f221067
-Dec  9 17:36:32 dhcp-66-70-5 kernel: page:ffffea0001e68000
-flags:0100000000080010 count:0 mapcount:-1 mapping:(null) index:0
-Dec  9 17:36:32 dhcp-66-70-5 kernel: addr:000000319ce06000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:6
-Dec  9 17:36:32 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:32 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:32 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:32 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff8111840a>] ?
-unmap_vmas+0x776/0xbd5
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:32 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:32 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:9541420a8f4e11ff pmd:22f221067
-Dec  9 17:36:32 dhcp-66-70-5 kernel: addr:000000319ce07000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:7
-Dec  9 17:36:32 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:32 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:33 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:33 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81116dd4>] ?
-vm_normal_page+0x7b/0x9f
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:33 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:e914e914fb0000e0 pmd:22f221067
-Dec  9 17:36:33 dhcp-66-70-5 kernel: addr:000000319ce08000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:8
-Dec  9 17:36:33 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:33 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:33 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:33 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff811184fe>] ?
-unmap_vmas+0x86a/0xbd5
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:33 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:33 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:8400000ca47700 pmd:22f221067
-Dec  9 17:36:34 dhcp-66-70-5 kernel: addr:000000319ce09000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:9
-Dec  9 17:36:34 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:34 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:34 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:34 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81116dab>] ?
-vm_normal_page+0x52/0x9f
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:34 dhcp-66-70-5 kernel: swap_free: Unused swap offset
-entry 00018000
-Dec  9 17:36:34 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:03000000 pmd:22f221067
-Dec  9 17:36:34 dhcp-66-70-5 kernel: addr:000000319ce0a000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:a
-Dec  9 17:36:34 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:34 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:34 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:34 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81118550>] ?
-unmap_vmas+0x8bc/0xbd5
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:34 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:34 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:43466e6169627609 pmd:22f221067
-Dec  9 17:36:34 dhcp-66-70-5 kernel: addr:000000319ce0b000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:b
-Dec  9 17:36:34 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116dab>] ?
-vm_normal_page+0x52/0x9f
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:35 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:46873735f043231 pmd:22f221067
-Dec  9 17:36:35 dhcp-66-70-5 kernel: addr:000000319ce0c000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:c
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116dab>] ?
-vm_normal_page+0x52/0x9f
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:35 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:636f6c057063745f pmd:22f221067
-Dec  9 17:36:35 dhcp-66-70-5 kernel: addr:000000319ce0d000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:d
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116dd4>] ?
-vm_normal_page+0x7b/0x9f
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:35 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:1802100006c61 pmd:22f221067
-Dec  9 17:36:35 dhcp-66-70-5 kernel: addr:000000319ce0e000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:e
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81116dd4>] ?
-vm_normal_page+0x7b/0x9f
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:35 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:35 dhcp-66-70-5 kernel: swap_free: Bad swap offset entry 09003c00
-Dec  9 17:36:35 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:1200780000 pmd:22f221067
-Dec  9 17:36:35 dhcp-66-70-5 kernel: addr:000000319ce0f000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:f
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:35 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:35 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81118550>] ?
-unmap_vmas+0x8bc/0xbd5
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:36 dhcp-66-70-5 kernel: swap_free: Bad swap offset entry
-30b4b13b048b00
-Dec  9 17:36:36 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:6169627609160000 pmd:22f221067
-Dec  9 17:36:36 dhcp-66-70-5 kernel: addr:000000319ce10000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:10
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81118550>] ?
-unmap_vmas+0x8bc/0xbd5
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:36 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:c020c0323143466e pmd:22f221067
-Dec  9 17:36:36 dhcp-66-70-5 kernel: addr:000000319ce11000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:11
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff811184fe>] ?
-unmap_vmas+0x86a/0xbd5
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:36 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:1801c0037 pmd:22f221067
-Dec  9 17:36:36 dhcp-66-70-5 kernel: page:ffffea0005406200
-flags:0200000000000860 count:2 mapcount:-1 mapping:ffff88022ef96d70
-index:143ed24
-Dec  9 17:36:36 dhcp-66-70-5 kernel: addr:000000319ce12000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:12
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8111840a>] ?
-unmap_vmas+0x776/0xbd5
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:36 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:80fe100078 pmd:22f221067
-Dec  9 17:36:36 dhcp-66-70-5 kernel: addr:000000319ce13000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:13
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:36 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:36 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:36 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff811184fe>] ?
-unmap_vmas+0x86a/0xbd5
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:37 dhcp-66-70-5 kernel: swap_free: Bad swap offset entry
-7f7f8b0f810000
-Dec  9 17:36:37 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:feff161f02000000 pmd:22f221067
-Dec  9 17:36:37 dhcp-66-70-5 kernel: addr:000000319ce14000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:14
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81118550>] ?
-unmap_vmas+0x8bc/0xbd5
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:37 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:80010037c0f3271e pmd:22f221067
-Dec  9 17:36:37 dhcp-66-70-5 kernel: addr:000000319ce15000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:15
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116dab>] ?
-vm_normal_page+0x52/0x9f
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:37 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:a04007800000001 pmd:22f221067
-Dec  9 17:36:37 dhcp-66-70-5 kernel: addr:000000319ce16000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:16
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116dd4>] ?
-vm_normal_page+0x7b/0x9f
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:36:37 dhcp-66-70-5 kernel: BUG: Bad page map in process vim
-pte:ef3352fe954142 pmd:22f221067
-Dec  9 17:36:37 dhcp-66-70-5 kernel: addr:000000319ce17000
-vm_flags:08000075 anon_vma:(null) mapping:ffff88022efa8848 index:17
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_ops->fault: filemap_fault+0x0/0x593
-Dec  9 17:36:37 dhcp-66-70-5 kernel: vma->vm_file->f_op->mmap:
-generic_file_mmap+0x0/0x63
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Pid: 659, comm: vim Tainted: G
-B      2.6.32 #55
-Dec  9 17:36:37 dhcp-66-70-5 kernel: Call Trace:
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116d32>] ?
-print_bad_pte+0x29b/0x2c2
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81116dd4>] ?
-vm_normal_page+0x7b/0x9f
-Dec  9 17:36:37 dhcp-66-70-5 kernel:  [<ffffffff81118218>] ?
-unmap_vmas+0x584/0xbd5
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff8111eaf9>] ?
-exit_mmap+0x13b/0x232
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff810593de>] ? mmput+0x57/0x123
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff8105f8ce>] ? exit_mm+0x1af/0x1c1
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff81061607>] ? do_exit+0x2f2/0xa61
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff81089da6>] ? up_read+0x10/0x19
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff81061e75>] ?
-sys_exit_group+0x0/0x24
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff81061e8e>] ?
-sys_exit_group+0x19/0x24
-Dec  9 17:36:38 dhcp-66-70-5 kernel:  [<ffffffff810039ab>] ?
-system_call_fastpath+0x16/0x1b
-Dec  9 17:37:57 dhcp-66-70-5 kernel: ------------[ cut here ]------------
+
+Anyway, I browsed 2.6.32 for find_task_by_vpid() / find_task_by_pid_ns() users
+and found below users which lacks read_lock(&tasklist_lock) or rcu_read_lock().
+
+Users missing read_lock(&tasklist_lock) when calling find_task_by_vpid():
+
+  get_net_ns_by_pid() in net/core/net_namespace.c
+  seq_print_userip_objs() in kernel/trace/trace_output.c
+  fill_pid() in kernel/taskstats.c
+  fill_tgid() in kernel/taskstats.c
+  futex_find_get_task() in kernel/futex.c
+  SYSCALL_DEFINE3(get_robust_list) in kernel/futex.c
+  compat_sys_get_robust_list() in kernel/futex_compat.c
+  ptrace_get_task_struct() in kernel/ptrace.c
+  do_send_specific() in kernel/signal.c
+  find_get_context() in kernel/perf_event.c
+  posix_cpu_clock_get() in kernel/posix-cpu-timers.c
+  good_sigevent() in kernel/posix-timers.c
+  attach_task_by_pid() in kernel/cgroup.c
+  SYSCALL_DEFINE1(getpgid) in kernel/sys.c
+  SYSCALL_DEFINE1(getsid) in kernel/sys.c
+  do_sched_setscheduler() in kernel/sched.c
+
+Users missing rcu_read_lock() when calling find_task_by_vpid():
+
+  SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
+  SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
+  cap_get_target_pid() in kernel/capability.c
+  audit_prepare_user_tty() in kernel/audit.c
+  audit_receive_msg() in kernel/audit.c
+  check_clock() in kernel/posix-cpu-timers.c
+  posix_cpu_timer_create() in kernel/posix-cpu-timers.c
+  SYSCALL_DEFINE3(setpriority) in kernel/sys.c
+  SYSCALL_DEFINE2(getpriority) in kernel/sys.c
+  SYSCALL_DEFINE2(setpgid) in kernel/sys.c
+  SYSCALL_DEFINE1(sched_getscheduler) in kernel/sched.c
+  SYSCALL_DEFINE2(sched_getparam) in kernel/sched.c
+  sched_setaffinity() in kernel/sched.c
+  sched_getaffinity() in kernel/sched.c
+  SYSCALL_DEFINE2(sched_rr_get_interval) in kernel/sched.c
+  tomoyo_is_select_one() in security/tomoyo/common.c
+  tomoyo_read_pid() in security/tomoyo/common.c
+  SYSCALL_DEFINE6(move_pages) in mm/migrate.c
+  SYSCALL_DEFINE4(migrate_pages) in mm/mempolicy.c
+  find_process_by_pid() in arch/mips/kernel/mips-mt-fpaff.c
+  pfm_get_task() in arch/ia64/kernel/perfmon.c
+  cxn_pin_by_pid() in arch/frv/mm/mmu-context.c
+
+Users missing read_lock(&tasklist_lock) when calling find_task_by_pid_ns():
+
+  rest_init() in init/main.c
+  proc_pid_lookup() in fs/proc/base.c
+  proc_task_lookup() in fs/proc/base.c
+  first_tid() in fs/proc/base.c
+  getthread() in kernel/kgdb.c
+  mconsole_stack() in arch/um/drivers/mconsole_kern.c
+
+Users missing rcu_read_lock() when calling find_task_by_pid_ns():
+
+  rest_init() in init/main.c
+  getthread() in kernel/kgdb.c
+  mconsole_stack() in arch/um/drivers/mconsole_kern.c
+
+Regarding users which lack rcu_read_lock(), users call
+read_lock(&tasklist_lock) in order to access "struct task_struct" returned
+by find_task_by_pid_ns() but they do not want to be bothered by internal pid
+structure. Thus, the fix would be to add rcu_read_lock() and rcu_read_unlock()
+inside find_task_by_pid_ns().
+
+But how to check users which lack read_lock(&tasklist_lock) but expecting that
+it is safe to access "struct task_struct" returned by find_task_by_pid_ns() ?
