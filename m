@@ -1,94 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZLKFh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZLKGAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753083AbZLKFh0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbZLKFhZ
+	id S1756792AbZLKGAo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 01:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZLKGAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:37:25 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:23522 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZLKFhY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:37:24 -0500
-Subject: Re: [PATCH 3/3] gpiolib: use chip->names for symlinks, always use
- gpioN for device names
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-To: Greg KH <gregkh@suse.de>
-Cc: David Brownell <david-b@pacbell.net>,
-       Jani Nikula <ext-jani.1.nikula@nokia.com>,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       dsilvers@simtec.co.uk, ben@simtec.co.uk, akpm@linux-foundation.org
-In-Reply-To: <20091211043849.GA18007@suse.de>
-References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com>
-	 <200912101939.30446.david-b@pacbell.net> <20091211034711.GA2773@suse.de>
-	 <200912102013.59329.david-b@pacbell.net>  <20091211043849.GA18007@suse.de>
+	Fri, 11 Dec 2009 01:00:41 -0500
+Received: from mga01.intel.com ([192.55.52.88]:37494 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbZLKGAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 01:00:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,379,1257148800"; 
+   d="scan'208";a="521900046"
+Subject: Re: [PATCH -V2] acpi: don't cond_resched if irq is disabled
+From: Lin Ming <ming.m.lin@intel.com>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Xiaotian Feng <dfeng@redhat.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <4B20E7B2.1010208@suse.de>
+References: <20091210100907.GA2446@ucw.cz>
+	 <1260446205-16868-1-git-send-email-dfeng@redhat.com>
+	 <4B20E7B2.1010208@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Organization: Nokia
-Date: Fri, 11 Dec 2009 07:36:11 +0200
-Message-Id: <1260509771.12346.138.camel@localhost>
+Date: Fri, 11 Dec 2009 13:46:13 +0800
+Message-Id: <1260510373.10543.17.camel@minggr.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 11 Dec 2009 05:36:14.0186 (UTC) FILETIME=[DA81BCA0:01CA7A23]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-10 at 20:38 -0800, Greg KH wrote:
-> On Thu, Dec 10, 2009 at 08:13:58PM -0800, David Brownell wrote:
-> > On Thursday 10 December 2009, Greg KH wrote:
-> > > 
-> > > > IMO a "good" solution in this space needs to accept that
-> > > > those names are not going to be globally unique ... but
-> > > > that they'll be unique within some context, of necessity.
-> > > > 
-> > > > If Greg doesn't want to see those names under classes,
-> > > > so be it ... but where should they then appear?
-> > > 
-> > > As a sysfs file within the device directory called 'name'? ?Then just
-> > > grep through the tree to find the right device, that also handles
-> > > duplicates just fine, right?
-> > 
-> > I want a concrete example.  Those chip->names things don't
-> > seem helpful to me though...
-> > 
-> > If for example I were building a JTAG adapter on Linux, it
-> > might consist of a spidev node (chardev) plus a handful of
-> > GPIOs.  So "the device directory" would be the sysfs home
-> > of that spidev node (or some variant)?  And inside that
-> > directory would be files named after various signals that
-> > are used as GPIOs ... maybe SRST, TRST, and DETECT to start
-> > with?  Holding some cookie that gets mapped to those GPIO's
-> > sysfs entries?
+On Thu, 2009-12-10 at 20:21 +0800, Alexey Starikovskiy wrote:
+> Hi Xiaotian,
 > 
-> Um, I really don't know, as I don't know the GPIO subsystem, nor why you
-> all have this problem in the first place :)
+> I think, this is another round of "armor vs. bullet" race... It will hold until
+> might_sleep() logic changes again.
 > 
-> I also find it funny that you think changing the kernel is easier than
-> userspace, that's a strange situation.
+> Please consider using preemptible() -- IMHO this is the check we should perform 
+> in our case of voluntary preemption.
 
-User-space does not know which GPIO number is what. E.g., is the
-"power_button" GPIO number 6 or 99? It just does not have this
-information.
+preemptible() may not work here because it always returns 0 for
+non-preemptible kernel.
 
-Kernel knows this, either because it was compiled for a specific board
-revision, or it got this information from the bootloader.
+#ifdef CONFIG_PREEMPT
+# define preemptible()  (preempt_count() == 0 && !irqs_disabled())
+# define IRQ_EXIT_OFFSET (HARDIRQ_OFFSET-1)
+#else
+# define preemptible()  0
+# define IRQ_EXIT_OFFSET HARDIRQ_OFFSET
+#endif
 
-And the whole idea is to make kernel export this name. Currently, the
-kernel exports only the numbers in sysfs, which is not enough.
+Lin Ming
 
-And because gpiolib is designed as it is designed, we found that having
-additional link in /sys/class/gpio is the nicest solution from gpiolib's
-POW. It just fits naturally to the existing design.
-
-And no, we do not have per-gpio struct device, so we cannot add a new
-"name" attribute there. We need to either persuade you to accept our
-solution or make you take closer look at gpoiolib subsystem and suggest
-us the right way to go :-)
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+> 
+> Regards,
+> Alex.
+> 
+> 
+> Xiaotian Feng пишет:
+> > commit 8bd108d adds preemption point after each opcode parse, then
+> > a sleeping function called from invalid context bug was founded
+> > during suspend/resume stage. this was fixed in commit abe1dfa by
+> > don't cond_resched when irq_disabled. But recent commit 138d156 changes
+> > the behaviour to don't cond_resched when in_atomic. This makes the
+> > sleeping function called from invalid context bug happen again, which
+> > is reported in http://lkml.org/lkml/2009/12/1/371.
+> > 
+> > This patch also fixes http://bugzilla.kernel.org/show_bug.cgi?id=14483
+> > 
+> > Reported-and-bisected-by: Larry Finger <Larry.Finger@lwfinger.net>
+> > Reported-and-bisected-by: Justin P. Mattock <justinmattock@gmail.com>
+> > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> > Cc: Len Brown <lenb@kernel.org>
+> > Cc: Bob Moore <robert.moore@intel.com>
+> > Cc: Lin Ming <ming.m.lin@intel.com>
+> > Cc: Alexey Starikovskiy <astarikovskiy@suse.de>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > ---
+> >  include/acpi/platform/aclinux.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
+> > index 9d7febd..0946997 100644
+> > --- a/include/acpi/platform/aclinux.h
+> > +++ b/include/acpi/platform/aclinux.h
+> > @@ -152,7 +152,7 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
+> >  #include <linux/hardirq.h>
+> >  #define ACPI_PREEMPTION_POINT() \
+> >  	do { \
+> > -		if (!in_atomic_preempt_off()) \
+> > +		if (!in_atomic_preempt_off() && !irqs_disabled()) \
+> >  			cond_resched(); \
+> >  	} while (0)
+> >  
+> 
 
