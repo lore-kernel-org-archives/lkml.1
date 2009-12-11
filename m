@@ -1,120 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbZLKPi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbZLKPhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759283AbZLKPi7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 10:38:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbZLKPhB
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1758971AbZLKPhB (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 11 Dec 2009 10:37:01 -0500
-Received: from mail.windriver.com ([147.11.1.11]:57510 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758930AbZLKPg5 (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbZLKPg6
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 11 Dec 2009 10:36:58 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:58443 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758830AbZLKPg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 10:36:57 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 9/9] kgdb: Always process the whole breakpoint list on activate or deactivate
-Date: Fri, 11 Dec 2009 09:36:17 -0600
-Message-Id: <1260545777-8089-10-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1260545777-8089-9-git-send-email-jason.wessel@windriver.com>
-References: <1260545777-8089-1-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-2-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-3-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-4-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-5-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-6-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-7-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-8-git-send-email-jason.wessel@windriver.com>
- <1260545777-8089-9-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 11 Dec 2009 15:36:36.0019 (UTC) FILETIME=[B9314030:01CA7A77]
+	Fri, 11 Dec 2009 10:36:56 -0500
+Date: Fri, 11 Dec 2009 23:36:58 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Matt Mackall <mpm@selenic.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: hwrng: virtio - Rename driver object to remove section mismatch
+	warning
+Message-ID: <20091211153658.GA1207@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes 2 edge cases in using kgdb in conjunction with gdb.
+Hi:
 
-1) kgdb_deactivate_sw_breakpoints() should process the entire array of
-   breakpoints.  The failure to do so results in breakpoints that you
-   cannot remove, because a break point can only be removed if its
-   state flag is set to BP_SET.
+Finally found the cause of the section mismatch warning in hwrng.
+Apparently in addition to __devexit_p we now have to name the
+variable in a certain way.
 
-   The easy way to duplicate this problem is to plant a break point in
-   a kernel module and then unload the kernel module.
+I'll add this patch.
 
-2) kgdb_activate_sw_breakpoints() should process the entire array of
-   breakpoints.  The failure to do so results in missed breakpoints
-   when a breakpoint cannot be activated.
+commit 8afb602bb676ed7da3cba154f2f5edf3971a582b
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Fri Dec 11 23:35:06 2009 +0800
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- kernel/kgdb.c |   23 +++++++++++++++--------
- 1 files changed, 15 insertions(+), 8 deletions(-)
+    hwrng: virtio - Rename driver object to remove section mismatch warning
+    
+    The section mismatch warning shows up unless the __devexit referencing
+    variable is named in a certain way.
+    
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 8584eac..2eb517e 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -625,7 +625,8 @@ static void kgdb_flush_swbreak_addr(unsigned long addr)
- static int kgdb_activate_sw_breakpoints(void)
+diff --git a/drivers/char/hw_random/virtio-rng.c b/drivers/char/hw_random/virtio-rng.c
+index bdaef8e..64fe0a7 100644
+--- a/drivers/char/hw_random/virtio-rng.c
++++ b/drivers/char/hw_random/virtio-rng.c
+@@ -114,7 +114,7 @@ static struct virtio_device_id id_table[] = {
+ 	{ 0 },
+ };
+ 
+-static struct virtio_driver virtio_rng = {
++static struct virtio_driver virtio_rng_driver = {
+ 	.driver.name =	KBUILD_MODNAME,
+ 	.driver.owner =	THIS_MODULE,
+ 	.id_table =	id_table,
+@@ -124,12 +124,12 @@ static struct virtio_driver virtio_rng = {
+ 
+ static int __init init(void)
  {
- 	unsigned long addr;
--	int error = 0;
-+	int error;
-+	int ret = 0;
- 	int i;
- 
- 	for (i = 0; i < KGDB_MAX_BREAKPOINTS; i++) {
-@@ -635,13 +636,16 @@ static int kgdb_activate_sw_breakpoints(void)
- 		addr = kgdb_break[i].bpt_addr;
- 		error = kgdb_arch_set_breakpoint(addr,
- 				kgdb_break[i].saved_instr);
--		if (error)
--			return error;
-+		if (error) {
-+			ret = error;
-+			printk(KERN_INFO "KGDB: BP install failed: %lx", addr);
-+			continue;
-+		}
- 
- 		kgdb_flush_swbreak_addr(addr);
- 		kgdb_break[i].state = BP_ACTIVE;
- 	}
--	return 0;
-+	return ret;
+-	return register_virtio_driver(&virtio_rng);
++	return register_virtio_driver(&virtio_rng_driver);
  }
  
- static int kgdb_set_sw_break(unsigned long addr)
-@@ -688,7 +692,8 @@ static int kgdb_set_sw_break(unsigned long addr)
- static int kgdb_deactivate_sw_breakpoints(void)
+ static void __exit fini(void)
  {
- 	unsigned long addr;
--	int error = 0;
-+	int error;
-+	int ret = 0;
- 	int i;
- 
- 	for (i = 0; i < KGDB_MAX_BREAKPOINTS; i++) {
-@@ -697,13 +702,15 @@ static int kgdb_deactivate_sw_breakpoints(void)
- 		addr = kgdb_break[i].bpt_addr;
- 		error = kgdb_arch_remove_breakpoint(addr,
- 					kgdb_break[i].saved_instr);
--		if (error)
--			return error;
-+		if (error) {
-+			printk(KERN_INFO "KGDB: BP remove failed: %lx\n", addr);
-+			ret = error;
-+		}
- 
- 		kgdb_flush_swbreak_addr(addr);
- 		kgdb_break[i].state = BP_SET;
- 	}
--	return 0;
-+	return ret;
+-	unregister_virtio_driver(&virtio_rng);
++	unregister_virtio_driver(&virtio_rng_driver);
  }
- 
- static int kgdb_remove_sw_break(unsigned long addr)
+ module_init(init);
+ module_exit(fini);
 -- 
-1.6.4.rc1
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
