@@ -1,56 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZLKMgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZLKMnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZLKMgM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:36:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZLKMgE
+	id S1755320AbZLKMnM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZLKMnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:36:04 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:51800 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754022AbZLKMgC (ORCPT
+	Fri, 11 Dec 2009 07:43:10 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34702 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZLKMnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:36:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=UijPiUEd2/mR3anK0QyRHpihTr9TcdzHc1S0B/fB34YHnx+ElCIgmlukStJhp9BSro
-         saP7ll16mblEIv3uyxo2Pa9Ao2A0Sx5pnQVphFxSecXSrTKILl6XIRmlnyr6cicmHK6B
-         TIyr97Ysm6RytSh4tC6m2p4pLYzxJ4/QJ10/E=
-Date: Fri, 11 Dec 2009 13:36:03 +0100
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-To: linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Add support for Sphairon Homelink 1202 USB WLAN
-Message-ID: <20091211133603.46bec686@strolchi.home.s3e.de>
-In-Reply-To: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
-References: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.1; i586-suse-linux-gnu)
+	Fri, 11 Dec 2009 07:43:08 -0500
+Subject: [PATCH v2 2/4] Defer skb allocation -- new skb_set calls & chain
+ pages in virtio_net
+From: Shirley Ma <mashirle@us.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <1260534506.30371.6.camel@localhost.localdomain>
+References: <1258697359.7416.14.camel@localhost.localdomain>
+	 <200911231123.18898.rusty@rustcorp.com.au>
+	 <20091208122134.GA17286@redhat.com>
+	 <1260534506.30371.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 11 Dec 2009 04:43:02 -0800
+Message-Id: <1260535382.30371.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  8 Dec 2009 15:21:33 +0100
-Stefan Seyfried <stefan.seyfried@googlemail.com> wrote:
+Signed-off-by: Shirley Ma <xma@us.ibm.com>
+--------------
 
-> From: Stefan Seyfried <seife@sphairon.com>
-> 
-> The following two trivial patches add support for this device to
-> zd1211rw (ejecting the virtual USB drive) and ar9170usb (that drives
-> the WLAN chip inside).
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+index bb5eb7b..100b4b9 100644
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -80,29 +80,25 @@ static inline struct skb_vnet_hdr *skb_vnet_hdr(struct sk_buff *skb)
+ 	return (struct skb_vnet_hdr *)skb->cb;
+ }
+ 
+-static void give_a_page(struct virtnet_info *vi, struct page *page)
++static void give_pages(struct virtnet_info *vi, struct page *page)
+ {
+-	page->private = (unsigned long)vi->pages;
+-	vi->pages = page;
+-}
++	struct page *end;
+ 
+-static void trim_pages(struct virtnet_info *vi, struct sk_buff *skb)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+-		give_a_page(vi, skb_shinfo(skb)->frags[i].page);
+-	skb_shinfo(skb)->nr_frags = 0;
+-	skb->data_len = 0;
++	/* Find end of list, sew whole thing into vi->pages. */
++	for (end = page; end->private; end = (struct page *)end->private);
++	end->private = (unsigned long)vi->pages;
++	vi->pages = page;
+ }
+ 
+ static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
+ {
+ 	struct page *p = vi->pages;
+ 
+-	if (p)
++	if (p) {
+ 		vi->pages = (struct page *)p->private;
+-	else
++		/* use private to chain pages for big packets */
++		p->private = 0;
++	} else
+ 		p = alloc_page(gfp_mask);
+ 	return p;
+ }
+@@ -128,6 +124,85 @@ static void skb_xmit_done(struct virtqueue *svq)
+ 	netif_wake_queue(vi->dev);
+ }
+ 
++static int skb_set_frag(struct sk_buff *skb, struct page *page,
++				int offset, int len)
++{
++	int i = skb_shinfo(skb)->nr_frags;
++	skb_frag_t *f;
++
++	i = skb_shinfo(skb)->nr_frags;
++	f = &skb_shinfo(skb)->frags[i];
++	f->page = page;
++	f->page_offset = offset;
++
++	if (len > PAGE_SIZE - f->page_offset)
++		f->size = PAGE_SIZE - f->page_offset;
++	else
++		f->size = len;
++
++	skb_shinfo(skb)->nr_frags++;
++	skb->data_len += f->size;
++	skb->len += f->size;
++
++	len -= f->size;
++	return len;
++}
++
++static struct sk_buff *skb_goodcopy(struct virtnet_info *vi, struct page **page,
++				    unsigned int *len)
++{
++	struct sk_buff *skb;
++	struct skb_vnet_hdr *hdr;
++	int copy, hdr_len, offset;
++	char *p;
++
++	p = page_address(*page);
++
++	skb = netdev_alloc_skb(vi->dev, GOOD_COPY_LEN + NET_IP_ALIGN);
++	if (unlikely(!skb))
++		return NULL;
++
++	skb_reserve(skb, NET_IP_ALIGN);
++	hdr = skb_vnet_hdr(skb);
++
++	if (vi->mergeable_rx_bufs) {
++		hdr_len = sizeof(hdr->mhdr);
++		offset = hdr_len;
++	} else {
++		/* share one page between virtio_net header and data */
++		struct padded_vnet_hdr {
++			struct virtio_net_hdr hdr;
++			/* This padding makes our data 16 byte aligned */
++			char padding[6];
++		};
++		hdr_len = sizeof(hdr->hdr);
++		offset = sizeof(struct padded_vnet_hdr);
++	}
++
++	memcpy(hdr, p, hdr_len);
++
++	*len -= hdr_len;
++	p += offset;
++
++	copy = *len;
++	if (copy > skb_tailroom(skb))
++		copy = skb_tailroom(skb);
++	memcpy(skb_put(skb, copy), p, copy);
++
++	*len -= copy;
++	offset += copy;
++
++	if (*len) {
++		*len = skb_set_frag(skb, *page, offset, *len);
++		*page = (struct page *)(*page)->private;
++	} else {
++		give_pages(vi, *page);
++		*page = NULL;
++	}
++
++	return skb;
++}
++
+ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+ 			unsigned len)
+ {
+@@ -162,7 +237,7 @@ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+ 		len -= copy;
+ 
+ 		if (!len) {
+-			give_a_page(vi, skb_shinfo(skb)->frags[0].page);
++			give_pages(vi, skb_shinfo(skb)->frags[0].page);
+ 			skb_shinfo(skb)->nr_frags--;
+ 		} else {
+ 			skb_shinfo(skb)->frags[0].page_offset +=
 
-Is anyhting wrong with those?
-Are those too trivial and "USB only" and thus better suited for direct
-submission to Greg?
 
-Thanks,
-
-	Stefan
--- 
-Stefan Seyfried
-
-"Any ideas, John?"
-"Well, surrounding them's out."
