@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761121AbZLKLA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbZLKLCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761121AbZLKLA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 06:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760481AbZLKLA0
+	id S1760887AbZLKLCd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 06:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbZLKLC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 06:00:26 -0500
-Received: from mail2.picochip.com ([82.111.145.34]:60115 "EHLO
-	thurne.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760928AbZLKLAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 06:00:25 -0500
-Date: Fri, 11 Dec 2009 11:01:11 +0000
-From: Jamie Iles <jamie.iles@picochip.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jamie Iles <jamie.iles@picochip.com>, linux-kernel@vger.kernel.org,
+	Fri, 11 Dec 2009 06:02:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51060 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755986AbZLKLC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 06:02:28 -0500
+Date: Fri, 11 Dec 2009 12:02:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Will Deacon <will.deacon@arm.com>
+Cc: "'Jamie Iles'" <jamie.iles@picochip.com>, linux-kernel@vger.kernel.org,
        Russell King <linux@arm.linux.org.uk>,
        Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 1/2] perf tools: allow building for ARM
-Message-ID: <20091211110111.GD4164@wear.picochip.com>
-References: <1260523260-15694-1-git-send-email-jamie.iles@picochip.com> <20091211102316.GB16882@elte.hu> <20091211103030.GC4164@wear.picochip.com> <20091211103848.GA9947@elte.hu>
+Message-ID: <20091211110225.GA20831@elte.hu>
+References: <1260523260-15694-1-git-send-email-jamie.iles@picochip.com>
+ <20091211102316.GB16882@elte.hu>
+ <20091211103030.GC4164@wear.picochip.com>
+ <000101ca7a50$b3e2ad70$1ba80850$@deacon@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091211103848.GA9947@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (thurne.picochip.com [172.17.0.105]); Fri, 11 Dec 2009 10:59:58 +0000 (GMT)
+In-Reply-To: <000101ca7a50$b3e2ad70$1ba80850$@deacon@arm.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 11:38:48AM +0100, Ingo Molnar wrote:
-> 
-> * Jamie Iles <jamie.iles@picochip.com> wrote:
-> 
-> > On Fri, Dec 11, 2009 at 11:23:16AM +0100, Ingo Molnar wrote:
-> > > cpu_relax() looks fine, but rmb() seems not to match the one that can be 
-> > > found in arch/arm/:
-> > > 
-> > > arch/arm/include/asm/system.h:#define rmb()		dmb()
-> > > arch/arm/include/asm/system.h:#define rmb()	do { if (arch_is_coherent()) dmb(); else barrier(); } while (0)
-> > > arch/arm/include/asm/system.h:#define smp_rmb()	rmb()
-> > > 
-> > > arch/arm/include/asm/system.h:#define dmb() __asm__ __volatile__ ("dmb" : : : "memory")
-> > > arch/arm/include/asm/system.h:#define dmb() __asm__ __volatile__ ("mcr p15, 0, %0, c7, c10, 5" \
-> > > arch/arm/include/asm/system.h:#define dmb() __asm__ __volatile__ ("" : : : "memory")
-> > > arch/arm/include/asm/system.h:#define dmb() __asm__ __volatile__ ("" : : : "memory")
+
+* Will Deacon <will.deacon@arm.com> wrote:
+
+> > From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org]
+> > On Behalf Of Jamie Iles
+> > Sent: 11 December 2009 10:31
 > >
 > > The implementation of the barriers depend on the CPU arch revision 
-> > which is defined in the kernel config. As the perf tools don't use the 
-> > kernel config, we don't know here what arch revision we're building 
-> > for. Perhaps we need a LINUX_ARM_ARCH parameter when building for ARM 
-> > so we can pick the correct one.
+> > which is defined in the kernel config. As the perf tools don't use 
+> > the kernel config, we don't know here what arch revision we're 
+> > building for. Perhaps we need a LINUX_ARM_ARCH parameter when 
+> > building for ARM so we can pick the correct one.
 > 
-> rmb() is used in two places in perf:
+> Hi Jamie, Ingo,
 > 
->  tools/perf/builtin-record.c:    rmb();
->  tools/perf/builtin-top.c:       rmb();
-> 
-> to interact with the shared kernel/user ring-buffer. Getting a barrier 
-> wrong there may cause hickups in recording.
-> 
-> Could you tell me a bit more about this ARM instruction - is the 'DMB' 
-> instruction used on all SMP ARM cores? Can it be used unconditionally, 
-> or is the instruction undefined on certain versions? To get the ball 
-> rolling we could use it unconditionally in the initial patch, but this 
-> needs to be solved i suspect.
-There are a few cases we need to deal with:
-	- v7 SMP: DMB instruction
-	- v6 SMP: MCR coprocessor instruction
-	- v5 and earlier no instructions for barriers.
+> Surely a better way to proceed with this would be to build the perf 
+> tool as a side effect of building the kernel? That way the relevant 
+> definitions from system.h could be included directly and there would 
+> be no need to duplicate the architectural conditionals in perf.h.
 
-Looking at the TRM for a v7 core (cortex A9) the MCR instruction that v6 uses
-is deprecated but still present. I suspect we could use this to cover the v6
-and v7 cores but we wouldn't be able to do soft perf events on v5 or earlier
-(which don't have hardware counters).
+Might make sense.
 
-Jamie
+> I'm also working on perf-events for ARM and am using:
+> 
+> #define rmb()           asm volatile("mcr p15, 0, %0, c7, c10, 5" :: "r" (0) : "memory")
+> 
+> This will work on v6 and v7 [although the dmb instruction is preferred 
+> here] cores.
+
+Note that the codepath where it's used isnt very performance sensitive 
+(we call it about once per batch of event processing), so we could use 
+the broadest instruction that works on as many cores as possible - to 
+keep things simple.
+
+	Ingo
