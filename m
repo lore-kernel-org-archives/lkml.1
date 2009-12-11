@@ -1,209 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbZLKDUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZLKDUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbZLKDUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 22:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756301AbZLKDUd
+	id S1756258AbZLKDUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 22:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbZLKDUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 22:20:33 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63387 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755862AbZLKDU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 22:20:29 -0500
-Message-ID: <4B21BA6F.2080508@cn.fujitsu.com>
-Date: Fri, 11 Dec 2009 11:20:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 10 Dec 2009 22:20:18 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:30661 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755846AbZLKDUQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 22:20:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=wSE9Vu3C+P/CA9R8jDNYKHCIvYnYgqIAcrexXS5HgHyHpJ2PkeqNr7Mp6C/OtG+8nVmVUF0xDMrVjOExRIqzZnbRKYIqEvcl8oibXDMqGXrDJyFoPnJgzrN8/5M8MWGh0QmAPnyuy+O12ciJDB8I99+Mr+NPnCEXJWXjxPpKw3Q=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: qsvFhuYVM1nzJhODo3RsW62z27kNeqdtYzgmnQazkDvbNsLetwTSuDsewNmJ821PIVnBXuBCDuqxHP3SoLy2J8qtic6sxV0xlr4bFuCy1P.oeVeco2PWL727tHEl_w5uQuNnH2y9CJq4p3WLfoR.prHiL4aiors.EjmTdn5HOrcmujZlIBj0DW6MGb5985VPsImHseVglqs38BbU2pp4JDrA7253tQGe3euw48P6fMWx2dP7.dg7jcnk.ipL9ROl5yU.DcQANya0LxF5nZ2eQanZAThlFW4F_aKHNaYVBd10zaTvzrmTbsC3b8xw7KFeD6UtPakxan1H7VhFiEvGT2DS.B6WwjIU7Fxpxy9l7lfU2jTVvtTWDPhp1ShOLwE-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] drivers/usb/gadget: Use ERR_PTR/IS_ERR
+Date: Thu, 10 Dec 2009 19:20:21 -0800
+User-Agent: KMail/1.9.10
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0912091422350.27028@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912091422350.27028@ask.diku.dk>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [PATCH] tracing: Define kmem_trace_alloc_notrace unconditionally
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912101920.21635.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always define kmem_trace_alloc_{,node}_notrace(), otherwise
-perf-kmem will show wrong stats ifndef CONFIG_KMEMTRACE,
-because a kmalloc() memory allocation may be traced by
-both trace_kmalloc and trace_kmem_cache_alloc.
+On Wednesday 09 December 2009, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> Use ERR_PTR and IS_ERR rather than mixing integers and pointers.
+> 
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression *E;
+> @@
+> 
+> * E < 0
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/slab_def.h |   24 ++----------------------
- include/linux/slub_def.h |   27 +++------------------------
- mm/slab.c                |    4 ----
- mm/slub.c                |    4 ----
- 4 files changed, 5 insertions(+), 54 deletions(-)
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
-index 850d057..1c9ce4b 100644
---- a/include/linux/slab_def.h
-+++ b/include/linux/slab_def.h
-@@ -109,21 +109,12 @@ extern struct cache_sizes malloc_sizes[];
- 
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
-+void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
- 
--#ifdef CONFIG_KMEMTRACE
--extern void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
--extern size_t slab_buffer_size(struct kmem_cache *cachep);
--#else
--static __always_inline void *
--kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
--{
--	return kmem_cache_alloc(cachep, flags);
--}
- static inline size_t slab_buffer_size(struct kmem_cache *cachep)
- {
--	return 0;
-+	return cachep->buffer_size;
- }
--#endif
- 
- static __always_inline void *kmalloc(size_t size, gfp_t flags)
- {
-@@ -165,20 +156,9 @@ found:
- #ifdef CONFIG_NUMA
- extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
- extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
--
--#ifdef CONFIG_KMEMTRACE
- extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
- 					   gfp_t flags,
- 					   int nodeid);
--#else
--static __always_inline void *
--kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
--			      gfp_t flags,
--			      int nodeid)
--{
--	return kmem_cache_alloc_node(cachep, flags, nodeid);
--}
--#endif
- 
- static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index 5ad70a6..5c5ca0c 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -215,18 +215,9 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
- #endif
- 
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
-+void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
- void *__kmalloc(size_t size, gfp_t flags);
- 
--#ifdef CONFIG_KMEMTRACE
--extern void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
--#else
--static __always_inline void *
--kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
--{
--	return kmem_cache_alloc(s, gfpflags);
--}
--#endif
--
- static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
- {
- 	unsigned int order = get_order(size);
-@@ -265,20 +256,8 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
- #ifdef CONFIG_NUMA
- void *__kmalloc_node(size_t size, gfp_t flags, int node);
- void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
--
--#ifdef CONFIG_KMEMTRACE
--extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
--					   gfp_t gfpflags,
--					   int node);
--#else
--static __always_inline void *
--kmem_cache_alloc_node_notrace(struct kmem_cache *s,
--			      gfp_t gfpflags,
--			      int node)
--{
--	return kmem_cache_alloc_node(s, gfpflags, node);
--}
--#endif
-+void *kmem_cache_alloc_node_notrace(struct kmem_cache *s, gfp_t gfpflags,
-+				    int node);
- 
- static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
-diff --git a/mm/slab.c b/mm/slab.c
-index 7dfa481..97c8976 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3558,13 +3558,11 @@ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
--#ifdef CONFIG_KMEMTRACE
- void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
- {
- 	return __cache_alloc(cachep, flags, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(kmem_cache_alloc_notrace);
--#endif
- 
- /**
-  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
-@@ -3621,7 +3619,6 @@ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- 
--#ifdef CONFIG_KMEMTRACE
- void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
- 				    gfp_t flags,
- 				    int nodeid)
-@@ -3630,7 +3627,6 @@ void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
- 				  __builtin_return_address(0));
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
--#endif
- 
- static __always_inline void *
- __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
-diff --git a/mm/slub.c b/mm/slub.c
-index 4996fc7..a1c8fe5 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1754,13 +1754,11 @@ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
- }
- EXPORT_SYMBOL(kmem_cache_alloc);
- 
--#ifdef CONFIG_KMEMTRACE
- void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
- {
- 	return slab_alloc(s, gfpflags, -1, _RET_IP_);
- }
- EXPORT_SYMBOL(kmem_cache_alloc_notrace);
--#endif
- 
- #ifdef CONFIG_NUMA
- void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
-@@ -1775,7 +1773,6 @@ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
- EXPORT_SYMBOL(kmem_cache_alloc_node);
- #endif
- 
--#ifdef CONFIG_KMEMTRACE
- void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
- 				    gfp_t gfpflags,
- 				    int node)
-@@ -1783,7 +1780,6 @@ void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
- 	return slab_alloc(s, gfpflags, node, _RET_IP_);
- }
- EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
--#endif
- 
- /*
-  * Slow patch handling. This may still be called frequently since objects
--- 
-1.6.3
+> 
+> ---
+>  drivers/usb/gadget/f_audio.c        |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/f_audio.c b/drivers/usb/gadget/f_audio.c
+> index c43c89f..0f2eee1 100644
+> --- a/drivers/usb/gadget/f_audio.c
+> +++ b/drivers/usb/gadget/f_audio.c
+> @@ -252,12 +252,12 @@ static struct f_audio_buf *f_audio_buffer_alloc(int buf_size)
+>  
+>  	copy_buf = kzalloc(sizeof *copy_buf, GFP_ATOMIC);
+>  	if (!copy_buf)
+> -		return (struct f_audio_buf *)-ENOMEM;
+> +		return ERR_PTR(-ENOMEM);
+>  
+>  	copy_buf->buf = kzalloc(buf_size, GFP_ATOMIC);
+>  	if (!copy_buf->buf) {
+>  		kfree(copy_buf);
+> -		return (struct f_audio_buf *)-ENOMEM;
+> +		return ERR_PTR(-ENOMEM);
+>  	}
+>  
+>  	return copy_buf;
+> @@ -332,7 +332,7 @@ static int f_audio_out_ep_complete(struct usb_ep *ep, struct usb_request *req)
+>  		list_add_tail(&copy_buf->list, &audio->play_queue);
+>  		schedule_work(&audio->playback_work);
+>  		copy_buf = f_audio_buffer_alloc(audio_buf_size);
+> -		if (copy_buf < 0)
+> +		if (IS_ERR(copy_buf))
+>  			return -ENOMEM;
+>  	}
+>  
+> @@ -576,6 +576,8 @@ static int f_audio_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
+>  			usb_ep_enable(out_ep, audio->out_desc);
+>  			out_ep->driver_data = audio;
+>  			audio->copy_buf = f_audio_buffer_alloc(audio_buf_size);
+> +			if (IS_ERR(audio->copy_buf))
+> +				return -ENOMEM;
+>  
+>  			/*
+>  			 * allocate a bunch of read buffers
+> 
+> 
+
 
