@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933739AbZLKQL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbZLKQP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933739AbZLKQL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 11:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbZLKQLX
+	id S1751388AbZLKQP5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbZLKQPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 11:11:23 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:43410 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933182AbZLKQLW (ORCPT
+	Fri, 11 Dec 2009 11:15:53 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54745 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932508AbZLKQPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 11:11:22 -0500
-Date: Fri, 11 Dec 2009 10:11:11 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [Patch] ipc: HARD_MSGMAX should be higher not lower on 64bit
-Message-ID: <20091211161111.GA31268@us.ibm.com>
-References: <20091211061316.3969.99500.sendpatchset@localhost.localdomain>
- <20091211144433.GA23731@us.ibm.com>
- <20091211152115.GA2414@hack>
+	Fri, 11 Dec 2009 11:15:52 -0500
+Date: Fri, 11 Dec 2009 17:15:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Lin Ming <ming.m.lin@intel.com>, Xiaotian Feng <dfeng@redhat.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>
+Subject: Re: [PATCH -V2] acpi: don't cond_resched if irq is disabled
+Message-ID: <20091211161549.GA15760@elf.ucw.cz>
+References: <20091210100907.GA2446@ucw.cz>
+ <1260446205-16868-1-git-send-email-dfeng@redhat.com>
+ <4B20E7B2.1010208@suse.de>
+ <1260510373.10543.17.camel@minggr.sh.intel.com>
+ <4B223185.80202@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091211152115.GA2414@hack>
+In-Reply-To: <4B223185.80202@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Américo Wang (xiyou.wangcong@gmail.com):
-> 
-> (Hi, I am the same person.)
-> 
-> On Fri, Dec 11, 2009 at 08:44:33AM -0600, Serge E. Hallyn wrote:
-> >Quoting Amerigo Wang (amwang@redhat.com):
-> >> It looks weird that we have HARD_MSGMAX lower on 64bit than on 32bit,
-> >> since usually 64bit machines have more memory than 32bit machines.
-> >
-> >It does look like this may have been an accident.
-> >
-> 
-> OK.
-> 
-> >> Making it higher on 64bit seems reasonable, and keep the original
-> >> number on 32bit.
-> >> 
-> >> Cc: Serge E. Hallyn <serue@us.ibm.com>
-> >> Cc: Cedric Le Goater <clg@fr.ibm.com>
-> >> Signed-off-by: WANG Cong <amwang@redhat.com>
-> >> 
-> >> ---
-> >> diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
-> >> index e408722..07baa38 100644
-> >> --- a/include/linux/ipc_namespace.h
-> >> +++ b/include/linux/ipc_namespace.h
-> >> @@ -87,7 +87,7 @@ extern int mq_init_ns(struct ipc_namespace *ns);
-> >>  /* default values */
-> >>  #define DFLT_QUEUESMAX 256     /* max number of message queues */
-> >>  #define DFLT_MSGMAX    10      /* max number of messages in each queue */
-> >> -#define HARD_MSGMAX    (131072/sizeof(void *))
-> >> +#define HARD_MSGMAX    (32768*sizeof(void *)/4)
-> >
-> >why /4 ?  You're now making it much smaller for 32-bit than it
-> >used to be?
-> >
-> 
-> Yes?
-> 
-> Before this patch, it is 131072/sizeof(void*) = 32768;
-> after this patch, it is 32768*sizeof(void*)/4 = 32768 too.
-> Both on 32bit, of course.
-> 
-> Am I missing something?
+On Fri 2009-12-11 14:48:21, Alexey Starikovskiy wrote:
+> Lin Ming ??????????:
+> > On Thu, 2009-12-10 at 20:21 +0800, Alexey Starikovskiy wrote:
+> >> Hi Xiaotian,
+> >>
+> >> I think, this is another round of "armor vs. bullet" race... It will hold until
+> >> might_sleep() logic changes again.
+> >>
+> >> Please consider using preemptible() -- IMHO this is the check we should perform 
+> >> in our case of voluntary preemption.
+> > 
+> > preemptible() may not work here because it always returns 0 for
+> > non-preemptible kernel.
+> Right, and it means that this machine does not care about low latency that much.
+> The reason we introduced the preemption point in the first place, was unacceptable latency
+> due to very long AML methods on some machines. We don't need this preemption point for normal
+> operation, this is exactly what voluntary preemption does -- allows those in hurry to pass by.
+> If there are none, fine.
+> > 
+> > #ifdef CONFIG_PREEMPT
+> > # define preemptible()  (preempt_count() == 0 && !irqs_disabled())
+> > # define IRQ_EXIT_OFFSET (HARDIRQ_OFFSET-1)
+> > #else
+> > # define preemptible()  0
+> > # define IRQ_EXIT_OFFSET HARDIRQ_OFFSET
+> > #endif
 
-Haha, nope.
+Well, normally we want low latency even for !CONFIG_PREEMPT kernels.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks,
--serge
+Actually, explicit preemption points are NOPs for CONFIG_PREEMPT
+kernels, right?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
