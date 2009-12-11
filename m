@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbZLKOpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758409AbZLKOou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758479AbZLKOpS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 09:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758408AbZLKOpP
+	id S1758409AbZLKOou (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 09:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbZLKOoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 09:45:15 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:40522 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758236AbZLKOpO (ORCPT
+	Fri, 11 Dec 2009 09:44:46 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60733 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757869AbZLKOop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 09:45:14 -0500
-Date: Fri, 11 Dec 2009 09:42:22 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Add support for Sphairon Homelink 1202 USB WLAN
-Message-ID: <20091211144221.GA6663@tuxdriver.com>
-References: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com> <20091211133603.46bec686@strolchi.home.s3e.de>
+	Fri, 11 Dec 2009 09:44:45 -0500
+Date: Fri, 11 Dec 2009 08:44:33 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [Patch] ipc: HARD_MSGMAX should be higher not lower on 64bit
+Message-ID: <20091211144433.GA23731@us.ibm.com>
+References: <20091211061316.3969.99500.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091211133603.46bec686@strolchi.home.s3e.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091211061316.3969.99500.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 01:36:03PM +0100, Stefan Seyfried wrote:
-> On Tue,  8 Dec 2009 15:21:33 +0100
-> Stefan Seyfried <stefan.seyfried@googlemail.com> wrote:
+Quoting Amerigo Wang (amwang@redhat.com):
+> It looks weird that we have HARD_MSGMAX lower on 64bit than on 32bit,
+> since usually 64bit machines have more memory than 32bit machines.
+
+It does look like this may have been an accident.
+
+> Making it higher on 64bit seems reasonable, and keep the original
+> number on 32bit.
 > 
-> > From: Stefan Seyfried <seife@sphairon.com>
-> > 
-> > The following two trivial patches add support for this device to
-> > zd1211rw (ejecting the virtual USB drive) and ar9170usb (that drives
-> > the WLAN chip inside).
+> Cc: Serge E. Hallyn <serue@us.ibm.com>
+> Cc: Cedric Le Goater <clg@fr.ibm.com>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
 > 
-> Is anyhting wrong with those?
-> Are those too trivial and "USB only" and thus better suited for direct
-> submission to Greg?
+> ---
+> diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
+> index e408722..07baa38 100644
+> --- a/include/linux/ipc_namespace.h
+> +++ b/include/linux/ipc_namespace.h
+> @@ -87,7 +87,7 @@ extern int mq_init_ns(struct ipc_namespace *ns);
+>  /* default values */
+>  #define DFLT_QUEUESMAX 256     /* max number of message queues */
+>  #define DFLT_MSGMAX    10      /* max number of messages in each queue */
+> -#define HARD_MSGMAX    (131072/sizeof(void *))
+> +#define HARD_MSGMAX    (32768*sizeof(void *)/4)
 
-Trivial or not, they are wireless LAN patches and they go here.
+why /4 ?  You're now making it much smaller for 32-bit than it
+used to be?
 
-FWIW, you posted them in the middle of the maintainer's merge window
-for 2.6.33.  So for now only fixes are being merged.  I wasn't sure
-these qualified, although upon closer review they may.
-
-It strikes me as strange that you are hitting two drivers to support
-one device.  Are you saying that your ar9170usb has the goofy storage
-device thing using the same USB IDs that the zd1211rw devices like that
-used?  I suppose that makes some sense given the shared heritage...
-
-We did just have a long (and possibly unresolved thread) about
-this type of practice (i.e. eject in the driver) not too long ago.
-But since zd1211rw is already doing this, maybe this patch is
-acceptable...?
-
-Anyway, I have your patch.  Please be patient.
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+>  #define DFLT_MSGSIZEMAX 8192   /* max message size */
+>  #else
+>  static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
