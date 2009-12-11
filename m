@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934839AbZLKHGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934886AbZLKHZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934839AbZLKHGh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 02:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934820AbZLKHGe
+	id S934886AbZLKHZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 02:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934827AbZLKHZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 02:06:34 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62431 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S934815AbZLKHGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 02:06:33 -0500
-Message-ID: <4B21EF6D.4070207@cn.fujitsu.com>
-Date: Fri, 11 Dec 2009 15:06:21 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH 1/2] tracing: Define kmem_trace_alloc_notrace unconditionally
-References: <4B21DD88.7080806@cn.fujitsu.com> <4B21DF33.7010906@cs.helsinki.fi> <4B21E07B.9040301@cn.fujitsu.com> <4B21E806.6070207@cs.helsinki.fi>
-In-Reply-To: <4B21E806.6070207@cs.helsinki.fi>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 11 Dec 2009 02:25:23 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56169 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S934824AbZLKHZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 02:25:23 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/uwP4WMj7uTAwiL63BeGRqH3wEs87rfErbvztyVm
+	t4XNkSbsHq1SsZ
+Subject: Re: check_preempt_tick() check vruntime mistake?
+From: Mike Galbraith <efault@gmx.de>
+To: XingChao Wang <wxc200@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <fd6b62c10912102017g56b8651aj2b8cbe569b0f90a6@mail.gmail.com>
+References: <fd6b62c10912102017g56b8651aj2b8cbe569b0f90a6@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 11 Dec 2009 08:25:26 +0100
+Message-Id: <1260516326.6090.61.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> Always define kmem_trace_alloc_{,node}_notrace(), otherwise
->>>> perf-kmem will show wrong stats ifndef CONFIG_KMEMTRACE,
->>>> because a kmalloc() memory allocation may be traced by
->>>> both trace_kmalloc() and trace_kmem_cache_alloc().
->>>>
->>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->>> Did you check how much this will make kernel text bigger because of the
->>> inlining happening in kmem_cache_alloc_notrace()?
->>>
->>
->> I'm not sure I understood what you meant, but I'm not inlining
->> kmem_cache_alloc_notrace(), and instead I'm removing the inline
->> version in !CONFIG_KMEMTRACE case.
+On Fri, 2009-12-11 at 12:17 +0800, XingChao Wang wrote:
+> Hi Ingo,peter,
 > 
-> In SLUB, slab_alloc() will be inlined to kmem_cache_alloc_notrace()
-> increasing mm/slub.o size so we don't want to define
-> kmem_cache_alloc_notrace() unconditionally.
+> When check_preempt_tick() selects next leftmost sched_entity,it
+> calculates delta vruntime of curr and leftmost entity, then compares
+> it with ideal_runtime. But ideal_runtime is real-time type, need
+> convert it to virtual-time ,right?
+
+Why?  The scheduler converges vruntimes to within min_granularity,
+that's it's mission.  What this test is trying to say is that if the
+awakened task's lag has grown to be more than your quantum while we
+waited for the tick to come along, you need to get out of it's way so it
+can catch up.
+
+Now, there are a couple ~problems in that in it's current form, it
+offers protection to SCHED_BATCH and SCHED_IDLE tasks, and the test..
+
+if (delta_exec < sysctl_sched_min_granularity)
+	return;
+
+..is... not exactly optimal for light weight tasks, but the lighter you
+get, the more likely you'd already have been preempted...
+
+I have a patch which excludes these, and computes min runtime based on
+differential in task weights.  These are the only things I see ~wrong.
+ideal_runtime is weighted, and is our "fair unit of measure", so using
+it to measure acceptable lag distance is correct AFAIKS.
+
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 37087a7..9b903d4 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -840,7 +840,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct
+> sched_entity *curr)
+>                 struct sched_entity *se = __pick_next_entity(cfs_rq);
+>                 s64 delta = curr->vruntime - se->vruntime;
 > 
+> -               if (delta > ideal_runtime)
+> +               if (delta > calc_delta_fair(ideal_runtime, curr))
+>                         resched_task(rq_of(cfs_rq)->curr);
+>         }
+>  }
+> 
+> thanks
+> --wang xingchao
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-I got your point. I'll make a new patch based on your suggestion.
-
-Thanks!
