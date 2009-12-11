@@ -1,108 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbZLKCho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbZLKCmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762261AbZLKCho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 21:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762249AbZLKChm
+	id S1762253AbZLKCmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 21:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762223AbZLKCmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 21:37:42 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42234 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762169AbZLKChh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 21:37:37 -0500
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 11 Dec 2009 13:37:30 +1100
+	Thu, 10 Dec 2009 21:42:20 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62348 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762221AbZLKCmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 21:42:19 -0500
+Message-ID: <4B21B172.2080500@cn.fujitsu.com>
+Date: Fri, 11 Dec 2009 10:41:54 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: rostedt@goodmis.org
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 07/10] trace_syscalls: init print_fmt
+References: <4B1F4EA6.5080105@cn.fujitsu.com> <1260491698.2146.322.camel@gandalf.stny.rr.com>
+In-Reply-To: <1260491698.2146.322.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <19233.45162.919445.731210@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PULL REQUEST] md updates for 2.6.33 merge window
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> On Wed, 2009-12-09 at 15:15 +0800, Lai Jiangshan wrote:
+>> Init print_fmt for trace_syscalls.
+>> It will be used for replacing ->show_format().
+> 
+> This needs more explanation too.
+> 
+>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>> ---
+>> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+>> index 75289f3..dcd8699 100644
+>> --- a/kernel/trace/trace_syscalls.c
+>> +++ b/kernel/trace/trace_syscalls.c
+>> @@ -191,6 +191,61 @@ int syscall_enter_format(struct ftrace_event_call *call, struct trace_seq *s)
+>>  	return trace_seq_putc(s, '\n');
+>>  }
+>>  
+>> +static
+>> +int  __set_enter_print_fmt(struct syscall_metadata *entry, char *buf, int len)
+>> +{
+>> +	int i;
+>> +	int pos = 0;
+>> +
+>> +	pos += snprintf(buf + pos, len > pos ? len - pos : 0, "\"");
+>> +	for (i = 0; i < entry->nb_args; i++) {
+>> +		pos += snprintf(buf + pos, len > pos ? len - pos : 0,
+>> +				"%s: 0x%%0%zulx%s", entry->args[i],
+>> +				sizeof(unsigned long),
+>> +				i == entry->nb_args - 1 ? "" : ", ");
+>> +	}
+>> +	pos += snprintf(buf + pos, len > pos ? len - pos : 0, "\"");
+>> +
+>> +	for (i = 0; i < entry->nb_args; i++) {
+>> +		pos += snprintf(buf + pos, len > pos ? len - pos : 0,
+>> +				", ((unsigned long)(REC->%s))", entry->args[i]);
+> 
+> Yuck! 4 snprintf(buf + pos, len > pos ? len - pos: 0 ...
+> 
+> Please make a wrapper for that.
 
-Greetings,
+Do you mind if I use a macro?
+Readability are still the same... 
 
- here is my offering for 2.6.33, to bring more goodness (and less
- badness?) to md/RAID.
+static
+int  __set_enter_print_fmt(struct syscall_metadata *entry, char *buf, int len)
+{
+	int i;
+	int pos = 0;
 
- Probably the most significant thing is that we now support barriers
- on all raid levels, so I expect to hear complaints that RAID5 just
- got slower :-(
+#define BUF_PRINTF(fmt...)						\
+do {									\
+	pos += snprintf(buf + pos, len > pos ? len - pos : 0, fmt);	\
+} while (0)
 
- There are also some changes to write-intent-bitmap handling so that
- the bitmaps can be inspected and manipulated through sysfs.
+	BUF_PRINTF("\"");
+	for (i = 0; i < entry->nb_args; i++) {
+		BUF_PRINTF("%s: 0x%%0%zulx%s", entry->args[i],
+				sizeof(unsigned long),
+				i == entry->nb_args - 1 ? "\"" : ", ");
+	}
 
- and it is possible to convert a 2-disk RAID5 to RAID1 (so if you
- converted a RAID1 to RAID5 by mistake, you can now convert it back).
+	for (i = 0; i < entry->nb_args; i++)
+		BUF_PRINTF(", ((unsigned long)(REC->%s))", entry->args[i]);
 
- ... as well as the usual mix of minor improvements and little bug
- fixes.
+#under BUF_PRINTF
 
-Thanks,
-NeilBrown
+	/* return the length of print_fmt */
+	return pos;
+}
 
+> 
+> Actually, this could use the new trace_seq code if I separate the
+> buffer. You would just need to do:
+> 
+> 	struct trace_seq s;
 
-The following changes since commit 3067e02f8f3ae2f3f02ba76400d03b8bcb4942b0:
-  Linus Torvalds (1):
-        Merge branch 'acpica' of git://git.kernel.org/.../lenb/linux-acpi-2.6
+I think trace_seq can not help.
+__set_enter_print_fmt() is called twice.
+We calculate the length at the first time(don't write any thing),
+then allocate memory and then really "snprintf" string into the buffer.
 
-are available in the git repository at:
+-- Lai
 
-  git://neil.brown.name/md for-linus
-
-Arnd Bergmann (1):
-      md: move compat_ioctl handling into md.c
-
-NeilBrown (22):
-      md/bitmap: protect against bitmap removal while being updated.
-      md/raid5: remove some sparse warnings.
-      md: remove sparse warning:symbol XXX was not declared.
-      md: adjust resync_min usefully when resync aborts.
-      md: don't reset curr_resync_completed after an interrupted resync
-      md: support barrier requests on all personalities.
-      md/raid5: don't complete make_request on barrier until writes are scheduled
-      md: add honouring of suspend_{lo,hi} to raid1.
-      md/raid1: add takeover support for raid5->raid1
-      md: collect bitmap-specific fields into one structure.
-      md: move offset, daemon_sleep and chunksize out of bitmap structure
-      md: change daemon_sleep to be in 'jiffies' rather than 'seconds'.
-      md: remove needless setting of thread->timeout in raid10_quiesce
-      md: support bitmap offset appropriate for external-metadata arrays.
-      md: factor out parsing of fixed-point numbers
-      md: support updating bitmap parameters via sysfs.
-      md/bitmap: move setting of daemon_lastrun out of bitmap_read_sb
-      md: Support write-intent bitmaps with externally managed metadata.
-      md/bitmap: update dirty flag when bitmap bits are explicitly set.
-      md: add MODULE_DESCRIPTION for all md related modules.
-      md: revise Kconfig help for MD_MULTIPATH
-      md: integrate spares into array at earliest opportunity.
-
-Robert Becker (2):
-      md/raid10: print more useful messages on device failure.
-      raid: improve MD/raid10 handling of correctable read errors.
-
- Documentation/md.txt    |   45 +++++
- drivers/md/Kconfig      |    9 +-
- drivers/md/bitmap.c     |  449 +++++++++++++++++++++++++++++++++++++++++------
- drivers/md/bitmap.h     |   19 +--
- drivers/md/faulty.c     |    1 +
- drivers/md/linear.c     |    3 +-
- drivers/md/md.c         |  344 ++++++++++++++++++++++++++++--------
- drivers/md/md.h         |   51 ++++--
- drivers/md/multipath.c  |    3 +-
- drivers/md/raid0.c      |    3 +-
- drivers/md/raid1.c      |  217 +++++++++++++++--------
- drivers/md/raid1.h      |    5 +
- drivers/md/raid10.c     |  116 +++++++++++--
- drivers/md/raid5.c      |   63 +++++--
- drivers/md/raid6algos.c |   20 +--
- fs/compat_ioctl.c       |   22 ---
- include/linux/raid/pq.h |   19 ++
- 17 files changed, 1077 insertions(+), 312 deletions(-)
+> 
+> 	trace_seq_init(&s, buf, len);
+> 
+> 	trace_seq_putc(&s, '"');
+> 	for (i = 0; i < entry->nb_args; i++)
+> 		trace_seq_printf(&s, "%s: 0x%%0%zulx%s", entry->args[i],
+> 				sizeof(unsigned long),
+> 				i == entry->nb_args - 1 ? "" : ", ");
+> 
+> 	trace_seq_putc(&s, '"');
+> 
+> 	for (i = 0; i < entry->nb_args; i++)
+> 		trace_seq_printf(&s, ", ((unsigned long)(REC->%s)",
+> 				entry->args[i]);
+> 
+> 	return s.len;
+> 
+> 
+> Looks much better, and less error prone.
+> 
+> -- Steve
+> 
