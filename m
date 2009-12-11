@@ -1,56 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZLKKQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZLKKOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbZLKKQK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 05:16:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZLKKQJ
+	id S1756685AbZLKKOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 05:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbZLKKOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 05:16:09 -0500
-Received: from mail1.radix.net ([207.192.128.31]:37990 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754523AbZLKKQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 05:16:08 -0500
-Subject: Re: [git pull] drm
-From: Andy Walls <awalls@radix.net>
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
-       stephane.marchesin@gmail.com, madman2003@gmail.com,
-       xavier.bestel@free.fr, airlied@linux.ie, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-In-Reply-To: <20091211.013436.189815985.davem@davemloft.net>
-References: <20091210235835.20e2269d@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain>
-	 <20091211091843.0a543136@lxorguk.ukuu.org.uk>
-	 <20091211.013436.189815985.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 11 Dec 2009 05:15:04 -0500
-Message-Id: <1260526504.3087.52.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Dec 2009 05:14:16 -0500
+Received: from mga05.intel.com ([192.55.52.89]:43373 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754802AbZLKKOP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 05:14:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,381,1257148800"; 
+   d="scan'208";a="521972414"
+Date: Fri, 11 Dec 2009 11:15:56 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+Cc: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       peter.de-schrijver@nokia.com, eduardo.valentin@nokia.com
+Subject: Re: [PATCHv2 1/1] twl4030-mfd: Add all twl4030 regulators to the
+ twl4030 mfd driver
+Message-ID: <20091211101555.GA5863@sortiz.org>
+References: <1259144042-9662-1-git-send-email-ext-juha.1.keski-saari@nokia.com>
+ <1259144042-9662-2-git-send-email-ext-juha.1.keski-saari@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259144042-9662-2-git-send-email-ext-juha.1.keski-saari@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 01:34 -0800, David Miller wrote:
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Date: Fri, 11 Dec 2009 09:18:43 +0000
+Hi Juha,
 
-> > You also
-> > previously said you don't want to merge stuff when the authors don't want
-> > it merged.
+On Wed, Nov 25, 2009 at 12:14:02PM +0200, Juha Keski-Saari wrote:
+> Add all twl4030 regulators to the twl4030 mfd driver and
+> twl4030_platform_data
+Patch applied, thanks.
 
-> However, one point remains is that we were told, by Dave Airlie, that
-> they didn't want this code merged because the one person being paid to
-> work on it "would be overwhelmed" if the code went upstream.
+Cheers,
+Samuel.
+
+
+> Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+> ---
+>  drivers/mfd/twl4030-core.c  |   26 ++++++++++++++++++++++++--
+>  include/linux/i2c/twl4030.h |    8 ++++++--
+>  2 files changed, 30 insertions(+), 4 deletions(-)
 > 
-> I distinctly remember this being mentioned at the kernel summit.
+> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+> index 0ee81e4..2d659e6 100644
+> --- a/drivers/mfd/twl4030-core.c
+> +++ b/drivers/mfd/twl4030-core.c
+> @@ -572,11 +572,21 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>  	}
+>  
+>  	if (twl_has_regulator()) {
+> -		/*
+>  		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
+>  		if (IS_ERR(child))
+>  			return PTR_ERR(child);
+> -		*/
+> +
+> +		child = add_regulator(TWL4030_REG_VIO, pdata->vio);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+> +
+> +		child = add_regulator(TWL4030_REG_VDD1, pdata->vdd1);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+> +
+> +		child = add_regulator(TWL4030_REG_VDD2, pdata->vdd2);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+>  
+>  		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
+>  		if (IS_ERR(child))
+> @@ -592,6 +602,18 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>  				pdata->vaux2);
+>  		if (IS_ERR(child))
+>  			return PTR_ERR(child);
+> +
+> +		child = add_regulator(TWL4030_REG_VINTANA1, pdata->vintana1);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+> +
+> +		child = add_regulator(TWL4030_REG_VINTANA2, pdata->vintana2);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+> +
+> +		child = add_regulator(TWL4030_REG_VINTDIG, pdata->vintdig);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+>  	}
+>  
+>  	if (twl_has_regulator() && usb_transceiver) {
+> diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
+> index c188961..bf143d8 100644
+> --- a/include/linux/i2c/twl4030.h
+> +++ b/include/linux/i2c/twl4030.h
+> @@ -440,8 +440,12 @@ struct twl4030_platform_data {
+>  	struct regulator_init_data		*vaux2;
+>  	struct regulator_init_data		*vaux3;
+>  	struct regulator_init_data		*vaux4;
+> -
+> -	/* REVISIT more to come ... _nothing_ should be hard-wired */
+> +	struct regulator_init_data		*vio;
+> +	struct regulator_init_data		*vdd1;
+> +	struct regulator_init_data		*vdd2;
+> +	struct regulator_init_data		*vintana1;
+> +	struct regulator_init_data		*vintana2;
+> +	struct regulator_init_data		*vintdig;
+>  };
+>  
+>  /*----------------------------------------------------------------------*/
+> -- 
+> 1.6.3.3
+> 
 
-That reason for not merging seems to fall squarely in the "authors don't
-want it merged" category.
-
-Your point does highlight, though, that it is worth talking to the
-author directly to understand the obstacles, as Alan mentioned.
-
-Regards,
-Andy
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
