@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbZLKNEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZLKNGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbZLKNEa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZLKNEZ
+	id S1752919AbZLKNGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZLKNGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:04:25 -0500
-Received: from mail2.picochip.com ([82.111.145.34]:42747 "EHLO
-	thurne.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751199AbZLKNEZ (ORCPT
+	Fri, 11 Dec 2009 08:06:31 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:51884 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbZLKNGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:04:25 -0500
-Date: Fri, 11 Dec 2009 13:04:08 +0000
-From: Jamie Iles <jamie.iles@picochip.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, jamie.iles@picochip.com, mikpe@it.uu.se,
-       linux@arm.linux.org.uk, tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/urgent] perf tools: Allow building for ARM
-Message-ID: <20091211130408.GG4164@wear.picochip.com>
-References: <1260534009-5394-1-git-send-email-jamie.iles@picochip.com> <tip-58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f@git.kernel.org>
+	Fri, 11 Dec 2009 08:06:30 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: What's in asm-generic.git
+Date: Fri, 11 Dec 2009 14:06:33 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Mike Frysinger <vapier.adi@gmail.com>, liqin.chen@sunplusct.com,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com> <200912102225.05280.arnd@arndb.de> <10f740e80912110454u172fc2cfye30da6ca0e0f0af0@mail.gmail.com>
+In-Reply-To: <10f740e80912110454u172fc2cfye30da6ca0e0f0af0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (thurne.picochip.com [172.17.0.105]); Fri, 11 Dec 2009 13:02:54 +0000 (GMT)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912111406.33424.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18aWjRKaxvPFDmwwVuI+GeWhBEtBKCmGaohATK
+ CSvcAHuXmHTFLskVGpid+YM+2EjoHo+ZbfawKdR9nwiSzrHpJs
+ LLqDnk11g780m+O3mCffw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 12:54:33PM +0000, tip-bot for Jamie Iles wrote:
-> Commit-ID:  58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
-> Gitweb:     http://git.kernel.org/tip/58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
-> Author:     Jamie Iles <jamie.iles@picochip.com>
-> AuthorDate: Fri, 11 Dec 2009 12:20:09 +0000
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 11 Dec 2009 13:50:21 +0100
-> 
-> perf tools: Allow building for ARM
-> 
-> Add definitions of rmb() and cpu_relax() and include the ARM
-> unistd.h header. The __kuser_memory_barrier helper in the helper
-> page is used to provide the correct memory barrier depending on
-> the CPU type.
-> 
-> [ The rmb() will work on v6 and v7, segfault on v5. Dynamic
->   detection to add v5 support will be added later. ]
-Sorry Ingo, my comment probably wasn't clear enough. The helper that Mikael
-suggested should work for _all_ ARM processors including v5 and earlier. It
-will just be a branch to a nop.
+On Friday 11 December 2009, Geert Uytterhoeven wrote:
+> 10+ architectures already have sys_[sg]et_thread_area of have reserved
+> entries for it.
 
-Jamie
+No, those are just the ones that blindly copied the unistd.h file from i386.
+As I said, only i386 and mips implement it, and I would assume that this
+is unlikely to change.
+
+	Arnd
