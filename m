@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762517AbZLKElb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbZLKExr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762517AbZLKElb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761687AbZLKEgx
+	id S1762596AbZLKExr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZLKExd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:36:53 -0500
-Received: from kroah.org ([198.145.64.141]:36851 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:53:33 -0500
+Received: from kroah.org ([198.145.64.141]:36856 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760465AbZLKEgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:04 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:52 2009
-Message-Id: <20091211042752.421711582@linux.site>
+	id S1759457AbZLKEgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:05 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:53 2009
+Message-Id: <20091211042753.004509392@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:25:14 -0800
+Date: Thu, 10 Dec 2009 20:25:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Sandeen <sandeen@redhat.com>, "Theodore Tso" <tytso@mit.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [36/90] ext4: limit block allocations for indirect-block files to < 2^32
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [37/90] ext4: store EXT4_EXT_MIGRATE in i_state instead of i_flags
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0036-ext4-limit-block-allocations-for-indirect-block-file.patch
+Content-Disposition: inline; filename=0037-ext4-store-EXT4_EXT_MIGRATE-in-i_state-instead-of-i_.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,178 +30,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit fb0a387dcdcd21aab1b09ee7fd80b7c979bdbbfd)
+(cherry picked from commit 1b9c12f44c1eb614fd3b8822bfe8f1f5d8e53737)
 
-Today, the ext4 allocator will happily allocate blocks past
-2^32 for indirect-block files, which results in the block
-numbers getting truncated, and corruption ensues.
+EXT4_EXT_MIGRATE is only intended to be used for an in-memory flag,
+and the hex value assigned to it collides with FS_DIRECTIO_FL (which
+is also stored in i_flags).  There's no reason for the
+EXT4_EXT_MIGRATE bit to be stored in i_flags, so we switch it to use
+i_state instead.
 
-This patch limits such allocations to < 2^32, and adds
-BUG_ONs if we do get blocks larger than that.
-
-This should address RH Bug 519471, ext4 bitmap allocator
-must limit blocks to < 2^32
-
-* ext4_find_goal() is modified to choose a goal < UINT_MAX,
-  so that our starting point is in an acceptable range.
-
-* ext4_xattr_block_set() is modified such that the goal block
-  is < UINT_MAX, as above.
-
-* ext4_mb_regular_allocator() is modified so that the group
-  search does not continue into groups which are too high
-
-* ext4_mb_use_preallocated() has a check that we don't use
-  preallocated space which is too far out
-
-* ext4_alloc_blocks() and ext4_xattr_block_set() add some BUG_ONs
-
-No attempt has been made to limit inode locations to < 2^32,
-so we may wind up with blocks far from their inodes.  Doing
-this much already will lead to some odd ENOSPC issues when the
-"lower 32" gets full, and further restricting inodes could
-make that even weirder.
-
-For high inodes, choosing a goal of the original, % UINT_MAX,
-may be a bit odd, but then we're in an odd situation anyway,
-and I don't know of a better heuristic.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h    |    4 ++++
- fs/ext4/inode.c   |   11 ++++++++++-
- fs/ext4/mballoc.c |    9 +++++++++
- fs/ext4/super.c   |    2 ++
- fs/ext4/xattr.c   |   15 +++++++++++++--
- 5 files changed, 38 insertions(+), 3 deletions(-)
+ fs/ext4/ext4.h    |    2 +-
+ fs/ext4/inode.c   |    6 ++----
+ fs/ext4/migrate.c |   20 ++++++++++----------
+ 3 files changed, 13 insertions(+), 15 deletions(-)
 
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -388,6 +388,9 @@ struct ext4_mount_options {
- #endif
- };
+@@ -253,7 +253,6 @@ struct flex_groups {
+ #define EXT4_TOPDIR_FL			0x00020000 /* Top of directory hierarchies*/
+ #define EXT4_HUGE_FILE_FL               0x00040000 /* Set to each huge file */
+ #define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
+-#define EXT4_EXT_MIGRATE		0x00100000 /* Inode is migrating */
+ #define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
  
-+/* Max physical block we can addres w/o extents */
-+#define EXT4_MAX_BLOCK_FILE_PHYS	0xFFFFFFFF
-+
- /*
-  * Structure of an inode on the disk
-  */
-@@ -843,6 +846,7 @@ struct ext4_sb_info {
- 	unsigned long s_gdb_count;	/* Number of group descriptor blocks */
- 	unsigned long s_desc_per_block;	/* Number of group descriptors per block */
- 	ext4_group_t s_groups_count;	/* Number of groups in the fs */
-+	ext4_group_t s_blockfile_groups;/* Groups acceptable for non-extent files */
- 	unsigned long s_overhead_last;  /* Last calculated overhead */
- 	unsigned long s_blocks_last;    /* Last seen block count */
- 	loff_t s_bitmap_maxbytes;	/* max bytes for bitmap files */
+ #define EXT4_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
+@@ -291,6 +290,7 @@ static inline __u32 ext4_mask_flags(umod
+ #define EXT4_STATE_XATTR		0x00000004 /* has in-inode xattrs */
+ #define EXT4_STATE_NO_EXPAND		0x00000008 /* No space for expansion */
+ #define EXT4_STATE_DA_ALLOC_CLOSE	0x00000010 /* Alloc DA blks on close */
++#define EXT4_STATE_EXT_MIGRATE		0x00000020 /* Inode is migrating */
+ 
+ /* Used to pass group descriptor data when online resize is done */
+ struct ext4_new_group_input {
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -564,15 +564,21 @@ static ext4_fsblk_t ext4_find_near(struc
-  *
-  *	Normally this function find the preferred place for block allocation,
-  *	returns it.
-+ *	Because this is only used for non-extent files, we limit the block nr
-+ *	to 32 bits.
-  */
- static ext4_fsblk_t ext4_find_goal(struct inode *inode, ext4_lblk_t block,
- 				   Indirect *partial)
- {
-+	ext4_fsblk_t goal;
-+
- 	/*
- 	 * XXX need to get goal block from mballoc's data structures
- 	 */
- 
--	return ext4_find_near(inode, partial);
-+	goal = ext4_find_near(inode, partial);
-+	goal = goal & EXT4_MAX_BLOCK_FILE_PHYS;
-+	return goal;
- }
- 
- /**
-@@ -653,6 +659,8 @@ static int ext4_alloc_blocks(handle_t *h
- 		if (*err)
- 			goto failed_out;
- 
-+		BUG_ON(current_block + count > EXT4_MAX_BLOCK_FILE_PHYS);
-+
- 		target -= count;
- 		/* allocate blocks for indirect blocks */
- 		while (index < indirect_blks && count) {
-@@ -687,6 +695,7 @@ static int ext4_alloc_blocks(handle_t *h
- 		ar.flags = EXT4_MB_HINT_DATA;
- 
- 	current_block = ext4_mb_new_blocks(handle, &ar, err);
-+	BUG_ON(current_block + ar.len > EXT4_MAX_BLOCK_FILE_PHYS);
- 
- 	if (*err && (target == blks)) {
- 		/*
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -1960,6 +1960,10 @@ ext4_mb_regular_allocator(struct ext4_al
- 	sb = ac->ac_sb;
- 	sbi = EXT4_SB(sb);
- 	ngroups = ext4_get_groups_count(sb);
-+	/* non-extent files are limited to low blocks/groups */
-+	if (!(EXT4_I(ac->ac_inode)->i_flags & EXT4_EXTENTS_FL))
-+		ngroups = sbi->s_blockfile_groups;
-+
- 	BUG_ON(ac->ac_status == AC_STATUS_FOUND);
- 
- 	/* first, try the goal */
-@@ -3355,6 +3359,11 @@ ext4_mb_use_preallocated(struct ext4_all
- 			ac->ac_o_ex.fe_logical >= pa->pa_lstart + pa->pa_len)
- 			continue;
- 
-+		/* non-extent files can't have physical blocks past 2^32 */
-+		if (!(EXT4_I(ac->ac_inode)->i_flags & EXT4_EXTENTS_FL) &&
-+			pa->pa_pstart + pa->pa_len > EXT4_MAX_BLOCK_FILE_PHYS)
-+			continue;
-+
- 		/* found preallocated blocks, use them */
- 		spin_lock(&pa->pa_lock);
- 		if (pa->pa_deleted == 0 && pa->pa_free) {
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2618,6 +2618,8 @@ static int ext4_fill_super(struct super_
- 		goto failed_mount;
+@@ -1256,8 +1256,7 @@ int ext4_get_blocks(handle_t *handle, st
+ 			 * i_data's format changing.  Force the migrate
+ 			 * to fail by clearing migrate flags
+ 			 */
+-			EXT4_I(inode)->i_flags = EXT4_I(inode)->i_flags &
+-							~EXT4_EXT_MIGRATE;
++			EXT4_I(inode)->i_state &= ~EXT4_STATE_EXT_MIGRATE;
+ 		}
  	}
- 	sbi->s_groups_count = blocks_count;
-+	sbi->s_blockfile_groups = min_t(ext4_group_t, sbi->s_groups_count,
-+			(EXT4_MAX_BLOCK_FILE_PHYS / EXT4_BLOCKS_PER_GROUP(sb)));
- 	db_count = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) /
- 		   EXT4_DESC_PER_BLOCK(sb);
- 	sbi->s_group_desc = kmalloc(db_count * sizeof(struct buffer_head *),
---- a/fs/ext4/xattr.c
-+++ b/fs/ext4/xattr.c
-@@ -810,12 +810,23 @@ inserted:
- 			get_bh(new_bh);
- 		} else {
- 			/* We need to allocate a new block */
--			ext4_fsblk_t goal = ext4_group_first_block_no(sb,
-+			ext4_fsblk_t goal, block;
-+
-+			goal = ext4_group_first_block_no(sb,
- 						EXT4_I(inode)->i_block_group);
--			ext4_fsblk_t block = ext4_new_meta_blocks(handle, inode,
-+
-+			/* non-extent files can't have physical blocks past 2^32 */
-+			if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
-+				goal = goal & EXT4_MAX_BLOCK_FILE_PHYS;
-+
-+			block = ext4_new_meta_blocks(handle, inode,
- 						  goal, NULL, &error);
- 			if (error)
- 				goto cleanup;
-+
-+			if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
-+				BUG_ON(block > EXT4_MAX_BLOCK_FILE_PHYS);
-+
- 			ea_idebug(inode, "creating block %d", block);
  
- 			new_bh = sb_getblk(sb, block);
+@@ -4608,8 +4607,7 @@ static int ext4_do_update_inode(handle_t
+ 	if (ext4_inode_blocks_set(handle, raw_inode, ei))
+ 		goto out_brelse;
+ 	raw_inode->i_dtime = cpu_to_le32(ei->i_dtime);
+-	/* clear the migrate flag in the raw_inode */
+-	raw_inode->i_flags = cpu_to_le32(ei->i_flags & ~EXT4_EXT_MIGRATE);
++	raw_inode->i_flags = cpu_to_le32(ei->i_flags);
+ 	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
+ 	    cpu_to_le32(EXT4_OS_HURD))
+ 		raw_inode->i_file_acl_high =
+--- a/fs/ext4/migrate.c
++++ b/fs/ext4/migrate.c
+@@ -353,17 +353,16 @@ static int ext4_ext_swap_inode_data(hand
+ 
+ 	down_write(&EXT4_I(inode)->i_data_sem);
+ 	/*
+-	 * if EXT4_EXT_MIGRATE is cleared a block allocation
++	 * if EXT4_STATE_EXT_MIGRATE is cleared a block allocation
+ 	 * happened after we started the migrate. We need to
+ 	 * fail the migrate
+ 	 */
+-	if (!(EXT4_I(inode)->i_flags & EXT4_EXT_MIGRATE)) {
++	if (!(EXT4_I(inode)->i_state & EXT4_STATE_EXT_MIGRATE)) {
+ 		retval = -EAGAIN;
+ 		up_write(&EXT4_I(inode)->i_data_sem);
+ 		goto err_out;
+ 	} else
+-		EXT4_I(inode)->i_flags = EXT4_I(inode)->i_flags &
+-							~EXT4_EXT_MIGRATE;
++		EXT4_I(inode)->i_state &= ~EXT4_STATE_EXT_MIGRATE;
+ 	/*
+ 	 * We have the extent map build with the tmp inode.
+ 	 * Now copy the i_data across
+@@ -517,14 +516,15 @@ int ext4_ext_migrate(struct inode *inode
+ 	 * when we add extents we extent the journal
+ 	 */
+ 	/*
+-	 * Even though we take i_mutex we can still cause block allocation
+-	 * via mmap write to holes. If we have allocated new blocks we fail
+-	 * migrate.  New block allocation will clear EXT4_EXT_MIGRATE flag.
+-	 * The flag is updated with i_data_sem held to prevent racing with
+-	 * block allocation.
++	 * Even though we take i_mutex we can still cause block
++	 * allocation via mmap write to holes. If we have allocated
++	 * new blocks we fail migrate.  New block allocation will
++	 * clear EXT4_STATE_EXT_MIGRATE flag.  The flag is updated
++	 * with i_data_sem held to prevent racing with block
++	 * allocation.
+ 	 */
+ 	down_read((&EXT4_I(inode)->i_data_sem));
+-	EXT4_I(inode)->i_flags = EXT4_I(inode)->i_flags | EXT4_EXT_MIGRATE;
++	EXT4_I(inode)->i_state |= EXT4_STATE_EXT_MIGRATE;
+ 	up_read((&EXT4_I(inode)->i_data_sem));
+ 
+ 	handle = ext4_journal_start(inode, 1);
 
 
