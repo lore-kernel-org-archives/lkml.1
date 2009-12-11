@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935153AbZLKXlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbZLKQHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935153AbZLKXlG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:41:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934993AbZLKXk5
+	id S933605AbZLKQHB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:07:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933481AbZLKQG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:40:57 -0500
-Received: from kroah.org ([198.145.64.141]:46893 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934338AbZLKXkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:40:22 -0500
-Date: Fri, 11 Dec 2009 15:40:17 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org
-Subject: Re: [GIT PATCH] STAGING patches for 2.6.33-git
-Message-ID: <20091211234017.GA11006@kroah.com>
-References: <20091211212704.GC6624@kroah.com>
- <alpine.LFD.2.00.0912111527480.3526@localhost.localdomain>
-MIME-Version: 1.0
+	Fri, 11 Dec 2009 11:06:57 -0500
+Received: from mga07.intel.com ([143.182.124.22]:62758 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933136AbZLKQGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 11:06:55 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="221616542"
+Date: Fri, 11 Dec 2009 18:42:35 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: jbarnes@virtuousgeek.org
+Cc: andi@firstfloor.org, ying.huang@intel.com, kent.liu@intel.com,
+       youquan.song@intel.com, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: [PATCH]PCIe AER: fix aer inject result in kernel oops
+Message-ID: <20091211234235.GA7196@youquan-linux.bj.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912111527480.3526@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 03:29:09PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 11 Dec 2009, Greg KH wrote:
-> >
-> > Here is the big staging merge for the 2.6.33-git tree
-> 
-> "B.A.T.M.A.N. Advanced Meshing Protocol"?
+If BIOS does not export _OSC to allow OS take over the PCIe AER, pcie aer
+driver will not initialize aer service. But aer_inject driver does not check
+this scenario, it results in kernel oops when inject aer error to OS.
+Some of kernel oops information as following:
 
-I just take the patches, I don't pick the names :)
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000350
+IP: [<ffffffff812e08f7>] _spin_lock_irqsave+0xc/0x23
+PGD 155c41067 PUD 157fe0067 PMD 0 
+Oops: 0002 [#1] SMP 
+Pid: 5119, comm: aer-inject Not tainted 2.6.32-rc8-mce #2         
+RIP: 0010:[<ffffffff812e08f7>]  [<ffffffff812e08f7>] _spin_lock_irqsave+0xc/0x23
+RSP: 0018:ffff880157f81e28  EFLAGS: 00010096
+RAX: 0000000000000296 RBX: 0000000000000000 RCX: 0000000000000100
+RDX: 0000000000010000 RSI: 0000000000000246 RDI: 0000000000000350
+RBP: ffff880157f81e28 R08: 0000000000000004 R09: ffff880157f81dac
+R10: ffff88015a666f60 R11: ffff88015a666f40 R12: ffff88015758cc00
+R13: 0000000000000350 R14: 0000000000000000 R15: 0000000000000100
+FS:  00007f4d4a66e6f0(0000) GS:ffff8800282e0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000350 CR3: 000000015661a000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process aer-inject (pid: 5119, threadinfo ffff880157f80000, task ffff8801585f4340)
+Stack:
+ ffff880157f81e78 ffffffff811b1615 ffff880157f81e78 ffffffff81222823
+Call Trace:
+ [<ffffffff811b1615>] aer_irq+0x38/0x117
+ [<ffffffff81222823>] ? device_for_each_child+0x5f/0x6f
+ [<ffffffffa00967bf>] aer_inject_write+0x409/0x45e [aer_inject]
+ [<ffffffff810eb80e>] vfs_write+0xae/0x16a
+ [<ffffffff810eb98e>] sys_write+0x47/0x6e
+ [<ffffffff8100ba2b>] system_call_fastpath+0x16/0x1b
+RIP  [<ffffffff812e08f7>] _spin_lock_irqsave+0xc/0x23
+ RSP <ffff880157f81e28>
+CR2: 0000000000000350
 
-> Oh, and I think I found a bug in BATMAN already: if you say 'no' to him, 
-> he still asks whether you want to debug him. 
-> 
-> Please, Greg, teach BATMAN that "No means no!". 
+Signed-off-by: Youquan, Song <youquan.song@intel.com>
+Acked-by: Ying, Huang <ying.huang@intel.com>
+---
 
-Doh, I have a patch for that around here from Randy, it didn't make it
-in...  Hm, no, he didn't send the patch, just pointed it out.  Here it
-is below, or you can pull from the same tree and get it:
-
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
-
-
-thanks,
-
-greg k-h
-
-From: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] Staging: batman: fix debug Kconfig option
-
-The debug batman option needs to depend on the correct
-config option.
-
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-diff --git a/drivers/staging/batman-adv/Kconfig b/drivers/staging/batman-adv/Kconfig
-index b9742e7..7632f57 100644
---- a/drivers/staging/batman-adv/Kconfig
-+++ b/drivers/staging/batman-adv/Kconfig
-@@ -15,7 +15,7 @@ config BATMAN_ADV
+diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
+index 62d15f6..ad77f0c 100644
+--- a/drivers/pci/pcie/aer/aer_inject.c
++++ b/drivers/pci/pcie/aer/aer_inject.c
+@@ -392,8 +392,14 @@ static int aer_inject(struct aer_error_inj *einj)
+ 	if (ret)
+ 		goto out_put;
  
- config BATMAN_DEBUG
- 	bool "B.A.T.M.A.N. debugging"
--	depends on BATMAN != n
-+	depends on BATMAN_ADV != n
- 	help
- 
- 	  This is an option for use by developers; most people should
+-	if (find_aer_device(rpdev, &edev))
++	if (find_aer_device(rpdev, &edev)) {
++		if (!get_service_data(edev)) {
++			printk(KERN_WARNING "AER service is not initialized\n");
++			ret = -EINVAL;
++			goto out_put;
++		}
+ 		aer_irq(-1, edev);
++	}
+ 	else
+ 		ret = -EINVAL;
+ out_put:
