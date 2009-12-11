@@ -1,107 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbZLKHac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbZLKHav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757716AbZLKHac (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 02:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZLKHa2
+	id S1760608AbZLKHav (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 02:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759151AbZLKHaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 02:30:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:21179 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752998AbZLKHa2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 02:30:28 -0500
-Message-ID: <4B21F4F6.5080600@monstr.eu>
-Date: Fri, 11 Dec 2009 08:29:58 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Fri, 11 Dec 2009 02:30:46 -0500
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:1346 "EHLO
+	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754536AbZLKHap convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 02:30:45 -0500
+X-SpamScore: -33
+X-BigFish: VPS-33(zz1432R98dN936eM148cM9371Pzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KUH8V0-01-A9K-02
+X-M-MSG: 
+Date: Fri, 11 Dec 2009 08:30:39 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Aristeu Rozanski <aris@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
+       x86 <x86@kernel.org>
+Subject: Re: [PATCH] x86, msr: add support for non-contiguous cpumasks
+Message-ID: <20091211073039.GA21312@aftab>
+References: <20091207122133.GA24877@aftab>
+ <4B21A50E.5090801@zytor.com>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: wuzhangjin@gmail.com, linux-kernel@vger.kernel.org,
-       John Williams <john.williams@petalogix.com>
-Subject: Re: dynamic ftrace - graph
-References: <4AF848C0.7010807@monstr.eu> <1260506225.2146.347.camel@gandalf.stny.rr.com>
-In-Reply-To: <1260506225.2146.347.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <4B21A50E.5090801@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 11 Dec 2009 07:30:36.0564 (UTC) FILETIME=[D4CD8540:01CA7A33]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Hi Michal,
+On Thu, Dec 10, 2009 at 05:49:02PM -0800, H. Peter Anvin wrote:
+> On 12/07/2009 04:21 AM, Borislav Petkov wrote:
+> >  
+> >  struct msr {
+> > +	int cpu;
+> >  	union {
+> >  		struct {
+> >  			u32 l;
 > 
-> Sorry for such a late reply, you sent this email to me at the worst
-> time. My wife was having shoulder surgery and I heading for a
-> conference. I fell very far behind in email and I only now just noticed
-> this.
+> I really don't like this patch, for multiple reasons.  One of them is
+> the above: this has no business being part of struct msr, which reflects
+> an MSR value (and ideally should replace at least the use of two
+> pointers in other places over time).  Having a CPU field and not an MSR
+> number field particular doesn't make any sense.
 
-No problem. I prepared Microblaze ftrace patches. You can find them in 
-linux-next. I am going to send pull request to Linus soon that's why if 
-you have any your comments please let me know.
+Why, MSRs are per-CPU. My reasoning here is to reflect the value of an
+MSR on a particular CPU...
 
-> 
-> 
-> I'll answer these ever though you may already figured it out.
-> 
-> On Mon, 2009-11-09 at 17:52 +0100, Michal Simek wrote:
->> Hi Steve and others,
->>
->> I have working dynamic ftrace function. :-)
->>
->> I look at __ftrace_modify_code function and I have one question about.
->> Below are function which are called when I enable function_graph.
->>
->> I personally think that make more sense to call 
->> ftrace_enable_ftrace_graph_caller before ftrace_update_ftrace_func.
->> The reason for it is that graph_caller enable calling graph tracing 
->> which should be setup before ftrace_update_ftrace_func which enable 
->> whole tracing function.
-> 
-> Have you seen any difference in output with this?
+[..]
 
-I haven't tested it. It was just suggestion. I don't know if is relevant 
-or not.
+> The ideal probably would be to use a percpu variable.  Now, this would
+> either have to be a dynamic percpu allocation (which would have to be
+> the responsibility of the caller, and reused, lest this would be a
+> *very* expensive proposition), or we would have to make these functions
+> run under a mutex.  However, as long as the expected callers of this are
+> things that get set up once and then pretty much stick around, a percpu
+> variable might just work.
 
-Michal
+I think this would be the cleanest way. Also, best it'll be to allocate
+those dynamically only when they're really needed (e.g. on driver
+loading) and later reuse them.
 
-> 
-> I never thought about this order too much.
-> 
-> -- Steve
-> 
->>
->>
->> # cd ; mkdir /debug; mount -t debugfs none /debug; cat 
->> /debug/tracing/available_tracers; echo function_graph > 
->> /debug/tracing/current_tracer;echo 0 > /debug/tra
->> cing/tracing_enabled;cat /debug/tracing/trace | head -n 10
->> function_graph function sched_switch nop
->>
->> ftrace_update_ftrace_func 0xc0009100 0xc00091c4, 0xb000c000, 0x32809100
->> ftrace_enable_ftrace_graph_caller
->> # tracer: function_graph
->>
->>
->> For disabling graph trace is sequence ok I think.
->>
->> # echo function > /debug/tracing/current_tracer
->> ftrace_disable_ftrace_graph_caller
->> ftrace_update_ftrace_func 0xc006afe4 0xc00091c4, 0xb000c006, 0x3280afe4
->>
->>
->> What do you think?
->>
->> Thanks,
->> Michal
->>
->>
-> 
-> 
+[..]
 
+> The third option would be to at least require that the struct msr
+> contents are at least serial in the order of the bitmask, not by adding
+> another field.
+
+I had that version already done but it seemed half-baked and clumsy for
+the MSRs array to traverse. I'll give the percpu variables a shot and
+get back to you when I have something ready.
+
+Thanks for reviewing.
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
