@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZLKFu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZLKFyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbZLKFu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933883AbZLKFuy
+	id S1756767AbZLKFyf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:54:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZLKFyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:50:54 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55365 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933632AbZLKFuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:50:52 -0500
-Message-ID: <4B21DDAF.90307@cn.fujitsu.com>
-Date: Fri, 11 Dec 2009 13:50:39 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 11 Dec 2009 00:54:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55078 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751124AbZLKFyc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:54:32 -0500
+Date: Thu, 10 Dec 2009 21:54:11 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Johannes Stezenbach <js@sig21.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32
+In-Reply-To: <20091209224759.GA26593@sig21.net>
+Message-ID: <alpine.LFD.2.00.0912102149590.3560@localhost.localdomain>
+References: <alpine.LFD.2.00.0912022125400.2872@localhost.localdomain> <20091209172007.GA11740@sig21.net> <alpine.LFD.2.00.0912090923500.3560@localhost.localdomain> <20091209224759.GA26593@sig21.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [PATCH 2/2] tracing: Fix no callsite ifndef CONFIG_KMEMTRACE
-References: <4B21DD88.7080806@cn.fujitsu.com>
-In-Reply-To: <4B21DD88.7080806@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For slab, if CONFIG_KMEMTRACE and CONFIG_DEBUG_SLAB are not set,
-__do_kmalloc() will not track callers:
 
- # ./perf record -f -a -R -e kmem:kmalloc
- ^C
- # ./perf trace
- ...
-          perf-2204  [000]   147.376774: kmalloc: call_site=c0529d2d ...
-          perf-2204  [000]   147.400997: kmalloc: call_site=c0529d2d ...
-          Xorg-1461  [001]   147.405413: kmalloc: call_site=0 ...
-          Xorg-1461  [001]   147.405609: kmalloc: call_site=0 ...
-       konsole-1776  [001]   147.405786: kmalloc: call_site=0 ...
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Wed, 9 Dec 2009, Johannes Stezenbach wrote:
+> 
+> it seems the lkml spam filter ate your reply,
+> maybe you shouldn't have mentioned the er**** pickled herring?
+> I'll keep a (slightly censored) full quote below,
+> hoping it gets through.  It would be a shame if
+> this essential information would be withheld from
+> the Linux community ;-)
+
+Actually, it wasn't about the er**** pickled herring, and your censored 
+email failed to get through too.
+
+I think it's the word "b*droom" that triggered the problem - it's on the 
+taboo list. I censored that one too, let's see if this now goes through.
+
+What a nasty lkml taboo list. Some of those entries really are very crazy 
+aggressive.
+
+		Linus
+
 ---
- mm/slab.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/mm/slab.c b/mm/slab.c
-index e556380..eacf7f0 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3637,7 +3637,7 @@ __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
- 	return ret;
- }
- 
--#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
-+#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_TRACING)
- void *__kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	return __do_kmalloc_node(size, flags, node,
-@@ -3657,7 +3657,7 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
- 	return __do_kmalloc_node(size, flags, node, NULL);
- }
- EXPORT_SYMBOL(__kmalloc_node);
--#endif /* CONFIG_DEBUG_SLAB */
-+#endif /* CONFIG_DEBUG_SLAB || CONFIG_TRACING */
- #endif /* CONFIG_NUMA */
- 
- /**
-@@ -3689,7 +3689,7 @@ static __always_inline void *__do_kmalloc(size_t size, gfp_t flags,
- }
- 
- 
--#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_KMEMTRACE)
-+#if defined(CONFIG_DEBUG_SLAB) || defined(CONFIG_TRACING)
- void *__kmalloc(size_t size, gfp_t flags)
- {
- 	return __do_kmalloc(size, flags, __builtin_return_address(0));
--- 
-1.6.3
-
+> On Wed, Dec 09, 2009 at 09:41:07AM -0800, Linus Torvalds wrote:
+> > 
+> > 
+> > On Wed, 9 Dec 2009, Johannes Stezenbach wrote:
+> > > 
+> > > it seems no one else dares to ask, so I'll bite:
+> > > Why is the kernel NAME no longer updated?
+> > 
+> > I'm not sure that you didn't mistype 'dares' (that 'c' is close to the 'd' 
+> > key on at least /my/ keyboard), but the answer is simple: I change the 
+> > name totally randomly, and it's usually brought on by me reading something 
+> > that struck me as funny. 
+> > 
+> > So the current "Man-eating Seals of Antiquity" comes from Bart Ehrman's 
+> > book "Jesus Interrupted". The previous one "Vindictive Armadillo", was I 
+> > think from an email that Alan Cox sent (probably some odd comment or 
+> > signature).  The one before that was just due to the tasmanian devil 
+> > mascot, while "Er**** Pickled Herring" was due to a NY-Times article that 
+> > said - quote - "It's as er**** as pickled herring."
+> > 
+> > [ Really. Look it up:
+> > 
+> > 	http://www.nytimes.com/2008/11/27/arts/27abro.html?_r=1&pagewanted=all
+> > 
+> >   and tell me that "Er**** Pickled Herring" doesn't make sense as a name 
+> >   for the kernel - or a rock band, for that matter. ]
+> > 
+> > And "Killer Bat of Doom" was due to a cute small bat somehow getting lost, 
+> > and ending up in Patricia's b*droom (it happened twice, and we have no 
+> > idea how it got in).
+> > 
+> > But I no longer remember what the background for "Rotary Wombat" and 
+> > "Funky Weasel is Jiggy wit it" was.
+> > 
+> > "Nocturnal Monster Puppy" was when Teddy (our dog) was little, and I had 
+> > to wake up a couple of times a night to take him out to pee. And "Lordi 
+> > Rules" was when hell froze over, and Finland won the Eurovision (if you 
+> > were Finnish, you'd understand - the largest newspaper in Finland 
+> > literally had "Hell Freezes Over" as the main story on the front page).
+> > 
+> > 			Linus
+> > 
+> 
+> Thanks,
+> Johannes
+> 
