@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbZLKSDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZLKSJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758708AbZLKSDB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 13:03:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbZLKSC4
+	id S1758830AbZLKSJm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 13:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758672AbZLKSJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 13:02:56 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59290 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbZLKSC4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 13:02:56 -0500
-Message-ID: <4B228902.7010609@zytor.com>
-Date: Fri, 11 Dec 2009 10:01:38 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 13:09:36 -0500
+Received: from www.tglx.de ([62.245.132.106]:53104 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758669AbZLKSJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 13:09:36 -0500
+Date: Fri, 11 Dec 2009 19:08:28 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Vegard Nossum <vegardno@ifi.uio.no>
+Subject: Re: [patch 8/9] Documentation: Fix invalid rcu assumptions
+In-Reply-To: <20091211163729.GD6803@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.0912111902350.3089@localhost.localdomain>
+References: <20091210004703.308396881@linutronix.de> <20091210001308.247025548@linutronix.de> <13688.1260540024@redhat.com> <alpine.LFD.2.00.0912110804430.3560@localhost.localdomain> <20091211163729.GD6803@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Aristeu Rozanski <aris@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-       x86 <x86@kernel.org>
-Subject: Re: [PATCH v2] x86, msr: add support for non-contiguous cpumasks
-References: <20091207122133.GA24877@aftab> <4B21A50E.5090801@zytor.com> <20091211171440.GD31998@aftab>
-In-Reply-To: <20091211171440.GD31998@aftab>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/2009 09:14 AM, Borislav Petkov wrote:
-> Ok, here's a second (and much leaner, removing a bunch of code) version.
-> Tested on K8 and F10h machines here.
+On Fri, 11 Dec 2009, Paul E. McKenney wrote:
+> On Fri, Dec 11, 2009 at 08:07:45AM -0800, Linus Torvalds wrote:
+> > 
+> > 
+> > On Fri, 11 Dec 2009, David Howells wrote:
+> > 
+> > > Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > 
+> > > > -197          * we use RCU protection here
+> > > > +196          * caller must be holding the RCU readlocke
+> > > 
+> > > You mean "readlock" I suspect.
+> > 
+> > Or maybe he's talking about ye olde readlocke, used widely for OS research 
+> > throughout the middle ages. You still find that spelling in some really 
+> > old CS literature.
+> 
+> Interestingly enough, they also tended to split it into two words and
+> capitalize it, as can be seen by searching for "Read Locke" at
+> 
+> 	http://faculty.uml.edu/enelson/modern07.htm
 
-Much better, thanks!
+The good thing about "Read Locke" is: there is no "Write Locke".
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Thanks,
+    	 tglx
