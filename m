@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751413AbZLKFGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbZLKFMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751413AbZLKFGa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:06:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbZLKFGZ
+	id S1752349AbZLKFMF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZLKFMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:06:25 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53921 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbZLKFGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:06:24 -0500
-Message-ID: <4B21D252.1060902@cn.fujitsu.com>
-Date: Fri, 11 Dec 2009 13:02:10 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
-CC: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cfq: Take whether cfq group is changed into account when
- choosing service tree
-Content-Type: text/plain; charset=UTF-8
+	Fri, 11 Dec 2009 00:12:03 -0500
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.104]:24939
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752086AbZLKFMC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:12:02 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AoABAHZjIUt8qNxK/2dsb2JhbAAI10CEKwQ
+X-IronPort-AV: E=Sophos;i="4.47,379,1257091200"; 
+   d="scan'208";a="489169558"
+Subject: Re: [PATCH 3/3] gpiolib: use chip->names for symlinks, always use
+ gpioN for device names
+From: Ben Nizette <bn@niasdigital.com>
+To: Greg KH <gregkh@suse.de>
+Cc: David Brownell <david-b@pacbell.net>,
+       Jani Nikula <ext-jani.1.nikula@nokia.com>,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       dsilvers@simtec.co.uk, ben@simtec.co.uk, Artem.Bityutskiy@nokia.com,
+       akpm@linux-foundation.org
+In-Reply-To: <20091211034711.GA2773@suse.de>
+References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com>
+	 <71eff9c88d3fec3daa218341c83c19a106ee1f62.1260364108.git.ext-jani.1.nikula@nokia.com>
+	 <8859db84eb13c0056e20c5edd5dba6837cb60c27.1260364108.git.ext-jani.1.nikula@nokia.com>
+	 <200912101939.30446.david-b@pacbell.net>  <20091211034711.GA2773@suse.de>
+Content-Type: text/plain
+Date: Fri, 11 Dec 2009 16:12:37 +1100
+Message-Id: <1260508357.12048.217.camel@ben-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, with IO Controller introduced, CFQ chooses cfq group
-at the top, and then choose service tree. So we need to take 
-whether cfq group is changed into account to decide whether we 
-should choose service tree start from scratch.
+On Thu, 2009-12-10 at 19:47 -0800, Greg KH wrote:
+> On Thu, Dec 10, 2009 at 07:39:30PM -0800, David Brownell wrote:
+> > On Wednesday 09 December 2009, Jani Nikula wrote:
+> > > While the device names are now unique again, collisions in chip->names
+> > > will still prevent duplicates from being exported to sysfs.
+> > 
+> > That's why I was never a real fan of chip->names...
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/cfq-iosched.c |   27 ++++++++++++++++++---------
- 1 files changed, 18 insertions(+), 9 deletions(-)
+Yea, poor idea indeed.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index f3f6239..16084ca 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1964,7 +1964,7 @@ static void cfq_setup_merge(struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
- 
- static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
- 				struct cfq_group *cfqg, enum wl_prio_t prio,
--				bool prio_changed)
-+				bool cfqg_changed, bool prio_changed)
- {
- 	struct cfq_queue *queue;
- 	int i;
-@@ -1972,7 +1972,7 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
- 	unsigned long lowest_key = 0;
- 	enum wl_type_t cur_best = SYNC_NOIDLE_WORKLOAD;
- 
--	if (prio_changed) {
-+	if (cfqg_changed || prio_changed) {
- 		/*
- 		 * When priorities switched, we prefer starting
- 		 * from SYNC_NOIDLE (first choice), or just SYNC
-@@ -2001,7 +2001,8 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
- 	return cur_best;
- }
- 
--static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
-+static void choose_service_tree(struct cfq_data *cfqd, 
-+				struct cfq_group *cfqg, bool cfqg_changed)
- {
- 	enum wl_prio_t previous_prio = cfqd->serving_prio;
- 	bool prio_changed;
-@@ -2033,21 +2034,22 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 	 * expiration time
- 	 */
- 	prio_changed = (cfqd->serving_prio != previous_prio);
--	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
--				cfqd);
-+	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type, 
-+			      cfqd);
- 	count = st->count;
- 
- 	/*
- 	 * If priority didn't change, check workload expiration,
- 	 * and that we still have other queues ready
- 	 */
--	if (!prio_changed && count &&
-+	if (!cfqg_changed && !prio_changed && count &&
- 	    !time_after(jiffies, cfqd->workload_expires))
- 		return;
- 
- 	/* otherwise select new workload type */
- 	cfqd->serving_type =
--		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio, prio_changed);
-+		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio, 
-+			      cfqg_changed, prio_changed);
- 	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
- 				cfqd);
- 	count = st->count;
-@@ -2104,9 +2106,16 @@ static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
- 
- static void cfq_choose_cfqg(struct cfq_data *cfqd)
- {
-+	bool cfqg_changed = false;
-+
-+	struct cfq_group *orig_cfqg = cfqd->serving_group;
-+
- 	struct cfq_group *cfqg = cfq_get_next_cfqg(cfqd);
- 
--	cfqd->serving_group = cfqg;
-+	if (orig_cfqg != cfqg) {
-+		cfqg_changed = 1;
-+		cfqd->serving_group = cfqg;
-+	}
- 
- 	/* Restore the workload type data */
- 	if (cfqg->saved_workload_slice) {
-@@ -2114,7 +2123,7 @@ static void cfq_choose_cfqg(struct cfq_data *cfqd)
- 		cfqd->serving_type = cfqg->saved_workload;
- 		cfqd->serving_prio = cfqg->saved_serving_prio;
- 	}
--	choose_service_tree(cfqd, cfqg);
-+	choose_service_tree(cfqd, cfqg, cfqg_changed);
- }
- 
- /*
--- 
-1.5.4.rc3
+> > 
+> > IMO a "good" solution in this space needs to accept that
+> > those names are not going to be globally unique ... but
+> > that they'll be unique within some context, of necessity.
+> > 
+> > If Greg doesn't want to see those names under classes,
+> > so be it ... but where should they then appear?
+> 
+> As a sysfs file within the device directory called 'name'?  Then just
+> grep through the tree to find the right device, that also handles
+> duplicates just fine, right?
+
+Well it bunts the handling of duplicates to who ever is grepping but
+yea, sounds good.  The user script can sanity-check it's results against
+the controlling gpio-chip if need be.  In fact, maybe symlink from
+gpioN/chip back to gpio-chipY could be useful?  A bit redundant though,
+as you can check using the number ranges..
+
+In fact I thought I had a patch to create /sys/class/gpio/gpioN/name at
+some stage..  Can't find it though, oh well.
+
+	--Ben.
 
 
