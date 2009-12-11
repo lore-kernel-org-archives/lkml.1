@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZLKRXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbZLKRYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756881AbZLKRXk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 12:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZLKRXf
+	id S1757025AbZLKRYt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 12:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZLKRYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 12:23:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53241 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753993AbZLKRXe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 12:23:34 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf symbols: Add missing "Variables" entry to map_type__name
-Date: Fri, 11 Dec 2009 15:23:28 -0200
-Message-Id: <1260552208-6824-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Fri, 11 Dec 2009 12:24:47 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:60364 "EHLO mail.cs.nmsu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752862AbZLKRYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 12:24:46 -0500
+Message-ID: <d4690bfe19cee0dc8c5355a684fa7e09.squirrel@intranet.cs.nmsu.edu>
+Date: Fri, 11 Dec 2009 10:24:52 -0700
+Subject: Logitech G13 driver + user-space libraries available
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: "Linux" <linux-kernel@vger.kernel.org>,
+       "Linux Input" <linux-input@vger.kernel.org>,
+       "Linux USB" <linux-usb@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Here's a first look at the G13 driver I've been playing around with:
+     git://g13.git.sourceforge.net/gitroot/g13/g13
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+I've been building the driver out-of-tree and this is my first (untested)
+shot at moving it in-tree. There are still a number of things to do (and
+clean up) in the driver but it is rather functional.
+
+I'll test it later today and update the repo as necessary, but I thought
+I'd throw it out there now.
+
+Here's the repo for the support libraries:
+     svn co https://g13.svn.sourceforge.net/svnroot/g13/trunk g13
+
+The Gtk and Gtkmm libs are empty for now, but I have tested the g13 and
+g13-cairo libs.
+
+The g13 library uses udev for device discovery and exports many of the
+sysfs attributes in a little bit friendlier API. See the 'utilities'
+directory and 'examples/g13-draw-checkerboard' for examples of the API.
+
+The g13-cairo library similarly provides an API that bridges the
+framebuffer functions of the g13 library with cairo making it a little
+more friendly to draw directly on the framebuffer. See
+'examples/cairo/g13-cairo-helloworld' for an animated example drawing with
+cairo to the g13 framebuffer.
+
+Feedback, comments, critiques and flames are welcome.
+
 ---
- tools/perf/util/thread.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index a128512..b68a00e 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -54,6 +54,7 @@ int thread__comm_len(struct thread *self)
- 
- static const char *map_type__name[MAP__NR_TYPES] = {
- 	[MAP__FUNCTION] = "Functions",
-+	[MAP__VARIABLE] = "Variables",
- };
- 
- static size_t __map_groups__fprintf_maps(struct map_groups *self,
--- 
-1.6.2.5
+Rick
+
 
