@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbZLKWZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbZLKWdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762792AbZLKWZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 17:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762711AbZLKWZa
+	id S1757942AbZLKWdc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 17:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbZLKWd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 17:25:30 -0500
-Received: from kroah.org ([198.145.64.141]:32800 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 17:33:27 -0500
+Received: from kroah.org ([198.145.64.141]:32818 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761569AbZLKWZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 17:25:07 -0500
+	id S1762708AbZLKWZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 17:25:08 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Eric W. Biederman" <ebiederm@aristanetworks.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 17/27] sysfs: Fix locking and factor out sysfs_sd_setattr
-Date: Fri, 11 Dec 2009 14:24:39 -0800
-Message-Id: <1260570289-6997-17-git-send-email-gregkh@suse.de>
+Subject: [PATCH 18/27] sysfs: Update s_iattr on link and unlink.
+Date: Fri, 11 Dec 2009 14:24:40 -0800
+Message-Id: <1260570289-6997-18-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211212642.GA6624@kroah.com>
 References: <20091211212642.GA6624@kroah.com>
@@ -26,112 +26,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Cleanly separate the work that is specific to setting the
-attributes of a sysfs_dirent from what is needed to update
-the attributes of a vfs inode.
-
-Additionally grab the sysfs_mutex to keep any nasties from
-surprising us when updating the sysfs_dirent.
+Currently sysfs updates the timestamps on the vfs directory
+inode when we create or remove a directory entry but doesn't
+update the cached copy on the sysfs_dirent, fix that oversight.
 
 Acked-by: Tejun Heo <tj@kernel.org>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/inode.c |   51 +++++++++++++++++++++++++++++++--------------------
- fs/sysfs/sysfs.h |    1 +
- 2 files changed, 32 insertions(+), 20 deletions(-)
+ fs/sysfs/dir.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 86fb230..76e977c 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -65,30 +65,14 @@ static struct sysfs_inode_attrs *sysfs_init_inode_attrs(struct sysfs_dirent *sd)
- 	return attrs;
- }
- 
--int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
-+int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 9ee130b..36ee6d8 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -464,6 +464,8 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+  */
+ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  {
--	struct inode * inode = dentry->d_inode;
--	struct sysfs_dirent * sd = dentry->d_fsdata;
- 	struct sysfs_inode_attrs *sd_attrs;
- 	struct iattr *iattrs;
- 	unsigned int ia_valid = iattr->ia_valid;
--	int error;
--
--	if (!sd)
--		return -EINVAL;
++	struct sysfs_inode_attrs *ps_iattr;
++
+ 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+ 		return -EEXIST;
  
- 	sd_attrs = sd->s_iattr;
+@@ -476,6 +478,13 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
  
--	error = inode_change_ok(inode, iattr);
--	if (error)
--		return error;
--
--	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
--
--	error = inode_setattr(inode, iattr);
--	if (error)
--		return error;
--
- 	if (!sd_attrs) {
- 		/* setting attributes for the first time, allocate now */
- 		sd_attrs = sysfs_init_inode_attrs(sd);
-@@ -111,12 +95,39 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
- 			iattrs->ia_ctime = iattr->ia_ctime;
- 		if (ia_valid & ATTR_MODE) {
- 			umode_t mode = iattr->ia_mode;
--
--			if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
--				mode &= ~S_ISGID;
- 			iattrs->ia_mode = sd->s_mode = mode;
- 		}
- 	}
-+	return 0;
-+}
-+
-+int sysfs_setattr(struct dentry *dentry, struct iattr *iattr)
-+{
-+	struct inode *inode = dentry->d_inode;
-+	struct sysfs_dirent *sd = dentry->d_fsdata;
-+	int error;
-+
-+	if (!sd)
-+		return -EINVAL;
-+
-+	error = inode_change_ok(inode, iattr);
-+	if (error)
-+		return error;
-+
-+	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
-+	if (iattr->ia_valid & ATTR_MODE) {
-+		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
-+			iattr->ia_mode &= ~S_ISGID;
+ 	sysfs_link_sibling(sd);
+ 
++	/* Update timestamps on the parent */
++	ps_iattr = acxt->parent_sd->s_iattr;
++	if (ps_iattr) {
++		struct iattr *ps_iattrs = &ps_iattr->ia_iattr;
++		ps_iattrs->ia_ctime = ps_iattrs->ia_mtime = CURRENT_TIME;
 +	}
 +
-+	error = inode_setattr(inode, iattr);
-+	if (error)
-+		return error;
-+
-+	mutex_lock(&sysfs_mutex);
-+	error = sysfs_sd_setattr(sd, iattr);
-+	mutex_unlock(&sysfs_mutex);
-+
- 	return error;
+ 	return 0;
  }
  
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index af4c4e7..a96d967 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -155,6 +155,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+@@ -554,10 +563,19 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
   */
- struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
- void sysfs_delete_inode(struct inode *inode);
-+int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
- int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
- int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
- 		size_t size, int flags);
+ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ {
++	struct sysfs_inode_attrs *ps_iattr;
++
+ 	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
+ 
+ 	sysfs_unlink_sibling(sd);
+ 
++	/* Update timestamps on the parent */
++	ps_iattr = acxt->parent_sd->s_iattr;
++	if (ps_iattr) {
++		struct iattr *ps_iattrs = &ps_iattr->ia_iattr;
++		ps_iattrs->ia_ctime = ps_iattrs->ia_mtime = CURRENT_TIME;
++	}
++
+ 	sd->s_flags |= SYSFS_FLAG_REMOVED;
+ 	sd->s_sibling = acxt->removed;
+ 	acxt->removed = sd;
 -- 
 1.6.5.5
 
