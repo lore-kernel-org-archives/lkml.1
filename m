@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZLKNyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbZLKN62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbZLKNyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbZLKNym
+	id S1758298AbZLKN62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbZLKN6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:54:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35597 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757853AbZLKNyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:54:41 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20091210004703.232302055@linutronix.de>
-References: <20091210004703.232302055@linutronix.de> <20091210001308.247025548@linutronix.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: dhowells@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [patch 6/9] signal: Fix racy access to __task_cred in kill_pid_info_as_uid()
-Date: Fri, 11 Dec 2009 13:53:47 +0000
-Message-ID: <13441.1260539627@redhat.com>
+	Fri, 11 Dec 2009 08:58:24 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:2724 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756295AbZLKN6W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 08:58:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=fQeVRGilU+ESIeBZxyF+brEZaRcLo3ZGf4q/kc6Zr+Ie2YX7aWV2NFMYOqgjfwbIjl
+         R3h2MUPwYDliQb8ecWIqt3tteKard5nwYnPS/RZJR+IYiVXQ9TEyFWXIsVFjYduev3Ha
+         NIyU/1P+4G1qCIBF6SyECQXVCv+825G6cVuHc=
+MIME-Version: 1.0
+In-Reply-To: <200912111406.33424.arnd@arndb.de>
+References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com>
+	 <200912102225.05280.arnd@arndb.de>
+	 <10f740e80912110454u172fc2cfye30da6ca0e0f0af0@mail.gmail.com>
+	 <200912111406.33424.arnd@arndb.de>
+Date: Fri, 11 Dec 2009 14:58:28 +0100
+X-Google-Sender-Auth: 3db43c2a04d048cd
+Message-ID: <10f740e80912110558g6c453d18ifeb4e02d5bd51973@mail.gmail.com>
+Subject: Re: What's in asm-generic.git
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, liqin.chen@sunplusct.com,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Fri, Dec 11, 2009 at 14:06, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Friday 11 December 2009, Geert Uytterhoeven wrote:
+>> 10+ architectures already have sys_[sg]et_thread_area of have reserved
+>> entries for it.
+>
+> No, those are just the ones that blindly copied the unistd.h file from i386.
+> As I said, only i386 and mips implement it, and I would assume that this
+> is unlikely to change.
 
-> kill_pid_info_as_uid() accesses __task_cred() without being in a RCU
-> read side critical section. tasklist_lock is not protecting that when
-> CONFIG_TREE_PREEMPT_RCU=y.
-> 
-> Convert the whole tasklist_lock section to rcu and use
-> lock_task_sighand to prevent the exit race.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+M68k will have it in the near future...
 
-Acked-by: David Howells <dhowells@redhat.com>
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
