@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbZLKQZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZLKQZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbZLKQZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 11:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZLKQZX
+	id S1755087AbZLKQZj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZLKQZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 11:25:23 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:46976 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZLKQZW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 11:25:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kElZdmSw0LEPzQ9YanbFHGQIG6r3L7I3ifOf4Bo56yeZ6m8eJi7XMGdQUnR5HrBPqg
-         9o6Hedz3H+bgmcxygoPz5dC7urghQKRRFf+aHWK+eZWSjQkhLIu/Cm5WswIddCYGKnqz
-         FDjkHIS3gyIUfo7nQ3wV3HGgBJ2CnFHZW9kKA=
-Message-ID: <4B227275.5010201@gmail.com>
-Date: Fri, 11 Dec 2009 19:25:25 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 11 Dec 2009 11:25:34 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:56544 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753405AbZLKQZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 11:25:26 -0500
+Date: Fri, 11 Dec 2009 10:25:32 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Miller <davem@davemloft.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH] Expose the irq_desc node in proc/irq
+Message-ID: <20091211162532.GA2716@sgi.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Lin Ming <ming.m.lin@intel.com>, Xiaotian Feng <dfeng@redhat.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>
-Subject: Re: [PATCH -V2] acpi: don't cond_resched if irq is disabled
-References: <20091210100907.GA2446@ucw.cz> <1260446205-16868-1-git-send-email-dfeng@redhat.com> <4B20E7B2.1010208@suse.de> <1260510373.10543.17.camel@minggr.sh.intel.com> <4B223185.80202@suse.de> <20091211161549.GA15760@elf.ucw.cz>
-In-Reply-To: <20091211161549.GA15760@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek пишет:
-> On Fri 2009-12-11 14:48:21, Alexey Starikovskiy wrote:
->   
->> Lin Ming ??????????:
->>     
->>> On Thu, 2009-12-10 at 20:21 +0800, Alexey Starikovskiy wrote:
->>>       
->>>> Hi Xiaotian,
->>>>
->>>> I think, this is another round of "armor vs. bullet" race... It will hold until
->>>> might_sleep() logic changes again.
->>>>
->>>> Please consider using preemptible() -- IMHO this is the check we should perform 
->>>> in our case of voluntary preemption.
->>>>         
->>> preemptible() may not work here because it always returns 0 for
->>> non-preemptible kernel.
->>>       
->> Right, and it means that this machine does not care about low latency that much.
->> The reason we introduced the preemption point in the first place, was unacceptable latency
->> due to very long AML methods on some machines. We don't need this preemption point for normal
->> operation, this is exactly what voluntary preemption does -- allows those in hurry to pass by.
->> If there are none, fine.
->>     
->>> #ifdef CONFIG_PREEMPT
->>> # define preemptible()  (preempt_count() == 0 && !irqs_disabled())
->>> # define IRQ_EXIT_OFFSET (HARDIRQ_OFFSET-1)
->>> #else
->>> # define preemptible()  0
->>> # define IRQ_EXIT_OFFSET HARDIRQ_OFFSET
->>> #endif
->>>       
->
-> Well, normally we want low latency even for !CONFIG_PREEMPT kernels.
->
-> Actually, explicit preemption points are NOPs for CONFIG_PREEMPT
-> kernels, right?
-> 									Pavel
->   
-Right. Do you have code?
+Expose the irq_desc node as /proc/irq/*/node.
 
-Thanks,
-Alex.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+
+---
+
+ kernel/irq/proc.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+Index: linux/kernel/irq/proc.c
+===================================================================
+--- linux.orig/kernel/irq/proc.c	2009-12-11 10:09:31.000000000 -0600
++++ linux/kernel/irq/proc.c	2009-12-11 10:15:28.000000000 -0600
+@@ -146,6 +146,26 @@ static const struct file_operations defa
+ 	.release	= single_release,
+ 	.write		= default_affinity_write,
+ };
++
++static int irq_node_proc_show(struct seq_file *m, void *v)
++{
++	struct irq_desc *desc = irq_to_desc((long) m->private);
++
++	seq_printf(m, "%d\n", desc->node);
++	return 0;
++}
++
++static int irq_node_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, irq_node_proc_show,  PDE(inode)->data);
++}
++
++static const struct file_operations irq_node_proc_fops = {
++	.open		= irq_node_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
+ #endif
+ 
+ static int irq_spurious_proc_show(struct seq_file *m, void *v)
+@@ -230,6 +250,9 @@ void register_irq_proc(unsigned int irq,
+ 	/* create /proc/irq/<irq>/smp_affinity */
+ 	proc_create_data("smp_affinity", 0600, desc->dir,
+ 			 &irq_affinity_proc_fops, (void *)(long)irq);
++
++	proc_create_data("node", 0444, desc->dir,
++			 &irq_node_proc_fops, (void *)(long)irq);
+ #endif
+ 
+ 	proc_create_data("spurious", 0444, desc->dir,
