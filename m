@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762461AbZLKEig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762479AbZLKEiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762461AbZLKEig (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762423AbZLKEid
+	id S1762479AbZLKEiu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762467AbZLKEir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:38:33 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60179 "EHLO smtps.tip.net.au"
+	Thu, 10 Dec 2009 23:38:47 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:49079 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762420AbZLKEi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:38:29 -0500
-Date: Fri, 11 Dec 2009 15:38:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: linux-next: tip tree build warning
-Message-Id: <20091211153828.6ba80bc4.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749"
+	id S1762451AbZLKEio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:38:44 -0500
+Date: Thu, 10 Dec 2009 20:38:49 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: Jani Nikula <ext-jani.1.nikula@nokia.com>, dbrownell@users.sourceforge.net,
+       linux-kernel@vger.kernel.org, dsilvers@simtec.co.uk, ben@simtec.co.uk,
+       Artem.Bityutskiy@nokia.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 3/3] gpiolib: use chip->names for symlinks, always use
+	gpioN for device names
+Message-ID: <20091211043849.GA18007@suse.de>
+References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com> <200912101939.30446.david-b@pacbell.net> <20091211034711.GA2773@suse.de> <200912102013.59329.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912102013.59329.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Dec 10, 2009 at 08:13:58PM -0800, David Brownell wrote:
+> On Thursday 10 December 2009, Greg KH wrote:
+> > 
+> > > IMO a "good" solution in this space needs to accept that
+> > > those names are not going to be globally unique ... but
+> > > that they'll be unique within some context, of necessity.
+> > > 
+> > > If Greg doesn't want to see those names under classes,
+> > > so be it ... but where should they then appear?
+> > 
+> > As a sysfs file within the device directory called 'name'? ?Then just
+> > grep through the tree to find the right device, that also handles
+> > duplicates just fine, right?
+> 
+> I want a concrete example.  Those chip->names things don't
+> seem helpful to me though...
+> 
+> If for example I were building a JTAG adapter on Linux, it
+> might consist of a spidev node (chardev) plus a handful of
+> GPIOs.  So "the device directory" would be the sysfs home
+> of that spidev node (or some variant)?  And inside that
+> directory would be files named after various signals that
+> are used as GPIOs ... maybe SRST, TRST, and DETECT to start
+> with?  Holding some cookie that gets mapped to those GPIO's
+> sysfs entries?
 
-Hi all,
+Um, I really don't know, as I don't know the GPIO subsystem, nor why you
+all have this problem in the first place :)
 
-Today's linux-next build (powerpc allyesconfig) produced this warning:
+I also find it funny that you think changing the kernel is easier than
+userspace, that's a strange situation.
 
-In file included from kernel/trace/trace.h:14,
-                 from kernel/trace/trace_selftest_dynamic.c:1:
-include/linux/hw_breakpoint.h: In function 'modify_user_hw_breakpoint':
-include/linux/hw_breakpoint.h:96: warning: return makes integer from pointe=
-r without a cast
+Anyway, I assumed that you already have a struct device for the GPIO
+devices, right?  Put it in there was what I was thinking, but as I don't
+understand your current layout, I really don't know.
 
-Introduced by commit 44234adcdce38f83c56e05f808ce656175b4beeb
-("hw-breakpoints: Modify breakpoints without unregistering them") from
-the tip tree.
+> I confess I'd still think a symlink from that directory
+> to the real GPIO would be easier to work with...
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+No, don't do that, no symlinks from a class please.
 
---Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749
-Content-Type: application/pgp-signature
+thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkshzMQACgkQjjKRsyhoI8x1mgCfTGeYMKU68amkpuNHEX0UwDTf
-8PEAniU+geOGaJpfosTCietByRtdOnuQ
-=865L
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749--
+greg k-h
