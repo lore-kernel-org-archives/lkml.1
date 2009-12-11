@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762617AbZLKVHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762649AbZLKVHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762617AbZLKVHc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZLKVH0
+	id S1762649AbZLKVHr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZLKVHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:07:26 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:49593 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756127AbZLKVHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:07:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=l4EP9NBCik+og4UwkTXqhq8Urns7BSp/luVxDuQKzfxLhgWj0zstjZcFnag9CfwUFp
-         +O/hSKmc7VD103KiFmYFN3PJ6F+CS9hzhtgZffX8uHLqo8sjh1qxghwv798lugLg2iUz
-         e8TIRGn1l7GZ6YDgxuSsF6dJwMGN2zcatUHtY=
-Message-ID: <4B22B481.9060600@gmail.com>
-Date: Fri, 11 Dec 2009 22:07:13 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Fri, 11 Dec 2009 16:07:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36729 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757302AbZLKVHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 16:07:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] PM: Fix kernel-doc notation
+Date: Fri, 11 Dec 2009 22:08:29 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1258877637.4495.45.camel@ht.satnam> <20091211120259.82de239d.randy.dunlap@oracle.com>
+In-Reply-To: <20091211120259.82de239d.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Stephen Clark <sclark46@earthlink.net>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH v2] Documentation: rw_lock lessons learned
-References: <4AF9C540.5090403@gmail.com>	<20091110180646.2e5859a8@nehalam>	<4AFAEF78.4080807@gmail.com> <20091111093724.4f40a48d@nehalam> <4AFBEC44.9030409@gmail.com> <4B227ADC.5010908@gmail.com>
-In-Reply-To: <4B227ADC.5010908@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912112208.29241.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Allen Simpson wrote, On 12/11/2009 06:01 PM:
-
-> William Allen Simpson wrote:
->> In recent weeks, two different network projects erroneously
->> strayed down the rw_lock path.  Update the Documentation
->> based upon comments by Eric Dumazet and Paul E. McKenney in
->> those threads.
->>
->> Merged with editorial changes by Stephen Hemminger.
->>
->> Signed-off-by: William.Allen.Simpson@gmail.com
->> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->>
-> A month ago, I'd taken the final line "Ho humm.." of Linus'
-> response to mean he wasn't interested.  But at the local
-> discussion yesterday, I'm told that's just a typical Linusism.
-
-Why would he write 6 paragraphs if he wasn't interested?
-
+On Friday 11 December 2009, Randy Dunlap wrote:
+> On Sun, 22 Nov 2009 13:43:57 +0530 Jaswinder Singh Rajput wrote:
 > 
-> The thread diverged into discussion of another document entirely.
+> > 
+> > Fix the following htmldocs warnings:
+> > 
+> >   Warning(drivers/base/power/main.c:249): No description found for parameter 'master'
+> >   Warning(drivers/base/power/main.c:249): Excess function parameter 'slave' description in 'device_pm_wait_for_slaves'
+> >   Warning(drivers/base/power/main.c:292): No description found for parameter 'master'
+> >   Warning(drivers/base/power/main.c:292): Excess function parameter 'slave' description in 'device_pm_check_slaves'
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > Cc: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> I'm not the person to update this document with any of the other
-> information about global locks and tasklists and such.  But surely
-> somebody else could handle that in another patch.
-> 
-> Anybody have answers/updates to Linus's concerns about "pretty old
-> and bogus language"?  Would folks be interested in the update?
-> Does anybody know which list(s) would be better for discussion?
+> What tree was this for?
+> I guess it's not needed now, I can't find these functions..
 
-I guess, you could literally start with removing this "global
-interrupt lock", adding "the example of a _good_ case of rwlocks",
-plus Stephen's "it is not just networking" fix in v3.
+It was on top of the async suspend/resume patches that Linus has rejected.
 
-Jarek P.
+Rafael
