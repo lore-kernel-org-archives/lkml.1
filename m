@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZLKDSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZLKDT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbZLKDSF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 22:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZLKDSE
+	id S1756041AbZLKDT4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 22:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZLKDTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 22:18:04 -0500
-Received: from mail.lang.hm ([64.81.33.126]:60873 "EHLO bifrost.lang.hm"
+	Thu, 10 Dec 2009 22:19:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35867 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753845AbZLKDSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 22:18:04 -0500
-Date: Thu, 10 Dec 2009 19:16:35 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Arjan van de Ven <arjan@infradead.org>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dimitri Sivanich <sivanich@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-In-Reply-To: <20091125074033.4c46c1b0@infradead.org>
-Message-ID: <alpine.DEB.2.00.0912101915430.10307@asgard.lang.hm>
-References: <20091120211139.GB19106@sgi.com> <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com> <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
- <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org> <20091125074033.4c46c1b0@infradead.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1755428AbZLKDTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 22:19:54 -0500
+Message-ID: <4B21BA54.1090103@redhat.com>
+Date: Thu, 10 Dec 2009 22:19:48 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: lwoodman@redhat.com, kosaki.motohiro@jp.fujitsu.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, aarcange@redhat.com
+Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
+References: <20091210185626.26f9828a@cuia.bos.redhat.com> <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
+In-Reply-To: <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009, Arjan van de Ven wrote:
+On 12/10/2009 09:03 PM, Minchan Kim wrote:
 
->> I think the irq scheduler is the only scheduler (except for batch
->> jobs) that we don't put in the kernel.  It seems to me that if we are
->> going to go to all of the trouble to rewrite the generic code to
->> better support irqbalance because we are having serious irqbalance
->> problems, it will be less effort to suck irqbalance into the kernel
->> along with everything else.
+>> +The default value is 8.
+>> +
+>> +=============================================================
 >
-> we had that; it didn't work.
-> what I'm asking for is for the kernel to expose the numa information;
-> right now that is the piece that is missing.
+> I like this. but why do you select default value as constant 8?
+> Do you have any reason?
+>
+> I think it would be better to select the number proportional to NR_CPU.
+> ex) NR_CPU * 2 or something.
+>
+> Otherwise looks good to me.
 
-but if there is only one userspace app, and that app has no user 
-accessable configuration, what is the difference between telling everyone 
-they must use that app and having the logic from that app in the kernel?
+Pessimistically, I assume that the pageout code spends maybe
+10% of its time on locking (we have seen far, far worse than
+this with thousands of processes in the pageout code).  That
+means if we have more than 10 threads in the pageout code,
+we could end up spending more time on locking and less doing
+real work - slowing everybody down.
 
-David Lang
+I rounded it down to the closest power of 2 to come up with
+an arbitrary number that looked safe :)
+
+However, this number is per zone - I imagine that really large
+systems will have multiple memory zones, so they can run with
+more than 8 processes in the pageout code simultaneously.
+
+> Reviewed-by: Minchan Kim<minchan.kim@gmail.com>
+
+Thank you.
+
+-- 
+All rights reversed.
