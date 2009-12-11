@@ -1,44 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZLKPbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbZLKPcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbZLKPbZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 10:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbZLKPbU
+	id S1758916AbZLKPcZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 10:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbZLKPcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 10:31:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43019 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758538AbZLKPbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 10:31:20 -0500
-Message-ID: <4B2265D2.6000400@suse.cz>
-Date: Fri, 11 Dec 2009 16:31:30 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH 1/3] Replace kernel/timeconst.pl with kernel/timeconst.sh
-References: <200912080317.08254.rob@landley.net> <200912091740.43147.rob@landley.net> <4B20FD2C.1010804@suse.cz> <200912101717.00049.rob@landley.net>
-In-Reply-To: <200912101717.00049.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Dec 2009 10:32:20 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:13497 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758568AbZLKPcT convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;6:1>);
+	Fri, 11 Dec 2009 10:32:19 -0500
+Message-Id: <4B227418020000780002553C@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Fri, 11 Dec 2009 15:32:24 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, <mingo@elte.hu>,
+       <tglx@linutronix.de>, "Nick Piggin" <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: slightly shorten __ticket_spin_trylock() (v2)
+References: <4B179A6D0200007800023542@vpn.id2.novell.com>
+ <alpine.LFD.2.00.0912031303180.2872@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912031303180.2872@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> On Thursday 10 December 2009 07:52:44 Michal Marek wrote:
->> and the makefile would run timeconst.pl to generate timeconst_custom.h
->> iff HZ is set to something arbitrary. I don't have a patch for that, but
->> I don't see a fundamental problem with such approach.
-> 
-> I looked at that when I was attempting to update (rather than replace) my 
-> original patch.  There's a reason I didn't go there.  You're suggesting there 
-> be two code paths, one maintained by hand and the other just about never 
-> tested against bit-rot.
+>>> Linus Torvalds <torvalds@linux-foundation.org> 03.12.09 22:10 >>>
+>On Thu, 3 Dec 2009, Jan Beulich wrote:
+>> @@ -88,12 +88,11 @@ static __always_inline int __ticket_spin
+>>  		     LOCK_PREFIX "cmpxchgw %w1,%2\n\t"
+>>  		     "1:"
+>>  		     "sete %b1\n\t"
+>> -		     "movzbl %b1,%0\n\t"
+>>  		     : "=&a" (tmp), "=&q" (new), "+m" (lock->slock)
+>>  		     :
+>>  		     : "memory", "cc");
+>>  
+>> -	return tmp;
+>> +	return new;
+>
+>This is fairly pessimal register allocation.
+>
+>It used to be that we returned the value in 'tmp', which is %eax, which is 
+>also the expected return register. Now that we use 'new', it's some random 
+>other register that is _not_ %eax, which means that while we avoid a 
+>'movzbl', the regular spin_trylock function call case will now have the 
+>compiler emitting a 
+>
+>	movb %X,%al
+>	ret
+>
+>at the end just to get the right return register.
 
-OK, that's valid point, indeed. Peter, would you ack Rob's patch with
-the oneline fix added (http://lkml.org/lkml/2009/12/8/94 plus
-http://lkml.org/lkml/2009/12/9/435)?
+No, not really, because __spin_trylock() doesn't directly pass on the
+return value of _raw_spin_trylock().
 
-Michal
+>Which seems a bit annoying. It looks like we could have done that last 
+>instruction as just
+>
+>	sete %b0
+>
+>instead, and then return 'tmp' instead of 'new', keeping the return value 
+>in %al and avoiding the unnecessary movement.
+>
+>> -static __always_inline int __ticket_spin_trylock(raw_spinlock_t *lock)
+>> +static __always_inline u8 __ticket_spin_trylock(raw_spinlock_t *lock)
+>
+>Same thing here, afaik.
+>
+>NOTE! I haven't actually looked at the generated code, and if we actually 
+>inline it all the way to the caller, it won't matter (and picking another 
+>register may even help). But while these helpers are marked 
+>__always_inline, I _thought_ that the way we actually build the final 
+>'spin_trylock()' function we end up with a real function in the end.
+
+The code isn't really much different either way: In the old variant, the
+compiler generated a xor/set pair, in the variant you suggest it
+produces a single movzx. In the _spin_trylock_bh() case the new
+variant actually produces an extra instruction (copying from %eax to
+another register), but all that certainly also depends on the compiler
+version.
+
+Hence I'm really uncertain which of both methods is preferable. The
+one additional benefit to the version you suggest is that it permits
+relaxing the constraint of 'new' from q to r (permitting the compiler
+to pick from a wider set of registers on 32-bit). But since there are
+only very few direct callers of _raw_spin_trylock(), this is marginal,
+as it doesn't matter for _spin_trylock() (I don't think the lock
+debugging case really needs much attention on performance).
+
+Jan
+
