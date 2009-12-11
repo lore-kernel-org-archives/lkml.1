@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762412AbZLKUFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbZLKULR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762412AbZLKUFB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 15:05:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761921AbZLKUE4
+	id S1752490AbZLKULR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 15:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZLKULL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 15:04:56 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:41687 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758394AbZLKUE4 (ORCPT
+	Fri, 11 Dec 2009 15:11:11 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:19894 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbZLKULL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 15:04:56 -0500
-Date: Fri, 11 Dec 2009 12:02:59 -0800
+	Fri, 11 Dec 2009 15:11:11 -0500
+Date: Fri, 11 Dec 2009 12:08:49 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PM: Fix kernel-doc notation
-Message-Id: <20091211120259.82de239d.randy.dunlap@oracle.com>
-In-Reply-To: <1258877637.4495.45.camel@ht.satnam>
-References: <1258877637.4495.45.camel@ht.satnam>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       samr@ravnborg.org
+Subject: Re: hwrng: virtio - Rename driver object to remove section mismatch
+ warning
+Message-Id: <20091211120849.012c43d8.randy.dunlap@oracle.com>
+In-Reply-To: <1260559557.24459.1320.camel@calx>
+References: <20091211153658.GA1207@gondor.apana.org.au>
+	<1260559557.24459.1320.camel@calx>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B22A5A2.00FB:SCFMA4539814,ss=1,fgs=0
+X-Source-IP: rcsinet15.oracle.com [148.87.113.117]
+X-CT-RefId: str=0001.0A090202.4B22A71B.011F:SCFMA4539811,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Nov 2009 13:43:57 +0530 Jaswinder Singh Rajput wrote:
+On Fri, 11 Dec 2009 13:25:57 -0600 Matt Mackall wrote:
 
+> On Fri, 2009-12-11 at 23:36 +0800, Herbert Xu wrote:
+> > Hi:
+> > 
+> > Finally found the cause of the section mismatch warning in hwrng.
+> > Apparently in addition to __devexit_p we now have to name the
+> > variable in a certain way.
 > 
-> Fix the following htmldocs warnings:
-> 
->   Warning(drivers/base/power/main.c:249): No description found for parameter 'master'
->   Warning(drivers/base/power/main.c:249): Excess function parameter 'slave' description in 'device_pm_wait_for_slaves'
->   Warning(drivers/base/power/main.c:292): No description found for parameter 'master'
->   Warning(drivers/base/power/main.c:292): Excess function parameter 'slave' description in 'device_pm_check_slaves'
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> That's fairly appalling. Any idea why?
 
-What tree was this for?
-I guess it's not needed now, I can't find these functions..
+(I haven't read the rest of this thread..)
 
-Thanks.
+scripts/mod/modpost.c looks for certain variable names to identify
+variables that can have references to other (non-data) sections.
+It's mostly explained there.
 
-> ---
->  drivers/base/power/main.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index e8d1ea6..5f13084 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -243,7 +243,7 @@ static void device_pm_wait_for_masters(struct device *slave)
->  
->  /**
->   * device_pm_wait_for_slaves - Wait for all slaves of given device.
-> - * @slave: Device to wait for the slaves of.
-> + * @master: Device to wait for the slaves of.
->   */
->  static void device_pm_wait_for_slaves(struct device *master)
->  {
-> @@ -286,7 +286,7 @@ static int device_pm_check_masters(struct device *slave)
->  
->  /**
->   * device_pm_check_slaves - Check power.op_complete for slaves of a device.
-> - * @slave: Device to check the slaves of.
-> + * @master: Device to check the slaves of.
->   */
->  static int device_pm_check_slaves(struct device *master)
->  {
-> -- 
+(added cc: Sam)
 
 ---
 ~Randy
