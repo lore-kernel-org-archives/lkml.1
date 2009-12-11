@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZLKH1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbZLKHac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZLKH1F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 02:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZLKH06
+	id S1757716AbZLKHac (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 02:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZLKHa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 02:26:58 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50061 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbZLKH05 (ORCPT
+	Fri, 11 Dec 2009 02:30:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:21179 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752998AbZLKHa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 02:26:57 -0500
-Message-ID: <4B21F42F.4070400@zytor.com>
-Date: Thu, 10 Dec 2009 23:26:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 02:30:28 -0500
+Message-ID: <4B21F4F6.5080600@monstr.eu>
+Date: Fri, 11 Dec 2009 08:29:58 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-To: James Andrewartha <jamesa@daa.com.au>
-CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>	<20090226025043.GJ1363@mit.edu>	<20090226030735.GA16891@parisc-linux.org> <yq1myc9g9ua.fsf@sermon.lab.mkp.net> <4B21EF54.9070609@daa.com.au>
-In-Reply-To: <4B21EF54.9070609@daa.com.au>
-Content-Type: text/plain; charset=UTF-8
+To: rostedt@goodmis.org
+CC: wuzhangjin@gmail.com, linux-kernel@vger.kernel.org,
+       John Williams <john.williams@petalogix.com>
+Subject: Re: dynamic ftrace - graph
+References: <4AF848C0.7010807@monstr.eu> <1260506225.2146.347.camel@gandalf.stny.rr.com>
+In-Reply-To: <1260506225.2146.347.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10/2009 11:05 PM, James Andrewartha wrote:
-> Martin K. Petersen wrote:
->>>>>>> "Matthew" == Matthew Wilcox <matthew@wil.cx> writes:
->>
->> Matthew> Lowest aligned logical block address=0
->>
->> Matthew> This disagrees with Martin's assertion.
->>
->> The original roadmap was to transition to 4KB sectors in 2006,
->> coinciding with the Vista release.
->>
->> Given how long this has taken (we're now talking ~2011 for GA) it may
->> very well be that the alignment knobs will be unused because everybody
->> will be using Vista or 7 by then.
+Steven Rostedt wrote:
+> Hi Michal,
 > 
-> The plan does seem to have changed - WD's shipping 4k sector drives that
-> are sane and require a drive jumper or tool for WinXP and old cloning
-> utilities.
+> Sorry for such a late reply, you sent this email to me at the worst
+> time. My wife was having shoulder surgery and I heading for a
+> conference. I fell very far behind in email and I only now just noticed
+> this.
+
+No problem. I prepared Microblaze ftrace patches. You can find them in 
+linux-next. I am going to send pull request to Linus soon that's why if 
+you have any your comments please let me know.
+
 > 
-> http://techreport.com/discussions.x/18115
-> http://wdc.com/en/products/advancedformat/
-> http://www.wdc.com/wdproducts/library/whitepapers/en/2579-771430-A00.pdf
+> 
+> I'll answer these ever though you may already figured it out.
+> 
+> On Mon, 2009-11-09 at 17:52 +0100, Michal Simek wrote:
+>> Hi Steve and others,
+>>
+>> I have working dynamic ftrace function. :-)
+>>
+>> I look at __ftrace_modify_code function and I have one question about.
+>> Below are function which are called when I enable function_graph.
+>>
+>> I personally think that make more sense to call 
+>> ftrace_enable_ftrace_graph_caller before ftrace_update_ftrace_func.
+>> The reason for it is that graph_caller enable calling graph tracing 
+>> which should be setup before ftrace_update_ftrace_func which enable 
+>> whole tracing function.
+> 
+> Have you seen any difference in output with this?
+
+I haven't tested it. It was just suggestion. I don't know if is relevant 
+or not.
+
+Michal
+
+> 
+> I never thought about this order too much.
+> 
+> -- Steve
+> 
+>>
+>>
+>> # cd ; mkdir /debug; mount -t debugfs none /debug; cat 
+>> /debug/tracing/available_tracers; echo function_graph > 
+>> /debug/tracing/current_tracer;echo 0 > /debug/tra
+>> cing/tracing_enabled;cat /debug/tracing/trace | head -n 10
+>> function_graph function sched_switch nop
+>>
+>> ftrace_update_ftrace_func 0xc0009100 0xc00091c4, 0xb000c000, 0x32809100
+>> ftrace_enable_ftrace_graph_caller
+>> # tracer: function_graph
+>>
+>>
+>> For disabling graph trace is sequence ok I think.
+>>
+>> # echo function > /debug/tracing/current_tracer
+>> ftrace_disable_ftrace_graph_caller
+>> ftrace_update_ftrace_func 0xc006afe4 0xc00091c4, 0xb000c006, 0x3280afe4
+>>
+>>
+>> What do you think?
+>>
+>> Thanks,
+>> Michal
+>>
+>>
+> 
 > 
 
-Even more important, the alignment can be changed as opposed to being
-fixed for the manufacture of the disk.
-
-	-hpa
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
