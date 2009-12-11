@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762464AbZLKLce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbZLKLcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762464AbZLKLce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 06:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762377AbZLKLcW
+	id S932825AbZLKLcn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 06:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762252AbZLKLc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 06:32:22 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:50302 "EHLO
+	Fri, 11 Dec 2009 06:32:29 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:50308 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762323AbZLKLcQ (ORCPT
+	with ESMTP id S1762362AbZLKLcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 06:32:16 -0500
+	Fri, 11 Dec 2009 06:32:20 -0500
 From: Felipe Balbi <felipe.balbi@nokia.com>
 To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
@@ -18,59 +18,111 @@ Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
        Greg Kroah-Hartman <gregkh@suse.de>,
        David Brownell <dbrownell@users.sourceforge.net>,
        Felipe Balbi <felipe.balbi@nokia.com>
-Subject: [RFC/PATCH 2/5] usb: otg: twl4030: add support for notifier
-Date: Fri, 11 Dec 2009 13:31:23 +0200
-Message-Id: <1260531086-23857-3-git-send-email-felipe.balbi@nokia.com>
+Subject: [RFC/PATCH 3/5] usb: musb: add support for ulpi block
+Date: Fri, 11 Dec 2009 13:31:24 +0200
+Message-Id: <1260531086-23857-4-git-send-email-felipe.balbi@nokia.com>
 X-Mailer: git-send-email 1.6.6.rc0
 In-Reply-To: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com>
 References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com>
-X-OriginalArrivalTime: 11 Dec 2009 11:31:47.0894 (UTC) FILETIME=[86633D60:01CA7A55]
+X-OriginalArrivalTime: 11 Dec 2009 11:31:50.0233 (UTC) FILETIME=[87C82490:01CA7A55]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-it's expected that the transceiver driver will
-initialize and call the notifier chain when
-necessary. Implement that for twl4030-usb driver.
+add register definitions and musb_ulpi_readb/writeb
+support.
 
 Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 ---
- drivers/usb/otg/twl4030-usb.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/usb/musb/musb_regs.h |   62 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 62 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/otg/twl4030-usb.c b/drivers/usb/otg/twl4030-usb.c
-index 2ffc8eb..c3e498a 100644
---- a/drivers/usb/otg/twl4030-usb.c
-+++ b/drivers/usb/otg/twl4030-usb.c
-@@ -36,7 +36,7 @@
- #include <linux/i2c/twl4030.h>
- #include <linux/regulator/consumer.h>
- #include <linux/err.h>
--
-+#include <linux/notifier.h>
+diff --git a/drivers/usb/musb/musb_regs.h b/drivers/usb/musb/musb_regs.h
+index 473a94e..7e6e68e 100644
+--- a/drivers/usb/musb/musb_regs.h
++++ b/drivers/usb/musb/musb_regs.h
+@@ -72,6 +72,11 @@
+ #define MUSB_DEVCTL_HR		0x02
+ #define MUSB_DEVCTL_SESSION	0x01
  
- /* Register defines */
- 
-@@ -628,7 +628,8 @@ static irqreturn_t twl4030_usb_irq(int irq, void *_twl)
- 		else
- 			twl4030_phy_resume(twl);
- 
--		twl4030charger_usb_en(status == USB_LINK_VBUS);
-+		blocking_notifier_call_chain(&twl->otg.notifier, status,
-+				twl->otg.gadget);
- 	}
- 	sysfs_notify(&twl->dev->kobj, NULL, "vbus");
- 
-@@ -718,6 +719,8 @@ static int __devinit twl4030_usb_probe(struct platform_device *pdev)
- 	if (device_create_file(&pdev->dev, &dev_attr_vbus))
- 		dev_warn(&pdev->dev, "could not create sysfs file\n");
- 
-+	BLOCKING_INIT_NOTIFIER_HEAD(&twl->otg.notifier);
++/* ULPI_REG_CONTROL */
++#define ULPI_REG_REQ		(1 << 0)
++#define ULPI_REG_CMPLT		(1 << 1)
++#define ULPI_RDN_WR		(1 << 2)
 +
- 	/* Our job is to use irqs and status from the power module
- 	 * to keep the transceiver disabled when nothing's connected.
- 	 *
+ /* TESTMODE */
+ #define MUSB_TEST_FORCE_HOST	0x80
+ #define MUSB_TEST_FIFO_ACCESS	0x40
+@@ -247,6 +252,16 @@
+ /* REVISIT: vctrl/vstatus: optional vendor utmi+phy register at 0x68 */
+ #define MUSB_HWVERS		0x6C	/* 8 bit */
+ 
++/* ULPI Registers */
++#define ULPI_VBUS_CONTROL	0x70	/* 8 bit */
++#define ULPI_CARKIT_CONTROL	0x71	/* 8 bit */
++#define ULPI_INT_MASK		0x72	/* 8 bit */
++#define ULPI_INT_SRC		0x73	/* 8 bit */
++#define ULPI_REG_DATA		0x74	/* 8 bit */
++#define ULPI_REG_ADDR		0x75	/* 8 bit */
++#define ULPI_REG_CONTROL	0x76	/* 8 bit */
++#define ULPI_RAW_DATA		0x77	/* 8 bit */
++
+ #define MUSB_EPINFO		0x78	/* 8 bit */
+ #define MUSB_RAMINFO		0x79	/* 8 bit */
+ #define MUSB_LINKINFO		0x7a	/* 8 bit */
+@@ -502,4 +517,51 @@ static inline void  musb_write_txhubport(void __iomem *mbase, u8 epnum,
+ 
+ #endif /* CONFIG_BLACKFIN */
+ 
++/* ULPI read/write support */
++static inline u8 musb_ulpi_readb(void __iomem *addr, u8 offset)
++{
++	int	i = 0;
++	u8	r;
++
++	musb_writeb(addr, ULPI_REG_ADDR, offset);
++	musb_writeb(addr, ULPI_REG_CONTROL, ULPI_REG_REQ | ULPI_RDN_WR);
++
++	while (!(musb_readb(addr, ULPI_REG_CONTROL) & ULPI_REG_CMPLT)) {
++		i++;
++		if (i == 10000) {
++			DBG(3, "ULPI read timed out\n");
++			return 0;
++		}
++
++	}
++	r = musb_readb(addr, ULPI_REG_CONTROL);
++	r &= ~ULPI_REG_CMPLT;
++	musb_writeb(addr, ULPI_REG_CONTROL, r);
++
++	return musb_readb(addr, ULPI_REG_DATA);
++}
++
++static inline void musb_ulpi_writeb(void __iomem *addr,
++	u8 offset, u8 data)
++{
++	int	i = 0;
++	u8	r = 0;
++
++	musb_writeb(addr, ULPI_REG_ADDR, offset);
++	musb_writeb(addr, ULPI_REG_DATA, data);
++	musb_writeb(addr, ULPI_REG_CONTROL, ULPI_REG_REQ);
++
++	while(!(musb_readb(addr, ULPI_REG_CONTROL) & ULPI_REG_CMPLT)) {
++		i++;
++		if (i == 10000) {
++			DBG(3, "ULPI write timed out\n");
++			return;
++		}
++	}
++
++	r = musb_readb(addr, ULPI_REG_CONTROL);
++	r &= ~ULPI_REG_CMPLT;
++	musb_writeb(addr, ULPI_REG_CONTROL, r);
++}
++
+ #endif	/* __MUSB_REGS_H__ */
 -- 
 1.6.6.rc0
 
