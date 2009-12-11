@@ -1,97 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZLKFyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbZLKF5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbZLKFyf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZLKFyd
+	id S1756823AbZLKF5M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:57:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbZLKF5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:54:33 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55078 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751124AbZLKFyc (ORCPT
+	Fri, 11 Dec 2009 00:57:11 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:43986 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754850AbZLKF5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:54:32 -0500
-Date: Thu, 10 Dec 2009 21:54:11 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Johannes Stezenbach <js@sig21.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32
-In-Reply-To: <20091209224759.GA26593@sig21.net>
-Message-ID: <alpine.LFD.2.00.0912102149590.3560@localhost.localdomain>
-References: <alpine.LFD.2.00.0912022125400.2872@localhost.localdomain> <20091209172007.GA11740@sig21.net> <alpine.LFD.2.00.0912090923500.3560@localhost.localdomain> <20091209224759.GA26593@sig21.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 11 Dec 2009 00:57:10 -0500
+Message-ID: <4B21DF33.7010906@cs.helsinki.fi>
+Date: Fri, 11 Dec 2009 07:57:07 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH 1/2] tracing: Define kmem_trace_alloc_notrace unconditionally
+References: <4B21DD88.7080806@cn.fujitsu.com>
+In-Reply-To: <4B21DD88.7080806@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 9 Dec 2009, Johannes Stezenbach wrote:
+Li Zefan wrote:
+> Always define kmem_trace_alloc_{,node}_notrace(), otherwise
+> perf-kmem will show wrong stats ifndef CONFIG_KMEMTRACE,
+> because a kmalloc() memory allocation may be traced by
+> both trace_kmalloc() and trace_kmem_cache_alloc().
 > 
-> it seems the lkml spam filter ate your reply,
-> maybe you shouldn't have mentioned the er**** pickled herring?
-> I'll keep a (slightly censored) full quote below,
-> hoping it gets through.  It would be a shame if
-> this essential information would be withheld from
-> the Linux community ;-)
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Actually, it wasn't about the er**** pickled herring, and your censored 
-email failed to get through too.
+Did you check how much this will make kernel text bigger because of the 
+inlining happening in kmem_cache_alloc_notrace()?
 
-I think it's the word "b*droom" that triggered the problem - it's on the 
-taboo list. I censored that one too, let's see if this now goes through.
+			Pekka
 
-What a nasty lkml taboo list. Some of those entries really are very crazy 
-aggressive.
-
-		Linus
-
----
-> On Wed, Dec 09, 2009 at 09:41:07AM -0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Wed, 9 Dec 2009, Johannes Stezenbach wrote:
-> > > 
-> > > it seems no one else dares to ask, so I'll bite:
-> > > Why is the kernel NAME no longer updated?
-> > 
-> > I'm not sure that you didn't mistype 'dares' (that 'c' is close to the 'd' 
-> > key on at least /my/ keyboard), but the answer is simple: I change the 
-> > name totally randomly, and it's usually brought on by me reading something 
-> > that struck me as funny. 
-> > 
-> > So the current "Man-eating Seals of Antiquity" comes from Bart Ehrman's 
-> > book "Jesus Interrupted". The previous one "Vindictive Armadillo", was I 
-> > think from an email that Alan Cox sent (probably some odd comment or 
-> > signature).  The one before that was just due to the tasmanian devil 
-> > mascot, while "Er**** Pickled Herring" was due to a NY-Times article that 
-> > said - quote - "It's as er**** as pickled herring."
-> > 
-> > [ Really. Look it up:
-> > 
-> > 	http://www.nytimes.com/2008/11/27/arts/27abro.html?_r=1&pagewanted=all
-> > 
-> >   and tell me that "Er**** Pickled Herring" doesn't make sense as a name 
-> >   for the kernel - or a rock band, for that matter. ]
-> > 
-> > And "Killer Bat of Doom" was due to a cute small bat somehow getting lost, 
-> > and ending up in Patricia's b*droom (it happened twice, and we have no 
-> > idea how it got in).
-> > 
-> > But I no longer remember what the background for "Rotary Wombat" and 
-> > "Funky Weasel is Jiggy wit it" was.
-> > 
-> > "Nocturnal Monster Puppy" was when Teddy (our dog) was little, and I had 
-> > to wake up a couple of times a night to take him out to pee. And "Lordi 
-> > Rules" was when hell froze over, and Finland won the Eurovision (if you 
-> > were Finnish, you'd understand - the largest newspaper in Finland 
-> > literally had "Hell Freezes Over" as the main story on the front page).
-> > 
-> > 			Linus
-> > 
+> ---
+>  include/linux/slab_def.h |   24 ++----------------------
+>  include/linux/slub_def.h |   27 +++------------------------
+>  mm/slab.c                |   12 ------------
+>  mm/slub.c                |    4 ----
+>  4 files changed, 5 insertions(+), 62 deletions(-)
 > 
-> Thanks,
-> Johannes
-> 
+> diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+> index 850d057..1c9ce4b 100644
+> --- a/include/linux/slab_def.h
+> +++ b/include/linux/slab_def.h
+> @@ -109,21 +109,12 @@ extern struct cache_sizes malloc_sizes[];
+>  
+>  void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+>  void *__kmalloc(size_t size, gfp_t flags);
+> +void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
+>  
+> -#ifdef CONFIG_KMEMTRACE
+> -extern void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
+> -extern size_t slab_buffer_size(struct kmem_cache *cachep);
+> -#else
+> -static __always_inline void *
+> -kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
+> -{
+> -	return kmem_cache_alloc(cachep, flags);
+> -}
+>  static inline size_t slab_buffer_size(struct kmem_cache *cachep)
+>  {
+> -	return 0;
+> +	return cachep->buffer_size;
+>  }
+> -#endif
+>  
+>  static __always_inline void *kmalloc(size_t size, gfp_t flags)
+>  {
+> @@ -165,20 +156,9 @@ found:
+>  #ifdef CONFIG_NUMA
+>  extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
+>  extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+> -
+> -#ifdef CONFIG_KMEMTRACE
+>  extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+>  					   gfp_t flags,
+>  					   int nodeid);
+> -#else
+> -static __always_inline void *
+> -kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+> -			      gfp_t flags,
+> -			      int nodeid)
+> -{
+> -	return kmem_cache_alloc_node(cachep, flags, nodeid);
+> -}
+> -#endif
+>  
+>  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  {
+> diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+> index 5ad70a6..5c5ca0c 100644
+> --- a/include/linux/slub_def.h
+> +++ b/include/linux/slub_def.h
+> @@ -215,18 +215,9 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
+>  #endif
+>  
+>  void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+> +void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
+>  void *__kmalloc(size_t size, gfp_t flags);
+>  
+> -#ifdef CONFIG_KMEMTRACE
+> -extern void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
+> -#else
+> -static __always_inline void *
+> -kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
+> -{
+> -	return kmem_cache_alloc(s, gfpflags);
+> -}
+> -#endif
+> -
+>  static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+>  {
+>  	unsigned int order = get_order(size);
+> @@ -265,20 +256,8 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+>  #ifdef CONFIG_NUMA
+>  void *__kmalloc_node(size_t size, gfp_t flags, int node);
+>  void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+> -
+> -#ifdef CONFIG_KMEMTRACE
+> -extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+> -					   gfp_t gfpflags,
+> -					   int node);
+> -#else
+> -static __always_inline void *
+> -kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+> -			      gfp_t gfpflags,
+> -			      int node)
+> -{
+> -	return kmem_cache_alloc_node(s, gfpflags, node);
+> -}
+> -#endif
+> +void *kmem_cache_alloc_node_notrace(struct kmem_cache *s, gfp_t gfpflags,
+> +				    int node);
+>  
+>  static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+>  {
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7dfa481..e556380 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -490,14 +490,6 @@ static void **dbg_userword(struct kmem_cache *cachep, void *objp)
+>  
+>  #endif
+>  
+> -#ifdef CONFIG_KMEMTRACE
+> -size_t slab_buffer_size(struct kmem_cache *cachep)
+> -{
+> -	return cachep->buffer_size;
+> -}
+> -EXPORT_SYMBOL(slab_buffer_size);
+> -#endif
+> -
+>  /*
+>   * Do not go above this order unless 0 objects fit into the slab.
+>   */
+> @@ -3558,13 +3550,11 @@ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc);
+>  
+> -#ifdef CONFIG_KMEMTRACE
+>  void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
+>  {
+>  	return __cache_alloc(cachep, flags, __builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_notrace);
+> -#endif
+>  
+>  /**
+>   * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
+> @@ -3621,7 +3611,6 @@ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node);
+>  
+> -#ifdef CONFIG_KMEMTRACE
+>  void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+>  				    gfp_t flags,
+>  				    int nodeid)
+> @@ -3630,7 +3619,6 @@ void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+>  				  __builtin_return_address(0));
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
+> -#endif
+>  
+>  static __always_inline void *
+>  __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 4996fc7..a1c8fe5 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1754,13 +1754,11 @@ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc);
+>  
+> -#ifdef CONFIG_KMEMTRACE
+>  void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
+>  {
+>  	return slab_alloc(s, gfpflags, -1, _RET_IP_);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_notrace);
+> -#endif
+>  
+>  #ifdef CONFIG_NUMA
+>  void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+> @@ -1775,7 +1773,6 @@ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+>  EXPORT_SYMBOL(kmem_cache_alloc_node);
+>  #endif
+>  
+> -#ifdef CONFIG_KMEMTRACE
+>  void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+>  				    gfp_t gfpflags,
+>  				    int node)
+> @@ -1783,7 +1780,6 @@ void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+>  	return slab_alloc(s, gfpflags, node, _RET_IP_);
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
+> -#endif
+>  
+>  /*
+>   * Slow patch handling. This may still be called frequently since objects
+
