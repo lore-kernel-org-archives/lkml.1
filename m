@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbZLKVu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbZLKV6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933289AbZLKVu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:50:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbZLKVuy
+	id S1761514AbZLKV6J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:58:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761489AbZLKV6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:50:54 -0500
-Received: from exprod6og108.obsmtp.com ([64.18.1.21]:43646 "EHLO
-	exprod6og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759163AbZLKVux convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 16:58:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58127 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761483AbZLKV6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:50:53 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Fri, 11 Dec 2009 16:58:03 -0500
+Date: Fri, 11 Dec 2009 13:57:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 2/2]ACPI: assign different lockdep key for acpi works
+Message-Id: <20091211135716.b6d577a1.akpm@linux-foundation.org>
+In-Reply-To: <20091211030458.GB7772@sli10-desk.sh.intel.com>
+References: <20091211030458.GB7772@sli10-desk.sh.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] leds-cobalt-qube.c: use resource_size()
-Date: Fri, 11 Dec 2009 16:50:58 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901FB10D8@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] leds-cobalt-qube.c: use resource_size()
-Thread-Index: Acp6rAW1+oFiny9YTUK1orYgEw4glQ==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>
-Cc: <rpurdie@rpsys.net>, <gregkh@suse.de>
-X-OriginalArrivalTime: 11 Dec 2009 21:50:59.0011 (UTC) FILETIME=[062DD130:01CA7AAC]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size() for ioremap.
+On Fri, 11 Dec 2009 11:04:58 +0800
+Shaohua Li <shaohua.li@intel.com> wrote:
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Differentiate works for three different workqueue in ACPI. This fixes
+> a fase alarm from lockdep, as acpi hotplug workqueue waits other
+> workqueues.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=14553
+> 
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> ---
+>  drivers/acpi/osl.c |   12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> Index: linux/drivers/acpi/osl.c
+> ===================================================================
+> --- linux.orig/drivers/acpi/osl.c	2009-12-10 10:40:15.000000000 +0800
+> +++ linux/drivers/acpi/osl.c	2009-12-10 10:43:25.000000000 +0800
+> @@ -729,6 +729,8 @@ static acpi_status __acpi_os_execute(acp
+>  	struct acpi_os_dpc *dpc;
+>  	struct workqueue_struct *queue;
+>  	int ret;
+> +	static struct lock_class_key hp_key, notify_key, acpid_key;
+> +
+>  	ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
+>  			  "Scheduling function [%p(%p)] for deferred execution.\n",
+>  			  function, context));
+> @@ -758,7 +760,15 @@ static acpi_status __acpi_os_execute(acp
+>  	queue = hp ? kacpi_hotplug_wq :
+>  		(type == OSL_NOTIFY_HANDLER ? kacpi_notify_wq : kacpid_wq);
+>  	dpc->wait = hp ? 1 : 0;
+> -	INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+> +	if (queue == kacpi_hotplug_wq)
+> +		INIT_WORK_KEY(&dpc->work, acpi_os_execute_deferred,
+> +				hp_key, "acpi_hp_work");
+> +	else if (queue == kacpi_notify_wq)
+> +		INIT_WORK_KEY(&dpc->work, acpi_os_execute_deferred,
+> +				notify_key, "acpi_notify_work");
+> +	else
+> +		INIT_WORK_KEY(&dpc->work, acpi_os_execute_deferred,
+> +				acpid_key, "acpi_acpid_work");
+>  	ret = queue_work(queue, &dpc->work);
+>  
+>  	if (!ret) {
 
----
+Yes, that's a shortcoming in the present INIT_WORK().  However I think
+you can solve this more simply, without introducing INIT_WORK_KEY():
 
-diff --git a/drivers/leds/leds-cobalt-qube.c b/drivers/leds/leds-cobalt-qube.c
-index 8816806..de19753 100644
---- a/drivers/leds/leds-cobalt-qube.c
-+++ b/drivers/leds/leds-cobalt-qube.c
-@@ -43,7 +43,7 @@ static int __devinit cobalt_qube_led_probe(struct platform_device *pdev)
- 	if (!res)
- 		return -EBUSY;
- 
--	led_port = ioremap(res->start, res->end - res->start + 1);
-+	led_port = ioremap(res->start, resource_size(res));
- 	if (!led_port)
- 		return -ENOMEM;
-  
+	if (queue == kacpi_hotplug_wq)
+		INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+	else if (queue == kacpi_notify_wq)
+		INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+	else
+		INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+
+it looks silly, but I think the compiler will do the right thing with it
+- you'll get a separate lock_class_key at each site.
+
+Obviously it would need an explanatory comment.
