@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbZLKPtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbZLKPwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932915AbZLKPtT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 10:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932845AbZLKPtQ
+	id S933236AbZLKPwk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 10:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932899AbZLKPwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 10:49:16 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48682 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932837AbZLKPtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 10:49:11 -0500
-Date: Fri, 11 Dec 2009 07:38:14 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Cc: bn@niasdigital.com,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+	Fri, 11 Dec 2009 10:52:34 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:50324 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932641AbZLKPwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 10:52:33 -0500
+Subject: Re: [PATCHv9 3/3] vhost_net: a kernel-level virtio server
+From: Shirley Ma <mashirle@us.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: "Xin, Xiaohui" <xiaohui.xin@intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dsilvers@simtec.co.uk" <dsilvers@simtec.co.uk>,
-       "ben@simtec.co.uk" <ben@simtec.co.uk>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] gpiolib: add support for having symlinks under
-	gpio class directory
-Message-ID: <20091211153814.GE28097@suse.de>
-References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com> <71eff9c88d3fec3daa218341c83c19a106ee1f62.1260364108.git.ext-jani.1.nikula@nokia.com> <20091210024834.GB20410@suse.de> <1260455537.25352.1762.camel@jani-desktop> <20091210144920.GA27237@suse.de> <1260520900.25352.2823.camel@jani-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260520900.25352.2823.camel@jani-desktop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "s.hetze@linux-ag.com" <s.hetze@linux-ag.com>,
+       Daniel Walker <dwalker@fifo99.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+In-Reply-To: <20091122103511.GB13644@redhat.com>
+References: <cover.1257786516.git.mst@redhat.com>
+	 <20091109172230.GD4724@redhat.com>
+	 <C85CEDA13AB1CF4D9D597824A86D2B901925446AB4@PDSMSX501.ccr.corp.intel.com>
+	 <20091122103511.GB13644@redhat.com>
+Content-Type: text/plain
+Date: Fri, 11 Dec 2009 07:52:22 -0800
+Message-Id: <1260546742.3960.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 10:41:40AM +0200, Jani Nikula wrote:
-> Let's see. 'udevadm monitor --env' gives me this when I 'echo add >
-> uevent' for an exported gpio #5:
-> 
-> UDEV  [1230784956.241303] add      /class/gpio/gpio5 (gpio)                     
-> UDEV_LOG=3                                                                      
-> ACTION=add                                                                      
-> DEVPATH=/class/gpio/gpio5                                                       
-> SUBSYSTEM=gpio                                                                  
-> SEQNUM=930                                                                      
-> UDEVD_EVENT=1
-> 
-> Now *assuming* we had /sys/class/gpio/gpioN/name, I could create very
-> crude udev rules along the lines of this:
-> 
-> SUBSYSTEM=="gpio", ACTION=="add", ATTR{name}!="", RUN="/bin/ln -s /sys$devpath /tmp/gpio-$attr{name}"
-> SUBSYSTEM=="gpio", ACTION=="remove", ATTR{name}!="", RUN="/bin/rm /tmp/gpio-$attr{name}"
-> 
-> Not exactly pretty, but seems to work (using another attr for testing).
-> Is there a more elegant way of doing this with udev when there are no
-> device nodes? Or is it even sensible to use udev without the device
-> nodes? And what would be the right place for the symlinks?
 
-Kay said he didn't like you creating symlinks in /dev with udev, but
-this looks ok to me.
+On Sun, 2009-11-22 at 12:35 +0200, Michael S. Tsirkin wrote:
+> These results where sent by Shirley Ma (Cc'd).
+> I think they were with tap, host-to-guest/guest-to-host
 
-> *If* we got that working in a sensible fashion, it'd be a matter of
-> adding the "name" attribute to each gpio.
+Yes, you are right.
 
-Yup, just use whatever you were wanting to use as the symlink name, it
-seems that logic was already done.
+Shirley
 
-thanks.
-
-greg k-h
