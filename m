@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934445AbZLKXaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934588AbZLKXaC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934445AbZLKXaj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934574AbZLKX34
+	id S934588AbZLKXaC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:30:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934530AbZLKX3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:29:56 -0500
-Received: from kroah.org ([198.145.64.141]:50551 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934500AbZLKX3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:29:40 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 58/58] tty: split the lock up a bit further
-Date: Fri, 11 Dec 2009 15:28:42 -0800
-Message-Id: <1260574122-10676-58-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <20091211232805.GA10652@kroah.com>
-References: <20091211232805.GA10652@kroah.com>
+	Fri, 11 Dec 2009 18:29:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51153 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934477AbZLKX3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:29:34 -0500
+Date: Fri, 11 Dec 2009 15:29:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+Subject: Re: [GIT PATCH] STAGING patches for 2.6.33-git
+In-Reply-To: <20091211212704.GC6624@kroah.com>
+Message-ID: <alpine.LFD.2.00.0912111527480.3526@localhost.localdomain>
+References: <20091211212704.GC6624@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
 
-The tty count sanity check may need the BKL, that isn't clear. However it
-is clear that the count use of the lock is internal and independant of the
-bigger use of the lock.
 
-Furthermore the file list locking is also separately locked already
+On Fri, 11 Dec 2009, Greg KH wrote:
+>
+> Here is the big staging merge for the 2.6.33-git tree
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/char/tty_io.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+"B.A.T.M.A.N. Advanced Meshing Protocol"?
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index a19fef2..684f0e0 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -516,6 +516,8 @@ static void do_tty_hangup(struct work_struct *work)
- 	/* inuse_filps is protected by the single kernel lock */
- 	lock_kernel();
- 	check_tty_count(tty, "do_tty_hangup");
-+	unlock_kernel();
-+
- 	file_list_lock();
- 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
- 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
-@@ -529,6 +531,7 @@ static void do_tty_hangup(struct work_struct *work)
- 	}
- 	file_list_unlock();
- 
-+	lock_kernel();
- 	tty_ldisc_hangup(tty);
- 
- 	read_lock(&tasklist_lock);
--- 
-1.6.5.5
+Oh, and I think I found a bug in BATMAN already: if you say 'no' to him, 
+he still asks whether you want to debug him. 
 
+Please, Greg, teach BATMAN that "No means no!". 
+
+		Linus
