@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762322AbZLKElz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbZLKElh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762322AbZLKElz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761629AbZLKElx
+	id S933245AbZLKElh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762328AbZLKEld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:41:53 -0500
-Received: from kroah.org ([198.145.64.141]:37201 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:41:33 -0500
+Received: from kroah.org ([198.145.64.141]:37207 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762179AbZLKEgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:52 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:28:23 2009
-Message-Id: <20091211042822.857844494@linux.site>
+	id S1762304AbZLKEgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:53 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:28:24 2009
+Message-Id: <20091211042823.450484017@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:26:07 -0800
+Date: Thu, 10 Dec 2009 20:26:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Kyle McMartin <kyle@mcmartin.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [89/90] signal: Fix alternate signal stack check
+       "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [90/90] ext4: Fix potential fiemap deadlock (mmap_sem vs. i_data_sem)
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=signal-fix-alternate-signal-stack-check.patch
+Content-Disposition: inline; filename=ext4-fix-potential-fiemap-deadlock-mmap_sem-vs.-i_data_sem.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,87 +29,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+(cherry picked from commit fab3a549e204172236779f502eccb4f9bf0dc87d)
 
-commit 2a855dd01bc1539111adb7233f587c5c468732ac upstream.
+Fix the following potential circular locking dependency between
+mm->mmap_sem and ei->i_data_sem:
 
-All architectures in the kernel increment/decrement the stack pointer
-before storing values on the stack.
+    =======================================================
+    [ INFO: possible circular locking dependency detected ]
+    2.6.32-04115-gec044c5 #37
+    -------------------------------------------------------
+    ureadahead/1855 is trying to acquire lock:
+     (&mm->mmap_sem){++++++}, at: [<ffffffff81107224>] might_fault+0x5c/0xac
 
-On architectures which have the stack grow down sas_ss_sp == sp is not
-on the alternate signal stack while sas_ss_sp + sas_ss_size == sp is
-on the alternate signal stack.
+    but task is already holding lock:
+     (&ei->i_data_sem){++++..}, at: [<ffffffff811be1fd>] ext4_fiemap+0x11b/0x159
 
-On architectures which have the stack grow up sas_ss_sp == sp is on
-the alternate signal stack while sas_ss_sp + sas_ss_size == sp is not
-on the alternate signal stack.
+    which lock already depends on the new lock.
 
-The current implementation fails for architectures which have the
-stack grow down on the corner case where sas_ss_sp == sp.This was
-reported as Debian bug #544905 on AMD64.
-Simplified test case: http://download.breakpoint.cc/tc-sig-stack.c
+    the existing dependency chain (in reverse order) is:
 
-The test case creates the following stack scenario:
-   0xn0300	stack top
-   0xn0200	alt stack pointer top (when switching to alt stack)
-   0xn01ff	alt stack end
-   0xn0100	alt stack start == stack pointer
+    -> #1 (&ei->i_data_sem){++++..}:
+           [<ffffffff81099bfa>] __lock_acquire+0xb67/0xd0f
+           [<ffffffff81099e7e>] lock_acquire+0xdc/0x102
+           [<ffffffff81516633>] down_read+0x51/0x84
+           [<ffffffff811a2414>] ext4_get_blocks+0x50/0x2a5
+           [<ffffffff811a3453>] ext4_get_block+0xab/0xef
+           [<ffffffff81154f39>] do_mpage_readpage+0x198/0x48d
+           [<ffffffff81155360>] mpage_readpages+0xd0/0x114
+           [<ffffffff811a104b>] ext4_readpages+0x1d/0x1f
+           [<ffffffff810f8644>] __do_page_cache_readahead+0x12f/0x1bc
+           [<ffffffff810f86f2>] ra_submit+0x21/0x25
+           [<ffffffff810f0cfd>] filemap_fault+0x19f/0x32c
+           [<ffffffff81107b97>] __do_fault+0x55/0x3a2
+           [<ffffffff81109db0>] handle_mm_fault+0x327/0x734
+           [<ffffffff8151aaa9>] do_page_fault+0x292/0x2aa
+           [<ffffffff81518205>] page_fault+0x25/0x30
+           [<ffffffff812a34d8>] clear_user+0x38/0x3c
+           [<ffffffff81167e16>] padzero+0x20/0x31
+           [<ffffffff81168b47>] load_elf_binary+0x8bc/0x17ed
+           [<ffffffff81130e95>] search_binary_handler+0xc2/0x259
+           [<ffffffff81166d64>] load_script+0x1b8/0x1cc
+           [<ffffffff81130e95>] search_binary_handler+0xc2/0x259
+           [<ffffffff8113255f>] do_execve+0x1ce/0x2cf
+           [<ffffffff81027494>] sys_execve+0x43/0x5a
+           [<ffffffff8102918a>] stub_execve+0x6a/0xc0
 
-If the signal is sent the stack pointer is pointing to the base
-address of the alt stack and the kernel erroneously decides that it
-has already switched to the alternate stack because of the current
-check for "sp - sas_ss_sp < sas_ss_size"
+    -> #0 (&mm->mmap_sem){++++++}:
+           [<ffffffff81099aa4>] __lock_acquire+0xa11/0xd0f
+           [<ffffffff81099e7e>] lock_acquire+0xdc/0x102
+           [<ffffffff81107251>] might_fault+0x89/0xac
+           [<ffffffff81139382>] fiemap_fill_next_extent+0x95/0xda
+           [<ffffffff811bcb43>] ext4_ext_fiemap_cb+0x138/0x157
+           [<ffffffff811be069>] ext4_ext_walk_space+0x178/0x1f1
+           [<ffffffff811be21e>] ext4_fiemap+0x13c/0x159
+           [<ffffffff811390e6>] do_vfs_ioctl+0x348/0x4d6
+           [<ffffffff811392ca>] sys_ioctl+0x56/0x79
+           [<ffffffff81028cb2>] system_call_fastpath+0x16/0x1b
 
-On parisc (stack grows up) the scenario would be:
-   0xn0200	stack pointer
-   0xn01ff	alt stack end
-   0xn0100	alt stack start = alt stack pointer base
-   		    	  	  (when switching to alt stack)
-   0xn0000	stack base
+    other info that might help us debug this:
 
-This is handled correctly by the current implementation.
+    1 lock held by ureadahead/1855:
+     #0:  (&ei->i_data_sem){++++..}, at: [<ffffffff811be1fd>] ext4_fiemap+0x11b/0x159
 
-[ tglx: Modified for archs which have the stack grow up (parisc) which
-  	would fail with the correct implementation for stack grows
-  	down. Added a check for sp >= current->sas_ss_sp which is
-  	strictly not necessary but makes the code symetric for both
-  	variants ]
+    stack backtrace:
+    Pid: 1855, comm: ureadahead Not tainted 2.6.32-04115-gec044c5 #37
+    Call Trace:
+     [<ffffffff81098c70>] print_circular_bug+0xa8/0xb7
+     [<ffffffff81099aa4>] __lock_acquire+0xa11/0xd0f
+     [<ffffffff8102f229>] ? sched_clock+0x9/0xd
+     [<ffffffff81099e7e>] lock_acquire+0xdc/0x102
+     [<ffffffff81107224>] ? might_fault+0x5c/0xac
+     [<ffffffff81107251>] might_fault+0x89/0xac
+     [<ffffffff81107224>] ? might_fault+0x5c/0xac
+     [<ffffffff81124b44>] ? __kmalloc+0x13b/0x18c
+     [<ffffffff81139382>] fiemap_fill_next_extent+0x95/0xda
+     [<ffffffff811bcb43>] ext4_ext_fiemap_cb+0x138/0x157
+     [<ffffffff811bca0b>] ? ext4_ext_fiemap_cb+0x0/0x157
+     [<ffffffff811be069>] ext4_ext_walk_space+0x178/0x1f1
+     [<ffffffff811be21e>] ext4_fiemap+0x13c/0x159
+     [<ffffffff81107224>] ? might_fault+0x5c/0xac
+     [<ffffffff811390e6>] do_vfs_ioctl+0x348/0x4d6
+     [<ffffffff8129f6d0>] ? __up_read+0x8d/0x95
+     [<ffffffff81517fb5>] ? retint_swapgs+0x13/0x1b
+     [<ffffffff811392ca>] sys_ioctl+0x56/0x79
+     [<ffffffff81028cb2>] system_call_fastpath+0x16/0x1b
 
-Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-LKML-Reference: <20091025143758.GA6653@Chamillionaire.breakpoint.cc>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- include/linux/sched.h |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ fs/ext4/extents.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1999,11 +1999,18 @@ static inline int is_si_special(const st
- 	return info <= SEND_SIG_FORCED;
- }
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -1742,7 +1742,9 @@ int ext4_ext_walk_space(struct inode *in
+ 	while (block < last && block != EXT_MAX_BLOCK) {
+ 		num = last - block;
+ 		/* find extent for this block */
++		down_read(&EXT4_I(inode)->i_data_sem);
+ 		path = ext4_ext_find_extent(inode, block, path);
++		up_read(&EXT4_I(inode)->i_data_sem);
+ 		if (IS_ERR(path)) {
+ 			err = PTR_ERR(path);
+ 			path = NULL;
+@@ -3707,10 +3709,8 @@ int ext4_fiemap(struct inode *inode, str
+ 		 * Walk the extent tree gathering extent information.
+ 		 * ext4_ext_fiemap_cb will push extents back to user.
+ 		 */
+-		down_read(&EXT4_I(inode)->i_data_sem);
+ 		error = ext4_ext_walk_space(inode, start_blk, len_blks,
+ 					  ext4_ext_fiemap_cb, fieinfo);
+-		up_read(&EXT4_I(inode)->i_data_sem);
+ 	}
  
--/* True if we are on the alternate signal stack.  */
--
-+/*
-+ * True if we are on the alternate signal stack.
-+ */
- static inline int on_sig_stack(unsigned long sp)
- {
--	return (sp - current->sas_ss_sp < current->sas_ss_size);
-+#ifdef CONFIG_STACK_GROWSUP
-+	return sp >= current->sas_ss_sp &&
-+		sp - current->sas_ss_sp < current->sas_ss_size;
-+#else
-+	return sp > current->sas_ss_sp &&
-+		sp - current->sas_ss_sp <= current->sas_ss_size;
-+#endif
- }
- 
- static inline int sas_ss_flags(unsigned long sp)
+ 	return error;
 
 
