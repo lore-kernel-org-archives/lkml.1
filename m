@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZLKXMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbZLKXMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761596AbZLKXMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:12:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761584AbZLKXMa
+	id S1758396AbZLKXMb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761549AbZLKXM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:12:30 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:42269 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761495AbZLKXM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Dec 2009 18:12:29 -0500
-Date: Sat, 12 Dec 2009 00:12:34 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
-Cc: davej@redhat.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org, mjg@redhat.com, trenn@suse.de,
-       lenb@kernel.org
-Subject: Re: [PATCH] cpufreq: Processor Clocking Control interface driver
-Message-ID: <20091211231233.GA4291@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Naga Chumbalkar <nagananda.chumbalkar@hp.com>, davej@redhat.com,
-	linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-	linux-acpi@vger.kernel.org, mjg@redhat.com, trenn@suse.de,
-	lenb@kernel.org
-References: <20091128034424.6796.75673.sendpatchset@localhost.localdomain>
+Received: from exprod6og112.obsmtp.com ([64.18.1.29]:57217 "EHLO
+	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761384AbZLKXM2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:12:28 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091128034424.6796.75673.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: GPIO support for HTC Dream
+Date: Fri, 11 Dec 2009 18:12:35 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901FB10EB@mi8nycmail19.Mi8.com>
+In-Reply-To: <d6200be20912111440k427c5013j2b17191bcbae2d52@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: GPIO support for HTC Dream
+Thread-Index: Acp6svjcYJvAE8eDQuaaXYbMbTd/FgAA7AKg
+References: <20091208102842.GH12264@elf.ucw.cz> <4B1EB57D.6070408@bluewatersys.com> <20091208214658.GC4164@elf.ucw.cz> <4B1ECEEE.3000209@bluewatersys.com> <4B203575.6050407@bluewatersys.com> <20091210172458.GJ19454@elf.ucw.cz> <4B2150B7.3040207@bluewatersys.com> <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com> <20091211221015.GB24456@elf.ucw.cz> <d6200be20912111440k427c5013j2b17191bcbae2d52@mail.gmail.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: =?iso-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       "Pavel Machek" <pavel@ucw.cz>
+Cc: "Ryan Mallon" <ryan@bluewatersys.com>,
+       "Daniel Walker" <dwalker@codeaurora.org>,
+       "Iliyan Malchev" <malchev@google.com>,
+       "Brian Swetland" <swetland@google.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>
+X-OriginalArrivalTime: 11 Dec 2009 23:12:34.0382 (UTC) FILETIME=[6C0C26E0:01CA7AB7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+On Friday, December 11, 2009 3:41 PM, Arve Hjønnevåg wrote:
 
-On Fri, Dec 11, 2009 at 10:55:40PM +0000, Naga Chumbalkar wrote:
-> +The VERSION number for the driver will be of the format v.xy.ab.
-> +eg: 1.00.02
-> +   ----- --
-> +    |    |
-> +    |    -- this will increase with bug fixes/enhancements to the driver
-> +    |-- this is the version of the PCC specification the driver adheres to
+<snip>
 
-If this is _really_ necessary... Doesn't the driver version relate to some
-Linux kernel version anyway?
+>> Now, it will still need some cleanups -- I'm not sure if gpios are
+>> dream-specific or generic for whole msm.... I kind of assume they
+>> should be generic for msm. Google people, can you help?
+>
+> I'm not exactly sure what you are asking. Gpios in general are not
+> dream specific, the code in board-dream-gpio.c is. Some gpios (e.g.
+> DREAM_4_BALL_UP_0) are used for a dream specific function, but point
+> to a gpio that is generic to the msm architecture.
 
-> +2.1 scaling_available_frequencies:
-> +----------------------------------
-> +scaling_available_frequencies indicates the minimum and maximum speed
-> +the CPU can take as advertised by the BIOS. No intermediate frequencies are
-> +listed because the BIOS will try to achieve any intermediate frequency
-> +requested by the governor. An intermediate frequency does not have to be
-> +strictly associated with a P-state.
+<snip>
 
-Why do you export scaling_available_frequencies anyway? It's made available
-by the _optional_ freq-table helper module, which is wrong to use in this
-case anyway.
+>> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+>> index 1c4119c..8bb8546 100644
+>> --- a/arch/arm/Kconfig
+>> +++ b/arch/arm/Kconfig
+>> @@ -565,6 +565,8 @@ config ARCH_MSM
+>>        select CPU_V6
+>>        select GENERIC_TIME
+>>        select GENERIC_CLOCKEVENTS
+>> +       select GENERIC_GPIO
+>> +       select ARCH_REQUIRE_GPIOLIB
+>
+> Please do not do this in a board specific change. You have not changed
+> the msm generic gpio support to use gpiolib.
 
-> +2.2 cpuinfo_transition_latency:
-> +-------------------------------
-> +The cpuinfo_transition_latency field is 0. The PCC specification does
-> +not include a field to expose this value currently.
+Where is the msm tree located?  mach-msm in mainline doesn't appear to
+have _any_ gpio support.  Is Pavel's implementation generic enough to
+work with any msm based board?
 
-Uh, bad specification... So does it work properly with ondemand and/or
-conservative (which read out this field, and if latency=0 use a minimum
-value)?
-
-> +config X86_PCC_CPUFREQ
-> +	tristate "Processor Clocking Control interface driver"
-> +	select CPU_FREQ_TABLE
-Uh, see above.
-
-> +static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
-> +{
-> +	return cpufreq_frequency_table_verify(policy, pcc_freq_table);
-> +}
-
-Well, AFAICS, this limits the whole interface to two values: min or max. So
-let's allow for any intermediate value:
-
-static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
-{
-	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
-}
-
-but well... later on, you check this:
-
-> +	if (target_freq <= (ioread32(&pcch_hdr->minimum_frequency) * 1000)) {
-> +		target_freq = ioread32(&pcch_hdr->minimum_frequency) * 1000;
-> +		dprintk("target: target_freq for cpu %d was below limit, "
-> +			"converted it to %d\n", cpu, target_freq);
-> +	}
-
-why not do this in the _verify() step? Does pcch_hdr->minimum_frequency
-even change "on the fly"?
-
-So, I'd propose to NACK this patch at the moment.
-
-Best,
-	Dominik
+Regards,
+Hartley
