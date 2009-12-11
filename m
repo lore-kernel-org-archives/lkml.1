@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZLKDE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZLKDE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZLKDE3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 22:04:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZLKDE1
+	id S1755625AbZLKDE7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 22:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZLKDEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 22:04:27 -0500
-Received: from mga02.intel.com ([134.134.136.20]:5797 "EHLO mga02.intel.com"
+	Thu, 10 Dec 2009 22:04:55 -0500
+Received: from mga14.intel.com ([143.182.124.37]:40271 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbZLKDE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 22:04:27 -0500
+	id S1752099AbZLKDEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 22:04:54 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,378,1257148800"; 
-   d="scan'208";a="577684814"
-Date: Fri, 11 Dec 2009 11:04:31 +0800
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="221376690"
+Date: Fri, 11 Dec 2009 11:04:58 +0800
 From: Shaohua Li <shaohua.li@intel.com>
 To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, lenb@kernel.org
-Subject: [PATCH 1/2]workqueue:introduce INIT_WORK_KEY()
-Message-ID: <20091211030431.GA7772@sli10-desk.sh.intel.com>
+Cc: lenb@kernel.org, akpm@linux-foundation.org, mingo@elte.hu
+Subject: [PATCH 2/2]ACPI: assign different lockdep key for acpi works
+Message-ID: <20091211030458.GB7772@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,52 +26,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce INIT_WORK_KEY(). lockdep key is static in a function. If a function
-uses INIT_WORK() to initialize works for different workqueue, the works will
-share a lockdep key incorrectly and cause lockdep fase alarm sometimes.
-Next patch will use the new API to solve one ACPI issue.
+Differentiate works for three different workqueue in ACPI. This fixes
+a fase alarm from lockdep, as acpi hotplug workqueue waits other
+workqueues.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=14553
 
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 ---
- include/linux/workqueue.h |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ drivers/acpi/osl.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-Index: linux/include/linux/workqueue.h
+Index: linux/drivers/acpi/osl.c
 ===================================================================
---- linux.orig/include/linux/workqueue.h	2009-12-10 10:14:56.000000000 +0800
-+++ linux/include/linux/workqueue.h	2009-12-10 10:39:30.000000000 +0800
-@@ -99,15 +99,20 @@ struct execute_work {
-  * to generate better code.
-  */
- #ifdef CONFIG_LOCKDEP
--#define INIT_WORK(_work, _func)						\
-+#define INIT_WORK_KEY(_work, _func, _key, _key_name) 			\
- 	do {								\
--		static struct lock_class_key __key;			\
--									\
- 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
--		lockdep_init_map(&(_work)->lockdep_map, #_work, &__key, 0);\
-+		lockdep_init_map(&(_work)->lockdep_map, _key_name, 	\
-+				&_key, 0);				\
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
- 	} while (0)
+--- linux.orig/drivers/acpi/osl.c	2009-12-10 10:40:15.000000000 +0800
++++ linux/drivers/acpi/osl.c	2009-12-10 10:43:25.000000000 +0800
+@@ -729,6 +729,8 @@ static acpi_status __acpi_os_execute(acp
+ 	struct acpi_os_dpc *dpc;
+ 	struct workqueue_struct *queue;
+ 	int ret;
++	static struct lock_class_key hp_key, notify_key, acpid_key;
 +
-+#define INIT_WORK(_work, _func)						\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		INIT_WORK_KEY(_work, _func, __key, #_work);		\
-+	} while (0)
- #else
- #define INIT_WORK(_work, _func)						\
- 	do {								\
-@@ -115,6 +120,9 @@ struct execute_work {
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
- 	} while (0)
-+
-+#define INIT_WORK_KEY(_work, _func, _key, _key_name) 			\
-+	INIT_WORK(_work, _func)
- #endif
+ 	ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
+ 			  "Scheduling function [%p(%p)] for deferred execution.\n",
+ 			  function, context));
+@@ -758,7 +760,15 @@ static acpi_status __acpi_os_execute(acp
+ 	queue = hp ? kacpi_hotplug_wq :
+ 		(type == OSL_NOTIFY_HANDLER ? kacpi_notify_wq : kacpid_wq);
+ 	dpc->wait = hp ? 1 : 0;
+-	INIT_WORK(&dpc->work, acpi_os_execute_deferred);
++	if (queue == kacpi_hotplug_wq)
++		INIT_WORK_KEY(&dpc->work, acpi_os_execute_deferred,
++				hp_key, "acpi_hp_work");
++	else if (queue == kacpi_notify_wq)
++		INIT_WORK_KEY(&dpc->work, acpi_os_execute_deferred,
++				notify_key, "acpi_notify_work");
++	else
++		INIT_WORK_KEY(&dpc->work, acpi_os_execute_deferred,
++				acpid_key, "acpi_acpid_work");
+ 	ret = queue_work(queue, &dpc->work);
  
- #define INIT_DELAYED_WORK(_work, _func)				\
+ 	if (!ret) {
