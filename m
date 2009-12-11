@@ -1,202 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762623AbZLKVEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762617AbZLKVHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762623AbZLKVEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:04:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbZLKVEj
+	id S1762617AbZLKVHc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZLKVH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:04:39 -0500
-Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:36269 "EHLO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756746AbZLKVEi convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 16:07:26 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:49593 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756127AbZLKVHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:04:38 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 11 Dec 2009 16:07:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=l4EP9NBCik+og4UwkTXqhq8Urns7BSp/luVxDuQKzfxLhgWj0zstjZcFnag9CfwUFp
+         +O/hSKmc7VD103KiFmYFN3PJ6F+CS9hzhtgZffX8uHLqo8sjh1qxghwv798lugLg2iUz
+         e8TIRGn1l7GZ6YDgxuSsF6dJwMGN2zcatUHtY=
+Message-ID: <4B22B481.9060600@gmail.com>
+Date: Fri, 11 Dec 2009 22:07:13 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
-Date: Fri, 11 Dec 2009 16:04:38 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
-Thread-Index: Acp6pYy295Xcs/GqTgG+X+vjFtsZug==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>
-Cc: <linux-ide@vger.kernel.org>, "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 11 Dec 2009 21:04:39.0517 (UTC) FILETIME=[8D78B0D0:01CA7AA5]
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Stephen Clark <sclark46@earthlink.net>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH v2] Documentation: rw_lock lessons learned
+References: <4AF9C540.5090403@gmail.com>	<20091110180646.2e5859a8@nehalam>	<4AFAEF78.4080807@gmail.com> <20091111093724.4f40a48d@nehalam> <4AFBEC44.9030409@gmail.com> <4B227ADC.5010908@gmail.com>
+In-Reply-To: <4B227ADC.5010908@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ioremap return value is an __iomem *, not an integer.  Update the
-private structure to reflect this.  While here, remove the typedef
-for _auide_hwif and just use struct auide_hwif instead as recommended
-by Documentation/CodingStyle.
+William Allen Simpson wrote, On 12/11/2009 06:01 PM:
 
-auide_setup_ports() still needs to cast the regbase back to an integer
-to correctly setup the io_ports_array.
+> William Allen Simpson wrote:
+>> In recent weeks, two different network projects erroneously
+>> strayed down the rw_lock path.  Update the Documentation
+>> based upon comments by Eric Dumazet and Paul E. McKenney in
+>> those threads.
+>>
+>> Merged with editorial changes by Stephen Hemminger.
+>>
+>> Signed-off-by: William.Allen.Simpson@gmail.com
+>> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>>
+> A month ago, I'd taken the final line "Ho humm.." of Linus'
+> response to mean he wasn't interested.  But at the local
+> discussion yesterday, I'm told that's just a typical Linusism.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David Miller <davem@davemloft.net>
+Why would he write 6 paragraphs if he wasn't interested?
 
----
+> 
+> The thread diverged into discussion of another document entirely.
+> 
+> I'm not the person to update this document with any of the other
+> information about global locks and tasklists and such.  But surely
+> somebody else could handle that in another patch.
+> 
+> Anybody have answers/updates to Linus's concerns about "pretty old
+> and bogus language"?  Would folks be interested in the update?
+> Does anybody know which list(s) would be better for discussion?
 
-diff --git a/Documentation/mips/AU1xxx_IDE.README b/Documentation/mips/AU1xxx_IDE.README
-index 8ace35e..37c6c34 100644
---- a/Documentation/mips/AU1xxx_IDE.README
-+++ b/Documentation/mips/AU1xxx_IDE.README
-@@ -45,7 +45,7 @@ FILES, CONFIGS AND COMPATABILITY
- Two files are introduced:
- 
-   a) 'arch/mips/include/asm/mach-au1x00/au1xxx_ide.h'
--     containes : struct _auide_hwif
-+     containes : struct auide_hwif
-                  timing parameters for PIO mode 0/1/2/3/4
-                  timing parameters for MWDMA 0/1/2
- 
-diff --git a/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h b/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h
-index 5656c72..f44b8bc 100644
---- a/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h
-+++ b/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h
-@@ -46,7 +46,7 @@
- #define CONFIG_BLK_DEV_IDE_AU1XXX_BURSTABLE_ON	0
- #endif
- 
--typedef struct {
-+struct auide_hwif {
- 	u32			tx_dev_id, rx_dev_id, target_dev_id;
- 	u32			tx_chan, rx_chan;
- 	void			*tx_desc_head, *rx_desc_head;
-@@ -57,8 +57,8 @@ typedef struct {
- 	dma_addr_t		dma_table_dma;
- #endif
- 	int			irq;
--	u32			regbase;
--} _auide_hwif;
-+	void __iomem		*regbase;
-+};
- 
- /******************************************************************************/
- /* PIO Mode timing calculation :					      */
-diff --git a/drivers/ide/au1xxx-ide.c b/drivers/ide/au1xxx-ide.c
-index 87cef0c..65abf57 100644
---- a/drivers/ide/au1xxx-ide.c
-+++ b/drivers/ide/au1xxx-ide.c
-@@ -46,13 +46,13 @@
- /* enable the burstmode in the dbdma */
- #define IDE_AU1XXX_BURSTMODE	1
- 
--static _auide_hwif auide_hwif;
-+static struct auide_hwif auide_hwif;
- 
- #if defined(CONFIG_BLK_DEV_IDE_AU1XXX_PIO_DBDMA)
- 
- static inline void auide_insw(unsigned long port, void *addr, u32 count)
- {
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	chan_tab_t *ctp;
- 	au1x_ddma_desc_t *dp;
- 
-@@ -70,7 +70,7 @@ static inline void auide_insw(unsigned long port, void *addr, u32 count)
- 
- static inline void auide_outsw(unsigned long port, void *addr, u32 count)
- {
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	chan_tab_t *ctp;
- 	au1x_ddma_desc_t *dp;
- 
-@@ -212,7 +212,7 @@ static void auide_set_dma_mode(ide_drive_t *drive, const u8 speed)
- static int auide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
- {
- 	ide_hwif_t *hwif = drive->hwif;
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	struct scatterlist *sg;
- 	int i = cmd->sg_nents, count = 0;
- 	int iswrite = !!(cmd->tf_flags & IDE_TFLAG_WRITE);
-@@ -344,7 +344,7 @@ static const struct ide_dma_ops au1xxx_dma_ops = {
- 
- static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
- {
--	_auide_hwif *auide = &auide_hwif;
-+	struct auide_hwif *auide = &auide_hwif;
- 	dbdev_tab_t source_dev_tab, target_dev_tab;
- 	u32 dev_id, tsize, devwidth, flags;
- 
-@@ -404,7 +404,7 @@ static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
- #else
- static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
- {
--	_auide_hwif *auide = &auide_hwif;
-+	struct auide_hwif *auide = &auide_hwif;
- 	dbdev_tab_t source_dev_tab;
- 	int flags;
- 
-@@ -449,17 +449,18 @@ static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
- }
- #endif
- 
--static void auide_setup_ports(struct ide_hw *hw, _auide_hwif *ahwif)
-+static void auide_setup_ports(struct ide_hw *hw, struct auide_hwif *ahwif)
- {
--	int i;
- 	unsigned long *ata_regs = hw->io_ports_array;
-+	unsigned long regbase = (unsigned long)ahwif->regbase;
-+	int i;
- 
- 	/* FIXME? */
- 	for (i = 0; i < 8; i++)
--		*ata_regs++ = ahwif->regbase + (i << IDE_REG_SHIFT);
-+		*ata_regs++ = regbase + (i << IDE_REG_SHIFT);
- 
- 	/* set the Alternative Status register */
--	*ata_regs = ahwif->regbase + (14 << IDE_REG_SHIFT);
-+	*ata_regs = regbase + (14 << IDE_REG_SHIFT);
- }
- 
- #ifdef CONFIG_BLK_DEV_IDE_AU1XXX_PIO_DBDMA
-@@ -504,7 +505,7 @@ static const struct ide_port_info au1xxx_port_info = {
- 
- static int au_ide_probe(struct platform_device *dev)
- {
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	struct resource *res;
- 	struct ide_host *host;
- 	int ret = 0;
-@@ -516,7 +517,7 @@ static int au_ide_probe(struct platform_device *dev)
- 	char *mode = "PIO+DDMA(offload)";
- #endif
- 
--	memset(&auide_hwif, 0, sizeof(_auide_hwif));
-+	memset(&auide_hwif, 0, sizeof(struct auide_hwif));
- 	ahwif->irq = platform_get_irq(dev, 0);
- 
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
-@@ -538,7 +539,7 @@ static int au_ide_probe(struct platform_device *dev)
- 		goto out;
- 	}
- 
--	ahwif->regbase = (u32)ioremap(res->start, resource_size(res));
-+	ahwif->regbase = ioremap(res->start, resource_size(res));
- 	if (ahwif->regbase == 0) {
- 		ret = -ENOMEM;
- 		goto out;
-@@ -567,11 +568,11 @@ static int au_ide_remove(struct platform_device *dev)
- {
- 	struct resource *res;
- 	struct ide_host *host = platform_get_drvdata(dev);
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 
- 	ide_host_remove(host);
- 
--	iounmap((void *)ahwif->regbase);
-+	iounmap(ahwif->regbase);
- 
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
- 	release_mem_region(res->start, resource_size(res)); 
+I guess, you could literally start with removing this "global
+interrupt lock", adding "the example of a _good_ case of rwlocks",
+plus Stephen's "it is not just networking" fix in v3.
+
+Jarek P.
