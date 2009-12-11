@@ -1,108 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762094AbZLKAyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762109AbZLKBCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762094AbZLKAyy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 19:54:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761964AbZLKAyx
+	id S1762109AbZLKBCK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 20:02:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbZLKBCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 19:54:53 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37635 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761687AbZLKAyx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 19:54:53 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 11 Dec 2009 09:51:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
-Message-Id: <20091211095159.6472a009.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <28c262360912101640y4b90db76w61a7a5dab5f8e796@mail.gmail.com>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-	<28c262360912101640y4b90db76w61a7a5dab5f8e796@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 10 Dec 2009 20:02:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60623 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754849AbZLKBCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 20:02:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Fri, 11 Dec 2009 02:02:28 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912102040.11063.rjw@sisk.pl> <alpine.LFD.2.00.0912101507550.3560@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912101507550.3560@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912110202.28536.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Dec 2009 09:40:07 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
-> > static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
-> >  {
-> > -       return (unsigned long)atomic_long_read(&(mm)->counters[member]);
-> > +       long ret;
-> > +       /*
-> > +        * Because this counter is loosely synchronized with percpu cached
-> > +        * information, it's possible that value gets to be minus. For user's
-> > +        * convenience/sanity, avoid returning minus.
-> > +        */
-> > +       ret = atomic_long_read(&(mm)->counters[member]);
-> > +       if (unlikely(ret < 0))
-> > +               return 0;
-> > +       return (unsigned long)ret;
-> >  }
+On Friday 11 December 2009, Linus Torvalds wrote:
 > 
-> Now, your sync point is only task switching time.
-> So we can't show exact number if many counting of mm happens
-> in short time.(ie, before context switching).
-> It isn't matter?
+> On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
+...
 > 
-I think it's not a matter from 2 reasons.
+> IOW, I'll happily take the completions version, but dammit, I refuse to 
+> take it when there is a simpler approach that does NOT need to iterate, 
+> and does NOT need to re-initialize the data structures each round etc.
 
-1. Now, considering servers which requires continuous memory usage monitoring
-as ps/top, when there are 2000 processes, "ps -elf" takes 0.8sec.
-Because system admins know that gathering process information consumes
-some amount of cpu resource, they will not do that so frequently.(I hope)
+I don't think it really is that simple.  For example, the fact that the outer
+lock has to be taken by one thread and released by another is not exactly
+straightforward.  [One might ask what's the critical section in this case.]
 
-2. When chains of page faults occur continously in a period, the monitor
-of memory usage just see a snapshot of current numbers and "snapshot of what
-moment" is at random, always. No one can get precise number in that kind of situation. 
+Besides, suppose a device driver wants some off-tree constraints to be
+satisfied.  What's the driver writer supposed to do?  He only can lock the
+other device, but that will cause lockdep to complain, because this lock
+is going to be nested.  Moreover, it's already too late, because his async
+thread has started and there's no guarantee that the other device hasn't
+acquired its rwsem yet.
 
+With completions, the driver doesn't have to take any action to prevent another
+one from suspending too early.  Instead, the other one has to wait for its
+suspend to complete, and for me personally this is a much more natural thing
+to do.  IOW, if I were a driver writed, I'd probably prefer to wait on a
+completion than to use a lock in a tricky manner.
 
-
-> >
-> >  static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
-<snip>
-
-> > Index: mmotm-2.6.32-Dec8/kernel/sched.c
-> > ===================================================================
-> > --- mmotm-2.6.32-Dec8.orig/kernel/sched.c
-> > +++ mmotm-2.6.32-Dec8/kernel/sched.c
-> > @@ -2858,6 +2858,7 @@ context_switch(struct rq *rq, struct tas
-> >        trace_sched_switch(rq, prev, next);
-> >        mm = next->mm;
-> >        oldmm = prev->active_mm;
-> > +
-> >        /*
-> >         * For paravirt, this is coupled with an exit in switch_to to
-> >         * combine the page table reload and the switch backend into
-> > @@ -5477,6 +5478,11 @@ need_resched_nonpreemptible:
-> >
-> >        if (sched_feat(HRTICK))
-> >                hrtick_clear(rq);
-> > +       /*
-> > +        * sync/invaldidate per-cpu cached mm related information
-> > +        * before taling rq->lock. (see include/linux/mm.h)
+> That's what I've been arguing against the whole time. It started as 
+> arguing against complex and unnecessary infrastructure, and trying to show 
+> that it _can_ be done so much simpler using existing basic locking.
 > 
-> taling => taking
+> And I get annoyed when you guys continually seem to want to make it more 
+> complex than it needs to be. 
 > 
-> > +        */
-> > +       sync_mm_counters_atomic();
+> > > And this, for example, is pretty disgusting. Not only is that 
+> > > INIT_COMPLETION purely brought on by the whole problem with completions 
+> > > (they are fundamentally one-shot, but you want to use them over and over
+> > 
+> > Actually, twice.  However, since I don't want to do any async handling in the
+> > _noirq phases any more, I can get rid of this whole function.  Thanks for
+> > pointing that out to me.
 > 
-> It's my above concern.
-> before the process schedule out, we could get the wrong info.
-> It's not realistic problem?
+> Well, my point was that you'll need to do that
 > 
-I think not, now.
+> 	INIT_COMPLETION(dev->power.completion);
+> 
+> thing each suspend and each resume. Exactly because completions are 
+> designed to be "onw-way" things, so you end up having to reset them each 
+> cycle (you just reset them even _more_ than you needed).
 
-Thanks,
--Kame
+Well, why actually do we need to preserve the state of the data structure from
+one cycle to another?  There's no need whatsoever.
 
+> Again, my point was that using locks is actually a very _natural_ thing to 
+> do. I really don't understand what problems you and Alan have with just 
+> using locks - we have way more locks in the kernel than we have 
+> completions, so they are the "default" thing to do, and they really are 
+> very natural to use.
+> 
+> [ Ok, so admittedly the actual use of 'struct rw_semaphore' is pretty 
+>   unusual, but my point is that people are used to locking semantics in 
+>   general, more so than the semantics of completions ]
+
+I still don't think there are many places where locks are used in a way you're
+suggesting.  I would even say it's quite unusual to use locks this way.
+
+> Completions were literally designed to be used for one-off things - one of 
+> the most common uses is that the 'struct completion' is on the _stack_. It 
+> doesn't get much more one-off than that - and the completions are really 
+> very explicitly designed so that you can do a 'complete()' on something 
+> that will literally disappear from under you as you do it (because the 
+> struct completion might be on the stack of the thing that is waiting for 
+> it, and gets de-allocated when the waiter goes ahead).
+
+We could literally throw away a completion after all of the potentially waiting
+threads have finished their operations and then allocate it back again when
+necessary.  We only need the synchronization in this particular phase of
+suspend or resume and it doesn't need to extend to the other phases or other
+cycles, because all of the concurrent threads we need to synchronize will
+only live during this one particular phase of suspend or resume.  They will
+all exit when it's finished anyway.
+
+> That is why 'wait_for_completion()' always has to take the spinlock, for 
+> example - there is no fastpath for completion, because the races for the 
+> waiter releasing things too early are too nasty.
+> 
+> So completions are actually very subtle things - and you don't need any of 
+> that subtlety. I realize that from a user perspective, completions look 
+> very simple, but in many ways they actually have subtler semantics than a 
+> regular lock has.
+
+Well, I guess your point is that the implementation of completions is much
+more complicated that we really need, but I'm not sure if that really hurts.
+
+Rafael
