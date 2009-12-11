@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbZLKAUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761895AbZLKAQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761910AbZLKAUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 19:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbZLKAT7
+	id S1761895AbZLKAQG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 19:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbZLKAQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 19:19:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34126 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757766AbZLKAT6 (ORCPT
+	Thu, 10 Dec 2009 19:16:04 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:40546 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755948AbZLKAQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 19:19:58 -0500
-X-Authority-Analysis: v=1.0 c=1 a=pgEMfFjABqMA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=omOdbC7AAAAA:8 a=onUY2Jp8L_EgsajZC6oA:9 a=BwnfpuYNADI7v2vK2JETcNl8lEcA:4 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 04/10] tracing: __dynamic_array() also defines fields
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B1F4E92.1090608@cn.fujitsu.com>
-References: <4B1F4E92.1090608@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 10 Dec 2009 19:20:03 -0500
-Message-ID: <1260490803.2146.311.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 10 Dec 2009 19:16:03 -0500
+Message-ID: <4B219046.3080908@pathscale.com>
+Date: Thu, 10 Dec 2009 19:20:22 -0500
+From: =?ISO-8859-1?Q?=22C=2E_Bergstr=F6m=22?= <cbergstrom@pathscale.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090909)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>	<alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>	<1260459601.18520.26.camel@skunk>	<alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>	<6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>	<alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>	<6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com>	<alpine.LFD.2.00.0912101531180.3560@localhost.localdomain>	<20091210235835.20e2269d@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 15:15 +0800, Lai Jiangshan wrote:
-> dynamic array is also added to struct ftrace_event_call->fields.
+Linus Torvalds wrote:
+> On Thu, 10 Dec 2009, Alan Cox wrote:
+>   
+>>> But not only is Fedora not following the rules, 
+>>>       
+>> You changed the rules. You require a Signed-off-by:. Fedora can no more
+>> add a signed off by than you can. It's not their code nor Red Hat's code
+>> any more than they "own" the kernel because they pay someone to work on
+>> it.
+>>     
+>
+> You're avoiding the point: they are shipping it, they are paying for (at 
+> least some) development, and they seem to not even want to face the issue.
+>
+> Sign-offs aren't some new feature that took Red Hat people by surprise. 
+> The "get it merged upstream first" didn't change in any way from it: it 
+> just codified existing practice - of _course_ everybody expects copyrights 
+> to be honored and clear.
+>
+>   
+>> It's really simple: if you want to merge it *you* pull it and sign it off.
+>> If you aren't prepared to do that then ask why Fedora should, its not
+>> their code either.
+>>     
+>
+> I'm not shipping it. They are. That's the difference.
+>
+> I realize that you have some emotional attachments to Red Hat, but ask 
+> yourself (and answer honestly): what would you think if some random other 
+> distro was packaging tens of thousands of lines of kernel code and not 
+> apparently working at trying to get them upstream?
+>
+> Dave claims it's only been going on for a few months, but quite frankly, 
+> we all know better. The nouveau kernel modules have been shipped for a lot 
+> longer than just F12.
+>
+> And it's possible that other distros are doing the same thing. I happen to 
+> know that Fedora does it (and has been doing it for at least a year), 
+> because I happen to have an Intel development machine that runs Fedora and 
+> was shipped by Intel with an nVidia card (and has a power supply that 
+> craps out if you don't use several hundred watts of power, so I can't 
+> change it to something more power-efficient - seriously).
+>   
+Thanks for the rather lengthly explanation, but in case you missed what 
+people are trying to say here..
 
-Could you add to the change log which events use it. I see bprint and
-print. But this change log is still lacking. It should explain what
-features this fixes.
+With all due respect Linus..
 
-But as for the patch itself:
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
-Thanks,
-
--- Steve
-
-
-
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-> index 458e5bf..511bc36 100644
-> --- a/kernel/trace/trace_export.c
-> +++ b/kernel/trace/trace_export.c
-> @@ -174,7 +174,12 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
->  		return ret;
->  
->  #undef __dynamic_array
-> -#define __dynamic_array(type, item)
-> +#define __dynamic_array(type, item)					\
-> +	ret = trace_define_field(event_call, #type, #item,		\
-> +				 offsetof(typeof(field), item),		\
-> +				 0, is_signed_type(type), FILTER_OTHER);\
-> +	if (ret)							\
-> +		return ret;
->  
->  #undef FTRACE_ENTRY
->  #define FTRACE_ENTRY(name, struct_name, id, tstruct, print)		\
-> 
-> 
-
+"patches welcome"
 
