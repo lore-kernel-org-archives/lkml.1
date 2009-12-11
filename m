@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbZLKMtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZLKMyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbZLKMtO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbZLKMtN
+	id S1754598AbZLKMyA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZLKMx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:49:13 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53410 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756091AbZLKMtM (ORCPT
+	Fri, 11 Dec 2009 07:53:57 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:50953 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbZLKMx4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:49:12 -0500
-Date: Fri, 11 Dec 2009 12:50:53 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: tytso@mit.edu
-Cc: Dave Airlie <airlied@gmail.com>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, stephane.marchesin@gmail.com,
-       madman2003@gmail.com, xavier.bestel@free.fr, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm
-Message-ID: <20091211125053.2bf95238@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091211124541.GB31139@thunk.org>
-References: <20091210235835.20e2269d@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.0912101601100.3560@localhost.localdomain>
-	<20091211091843.0a543136@lxorguk.ukuu.org.uk>
-	<20091211.013436.189815985.davem@davemloft.net>
-	<21d7e9970912110220u6b61a4e2o306289ae75a5bcc2@mail.gmail.com>
-	<20091211124541.GB31139@thunk.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Dec 2009 07:53:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=iasiJmENLMnDXTNRNCMTPX+VoAjcGWnRFiYX4nyR22g8f0Ygt6UII+3oTu1sUuTead
+         Vfqvp1AV3rN/GTRaeEYYN4NSxV8z4h9AcNMi3JsvN3HbPJ2KNUxC7UbjdTK9qSEzHIDk
+         DxeWILidnPgu0uPTGhvWekIHT6zWIoWyyG1io=
+MIME-Version: 1.0
+In-Reply-To: <200912102225.05280.arnd@arndb.de>
+References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com>
+	 <200912102210.12124.arnd@arndb.de>
+	 <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
+	 <200912102225.05280.arnd@arndb.de>
+Date: Fri, 11 Dec 2009 13:54:01 +0100
+X-Google-Sender-Auth: 3c572297862ec66b
+Message-ID: <10f740e80912110454u172fc2cfye30da6ca0e0f0af0@mail.gmail.com>
+Subject: Re: What's in asm-generic.git
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, liqin.chen@sunplusct.com,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Dec 2009 07:45:41 -0500
-tytso@mit.edu wrote:
+On Thu, Dec 10, 2009 at 22:25, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Thursday 10 December 2009, Mike Frysinger wrote:
+>> > I have found now that sys_accept4 was missing. sys_set_thread_area however
+>> > is only defined on x86 and mips. Since you don't currently implement this
+>> > on score, maybe it would be more appropriate to handle it like the other
+>> > architectures do, rather than adding it to asm-generic/unistd.h?
+>>
+>> isnt the point of asm-generic/unistd.h to collect all common syscalls
+>> ?  if there's syscalls that ideally should be handled by everyone but
+>> currently doesnt, then it's easy to define it in the header but have
+>> the actual entry.S leave it as a hole ...
+>
+> Well, sys_thread_area is not a common syscall but rather an exception.
+> I haven't looked at how glibc does implents TLS on different architectures,
+> but I think this is commonly done purely in user space without the
+> need for a syscall.
 
-> On Fri, Dec 11, 2009 at 08:20:57PM +1000, Dave Airlie wrote:
-> > 
-> > Well the main thing was I wasn't mean to discuss possible legal issues
-> > and still don't have permission, you know as well as I do once lawyers are
-> > involved you have to keep out of things until they deal with them.
-> 
-> The thing which really surprises me is that if there are legally
-> dubious issues, why on *earth* did Red Hat allow Fedora to ship said
-> code?
+10+ architectures already have sys_[sg]et_thread_area of have reserved
+entries for it.
 
-The thing which really surprises me is that if there are legal questions
-involved why on *earth* do people keep asking them on public mailing
-lists when they know the lawyers views/opinions/decisions will not be
-publishable there ?
+Gr{oetje,eeting}s,
 
-Ted, you of all people know that if you want to get an answer that isn't
-the way to get it.
+						Geert
 
-Alan
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
