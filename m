@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbZLKXtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762833AbZLKXu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762768AbZLKXtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbZLKXtS
+	id S1762833AbZLKXu1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761661AbZLKXuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:49:18 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:55727 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761571AbZLKXtR convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 18:50:20 -0500
+Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:57443 "EHLO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761650AbZLKXuT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:49:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hA252PnVrL+cOfMleq7UP+FRA3aA3QbxVHhxRmwTdnngsWihaHiaXSk8L1Wvn6H6pv
-         q04jpbCWJBN2WP1wRhRlceO39kvZvbIjXXaVutg+i889ZhK4+zTUkdC5vobKuTjS5dhY
-         jby/GtHb9K8qWaAStlCHxPZtKvjh8QSPwUSJc=
+	Fri, 11 Dec 2009 18:50:19 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <6a89f9d50912111527y3ad430d5mce713b6ff38f9408@mail.gmail.com>
-References: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
-	 <6a89f9d50912111523r178c0casb61fca1198f6f253@mail.gmail.com>
-	 <21d7e9970912111526u5b7164eaydbea44986bb82d2e@mail.gmail.com>
-	 <6a89f9d50912111527y3ad430d5mce713b6ff38f9408@mail.gmail.com>
-Date: Sat, 12 Dec 2009 00:49:22 +0100
-Message-ID: <6a89f9d50912111549i5885480xe7564ace8142a275@mail.gmail.com>
-Subject: Re: [git pull] drm nouveau pony for Xmas.
-From: Stephane Marchesin <stephane.marchesin@gmail.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: GPIO support for HTC Dream
+Date: Fri, 11 Dec 2009 18:50:25 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901FB1100@mi8nycmail19.Mi8.com>
+In-Reply-To: <20091211232838.GE12628@n2100.arm.linux.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: GPIO support for HTC Dream
+Thread-Index: Acp6ub5I2J438JcTTrujzNk3VafjbwAAaCtQ
+References: <20091208102842.GH12264@elf.ucw.cz> <4B1EB57D.6070408@bluewatersys.com> <20091208214658.GC4164@elf.ucw.cz> <4B1ECEEE.3000209@bluewatersys.com> <4B203575.6050407@bluewatersys.com> <20091210172458.GJ19454@elf.ucw.cz> <4B2150B7.3040207@bluewatersys.com> <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com> <20091211221015.GB24456@elf.ucw.cz> <20091211232838.GE12628@n2100.arm.linux.org.uk>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Pavel Machek" <pavel@ucw.cz>
+Cc: "Daniel Walker" <dwalker@codeaurora.org>,
+       "Iliyan Malchev" <malchev@google.com>,
+       "Brian Swetland" <swetland@google.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Ryan Mallon" <ryan@bluewatersys.com>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>
+X-OriginalArrivalTime: 11 Dec 2009 23:50:23.0722 (UTC) FILETIME=[B4ADF4A0:01CA7ABC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2009 at 00:27, Stephane Marchesin
-<stephane.marchesin@gmail.com> wrote:
-> 2009/12/12 Dave Airlie <airlied@gmail.com>:
->> 2009/12/12 Stephane Marchesin <stephane.marchesin@gmail.com>:
->> I did git log on the nouveau kernel tree nouveau dir with sort and uniq,
->>
->> I'm not sure where else I needed to trawl to get anymore ppl who have
->> contributed to
->> the KMS driver. I'm sure ppl contributed to X.org/Mesa drivers but
->> this isn't the
->> place for them. Also all copyright should be intact.
->>
+On Friday, December 11, 2009 4:29 PM, Russell King wrote:
+> On Fri, Dec 11, 2009 at 11:10:15PM +0100, Pavel Machek wrote:
+>> +#include <linux/gpio.h>
+> ...
+>> +#include <mach/gpio.h>
+> ...
+>> +#include <asm/gpio.h>
 >
-> The problem is that when you moved from the drm to the linux tree, you
-> killed the whole history and the authors along.
->
->> But we can add an author lists to the code subdir if you like, if
->> someone compiles
->> the complete list of ppl who have added code to the kernel driver.
->>
->
-> That would indeed be the proper thing to do.
->
+> Emm, this is getting really silly.
+> 
+> include/linux/gpio.h:
+>   
+>   #ifdef CONFIG_GENERIC_GPIO
+>   #include <asm/gpio.h>
+>   #else
+>   ...
+>   #endif
+> 
+> arch/arm/include/asm/gpio.h:
+> 
+>   #include <mach/gpio.h>
+> 
+> There really is no point in including mach/gpio.h nor asm/gpio.h when
+> linux/gpio.h will do.  I'm retiscent to add #warnings or #errors into
+> these files, but it seems that this is such a common thing that it may
+> be beneficial to do so.
 
-Ok, as you requested here is a proper list of actual authors:
+Hi Russell,
 
-Arthur Huillet <arthur.huillet@free.fr>
-Anssi Hannula <anssi.hannula@iki.fi>
-Ben Skeggs <bskeggs@redhat.com>
-B. Rathmann <koala_br@users.sourceforge.net>
-Danny Tholen <moondrake@gmail.com>
-Dave Airlie <airlied@redhat.com>
-Francisco Jerez <currojerez@riseup.net>
-Jeremy Kolb <jkolb@brandeis.edu>
-Maarten Maathuis <madman2003@gmail.com>
-Marcin Kościelnicki <koriakin@0x04.net>
-Matthew Garrett <mjg@redhat.com>
-Matthieu Castet <castet.matthieu@free.fr>
-Matt Parnell <mparnell@gmail.com>
-Maurice van der Pot <griffon26@kfk4ever.com>
-Patrice Mandin <patmandin@gmail.com>
-Pekka Paalanen <pq@iki.fi>
-Stephane Marchesin <marchesin@icps.u-strasbg.fr>
-Stuart Bennett <stuart@freedesktop.org>
-Xavier Chantry <shiningxc@gmail.com>
+I think you mentioned last year around this time, when the big header
+move occurred, that you were going to add a guideline for mach/*.h
+headers to Documentation/arm.  Maybe it's time to add that patch and
+just note that the <linux/*.h> version of the common headers should
+be used and that the <asm/*.h> and <mach/*.h> header gets pulled in
+automatically.
 
-As far as I can recall, this list is complete.
+I think the two big ones that everyone screws up are, <linux/gpio.h>
+and <linux/io.h>.
 
-Stephane
+Regards,
+Hartley
