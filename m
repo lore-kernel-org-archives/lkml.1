@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762431AbZLKT61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762412AbZLKUFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762431AbZLKT61 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 14:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761837AbZLKT6V
+	id S1762412AbZLKUFB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 15:05:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761921AbZLKUE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 14:58:21 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48890 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761771AbZLKT6V (ORCPT
+	Fri, 11 Dec 2009 15:04:56 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:41687 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758394AbZLKUE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 14:58:21 -0500
-Date: Fri, 11 Dec 2009 20:58:20 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Ryan Mallon <ryan@bluewatersys.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Arve Hj?nnev?g <arve@android.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: GPIO support for HTC Dream
-Message-ID: <20091211195820.GA1980@elf.ucw.cz>
-References: <20091208102842.GH12264@elf.ucw.cz>
- <4B1EB57D.6070408@bluewatersys.com>
- <20091208214658.GC4164@elf.ucw.cz>
- <4B1ECEEE.3000209@bluewatersys.com>
- <4B203575.6050407@bluewatersys.com>
- <20091210172458.GJ19454@elf.ucw.cz>
- <4B2150B7.3040207@bluewatersys.com>
- <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 11 Dec 2009 15:04:56 -0500
+Date: Fri, 11 Dec 2009 12:02:59 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PM: Fix kernel-doc notation
+Message-Id: <20091211120259.82de239d.randy.dunlap@oracle.com>
+In-Reply-To: <1258877637.4495.45.camel@ht.satnam>
+References: <1258877637.4495.45.camel@ht.satnam>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B22A5A2.00FB:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, 22 Nov 2009 13:43:57 +0530 Jaswinder Singh Rajput wrote:
 
-> With this you can now just access the dream_gpio_chip data in all
-> the member function using the to_dream_gpio_chip() macro.
 > 
-> I agree with Ryan and think you would be better off in the long
-> run to re-code this and use gpiolib.  You might also want to break
-> out all the gpio interrupt stuff and submit it as a seperate patch.
+> Fix the following htmldocs warnings:
+> 
+>   Warning(drivers/base/power/main.c:249): No description found for parameter 'master'
+>   Warning(drivers/base/power/main.c:249): Excess function parameter 'slave' description in 'device_pm_wait_for_slaves'
+>   Warning(drivers/base/power/main.c:292): No description found for parameter 'master'
+>   Warning(drivers/base/power/main.c:292): Excess function parameter 'slave' description in 'device_pm_check_slaves'
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
 
-Yep, lets ignore the interrupts, I do not need them for led blinking
-:-).
+What tree was this for?
+I guess it's not needed now, I can't find these functions..
 
-And... thanks!
-									Pavel
+Thanks.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> ---
+>  drivers/base/power/main.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e8d1ea6..5f13084 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -243,7 +243,7 @@ static void device_pm_wait_for_masters(struct device *slave)
+>  
+>  /**
+>   * device_pm_wait_for_slaves - Wait for all slaves of given device.
+> - * @slave: Device to wait for the slaves of.
+> + * @master: Device to wait for the slaves of.
+>   */
+>  static void device_pm_wait_for_slaves(struct device *master)
+>  {
+> @@ -286,7 +286,7 @@ static int device_pm_check_masters(struct device *slave)
+>  
+>  /**
+>   * device_pm_check_slaves - Check power.op_complete for slaves of a device.
+> - * @slave: Device to check the slaves of.
+> + * @master: Device to check the slaves of.
+>   */
+>  static int device_pm_check_slaves(struct device *master)
+>  {
+> -- 
+
+---
+~Randy
