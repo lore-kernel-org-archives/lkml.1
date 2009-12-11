@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762519AbZLKLd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762405AbZLKLdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762519AbZLKLd2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 06:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762382AbZLKLdD
+	id S1762405AbZLKLdG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 06:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762431AbZLKLcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 06:33:03 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:50320 "EHLO
+	Fri, 11 Dec 2009 06:32:33 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:50311 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762405AbZLKLc0 (ORCPT
+	with ESMTP id S1762371AbZLKLcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 06:32:26 -0500
+	Fri, 11 Dec 2009 06:32:22 -0500
 From: Felipe Balbi <felipe.balbi@nokia.com>
 To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
@@ -18,113 +18,148 @@ Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
        Greg Kroah-Hartman <gregkh@suse.de>,
        David Brownell <dbrownell@users.sourceforge.net>,
        Felipe Balbi <felipe.balbi@nokia.com>
-Subject: [RFC/PATCH 4/5] usb: musb: isp1704: add registers from isp1704
-Date: Fri, 11 Dec 2009 13:31:25 +0200
-Message-Id: <1260531086-23857-5-git-send-email-felipe.balbi@nokia.com>
+Subject: [RFC/PATCH 5/5] usb: musb: musb supports otg notifier
+Date: Fri, 11 Dec 2009 13:31:26 +0200
+Message-Id: <1260531086-23857-6-git-send-email-felipe.balbi@nokia.com>
 X-Mailer: git-send-email 1.6.6.rc0
 In-Reply-To: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com>
 References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com>
-X-OriginalArrivalTime: 11 Dec 2009 11:31:53.0108 (UTC) FILETIME=[897ED540:01CA7A55]
+X-OriginalArrivalTime: 11 Dec 2009 11:31:55.0983 (UTC) FILETIME=[8B3585F0:01CA7A55]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-transceiver used on RX-51 board.
+we use the notifier to kick the charger detection.
+Needed on RX-51 board. Later on we will notify
+also the bMaxPower field from usb_configuration.
 
-NYET-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 ---
- drivers/usb/musb/isp1704.h |   81 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 81 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/musb/isp1704.h
+ drivers/usb/musb/musb_core.c |   72 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/musb/musb_core.h |    5 +++
+ 2 files changed, 77 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/musb/isp1704.h b/drivers/usb/musb/isp1704.h
-new file mode 100644
-index 0000000..c52406e
---- /dev/null
-+++ b/drivers/usb/musb/isp1704.h
-@@ -0,0 +1,81 @@
-+/*
-+ * isp1704.h - ISP 1704 Register
-+ *
-+ * Copyright (C) 2008 Nokia Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-+ * 02110-1301 USA
-+ *
-+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
-+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
-+ * NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
-+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 55e185a..c7c60df 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -98,6 +98,7 @@
+ #include <linux/kobject.h>
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
++#include <linux/notifier.h>
+ 
+ #ifdef	CONFIG_ARM
+ #include <mach/hardware.h>
+@@ -144,6 +145,74 @@ MODULE_ALIAS("platform:" MUSB_DRIVER_NAME);
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++#include "isp1704.h"
 +
-+#ifndef __ISP1704_H__
-+#define __ISP1704_H__
++static int musb_detect_charger(struct musb *musb)
++{
++	unsigned long		timeout;
++	u8			vdat = 0;
++	u8			power;
++	u8			r;
 +
-+#define ISP1704_VENDOR_ID_LOW		0x00
-+#define ISP1704_VENDOR_ID_HIGH		0x01
-+#define ISP1704_PRODUCT_ID_LOW		0x02
-+#define ISP1704_PRODUCT_ID_HIGH		0x03
-+#define ISP1704_FUNC_CTRL		0x04
-+#define ISP1704_OTG_CTRL		0x0a
-+#define ISP1704_USB_INTRISE		0x0d
-+#define ISP1704_USB_INTFALL		0x10
-+#define ISP1704_DEBUG			0x15
-+#define ISP1704_SCRATCH			0x16
-+#define ISP1704_PWR_CTRL		0x3d
++	/* first we disable data pullups */
++	power = musb_readb(musb->mregs, MUSB_POWER);
++	power &= ~MUSB_POWER_SOFTCONN;
++	musb_writeb(musb->mregs, MUSB_POWER, power);
 +
-+/* Function control */
-+#define ISP1704_FUNC_CTRL_FULL_SPEED	(1 << 0)
-+#define ISP1704_FUNC_CTRL_XCVRSELECT	0x3
-+#define ISP1704_FUNC_CTRL_XCVRSELECT_SHIFT	(1 << 0)
-+#define ISP1704_FUNC_CTRL_TERMSELECT	(1 << 2)
-+#define ISP1704_FUNC_CTRL_OPMODE	(1 << 3)
-+#define ISP1704_FUNC_CTRL_OPMODE_SHIFT	3
-+#define ISP1704_FUNC_CTRL_RESET		(1 << 5)
-+#define ISP1704_FUNC_CTRL_SUSPENDM	(1 << 6)
++	/* now we set SW control bit in PWR_CTRL register */
++	r = musb_ulpi_readb(musb->mregs, ISP1704_PWR_CTRL);
++	r |= ISP1704_PWR_CTRL_SWCTRL;
++	musb_ulpi_writeb(musb->mregs, ISP1704_PWR_CTRL, r);
 +
-+/* OTG Control */
-+#define ISP1704_OTG_CTRL_IDPULLUP	(1 << 0)
-+#define ISP1704_OTG_CTRL_DP_PULLDOWN	(1 << 1)
-+#define ISP1704_OTG_CTRL_DM_PULLDOWN	(1 << 2)
-+#define ISP1704_OTG_CTRL_DISCHRG_VBUS	(1 << 3)
-+#define ISP1704_OTG_CTRL_CHRG_VBUS	(1 << 4)
-+#define ISP1704_OTG_CTRL_DRV_VBUS_EXT	(1 << 6)
-+#define ISP1704_OTG_CTRL_USB_EXT_VBUS	(1 << 7)
++	/* and finally enable manual charger detection */
++	r |= ISP1704_PWR_CTRL_DPVSRC_EN;
++	musb_ulpi_writeb(musb->mregs, ISP1704_PWR_CTRL, r);
++	msleep(10);
 +
-+/* Debug */
-+#define ISP1704_DEBUG_LINESTATE0	(1 << 0)
-+#define ISP1704_DEBUG_LINESTATE1	(1 << 1)
++	timeout = jiffies + msecs_to_jiffies(300);
++	while (!time_after(jiffies, timeout)) {
++		/* Check if there is a charger */
++		vdat = !!(musb_ulpi_readb(musb->mregs, ISP1704_PWR_CTRL)
++				& ISP1704_PWR_CTRL_VDAT_DET);
++		if (vdat)
++			break;
++	}
 +
-+/* Power control */
-+#define ISP1704_PWR_CTRL_SWCTRL		(1 << 0)
-+#define ISP1704_PWR_CTRL_DET_COMP	(1 << 1)
-+#define ISP1704_PWR_CTRL_BVALID_RISE	(1 << 2)
-+#define ISP1704_PWR_CTRL_BVALID_FALL	(1 << 3)
-+#define ISP1704_PWR_CTRL_DP_WKPU_EN	(1 << 4)
-+#define ISP1704_PWR_CTRL_VDAT_DET	(1 << 5)
-+#define ISP1704_PWR_CTRL_DPVSRC_EN	(1 << 6)
-+#define ISP1704_PWR_CTRL_HWDETECT	(1 << 7)
++	/* clear DPVSRC_EN, otherwise usb communication doesn't work */
++	r &= ~ISP1704_PWR_CTRL_DPVSRC_EN;
++	musb_ulpi_writeb(musb->mregs, ISP1704_PWR_CTRL, r);
 +
-+#endif	/* __ISP1704_H__ */
++	if (vdat)
++		blocking_notifier_call_chain(&musb->xceiv->notifier,
++				USB_EVENT_CHARGER, &musb->g);
++
++	/*
++	 * re-enable data pullups, we might have been connected
++	 * to a host/hub charger
++	 */
++	power |= MUSB_POWER_SOFTCONN;
++	musb_writeb(musb->mregs, MUSB_POWER, power);
++
++	return vdat;
++}
++
++static int musb_notifier_call(struct notifier_block *nb, unsigned long event,
++		void *_gadget)
++{
++	struct usb_gadget	*g = _gadget;
++	struct musb		*musb = container_of(g, struct musb, g);
++
++	switch (event) {
++	case USB_EVENT_VBUS:
++		musb->is_charger = musb_detect_charger(musb);
++		break;
++	default:
++		return NOTIFY_DONE;
++	}
++
++	return NOTIFY_OK;
++}
++
+ static inline struct musb *dev_to_musb(struct device *dev)
+ {
+ #ifdef CONFIG_USB_MUSB_HDRC_HCD
+@@ -1961,6 +2030,9 @@ bad_config:
+ 		goto fail2;
+ 	}
+ 
++	musb->nb.notifier_call = musb_notifier_call;
++	otg_register_notifier(musb->xceiv, &musb->nb);
++
+ #ifndef CONFIG_MUSB_PIO_ONLY
+ 	if (use_dma && dev->dma_mask) {
+ 		struct dma_controller	*c;
+diff --git a/drivers/usb/musb/musb_core.h b/drivers/usb/musb/musb_core.h
+index 644fcd8..3de6eb8 100644
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -322,6 +322,9 @@ struct musb {
+ 	struct clk		*clock;
+ 	irqreturn_t		(*isr)(int, void *);
+ 	struct work_struct	irq_work;
++
++	struct notifier_block	nb;
++
+ #define MUSB_HWVERS_MAJOR(x)	((x >> 10) & 0x1f)
+ #define MUSB_HWVERS_MINOR(x)	(x & 0x3ff)
+ #define MUSB_HWVERS_RC		0x8000
+@@ -432,6 +435,8 @@ struct musb {
+ 	unsigned		is_self_powered:1;
+ 	unsigned		is_bus_powered:1;
+ 
++	unsigned		is_charger:1;
++
+ 	unsigned		set_address:1;
+ 	unsigned		test_mode:1;
+ 	unsigned		softconnect:1;
 -- 
 1.6.6.rc0
 
