@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZLKO1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbZLKOiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757781AbZLKO1k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 09:27:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbZLKO1i
+	id S1758078AbZLKOiK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 09:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbZLKOiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 09:27:38 -0500
-Received: from snt0-omc3-s1.snt0.hotmail.com ([65.55.90.140]:15444 "EHLO
-	snt0-omc3-s1.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754874AbZLKO1i (ORCPT
+	Fri, 11 Dec 2009 09:38:08 -0500
+Received: from chipmunk.wormnet.eu ([195.195.131.226]:54011 "EHLO
+	chipmunk.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757561AbZLKOiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 09:27:38 -0500
-X-Originating-IP: [94.195.177.167]
-X-Originating-Email: [johnkyr83@hotmail.com]
-Message-ID: <SNT111-DS18FDA82A2FB992AC38B693A78C0@phx.gbl>
-From: "Ioannis Kyriakopoulos" <johnkyr83@hotmail.com>
-To: "'Christoph Lameter'" <cl@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>
-References: <SNT111-DS372EC73016B4FB39E0ACAA78C0@phx.gbl> <alpine.DEB.2.00.0912110802250.32415@router.home>
-In-Reply-To: <alpine.DEB.2.00.0912110802250.32415@router.home>
-Subject: RE: Finding and chaniging registered clocksources
-Date: Fri, 11 Dec 2009 14:27:42 +0000
+	Fri, 11 Dec 2009 09:38:07 -0500
+X-Greylist: delayed 367 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Dec 2009 09:38:07 EST
+Date: Fri, 11 Dec 2009 14:32:04 +0000
+From: Alexander Clouter <alex@digriz.org.uk>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] timeriomem-rng.c: use resource_size()
+Message-ID: <20091211143204.GW993@chipmunk>
+References: <BD79186B4FD85F4B8E60E381CAEE190901FB0FBA@mi8nycmail19.Mi8.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acp6ayjqKmfB3hKjQS2tgYkTN3q7XAAAK2CQ
-Content-Language: en-gb
-X-OriginalArrivalTime: 11 Dec 2009 14:27:45.0062 (UTC) FILETIME=[1AF33C60:01CA7A6E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB0FBA@mi8nycmail19.Mi8.com>
+Organization: diGriz
+X-URL: http://www.digriz.org.uk/
+X-JabberID: alex@digriz.org.uk
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks very much for the reply.
+Hi,
 
->> However, I don't know how to found out what clocksource Linux has
-assigned
->> for other activities apart from the one mentioned (e.g. for timekeeping)
-and
->> how to change it, if possible.
+* H Hartley Sweeten <hartleys@visionengravers.com> [2009-12-10 20:16:54-0500]:
 >
->Depends on the subsystem.
+> Use resource_size() for ioremap.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: Alexander Clouter <alex@digriz.org.uk>
+> 
+Acked-by: Alexander Clouter <alex@digriz.org.uk>
 
-Could you be a little more specific please cause I don't understand?
+> diff --git a/drivers/char/hw_random/timeriomem-rng.c b/drivers/char/hw_random/timeriomem-rng.c
+> index a94e930..a8428e6 100644
+> --- a/drivers/char/hw_random/timeriomem-rng.c
+> +++ b/drivers/char/hw_random/timeriomem-rng.c
+> @@ -100,8 +100,7 @@ static int __devinit timeriomem_rng_probe(struct platform_device *pdev)
+>  
+>  	timeriomem_rng_data = pdev->dev.platform_data;
+>  
+> -	timeriomem_rng_data->address = ioremap(res->start,
+> -						res->end - res->start + 1);
+> +	timeriomem_rng_data->address = ioremap(res->start, resource_size(res));
+>  	if (!timeriomem_rng_data->address)
+>  		return -EIO;
 
->getnstimeofday uses the syste, cllock that can be retrieved using
->/sys/devices/system/clocksource/clocksource0/current_clocksource
-
-The problem in my case is that when I execute the above, I get:
-cat: can't open
-'/sys/devices/system/clocksource/clocksource0/current_clocksource': No such
-file or directory
-In general, my /sys directory is empty. This file should exist to my
-filesystem prior to kernel execution or should it be created by the kernel
-when it starts executing; but for some reason it is not being created in my
-case?
-
-Thanks.
-
+-- 
+Alexander Clouter
+.sigmonster says: Every time I think I know where it's at, they move it.
