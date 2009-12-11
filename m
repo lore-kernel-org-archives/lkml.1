@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933747AbZLKQNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbZLKXtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933747AbZLKQNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 11:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbZLKQNP
+	id S1762768AbZLKXtX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbZLKXtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 11:13:15 -0500
-Received: from mga05.intel.com ([192.55.52.89]:10263 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932797AbZLKQNO (ORCPT
+	Fri, 11 Dec 2009 18:49:18 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55727 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761571AbZLKXtR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 11:13:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,382,1257148800"; 
-   d="scan'208";a="755109092"
-Date: Fri, 11 Dec 2009 18:48:55 -0500
-From: "Youquan,Song" <youquan.song@linux.intel.com>
-To: jbarnes@virtuousgeek.org
-Cc: andi@firstfloor.org, ying.huang@intel.com, kent.liu@intel.com,
-       youquan.song@intel.com, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: [PATCH]PCIe AER: reject aer inject if hardware mask error reporting
-Message-ID: <20091211234855.GB7196@youquan-linux.bj.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Fri, 11 Dec 2009 18:49:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hA252PnVrL+cOfMleq7UP+FRA3aA3QbxVHhxRmwTdnngsWihaHiaXSk8L1Wvn6H6pv
+         q04jpbCWJBN2WP1wRhRlceO39kvZvbIjXXaVutg+i889ZhK4+zTUkdC5vobKuTjS5dhY
+         jby/GtHb9K8qWaAStlCHxPZtKvjh8QSPwUSJc=
+MIME-Version: 1.0
+In-Reply-To: <6a89f9d50912111527y3ad430d5mce713b6ff38f9408@mail.gmail.com>
+References: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
+	 <6a89f9d50912111523r178c0casb61fca1198f6f253@mail.gmail.com>
+	 <21d7e9970912111526u5b7164eaydbea44986bb82d2e@mail.gmail.com>
+	 <6a89f9d50912111527y3ad430d5mce713b6ff38f9408@mail.gmail.com>
+Date: Sat, 12 Dec 2009 00:49:22 +0100
+Message-ID: <6a89f9d50912111549i5885480xe7564ace8142a275@mail.gmail.com>
+Subject: Re: [git pull] drm nouveau pony for Xmas.
+From: Stephane Marchesin <stephane.marchesin@gmail.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correcteable/Uncorrectable Error Mask Register are used by PCIe AER driver 
-which will controls the reporting of idividual errors to PCIe RC via PCIe
-error messages. 
+On Sat, Dec 12, 2009 at 00:27, Stephane Marchesin
+<stephane.marchesin@gmail.com> wrote:
+> 2009/12/12 Dave Airlie <airlied@gmail.com>:
+>> 2009/12/12 Stephane Marchesin <stephane.marchesin@gmail.com>:
+>> I did git log on the nouveau kernel tree nouveau dir with sort and uniq,
+>>
+>> I'm not sure where else I needed to trawl to get anymore ppl who have
+>> contributed to
+>> the KMS driver. I'm sure ppl contributed to X.org/Mesa drivers but
+>> this isn't the
+>> place for them. Also all copyright should be intact.
+>>
+>
+> The problem is that when you moved from the drm to the linux tree, you
+> killed the whole history and the authors along.
+>
+>> But we can add an author lists to the code subdir if you like, if
+>> someone compiles
+>> the complete list of ppl who have added code to the kernel driver.
+>>
+>
+> That would indeed be the proper thing to do.
+>
 
-If hardware masks special error reporting to RC, the aer_inject driver should
- not inject aer error.
+Ok, as you requested here is a proper list of actual authors:
 
-Signed-off-by: Youquan, Song <youquan.song@intel.com>
-Acked-by: Ying, Huang <ying.huang@intel.com>
----
+Arthur Huillet <arthur.huillet@free.fr>
+Anssi Hannula <anssi.hannula@iki.fi>
+Ben Skeggs <bskeggs@redhat.com>
+B. Rathmann <koala_br@users.sourceforge.net>
+Danny Tholen <moondrake@gmail.com>
+Dave Airlie <airlied@redhat.com>
+Francisco Jerez <currojerez@riseup.net>
+Jeremy Kolb <jkolb@brandeis.edu>
+Maarten Maathuis <madman2003@gmail.com>
+Marcin Kościelnicki <koriakin@0x04.net>
+Matthew Garrett <mjg@redhat.com>
+Matthieu Castet <castet.matthieu@free.fr>
+Matt Parnell <mparnell@gmail.com>
+Maurice van der Pot <griffon26@kfk4ever.com>
+Patrice Mandin <patmandin@gmail.com>
+Pekka Paalanen <pq@iki.fi>
+Stephane Marchesin <marchesin@icps.u-strasbg.fr>
+Stuart Bennett <stuart@freedesktop.org>
+Xavier Chantry <shiningxc@gmail.com>
 
-diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
-index ad77f0c..fa2bc22 100644
---- a/drivers/pci/pcie/aer/aer_inject.c
-+++ b/drivers/pci/pcie/aer/aer_inject.c
-@@ -302,7 +302,7 @@ static int aer_inject(struct aer_error_inj *einj)
- 	unsigned long flags;
- 	unsigned int devfn = PCI_DEVFN(einj->dev, einj->fn);
- 	int pos_cap_err, rp_pos_cap_err;
--	u32 sever;
-+	u32 sever, mask;
- 	int ret = 0;
- 
- 	dev = pci_get_bus_and_slot(einj->bus, devfn);
-@@ -354,6 +354,22 @@ static int aer_inject(struct aer_error_inj *einj)
- 	err->header_log2 = einj->header_log2;
- 	err->header_log3 = einj->header_log3;
- 
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, &mask);
-+	if (einj->cor_status && !(einj->cor_status & ~mask)) {
-+		ret = -EINVAL;
-+		printk(KERN_WARNING "The correctable error is masked by device\n");
-+		spin_unlock_irqrestore(&inject_lock, flags);
-+		goto out_put;
-+	}
-+
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, &mask);
-+	if (einj->uncor_status && !(einj->uncor_status & ~mask)) {
-+		ret = -EINVAL;
-+		printk(KERN_WARNING "The uncorrectable error is masked by device\n");
-+		spin_unlock_irqrestore(&inject_lock, flags);
-+		goto out_put;
-+	}
-+
- 	rperr = __find_aer_error_by_dev(rpdev);
- 	if (!rperr) {
- 		rperr = rperr_alloc;
+As far as I can recall, this list is complete.
+
+Stephane
