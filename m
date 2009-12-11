@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbZLKBga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934318AbZLKBgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934144AbZLKBga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 20:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762216AbZLKBgZ
+	id S934318AbZLKBgb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 20:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933098AbZLKBg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 20:36:25 -0500
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:57739 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762165AbZLKBeE (ORCPT
+	Thu, 10 Dec 2009 20:36:27 -0500
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:47328 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762041AbZLKBeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Dec 2009 20:34:04 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH V2 5/8] Squashfs: add support for LZMA compressed filesystems
-Message-Id: <E1NIuOW-0001og-Ol@dylan.lougher.demon.co.uk>
+Subject: [PATCH V2 2/8] Squashfs: Factor out remaining zlib dependencies into separate wrapper file
+Message-Id: <E1NIuOW-0001oO-ER@dylan.lougher.demon.co.uk>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Fri, 11 Dec 2009 01:34:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,225 +22,346 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Move zlib buffer init/destroy code into separate wrapper file.  Also
+make zlib z_stream field a void * removing the need to include zlib.h
+for most files.
+
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/Kconfig        |    5 ++
- fs/squashfs/Makefile       |    1 +
- fs/squashfs/decompressor.c |    4 +
- fs/squashfs/lzma_wrapper.c |  151 ++++++++++++++++++++++++++++++++++++++++++++
- fs/squashfs/squashfs.h     |    3 +
- 5 files changed, 164 insertions(+), 0 deletions(-)
- create mode 100644 fs/squashfs/lzma_wrapper.c
+ fs/squashfs/block.c          |    1 -
+ fs/squashfs/cache.c          |    1 -
+ fs/squashfs/dir.c            |    1 -
+ fs/squashfs/export.c         |    1 -
+ fs/squashfs/file.c           |    1 -
+ fs/squashfs/fragment.c       |    1 -
+ fs/squashfs/id.c             |    1 -
+ fs/squashfs/inode.c          |    1 -
+ fs/squashfs/namei.c          |    1 -
+ fs/squashfs/squashfs.h       |    2 +
+ fs/squashfs/squashfs_fs_sb.h |    2 +-
+ fs/squashfs/super.c          |   14 +++------
+ fs/squashfs/symlink.c        |    1 -
+ fs/squashfs/zlib_wrapper.c   |   56 ++++++++++++++++++++++++++++++++---------
+ 14 files changed, 51 insertions(+), 33 deletions(-)
 
-diff --git a/fs/squashfs/Kconfig b/fs/squashfs/Kconfig
-index 25a00d1..0294aa2 100644
---- a/fs/squashfs/Kconfig
-+++ b/fs/squashfs/Kconfig
-@@ -26,6 +26,11 @@ config SQUASHFS
+diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+index b8addfd..3f836e1 100644
+--- a/fs/squashfs/block.c
++++ b/fs/squashfs/block.c
+@@ -31,7 +31,6 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/buffer_head.h>
+-#include <linux/zlib.h>
  
- 	  If unsure, say N.
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/cache.c b/fs/squashfs/cache.c
+index 40c98fa..57314be 100644
+--- a/fs/squashfs/cache.c
++++ b/fs/squashfs/cache.c
+@@ -51,7 +51,6 @@
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
+-#include <linux/zlib.h>
+ #include <linux/pagemap.h>
  
-+config SQUASHFS_LZMA
-+	bool "Include support for LZMA compressed file systems"
-+	depends on SQUASHFS
-+	select DECOMPRESS_LZMA
-+
- config SQUASHFS_EMBEDDED
+ #include "squashfs_fs.h"
+diff --git a/fs/squashfs/dir.c b/fs/squashfs/dir.c
+index 566b0ea..12b933a 100644
+--- a/fs/squashfs/dir.c
++++ b/fs/squashfs/dir.c
+@@ -30,7 +30,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/zlib.h>
  
- 	bool "Additional option for memory-constrained systems" 
-diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
-index df8a19e..45aaefd 100644
---- a/fs/squashfs/Makefile
-+++ b/fs/squashfs/Makefile
-@@ -5,3 +5,4 @@
- obj-$(CONFIG_SQUASHFS) += squashfs.o
- squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
- squashfs-y += namei.o super.o symlink.o zlib_wrapper.o decompressor.o
-+squashfs-$(CONFIG_SQUASHFS_LZMA) += lzma_wrapper.o
-diff --git a/fs/squashfs/decompressor.c b/fs/squashfs/decompressor.c
-index 157478d..0b6ad9b 100644
---- a/fs/squashfs/decompressor.c
-+++ b/fs/squashfs/decompressor.c
-@@ -50,7 +50,11 @@ static const struct squashfs_decompressor squashfs_unknown_comp_ops = {
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/export.c b/fs/squashfs/export.c
+index 2b1b8fe..7f93d5a 100644
+--- a/fs/squashfs/export.c
++++ b/fs/squashfs/export.c
+@@ -39,7 +39,6 @@
+ #include <linux/vfs.h>
+ #include <linux/dcache.h>
+ #include <linux/exportfs.h>
+-#include <linux/zlib.h>
+ #include <linux/slab.h>
  
- static const struct squashfs_decompressor *decompressor[] = {
- 	&squashfs_zlib_comp_ops,
-+#ifdef CONFIG_SQUASHFS_LZMA
-+	&squashfs_lzma_comp_ops,
-+#else
- 	&squashfs_lzma_unsupported_comp_ops,
-+#endif
- 	&squashfs_lzo_unsupported_comp_ops,
- 	&squashfs_unknown_comp_ops
- };
-diff --git a/fs/squashfs/lzma_wrapper.c b/fs/squashfs/lzma_wrapper.c
-new file mode 100644
-index 0000000..cef06d6
---- /dev/null
-+++ b/fs/squashfs/lzma_wrapper.c
-@@ -0,0 +1,151 @@
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * lzma_wrapper.c
-+ */
-+
-+#include <asm/unaligned.h>
-+#include <linux/buffer_head.h>
-+#include <linux/mutex.h>
-+#include <linux/vmalloc.h>
-+#include <linux/decompress/unlzma.h>
-+
-+#include "squashfs_fs.h"
-+#include "squashfs_fs_sb.h"
-+#include "squashfs_fs_i.h"
-+#include "squashfs.h"
-+#include "decompressor.h"
-+
-+struct squashfs_lzma {
-+	void	*input;
-+	void	*output;
-+};
-+
-+/* decompress_unlzma.c is currently non re-entrant... */
-+DEFINE_MUTEX(lzma_mutex);
-+
-+/* decompress_unlzma.c doesn't provide any context in its callbacks... */
-+static int lzma_error;
-+
-+static void error(char *m)
+ #include "squashfs_fs.h"
+diff --git a/fs/squashfs/file.c b/fs/squashfs/file.c
+index 717767d..a25c506 100644
+--- a/fs/squashfs/file.c
++++ b/fs/squashfs/file.c
+@@ -47,7 +47,6 @@
+ #include <linux/string.h>
+ #include <linux/pagemap.h>
+ #include <linux/mutex.h>
+-#include <linux/zlib.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/fragment.c b/fs/squashfs/fragment.c
+index b5a2c15..7c90bbd 100644
+--- a/fs/squashfs/fragment.c
++++ b/fs/squashfs/fragment.c
+@@ -36,7 +36,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/zlib.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/id.c b/fs/squashfs/id.c
+index 3795b83..b7f64bc 100644
+--- a/fs/squashfs/id.c
++++ b/fs/squashfs/id.c
+@@ -34,7 +34,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/zlib.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/inode.c b/fs/squashfs/inode.c
+index 9101dbd..49daaf6 100644
+--- a/fs/squashfs/inode.c
++++ b/fs/squashfs/inode.c
+@@ -40,7 +40,6 @@
+ 
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+-#include <linux/zlib.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/namei.c b/fs/squashfs/namei.c
+index 9e39865..5266bd8 100644
+--- a/fs/squashfs/namei.c
++++ b/fs/squashfs/namei.c
+@@ -57,7 +57,6 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/dcache.h>
+-#include <linux/zlib.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
+index ba87db6..9c2f76a 100644
+--- a/fs/squashfs/squashfs.h
++++ b/fs/squashfs/squashfs.h
+@@ -71,6 +71,8 @@ extern struct inode *squashfs_iget(struct super_block *, long long,
+ extern int squashfs_read_inode(struct inode *, long long);
+ 
+ /* zlib_wrapper.c */
++extern void *squashfs_zlib_init(void);
++extern void squashfs_zlib_free(void *);
+ extern int squashfs_zlib_uncompress(struct squashfs_sb_info *, void **,
+ 				struct buffer_head **, int, int, int, int, int);
+ 
+diff --git a/fs/squashfs/squashfs_fs_sb.h b/fs/squashfs/squashfs_fs_sb.h
+index c8c6561..23a67fa 100644
+--- a/fs/squashfs/squashfs_fs_sb.h
++++ b/fs/squashfs/squashfs_fs_sb.h
+@@ -64,7 +64,7 @@ struct squashfs_sb_info {
+ 	struct mutex		read_data_mutex;
+ 	struct mutex		meta_index_mutex;
+ 	struct meta_index	*meta_index;
+-	z_stream		stream;
++	void			*stream;
+ 	__le64			*inode_lookup_table;
+ 	u64			inode_table;
+ 	u64			directory_table;
+diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
+index 6c197ef..b9f8c6a 100644
+--- a/fs/squashfs/super.c
++++ b/fs/squashfs/super.c
+@@ -35,7 +35,6 @@
+ #include <linux/pagemap.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+-#include <linux/zlib.h>
+ #include <linux/magic.h>
+ 
+ #include "squashfs_fs.h"
+@@ -87,12 +86,9 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	}
+ 	msblk = sb->s_fs_info;
+ 
+-	msblk->stream.workspace = kmalloc(zlib_inflate_workspacesize(),
+-		GFP_KERNEL);
+-	if (msblk->stream.workspace == NULL) {
+-		ERROR("Failed to allocate zlib workspace\n");
++	msblk->stream = squashfs_zlib_init();
++	if (msblk->stream == NULL)
+ 		goto failure;
+-	}
+ 
+ 	sblk = kzalloc(sizeof(*sblk), GFP_KERNEL);
+ 	if (sblk == NULL) {
+@@ -292,17 +288,17 @@ failed_mount:
+ 	squashfs_cache_delete(msblk->block_cache);
+ 	squashfs_cache_delete(msblk->fragment_cache);
+ 	squashfs_cache_delete(msblk->read_page);
++	squashfs_zlib_free(msblk->stream);
+ 	kfree(msblk->inode_lookup_table);
+ 	kfree(msblk->fragment_index);
+ 	kfree(msblk->id_table);
+-	kfree(msblk->stream.workspace);
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+ 	kfree(sblk);
+ 	return err;
+ 
+ failure:
+-	kfree(msblk->stream.workspace);
++	squashfs_zlib_free(msblk->stream);
+ 	kfree(sb->s_fs_info);
+ 	sb->s_fs_info = NULL;
+ 	return -ENOMEM;
+@@ -346,10 +342,10 @@ static void squashfs_put_super(struct super_block *sb)
+ 		squashfs_cache_delete(sbi->block_cache);
+ 		squashfs_cache_delete(sbi->fragment_cache);
+ 		squashfs_cache_delete(sbi->read_page);
++		squashfs_zlib_free(sbi->stream);
+ 		kfree(sbi->id_table);
+ 		kfree(sbi->fragment_index);
+ 		kfree(sbi->meta_index);
+-		kfree(sbi->stream.workspace);
+ 		kfree(sb->s_fs_info);
+ 		sb->s_fs_info = NULL;
+ 	}
+diff --git a/fs/squashfs/symlink.c b/fs/squashfs/symlink.c
+index 83d8788..e80be20 100644
+--- a/fs/squashfs/symlink.c
++++ b/fs/squashfs/symlink.c
+@@ -36,7 +36,6 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/pagemap.h>
+-#include <linux/zlib.h>
+ 
+ #include "squashfs_fs.h"
+ #include "squashfs_fs_sb.h"
+diff --git a/fs/squashfs/zlib_wrapper.c b/fs/squashfs/zlib_wrapper.c
+index 3be9964..c814594 100644
+--- a/fs/squashfs/zlib_wrapper.c
++++ b/fs/squashfs/zlib_wrapper.c
+@@ -31,21 +31,51 @@
+ #include "squashfs_fs_i.h"
+ #include "squashfs.h"
+ 
++void *squashfs_zlib_init()
 +{
-+	ERROR("unlzma error: %s\n", m);
-+	lzma_error = 1;
-+}
-+
-+
-+static void *lzma_init(struct squashfs_sb_info *msblk)
-+{
-+	struct squashfs_lzma *stream = kzalloc(sizeof(*stream), GFP_KERNEL);
++	z_stream *stream = kmalloc(sizeof(z_stream), GFP_KERNEL);
 +	if (stream == NULL)
 +		goto failed;
-+	stream->input = vmalloc(msblk->block_size);
-+	if (stream->input == NULL)
++	stream->workspace = kmalloc(zlib_inflate_workspacesize(),
++		GFP_KERNEL);
++	if (stream->workspace == NULL)
 +		goto failed;
-+	stream->output = vmalloc(msblk->block_size);
-+	if (stream->output == NULL)
-+		goto failed2;
 +
 +	return stream;
 +
-+failed2:
-+	vfree(stream->input);
 +failed:
-+	ERROR("failed to allocate lzma workspace\n");
++	ERROR("Failed to allocate zlib workspace\n");
 +	kfree(stream);
 +	return NULL;
 +}
 +
 +
-+static void lzma_free(void *strm)
++void squashfs_zlib_free(void *strm)
 +{
-+	struct squashfs_lzma *stream = strm;
++	z_stream *stream = strm;
 +
-+	if (stream) {
-+		vfree(stream->input);
-+		vfree(stream->output);
-+	}
++	if (stream)
++		kfree(stream->workspace);
 +	kfree(stream);
 +}
 +
 +
-+static int lzma_uncompress(struct squashfs_sb_info *msblk, void **buffer,
-+	struct buffer_head **bh, int b, int offset, int length, int srclength,
-+	int pages)
-+{
-+	struct squashfs_lzma *stream = msblk->stream;
-+	void *buff = stream->input;
-+	int avail, i, bytes = length, res;
-+
-+	mutex_lock(&lzma_mutex);
-+
-+	for (i = 0; i < b; i++) {
-+		wait_on_buffer(bh[i]);
-+		if (!buffer_uptodate(bh[i]))
-+			goto block_release;
-+
-+		avail = min(bytes, msblk->devblksize - offset);
-+		memcpy(buff, bh[i]->b_data + offset, avail);
-+		buff += avail;
-+		bytes -= avail;
-+		offset = 0;
-+		put_bh(bh[i]);
-+	}
-+
-+	lzma_error = 0;
-+	res = unlzma(stream->input, length, NULL, NULL, stream->output, NULL,
-+							error);
-+	if (res || lzma_error)
-+		goto failed;
-+
-+	/* uncompressed size is stored in the LZMA header (5 byte offset) */
-+	res = bytes = get_unaligned_le32(stream->input + 5);
-+	for (i = 0, buff = stream->output; bytes && i < pages; i++) {
-+		avail = min_t(int, bytes, PAGE_CACHE_SIZE);
-+		memcpy(buffer[i], buff, avail);
-+		buff += avail;
-+		bytes -= avail;
-+	}
-+	if (bytes)
-+		goto failed;
-+
-+	mutex_unlock(&lzma_mutex);
-+	return res;
-+
-+block_release:
-+	for (; i < b; i++)
-+		put_bh(bh[i]);
-+
-+failed:
-+	mutex_unlock(&lzma_mutex);
-+
-+	ERROR("lzma decompression failed, data probably corrupt\n");
-+	return -EIO;
-+}
-+
-+const struct squashfs_decompressor squashfs_lzma_comp_ops = {
-+	.init = lzma_init,
-+	.free = lzma_free,
-+	.decompress = lzma_uncompress,
-+	.id = LZMA_COMPRESSION,
-+	.name = "lzma",
-+	.supported = 1
-+};
-+
-diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
-index fe2587a..d094886 100644
---- a/fs/squashfs/squashfs.h
-+++ b/fs/squashfs/squashfs.h
-@@ -94,3 +94,6 @@ extern const struct address_space_operations squashfs_symlink_aops;
+ int squashfs_zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
+ 	struct buffer_head **bh, int b, int offset, int length, int srclength,
+ 	int pages)
+ {
+ 	int zlib_err = 0, zlib_init = 0;
+ 	int avail, bytes, k = 0, page = 0;
++	z_stream *stream = msblk->stream;
  
- /* zlib_wrapper.c */
- extern const struct squashfs_decompressor squashfs_zlib_comp_ops;
-+
-+/* lzma wrapper.c */
-+extern const struct squashfs_decompressor squashfs_lzma_comp_ops;
+ 	mutex_lock(&msblk->read_data_mutex);
+ 
+-	msblk->stream.avail_out = 0;
+-	msblk->stream.avail_in = 0;
++	stream->avail_out = 0;
++	stream->avail_in = 0;
+ 
+ 	bytes = length;
+ 	do {
+-		if (msblk->stream.avail_in == 0 && k < b) {
++		if (stream->avail_in == 0 && k < b) {
+ 			avail = min(bytes, msblk->devblksize - offset);
+ 			bytes -= avail;
+ 			wait_on_buffer(bh[k]);
+@@ -58,18 +88,18 @@ int squashfs_zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
+ 				continue;
+ 			}
+ 
+-			msblk->stream.next_in = bh[k]->b_data + offset;
+-			msblk->stream.avail_in = avail;
++			stream->next_in = bh[k]->b_data + offset;
++			stream->avail_in = avail;
+ 			offset = 0;
+ 		}
+ 
+-		if (msblk->stream.avail_out == 0 && page < pages) {
+-			msblk->stream.next_out = buffer[page++];
+-			msblk->stream.avail_out = PAGE_CACHE_SIZE;
++		if (stream->avail_out == 0 && page < pages) {
++			stream->next_out = buffer[page++];
++			stream->avail_out = PAGE_CACHE_SIZE;
+ 		}
+ 
+ 		if (!zlib_init) {
+-			zlib_err = zlib_inflateInit(&msblk->stream);
++			zlib_err = zlib_inflateInit(stream);
+ 			if (zlib_err != Z_OK) {
+ 				ERROR("zlib_inflateInit returned unexpected "
+ 					"result 0x%x, srclength %d\n",
+@@ -79,9 +109,9 @@ int squashfs_zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
+ 			zlib_init = 1;
+ 		}
+ 
+-		zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
++		zlib_err = zlib_inflate(stream, Z_SYNC_FLUSH);
+ 
+-		if (msblk->stream.avail_in == 0 && k < b)
++		if (stream->avail_in == 0 && k < b)
+ 			put_bh(bh[k++]);
+ 	} while (zlib_err == Z_OK);
+ 
+@@ -90,14 +120,14 @@ int squashfs_zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
+ 		goto release_mutex;
+ 	}
+ 
+-	zlib_err = zlib_inflateEnd(&msblk->stream);
++	zlib_err = zlib_inflateEnd(stream);
+ 	if (zlib_err != Z_OK) {
+ 		ERROR("zlib_inflate error, data probably corrupt\n");
+ 		goto release_mutex;
+ 	}
+ 
+ 	mutex_unlock(&msblk->read_data_mutex);
+-	return msblk->stream.total_out;
++	return stream->total_out;
+ 
+ release_mutex:
+ 	mutex_unlock(&msblk->read_data_mutex);
 -- 
 1.6.3.3
 
