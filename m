@@ -1,113 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbZLKMdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbZLKMfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbZLKMdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbZLKMdX
+	id S1754374AbZLKMfx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZLKMfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:33:23 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:53997 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbZLKMdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:33:22 -0500
-Subject: [PATCH v2 1/4] Defer skb allocation -- add destroy buffers
- function for virtio
-From: Shirley Ma <mashirle@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-In-Reply-To: <1260534506.30371.6.camel@localhost.localdomain>
-References: <1258697359.7416.14.camel@localhost.localdomain>
-	 <200911231123.18898.rusty@rustcorp.com.au>
-	 <20091208122134.GA17286@redhat.com>
-	 <1260534506.30371.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 11 Dec 2009 04:33:25 -0800
-Message-Id: <1260534805.30371.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Fri, 11 Dec 2009 07:35:48 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:19290 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbZLKMfr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 07:35:47 -0500
+Message-ID: <4B223C78.2060908@nokia.com>
+Date: Fri, 11 Dec 2009 14:35:04 +0200
+From: "Krogerus Heikki (EXT-Teleca/Helsinki)" 
+	<ext-heikki.krogerus@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+CC: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grazvydas Ignotas <notasas@gmail.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [RFC/PATCH 4/5] usb: musb: isp1704: add registers from isp1704
+References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <1260531086-23857-5-git-send-email-felipe.balbi@nokia.com>
+In-Reply-To: <1260531086-23857-5-git-send-email-felipe.balbi@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Dec 2009 12:35:10.0082 (UTC) FILETIME=[60AB1620:01CA7A5E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: <xma@us.ibm.com>
--------------
+Balbi Felipe (Nokia-D/Helsinki) wrote:
+> transceiver used on RX-51 board.
+>
+> NYET-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+> ---
+>   
 
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index c708ecc..bb5eb7b 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -107,6 +107,16 @@ static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
- 	return p;
- }
- 
-+static void virtio_net_free_pages(void *buf)
-+{
-+	struct page *page, *next;
-+
-+	for (page = buf; page; page = next) {
-+		next = (struct page *)page->private;
-+		__free_pages(page, 0);
-+	}
-+}
-+
- static void skb_xmit_done(struct virtqueue *svq)
- {
- 	struct virtnet_info *vi = svq->vdev->priv;
-diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-index fbd2ecd..db83465 100644
---- a/drivers/virtio/virtio_ring.c
-+++ b/drivers/virtio/virtio_ring.c
-@@ -334,6 +334,29 @@ static bool vring_enable_cb(struct virtqueue *_vq)
- 	return true;
- }
- 
-+static int vring_destroy_bufs(struct virtqueue *_vq, void (*destroy)(void *))
-+{
-+	struct vring_virtqueue *vq = to_vvq(_vq);
-+	void *buf;
-+	unsigned int i;
-+	int freed = 0;
-+
-+	START_USE(vq);
-+
-+	for (i = 0; i < vq->vring.num; i++) {
-+		if (vq->data[i]) {
-+			/* detach_buf clears data, so grab it now. */
-+			buf = vq->data[i];
-+			detach_buf(vq, i);
-+			destroy(buf);
-+			freed++;
-+		}
-+	}
-+
-+	END_USE(vq);
-+	return freed;
-+}
-+
- irqreturn_t vring_interrupt(int irq, void *_vq)
- {
- 	struct vring_virtqueue *vq = to_vvq(_vq);
-@@ -360,6 +383,7 @@ static struct virtqueue_ops vring_vq_ops = {
- 	.kick = vring_kick,
- 	.disable_cb = vring_disable_cb,
- 	.enable_cb = vring_enable_cb,
-+	.destroy_bufs = vring_destroy_bufs,
- };
- 
- struct virtqueue *vring_new_virtqueue(unsigned int num,
-diff --git a/include/linux/virtio.h b/include/linux/virtio.h
-index 057a2e0..e6d7d77 100644
---- a/include/linux/virtio.h
-+++ b/include/linux/virtio.h
-@@ -71,6 +71,7 @@ struct virtqueue_ops {
- 
- 	void (*disable_cb)(struct virtqueue *vq);
- 	bool (*enable_cb)(struct virtqueue *vq);
-+	int (*destroy_bufs)(struct virtqueue *vq, void (*destory)(void *));
- };
- 
- /**
+There are now many ULPI transceivers in use. Let's add the global ULPI 
+register definitions. isp170x transceivers have only one vendor-specific 
+register. The Power Control.
 
+-- 
+heikki
 
