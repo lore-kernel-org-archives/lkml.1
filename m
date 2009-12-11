@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZLKKZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbZLKK2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbZLKKZm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 05:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbZLKKZg
+	id S1757081AbZLKK2M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 05:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbZLKK2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 05:25:36 -0500
-Received: from mail1.radix.net ([207.192.128.31]:38148 "EHLO mail1.radix.net"
+	Fri, 11 Dec 2009 05:28:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38640 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756350AbZLKKZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 05:25:35 -0500
-Subject: Re: [git pull] drm
-From: Andy Walls <awalls@radix.net>
-To: Stephane Marchesin <stephane.marchesin@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Maarten Maathuis <madman2003@gmail.com>,
-       Xavier Bestel <xavier.bestel@free.fr>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <6a89f9d50912110202n702821c7u17f377f807cd0919@mail.gmail.com>
-References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>
-	 <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>
-	 <1260459601.18520.26.camel@skunk>
-	 <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>
-	 <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
-	 <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
-	 <6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com>
-	 <alpine.LFD.2.00.0912101531180.3560@localhost.localdomain>
-	 <20091210235835.20e2269d@lxorguk.ukuu.org.uk>
-	 <6a89f9d50912110202n702821c7u17f377f807cd0919@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Dec 2009 05:24:42 -0500
-Message-Id: <1260527082.3087.55.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1754374AbZLKK2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 05:28:08 -0500
+Date: Fri, 11 Dec 2009 10:27:32 GMT
+From: tip-bot for Jamie Iles <jamie.iles@picochip.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, jamie.iles@picochip.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, jamie.iles@picochip.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1260523260-15694-2-git-send-email-jamie.iles@picochip.com>
+References: <1260523260-15694-2-git-send-email-jamie.iles@picochip.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Allow cross compiling
+Message-ID: <tip-cc835752ae3634acd2d487fdf5152f6075f45aef@git.kernel.org>
+Git-Commit-ID: cc835752ae3634acd2d487fdf5152f6075f45aef
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 11:02 +0100, Stephane Marchesin wrote:
-> On Fri, Dec 11, 2009 at 00:58, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Commit-ID:  cc835752ae3634acd2d487fdf5152f6075f45aef
+Gitweb:     http://git.kernel.org/tip/cc835752ae3634acd2d487fdf5152f6075f45aef
+Author:     Jamie Iles <jamie.iles@picochip.com>
+AuthorDate: Fri, 11 Dec 2009 09:21:00 +0000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 11 Dec 2009 11:24:13 +0100
 
-> > It's really simple: if you want to merge it *you* pull it and sign it off.
-> > If you aren't prepared to do that then ask why Fedora should, its not
-> > their code either.
+perf tools: Allow cross compiling
 
-> So what, if someone outside RedHat is ok to sign it off, it can go
-> into staging? If it's that simple I don't mind signing it off
-> (including the dubious bits), I can take the blame if that helps
-> things move forward.
+For embedded platforms, we want to be able to build the perf
+tools on a build machine to run on a different arch. This patch
+allows $CROSS_COMPILE to set the cross compiler.
 
-Could not a NAK by the author stop that?
+Additionally, if NO_LIBPERL is set, then don't use perl include
+paths as they will be for the host arch.
 
-Regards,
-Andy
+Signed-off-by: Jamie Iles <jamie.iles@picochip.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1260523260-15694-2-git-send-email-jamie.iles@picochip.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/Makefile |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 23ec660..e2ee3b5 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -237,8 +237,8 @@ lib = lib
+ 
+ export prefix bindir sharedir sysconfdir
+ 
+-CC = gcc
+-AR = ar
++CC = $(CROSS_COMPILE)gcc
++AR = $(CROSS_COMPILE)ar
+ RM = rm -f
+ TAR = tar
+ FIND = find
+@@ -492,8 +492,10 @@ else
+ 	LIB_OBJS += util/probe-finder.o
+ endif
+ 
++ifndef NO_LIBPERL
+ PERL_EMBED_LDOPTS = `perl -MExtUtils::Embed -e ldopts 2>/dev/null`
+ PERL_EMBED_CCOPTS = `perl -MExtUtils::Embed -e ccopts 2>/dev/null`
++endif
+ 
+ ifneq ($(shell sh -c "(echo '\#include <EXTERN.h>'; echo '\#include <perl.h>'; echo 'int main(void) { perl_alloc(); return 0; }') | $(CC) -x c - $(PERL_EMBED_CCOPTS) -o /dev/null $(PERL_EMBED_LDOPTS) > /dev/null 2>&1 && echo y"), y)
+ 	BASIC_CFLAGS += -DNO_LIBPERL
