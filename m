@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935094AbZLKXkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935129AbZLKXkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935094AbZLKXkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934199AbZLKXg5
+	id S935129AbZLKXkb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933787AbZLKXgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:36:57 -0500
-Received: from kroah.org ([198.145.64.141]:50441 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 18:36:54 -0500
+Received: from kroah.org ([198.145.64.141]:50447 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933644AbZLKX24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:28:56 -0500
+	id S933771AbZLKX25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:28:57 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 12/58] tty: stallion: kill BKL ioctl
-Date: Fri, 11 Dec 2009 15:27:56 -0800
-Message-Id: <1260574122-10676-12-git-send-email-gregkh@suse.de>
+Cc: Alan Cox <alan@linux.intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 13/58] tty_port: add "tty_port_open" helper
+Date: Fri, 11 Dec 2009 15:27:57 -0800
+Message-Id: <1260574122-10676-13-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211232805.GA10652@kroah.com>
 References: <20091211232805.GA10652@kroah.com>
@@ -24,66 +25,176 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
+For the moment this just moves the USB logic over and fixes the 'what if
+we open and hangup at the same time' race noticed by Oliver Neukum.
+
 Signed-off-by: Alan Cox <alan@linux.intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/stallion.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/char/tty_port.c         |   36 +++++++++++++++++++++++++++-
+ drivers/usb/serial/usb-serial.c |   49 ++++++++++++++++-----------------------
+ include/linux/tty.h             |   10 +++++++-
+ 3 files changed, 64 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index db6dcfa..b4ba5ed 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -407,7 +407,7 @@ static unsigned int	stl_baudrates[] = {
-  *	Declare all those functions in this driver!
-  */
+diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
+index c63f3d3..b22a61a 100644
+--- a/drivers/char/tty_port.c
++++ b/drivers/char/tty_port.c
+@@ -99,10 +99,11 @@ EXPORT_SYMBOL(tty_port_tty_set);
  
--static int	stl_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, unsigned long arg);
-+static long	stl_memioctl(struct file *fp, unsigned int cmd, unsigned long arg);
- static int	stl_brdinit(struct stlbrd *brdp);
- static int	stl_getportstats(struct tty_struct *tty, struct stlport *portp, comstats_t __user *cp);
- static int	stl_clrportstats(struct stlport *portp, comstats_t __user *cp);
-@@ -607,7 +607,7 @@ static unsigned int	sc26198_baudtable[] = {
-  */
- static const struct file_operations	stl_fsiomem = {
- 	.owner		= THIS_MODULE,
--	.ioctl		= stl_memioctl,
-+	.unlocked_ioctl	= stl_memioctl,
- };
- 
- static struct class *stallion_class;
-@@ -2486,18 +2486,19 @@ static int stl_getbrdstruct(struct stlbrd __user *arg)
-  *	collection.
-  */
- 
--static int stl_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, unsigned long arg)
-+static long stl_memioctl(struct file *fp, unsigned int cmd, unsigned long arg)
+ static void tty_port_shutdown(struct tty_port *port)
  {
- 	int	brdnr, rc;
- 	void __user *argp = (void __user *)arg;
- 
--	pr_debug("stl_memioctl(ip=%p,fp=%p,cmd=%x,arg=%lx)\n", ip, fp, cmd,arg);
-+	pr_debug("stl_memioctl(fp=%p,cmd=%x,arg=%lx)\n", fp, cmd,arg);
- 
--	brdnr = iminor(ip);
-+	brdnr = iminor(fp->f_dentry->d_inode);
- 	if (brdnr >= STL_MAXBRDS)
- 		return -ENODEV;
- 	rc = 0;
- 
-+	lock_kernel();
- 	switch (cmd) {
- 	case COM_GETPORTSTATS:
- 		rc = stl_getportstats(NULL, NULL, argp);
-@@ -2518,7 +2519,7 @@ static int stl_memioctl(struct inode *ip, struct file *fp, unsigned int cmd, uns
- 		rc = -ENOIOCTLCMD;
- 		break;
- 	}
++	mutex_lock(&port->mutex);
+ 	if (port->ops->shutdown &&
+ 		test_and_clear_bit(ASYNCB_INITIALIZED, &port->flags))
+ 			port->ops->shutdown(port);
 -
-+	unlock_kernel();
- 	return rc;
++	mutex_unlock(&port->mutex);
  }
  
+ /**
+@@ -381,3 +382,36 @@ void tty_port_close(struct tty_port *port, struct tty_struct *tty,
+ 	tty_port_tty_set(port, NULL);
+ }
+ EXPORT_SYMBOL(tty_port_close);
++
++int tty_port_open(struct tty_port *port, struct tty_struct *tty,
++                                                        struct file *filp)
++{
++	spin_lock_irq(&port->lock);
++	if (!tty_hung_up_p(filp))
++		++port->count;
++	spin_unlock_irq(&port->lock);
++	tty_port_tty_set(port, tty);
++
++	/*
++	 * Do the device-specific open only if the hardware isn't
++	 * already initialized. Serialize open and shutdown using the
++	 * port mutex.
++	 */
++
++	mutex_lock(&port->mutex);
++
++	if (!test_bit(ASYNCB_INITIALIZED, &port->flags)) {
++		if (port->ops->activate) {
++			int retval = port->ops->activate(port, tty);
++			if (retval) {
++        		        mutex_unlock(&port->mutex);
++        			return retval;
++        		}
++                }
++		set_bit(ASYNCB_INITIALIZED, &port->flags);
++	}
++	mutex_unlock(&port->mutex);
++	return tty_port_block_til_ready(port, tty, filp);
++}
++
++EXPORT_SYMBOL(tty_port_open);
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index bd3fa7f..b0649d9 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -247,41 +247,31 @@ static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	return retval;
+ }
+ 
+-static int serial_open(struct tty_struct *tty, struct file *filp)
++static int serial_activate(struct tty_port *tport, struct tty_struct *tty)
+ {
+-	struct usb_serial_port *port = tty->driver_data;
++	struct usb_serial_port *port =
++		container_of(tport, struct usb_serial_port, port);
+ 	struct usb_serial *serial = port->serial;
+ 	int retval;
+ 
+-	dbg("%s - port %d", __func__, port->number);
+-
+-	spin_lock_irq(&port->port.lock);
+-	if (!tty_hung_up_p(filp))
+-		++port->port.count;
+-	spin_unlock_irq(&port->port.lock);
+-	tty_port_tty_set(&port->port, tty);
++	if (mutex_lock_interruptible(&port->mutex))
++		return -ERESTARTSYS;
++	mutex_lock(&serial->disc_mutex);
++	if (serial->disconnected)
++		retval = -ENODEV;
++	else
++		retval = port->serial->type->open(tty, port);
++	mutex_unlock(&serial->disc_mutex);
++	mutex_unlock(&port->mutex);
++	return retval;
++}
+ 
+-	/* Do the device-specific open only if the hardware isn't
+-	 * already initialized.
+-	 */
+-	if (!test_bit(ASYNCB_INITIALIZED, &port->port.flags)) {
+-		if (mutex_lock_interruptible(&port->mutex))
+-			return -ERESTARTSYS;
+-		mutex_lock(&serial->disc_mutex);
+-		if (serial->disconnected)
+-			retval = -ENODEV;
+-		else
+-			retval = port->serial->type->open(tty, port);
+-		mutex_unlock(&serial->disc_mutex);
+-		mutex_unlock(&port->mutex);
+-		if (retval)
+-			return retval;
+-		set_bit(ASYNCB_INITIALIZED, &port->port.flags);
+-	}
++static int serial_open(struct tty_struct *tty, struct file *filp)
++{
++	struct usb_serial_port *port = tty->driver_data;
+ 
+-	/* Now do the correct tty layer semantics */
+-	retval = tty_port_block_til_ready(&port->port, tty, filp);
+-	return retval;
++	dbg("%s - port %d", __func__, port->number);
++	return tty_port_open(&port->port, tty, filp);
+ }
+ 
+ /**
+@@ -725,6 +715,7 @@ static void serial_dtr_rts(struct tty_port *port, int on)
+ static const struct tty_port_operations serial_port_ops = {
+ 	.carrier_raised = serial_carrier_raised,
+ 	.dtr_rts = serial_dtr_rts,
++	.activate = serial_activate,
+ };
+ 
+ int usb_serial_probe(struct usb_interface *interface,
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index f0f43d0..6352ac2 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -190,9 +190,15 @@ struct tty_port_operations {
+ 	/* Control the DTR line */
+ 	void (*dtr_rts)(struct tty_port *port, int raise);
+ 	/* Called when the last close completes or a hangup finishes
+-	   IFF the port was initialized. Do not use to free resources */
++	   IFF the port was initialized. Do not use to free resources. Called
++	   under the port mutex to serialize against activate/shutdowns */
+ 	void (*shutdown)(struct tty_port *port);
+ 	void (*drop)(struct tty_port *port);
++	/* Called under the port mutex from tty_port_open, serialized using
++	   the port mutex */
++        /* FIXME: long term getting the tty argument *out* of this would be
++           good for consoles */
++	int (*activate)(struct tty_port *port, struct tty_struct *tty);
+ };
+ 	
+ struct tty_port {
+@@ -467,6 +473,8 @@ extern int tty_port_close_start(struct tty_port *port,
+ extern void tty_port_close_end(struct tty_port *port, struct tty_struct *tty);
+ extern void tty_port_close(struct tty_port *port,
+ 				struct tty_struct *tty, struct file *filp);
++extern int tty_port_open(struct tty_port *port,
++				struct tty_struct *tty, struct file *filp);
+ extern inline int tty_port_users(struct tty_port *port)
+ {
+ 	return port->count + port->blocked_open;
 -- 
 1.6.5.5
 
