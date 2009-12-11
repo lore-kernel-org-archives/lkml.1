@@ -1,121 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZLKKTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZLKKU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbZLKKTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 05:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbZLKKT3
+	id S1756882AbZLKKU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 05:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbZLKKUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 05:19:29 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34982 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754802AbZLKKT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 05:19:28 -0500
-X-Authenticated: #2813124
-X-Provags-ID: V01U2FsdGVkX1+cjmV7buacVtgb5nxyrgL27YcLxCdbxAF+OgQz5j
-	iPyrAnvcfMiIIB
-Message-ID: <4B221CB1.9060003@gmx.ch>
-Date: Fri, 11 Dec 2009 11:19:29 +0100
-From: Daniel Ritz <daniel.ritz@gmx.ch>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Fri, 11 Dec 2009 05:20:53 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:60276 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754802AbZLKKUw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 05:20:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TdHQ8Jm8HnDhX8cW4q4WgXOb5uzfvVVk/r1Vxy7SaxUjJgP2QqYHC8C2zIPTYVsl7R
+         ryR0PEj63aN6UWdxCp8FiT5cxIVxMJ4hikPSJSeTFiNHh7FBTiGRkWw5Gehp236kLP8p
+         oB8ymtcCP092tNZzvWHyftVNvFnTkfMb0c8lE=
 MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] uvcvideo: add another YUYV format GUID
-References: <1259711324.13720.20.camel@MacRitz2> <200912100246.27827.laurent.pinchart@ideasonboard.com> <1260462865.2138.8.camel@MacRitz2> <200912110221.31086.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <200912110221.31086.laurent.pinchart@ideasonboard.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
+In-Reply-To: <20091211.013436.189815985.davem@davemloft.net>
+References: <20091210235835.20e2269d@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain>
+	 <20091211091843.0a543136@lxorguk.ukuu.org.uk>
+	 <20091211.013436.189815985.davem@davemloft.net>
+Date: Fri, 11 Dec 2009 20:20:57 +1000
+Message-ID: <21d7e9970912110220u6b61a4e2o306289ae75a5bcc2@mail.gmail.com>
+Subject: Re: [git pull] drm
+From: Dave Airlie <airlied@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
+       stephane.marchesin@gmail.com, madman2003@gmail.com,
+       xavier.bestel@free.fr, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.12.2009 02:21, Laurent Pinchart wrote:
-> On Thursday 10 December 2009 17:34:25 Daniel Ritz wrote:
->> On Thu, 2009-12-10 at 02:46 +0100, Laurent Pinchart wrote:
->>> Hi Daniel,
->>>
->>> On Friday 04 December 2009 03:05:37 Daniel Ritz wrote:
->>>> Hi Laurent
->>>>
->>>> On Thu, 2009-12-03 at 21:15 +0100, Laurent Pinchart wrote:
->>>>> Hi Daniel,
->>>>>
->>>>> On Wednesday 02 December 2009 00:48:44 Daniel Ritz wrote:
->>>>>> For some unknown reason, on a MacBookPro5,3 the iSight
->>>>>
->>>>> Could you please send me the output of lsusb -v both with the correct
->>>>> and wrong GUID ?
->>>>
->>>> sure. i attached three files:
->>>>   isight-good.txt, isight-bad.txt, isight-good2.txt
->>>>
->>>> this is three reboots in a row from like 10 minutes ago. the first
->>>> boot into linux was actually rebooting from OSX...first cold boot
->>>> today directly into linux had the right GUID.
->>>
->>> Thanks. diff'ing the descriptors shows something interesting (from good
->>> to good2):
->>>
->>> @@ -264,7 +264,7 @@
->>>          dwMaxVideoFrameBufferSize      614400
->>>          dwDefaultFrameInterval         333333
->>>          bFrameIntervalType                 11
->>> -        dwFrameInterval( 0)         3758429717
->>> +        dwFrameInterval( 0)            333333
->>>          dwFrameInterval( 1)            363636
->>>          dwFrameInterval( 2)            400000
->>>          dwFrameInterval( 3)            444444
->>>
->>> 3758429717 is 0xe0051615 in hex, and 333333 is 0x00051615.
->>>
->>> I wonder what other parts of the descriptors could get corrupted that
->>> way.
->>
->> hmm..dunno..but even with this it just worked.
->>
->>>>>> _sometimes_ report a different video format GUID.
->>>>>
->>>>> Sometimes only ? Now that's weird. Is that completely random ?
->>>>
->>>> yes, sometimes only. it seems to be related to reboots, but i don't
->>>> know what exactly triggers it. rmmod/modprobe doesn't trigger it.
->>>> also, when the wrong GUID is reported, the only way of fixing it is
->>>> to reboot. it really is just the GUID. even when the wrong one is
->>>> reported, the device works just fine.
->>>>
->>>> i started with a plain ubuntu 9.10, kernel 2.6.31 which was supposed
->>>> to fail, so i upgraded to a 2.6.32-rc8 to fix the iSight and some other
->>>> things, just to see it fail again. a reboot later and it worked, some
->>>> time and reboot later it failed again...
->>>
->>> All of those are warm reboots, and you don't boot any alternative OS in-
->>> between, right ?
->>
->> yes, linux only.
->>
->>> Does Linux reload the iSight firmware at every boot ? If it does, could
->>> you try to reload the firmware manually when you get a "bad" GUID to see
->>> if it helps ? You will probably need to unload the uvcvideo driver before
->>> reloading the firmware.
->>
->> linux does not load isight firmware at all. the new macbooks don't
->> require to load FW the device just "works".
->> FW loading is only required for the devices with ID 0x05AC:0x8300,
->> what i have is 05ac:8507....
-> 
-> Ok, thanks for the information.
-> 
-> I guess the camera is really broken. As MacOSX probably doesn't even try to 
-> parse the USB descriptors, the Apple developers never noticed.
-> 
-> Anyway, I'll apply your patch. Can I still keep your SoB line if I rename 
-> YUY2_2 to YUY2_ISIGHT ?
+On Fri, Dec 11, 2009 at 7:34 PM, David Miller <davem@davemloft.net> wrote:
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date: Fri, 11 Dec 2009 09:18:43 +0000
+>
+>> However the fundamental point stands. The only people who can sign it off
+>> are the people who wrote it. Those are the rules. Red Hat didn't write the
+>> code, Red Hat cannot sign it off however much you rant at them. You also
+>> previously said you don't want to merge stuff when the authors don't want
+>> it merged.
+>
+> I agree with a lot of what you say.
+>
+> However, one point remains is that we were told, by Dave Airlie, that
+> they didn't want this code merged because the one person being paid to
+> work on it "would be overwhelmed" if the code went upstream.
+>
+> I distinctly remember this being mentioned at the kernel summit.
+>
+> And you know what?  That kind of excuse pisses me off too :-)
 
-sure.
+Well the main thing was I wasn't mean to discuss possible legal issues
+and still don't have permission, you know as well as I do once lawyers are
+involved you have to keep out of things until they deal with them.
 
-thanks, rgds
--daniel
+but yes it is a side effect of upstreaming this code that other
+distros will start
+to place time demands on people who Red Hat employ but we were
+starting to see that anyways without upstreaming. It would be have
+been really nice
+if some of the distros would start to put their money behind what they
+want to ship instead of rhetoric[1].
 
+Dave.
 
+[1] http://www.markshuttleworth.com/archives/95
