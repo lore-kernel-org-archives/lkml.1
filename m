@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762197AbZLKEtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbZLKEhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762197AbZLKEtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934225AbZLKEtj
+	id S1761303AbZLKEhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762324AbZLKEhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:49:39 -0500
-Received: from kroah.org ([198.145.64.141]:36963 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:37:15 -0500
+Received: from kroah.org ([198.145.64.141]:36968 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761048AbZLKEgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:20 -0500
+	id S1761055AbZLKEgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:21 -0500
 X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:28:03 2009
-Message-Id: <20091211042802.562626729@linux.site>
+Message-Id: <20091211042803.182022052@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:25:32 -0800
+Date: Thu, 10 Dec 2009 20:25:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Mingming Cao <cmm@us.ibm.com>, "Theodore Tso" <tytso@mit.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [54/90] ext4: skip conversion of uninit extents after direct IO if there isnt any
+Subject: [55/90] ext4: code clean up for dio fallocate handling
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0054-ext4-skip-conversion-of-uninit-extents-after-direct-.patch
+Content-Disposition: inline; filename=0055-ext4-code-clean-up-for-dio-fallocate-handling.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,96 +30,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 5f5249507e4b5c4fc0f9c93f33d133d8c95f47e1)
+(cherry picked from commit 4b70df181611012a3556f017b57dfcef7e1d279f)
 
-At the end of direct I/O operation, ext4_ext_direct_IO() always called
-ext4_convert_unwritten_extents(), regardless of whether there were any
-unwritten extents involved in the I/O or not.
+The ext4_debug() call in ext4_end_io_dio() should be moved after the
+check to make sure that io_end is non-NULL.
 
-This commit adds a state flag so that ext4_ext_direct_IO() only calls
-ext4_convert_unwritten_extents() when necessary.
+The comment above ext4_get_block_dio_write() ("Maximum number of
+blocks...") is a duplicate; the original and correct comment is above
+the #define DIO_MAX_BLOCKS up above.
+
+Based on review comments from Curt Wohlgemuth.
 
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h    |    1 +
- fs/ext4/extents.c |   22 +++++++++++++++++-----
- fs/ext4/inode.c   |    4 +++-
- 3 files changed, 21 insertions(+), 6 deletions(-)
+ fs/ext4/inode.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -318,6 +318,7 @@ static inline __u32 ext4_mask_flags(umod
- #define EXT4_STATE_NO_EXPAND		0x00000008 /* No space for expansion */
- #define EXT4_STATE_DA_ALLOC_CLOSE	0x00000010 /* Alloc DA blks on close */
- #define EXT4_STATE_EXT_MIGRATE		0x00000020 /* Inode is migrating */
-+#define EXT4_STATE_DIO_UNWRITTEN	0x00000040 /* need convert on dio done*/
- 
- /* Used to pass group descriptor data when online resize is done */
- struct ext4_new_group_input {
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -3025,12 +3025,18 @@ ext4_ext_handle_uninitialized_extents(ha
- 		ret = ext4_split_unwritten_extents(handle,
- 						inode, path, iblock,
- 						max_blocks, flags);
--		/* flag the io_end struct that we need convert when IO done */
-+		/*
-+		 * Flag the inode(non aio case) or end_io struct (aio case)
-+		 * that this IO needs to convertion to written when IO is
-+		 * completed
-+		 */
- 		if (io)
- 			io->flag = DIO_AIO_UNWRITTEN;
-+		else
-+			EXT4_I(inode)->i_state |= EXT4_STATE_DIO_UNWRITTEN;
- 		goto out;
- 	}
--	/* DIO end_io complete, convert the filled extent to written */
-+	/* async DIO end_io complete, convert the filled extent to written */
- 	if (flags == EXT4_GET_BLOCKS_DIO_CONVERT_EXT) {
- 		ret = ext4_convert_unwritten_extents_dio(handle, inode,
- 							path);
-@@ -3272,10 +3278,16 @@ int ext4_ext_get_blocks(handle_t *handle
- 		 * To avoid unecessary convertion for every aio dio rewrite
- 		 * to the mid of file, here we flag the IO that is really
- 		 * need the convertion.
--		 *
-+		 * For non asycn direct IO case, flag the inode state
-+		 * that we need to perform convertion when IO is done.
- 		 */
--		if (io && flags == EXT4_GET_BLOCKS_DIO_CREATE_EXT)
--			io->flag = DIO_AIO_UNWRITTEN;
-+		if (flags == EXT4_GET_BLOCKS_DIO_CREATE_EXT) {
-+			if (io)
-+				io->flag = DIO_AIO_UNWRITTEN;
-+			else
-+				EXT4_I(inode)->i_state |=
-+					EXT4_STATE_DIO_UNWRITTEN;;
-+		}
- 	}
- 	err = ext4_ext_insert_extent(handle, inode, path, &newex, flags);
- 	if (err) {
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -3766,7 +3766,8 @@ static ssize_t ext4_ext_direct_IO(int rw
- 		if (ret != -EIOCBQUEUED && ret <= 0 && iocb->private) {
- 			ext4_free_io_end(iocb->private);
- 			iocb->private = NULL;
--		} else if (ret > 0) {
-+		} else if (ret > 0 && (EXT4_I(inode)->i_state &
-+				       EXT4_STATE_DIO_UNWRITTEN)) {
- 			int err;
- 			/*
- 			 * for non AIO case, since the IO is already
-@@ -3776,6 +3777,7 @@ static ssize_t ext4_ext_direct_IO(int rw
- 							     offset, ret);
- 			if (err < 0)
- 				ret = err;
-+			EXT4_I(inode)->i_state &= ~EXT4_STATE_DIO_UNWRITTEN;
- 		}
- 		return ret;
- 	}
+@@ -3440,8 +3440,6 @@ out:
+ 	return ret;
+ }
+ 
+-/* Maximum number of blocks we map for direct IO at once. */
+-
+ static int ext4_get_block_dio_write(struct inode *inode, sector_t iblock,
+ 		   struct buffer_head *bh_result, int create)
+ {
+@@ -3649,13 +3647,14 @@ static void ext4_end_io_dio(struct kiocb
+         ext4_io_end_t *io_end = iocb->private;
+ 	struct workqueue_struct *wq;
+ 
++	/* if not async direct IO or dio with 0 bytes write, just return */
++	if (!io_end || !size)
++		return;
++
+ 	ext_debug("ext4_end_io_dio(): io_end 0x%p"
+ 		  "for inode %lu, iocb 0x%p, offset %llu, size %llu\n",
+  		  iocb->private, io_end->inode->i_ino, iocb, offset,
+ 		  size);
+-	/* if not async direct IO or dio with 0 bytes write, just return */
+-	if (!io_end || !size)
+-		return;
+ 
+ 	/* if not aio dio with unwritten extents, just free io and return */
+ 	if (io_end->flag != DIO_AIO_UNWRITTEN){
 
 
