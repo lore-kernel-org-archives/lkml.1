@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbZLKQr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZLKQsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756256AbZLKQr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 11:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZLKQrZ
+	id S1756901AbZLKQsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZLKQsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 11:47:25 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:53355 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbZLKQrY (ORCPT
+	Fri, 11 Dec 2009 11:48:09 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:59289 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbZLKQsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 11:47:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=q+6HIuwtqFKlTB/L7GbpGm3tH8nniSZTZFR/vnNGEB7E+bRKrA3xZ6KlS6qRmiGV+1
-         /7HYihK7bSebUUwielfpI+Rg5Lm5ga+haE4V4kZJ4TbP4pZ5qUS7nebeSL+6hhM/8Hc9
-         9M4s9W0NodglDTmdtCtZQDWE3ZGJnaUMwrA6o=
+	Fri, 11 Dec 2009 11:48:08 -0500
+To: device-mapper development <dm-devel@redhat.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-kernel@vger.kernel.org, Heinz Diehl <htd@fancy-poultry.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [dm-devel] Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device mapper warnings
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <200912091049.12604.borntraeger@de.ibm.com>
+	<170fa0d20912091656s31575d0cneaf899e1781bdc16@mail.gmail.com>
+	<yq1bpi7vdes.fsf@sermon.lab.mkp.net>
+	<200912111028.05512.borntraeger@de.ibm.com>
+Date: Fri, 11 Dec 2009 11:47:40 -0500
+In-Reply-To: <200912111028.05512.borntraeger@de.ibm.com> (Christian
+	Borntraeger's message of "Fri, 11 Dec 2009 10:28:05 +0100")
+Message-ID: <yq13a3hv4nn.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20091211163822.GA1869@srcf.ucam.org>
-References: <1260546750-6206-1-git-send-email-mjg@redhat.com>
-	 <68676e00912110828q26e511edt52546f09490c9431@mail.gmail.com>
-	 <20091211163328.GA1596@srcf.ucam.org>
-	 <68676e00912110836p278985cfv3d052e16a22916b1@mail.gmail.com>
-	 <20091211163822.GA1869@srcf.ucam.org>
-Date: Fri, 11 Dec 2009 17:47:29 +0100
-Message-ID: <68676e00912110847o3594931etf6e045340043e2c6@mail.gmail.com>
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for intel PCI thermal 
-	subsystem
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+X-Auth-Type: Internal IP
+X-Source-IP: rcsinet13.oracle.com [148.87.113.125]
+X-CT-RefId: str=0001.0A090204.4B2277BD.0198:SCFMA4539811,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 5:38 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Fri, Dec 11, 2009 at 05:36:59PM +0100, Luca Tettamanti wrote:
->> On Fri, Dec 11, 2009 at 5:33 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->> >> Does it plays nice with other drivers?
->> >> More specifically: is it possible to load the native driver and this
->> >> one (which I presume pokes at the same chip) at the same time?
->> >
->> > What do you mean by native driver? This is a native driver for the chip
->> > in question.
->>
->> I mean the driver for the hwmon chip attached to I2C/SMB bus.
->
-> This is the hwmon chip.
+>>>>> "Christian" == Christian Borntraeger <borntraeger@de.ibm.com> writes:
 
-Sorry, I think we're not understanding each other :)
-Does the PCH samples the values directly from the probes? Or is it an
-interface for the real monitoring chip (most likely the superio chip)?
-In the latter case it might be possible to access directly the
-monitoring hardware using another driver (e.g. w83627ehf, lm80, etc.),
-thus racing against the PCI driver.
-Did I make myself clear?
+Christian> any news on the final fix? Do you want Heinz and me to verify
+Christian> your fix on our systems?
 
-thanks,
-Luca
+Looking into this issue unearthed an unrelated problem with the topology
+stacking algorithm that turns out to be much trickier to fix.  That's
+what's taking time.
+
+Since the first bug is simply causing a warning I'm inclined to get
+everything fixed up before having Jens queue a fix.  Shouldn't be more
+than a day or two before I have all this worked out.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
+
