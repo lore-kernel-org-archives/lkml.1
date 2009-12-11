@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933500AbZLKP6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933636AbZLKQKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933500AbZLKP6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 10:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbZLKP6h
+	id S933636AbZLKQKf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933182AbZLKQK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 10:58:37 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:36833 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932334AbZLKP6g (ORCPT
+	Fri, 11 Dec 2009 11:10:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35857 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932918AbZLKQK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 10:58:36 -0500
-Subject: [GIT PULL] Kmemleak patches
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 04 Dec 2009 10:02:55.0449 (UTC)
-	FILETIME=[F31C7490:01CA74C8]
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 11 Dec 2009 15:57:49 +0000
-Message-Id: <1260547070.25477.12.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Dec 2009 11:10:28 -0500
+Date: Fri, 11 Dec 2009 08:07:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Howells <dhowells@redhat.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Vegard Nossum <vegardno@ifi.uio.no>
+Subject: Re: [patch 8/9] Documentation: Fix invalid rcu assumptions
+In-Reply-To: <13688.1260540024@redhat.com>
+Message-ID: <alpine.LFD.2.00.0912110804430.3560@localhost.localdomain>
+References: <20091210004703.308396881@linutronix.de> <20091210001308.247025548@linutronix.de> <13688.1260540024@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-(sorry for the re-post but just in case you missed the first e-mail)
 
-Could you please merge the kmemleak branch below? It contains some
-improvements to kmemleak (including reduced rate of false positives).
-Thanks.
+On Fri, 11 Dec 2009, David Howells wrote:
 
-The following changes since commit 012abeea669ea49636cf952d13298bb68654146a:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc5
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > -197          * we use RCU protection here
+> > +196          * caller must be holding the RCU readlocke
+> 
+> You mean "readlock" I suspect.
 
-are available in the git repository at:
+Or maybe he's talking about ye olde readlocke, used widely for OS research 
+throughout the middle ages. You still find that spelling in some really 
+old CS literature.
 
-  git://linux-arm.org/linux-2.6.git kmemleak
-
-Catalin Marinas (6):
-      kmemleak: Do not use off-slab management with SLAB_NOLEAKTRACE
-      kmemleak: Simplify the kmemleak_scan_area() function prototype
-      kmemleak: Scan the _ftrace_events section in modules
-      kmemleak: Release the object lock before calling put_object()
-      kmemleak: Show the age of an unreferenced object
-      kmemleak: Reduce the false positives by checking for modified objects
-
-Randy Dunlap (1):
-      kmemleak: fix kconfig for crc32 build error
-
- include/linux/kmemleak.h |    6 +-
- kernel/module.c          |   13 ++-
- lib/Kconfig.debug        |    1 +
- mm/kmemleak.c            |  188 +++++++++++++++++++++++++---------------------
- mm/slab.c                |   10 ++-
- 5 files changed, 118 insertions(+), 100 deletions(-)
-
--- 
-Catalin
-
+			Linus
