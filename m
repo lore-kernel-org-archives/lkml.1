@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbZLKV3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762672AbZLKV3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762660AbZLKV3M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759184AbZLKV3J
+	id S1762672AbZLKV3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762664AbZLKV3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:29:09 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:53471 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760598AbZLKV3I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:29:08 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 8/9] Documentation: Fix invalid rcu assumptions
-Date: Fri, 11 Dec 2009 21:28:25 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31-rc6-00266-g3420e74; KDE/4.3.2; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Vegard Nossum <vegardno@ifi.uio.no>
-References: <20091210001308.247025548@linutronix.de> <20091210004703.308396881@linutronix.de>
-In-Reply-To: <20091210004703.308396881@linutronix.de>
+	Fri, 11 Dec 2009 16:29:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32188 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760919AbZLKV3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 16:29:19 -0500
+Date: Fri, 11 Dec 2009 19:29:00 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 0/8] perf-probe updates
+Message-ID: <20091211212900.GA13473@ghostprotocols.net>
+References: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com> <20091209072220.GA4328@elte.hu> <20091209084341.GA21333@elte.hu> <4B1FE022.1030704@redhat.com> <4B201993.9020005@redhat.com> <20091211205141.GA1949@ghostprotocols.net> <4B22B672.9060402@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912112128.25954.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18THUSg0GfnDXf6uBgchfAsuWIG2jHR40anfdk
- LCbGJtU75Q6QG1zO29KQvkuLj6ilQ9d3LhsVG6yk8rxeJ3/4Om
- StzSi5d9S5jstZR/u9Bbw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B22B672.9060402@redhat.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 December 2009 00:53:26 Thomas Gleixner wrote:
-> Index: linux-2.6-tip/Documentation/credentials.txt
-> ===================================================================
-> --- linux-2.6-tip.orig/Documentation/credentials.txt
-> +++ linux-2.6-tip/Documentation/credentials.txt
-> @@ -408,9 +408,6 @@ This should be used inside the RCU read 
->                 ...
->         }
->  
-> -A function need not get RCU read lock to use __task_cred() if it is holding a
-> -spinlock at the time as this implicitly holds the RCU read lock.
-> -
->  Should it be necessary to hold another task's credentials for a long period of
->  time, and possibly to sleep whilst doing so, then the caller should get a
->  reference on them using:
+Em Fri, Dec 11, 2009 at 04:15:30PM -0500, Masami Hiramatsu escreveu:
+> Arnaldo Carvalho de Melo wrote:
+> > Em Wed, Dec 09, 2009 at 04:41:39PM -0500, Masami Hiramatsu escreveu:
+> >> Masami Hiramatsu wrote:
+> >>>> Here the failure was because the symbol does not exist.
+> >>>
+> >>> Yeah, so that's what I'm expecting to be implemented with below item :-)
+> >>>
+> >>>    - Symbol search by libelf/kallsyms
+> >>>
+> >>> I guess it will be done by using symbol.c.
+> >>> (Actually, current
+> >>
+> >> Oops, I might miss something, forgot it.
+> >> actually, current perf probe doesn't decode kallsyms/elf, it just depends on
+> >> kprobe-tracer. And kprobe-tracer will return -EINVAL not only if the symbol
+> >> was not found, but also other reasons.
+> >>
+> >> So, if we want to show below message, we need to decode elf or kallsyms.
+> > 
+> > Should be easy now with my latest patch :-)
+> 
+> Thanks! that's looks very useful for me!
 
-How about changing the documentation to explain why you can't just use a spinlock
-or local_irq_disable instead of rcu_read_lock? You explained it well in your
-[patch 0/9], but that part had not occurred to me yet and having it in the kernel
-sources might prevent more people from getting it wrong in the future.
+Please let me know of any shortcomings you may find!
 
-	Arnd
+- Arnaldo
