@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbZLKAOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbZLKAUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761924AbZLKAOQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 19:14:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761891AbZLKAOO
+	id S1761910AbZLKAUB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 19:20:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbZLKAT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 19:14:14 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47442 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761886AbZLKAOO (ORCPT
+	Thu, 10 Dec 2009 19:19:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34126 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757766AbZLKAT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 19:14:14 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 11 Dec 2009 09:11:14 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com
-Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
-Message-Id: <20091211091114.c5fa4371.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091210185459.GA8697@elte.hu>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210075454.GB25549@elte.hu>
-	<20091210172040.37d259d3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210083310.GB6834@elte.hu>
-	<alpine.DEB.2.00.0912101134220.5481@router.home>
-	<20091210173819.GA5256@elte.hu>
-	<alpine.DEB.2.00.0912101203320.5481@router.home>
-	<20091210185459.GA8697@elte.hu>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 10 Dec 2009 19:19:58 -0500
+X-Authority-Analysis: v=1.0 c=1 a=pgEMfFjABqMA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=omOdbC7AAAAA:8 a=onUY2Jp8L_EgsajZC6oA:9 a=BwnfpuYNADI7v2vK2JETcNl8lEcA:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 04/10] tracing: __dynamic_array() also defines fields
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B1F4E92.1090608@cn.fujitsu.com>
+References: <4B1F4E92.1090608@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 10 Dec 2009 19:20:03 -0500
+Message-ID: <1260490803.2146.311.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009 19:54:59 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-> > [...] Exposing via perf is outside of the scope of his work.
-> 
-> Please make thoughts about intelligent instrumentation solutions, and 
-> please think "outside of the scope" of your usual routine.
-> 
+On Wed, 2009-12-09 at 15:15 +0800, Lai Jiangshan wrote:
+> dynamic array is also added to struct ftrace_event_call->fields.
 
-I'm sorry that I don't fully understand your suggestion...
+Could you add to the change log which events use it. I see bprint and
+print. But this change log is still lacking. It should explain what
+features this fixes.
 
-This patch is for _usage_ counters (those can increase/decrease and can be
-modified in batched manner), but you don't talk about usage counter
-but about lack of (useful) _event_ counters under page fault path.
+But as for the patch itself:
 
-If so, yes, I agree that current events are not enough.
-If not, hmm ? 
-
-More event counters I can think of around mm/page-fault is following..
-
-  - fault to new anon pages
-    + a new anon page is from remote node.
-  - fault to file-backed area
-    + a file page is from remote node.
-  - copy_on_write
-    +  a new anon page is from remote node.
-    +  copy-on-write to zero page.
-  - make page write (make page dirty)
-  - search vma. (find_vma() is called and goes into rb-tree lookup)
-  - swap-in (necessary ?)
-  - get_user_page() is called to snoop other process's memory.
-
-I wonder adding event and inserting perf_sw_event(PERF_COUNT_SW....) is
-enough for adding event coutners...but is there good documentation of
-this hook ?
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
 Thanks,
--Kame
+
+-- Steve
+
+
+
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+> index 458e5bf..511bc36 100644
+> --- a/kernel/trace/trace_export.c
+> +++ b/kernel/trace/trace_export.c
+> @@ -174,7 +174,12 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
+>  		return ret;
+>  
+>  #undef __dynamic_array
+> -#define __dynamic_array(type, item)
+> +#define __dynamic_array(type, item)					\
+> +	ret = trace_define_field(event_call, #type, #item,		\
+> +				 offsetof(typeof(field), item),		\
+> +				 0, is_signed_type(type), FILTER_OTHER);\
+> +	if (ret)							\
+> +		return ret;
+>  
+>  #undef FTRACE_ENTRY
+>  #define FTRACE_ENTRY(name, struct_name, id, tstruct, print)		\
+> 
+> 
+
 
