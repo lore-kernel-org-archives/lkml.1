@@ -1,170 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbZLKAZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZLKAda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761987AbZLKAZB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 19:25:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbZLKAZB
+	id S1758623AbZLKAda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 19:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbZLKAd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 19:25:01 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37756 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757980AbZLKAZA (ORCPT
+	Thu, 10 Dec 2009 19:33:26 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40909 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757023AbZLKAd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 19:25:00 -0500
-X-Authority-Analysis: v=1.0 c=1 a=YPKwDEcdE-AA:10 a=7U3hwN5JcxgA:10 a=omOdbC7AAAAA:8 a=hBdcBwD0KHrrqBoanfgA:9 a=sU27wg75geW74AUeHkjE8wRjh_oA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 06/10] tracing: add print_fmt field
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B1F4EA1.4080400@cn.fujitsu.com>
-References: <4B1F4EA1.4080400@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 10 Dec 2009 19:25:04 -0500
-Message-ID: <1260491104.2146.314.camel@gandalf.stny.rr.com>
+	Thu, 10 Dec 2009 19:33:26 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 11 Dec 2009 09:30:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com, mingo@elte.hu
+Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
+Message-Id: <20091211093032.db7fdd91.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0912101136110.5481@router.home>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0912101136110.5481@router.home>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 15:15 +0800, Lai Jiangshan wrote:
-> Add print_fmt field and the initialization codes.
-> It will be used for replacing ->show_format().
 
-This change log is very lacking. I don't even know what this patch is
-doing. I'm guessing other patches will depend on it. But this patch
-alone should have a change log that describes the goal that will happen
-to give it rational.
+thank you for review.
 
-If I'm bisecting the kernel and I come across this change, I want the
-change log to explain why this change exists, and not have to spend time
-searching the logs for other patches that may depend on this one.
+On Thu, 10 Dec 2009 11:51:24 -0600 (CST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-
--- Steve
-
+> On Thu, 10 Dec 2009, KAMEZAWA Hiroyuki wrote:
 > 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index f883406..58db567 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -120,6 +120,7 @@ struct ftrace_event_call {
->  	int			(*regfunc)(struct ftrace_event_call *);
->  	void			(*unregfunc)(struct ftrace_event_call *);
->  	int			id;
-> +	const char		*print_fmt;
->  	int			(*raw_init)(struct ftrace_event_call *);
->  	int			(*show_format)(struct ftrace_event_call *,
->  					       struct trace_seq *);
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 54258a0..eb63c97 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -723,8 +723,20 @@ static struct trace_event ftrace_event_type_##call = {			\
->  
->  #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
->  
-> +#undef __entry
-> +#define __entry REC
-> +
-> +#undef __print_flags
-> +#undef __print_symbolic
-> +#undef __get_dynamic_array
-> +#undef __get_str
-> +
-> +#undef TP_printk
-> +#define TP_printk(fmt, args...) #fmt ", "  __stringify(args)
-> +
->  #undef DECLARE_EVENT_CLASS
-> -#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)
-> +#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
-> +static const char print_fmt_##call[] = print;
->  
->  #undef DEFINE_EVENT
->  #define DEFINE_EVENT(template, call, proto, args)			\
-> @@ -738,6 +750,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
->  	.raw_init		= trace_event_raw_init,			\
->  	.regfunc		= ftrace_raw_reg_event_##call,		\
->  	.unregfunc		= ftrace_raw_unreg_event_##call,	\
-> +	.print_fmt		= print_fmt_##template,			\
->  	.show_format		= ftrace_format_##template,		\
->  	.define_fields		= ftrace_define_fields_##template,	\
->  	_TRACE_PROFILE_INIT(call)					\
-> @@ -746,6 +759,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
->  #undef DEFINE_EVENT_PRINT
->  #define DEFINE_EVENT_PRINT(template, call, proto, args, print)		\
->  									\
-> +static const char print_fmt_##call[] = print;				\
-> +									\
->  static struct ftrace_event_call __used					\
->  __attribute__((__aligned__(4)))						\
->  __attribute__((section("_ftrace_events"))) event_##call = {		\
-> @@ -755,6 +770,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
->  	.raw_init		= trace_event_raw_init,			\
->  	.regfunc		= ftrace_raw_reg_event_##call,		\
->  	.unregfunc		= ftrace_raw_unreg_event_##call,	\
-> +	.print_fmt		= print_fmt_##call,			\
->  	.show_format		= ftrace_format_##call,			\
->  	.define_fields		= ftrace_define_fields_##template,	\
->  	_TRACE_PROFILE_INIT(call)					\
-> @@ -838,6 +854,16 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
->  
->  #ifdef CONFIG_EVENT_PROFILE
->  
-> +#undef __entry
-> +#define __entry entry
-> +
-> +#undef __get_dynamic_array
-> +#define __get_dynamic_array(field)	\
-> +		((void *)__entry + (__entry->__data_loc_##field & 0xffff))
-> +
-> +#undef __get_str
-> +#define __get_str(field) (char *)__get_dynamic_array(field)
-> +
->  #undef __perf_addr
->  #define __perf_addr(a) __addr = (a)
->  
-> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-> index 9978a4f..95d14b6 100644
-> --- a/kernel/trace/trace_export.c
-> +++ b/kernel/trace/trace_export.c
-> @@ -203,6 +203,9 @@ static int ftrace_raw_init_event(struct ftrace_event_call *call)
->  	return 0;
->  }
->  
-> +#undef __entry
-> +#define __entry REC
-> +
->  #undef __field
->  #define __field(type, item)
->  
-> @@ -218,6 +221,9 @@ static int ftrace_raw_init_event(struct ftrace_event_call *call)
->  #undef __dynamic_array
->  #define __dynamic_array(type, item)
->  
-> +#undef F_printk
-> +#define F_printk(fmt, args...) #fmt ", "  __stringify(args)
-> +
->  #undef FTRACE_ENTRY
->  #define FTRACE_ENTRY(call, struct_name, type, tstruct, print)		\
->  									\
-> @@ -228,6 +234,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
->  	.id			= type,					\
->  	.system			= __stringify(TRACE_SYSTEM),		\
->  	.raw_init		= ftrace_raw_init_event,		\
-> +	.print_fmt		= print,				\
->  	.show_format		= ftrace_format_##call,			\
->  	.define_fields		= ftrace_define_fields_##call,		\
->  };									\
+> > Now, mm's counter information is updated by atomic_long_xxx() functions if
+> > USE_SPLIT_PTLOCKS is defined. This causes cache-miss when page faults happens
+> > simultaneously in prural cpus. (Almost all process-shared objects is...)
 > 
+> s/prural cpus/multiple cpus simultaneously/?
+> 
+Ah, I see..I often does this misuse, sorry.
+
+> > This patch implements per-cpu mm cache. This per-cpu cache is loosely
+> > synchronized with mm's counter. Current design is..
+> 
+> Some more explanation about the role of the per cpu data would be useful.
+> 
+I see.
+> For each cpu we keep a set of counters that can be incremented using per
+> cpu operations. curr_mc points to the mm struct that is currently using
+> the per cpu counters on a specific cpu?
+> 
+yes. Precisely. per-cpu curr_mmc.mm points to mm_struct of current thread
+if a page fault occurs since last schedule().
+
+
+> >   - prepare per-cpu object curr_mmc. curr_mmc containes pointer to mm and
+> >     array of counters.
+> >   - At page fault,
+> >      * if curr_mmc.mm != NULL, update curr_mmc.mm counter.
+> >      * if curr_mmc.mm == NULL, fill curr_mmc.mm = current->mm and account 1.
+> >   - At schedule()
+> >      * if curr_mm.mm != NULL, synchronize and invalidate cached information.
+> >      * if curr_mmc.mm == NULL, nothing to do.
+> 
+> Sounds like a very good idea that could be expanded and used for other
+> things like tracking the amount of memory used on a specific NUMA node in
+> the future. Through that we may get to a schedule that can schedule with
+> an awareness where the memory of a process is actually located.
+> 
+Hmm. Expanding as per-node stat ?
+
+>  > By this.
+> >   - no atomic ops, which tends to cache-miss, under page table lock.
+> >   - mm->counters are synchronized when schedule() is called.
+> >   - No bad thing to read-side.
+> >
+> > Concern:
+> >   - added cost to schedule().
+> 
+> That is only a simple check right?
+yes.
+
+> Are we already touching that cacheline in schedule?
+
+0000000000010040 l     O .data.percpu   0000000000000050 vmstat_work
+00000000000100a0 g     O .data.percpu   0000000000000030 curr_mmc
+00000000000100e0 l     O .data.percpu   0000000000000030 vmap_block_queue
+
+Hmm...not touched unless a page fault occurs.
+
+> Or place that structure near other stuff touched by the scheduer?
 > 
 
+I'll think about that.
+
+
+> >
+> > +#if USE_SPLIT_PTLOCKS
+> > +
+> > +DEFINE_PER_CPU(struct pcp_mm_cache, curr_mmc);
+> > +
+> > +void __sync_mm_counters(struct mm_struct *mm)
+> > +{
+> > +	struct pcp_mm_cache *mmc = &per_cpu(curr_mmc, smp_processor_id());
+> > +	int i;
+> > +
+> > +	for (i = 0; i < NR_MM_COUNTERS; i++) {
+> > +		if (mmc->counters[i] != 0) {
+> 
+> Omit != 0?
+> 
+> if you change mmc->curr_mc then there is no need to set mmc->counters[0]
+> to zero right? add_mm_counter_fast will set the counter to 1 next?
+> 
+yes. I can omit that.
+
+
+> > +static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
+> > +{
+> > +	struct mm_struct *cached = percpu_read(curr_mmc.mm);
+> > +
+> > +	if (likely(cached == mm)) { /* fast path */
+> > +		percpu_add(curr_mmc.counters[member], val);
+> > +	} else if (mm == current->mm) { /* 1st page fault in this period */
+> > +		percpu_write(curr_mmc.mm, mm);
+> > +		percpu_write(curr_mmc.counters[member], val);
+> > +	} else /* page fault via side-path context (get_user_pages()) */
+> > +		add_mm_counter(mm, member, val);
+> 
+> So get_user pages will not be accellerated.
+> 
+Yes. but I guess it's not fast path. I'll mention about that in patch description.
+
+
+> > Index: mmotm-2.6.32-Dec8/kernel/sched.c
+> > ===================================================================
+> > --- mmotm-2.6.32-Dec8.orig/kernel/sched.c
+> > +++ mmotm-2.6.32-Dec8/kernel/sched.c
+> > @@ -2858,6 +2858,7 @@ context_switch(struct rq *rq, struct tas
+> >  	trace_sched_switch(rq, prev, next);
+> >  	mm = next->mm;
+> >  	oldmm = prev->active_mm;
+> > +
+> >  	/*
+> >  	 * For paravirt, this is coupled with an exit in switch_to to
+> >  	 * combine the page table reload and the switch backend into
+> 
+> Extraneous new line.
+> 
+will fix.
+
+> > @@ -5477,6 +5478,11 @@ need_resched_nonpreemptible:
+> >
+> >  	if (sched_feat(HRTICK))
+> >  		hrtick_clear(rq);
+> > +	/*
+> > +	 * sync/invaldidate per-cpu cached mm related information
+> > +	 * before taling rq->lock. (see include/linux/mm.h)
+> > +	 */
+> > +	sync_mm_counters_atomic();
+> >
+> >  	spin_lock_irq(&rq->lock);
+> >  	update_rq_clock(rq);
+> 
+> Could the per cpu counter stuff be placed into rq to avoid
+> touching another cacheline?
+> 
+I will try and check how it can be done without annoyting people.
+
+Thanks,
+-Kame
 
