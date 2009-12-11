@@ -1,57 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761007AbZLKKu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbZLKKyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761007AbZLKKu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 05:50:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760941AbZLKKuz
+	id S932104AbZLKKyH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 05:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761140AbZLKKyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 05:50:55 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:62932 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760928AbZLKKuy (ORCPT
+	Fri, 11 Dec 2009 05:54:03 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:46964 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761097AbZLKKx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 05:50:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Oosu1LUjLZeyI5M9W0Nxwn44Jt1P7q9inWCfo92YKnvL9dwHTAaeEimXVNMGgzX0CD
-         zxA7LpCN7wJKrBZmSlmVzeNJSON4tgokjPlQCdqv9HSJNZkKG2iA3RvDZtqB63eglH7B
-         B/klQKvuZnu9MHv6zp3+rK/rAu/2rrCOx0q8I=
-Message-ID: <4B222426.8000904@gmail.com>
-Date: Fri, 11 Dec 2009 11:51:18 +0100
-From: Jes Sorensen <jes.sorensen@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 05:53:59 -0500
+Date: Fri, 11 Dec 2009 12:53:45 +0200
+From: Eduardo Valentin <eduardo.valentin@nokia.com>
+To: ext Samuel Ortiz <sameo@linux.intel.com>
+Cc: "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       "gadiyar@ti.com" <gadiyar@ti.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       List Linux Omap <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH 1/1] mfd: twl4030: clarify the return value for read
+ and write
+Message-ID: <20091211105345.GE8299@esdhcp037198.research.nokia.com>
+Reply-To: eduardo.valentin@nokia.com
+References: <5A47E75E594F054BAF48C5E4FC4B92AB0309DAC23C@dbde02.ent.ti.com>
+ <449d505b874c236e4d0df0c1f765918386a4d58b.1260187781.git.amit.kucheria@verdurent.com>
+ <20091207135309.GA23829@esdhcp037198.research.nokia.com>
+ <20091211103609.GB5863@sortiz.org>
 MIME-Version: 1.0
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: PATCH: Toshiba Bluetooth enabler (v3)
-References: <4B192D08.9080608@gmail.com>	 <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>	 <4B1E85A9.3030005@gmail.com>	 <9b2b86520912090517l458bc21cobbb138d460e11f53@mail.gmail.com>	 <4B211346.2000205@gmail.com> <9b2b86520912100900p5796bc35q702af615d3f27a0c@mail.gmail.com>
-In-Reply-To: <9b2b86520912100900p5796bc35q702af615d3f27a0c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091211103609.GB5863@sortiz.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 11 Dec 2009 10:53:52.0411 (UTC) FILETIME=[3A1816B0:01CA7A50]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10/09 18:00, Alan Jenkins wrote:
-> I did question "depends on RFKILL".  If you manually configure a
-> kernel, you will miss "If you have a modern Toshiba laptop with a
-> Bluetooth and an RFKill switch (such as the Portege R500), say Y."
-> unless you enable RFKILL first.  (Which is unnecessary since the
-> driver will work exactly the same with RFKILL=n).  I wouldn't call it
-> a strong objection, but it would be nice to hear the reason you
-> included this dependency.
->
-> Everything else looks fine.  Thanks for working on this.
-> Alan
+On Fri, Dec 11, 2009 at 11:36:10AM +0100, ext Samuel Ortiz wrote:
+> Hi Amit,
+> 
+> On Mon, Dec 07, 2009 at 03:53:09PM +0200, Eduardo Valentin wrote:
+> > On Mon, Dec 07, 2009 at 01:17:29PM +0100, ext Amit Kucheria wrote:
+> > > Infact, we can just return -EIO so that caller knows for sure that all
+> > > messages were not tranferred. Please consider fixed patch instead.
+> > > 
+> > > We should be checking if all the messages were tranferred or not. And return
+> > > -1 for failure. Currently we return success (0) even if none of messages were
+> > > transferred successfully.
+> > > 
+> > > Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+> > > ---
+> > >  drivers/mfd/twl4030-core.c |   24 ++++++++++++++++--------
+> > >  1 files changed, 16 insertions(+), 8 deletions(-)
+> > > 
+> > > diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+> > > index 56f1de5..3d2c413 100644
+> > > --- a/drivers/mfd/twl4030-core.c
+> > > +++ b/drivers/mfd/twl4030-core.c
+> > > @@ -292,10 +292,14 @@ int twl4030_i2c_write(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
+> > >  	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 1);
+> > >  	mutex_unlock(&twl->xfer_lock);
+> > >  
+> > > -	/* i2cTransfer returns num messages.translate it pls.. */
+> > > -	if (ret >= 0)
+> > > -		ret = 0;
+> > > -	return ret;
+> > > +	/* i2c_transfer returns number of messages transferred */
+> > > +	if (ret != 1) {
+> > > +		pr_err("%s: i2c_write failed to transfer all messages\n",
+> > > +			DRIVER_NAME);
+> > > +		return -EIO;
+> > 
+> > How about reporting the actual error that has occurred and reported by i2c_transfer?
+> > Instead of just masking it as EIO? If i2c_transfer returns something > 0 then EIO should be right.
+> > But if returns and error code, then that error code must be reported to upper layers.
+> >
+> So, I applied a modified version of this patch, see below. If you disagree
+> with it, please let me know and I wont push it upstream.
+> 
 
-The driver is acting as RFKill functionality, even if it doesn't
-provide it in full. We can pull that depend if you like, however
-I still think it's awkward to offer a driver for a functionality
-the user had previously said no to.
+OK.
 
-Cheers,
-Jes
+> 
+> commit 8aa7cfd5732dee80aaaf3caa0a1d2f9621126315
+> Author: Amit Kucheria <amit.kucheria@verdurent.com>
+> Date:   Fri Dec 11 11:31:11 2009 +0100
+> 
+>     mfd: Clarify twl4030 return value for read and write
+>     
+>     We should be checking if all the messages were tranferred. If not, then we
+>     should propagate the i2c core error code.
+>     Currently we return success (0) even if none of messages were transferred
+>     successfully.
+>     
+>     Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+>     Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
+> 
+> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+> index e4a5d48..8add16c 100644
+> --- a/drivers/mfd/twl4030-core.c
+> +++ b/drivers/mfd/twl4030-core.c
+> @@ -306,10 +306,14 @@ int twl4030_i2c_write(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
+>  	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 1);
+>  	mutex_unlock(&twl->xfer_lock);
+>  
+> -	/* i2cTransfer returns num messages.translate it pls.. */
+> -	if (ret >= 0)
+> -		ret = 0;
+> -	return ret;
+> +	/* i2c_transfer returns number of messages transferred */
+> +	if (ret != 1) {
+> +		pr_err("%s: i2c_write failed to transfer all messages\n",
+> +			DRIVER_NAME);
+> +		return ret;
+
+For this case we will be returning success if i2c_transfer fails to transfer the one message.
+I guess we should return ret only if ret < 0 ? otherwise -EIO.
+
+> +	} else {
+> +		return 0;
+> +	}
+>  }
+>  EXPORT_SYMBOL(twl4030_i2c_write);
+>  
+> @@ -358,10 +362,14 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
+>  	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 2);
+>  	mutex_unlock(&twl->xfer_lock);
+>  
+> -	/* i2cTransfer returns num messages.translate it pls.. */
+> -	if (ret >= 0)
+> -		ret = 0;
+> -	return ret;
+> +	/* i2c_transfer returns number of messages transferred */
+> +	if (ret != 2) {
+> +		pr_err("%s: i2c_read failed to transfer all messages\n",
+> +			DRIVER_NAME);
+> +		return ret;
+
+Same case here, we will be returning success if i2c_transfer fails to transfer any of those messages.
+I guess we should return ret only if ret < 0 ? otherwise -EIO.
 
 
+> +	} else {
+> +		return 0;
+> +	}
+>  }
+>  EXPORT_SYMBOL(twl4030_i2c_read);
+>  
+> -- 
+> Intel Open Source Technology Centre
+> http://oss.intel.com/
+
+-- 
+Eduardo Valentin
