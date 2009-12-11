@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbZLKMfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZLKMgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbZLKMfx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZLKMfs
+	id S1754013AbZLKMgM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZLKMgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:35:48 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:19290 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZLKMfr (ORCPT
+	Fri, 11 Dec 2009 07:36:04 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:51800 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754022AbZLKMgC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:35:47 -0500
-Message-ID: <4B223C78.2060908@nokia.com>
-Date: Fri, 11 Dec 2009 14:35:04 +0200
-From: "Krogerus Heikki (EXT-Teleca/Helsinki)" 
-	<ext-heikki.krogerus@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
-CC: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Grazvydas Ignotas <notasas@gmail.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [RFC/PATCH 4/5] usb: musb: isp1704: add registers from isp1704
-References: <6ed0b2680912101251jeec28e6i216dfc51caab13aa@mail.gmail.com> <1260531086-23857-5-git-send-email-felipe.balbi@nokia.com>
-In-Reply-To: <1260531086-23857-5-git-send-email-felipe.balbi@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Dec 2009 07:36:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=UijPiUEd2/mR3anK0QyRHpihTr9TcdzHc1S0B/fB34YHnx+ElCIgmlukStJhp9BSro
+         saP7ll16mblEIv3uyxo2Pa9Ao2A0Sx5pnQVphFxSecXSrTKILl6XIRmlnyr6cicmHK6B
+         TIyr97Ysm6RytSh4tC6m2p4pLYzxJ4/QJ10/E=
+Date: Fri, 11 Dec 2009 13:36:03 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Add support for Sphairon Homelink 1202 USB WLAN
+Message-ID: <20091211133603.46bec686@strolchi.home.s3e.de>
+In-Reply-To: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
+References: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.1; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Dec 2009 12:35:10.0082 (UTC) FILETIME=[60AB1620:01CA7A5E]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbi Felipe (Nokia-D/Helsinki) wrote:
-> transceiver used on RX-51 board.
->
-> NYET-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
-> ---
->   
+On Tue,  8 Dec 2009 15:21:33 +0100
+Stefan Seyfried <stefan.seyfried@googlemail.com> wrote:
 
-There are now many ULPI transceivers in use. Let's add the global ULPI 
-register definitions. isp170x transceivers have only one vendor-specific 
-register. The Power Control.
+> From: Stefan Seyfried <seife@sphairon.com>
+> 
+> The following two trivial patches add support for this device to
+> zd1211rw (ejecting the virtual USB drive) and ar9170usb (that drives
+> the WLAN chip inside).
 
+Is anyhting wrong with those?
+Are those too trivial and "USB only" and thus better suited for direct
+submission to Greg?
+
+Thanks,
+
+	Stefan
 -- 
-heikki
+Stefan Seyfried
 
+"Any ideas, John?"
+"Well, surrounding them's out."
