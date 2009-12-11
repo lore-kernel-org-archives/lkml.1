@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbZLKExr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbZLKExf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbZLKExr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZLKExd
+	id S1762423AbZLKExf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZLKExa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:53:33 -0500
-Received: from kroah.org ([198.145.64.141]:36856 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:53:30 -0500
+Received: from kroah.org ([198.145.64.141]:36863 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759457AbZLKEgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:05 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:53 2009
-Message-Id: <20091211042753.004509392@linux.site>
+	id S1759254AbZLKEgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:06 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:54 2009
+Message-Id: <20091211042753.567755833@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:25:15 -0800
+Date: Thu, 10 Dec 2009 20:25:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [37/90] ext4: store EXT4_EXT_MIGRATE in i_state instead of i_flags
+Subject: [38/90] ext4: Fix the alloc on close after a truncate hueristic
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0037-ext4-store-EXT4_EXT_MIGRATE-in-i_state-instead-of-i_.patch
+Content-Disposition: inline; filename=0038-ext4-Fix-the-alloc-on-close-after-a-truncate-huerist.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,107 +29,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 1b9c12f44c1eb614fd3b8822bfe8f1f5d8e53737)
+(cherry picked from commit 5534fb5bb35a62a94e0bd1fa2421f7fb6e894f10)
 
-EXT4_EXT_MIGRATE is only intended to be used for an in-memory flag,
-and the hex value assigned to it collides with FS_DIRECTIO_FL (which
-is also stored in i_flags).  There's no reason for the
-EXT4_EXT_MIGRATE bit to be stored in i_flags, so we switch it to use
-i_state instead.
+In an attempt to avoid doing an unneeded flush after opening a
+(previously non-existent) file with O_CREAT|O_TRUNC, the code only
+triggered the hueristic if ei->disksize was non-zero.  Turns out that
+the VFS doesn't call ->truncate() if the file doesn't exist, and
+ei->disksize is always zero even if the file previously existed.  So
+remove the test, since it isn't necessary and in fact disabled the
+hueristic.
 
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Thanks to Clemens Eisserer that he was seeing problems with files
+written using kwrite and eclipse after sudden crashes caused by a
+buggy Intel video driver.
+
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h    |    2 +-
- fs/ext4/inode.c   |    6 ++----
- fs/ext4/migrate.c |   20 ++++++++++----------
- 3 files changed, 13 insertions(+), 15 deletions(-)
+ fs/ext4/inode.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -253,7 +253,6 @@ struct flex_groups {
- #define EXT4_TOPDIR_FL			0x00020000 /* Top of directory hierarchies*/
- #define EXT4_HUGE_FILE_FL               0x00040000 /* Set to each huge file */
- #define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
--#define EXT4_EXT_MIGRATE		0x00100000 /* Inode is migrating */
- #define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
- 
- #define EXT4_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
-@@ -291,6 +290,7 @@ static inline __u32 ext4_mask_flags(umod
- #define EXT4_STATE_XATTR		0x00000004 /* has in-inode xattrs */
- #define EXT4_STATE_NO_EXPAND		0x00000008 /* No space for expansion */
- #define EXT4_STATE_DA_ALLOC_CLOSE	0x00000010 /* Alloc DA blks on close */
-+#define EXT4_STATE_EXT_MIGRATE		0x00000020 /* Inode is migrating */
- 
- /* Used to pass group descriptor data when online resize is done */
- struct ext4_new_group_input {
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -1256,8 +1256,7 @@ int ext4_get_blocks(handle_t *handle, st
- 			 * i_data's format changing.  Force the migrate
- 			 * to fail by clearing migrate flags
- 			 */
--			EXT4_I(inode)->i_flags = EXT4_I(inode)->i_flags &
--							~EXT4_EXT_MIGRATE;
-+			EXT4_I(inode)->i_state &= ~EXT4_STATE_EXT_MIGRATE;
- 		}
- 	}
+@@ -3983,8 +3983,7 @@ void ext4_truncate(struct inode *inode)
+ 	if (!ext4_can_truncate(inode))
+ 		return;
  
-@@ -4608,8 +4607,7 @@ static int ext4_do_update_inode(handle_t
- 	if (ext4_inode_blocks_set(handle, raw_inode, ei))
- 		goto out_brelse;
- 	raw_inode->i_dtime = cpu_to_le32(ei->i_dtime);
--	/* clear the migrate flag in the raw_inode */
--	raw_inode->i_flags = cpu_to_le32(ei->i_flags & ~EXT4_EXT_MIGRATE);
-+	raw_inode->i_flags = cpu_to_le32(ei->i_flags);
- 	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
- 	    cpu_to_le32(EXT4_OS_HURD))
- 		raw_inode->i_file_acl_high =
---- a/fs/ext4/migrate.c
-+++ b/fs/ext4/migrate.c
-@@ -353,17 +353,16 @@ static int ext4_ext_swap_inode_data(hand
+-	if (ei->i_disksize && inode->i_size == 0 &&
+-	    !test_opt(inode->i_sb, NO_AUTO_DA_ALLOC))
++	if (inode->i_size == 0 && !test_opt(inode->i_sb, NO_AUTO_DA_ALLOC))
+ 		ei->i_state |= EXT4_STATE_DA_ALLOC_CLOSE;
  
- 	down_write(&EXT4_I(inode)->i_data_sem);
- 	/*
--	 * if EXT4_EXT_MIGRATE is cleared a block allocation
-+	 * if EXT4_STATE_EXT_MIGRATE is cleared a block allocation
- 	 * happened after we started the migrate. We need to
- 	 * fail the migrate
- 	 */
--	if (!(EXT4_I(inode)->i_flags & EXT4_EXT_MIGRATE)) {
-+	if (!(EXT4_I(inode)->i_state & EXT4_STATE_EXT_MIGRATE)) {
- 		retval = -EAGAIN;
- 		up_write(&EXT4_I(inode)->i_data_sem);
- 		goto err_out;
- 	} else
--		EXT4_I(inode)->i_flags = EXT4_I(inode)->i_flags &
--							~EXT4_EXT_MIGRATE;
-+		EXT4_I(inode)->i_state &= ~EXT4_STATE_EXT_MIGRATE;
- 	/*
- 	 * We have the extent map build with the tmp inode.
- 	 * Now copy the i_data across
-@@ -517,14 +516,15 @@ int ext4_ext_migrate(struct inode *inode
- 	 * when we add extents we extent the journal
- 	 */
- 	/*
--	 * Even though we take i_mutex we can still cause block allocation
--	 * via mmap write to holes. If we have allocated new blocks we fail
--	 * migrate.  New block allocation will clear EXT4_EXT_MIGRATE flag.
--	 * The flag is updated with i_data_sem held to prevent racing with
--	 * block allocation.
-+	 * Even though we take i_mutex we can still cause block
-+	 * allocation via mmap write to holes. If we have allocated
-+	 * new blocks we fail migrate.  New block allocation will
-+	 * clear EXT4_STATE_EXT_MIGRATE flag.  The flag is updated
-+	 * with i_data_sem held to prevent racing with block
-+	 * allocation.
- 	 */
- 	down_read((&EXT4_I(inode)->i_data_sem));
--	EXT4_I(inode)->i_flags = EXT4_I(inode)->i_flags | EXT4_EXT_MIGRATE;
-+	EXT4_I(inode)->i_state |= EXT4_STATE_EXT_MIGRATE;
- 	up_read((&EXT4_I(inode)->i_data_sem));
- 
- 	handle = ext4_journal_start(inode, 1);
+ 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
 
 
