@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbZLKNsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZLKNus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbZLKNsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbZLKNs2
+	id S1758039AbZLKNus (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbZLKNuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:48:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19137 "EHLO mx1.redhat.com"
+	Fri, 11 Dec 2009 08:50:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43768 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757447AbZLKNs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:48:28 -0500
-Message-ID: <4B224D9C.6070804@redhat.com>
-Date: Fri, 11 Dec 2009 08:48:12 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: lwoodman@redhat.com
-CC: Minchan Kim <minchan.kim@gmail.com>, kosaki.motohiro@jp.fujitsu.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
-References: <20091210185626.26f9828a@cuia.bos.redhat.com> <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com> <4B2235F0.4080606@redhat.com>
-In-Reply-To: <4B2235F0.4080606@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757571AbZLKNuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 08:50:44 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20091210004703.148689096@linutronix.de>
+References: <20091210004703.148689096@linutronix.de> <20091210001308.247025548@linutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: dhowells@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org
+Subject: Re: [patch 4/9] oom: Add missing rcu protection of __task_cred() in dump_tasks
+Date: Fri, 11 Dec 2009 13:49:31 +0000
+Message-ID: <13284.1260539371@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/2009 07:07 AM, Larry Woodman wrote:
-> Minchan Kim wrote:
->>
->> I like this. but why do you select default value as constant 8?
->> Do you have any reason?
->>
->> I think it would be better to select the number proportional to NR_CPU.
->> ex) NR_CPU * 2 or something.
->>
->> Otherwise looks good to me.
->>
->> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
->>
-> This is a per-zone count so perhaps a reasonable default is the number
-> of CPUs on the
-> NUMA node that the zone resides on ?
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-One reason I made it tunable is so people can easily test
-what a good value would be :)
+> +		/* Protect __task_cred() access */
+> +		rcu_read_lock();
+>  		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
+>  		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
+>  		       get_mm_rss(mm), (int)task_cpu(p), p->signal->oom_adj,
+>  		       p->comm);
+> +		rcu_read_unlock();
 
--- 
-All rights reversed.
+No.  If there's only one access to __task_cred() like this, use
+task_cred_xxx() or one of its wrappers instead:
+
+-		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
++		       p->pid, task_uid(p), p->tgid, mm->total_vm,
+
+that limits the size of the critical section.
+
+David
