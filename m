@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbZLKUwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbZLKU4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbZLKUwI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 15:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZLKUwD
+	id S1758552AbZLKU4o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 15:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbZLKU4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 15:52:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37988 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755907AbZLKUwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 15:52:01 -0500
-Date: Fri, 11 Dec 2009 18:51:41 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip 0/8] perf-probe updates
-Message-ID: <20091211205141.GA1949@ghostprotocols.net>
-References: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
- <20091209072220.GA4328@elte.hu>
- <20091209084341.GA21333@elte.hu>
- <4B1FE022.1030704@redhat.com>
- <4B201993.9020005@redhat.com>
+	Fri, 11 Dec 2009 15:56:40 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52940 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756138AbZLKU4j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 15:56:39 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/1] perf symbols: Ditch dso->find_symbol
+Date: Fri, 11 Dec 2009 18:56:39 -0200
+Message-Id: <1260564999-13371-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B201993.9020005@redhat.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Dec 09, 2009 at 04:41:39PM -0500, Masami Hiramatsu escreveu:
-> Masami Hiramatsu wrote:
-> >> Here the failure was because the symbol does not exist.
-> > 
-> > Yeah, so that's what I'm expecting to be implemented with below item :-)
-> > 
-> >    - Symbol search by libelf/kallsyms
-> > 
-> > I guess it will be done by using symbol.c.
-> > (Actually, current
-> 
-> Oops, I might miss something, forgot it.
-> actually, current perf probe doesn't decode kallsyms/elf, it just depends on
-> kprobe-tracer. And kprobe-tracer will return -EINVAL not only if the symbol
-> was not found, but also other reasons.
-> 
-> So, if we want to show below message, we need to decode elf or kallsyms.
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Should be easy now with my latest patch :-)
+It is always wired to dso__find_symbol.
+
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/map.c    |    2 +-
+ tools/perf/util/symbol.c |    2 --
+ tools/perf/util/symbol.h |    3 +--
+ 3 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+index 175f1f6..76bdca6 100644
+--- a/tools/perf/util/map.c
++++ b/tools/perf/util/map.c
+@@ -149,7 +149,7 @@ struct symbol *map__find_symbol(struct map *self, u64 addr,
+ 	if (!dso__loaded(self->dso, self->type) && map__load(self, filter) < 0)
+ 		return NULL;
  
-> > >
-> > > There's similar problems in most other failure cases. Trying to remove a
-> > > non-existent probe gives:
-> > >
-> > >   # perf probe -d test
-> > >   Warning: event "probe:test" is not found.
+-	return self->dso->find_symbol(self->dso, self->type, addr);
++	return dso__find_symbol(self->dso, self->type, addr);
+ }
+ 
+ struct symbol *map__find_symbol_by_name(struct map *self, const char *name,
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 8134c49..d3d9fed 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -30,7 +30,6 @@ enum dso_origin {
+ 
+ static void dsos__add(struct list_head *head, struct dso *dso);
+ static struct map *map__new2(u64 start, struct dso *dso, enum map_type type);
+-struct symbol *dso__find_symbol(struct dso *self, enum map_type type, u64 addr);
+ static int dso__load_kernel_sym(struct dso *self, struct map *map,
+ 				struct map_groups *mg, symbol_filter_t filter);
+ unsigned int symbol__priv_size;
+@@ -186,7 +185,6 @@ struct dso *dso__new(const char *name)
+ 		self->short_name = self->name;
+ 		for (i = 0; i < MAP__NR_TYPES; ++i)
+ 			self->symbols[i] = self->symbol_names[i] = RB_ROOT;
+-		self->find_symbol = dso__find_symbol;
+ 		self->slen_calculated = 0;
+ 		self->origin = DSO__ORIG_NOT_FOUND;
+ 		self->loaded = 0;
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 51c4013..cf99f88 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -76,8 +76,6 @@ struct dso {
+ 	struct list_head node;
+ 	struct rb_root	 symbols[MAP__NR_TYPES];
+ 	struct rb_root	 symbol_names[MAP__NR_TYPES];
+-	struct symbol    *(*find_symbol)(struct dso *self,
+-					 enum map_type type, u64 addr);
+ 	u8		 adjust_symbols:1;
+ 	u8		 slen_calculated:1;
+ 	u8		 has_build_id:1;
+@@ -109,6 +107,7 @@ size_t dso__fprintf_buildid(struct dso *self, FILE *fp);
+ size_t dso__fprintf(struct dso *self, enum map_type type, FILE *fp);
+ char dso__symtab_origin(const struct dso *self);
+ void dso__set_build_id(struct dso *self, void *build_id);
++struct symbol *dso__find_symbol(struct dso *self, enum map_type type, u64 addr);
+ struct symbol *dso__find_symbol_by_name(struct dso *self, enum map_type type,
+ 					const char *name);
+ 
+-- 
+1.6.2.5
+
