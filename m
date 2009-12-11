@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751370AbZLKMNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbZLKMHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751370AbZLKMNK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:13:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbZLKMNF
+	id S1762230AbZLKMHy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbZLKMHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:13:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45957 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbZLKMNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:13:05 -0500
-Message-ID: <4B2235F0.4080606@redhat.com>
-Date: Fri, 11 Dec 2009 07:07:12 -0500
-From: Larry Woodman <lwoodman@redhat.com>
-Reply-To: lwoodman@redhat.com
-Organization: RedHat
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 11 Dec 2009 07:07:53 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:43425 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754887AbZLKMHw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 07:07:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=h2Now4d7xid+5bpQO7nXr4kY/8ayf+YYbxgQwkN4lMxr84CZ9J4FexBV4lJCAZ8icU
+         HRcnJV+VwLfIpHnFHEoymE+Cf+VSYMZIXAveHKMPn3dK/mro2l/DFa0IojtFjHKwl+AL
+         fx9D9/9P50fo37HvGHlzuCEnGJyd+irUdXgxg=
+Date: Fri, 11 Dec 2009 13:07:55 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Wenji Huang <wenji.huang@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] tracing/filters: Fix MATCH_FULL filter matching
+	for PTR_STRING
+Message-ID: <20091211120753.GE5244@nowhere>
+References: <4B2217D0.5000308@cn.fujitsu.com> <4B2217EA.4010902@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
-References: <20091210185626.26f9828a@cuia.bos.redhat.com> <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
-In-Reply-To: <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2217EA.4010902@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
->
-> I like this. but why do you select default value as constant 8?
-> Do you have any reason?
->
-> I think it would be better to select the number proportional to NR_CPU.
-> ex) NR_CPU * 2 or something.
->
-> Otherwise looks good to me.
->
-> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
->
->   
-This is a per-zone count so perhaps a reasonable default is the number 
-of CPUs on the
-NUMA node that the zone resides on ?
+On Fri, Dec 11, 2009 at 05:59:06PM +0800, Li Zefan wrote:
+> MATCH_FULL matching for PTR_STRING is not working correctly:
+> 
+>   # echo 'func == vt' > events/bkl/lock_kernel/filter
+>   # echo 1 > events/bkl/lock_kernel/enable
+>   ...
+>   # cat trace
+>    Xorg-1484  [000]  1973.392586: lock_kernel: ... func=vt_ioctl()
+>     gpm-1402  [001]  1974.027740: lock_kernel: ... func=vt_ioctl()
+> 
+> We should pass to regex.match(..., len) the length (including '\0')
+> of the source string instead of the length of the pattern string.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+
+
+This patch is cool but it seems to also break middle and end
+matching (at least what was working with end matching :)
+
+I know you fix that in the subsequent patches, but please
+avoid that. A fix should not bring another known bug,
+event if it's fixed in the same batch.
+
+Thanks.
 
