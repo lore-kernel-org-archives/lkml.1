@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZLKQu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZLKQuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbZLKQu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 11:50:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZLKQuq
+	id S1754111AbZLKQuv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 11:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZLKQup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 11:50:46 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60430 "EHLO
+	Fri, 11 Dec 2009 11:50:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60429 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbZLKQup (ORCPT
+	with ESMTP id S1752023AbZLKQup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Dec 2009 11:50:45 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
@@ -16,9 +16,9 @@ Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
        =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
        Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/4] perf symbols: Introduce symbol_type__is_a
-Date: Fri, 11 Dec 2009 14:50:37 -0200
-Message-Id: <1260550239-5372-2-git-send-email-acme@infradead.org>
+Subject: [PATCH 3/4] perf symbols: Introduce ELF counterparts to symbol_type__is_a
+Date: Fri, 11 Dec 2009 14:50:38 -0200
+Message-Id: <1260550239-5372-3-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1260550239-5372-1-git-send-email-acme@infradead.org>
 References: <1260550239-5372-1-git-send-email-acme@infradead.org>
@@ -33,8 +33,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-For selecting the right types of symbols in /proc/kallsyms, will be
-followed by elf_symbol_type__is_a, for the same purpose on ELF symtabs.
+For selecting the right types of symbols in ELF symtabs.
 
 Cc: Frédéric Weisbecker <fweisbec@gmail.com>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -42,60 +41,58 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/util/event.h  |    4 ++--
- tools/perf/util/symbol.c |   15 +++++++++++----
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ tools/perf/util/symbol.c |   24 ++++++++++++++++++++++--
+ 1 files changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index c7a78ee..d9a65d9 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -103,10 +103,10 @@ void event__print_totals(void);
- 
- enum map_type {
- 	MAP__FUNCTION = 0,
--
--	MAP__NR_TYPES,
- };
- 
-+#define MAP__NR_TYPES (MAP__FUNCTION + 1)
-+
- struct map {
- 	union {
- 		struct rb_node	rb_node;
 diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 9362023..bb21c96 100644
+index bb21c96..db8dc97 100644
 --- a/tools/perf/util/symbol.c
 +++ b/tools/perf/util/symbol.c
-@@ -56,6 +56,16 @@ static void dso__set_loaded(struct dso *self, enum map_type type)
- 	self->loaded |= (1 << type);
+@@ -751,6 +751,26 @@ out:
+ 	return 0;
  }
  
-+static bool symbol_type__is_a(char symbol_type, enum map_type map_type)
++static bool elf_sym__is_a(GElf_Sym *self, enum map_type type)
 +{
-+	switch (map_type) {
++	switch (type) {
 +	case MAP__FUNCTION:
-+		return symbol_type == 'T' || symbol_type == 'W';
++		return elf_sym__is_function(self);
 +	default:
 +		return false;
 +	}
 +}
 +
- static void symbols__fixup_end(struct rb_root *self)
- {
- 	struct rb_node *nd, *prevnd = rb_first(self);
-@@ -327,10 +337,7 @@ static int dso__load_all_kallsyms(struct dso *self, struct map *map)
++static bool elf_sec__is_a(GElf_Shdr *self, Elf_Data *secstrs, enum map_type type)
++{
++	switch (type) {
++	case MAP__FUNCTION:
++		return elf_sec__is_text(self, secstrs);
++	default:
++		return false;
++	}
++}
++
+ static int dso__load_sym(struct dso *self, struct map *map,
+ 			 struct map_groups *mg, const char *name, int fd,
+ 			 symbol_filter_t filter, int kernel, int kmodule)
+@@ -825,7 +845,7 @@ static int dso__load_sym(struct dso *self, struct map *map,
+ 		int is_label = elf_sym__is_label(&sym);
+ 		const char *section_name;
+ 
+-		if (!is_label && !elf_sym__is_function(&sym))
++		if (!is_label && !elf_sym__is_a(&sym, map->type))
  			continue;
  
- 		symbol_type = toupper(line[len]);
--		/*
--		 * We're interested only in code ('T'ext)
--		 */
--		if (symbol_type != 'T' && symbol_type != 'W')
-+		if (!symbol_type__is_a(symbol_type, map->type))
+ 		sec = elf_getscn(elf, sym.st_shndx);
+@@ -834,7 +854,7 @@ static int dso__load_sym(struct dso *self, struct map *map,
+ 
+ 		gelf_getshdr(sec, &shdr);
+ 
+-		if (is_label && !elf_sec__is_text(&shdr, secstrs))
++		if (is_label && !elf_sec__is_a(&shdr, secstrs, map->type))
  			continue;
  
- 		symbol_name = line + len + 2;
+ 		elf_name = elf_sym__name(&sym, symstrs);
 -- 
 1.6.2.5
 
