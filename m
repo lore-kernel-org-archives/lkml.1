@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934399AbZLKXeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934811AbZLKXeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934399AbZLKXeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934814AbZLKXeG
+	id S934811AbZLKXeF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:34:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbZLKXeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:34:06 -0500
-Received: from kroah.org ([198.145.64.141]:50479 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 18:34:00 -0500
+Received: from kroah.org ([198.145.64.141]:50451 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933562AbZLKX3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:29:24 -0500
+	id S934401AbZLKX3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:29:25 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 41/58] tty: tty_port: Add a kref object to the tty port
-Date: Fri, 11 Dec 2009 15:28:25 -0800
-Message-Id: <1260574122-10676-41-git-send-email-gregkh@suse.de>
+Subject: [PATCH 42/58] tty: isicom: switch to the new tty_port_open helper
+Date: Fri, 11 Dec 2009 15:28:26 -0800
+Message-Id: <1260574122-10676-42-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091211232805.GA10652@kroah.com>
 References: <20091211232805.GA10652@kroah.com>
@@ -24,89 +24,203 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-Users of tty port need a way to refcount ports when hotplugging is
-involved.
+Trivial conversion in this case so might as well do it while testing the
+port_open design is right
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/tty_port.c |   18 ++++++++++++++++++
- include/linux/tty.h     |   12 ++++++++++++
- 2 files changed, 30 insertions(+), 0 deletions(-)
+ drivers/char/isicom.c |   88 ++++++++++++-------------------------------------
+ 1 files changed, 21 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-index 84006de..be492dd 100644
---- a/drivers/char/tty_port.c
-+++ b/drivers/char/tty_port.c
-@@ -29,6 +29,7 @@ void tty_port_init(struct tty_port *port)
- 	spin_lock_init(&port->lock);
- 	port->close_delay = (50 * HZ) / 100;
- 	port->closing_wait = (3000 * HZ) / 100;
-+	kref_init(&port->kref);
+diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+index 426bfdd..e7be3ec 100644
+--- a/drivers/char/isicom.c
++++ b/drivers/char/isicom.c
+@@ -804,24 +804,21 @@ static inline void isicom_setup_board(struct isi_board *bp)
+ 	bp->status |= BOARD_ACTIVE;
+ 	for (channel = 0; channel < bp->port_count; channel++, port++)
+ 		drop_dtr_rts(port);
++	bp->count++;
+ 	spin_unlock_irqrestore(&bp->card_lock, flags);
  }
- EXPORT_SYMBOL(tty_port_init);
  
-@@ -56,6 +57,23 @@ void tty_port_free_xmit_buf(struct tty_port *port)
+-static int isicom_setup_port(struct tty_struct *tty)
++static int isicom_activate(struct tty_port *tport, struct tty_struct *tty)
+ {
+-	struct isi_port *port = tty->driver_data;
++	struct isi_port *port = container_of(tport, struct isi_port, port);
+ 	struct isi_board *card = port->card;
+ 	unsigned long flags;
+ 
+-	if (port->port.flags & ASYNC_INITIALIZED)
+-		return 0;
+-	if (tty_port_alloc_xmit_buf(&port->port) < 0)
++	if (tty_port_alloc_xmit_buf(tport) < 0)
+ 		return -ENOMEM;
+ 
+ 	spin_lock_irqsave(&card->card_lock, flags);
+-	clear_bit(TTY_IO_ERROR, &tty->flags);
+-	if (port->port.count == 1)
+-		card->count++;
++	isicom_setup_board(card);
+ 
+ 	port->xmit_cnt = port->xmit_head = port->xmit_tail = 0;
+ 
+@@ -832,9 +829,7 @@ static int isicom_setup_port(struct tty_struct *tty)
+ 		outw(((ISICOM_KILLTX | ISICOM_KILLRX) << 8) | 0x06, card->base);
+ 		InterruptTheCard(card->base);
+ 	}
+-
+ 	isicom_config_port(tty);
+-	port->port.flags |= ASYNC_INITIALIZED;
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ 
+ 	return 0;
+@@ -871,31 +866,20 @@ static struct tty_port *isicom_find_port(struct tty_struct *tty)
+ 
+ 	return &port->port;
  }
- EXPORT_SYMBOL(tty_port_free_xmit_buf);
- 
-+static void tty_port_destructor(struct kref *kref)
-+{
-+	struct tty_port *port = container_of(kref, struct tty_port, kref);
-+	if (port->xmit_buf)
-+		free_page((unsigned long)port->xmit_buf);
-+	if (port->ops->destruct)
-+		port->ops->destruct(port);
-+	else
-+		kfree(port);
-+}
+-	
 +
-+void tty_port_put(struct tty_port *port)
-+{
-+	if (port)
-+		kref_put(&port->kref, tty_port_destructor);
-+}
-+EXPORT_SYMBOL(tty_port_put);
+ static int isicom_open(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct isi_port *port;
+ 	struct isi_board *card;
+ 	struct tty_port *tport;
+-	int error = 0;
  
- /**
-  *	tty_port_tty_get	-	get a tty reference
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index e9269ca..e6da667 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -199,6 +199,8 @@ struct tty_port_operations {
-         /* FIXME: long term getting the tty argument *out* of this would be
-            good for consoles */
- 	int (*activate)(struct tty_port *port, struct tty_struct *tty);
-+	/* Called on the final put of a port */
-+	void (*destruct)(struct tty_port *port);
+ 	tport = isicom_find_port(tty);
+ 	if (tport == NULL)
+ 		return -ENODEV;
+ 	port = container_of(tport, struct isi_port, port);
+ 	card = &isi_card[BOARD(tty->index)];
+-	isicom_setup_board(card);
+ 
+-	/* FIXME: locking on port.count etc */
+-	port->port.count++;
+-	tty->driver_data = port;
+-	tty_port_tty_set(&port->port, tty);
+-	/* FIXME: Locking on Initialized flag */
+-	if (!test_bit(ASYNCB_INITIALIZED, &tport->flags))
+-		error = isicom_setup_port(tty);
+-	if (error == 0)
+-		error = tty_port_block_til_ready(&port->port, tty, filp);
+-	return error;
++	return tty_port_open(tport, tty, filp);
+ }
+ 
+ /* close et all */
+@@ -914,40 +898,21 @@ static void isicom_shutdown_port(struct isi_port *port)
+ 
+ 	tty = tty_port_tty_get(&port->port);
+ 
+-	if (!(port->port.flags & ASYNC_INITIALIZED)) {
+-		tty_kref_put(tty);
+-		return;
+-	}
+-
+ 	tty_port_free_xmit_buf(&port->port);
+-	port->port.flags &= ~ASYNC_INITIALIZED;
+-	/* 3rd October 2000 : Vinayak P Risbud */
+-	tty_port_tty_set(&port->port, NULL);
+-
+-	/*Fix done by Anil .S on 30-04-2001
+-	remote login through isi port has dtr toggle problem
+-	due to which the carrier drops before the password prompt
+-	appears on the remote end. Now we drop the dtr only if the
+-	HUPCL(Hangup on close) flag is set for the tty*/
+-
+-	if (C_HUPCL(tty))
+-		/* drop dtr on this port */
+-		drop_dtr(port);
+-
+-	/* any other port uninits  */
+-	if (tty)
+-		set_bit(TTY_IO_ERROR, &tty->flags);
+-
+ 	if (--card->count < 0) {
+ 		pr_dbg("isicom_shutdown_port: bad board(0x%lx) count %d.\n",
+ 			card->base, card->count);
+ 		card->count = 0;
+ 	}
+ 
+-	/* last port was closed, shutdown that boad too */
+-	if (C_HUPCL(tty)) {
+-		if (!card->count)
+-			isicom_shutdown_board(card);
++	/* last port was closed, shutdown that board too */
++	if (tty && C_HUPCL(tty)) {
++		/* FIXME: this logic is bogus - it's the old logic that was
++		   bogus before but it still wants fixing */
++		if (!card->count) {
++			if (card->status & BOARD_ACTIVE)
++				card->status &= ~BOARD_ACTIVE;
++		}
+ 	}
+ 	tty_kref_put(tty);
+ }
+@@ -968,7 +933,7 @@ static void isicom_flush_buffer(struct tty_struct *tty)
+ 	tty_wakeup(tty);
+ }
+ 
+-static void isicom_close_port(struct tty_port *port)
++static void isicom_shutdown(struct tty_port *port)
+ {
+ 	struct isi_port *ip = container_of(port, struct isi_port, port);
+ 	struct isi_board *card = ip->card;
+@@ -977,10 +942,8 @@ static void isicom_close_port(struct tty_port *port)
+ 	/* indicate to the card that no more data can be received
+ 	   on this port */
+ 	spin_lock_irqsave(&card->card_lock, flags);
+-	if (port->flags & ASYNC_INITIALIZED) {
+-		card->port_status &= ~(1 << ip->channel);
+-		outw(card->port_status, card->base + 0x02);
+-	}
++	card->port_status &= ~(1 << ip->channel);
++	outw(card->port_status, card->base + 0x02);
+ 	isicom_shutdown_port(ip);
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ }
+@@ -991,12 +954,7 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
+ 	struct tty_port *port = &ip->port;
+ 	if (isicom_paranoia_check(ip, tty->name, "isicom_close"))
+ 		return;
+-
+-	if (tty_port_close_start(port, tty, filp) == 0)
+-		return;
+-	isicom_close_port(port);
+-	isicom_flush_buffer(tty);
+-	tty_port_close_end(port, tty);
++	tty_port_close(port, tty, filp);
+ }
+ 
+ /* write et all */
+@@ -1326,15 +1284,9 @@ static void isicom_start(struct tty_struct *tty)
+ static void isicom_hangup(struct tty_struct *tty)
+ {
+ 	struct isi_port *port = tty->driver_data;
+-	unsigned long flags;
+ 
+ 	if (isicom_paranoia_check(port, tty->name, "isicom_hangup"))
+ 		return;
+-
+-	spin_lock_irqsave(&port->card->card_lock, flags);
+-	isicom_shutdown_port(port);
+-	spin_unlock_irqrestore(&port->card->card_lock, flags);
+-
+ 	tty_port_hangup(&port->port);
+ }
+ 
+@@ -1367,6 +1319,8 @@ static const struct tty_operations isicom_ops = {
+ static const struct tty_port_operations isicom_port_ops = {
+ 	.carrier_raised		= isicom_carrier_raised,
+ 	.dtr_rts		= isicom_dtr_rts,
++	.activate		= isicom_activate,
++	.shutdown		= isicom_shutdown,
  };
- 	
- struct tty_port {
-@@ -219,6 +221,7 @@ struct tty_port {
- 	int			drain_delay;	/* Set to zero if no pure time
- 						   based drain is needed else
- 						   set to size of fifo */
-+	struct kref		kref;		/* Ref counter */
- };
  
- /*
-@@ -461,6 +464,15 @@ extern int tty_write_lock(struct tty_struct *tty, int ndelay);
- extern void tty_port_init(struct tty_port *port);
- extern int tty_port_alloc_xmit_buf(struct tty_port *port);
- extern void tty_port_free_xmit_buf(struct tty_port *port);
-+extern void tty_port_put(struct tty_port *port);
-+
-+extern inline struct tty_port *tty_port_get(struct tty_port *port)
-+{
-+	if (port)
-+		kref_get(&port->kref);
-+	return port;
-+}
-+
- extern struct tty_struct *tty_port_tty_get(struct tty_port *port);
- extern void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty);
- extern int tty_port_carrier_raised(struct tty_port *port);
+ static int __devinit reset_card(struct pci_dev *pdev,
 -- 
 1.6.5.5
 
