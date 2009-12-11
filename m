@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbZLKF3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZLKF3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbZLKF3p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZLKF3l
+	id S1753760AbZLKF3r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZLKF3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:29:41 -0500
-Received: from kroah.org ([198.145.64.141]:53439 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 00:29:45 -0500
+Received: from kroah.org ([198.145.64.141]:53445 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752544AbZLKF3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:29:40 -0500
+	id S1751557AbZLKF3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:29:41 -0500
 X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:42 2009
-Message-Id: <20091211052541.550415868@linux.site>
+Message-Id: <20091211052542.045664905@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 21:23:15 -0800
+Date: Thu, 10 Dec 2009 21:23:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Martin Michlmayr <tbm@cyrius.com>, Boaz Harrosh <bharrosh@panasas.com>,
        James Bottomley <James.Bottomley@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [03/34] SCSI: osd_protocol.h: Add missing #include
+Subject: [04/34] SCSI: megaraid_sas: fix 64 bit sense pointer truncation
 References: <20091211052312.805428372@linux.site>
-Content-Disposition: inline; filename=scsi-osd_protocol.h-add-missing-include.patch
+Content-Disposition: inline; filename=scsi-megaraid_sas-fix-64-bit-sense-pointer-truncation.patch
 In-Reply-To: <20091211052858.GA23229@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,28 +31,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Martin Michlmayr <tbm@cyrius.com>
+From: Yang, Bo <Bo.Yang@lsi.com>
 
-commit 0899638688f223fd9e9fee60d662665e11693d12 upstream.
+commit 7b2519afa1abd1b9f63aa1e90879307842422dae upstream.
 
-include/scsi/osd_protocol.h uses ALIGN() without an #include
-<linux/kernel.h>, leading to:
-| include/scsi/osd_protocol.h:362: error: implicit declaration of function 'ALIGN'
+The current sense pointer is cast to a u32 pointer, which can truncate
+on 64 bits.  Fix by using unsigned long instead.
 
-Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/include/scsi/osd_protocol.h
-+++ b/include/scsi/osd_protocol.h
-@@ -17,6 +17,7 @@
- #define __OSD_PROTOCOL_H__
+---
+ drivers/scsi/megaraid/megaraid_sas.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/drivers/scsi/megaraid/megaraid_sas.c
++++ b/drivers/scsi/megaraid/megaraid_sas.c
+@@ -3032,7 +3032,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	int error = 0, i;
+ 	void *sense = NULL;
+ 	dma_addr_t sense_handle;
+-	u32 *sense_ptr;
++	unsigned long *sense_ptr;
  
- #include <linux/types.h>
-+#include <linux/kernel.h>
- #include <asm/unaligned.h>
- #include <scsi/scsi.h>
+ 	memset(kbuff_arr, 0, sizeof(kbuff_arr));
  
+@@ -3109,7 +3109,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 		}
+ 
+ 		sense_ptr =
+-		    (u32 *) ((unsigned long)cmd->frame + ioc->sense_off);
++		(unsigned long *) ((unsigned long)cmd->frame + ioc->sense_off);
+ 		*sense_ptr = sense_handle;
+ 	}
+ 
+@@ -3140,8 +3140,8 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 		 * sense_ptr points to the location that has the user
+ 		 * sense buffer address
+ 		 */
+-		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
+-				     ioc->sense_off);
++		sense_ptr = (unsigned long *) ((unsigned long)ioc->frame.raw +
++				ioc->sense_off);
+ 
+ 		if (copy_to_user((void __user *)((unsigned long)(*sense_ptr)),
+ 				 sense, ioc->sense_len)) {
 
 
