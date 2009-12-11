@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762320AbZLKEhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762351AbZLKEhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762320AbZLKEhD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:37:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762295AbZLKEg7
+	id S1762351AbZLKEhO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762324AbZLKEhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:36:59 -0500
-Received: from kroah.org ([198.145.64.141]:36871 "EHLO coco.kroah.org"
+	Thu, 10 Dec 2009 23:37:02 -0500
+Received: from kroah.org ([198.145.64.141]:36877 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760734AbZLKEgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:36:10 -0500
+	id S1759126AbZLKEgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:36:11 -0500
 X-Mailbox-Line: From linux@linux.site Thu Dec 10 20:27:56 2009
-Message-Id: <20091211042755.790514342@linux.site>
+Message-Id: <20091211042756.339680773@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 20:25:20 -0800
+Date: Thu, 10 Dec 2009 20:25:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [42/90] ext4: Split uninitialized extents for direct I/O
+Subject: [43/90] ext4: Use end_io callback to avoid direct I/O fallback to buffered I/O
 References: <20091211042438.970725457@linux.site>
-Content-Disposition: inline; filename=0042-ext4-Split-uninitialized-extents-for-direct-I-O.patch
+Content-Disposition: inline; filename=0043-ext4-Use-end_io-callback-to-avoid-direct-I-O-fallbac.patch
 In-Reply-To: <20091211043502.GA17916@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,654 +29,305 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-(cherry picked from commit 0031462b5b392f90d17f1d75abb795883c44e969)
+(cherry picked from commit 4c0425ff68b1b87b802ffeda7b6a46ff7da7241c)
 
-When writing into an unitialized extent via direct I/O, and the direct
-I/O doesn't exactly cover the unitialized extent, split the extent
-into uninitialized and initialized extents before submitting the I/O.
-This avoids needing to deal with an ENOSPC error in the end_io
-callback that gets used for direct I/O.
+Currently the DIO VFS code passes create = 0 when writing to the
+middle of file.  It does this to avoid block allocation for holes, so
+as not to expose stale data out when there is a parallel buffered read
+(which does not hold the i_mutex lock).  Direct I/O writes into holes
+falls back to buffered IO for this reason.
 
-When the IO is complete, the written extent will be marked as initialized.
+Since preallocated extents are treated as holes when doing a
+get_block() look up (buffer is not mapped), direct IO over fallocate
+also falls back to buffered IO.  Thus ext4 actually silently falls
+back to buffered IO in above two cases, which is undesirable.
+
+To fix this, this patch creates unitialized extents when a direct I/O
+write into holes in sparse files, and registering an end_io callback which
+converts the uninitialized extent to an initialized extent after the
+I/O is completed.
 
 Singed-Off-By: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h         |   22 ++
- fs/ext4/ext4_extents.h |    7 
- fs/ext4/extents.c      |  423 ++++++++++++++++++++++++++++++++++++++++++++-----
- fs/ext4/inode.c        |    3 
- fs/ext4/migrate.c      |    2 
- fs/ext4/move_extent.c  |    4 
- 6 files changed, 419 insertions(+), 42 deletions(-)
+ fs/ext4/ext4.h  |    3 
+ fs/ext4/inode.c |  197 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/ext4/super.c |   11 +++
+ 3 files changed, 210 insertions(+), 1 deletion(-)
 
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -113,6 +113,15 @@ struct ext4_allocation_request {
- 	unsigned int flags;
+@@ -1002,6 +1002,9 @@ struct ext4_sb_info {
+ 
+ 	unsigned int s_log_groups_per_flex;
+ 	struct flex_groups *s_flex_groups;
++
++	/* workqueue for dio unwritten */
++	struct workqueue_struct *dio_unwritten_wq;
  };
  
-+typedef struct ext4_io_end {
-+	struct inode		*inode;		/* file being written to */
-+	unsigned int		flag;		/* sync IO or AIO */
-+	int			error;		/* I/O error code */
-+	ext4_lblk_t		offset;		/* offset in the file */
-+	size_t			size;		/* size of the extent */
-+	struct work_struct	work;		/* data work queue */
-+} ext4_io_end_t;
-+
- /*
-  * Delayed allocation stuff
-  */
-@@ -348,7 +357,16 @@ struct ext4_new_group_data {
- 	/* Call ext4_da_update_reserve_space() after successfully 
- 	   allocating the blocks */
- #define EXT4_GET_BLOCKS_UPDATE_RESERVE_SPACE	0x0008
--
-+	/* caller is from the direct IO path, request to creation of an
-+	unitialized extents if not allocated, split the uninitialized
-+	extent if blocks has been preallocated already*/
-+#define EXT4_GET_BLOCKS_DIO			0x0010
-+#define EXT4_GET_BLOCKS_CONVERT			0x0020
-+#define EXT4_GET_BLOCKS_DIO_CREATE_EXT		(EXT4_GET_BLOCKS_DIO|\
-+					 EXT4_GET_BLOCKS_CREATE_UNINIT_EXT)
-+	/* Convert extent to initialized after direct IO complete */
-+#define EXT4_GET_BLOCKS_DIO_CONVERT_EXT		(EXT4_GET_BLOCKS_CONVERT|\
-+					 EXT4_GET_BLOCKS_DIO_CREATE_EXT)
- 
- /*
-  * ioctl commands
-@@ -1702,6 +1720,8 @@ extern void ext4_ext_init(struct super_b
- extern void ext4_ext_release(struct super_block *);
- extern long ext4_fallocate(struct inode *inode, int mode, loff_t offset,
- 			  loff_t len);
-+extern int ext4_convert_unwritten_extents(struct inode *inode, loff_t offset,
-+			  loff_t len);
- extern int ext4_get_blocks(handle_t *handle, struct inode *inode,
- 			   sector_t block, unsigned int max_blocks,
- 			   struct buffer_head *bh, int flags);
---- a/fs/ext4/ext4_extents.h
-+++ b/fs/ext4/ext4_extents.h
-@@ -220,6 +220,11 @@ static inline int ext4_ext_get_actual_le
- 		(le16_to_cpu(ext->ee_len) - EXT_INIT_MAX_LEN));
- }
- 
-+static inline void ext4_ext_mark_initialized(struct ext4_extent *ext)
-+{
-+	ext->ee_len = cpu_to_le16(ext4_ext_get_actual_len(ext));
-+}
-+
- extern int ext4_ext_calc_metadata_amount(struct inode *inode, int blocks);
- extern ext4_fsblk_t ext_pblock(struct ext4_extent *ex);
- extern ext4_fsblk_t idx_pblock(struct ext4_extent_idx *);
-@@ -235,7 +240,7 @@ extern int ext4_ext_try_to_merge(struct
- 				 struct ext4_ext_path *path,
- 				 struct ext4_extent *);
- extern unsigned int ext4_ext_check_overlap(struct inode *, struct ext4_extent *, struct ext4_ext_path *);
--extern int ext4_ext_insert_extent(handle_t *, struct inode *, struct ext4_ext_path *, struct ext4_extent *);
-+extern int ext4_ext_insert_extent(handle_t *, struct inode *, struct ext4_ext_path *, struct ext4_extent *, int);
- extern int ext4_ext_walk_space(struct inode *, ext4_lblk_t, ext4_lblk_t,
- 							ext_prepare_callback, void *);
- extern struct ext4_ext_path *ext4_ext_find_extent(struct inode *, ext4_lblk_t,
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -710,7 +710,7 @@ err:
-  * insert new index [@logical;@ptr] into the block at @curp;
-  * check where to insert: before @curp or after @curp
-  */
--static int ext4_ext_insert_index(handle_t *handle, struct inode *inode,
-+int ext4_ext_insert_index(handle_t *handle, struct inode *inode,
- 				struct ext4_ext_path *curp,
- 				int logical, ext4_fsblk_t ptr)
- {
-@@ -1572,7 +1572,7 @@ out:
-  */
- int ext4_ext_insert_extent(handle_t *handle, struct inode *inode,
- 				struct ext4_ext_path *path,
--				struct ext4_extent *newext)
-+				struct ext4_extent *newext, int flag)
- {
- 	struct ext4_extent_header *eh;
- 	struct ext4_extent *ex, *fex;
-@@ -1588,7 +1588,8 @@ int ext4_ext_insert_extent(handle_t *han
- 	BUG_ON(path[depth].p_hdr == NULL);
- 
- 	/* try to insert block into found extent and return */
--	if (ex && ext4_can_extents_be_merged(inode, ex, newext)) {
-+	if (ex && (flag != EXT4_GET_BLOCKS_DIO_CREATE_EXT)
-+		&& ext4_can_extents_be_merged(inode, ex, newext)) {
- 		ext_debug("append %d block to %d:%d (from %llu)\n",
- 				ext4_ext_get_actual_len(newext),
- 				le32_to_cpu(ex->ee_block),
-@@ -1703,7 +1704,8 @@ has_space:
- 
- merge:
- 	/* try to merge extents to the right */
--	ext4_ext_try_to_merge(inode, path, nearex);
-+	if (flag != EXT4_GET_BLOCKS_DIO_CREATE_EXT)
-+		ext4_ext_try_to_merge(inode, path, nearex);
- 
- 	/* try to merge extents to the left */
- 
-@@ -2470,7 +2472,6 @@ static int ext4_ext_zeroout(struct inode
- }
- 
- #define EXT4_EXT_ZERO_LEN 7
--
- /*
-  * This function is called by ext4_ext_get_blocks() if someone tries to write
-  * to an uninitialized extent. It may result in splitting the uninitialized
-@@ -2563,7 +2564,8 @@ static int ext4_ext_convert_to_initializ
- 			ex3->ee_block = cpu_to_le32(iblock);
- 			ext4_ext_store_pblock(ex3, newblock);
- 			ex3->ee_len = cpu_to_le16(allocated);
--			err = ext4_ext_insert_extent(handle, inode, path, ex3);
-+			err = ext4_ext_insert_extent(handle, inode, path,
-+							ex3, 0);
- 			if (err == -ENOSPC) {
- 				err =  ext4_ext_zeroout(inode, &orig_ex);
- 				if (err)
-@@ -2619,7 +2621,7 @@ static int ext4_ext_convert_to_initializ
- 		ext4_ext_store_pblock(ex3, newblock + max_blocks);
- 		ex3->ee_len = cpu_to_le16(allocated - max_blocks);
- 		ext4_ext_mark_uninitialized(ex3);
--		err = ext4_ext_insert_extent(handle, inode, path, ex3);
-+		err = ext4_ext_insert_extent(handle, inode, path, ex3, 0);
- 		if (err == -ENOSPC) {
- 			err =  ext4_ext_zeroout(inode, &orig_ex);
- 			if (err)
-@@ -2737,7 +2739,7 @@ static int ext4_ext_convert_to_initializ
- 	err = ext4_ext_dirty(handle, inode, path + depth);
- 	goto out;
- insert:
--	err = ext4_ext_insert_extent(handle, inode, path, &newex);
-+	err = ext4_ext_insert_extent(handle, inode, path, &newex, 0);
- 	if (err == -ENOSPC) {
- 		err =  ext4_ext_zeroout(inode, &orig_ex);
- 		if (err)
-@@ -2764,6 +2766,320 @@ fix_extent_len:
- }
- 
- /*
-+ * This function is called by ext4_ext_get_blocks() from
-+ * ext4_get_blocks_dio_write() when DIO to write
-+ * to an uninitialized extent.
-+ *
-+ * Writing to an uninitized extent may result in splitting the uninitialized
-+ * extent into multiple /intialized unintialized extents (up to three)
-+ * There are three possibilities:
-+ *   a> There is no split required: Entire extent should be uninitialized
-+ *   b> Splits in two extents: Write is happening at either end of the extent
-+ *   c> Splits in three extents: Somone is writing in middle of the extent
-+ *
-+ * One of more index blocks maybe needed if the extent tree grow after
-+ * the unintialized extent split. To prevent ENOSPC occur at the IO
-+ * complete, we need to split the uninitialized extent before DIO submit
-+ * the IO. The uninitilized extent called at this time will be split
-+ * into three uninitialized extent(at most). After IO complete, the part
-+ * being filled will be convert to initialized by the end_io callback function
-+ * via ext4_convert_unwritten_extents().
-+ */
-+static int ext4_split_unwritten_extents(handle_t *handle,
-+					struct inode *inode,
-+					struct ext4_ext_path *path,
-+					ext4_lblk_t iblock,
-+					unsigned int max_blocks,
-+					int flags)
-+{
-+	struct ext4_extent *ex, newex, orig_ex;
-+	struct ext4_extent *ex1 = NULL;
-+	struct ext4_extent *ex2 = NULL;
-+	struct ext4_extent *ex3 = NULL;
-+	struct ext4_extent_header *eh;
-+	ext4_lblk_t ee_block;
-+	unsigned int allocated, ee_len, depth;
-+	ext4_fsblk_t newblock;
-+	int err = 0;
-+	int ret = 0;
-+
-+	ext_debug("ext4_split_unwritten_extents: inode %lu,"
-+		  "iblock %llu, max_blocks %u\n", inode->i_ino,
-+		  (unsigned long long)iblock, max_blocks);
-+	depth = ext_depth(inode);
-+	eh = path[depth].p_hdr;
-+	ex = path[depth].p_ext;
-+	ee_block = le32_to_cpu(ex->ee_block);
-+	ee_len = ext4_ext_get_actual_len(ex);
-+	allocated = ee_len - (iblock - ee_block);
-+	newblock = iblock - ee_block + ext_pblock(ex);
-+	ex2 = ex;
-+	orig_ex.ee_block = ex->ee_block;
-+	orig_ex.ee_len   = cpu_to_le16(ee_len);
-+	ext4_ext_store_pblock(&orig_ex, ext_pblock(ex));
-+
-+	/*
-+ 	 * if the entire unintialized extent length less than
-+ 	 * the size of extent to write, there is no need to split
-+ 	 * uninitialized extent
-+ 	 */
-+ 	if (allocated <= max_blocks)
-+		return ret;
-+
-+	err = ext4_ext_get_access(handle, inode, path + depth);
-+	if (err)
-+		goto out;
-+	/* ex1: ee_block to iblock - 1 : uninitialized */
-+	if (iblock > ee_block) {
-+		ex1 = ex;
-+		ex1->ee_len = cpu_to_le16(iblock - ee_block);
-+		ext4_ext_mark_uninitialized(ex1);
-+		ex2 = &newex;
-+	}
-+	/*
-+	 * for sanity, update the length of the ex2 extent before
-+	 * we insert ex3, if ex1 is NULL. This is to avoid temporary
-+	 * overlap of blocks.
-+	 */
-+	if (!ex1 && allocated > max_blocks)
-+		ex2->ee_len = cpu_to_le16(max_blocks);
-+	/* ex3: to ee_block + ee_len : uninitialised */
-+	if (allocated > max_blocks) {
-+		unsigned int newdepth;
-+		ex3 = &newex;
-+		ex3->ee_block = cpu_to_le32(iblock + max_blocks);
-+		ext4_ext_store_pblock(ex3, newblock + max_blocks);
-+		ex3->ee_len = cpu_to_le16(allocated - max_blocks);
-+		ext4_ext_mark_uninitialized(ex3);
-+		err = ext4_ext_insert_extent(handle, inode, path, ex3, flags);
-+		if (err == -ENOSPC) {
-+			err =  ext4_ext_zeroout(inode, &orig_ex);
-+			if (err)
-+				goto fix_extent_len;
-+			/* update the extent length and mark as initialized */
-+			ex->ee_block = orig_ex.ee_block;
-+			ex->ee_len   = orig_ex.ee_len;
-+			ext4_ext_store_pblock(ex, ext_pblock(&orig_ex));
-+			ext4_ext_dirty(handle, inode, path + depth);
-+			/* zeroed the full extent */
-+			/* blocks available from iblock */
-+			return allocated;
-+
-+		} else if (err)
-+			goto fix_extent_len;
-+		/*
-+		 * The depth, and hence eh & ex might change
-+		 * as part of the insert above.
-+		 */
-+		newdepth = ext_depth(inode);
-+		/*
-+		 * update the extent length after successful insert of the
-+		 * split extent
-+		 */
-+		orig_ex.ee_len = cpu_to_le16(ee_len -
-+						ext4_ext_get_actual_len(ex3));
-+		depth = newdepth;
-+		ext4_ext_drop_refs(path);
-+		path = ext4_ext_find_extent(inode, iblock, path);
-+		if (IS_ERR(path)) {
-+			err = PTR_ERR(path);
-+			goto out;
-+		}
-+		eh = path[depth].p_hdr;
-+		ex = path[depth].p_ext;
-+		if (ex2 != &newex)
-+			ex2 = ex;
-+
-+		err = ext4_ext_get_access(handle, inode, path + depth);
-+		if (err)
-+			goto out;
-+
-+		allocated = max_blocks;
-+	}
-+	/*
-+	 * If there was a change of depth as part of the
-+	 * insertion of ex3 above, we need to update the length
-+	 * of the ex1 extent again here
-+	 */
-+	if (ex1 && ex1 != ex) {
-+		ex1 = ex;
-+		ex1->ee_len = cpu_to_le16(iblock - ee_block);
-+		ext4_ext_mark_uninitialized(ex1);
-+		ex2 = &newex;
-+	}
-+	/*
-+	 * ex2: iblock to iblock + maxblocks-1 : to be direct IO written,
-+	 * uninitialised still.
-+	 */
-+	ex2->ee_block = cpu_to_le32(iblock);
-+	ext4_ext_store_pblock(ex2, newblock);
-+	ex2->ee_len = cpu_to_le16(allocated);
-+	ext4_ext_mark_uninitialized(ex2);
-+	if (ex2 != ex)
-+		goto insert;
-+	/* Mark modified extent as dirty */
-+	err = ext4_ext_dirty(handle, inode, path + depth);
-+	ext_debug("out here\n");
-+	goto out;
-+insert:
-+	err = ext4_ext_insert_extent(handle, inode, path, &newex, flags);
-+	if (err == -ENOSPC) {
-+		err =  ext4_ext_zeroout(inode, &orig_ex);
-+		if (err)
-+			goto fix_extent_len;
-+		/* update the extent length and mark as initialized */
-+		ex->ee_block = orig_ex.ee_block;
-+		ex->ee_len   = orig_ex.ee_len;
-+		ext4_ext_store_pblock(ex, ext_pblock(&orig_ex));
-+		ext4_ext_dirty(handle, inode, path + depth);
-+		/* zero out the first half */
-+		return allocated;
-+	} else if (err)
-+		goto fix_extent_len;
-+out:
-+	ext4_ext_show_leaf(inode, path);
-+	return err ? err : allocated;
-+
-+fix_extent_len:
-+	ex->ee_block = orig_ex.ee_block;
-+	ex->ee_len   = orig_ex.ee_len;
-+	ext4_ext_store_pblock(ex, ext_pblock(&orig_ex));
-+	ext4_ext_mark_uninitialized(ex);
-+	ext4_ext_dirty(handle, inode, path + depth);
-+	return err;
-+}
-+static int ext4_convert_unwritten_extents_dio(handle_t *handle,
-+					      struct inode *inode,
-+					      struct ext4_ext_path *path)
-+{
-+	struct ext4_extent *ex;
-+	struct ext4_extent_header *eh;
-+	int depth;
-+	int err = 0;
-+	int ret = 0;
-+
-+	depth = ext_depth(inode);
-+	eh = path[depth].p_hdr;
-+	ex = path[depth].p_ext;
-+
-+	err = ext4_ext_get_access(handle, inode, path + depth);
-+	if (err)
-+		goto out;
-+	/* first mark the extent as initialized */
-+	ext4_ext_mark_initialized(ex);
-+
-+	/*
-+	 * We have to see if it can be merged with the extent
-+	 * on the left.
-+	 */
-+	if (ex > EXT_FIRST_EXTENT(eh)) {
-+		/*
-+		 * To merge left, pass "ex - 1" to try_to_merge(),
-+		 * since it merges towards right _only_.
-+		 */
-+		ret = ext4_ext_try_to_merge(inode, path, ex - 1);
-+		if (ret) {
-+			err = ext4_ext_correct_indexes(handle, inode, path);
-+			if (err)
-+				goto out;
-+			depth = ext_depth(inode);
-+			ex--;
-+		}
-+	}
-+	/*
-+	 * Try to Merge towards right.
-+	 */
-+	ret = ext4_ext_try_to_merge(inode, path, ex);
-+	if (ret) {
-+		err = ext4_ext_correct_indexes(handle, inode, path);
-+		if (err)
-+			goto out;
-+		depth = ext_depth(inode);
-+	}
-+	/* Mark modified extent as dirty */
-+	err = ext4_ext_dirty(handle, inode, path + depth);
-+out:
-+	ext4_ext_show_leaf(inode, path);
-+	return err;
-+}
-+
-+static int
-+ext4_ext_handle_uninitialized_extents(handle_t *handle, struct inode *inode,
-+			ext4_lblk_t iblock, unsigned int max_blocks,
-+			struct ext4_ext_path *path, int flags,
-+			unsigned int allocated, struct buffer_head *bh_result,
-+			ext4_fsblk_t newblock)
-+{
-+	int ret = 0;
-+	int err = 0;
-+
-+	ext_debug("ext4_ext_handle_uninitialized_extents: inode %lu, logical"
-+		  "block %llu, max_blocks %u, flags %d, allocated %u",
-+		  inode->i_ino, (unsigned long long)iblock, max_blocks,
-+		  flags, allocated);
-+	ext4_ext_show_leaf(inode, path);
-+
-+	/* DIO get_block() before submit the IO, split the extent */
-+	if (flags == EXT4_GET_BLOCKS_DIO_CREATE_EXT) {
-+		ret = ext4_split_unwritten_extents(handle,
-+						inode, path, iblock,
-+						max_blocks, flags);
-+		goto out;
-+	}
-+	/* DIO end_io complete, convert the filled extent to written */
-+	if (flags == EXT4_GET_BLOCKS_DIO_CONVERT_EXT) {
-+		ret = ext4_convert_unwritten_extents_dio(handle, inode,
-+							path);
-+		goto out2;
-+	}
-+	/* buffered IO case */
-+	/*
-+	 * repeat fallocate creation request
-+	 * we already have an unwritten extent
-+	 */
-+	if (flags & EXT4_GET_BLOCKS_UNINIT_EXT)
-+		goto map_out;
-+
-+	/* buffered READ or buffered write_begin() lookup */
-+	if ((flags & EXT4_GET_BLOCKS_CREATE) == 0) {
-+		/*
-+		 * We have blocks reserved already.  We
-+		 * return allocated blocks so that delalloc
-+		 * won't do block reservation for us.  But
-+		 * the buffer head will be unmapped so that
-+		 * a read from the block returns 0s.
-+		 */
-+		set_buffer_unwritten(bh_result);
-+		goto out1;
-+	}
-+
-+	/* buffered write, writepage time, convert*/
-+	ret = ext4_ext_convert_to_initialized(handle, inode,
-+						path, iblock,
-+						max_blocks);
-+out:
-+	if (ret <= 0) {
-+		err = ret;
-+		goto out2;
-+	} else
-+		allocated = ret;
-+	set_buffer_new(bh_result);
-+map_out:
-+	set_buffer_mapped(bh_result);
-+out1:
-+	if (allocated > max_blocks)
-+		allocated = max_blocks;
-+	ext4_ext_show_leaf(inode, path);
-+	bh_result->b_bdev = inode->i_sb->s_bdev;
-+	bh_result->b_blocknr = newblock;
-+out2:
-+	if (path) {
-+		ext4_ext_drop_refs(path);
-+		kfree(path);
-+	}
-+	return err ? err : allocated;
-+}
-+/*
-  * Block allocation/map/preallocation routine for extents based files
-  *
-  *
-@@ -2868,33 +3184,10 @@ int ext4_ext_get_blocks(handle_t *handle
- 							EXT4_EXT_CACHE_EXTENT);
- 				goto out;
- 			}
--			if (flags & EXT4_GET_BLOCKS_UNINIT_EXT)
--				goto out;
--			if ((flags & EXT4_GET_BLOCKS_CREATE) == 0) {
--				if (allocated > max_blocks)
--					allocated = max_blocks;
--				/*
--				 * We have blocks reserved already.  We
--				 * return allocated blocks so that delalloc
--				 * won't do block reservation for us.  But
--				 * the buffer head will be unmapped so that
--				 * a read from the block returns 0s.
--				 */
--				set_buffer_unwritten(bh_result);
--				bh_result->b_bdev = inode->i_sb->s_bdev;
--				bh_result->b_blocknr = newblock;
--				goto out2;
--			}
--
--			ret = ext4_ext_convert_to_initialized(handle, inode,
--								path, iblock,
--								max_blocks);
--			if (ret <= 0) {
--				err = ret;
--				goto out2;
--			} else
--				allocated = ret;
--			goto outnew;
-+			ret = ext4_ext_handle_uninitialized_extents(handle,
-+					inode, iblock, max_blocks, path,
-+					flags, allocated, bh_result, newblock);
-+			return ret;
- 		}
- 	}
- 
-@@ -2967,7 +3260,7 @@ int ext4_ext_get_blocks(handle_t *handle
- 	newex.ee_len = cpu_to_le16(ar.len);
- 	if (flags & EXT4_GET_BLOCKS_UNINIT_EXT)  /* Mark uninitialized */
- 		ext4_ext_mark_uninitialized(&newex);
--	err = ext4_ext_insert_extent(handle, inode, path, &newex);
-+	err = ext4_ext_insert_extent(handle, inode, path, &newex, flags);
- 	if (err) {
- 		/* free data blocks we just allocated */
- 		/* not a good idea to call discard here directly,
-@@ -2981,7 +3274,6 @@ int ext4_ext_get_blocks(handle_t *handle
- 	/* previous routine could use block we allocated */
- 	newblock = ext_pblock(&newex);
- 	allocated = ext4_ext_get_actual_len(&newex);
--outnew:
- 	set_buffer_new(bh_result);
- 
- 	/* Cache only when it is _not_ an uninitialized extent */
-@@ -3180,6 +3472,63 @@ retry:
- }
- 
- /*
-+ * This function convert a range of blocks to written extents
-+ * The caller of this function will pass the start offset and the size.
-+ * all unwritten extents within this range will be converted to
-+ * written extents.
-+ *
-+ * This function is called from the direct IO end io call back
-+ * function, to convert the fallocated extents after IO is completed.
-+ */
-+int ext4_convert_unwritten_extents(struct inode *inode, loff_t offset,
-+				    loff_t len)
-+{
-+	handle_t *handle;
-+	ext4_lblk_t block;
-+	unsigned int max_blocks;
-+	int ret = 0;
-+	int ret2 = 0;
-+	struct buffer_head map_bh;
-+	unsigned int credits, blkbits = inode->i_blkbits;
-+
-+	block = offset >> blkbits;
-+	/*
-+	 * We can't just convert len to max_blocks because
-+	 * If blocksize = 4096 offset = 3072 and len = 2048
-+	 */
-+	max_blocks = (EXT4_BLOCK_ALIGN(len + offset, blkbits) >> blkbits)
-+							- block;
-+	/*
-+	 * credits to insert 1 extent into extent tree
-+	 */
-+	credits = ext4_chunk_trans_blocks(inode, max_blocks);
-+	while (ret >= 0 && ret < max_blocks) {
-+		block = block + ret;
-+		max_blocks = max_blocks - ret;
-+		handle = ext4_journal_start(inode, credits);
-+		if (IS_ERR(handle)) {
-+			ret = PTR_ERR(handle);
-+			break;
-+		}
-+		map_bh.b_state = 0;
-+		ret = ext4_get_blocks(handle, inode, block,
-+				      max_blocks, &map_bh,
-+				      EXT4_GET_BLOCKS_DIO_CONVERT_EXT);
-+		if (ret <= 0) {
-+			WARN_ON(ret <= 0);
-+			printk(KERN_ERR "%s: ext4_ext_get_blocks "
-+				    "returned error inode#%lu, block=%u, "
-+				    "max_blocks=%u", __func__,
-+				    inode->i_ino, block, max_blocks);
-+		}
-+		ext4_mark_inode_dirty(handle, inode);
-+		ret2 = ext4_journal_stop(handle);
-+		if (ret <= 0 || ret2 )
-+			break;
-+	}
-+	return ret > 0 ? ret2 : ret;
-+}
-+/*
-  * Callback function called for each extent to gather FIEMAP information.
-  */
- static int ext4_ext_fiemap_cb(struct inode *inode, struct ext4_ext_path *path,
+ static inline struct ext4_sb_info *EXT4_SB(struct super_block *sb)
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -1234,6 +1234,9 @@ int ext4_get_blocks(handle_t *handle, st
- 	clear_buffer_mapped(bh);
- 	clear_buffer_unwritten(bh);
+@@ -37,6 +37,7 @@
+ #include <linux/namei.h>
+ #include <linux/uio.h>
+ #include <linux/bio.h>
++#include <linux/workqueue.h>
  
-+	ext_debug("ext4_get_blocks(): inode %lu, flag %d, max_blocks %u,"
-+		  "logical block %lu\n", inode->i_ino, flags, max_blocks,
-+		  (unsigned long)block);
- 	/*
- 	 * Try to see if we can get the block without requesting a new
- 	 * file system block.
---- a/fs/ext4/migrate.c
-+++ b/fs/ext4/migrate.c
-@@ -75,7 +75,7 @@ static int finish_range(handle_t *handle
- 				goto err_out;
+ #include "ext4_jbd2.h"
+ #include "xattr.h"
+@@ -3350,6 +3351,8 @@ static int ext4_releasepage(struct page
+ }
+ 
+ /*
++ * O_DIRECT for ext3 (or indirect map) based files
++ *
+  * If the O_DIRECT write will extend the file then add this inode to the
+  * orphan list.  So recovery will truncate it back to the original size
+  * if the machine crashes during the write.
+@@ -3358,7 +3361,7 @@ static int ext4_releasepage(struct page
+  * crashes then stale disk data _may_ be exposed inside the file. But current
+  * VFS code falls back into buffered path in that case so we are safe.
+  */
+-static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
++static ssize_t ext4_ind_direct_IO(int rw, struct kiocb *iocb,
+ 			      const struct iovec *iov, loff_t offset,
+ 			      unsigned long nr_segs)
+ {
+@@ -3432,6 +3435,198 @@ out:
+ 	return ret;
+ }
+ 
++/* Maximum number of blocks we map for direct IO at once. */
++
++static int ext4_get_block_dio_write(struct inode *inode, sector_t iblock,
++		   struct buffer_head *bh_result, int create)
++{
++	handle_t *handle = NULL;
++	int ret = 0;
++	unsigned max_blocks = bh_result->b_size >> inode->i_blkbits;
++	int dio_credits;
++
++	/*
++	 * DIO VFS code passes create = 0 flag for write to
++	 * the middle of file. It does this to avoid block
++	 * allocation for holes, to prevent expose stale data
++	 * out when there is parallel buffered read (which does
++	 * not hold the i_mutex lock) while direct IO write has
++	 * not completed. DIO request on holes finally falls back
++	 * to buffered IO for this reason.
++	 *
++	 * For ext4 extent based file, since we support fallocate,
++	 * new allocated extent as uninitialized, for holes, we
++	 * could fallocate blocks for holes, thus parallel
++	 * buffered IO read will zero out the page when read on
++	 * a hole while parallel DIO write to the hole has not completed.
++	 *
++	 * when we come here, we know it's a direct IO write to
++	 * to the middle of file (<i_size)
++	 * so it's safe to override the create flag from VFS.
++	 */
++	create = EXT4_GET_BLOCKS_DIO_CREATE_EXT;
++
++	if (max_blocks > DIO_MAX_BLOCKS)
++		max_blocks = DIO_MAX_BLOCKS;
++	dio_credits = ext4_chunk_trans_blocks(inode, max_blocks);
++	handle = ext4_journal_start(inode, dio_credits);
++	if (IS_ERR(handle)) {
++		ret = PTR_ERR(handle);
++		goto out;
++	}
++	ret = ext4_get_blocks(handle, inode, iblock, max_blocks, bh_result,
++			      create);
++	if (ret > 0) {
++		bh_result->b_size = (ret << inode->i_blkbits);
++		ret = 0;
++	}
++	ext4_journal_stop(handle);
++out:
++	return ret;
++}
++
++#define		DIO_AIO		0x1
++
++static void ext4_free_io_end(ext4_io_end_t *io)
++{
++	kfree(io);
++}
++
++/*
++ * IO write completion for unwritten extents.
++ *
++ * check a range of space and convert unwritten extents to written.
++ */
++static void ext4_end_dio_unwritten(struct work_struct *work)
++{
++	ext4_io_end_t *io = container_of(work, ext4_io_end_t, work);
++	struct inode *inode = io->inode;
++	loff_t offset = io->offset;
++	size_t size = io->size;
++	int ret = 0;
++	int aio = io->flag & DIO_AIO;
++
++	if (aio)
++		mutex_lock(&inode->i_mutex);
++	if (offset + size <= i_size_read(inode))
++		ret = ext4_convert_unwritten_extents(inode, offset, size);
++
++	if (ret < 0)
++		printk(KERN_EMERG "%s: failed to convert unwritten"
++			"extents to written extents, error is %d\n",
++                       __func__, ret);
++
++	ext4_free_io_end(io);
++	if (aio)
++		mutex_unlock(&inode->i_mutex);
++}
++
++static ext4_io_end_t *ext4_init_io_end (struct inode *inode, unsigned int flag)
++{
++	ext4_io_end_t *io = NULL;
++
++	io = kmalloc(sizeof(*io), GFP_NOFS);
++
++	if (io) {
++		io->inode = inode;
++		io->flag = flag;
++		io->offset = 0;
++		io->size = 0;
++		io->error = 0;
++		INIT_WORK(&io->work, ext4_end_dio_unwritten);
++	}
++
++	return io;
++}
++
++static void ext4_end_io_dio(struct kiocb *iocb, loff_t offset,
++			    ssize_t size, void *private)
++{
++        ext4_io_end_t *io_end = iocb->private;
++	struct workqueue_struct *wq;
++
++	/* if not hole or unwritten extents, just simple return */
++	if (!io_end || !size || !iocb->private)
++		return;
++	io_end->offset = offset;
++	io_end->size = size;
++	wq = EXT4_SB(io_end->inode->i_sb)->dio_unwritten_wq;
++
++	/* We need to convert unwritten extents to written */
++	queue_work(wq, &io_end->work);
++
++        if (is_sync_kiocb(iocb))
++		flush_workqueue(wq);
++
++	iocb->private = NULL;
++}
++/*
++ * For ext4 extent files, ext4 will do direct-io write to holes,
++ * preallocated extents, and those write extend the file, no need to
++ * fall back to buffered IO.
++ *
++ * For holes, we fallocate those blocks, mark them as unintialized
++ * If those blocks were preallocated, we mark sure they are splited, but
++ * still keep the range to write as unintialized.
++ *
++ * When end_io call back function called at the last IO complete time,
++ * those extents will be converted to written extents.
++ *
++ * If the O_DIRECT write will extend the file then add this inode to the
++ * orphan list.  So recovery will truncate it back to the original size
++ * if the machine crashes during the write.
++ *
++ */
++static ssize_t ext4_ext_direct_IO(int rw, struct kiocb *iocb,
++			      const struct iovec *iov, loff_t offset,
++			      unsigned long nr_segs)
++{
++	struct file *file = iocb->ki_filp;
++	struct inode *inode = file->f_mapping->host;
++	ssize_t ret;
++	size_t count = iov_length(iov, nr_segs);
++
++	loff_t final_size = offset + count;
++	if (rw == WRITE && final_size <= inode->i_size) {
++		/*
++ 		 * For DIO we fallocate blocks for holes, we fallocate blocks
++ 		 * The fallocated extent for hole is marked as uninitialized
++ 		 * to prevent paralel buffered read to expose the stale data
++ 		 * before DIO complete the data IO.
++ 		 * as for previously fallocated extents, ext4 get_block
++ 		 * will just simply mark the buffer mapped but still
++ 		 * keep the extents uninitialized.
++ 		 *
++ 		 * At the end of IO, the ext4 end_io callback function
++ 		 * will convert those unwritten extents to written,
++ 		 *
++ 		 */
++		iocb->private = ext4_init_io_end(inode, !is_sync_kiocb(iocb));
++		if (!iocb->private)
++			return -ENOMEM;
++		ret = blockdev_direct_IO(rw, iocb, inode,
++					 inode->i_sb->s_bdev, iov,
++					 offset, nr_segs,
++					 ext4_get_block_dio_write,
++					 ext4_end_io_dio);
++		return ret;
++	}
++	return ext4_ind_direct_IO(rw, iocb, iov, offset, nr_segs);
++}
++
++static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
++			      const struct iovec *iov, loff_t offset,
++			      unsigned long nr_segs)
++{
++	struct file *file = iocb->ki_filp;
++	struct inode *inode = file->f_mapping->host;
++
++	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)
++		return ext4_ext_direct_IO(rw, iocb, iov, offset, nr_segs);
++
++	return ext4_ind_direct_IO(rw, iocb, iov, offset, nr_segs);
++}
++
+ /*
+  * Pages can be marked dirty completely asynchronously from ext4's journalling
+  * activity.  By filemap_sync_pte(), try_to_unmap_one(), etc.  We cannot do
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -580,6 +580,9 @@ static void ext4_put_super(struct super_
+ 	struct ext4_super_block *es = sbi->s_es;
+ 	int i, err;
+ 
++	flush_workqueue(sbi->dio_unwritten_wq);
++	destroy_workqueue(sbi->dio_unwritten_wq);
++
+ 	lock_super(sb);
+ 	lock_kernel();
+ 	if (sb->s_dirt)
+@@ -2809,6 +2812,12 @@ no_journal:
+ 			clear_opt(sbi->s_mount_opt, NOBH);
  		}
  	}
--	retval = ext4_ext_insert_extent(handle, inode, path, &newext);
-+	retval = ext4_ext_insert_extent(handle, inode, path, &newext, 0);
- err_out:
- 	if (path) {
- 		ext4_ext_drop_refs(path);
---- a/fs/ext4/move_extent.c
-+++ b/fs/ext4/move_extent.c
-@@ -322,7 +322,7 @@ mext_insert_across_blocks(handle_t *hand
- 			goto out;
++	EXT4_SB(sb)->dio_unwritten_wq = create_workqueue("ext4-dio-unwritten");
++	if (!EXT4_SB(sb)->dio_unwritten_wq) {
++		printk(KERN_ERR "EXT4-fs: failed to create DIO workqueue\n");
++		goto failed_mount_wq;
++	}
++
+ 	/*
+ 	 * The jbd2_journal_load will have done any necessary log recovery,
+ 	 * so we can safely mount the rest of the filesystem now.
+@@ -2921,6 +2930,8 @@ cantfind_ext4:
  
- 		if (ext4_ext_insert_extent(handle, orig_inode,
--					orig_path, new_ext))
-+					orig_path, new_ext, 0))
- 			goto out;
- 	}
- 
-@@ -333,7 +333,7 @@ mext_insert_across_blocks(handle_t *hand
- 			goto out;
- 
- 		if (ext4_ext_insert_extent(handle, orig_inode,
--					   orig_path, end_ext))
-+					   orig_path, end_ext, 0))
- 			goto out;
- 	}
- out:
+ failed_mount4:
+ 	ext4_msg(sb, KERN_ERR, "mount failed");
++	destroy_workqueue(EXT4_SB(sb)->dio_unwritten_wq);
++failed_mount_wq:
+ 	ext4_release_system_zone(sb);
+ 	if (sbi->s_journal) {
+ 		jbd2_journal_destroy(sbi->s_journal);
 
 
