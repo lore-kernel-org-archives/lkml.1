@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZLKX5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935213AbZLKXzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbZLKX5Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZLKX5M
+	id S935213AbZLKXzf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935191AbZLKXze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:57:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60209 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZLKX5L (ORCPT
+	Fri, 11 Dec 2009 18:55:34 -0500
+Received: from exprod6og103.obsmtp.com ([64.18.1.185]:57247 "EHLO
+	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935181AbZLKXzd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:57:11 -0500
-Message-ID: <4B22DBEB.6090407@zytor.com>
-Date: Fri, 11 Dec 2009 15:55:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 18:55:33 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Gertjan van Wingerde <gwingerde@gmail.com>
-Subject: Re: [PATCH 5/7] x86/pci: use u64 instead of size_t in amd_bus.c
-References: <4B22D4DA.2000104@kernel.org> <4B22D746.9040807@kernel.org>
-In-Reply-To: <4B22D746.9040807@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] sm501.c: use resource_size()
+Date: Fri, 11 Dec 2009 18:55:41 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901FB1105@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] sm501.c: use resource_size()
+Thread-Index: Acp6vXHs0nURLWjpT6ysZkUtuCoM9Q==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>
+Cc: "Ben Dooks" <ben-linux@fluff.org>, <sameo@linux.intel.com>
+X-OriginalArrivalTime: 11 Dec 2009 23:55:38.0853 (UTC) FILETIME=[70832150:01CA7ABD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/2009 03:35 PM, Yinghai Lu wrote:
-> 
-> 
-> prepare to enable it for 32bit
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/pci/amd_bus.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/pci/amd_bus.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/pci/amd_bus.c
-> +++ linux-2.6/arch/x86/pci/amd_bus.c
-> @@ -82,8 +82,8 @@ static int __init early_fill_mp_bus_info
->  	struct pci_root_info *info;
->  	u32 reg;
->  	struct resource *res;
-> -	size_t start;
-> -	size_t end;
-> +	u64 start;
-> +	u64 end;
->  	struct range range[RANGE_NUM];
->  	u64 val;
->  	u32 address;
-> 
+The requested memory region is smaller than the actual ioremap().
+Use resource_size() to get the correct size.
 
-Shouldn't this be resource_size_t?
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
 
-	-hpa
+---
 
+diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index 0cc5eef..dc9ea95 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -1430,7 +1430,7 @@ static int __devinit sm501_plat_probe(struct platform_device *dev)
+ 	}
+ 
+ 	sm->regs_claim = request_mem_region(sm->io_res->start,
+-					    0x100, "sm501");
++					    resource_size(sm->io_res), "sm501");
+ 
+ 	if (sm->regs_claim == NULL) {
+ 		dev_err(&dev->dev, "cannot claim registers\n");
+@@ -1440,8 +1440,7 @@ static int __devinit sm501_plat_probe(struct platform_device *dev)
+ 
+ 	platform_set_drvdata(dev, sm);
+ 
+-	sm->regs = ioremap(sm->io_res->start,
+-			   (sm->io_res->end - sm->io_res->start) - 1);
++	sm->regs = ioremap(sm->io_res->start, resource_size(sm->io_res));
+ 
+ 	if (sm->regs == NULL) {
+ 		dev_err(&dev->dev, "cannot remap registers\n");
+@@ -1645,7 +1644,7 @@ static int __devinit sm501_pci_probe(struct pci_dev *dev,
+ 	sm->mem_res = &dev->resource[0];
+ 
+ 	sm->regs_claim = request_mem_region(sm->io_res->start,
+-					    0x100, "sm501");
++					    resource_size(sm->io_res), "sm501");
+ 	if (sm->regs_claim == NULL) {
+ 		dev_err(&dev->dev, "cannot claim registers\n");
+ 		err= -EBUSY; 
