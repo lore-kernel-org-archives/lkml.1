@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935048AbZLKXjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935153AbZLKXlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935048AbZLKXjK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934189AbZLKXi6
+	id S935153AbZLKXlG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:41:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934993AbZLKXk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:38:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57352 "EHLO hera.kernel.org"
+	Fri, 11 Dec 2009 18:40:57 -0500
+Received: from kroah.org ([198.145.64.141]:46893 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935041AbZLKXh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:37:29 -0500
-Message-ID: <4B22D754.2020706@kernel.org>
-Date: Fri, 11 Dec 2009 15:35:48 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S934338AbZLKXkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:40:22 -0500
+Date: Fri, 11 Dec 2009 15:40:17 -0800
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+Subject: Re: [GIT PATCH] STAGING patches for 2.6.33-git
+Message-ID: <20091211234017.GA11006@kroah.com>
+References: <20091211212704.GC6624@kroah.com>
+ <alpine.LFD.2.00.0912111527480.3526@localhost.localdomain>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: [PATCH 7/7] x86: increase MAX_EARLY_RES
-References: <4B22D4DA.2000104@kernel.org>
-In-Reply-To: <4B22D4DA.2000104@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912111527480.3526@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 11, 2009 at 03:29:09PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 11 Dec 2009, Greg KH wrote:
+> >
+> > Here is the big staging merge for the 2.6.33-git tree
+> 
+> "B.A.T.M.A.N. Advanced Meshing Protocol"?
+
+I just take the patches, I don't pick the names :)
+
+> Oh, and I think I found a bug in BATMAN already: if you say 'no' to him, 
+> he still asks whether you want to debug him. 
+> 
+> Please, Greg, teach BATMAN that "No means no!". 
+
+Doh, I have a patch for that around here from Randy, it didn't make it
+in...  Hm, no, he didn't send the patch, just pointed it out.  Here it
+is below, or you can pull from the same tree and get it:
+
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
 
 
-32bit numa run out of it, because recent change with wakeup and mptable.
+thanks,
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+greg k-h
 
----
- arch/x86/kernel/e820.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+From: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] Staging: batman: fix debug Kconfig option
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -724,7 +724,7 @@ core_initcall(e820_mark_nvs_memory);
- /*
-  * Early reserved memory areas.
-  */
--#define MAX_EARLY_RES 20
-+#define MAX_EARLY_RES 32
+The debug batman option needs to depend on the correct
+config option.
+
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+diff --git a/drivers/staging/batman-adv/Kconfig b/drivers/staging/batman-adv/Kconfig
+index b9742e7..7632f57 100644
+--- a/drivers/staging/batman-adv/Kconfig
++++ b/drivers/staging/batman-adv/Kconfig
+@@ -15,7 +15,7 @@ config BATMAN_ADV
  
- struct early_res {
- 	u64 start, end;
-
+ config BATMAN_DEBUG
+ 	bool "B.A.T.M.A.N. debugging"
+-	depends on BATMAN != n
++	depends on BATMAN_ADV != n
+ 	help
+ 
+ 	  This is an option for use by developers; most people should
