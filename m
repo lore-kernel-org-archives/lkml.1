@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZLKFeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZLKFdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756390AbZLKFeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbZLKFdf
+	id S1755093AbZLKFdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbZLKFdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:33:35 -0500
-Received: from kroah.org ([198.145.64.141]:53530 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 00:33:07 -0500
+Received: from kroah.org ([198.145.64.141]:53538 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754706AbZLKF35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:29:57 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:51 2009
-Message-Id: <20091211052551.004437667@linux.site>
+	id S1753399AbZLKF36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:29:58 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:52 2009
+Message-Id: <20091211052551.564396025@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 21:23:32 -0800
+Date: Thu, 10 Dec 2009 21:23:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Sandeen <sandeen@redhat.com>, "Theodore Tso" <tytso@mit.edu>,
+       Akira Fujita <a-fujita@rs.jp.nec.com>, "Theodore Tso" <tytso@mit.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [20/34] ext4: make "norecovery" an alias for "noload"
+Subject: [21/34] ext4: Fix double-free of blocks with EXT4_IOC_MOVE_EXT
 References: <20091211052312.805428372@linux.site>
-Content-Disposition: inline; filename=0016-ext4-make-norecovery-an-alias-for-noload.patch
+Content-Disposition: inline; filename=0017-ext4-Fix-double-free-of-blocks-with-EXT4_IOC_MOVE_EX.patch
 In-Reply-To: <20091211052858.GA23229@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,57 +31,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-(cherry picked from commit e3bb52ae2bb9573e84c17b8e3560378d13a5c798)
+(cherry picked from commit 94d7c16cbbbd0e03841fcf272bcaf0620ad39618)
 
-Users on the linux-ext4 list recently complained about differences
-across filesystems w.r.t. how to mount without a journal replay.
+At the beginning of ext4_move_extent(), we call
+ext4_discard_preallocations() to discard inode PAs of orig and donor
+inodes.  But in the following case, blocks can be double freed, so
+move ext4_discard_preallocations() to the end of ext4_move_extents().
 
-In the discussion it was noted that xfs's "norecovery" option is
-perhaps more descriptively accurate than "noload," so let's make
-that an alias for ext4.
+1. Discard inode PAs of orig and donor inodes with
+   ext4_discard_preallocations() in ext4_move_extents().
 
-Also show this status in /proc/mounts
+   orig : [ DATA1 ]
+   donor: [ DATA2 ]
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+2. While data blocks are exchanging between orig and donor inodes, new
+   inode PAs is created to orig by other process's block allocation.
+   (Since there are semaphore gaps in ext4_move_extents().)  And new
+   inode PAs is used partially (2-1).
+
+   2-1 Create new inode PAs to orig inode
+   orig : [ DATA1 | used PA1 | free PA1 ]
+   donor: [ DATA2 ]
+
+3. Donor inode which has old orig inode's blocks is deleted after
+   EXT4_IOC_MOVE_EXT finished (3-1, 3-2).  So the block bitmap
+   corresponds to old orig inode's blocks are freed.
+
+   3-1 After EXT4_IOC_MOVE_EXT finished
+   orig : [ DATA2 |  free PA1 ]
+   donor: [ DATA1 |  used PA1 ]
+
+   3-2 Delete donor inode
+   orig : [ DATA2 |  free PA1 ]
+   donor: [ FREE SPACE(DATA1) | FREE SPACE(used PA1) ]
+
+4. The double-free of blocks is occurred, when close() is called to
+   orig inode.  Because ext4_discard_preallocations() for orig inode
+   frees used PA1 and free PA1, though used PA1 is already freed in 3.
+
+   4-1 Double-free of blocks is occurred
+   orig : [ DATA2 |  FREE SPACE(free PA1) ]
+   donor: [ FREE SPACE(DATA1) | DOUBLE FREE(used PA1) ]
+
+Signed-off-by: Akira Fujita <a-fujita@rs.jp.nec.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/filesystems/ext4.txt |    4 ++--
- fs/ext4/super.c                    |    4 ++++
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ fs/ext4/move_extent.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
---- a/Documentation/filesystems/ext4.txt
-+++ b/Documentation/filesystems/ext4.txt
-@@ -153,8 +153,8 @@ journal_dev=devnum	When the external jou
- 			identified through its new major/minor numbers encoded
- 			in devnum.
+--- a/fs/ext4/move_extent.c
++++ b/fs/ext4/move_extent.c
+@@ -1289,10 +1289,6 @@ ext4_move_extents(struct file *o_filp, s
+ 			 ext4_ext_get_actual_len(ext_cur), block_end + 1) -
+ 		     max(le32_to_cpu(ext_cur->ee_block), block_start);
  
--noload			Don't load the journal on mounting.  Note that
--                     	if the filesystem was not unmounted cleanly,
-+norecovery		Don't load the journal on mounting.  Note that
-+noload			if the filesystem was not unmounted cleanly,
-                      	skipping the journal replay will lead to the
-                      	filesystem containing inconsistencies that can
-                      	lead to any number of problems.
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -902,6 +902,9 @@ static int ext4_show_options(struct seq_
- 	if (test_opt(sb, DISCARD))
- 		seq_puts(seq, ",discard");
+-	/* Discard preallocations of two inodes */
+-	ext4_discard_preallocations(orig_inode);
+-	ext4_discard_preallocations(donor_inode);
+-
+ 	while (!last_extent && le32_to_cpu(ext_cur->ee_block) <= block_end) {
+ 		seq_blocks += add_blocks;
  
-+	if (test_opt(sb, NOLOAD))
-+		seq_puts(seq, ",norecovery");
+@@ -1410,6 +1406,11 @@ ext4_move_extents(struct file *o_filp, s
+ 
+ 	}
+ out:
++	if (*moved_len) {
++		ext4_discard_preallocations(orig_inode);
++		ext4_discard_preallocations(donor_inode);
++	}
 +
- 	ext4_show_quota_options(seq, sb);
- 
- 	return 0;
-@@ -1108,6 +1111,7 @@ static const match_table_t tokens = {
- 	{Opt_acl, "acl"},
- 	{Opt_noacl, "noacl"},
- 	{Opt_noload, "noload"},
-+	{Opt_noload, "norecovery"},
- 	{Opt_nobh, "nobh"},
- 	{Opt_bh, "bh"},
- 	{Opt_commit, "commit=%u"},
+ 	if (orig_path) {
+ 		ext4_ext_drop_refs(orig_path);
+ 		kfree(orig_path);
 
 
