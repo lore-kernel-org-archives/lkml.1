@@ -1,37 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762643AbZLKVLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbZLKVQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762643AbZLKVLA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbZLKVK7
+	id S1759026AbZLKVQK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZLKVQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:10:59 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:38772 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758821AbZLKVK6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:10:58 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: K8 ECC error with linux-2.6.32
-Date: Fri, 11 Dec 2009 22:11:03 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.32-fglrx; KDE/4.3.80; x86_64; ; )
-References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
-In-Reply-To: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
+	Fri, 11 Dec 2009 16:16:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:52807 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755107AbZLKVQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 16:16:03 -0500
+Message-ID: <4B22B672.9060402@redhat.com>
+Date: Fri, 11 Dec 2009 16:15:30 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 0/8] perf-probe updates
+References: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com> <20091209072220.GA4328@elte.hu> <20091209084341.GA21333@elte.hu> <4B1FE022.1030704@redhat.com> <4B201993.9020005@redhat.com> <20091211205141.GA1949@ghostprotocols.net>
+In-Reply-To: <20091211205141.GA1949@ghostprotocols.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912112211.04071.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 11 Dezember 2009 22:02:47 schrieb Johannes Hirte:
-> With kernel 2.6.32 I get now:
+Arnaldo Carvalho de Melo wrote:
+> Em Wed, Dec 09, 2009 at 04:41:39PM -0500, Masami Hiramatsu escreveu:
+>> Masami Hiramatsu wrote:
+>>>> Here the failure was because the symbol does not exist.
+>>>
+>>> Yeah, so that's what I'm expecting to be implemented with below item :-)
+>>>
+>>>    - Symbol search by libelf/kallsyms
+>>>
+>>> I guess it will be done by using symbol.c.
+>>> (Actually, current
+>>
+>> Oops, I might miss something, forgot it.
+>> actually, current perf probe doesn't decode kallsyms/elf, it just depends on
+>> kprobe-tracer. And kprobe-tracer will return -EINVAL not only if the symbol
+>> was not found, but also other reasons.
+>>
+>> So, if we want to show below message, we need to decode elf or kallsyms.
 > 
-> Dec 11 21:26:37 datengrab kernel: Northbridge Error, node 0, core: -1
-> Dec 11 21:26:37 datengrab kernel: K8 ECC error.
-...
+> Should be easy now with my latest patch :-)
 
-I forgot to mention, it's a Tyan Tiger K8W S2875 Board with AMD 8151+8111 
-chipset, two Opteron 252, 3GB RAM and a Radeon 3650 (RV635) AGP card.
+Thanks! that's looks very useful for me!
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
