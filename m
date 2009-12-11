@@ -1,285 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbZLKX0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbZLKX2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762452AbZLKX0U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 18:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759208AbZLKX0Q
+	id S1762797AbZLKX2r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 18:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761788AbZLKX2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 18:26:16 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:50080 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756395AbZLKX0Q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 18:26:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tfFjg9KJ4I8OGvusdXmNQ/kU9gtnoHOykJak9fkoX/UcYE1MimlSulhfmcmaedMT+i
-         SoSJq1G3YH40E8C+HV2gyaB204UNsER4YEmoSXkZvfxGzShA05rTvGOTMhOlmxDRbLTZ
-         X2i615YmbKQnS7H3f1JAbajFxJAjASQpHG61c=
+	Fri, 11 Dec 2009 18:28:46 -0500
+Received: from kroah.org ([198.145.64.141]:50403 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758471AbZLKX2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 18:28:45 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@linux.vnet.ibm.com>,
+       Scott Kilau <scottk@digi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/58] jsm: IRQ handlers doesn't need to have IRQ_DISABLED enabled
+Date: Fri, 11 Dec 2009 15:27:45 -0800
+Message-Id: <1260574122-10676-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.5.3
+In-Reply-To: <20091211232805.GA10652@kroah.com>
+References: <20091211232805.GA10652@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <6a89f9d50912111523r178c0casb61fca1198f6f253@mail.gmail.com>
-References: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
-	 <6a89f9d50912111523r178c0casb61fca1198f6f253@mail.gmail.com>
-Date: Sat, 12 Dec 2009 09:26:22 +1000
-Message-ID: <21d7e9970912111526u5b7164eaydbea44986bb82d2e@mail.gmail.com>
-Subject: Re: [git pull] drm nouveau pony for Xmas.
-From: Dave Airlie <airlied@gmail.com>
-To: Stephane Marchesin <stephane.marchesin@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/12 Stephane Marchesin <stephane.marchesin@gmail.com>:
-> 2009/12/11 Dave Airlie <airlied@linux.ie>:
->>
->> Hi Linus,
->>
->> Please pull the 'drm-nouveau-pony' branch from
->> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-nouveau-pony
->>
->> This contains the nouveau driver with Kconfig under staging for now, the
->> code is going under drm because the upstream tree has it there, and it
->> makes passing patches a lot easier at least initially.
->>
->> Thanks to Ben Skeggs for doing overtime on his Friday evening to get the
->> ctxprogs ripped out and firmware loader support added. The firmware is
->> available elsewhere via the nouveau project linux git tree, and comes with
->> all the warnings mentioned about possible copyright issues.
->>
->> After this I also hope to merge the VMware virtual GPU kms driver early
->> next week which is also TTM based and going into staging.
->>
->> The driver alone is ~36,000 lines of code, which is bigger than most
->> subsystems we carry, so hopefully ppl realise the monumental scale of
->> writing a driver for these things.
->>
->> Dave.
->>
->> †drivers/gpu/drm/Makefile † † † † † † † † † †| † †2 +
->> †drivers/gpu/drm/i2c/Makefile † † † † † † † †| † †4 +
->> †drivers/gpu/drm/i2c/ch7006_drv.c † † † † † †| †531 +++
->> †drivers/gpu/drm/i2c/ch7006_mode.c † † † † † | †473 +++
->> †drivers/gpu/drm/i2c/ch7006_priv.h † † † † † | †344 ++
->> †drivers/gpu/drm/nouveau/Kconfig † † † † † † | † 44 +
->> †drivers/gpu/drm/nouveau/Makefile † † † † † †| † 31 +
->> †drivers/gpu/drm/nouveau/nouveau_acpi.c † † †| †125 +
->> †drivers/gpu/drm/nouveau/nouveau_backlight.c | †155 +
->> †drivers/gpu/drm/nouveau/nouveau_bios.c † † †| 6095 +++++++++++++++++++++++++++
->> †drivers/gpu/drm/nouveau/nouveau_bios.h † † †| †289 ++
->> †drivers/gpu/drm/nouveau/nouveau_bo.c † † † †| †671 +++
->> †drivers/gpu/drm/nouveau/nouveau_calc.c † † †| †478 +++
->> †drivers/gpu/drm/nouveau/nouveau_channel.c † | †468 ++
->> †drivers/gpu/drm/nouveau/nouveau_connector.c | †824 ++++
->> †drivers/gpu/drm/nouveau/nouveau_connector.h | † 54 +
->> †drivers/gpu/drm/nouveau/nouveau_crtc.h † † †| † 95 +
->> †drivers/gpu/drm/nouveau/nouveau_debugfs.c † | †155 +
->> †drivers/gpu/drm/nouveau/nouveau_display.c † | †115 +
->> †drivers/gpu/drm/nouveau/nouveau_dma.c † † † | †206 +
->> †drivers/gpu/drm/nouveau/nouveau_dma.h † † † | †157 +
->> †drivers/gpu/drm/nouveau/nouveau_dp.c † † † †| †569 +++
->> †drivers/gpu/drm/nouveau/nouveau_drv.c † † † | †405 ++
->> †drivers/gpu/drm/nouveau/nouveau_drv.h † † † | 1286 ++++++
->> †drivers/gpu/drm/nouveau/nouveau_encoder.h † | † 91 +
->> †drivers/gpu/drm/nouveau/nouveau_fb.h † † † †| † 47 +
->> †drivers/gpu/drm/nouveau/nouveau_fbcon.c † † | †380 ++
->> †drivers/gpu/drm/nouveau/nouveau_fbcon.h † † | † 47 +
->> †drivers/gpu/drm/nouveau/nouveau_fence.c † † | †262 ++
->> †drivers/gpu/drm/nouveau/nouveau_gem.c † † † | †992 +++++
->> †drivers/gpu/drm/nouveau/nouveau_hw.c † † † †| 1080 +++++
->> †drivers/gpu/drm/nouveau/nouveau_hw.h † † † †| †455 ++
->> †drivers/gpu/drm/nouveau/nouveau_i2c.c † † † | †269 ++
->> †drivers/gpu/drm/nouveau/nouveau_i2c.h † † † | † 52 +
->> †drivers/gpu/drm/nouveau/nouveau_ioc32.c † † | † 72 +
->> †drivers/gpu/drm/nouveau/nouveau_irq.c † † † | †702 +++
->> †drivers/gpu/drm/nouveau/nouveau_mem.c † † † | †568 +++
->> †drivers/gpu/drm/nouveau/nouveau_notifier.c †| †196 +
->> †drivers/gpu/drm/nouveau/nouveau_object.c † †| 1294 ++++++
->> †drivers/gpu/drm/nouveau/nouveau_reg.h † † † | †836 ++++
->> †drivers/gpu/drm/nouveau/nouveau_sgdma.c † † | †321 ++
->> †drivers/gpu/drm/nouveau/nouveau_state.c † † | †811 ++++
->> †drivers/gpu/drm/nouveau/nouveau_ttm.c † † † | †131 +
->> †drivers/gpu/drm/nouveau/nv04_crtc.c † † † † | 1002 +++++
->> †drivers/gpu/drm/nouveau/nv04_cursor.c † † † | † 70 +
->> †drivers/gpu/drm/nouveau/nv04_dac.c † † † † †| †528 +++
->> †drivers/gpu/drm/nouveau/nv04_dfp.c † † † † †| †621 +++
->> †drivers/gpu/drm/nouveau/nv04_display.c † † †| †288 ++
->> †drivers/gpu/drm/nouveau/nv04_fb.c † † † † † | † 21 +
->> †drivers/gpu/drm/nouveau/nv04_fbcon.c † † † †| †316 ++
->> †drivers/gpu/drm/nouveau/nv04_fifo.c † † † † | †271 ++
->> †drivers/gpu/drm/nouveau/nv04_graph.c † † † †| †579 +++
->> †drivers/gpu/drm/nouveau/nv04_instmem.c † † †| †208 +
->> †drivers/gpu/drm/nouveau/nv04_mc.c † † † † † | † 20 +
->> †drivers/gpu/drm/nouveau/nv04_timer.c † † † †| † 51 +
->> †drivers/gpu/drm/nouveau/nv04_tv.c † † † † † | †305 ++
->> †drivers/gpu/drm/nouveau/nv10_fb.c † † † † † | † 24 +
->> †drivers/gpu/drm/nouveau/nv10_fifo.c † † † † | †260 ++
->> †drivers/gpu/drm/nouveau/nv10_graph.c † † † †| †892 ++++
->> †drivers/gpu/drm/nouveau/nv17_gpio.c † † † † | † 92 +
->> †drivers/gpu/drm/nouveau/nv17_tv.c † † † † † | †681 +++
->> †drivers/gpu/drm/nouveau/nv17_tv.h † † † † † | †156 +
->> †drivers/gpu/drm/nouveau/nv17_tv_modes.c † † | †583 +++
->> †drivers/gpu/drm/nouveau/nv20_graph.c † † † †| †780 ++++
->> †drivers/gpu/drm/nouveau/nv40_fb.c † † † † † | † 62 +
->> †drivers/gpu/drm/nouveau/nv40_fifo.c † † † † | †314 ++
->> †drivers/gpu/drm/nouveau/nv40_graph.c † † † †| †560 +++
->> †drivers/gpu/drm/nouveau/nv40_mc.c † † † † † | † 38 +
->> †drivers/gpu/drm/nouveau/nv50_crtc.c † † † † | †769 ++++
->> †drivers/gpu/drm/nouveau/nv50_cursor.c † † † | †156 +
->> †drivers/gpu/drm/nouveau/nv50_dac.c † † † † †| †304 ++
->> †drivers/gpu/drm/nouveau/nv50_display.c † † †| 1015 +++++
->> †drivers/gpu/drm/nouveau/nv50_display.h † † †| † 46 +
->> †drivers/gpu/drm/nouveau/nv50_evo.h † † † † †| †113 +
->> †drivers/gpu/drm/nouveau/nv50_fbcon.c † † † †| †273 ++
->> †drivers/gpu/drm/nouveau/nv50_fifo.c † † † † | †494 +++
->> †drivers/gpu/drm/nouveau/nv50_graph.c † † † †| †385 ++
->> †drivers/gpu/drm/nouveau/nv50_instmem.c † † †| †509 +++
->> †drivers/gpu/drm/nouveau/nv50_mc.c † † † † † | † 40 +
->> †drivers/gpu/drm/nouveau/nv50_sor.c † † † † †| †309 ++
->> †drivers/gpu/drm/nouveau/nvreg.h † † † † † † | †535 +++
->> †drivers/staging/Kconfig † † † † † † † † † † | † †2 +
->> †include/drm/Kbuild † † † † † † † † † † † † †| † †1 +
->> †include/drm/i2c/ch7006.h † † † † † † † † † †| † 86 +
->> †include/drm/nouveau_drm.h † † † † † † † † † | †220 +
->> †85 files changed, 36161 insertions(+), 0 deletions(-)
->> †create mode 100644 drivers/gpu/drm/i2c/Makefile
->> †create mode 100644 drivers/gpu/drm/i2c/ch7006_drv.c
->> †create mode 100644 drivers/gpu/drm/i2c/ch7006_mode.c
->> †create mode 100644 drivers/gpu/drm/i2c/ch7006_priv.h
->> †create mode 100644 drivers/gpu/drm/nouveau/Kconfig
->> †create mode 100644 drivers/gpu/drm/nouveau/Makefile
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_acpi.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_backlight.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_bios.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_bios.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_bo.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_calc.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_channel.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_connector.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_connector.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_crtc.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_debugfs.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_display.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_dma.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_dma.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_dp.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_drv.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_drv.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_encoder.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_fb.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_fbcon.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_fbcon.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_fence.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_gem.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_hw.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_hw.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_i2c.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_i2c.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_ioc32.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_irq.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_mem.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_notifier.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_object.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_reg.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_sgdma.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_state.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nouveau_ttm.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_crtc.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_cursor.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_dac.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_dfp.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_display.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_fb.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_fbcon.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_fifo.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_graph.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_instmem.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_mc.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_timer.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv04_tv.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv10_fb.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv10_fifo.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv10_graph.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv17_gpio.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv17_tv.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv17_tv.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nv17_tv_modes.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv20_graph.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv40_fb.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv40_fifo.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv40_graph.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv40_mc.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_crtc.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_cursor.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_dac.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_display.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_display.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_evo.h
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_fbcon.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_fifo.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_graph.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_instmem.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_mc.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nv50_sor.c
->> †create mode 100644 drivers/gpu/drm/nouveau/nvreg.h
->> †create mode 100644 include/drm/i2c/ch7006.h
->> †create mode 100644 include/drm/nouveau_drm.h
->>
->> commit 6ee738610f41b59733f63718f0bdbcba7d3a3f12
->> Author: Ben Skeggs <bskeggs@redhat.com>
->> Date: † Fri Dec 11 19:24:15 2009 +1000
->>
->> † †drm/nouveau: Add DRM driver for NVIDIA GPUs
->>
->> † †This adds a drm/kms staging non-API stable driver for GPUs from NVIDIA.
->>
->> † †This driver is a KMS-based driver and requires a compatible nouveau
->> † †userspace libdrm and nouveau X.org driver.
->>
->> † †This driver requires firmware files not available in this kernel tree,
->> † †interested parties can find them via the nouveau project git archive.
->>
->> † †This driver is reverse engineered, and is in no way supported by nVidia.
->>
->> † †Support for nearly the complete range of nvidia hw from nv04->g80 (nv50)
->> † †is available, and the kms driver should support driving nearly all
->> † †output types (displayport is under development still) along with supporting
->> † †suspend/resume.
->>
->> † †This work is all from the upstream nouveau project found at
->> † †nouveau.freedesktop.org.
->>
->> † †The original authors list from nouveau git tree is:
->> † †Anssi Hannula <anssi.hannula@iki.fi>
->> † †Ben Skeggs <bskeggs@redhat.com>
->> † †Francisco Jerez <currojerez@riseup.net>
->> † †Maarten Maathuis <madman2003@gmail.com>
->> † †Marcin Ko∂cielnicki <koriakin@0x04.net>
->> † †Matthew Garrett <mjg@redhat.com>
->> † †Matt Parnell <mparnell@gmail.com>
->> † †Patrice Mandin <patmandin@gmail.com>
->> † †Pekka Paalanen <pq@iki.fi>
->> † †Xavier Chantry <shiningxc@gmail.com>
->> † †along with project founder Stephane Marchesin <marchesin@icps.u-strasbg.fr>
->>
->
-> Btw could we get proper developer credit here? I think 3/4 of the
-> people who wrote the code are missing here.
+From: Breno Leit√£o <leitao@linux.vnet.ibm.com>
 
-I did git log on the nouveau kernel tree nouveau dir with sort and uniq,
+Currently jsm is showing the following message when loaded:
 
-I'm not sure where else I needed to trawl to get anymore ppl who have
-contributed to
-the KMS driver. I'm sure ppl contributed to X.org/Mesa drivers but
-this isn't the
-place for them. Also all copyright should be intact.
+IRQ 432/JSM: IRQF_DISABLED is not guaranteed on shared IRQs
 
-But we can add an author lists to the code subdir if you like, if
-someone compiles
-the complete list of ppl who have added code to the kernel driver.
+It's because the request_irq() is called using IRQF_DISABLED
+and IRQF_SHARED.
+Actually there is no need to use IRQF_DISABLED in this driver.
 
-Dave.
+Signed-off-by: Breno Leit√£o <leitao@linux.vnet.ibm.com>
+Cc: Scott Kilau <scottk@digi.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/serial/jsm/jsm_driver.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/serial/jsm/jsm_driver.c b/drivers/serial/jsm/jsm_driver.c
+index b3604aa..48326f7 100644
+--- a/drivers/serial/jsm/jsm_driver.c
++++ b/drivers/serial/jsm/jsm_driver.c
+@@ -123,7 +123,7 @@ static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct pci_device
+ 	}
+ 
+ 	rc = request_irq(brd->irq, brd->bd_ops->intr,
+-			IRQF_DISABLED|IRQF_SHARED, "JSM", brd);
++			IRQF_SHARED, "JSM", brd);
+ 	if (rc) {
+ 		printk(KERN_WARNING "Failed to hook IRQ %d\n",brd->irq);
+ 		goto out_iounmap;
+-- 
+1.6.5.5
+
