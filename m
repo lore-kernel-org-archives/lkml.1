@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZLKGJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbZLKGKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbZLKGJX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 01:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbZLKGJV
+	id S1756931AbZLKGKb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 01:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbZLKGKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 01:09:21 -0500
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:58517 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755995AbZLKGJU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 01:09:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type
-	:content-transfer-encoding; q=dns; s=sasl; b=c7W6ngFHrJPKV3UNqUx
-	DRtKLTOjGyhzijlGflY9CS8AZCZWQfFcYCZiLGNgV1OXguxget78vkXZQl7RVCRB
-	OdUiCNi6xlyQbBKbBwrLAe3DAMvLqy6qdFW2m9HOkcguTQsQ45BnRCKUmnTgrZor
-	JaaS1Y2p7Gt1l5d5YFCncskE=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] Git 1.6.5.6
-From: Junio C Hamano <gitster@pobox.com>
-Date: Thu, 10 Dec 2009 22:09:12 -0800
-Message-ID: <7vljha59fb.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-X-Pobox-Relay-ID: B88F0544-E61B-11DE-8D99-B34DBBB5EC2E-77302942!a-pb-sasl-sd.pobox.com
-Content-Transfer-Encoding: 8BIT
+	Fri, 11 Dec 2009 01:10:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13347 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756632AbZLKGK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 01:10:28 -0500
+Date: Fri, 11 Dec 2009 01:10:14 -0500
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Amerigo Wang <amwang@redhat.com>, Cedric Le Goater <clg@fr.ibm.com>
+Message-Id: <20091211061316.3969.99500.sendpatchset@localhost.localdomain>
+Subject: [Patch] ipc: HARD_MSGMAX should be higher not lower on 64bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release Git 1.6.5.6 is available at the
-usual places:
+It looks weird that we have HARD_MSGMAX lower on 64bit than on 32bit,
+since usually 64bit machines have more memory than 32bit machines.
 
-  http://www.kernel.org/pub/software/scm/git/
+Making it higher on 64bit seems reasonable, and keep the original
+number on 32bit.
 
-  git-1.6.5.6.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.5.6.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.5.6.tar.{gz,bz2}		(preformatted docs)
+Cc: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Cedric Le Goater <clg@fr.ibm.com>
+Signed-off-by: WANG Cong <amwang@redhat.com>
 
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.5.6-1.fc11.$arch.rpm	(RPM)
-
-Hopefully this will be the last update to the 1.6.5.X series before the
-upcoming feature release (1.6.6).  It fixes a security issue, and users of
-older 1.6.5.X series are strongly recommended to update to this version.
-
-Git v1.6.5.6 Release Notes
-==========================
-
-Fixes since v1.6.5.5
---------------------
-
- * "git add -p" had a regression since v1.6.5.3 that broke deletion of
-   non-empty files.
-
- * "git archive -o o.zip -- Makefile" produced an archive in o.zip
-   but in POSIX tar format.
-
- * Error message given to "git pull --rebase" when the user didn't give
-   enough clue as to what branch to integrate with still talked about
-   "merging with" the branch.
-
- * Error messages given by "git merge" when the merge resulted in a
-   fast-forward still were in plumbing lingo, even though in v1.6.5
-   we reworded messages in other cases.
-
- * The post-upload-hook run by upload-pack in response to "git fetch" has
-   been removed, due to security concerns (the hook first appeared in
-   1.6.5).
-
-----------------------------------------------------------------
-
-Changes since v1.6.5.5 are as follows:
-
-Jan Krüger (1):
-      pull: clarify advice for the unconfigured error case
-
-Jeff King (1):
-      add-interactive: fix deletion of non-empty files
-
-Junio C Hamano (3):
-      Remove post-upload-hook
-      Fix archive format with -- on the command line
-      Git 1.6.5.6
-
-Matthieu Moy (2):
-      merge-recursive: make the error-message generation an extern function
-      builtin-merge: show user-friendly error messages for fast-forward too.
-
+---
+diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
+index e408722..07baa38 100644
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -87,7 +87,7 @@ extern int mq_init_ns(struct ipc_namespace *ns);
+ /* default values */
+ #define DFLT_QUEUESMAX 256     /* max number of message queues */
+ #define DFLT_MSGMAX    10      /* max number of messages in each queue */
+-#define HARD_MSGMAX    (131072/sizeof(void *))
++#define HARD_MSGMAX    (32768*sizeof(void *)/4)
+ #define DFLT_MSGSIZEMAX 8192   /* max message size */
+ #else
+ static inline int mq_init_ns(struct ipc_namespace *ns) { return 0; }
