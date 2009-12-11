@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbZLKVTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbZLKVTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757625AbZLKVTu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932731AbZLKVTr
+	id S932715AbZLKVTm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757625AbZLKVTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:19:47 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52159 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932655AbZLKVTp (ORCPT
+	Fri, 11 Dec 2009 16:19:36 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:41065 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756134AbZLKVTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:19:45 -0500
-Date: Fri, 11 Dec 2009 21:19:23 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, jamie.iles@picochip.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 1/2] perf tools: allow building for ARM
-Message-ID: <20091211211923.GC12628@n2100.arm.linux.org.uk>
-References: <1260523260-15694-1-git-send-email-jamie.iles@picochip.com> <20091211102316.GB16882@elte.hu> <20091211.023808.233094506.davem@davemloft.net>
+	Fri, 11 Dec 2009 16:19:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=vN+Tz9Elg/mTvej9Z2pgFY+21a/Hv4AE4Gbv8V7cdFMNUaKJ4v/btkurOlmA/oYCcg
+         vaQDxVsDZTditl1e4gv+reNd3SwLrVPhXe8oZfX5VaJybq3k0VLHSnzs6Q4WAGLJ9TfL
+         hACU13mZcaIsBKfKw5ptEv44bEUkSkGftdP/o=
+Date: Fri, 11 Dec 2009 22:19:38 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: K8 ECC error with linux-2.6.32
+Message-ID: <20091211211938.GB6246@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>,
+	linux-kernel@vger.kernel.org
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20091211.023808.233094506.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 02:38:08AM -0800, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 11 Dec 2009 11:23:16 +0100
+On Fri, Dec 11, 2009 at 10:02:47PM +0100, Johannes Hirte wrote:
+> With kernel 2.6.32 I get now:
 > 
-> > 
-> > * Jamie Iles <jamie.iles@picochip.com> wrote:
-> > 
-> >> +#ifdef __arm__
-> >> +#include "../../arch/arm/include/asm/unistd.h"
-> >> +#define rmb()		asm volatile("":::"memory")
-> >> +#define cpu_relax()	asm volatile("":::"memory")
-> >> +#endif
-> > 
-> > cpu_relax() looks fine, but rmb() seems not to match the one that can be 
-> > found in arch/arm/:
-> 
-> I think he did it this way so it can compile in the meantime,
-> and that doing it right requires runtime cpu detection to
-> select which barrier instruction is even available on the
-> current ARM cpu.
+> Dec 11 21:26:37 datengrab kernel: Northbridge Error, node 0, core: -1
+> Dec 11 21:26:37 datengrab kernel: K8 ECC error.
 
-We provide a way for userspace to be independent of the CPU for these
-operations by providing code snippets up in the vector page for userspace
-to call.  The kernel places the correct code there according to the CPU
-it's built for.
+Is that all, i.e. do you have anything else in the logs. For example, a
+line which contains "MC?_STATUS: ..." or similar. Please send the whole
+dmesg.
 
-Look for __kuser_memory_barrier in arch/arm/kernel/entry-armv.S
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
