@@ -1,134 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbZLKCmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbZLKCsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762253AbZLKCmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 21:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762223AbZLKCmU
+	id S1762263AbZLKCsK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 21:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762225AbZLKCsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 21:42:20 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62348 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1762221AbZLKCmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 21:42:19 -0500
-Message-ID: <4B21B172.2080500@cn.fujitsu.com>
-Date: Fri, 11 Dec 2009 10:41:54 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 07/10] trace_syscalls: init print_fmt
-References: <4B1F4EA6.5080105@cn.fujitsu.com> <1260491698.2146.322.camel@gandalf.stny.rr.com>
-In-Reply-To: <1260491698.2146.322.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 10 Dec 2009 21:48:10 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:61283 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762135AbZLKCsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 21:48:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=fjAH4UUfEMj8+71Ihy8r7lE1rNlBcOH3pzBi4V3bQbRSpTSaY82xkD8p9RRxxnJVNS
+         6xl9Zb/hnLdseJpIWoOOY1eYOvHj/v+YJ6HDLG/PEyFPQ9E4IIc0PwduUMObiWMyTn7A
+         WYXr+blS0nk7aGG4z1qaoaHDeKu9jAWIzxF1E=
+Subject: Re: [PATCH v9 8/8] Loongson: YeeLoong: add input/hotkey driver
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: akpm@linux-foundation.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <e6d590fa37e6003dd482918fdef02c1fc127d6c8.1260281599.git.wuzhangjin@gmail.com>
+References: <cover.1260254344.git.wuzhangjin@gmail.com>
+	 <39d232e3f8359e9c11bad7536f0162444401ec94.1260281599.git.wuzhangjin@gmail.com>
+	 <7676d8397e593dbec0d40e24429b7ccbcecfa588.1260281599.git.wuzhangjin@gmail.com>
+	 <4d821efaecc3dee0b9124119507a694e81572437.1260281599.git.wuzhangjin@gmail.com>
+	 <5c426a5091bee3e4483fc0b93f26359e2840428b.1260281599.git.wuzhangjin@gmail.com>
+	 <5e9acb4cd757075f617daa45cbd6f5fad94678ac.1260281599.git.wuzhangjin@gmail.com>
+	 <234c5ecd475b05e3eb17ead3ae107cfe3426e0e0.1260281599.git.wuzhangjin@gmail.com>
+	 <6af33d6c42ba4de9eea27316c64f81b96e01c948.1260281599.git.wuzhangjin@gmail.com>
+	 <e6d590fa37e6003dd482918fdef02c1fc127d6c8.1260281599.git.wuzhangjin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 11 Dec 2009 10:47:40 +0800
+Message-ID: <1260499660.3193.17.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 2009-12-09 at 15:15 +0800, Lai Jiangshan wrote:
->> Init print_fmt for trace_syscalls.
->> It will be used for replacing ->show_format().
+On Tue, 2009-12-08 at 22:15 +0800, Wu Zhangjin wrote:
+> From: Wu Zhangjin <wuzhangjin@gmail.com>
 > 
-> This needs more explanation too.
+> This patch adds Hotkey Driver, which will do related actions for The
+> hotkey event(/sys/class/input) and report the corresponding input keys
+> to the user-space applications.
 > 
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
->> index 75289f3..dcd8699 100644
->> --- a/kernel/trace/trace_syscalls.c
->> +++ b/kernel/trace/trace_syscalls.c
->> @@ -191,6 +191,61 @@ int syscall_enter_format(struct ftrace_event_call *call, struct trace_seq *s)
->>  	return trace_seq_putc(s, '\n');
->>  }
->>  
->> +static
->> +int  __set_enter_print_fmt(struct syscall_metadata *entry, char *buf, int len)
->> +{
->> +	int i;
->> +	int pos = 0;
->> +
->> +	pos += snprintf(buf + pos, len > pos ? len - pos : 0, "\"");
->> +	for (i = 0; i < entry->nb_args; i++) {
->> +		pos += snprintf(buf + pos, len > pos ? len - pos : 0,
->> +				"%s: 0x%%0%zulx%s", entry->args[i],
->> +				sizeof(unsigned long),
->> +				i == entry->nb_args - 1 ? "" : ", ");
->> +	}
->> +	pos += snprintf(buf + pos, len > pos ? len - pos : 0, "\"");
->> +
->> +	for (i = 0; i < entry->nb_args; i++) {
->> +		pos += snprintf(buf + pos, len > pos ? len - pos : 0,
->> +				", ((unsigned long)(REC->%s))", entry->args[i]);
+> [NOTE:
 > 
-> Yuck! 4 snprintf(buf + pos, len > pos ? len - pos: 0 ...
+> This patch is based on the sparse keymap library in:
 > 
-> Please make a wrapper for that.
+> git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input next
+> 
+> of Dmitry Torokhov. that sparse keymap support is also queued for
+> 2.6.33. Before the above branch is pulled by linus, this patch is not
+> appliable.]
+> 
+[...]
+> +
+> +/* yeeloong_wifi_handler may be implemented in the wifi driver */
+> +sci_handler yeeloong_wifi_handler;
+> +EXPORT_SYMBOL(yeeloong_wifi_handler);
+> +
 
-Do you mind if I use a macro?
-Readability are still the same... 
+Because we have reported the KEY_WLAN to user-space and If we provide
+the standard rfkill interfaces too, there is no need to handle the Fn+F5
+event in kernel space, will remove the above three lines the following
+related source code.
 
-static
-int  __set_enter_print_fmt(struct syscall_metadata *entry, char *buf, int len)
-{
-	int i;
-	int pos = 0;
+> +static void do_event_action(int event)
+> +{
+> +	sci_handler handler;
+> +	int reg, status;
+> +	struct key_entry *ke;
+> +
+> +	reg = 0;
+> +	handler = NULL;
+> +
+> +	switch (event) {
+[...]
+> +	case EVENT_WLAN:
+> +		/* We use 2 to indicate it as a switch */
+> +		status = 2;
+> +		handler = yeeloong_wifi_handler;
+> +		break;
 
-#define BUF_PRINTF(fmt...)						\
-do {									\
-	pos += snprintf(buf + pos, len > pos ? len - pos : 0, fmt);	\
-} while (0)
+Will remove it and send the this patch as v10 later.
 
-	BUF_PRINTF("\"");
-	for (i = 0; i < entry->nb_args; i++) {
-		BUF_PRINTF("%s: 0x%%0%zulx%s", entry->args[i],
-				sizeof(unsigned long),
-				i == entry->nb_args - 1 ? "\"" : ", ");
-	}
+Best Regards,
+	Wu Zhangjin
 
-	for (i = 0; i < entry->nb_args; i++)
-		BUF_PRINTF(", ((unsigned long)(REC->%s))", entry->args[i]);
-
-#under BUF_PRINTF
-
-	/* return the length of print_fmt */
-	return pos;
-}
-
-> 
-> Actually, this could use the new trace_seq code if I separate the
-> buffer. You would just need to do:
-> 
-> 	struct trace_seq s;
-
-I think trace_seq can not help.
-__set_enter_print_fmt() is called twice.
-We calculate the length at the first time(don't write any thing),
-then allocate memory and then really "snprintf" string into the buffer.
-
--- Lai
-
-> 
-> 	trace_seq_init(&s, buf, len);
-> 
-> 	trace_seq_putc(&s, '"');
-> 	for (i = 0; i < entry->nb_args; i++)
-> 		trace_seq_printf(&s, "%s: 0x%%0%zulx%s", entry->args[i],
-> 				sizeof(unsigned long),
-> 				i == entry->nb_args - 1 ? "" : ", ");
-> 
-> 	trace_seq_putc(&s, '"');
-> 
-> 	for (i = 0; i < entry->nb_args; i++)
-> 		trace_seq_printf(&s, ", ((unsigned long)(REC->%s)",
-> 				entry->args[i]);
-> 
-> 	return s.len;
-> 
-> 
-> Looks much better, and less error prone.
-> 
-> -- Steve
-> 
