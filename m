@@ -1,266 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZLKNYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbZLKN07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbZLKNYE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbZLKNXz
+	id S1756235AbZLKN07 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbZLKN0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:23:55 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34370 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756030AbZLKNXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:23:53 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/MqRhdcA7MkfcO0fTCHuGSjYYsD7NZEUfuTlcfjf
-	1Nfa+CdBNxiNWQ
-Subject: Re: [git pull] drm nouveau pony for Xmas.
-From: Mike Galbraith <efault@gmx.de>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
-References: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Dec 2009 14:23:55 +0100
-Message-Id: <1260537835.6126.72.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+	Fri, 11 Dec 2009 08:26:53 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49315 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754391AbZLKN0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 08:26:52 -0500
+Date: Fri, 11 Dec 2009 14:26:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jamie Iles <jamie.iles@picochip.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, mikpe@it.uu.se, linux@arm.linux.org.uk,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/urgent] perf tools: Allow building for ARM
+Message-ID: <20091211132640.GA12140@elte.hu>
+References: <1260534009-5394-1-git-send-email-jamie.iles@picochip.com>
+ <tip-58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f@git.kernel.org>
+ <20091211130408.GG4164@wear.picochip.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091211130408.GG4164@wear.picochip.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 11:57 +0000, Dave Airlie wrote:
-> Hi Linus,
-> 
-> Please pull the 'drm-nouveau-pony' branch from
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-nouveau-pony
-> 
-> This contains the nouveau driver with Kconfig under staging for now, the 
-> code is going under drm because the upstream tree has it there, and it
-> makes passing patches a lot easier at least initially.
-> 
-> Thanks to Ben Skeggs for doing overtime on his Friday evening to get the 
-> ctxprogs ripped out and firmware loader support added. The firmware is 
-> available elsewhere via the nouveau project linux git tree, and comes with 
-> all the warnings mentioned about possible copyright issues.
-> 
-> After this I also hope to merge the VMware virtual GPU kms driver early 
-> next week which is also TTM based and going into staging.
-> 
-> The driver alone is ~36,000 lines of code, which is bigger than most 
-> subsystems we carry, so hopefully ppl realise the monumental scale of
-> writing a driver for these things.
-> 
-> Dave.
-> 
->  drivers/gpu/drm/Makefile                    |    2 +
->  drivers/gpu/drm/i2c/Makefile                |    4 +
->  drivers/gpu/drm/i2c/ch7006_drv.c            |  531 +++
->  drivers/gpu/drm/i2c/ch7006_mode.c           |  473 +++
->  drivers/gpu/drm/i2c/ch7006_priv.h           |  344 ++
->  drivers/gpu/drm/nouveau/Kconfig             |   44 +
->  drivers/gpu/drm/nouveau/Makefile            |   31 +
->  drivers/gpu/drm/nouveau/nouveau_acpi.c      |  125 +
->  drivers/gpu/drm/nouveau/nouveau_backlight.c |  155 +
->  drivers/gpu/drm/nouveau/nouveau_bios.c      | 6095 +++++++++++++++++++++++++++
->  drivers/gpu/drm/nouveau/nouveau_bios.h      |  289 ++
->  drivers/gpu/drm/nouveau/nouveau_bo.c        |  671 +++
->  drivers/gpu/drm/nouveau/nouveau_calc.c      |  478 +++
->  drivers/gpu/drm/nouveau/nouveau_channel.c   |  468 ++
->  drivers/gpu/drm/nouveau/nouveau_connector.c |  824 ++++
->  drivers/gpu/drm/nouveau/nouveau_connector.h |   54 +
->  drivers/gpu/drm/nouveau/nouveau_crtc.h      |   95 +
->  drivers/gpu/drm/nouveau/nouveau_debugfs.c   |  155 +
->  drivers/gpu/drm/nouveau/nouveau_display.c   |  115 +
->  drivers/gpu/drm/nouveau/nouveau_dma.c       |  206 +
->  drivers/gpu/drm/nouveau/nouveau_dma.h       |  157 +
->  drivers/gpu/drm/nouveau/nouveau_dp.c        |  569 +++
->  drivers/gpu/drm/nouveau/nouveau_drv.c       |  405 ++
->  drivers/gpu/drm/nouveau/nouveau_drv.h       | 1286 ++++++
->  drivers/gpu/drm/nouveau/nouveau_encoder.h   |   91 +
->  drivers/gpu/drm/nouveau/nouveau_fb.h        |   47 +
->  drivers/gpu/drm/nouveau/nouveau_fbcon.c     |  380 ++
->  drivers/gpu/drm/nouveau/nouveau_fbcon.h     |   47 +
->  drivers/gpu/drm/nouveau/nouveau_fence.c     |  262 ++
->  drivers/gpu/drm/nouveau/nouveau_gem.c       |  992 +++++
->  drivers/gpu/drm/nouveau/nouveau_hw.c        | 1080 +++++
->  drivers/gpu/drm/nouveau/nouveau_hw.h        |  455 ++
->  drivers/gpu/drm/nouveau/nouveau_i2c.c       |  269 ++
->  drivers/gpu/drm/nouveau/nouveau_i2c.h       |   52 +
->  drivers/gpu/drm/nouveau/nouveau_ioc32.c     |   72 +
->  drivers/gpu/drm/nouveau/nouveau_irq.c       |  702 +++
->  drivers/gpu/drm/nouveau/nouveau_mem.c       |  568 +++
->  drivers/gpu/drm/nouveau/nouveau_notifier.c  |  196 +
->  drivers/gpu/drm/nouveau/nouveau_object.c    | 1294 ++++++
->  drivers/gpu/drm/nouveau/nouveau_reg.h       |  836 ++++
->  drivers/gpu/drm/nouveau/nouveau_sgdma.c     |  321 ++
->  drivers/gpu/drm/nouveau/nouveau_state.c     |  811 ++++
->  drivers/gpu/drm/nouveau/nouveau_ttm.c       |  131 +
->  drivers/gpu/drm/nouveau/nv04_crtc.c         | 1002 +++++
->  drivers/gpu/drm/nouveau/nv04_cursor.c       |   70 +
->  drivers/gpu/drm/nouveau/nv04_dac.c          |  528 +++
->  drivers/gpu/drm/nouveau/nv04_dfp.c          |  621 +++
->  drivers/gpu/drm/nouveau/nv04_display.c      |  288 ++
->  drivers/gpu/drm/nouveau/nv04_fb.c           |   21 +
->  drivers/gpu/drm/nouveau/nv04_fbcon.c        |  316 ++
->  drivers/gpu/drm/nouveau/nv04_fifo.c         |  271 ++
->  drivers/gpu/drm/nouveau/nv04_graph.c        |  579 +++
->  drivers/gpu/drm/nouveau/nv04_instmem.c      |  208 +
->  drivers/gpu/drm/nouveau/nv04_mc.c           |   20 +
->  drivers/gpu/drm/nouveau/nv04_timer.c        |   51 +
->  drivers/gpu/drm/nouveau/nv04_tv.c           |  305 ++
->  drivers/gpu/drm/nouveau/nv10_fb.c           |   24 +
->  drivers/gpu/drm/nouveau/nv10_fifo.c         |  260 ++
->  drivers/gpu/drm/nouveau/nv10_graph.c        |  892 ++++
->  drivers/gpu/drm/nouveau/nv17_gpio.c         |   92 +
->  drivers/gpu/drm/nouveau/nv17_tv.c           |  681 +++
->  drivers/gpu/drm/nouveau/nv17_tv.h           |  156 +
->  drivers/gpu/drm/nouveau/nv17_tv_modes.c     |  583 +++
->  drivers/gpu/drm/nouveau/nv20_graph.c        |  780 ++++
->  drivers/gpu/drm/nouveau/nv40_fb.c           |   62 +
->  drivers/gpu/drm/nouveau/nv40_fifo.c         |  314 ++
->  drivers/gpu/drm/nouveau/nv40_graph.c        |  560 +++
->  drivers/gpu/drm/nouveau/nv40_mc.c           |   38 +
->  drivers/gpu/drm/nouveau/nv50_crtc.c         |  769 ++++
->  drivers/gpu/drm/nouveau/nv50_cursor.c       |  156 +
->  drivers/gpu/drm/nouveau/nv50_dac.c          |  304 ++
->  drivers/gpu/drm/nouveau/nv50_display.c      | 1015 +++++
->  drivers/gpu/drm/nouveau/nv50_display.h      |   46 +
->  drivers/gpu/drm/nouveau/nv50_evo.h          |  113 +
->  drivers/gpu/drm/nouveau/nv50_fbcon.c        |  273 ++
->  drivers/gpu/drm/nouveau/nv50_fifo.c         |  494 +++
->  drivers/gpu/drm/nouveau/nv50_graph.c        |  385 ++
->  drivers/gpu/drm/nouveau/nv50_instmem.c      |  509 +++
->  drivers/gpu/drm/nouveau/nv50_mc.c           |   40 +
->  drivers/gpu/drm/nouveau/nv50_sor.c          |  309 ++
->  drivers/gpu/drm/nouveau/nvreg.h             |  535 +++
->  drivers/staging/Kconfig                     |    2 +
->  include/drm/Kbuild                          |    1 +
->  include/drm/i2c/ch7006.h                    |   86 +
->  include/drm/nouveau_drm.h                   |  220 +
->  85 files changed, 36161 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/gpu/drm/i2c/Makefile
->  create mode 100644 drivers/gpu/drm/i2c/ch7006_drv.c
->  create mode 100644 drivers/gpu/drm/i2c/ch7006_mode.c
->  create mode 100644 drivers/gpu/drm/i2c/ch7006_priv.h
->  create mode 100644 drivers/gpu/drm/nouveau/Kconfig
->  create mode 100644 drivers/gpu/drm/nouveau/Makefile
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_acpi.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_backlight.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_bios.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_bios.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_bo.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_calc.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_channel.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_connector.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_connector.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_crtc.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_debugfs.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_display.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_dma.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_dma.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_dp.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_drv.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_drv.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_encoder.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_fb.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_fbcon.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_fbcon.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_fence.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_gem.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_hw.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_hw.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_i2c.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_i2c.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_ioc32.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_irq.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_mem.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_notifier.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_object.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_reg.h
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_sgdma.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_state.c
->  create mode 100644 drivers/gpu/drm/nouveau/nouveau_ttm.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_crtc.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_cursor.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_dac.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_dfp.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_display.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_fb.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_fbcon.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_fifo.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_graph.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_instmem.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_mc.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_timer.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv04_tv.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv10_fb.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv10_fifo.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv10_graph.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv17_gpio.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv17_tv.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv17_tv.h
->  create mode 100644 drivers/gpu/drm/nouveau/nv17_tv_modes.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv20_graph.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv40_fb.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv40_fifo.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv40_graph.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv40_mc.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_crtc.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_cursor.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_dac.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_display.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_display.h
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_evo.h
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_fbcon.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_fifo.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_graph.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_instmem.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_mc.c
->  create mode 100644 drivers/gpu/drm/nouveau/nv50_sor.c
->  create mode 100644 drivers/gpu/drm/nouveau/nvreg.h
->  create mode 100644 include/drm/i2c/ch7006.h
->  create mode 100644 include/drm/nouveau_drm.h
-> 
-> commit 6ee738610f41b59733f63718f0bdbcba7d3a3f12
-> Author: Ben Skeggs <bskeggs@redhat.com>
-> Date:   Fri Dec 11 19:24:15 2009 +1000
-> 
->     drm/nouveau: Add DRM driver for NVIDIA GPUs
->     
->     This adds a drm/kms staging non-API stable driver for GPUs from NVIDIA.
->     
->     This driver is a KMS-based driver and requires a compatible nouveau
->     userspace libdrm and nouveau X.org driver.
->     
->     This driver requires firmware files not available in this kernel tree,
->     interested parties can find them via the nouveau project git archive.
->     
->     This driver is reverse engineered, and is in no way supported by nVidia.
->     
->     Support for nearly the complete range of nvidia hw from nv04->g80 (nv50)
->     is available, and the kms driver should support driving nearly all
->     output types (displayport is under development still) along with supporting
->     suspend/resume.
->     
->     This work is all from the upstream nouveau project found at
->     nouveau.freedesktop.org.
->     
->     The original authors list from nouveau git tree is:
->     Anssi Hannula <anssi.hannula@iki.fi>
->     Ben Skeggs <bskeggs@redhat.com>
->     Francisco Jerez <currojerez@riseup.net>
->     Maarten Maathuis <madman2003@gmail.com>
->     Marcin Kościelnicki <koriakin@0x04.net>
->     Matthew Garrett <mjg@redhat.com>
->     Matt Parnell <mparnell@gmail.com>
->     Patrice Mandin <patmandin@gmail.com>
->     Pekka Paalanen <pq@iki.fi>
->     Xavier Chantry <shiningxc@gmail.com>
->     along with project founder Stephane Marchesin <marchesin@icps.u-strasbg.fr>
->     
->     Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
->     Signed-off-by: Dave Airlie <airlied@redhat.com>
 
+* Jamie Iles <jamie.iles@picochip.com> wrote:
+
+> On Fri, Dec 11, 2009 at 12:54:33PM +0000, tip-bot for Jamie Iles wrote:
+> > Commit-ID:  58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
+> > Gitweb:     http://git.kernel.org/tip/58e9f94138c1d9c47f6a63632ca7a78fc6dcc15f
+> > Author:     Jamie Iles <jamie.iles@picochip.com>
+> > AuthorDate: Fri, 11 Dec 2009 12:20:09 +0000
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Fri, 11 Dec 2009 13:50:21 +0100
+> > 
+> > perf tools: Allow building for ARM
+> > 
+> > Add definitions of rmb() and cpu_relax() and include the ARM
+> > unistd.h header. The __kuser_memory_barrier helper in the helper
+> > page is used to provide the correct memory barrier depending on
+> > the CPU type.
+> > 
+> > [ The rmb() will work on v6 and v7, segfault on v5. Dynamic
+> >   detection to add v5 support will be added later. ]
+>
+> Sorry Ingo, my comment probably wasn't clear enough. The helper that 
+> Mikael suggested should work for _all_ ARM processors including v5 and 
+> earlier. It will just be a branch to a nop.
+
+oh - good! Too late to fix the comment, i already pushed it out - but as 
+long as the _code_ is fine it's a good tradeoff ;-)
+
+	Ingo
