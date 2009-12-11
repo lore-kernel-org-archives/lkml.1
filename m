@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762086AbZLKIEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbZLKIGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762086AbZLKIEQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 03:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbZLKIEL
+	id S1761767AbZLKIGP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 03:06:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760882AbZLKIGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 03:04:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58348 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760691AbZLKIEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 03:04:10 -0500
-Date: Fri, 11 Dec 2009 09:04:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       =?unknown-8bit?B?RnLDqWTDqXJpYw==?= Weisbecker 
-	<fweisbec@gmail.com>
-Subject: Re: [PATCH 0/2] [GIT PULL][v2.6.33] ring-buffer: resizing issues
-Message-ID: <20091211080406.GA24652@elte.hu>
-References: <20091211045003.107725797@goodmis.org>
+	Fri, 11 Dec 2009 03:06:14 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34921 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760686AbZLKIGN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 03:06:13 -0500
+Message-ID: <4B21FD7A.9010006@cs.helsinki.fi>
+Date: Fri, 11 Dec 2009 10:06:18 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091211045003.107725797@goodmis.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH 1/2] tracing: Define kmem_cache_alloc_notrace ifdef CONFIG_TRACING
+References: <4B21F89A.7000801@cn.fujitsu.com>
+In-Reply-To: <4B21F89A.7000801@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Li Zefan kirjoitti:
+> Define kmem_trace_alloc_{,node}_notrace() if CONFIG_TRACING is
+> enabled, otherwise perf-kmem will show wrong stats ifndef
+> CONFIG_KMEM_TRACE, because a kmalloc() memory allocation may
+> be traced by both trace_kmalloc() and trace_kmem_cache_alloc().
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/urgent tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/urgent
-> 
-> 
-> Steven Rostedt (2):
->       ring-buffer: Use sync sched protection on ring buffer resizing
->       ring-buffer: Move resize integrity check under reader lock
-> 
-> ----
->  kernel/trace/ring_buffer.c |   29 +++++++++++------------------
->  1 files changed, 11 insertions(+), 18 deletions(-)
-
-Pulled, thanks Steve!
-
-	Ingo
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
