@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbZLKBep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933362AbZLKBey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbZLKBep (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 20:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933337AbZLKBem
+	id S933362AbZLKBey (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 20:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbZLKBev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 20:34:42 -0500
-Received: from waste.org ([173.11.57.241]:37069 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933333AbZLKBej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 20:34:39 -0500
-Subject: Re: [PATCH] timeriomem-rng.c: use resource_size()
-From: Matt Mackall <mpm@selenic.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Alexander Clouter <alex@digriz.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB0FBA@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901FB0FBA@mi8nycmail19.Mi8.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Dec 2009 19:34:43 -0600
-Message-ID: <1260495283.24459.1225.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 20:34:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37718 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933346AbZLKBeo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 20:34:44 -0500
+Date: Thu, 10 Dec 2009 20:34:49 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "C. Bergstr?m" <cbergstrom@pathscale.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [git pull] drm
+Message-ID: <20091211013449.GC28962@bombadil.infradead.org>
+References: <1260459601.18520.26.camel@skunk> <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain> <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com> <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain> <6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com> <alpine.LFD.2.00.0912101531180.3560@localhost.localdomain> <20091210235835.20e2269d@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0912101601100.3560@localhost.localdomain> <4B219046.3080908@pathscale.com> <alpine.LFD.2.00.0912101623010.3560@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912101623010.3560@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-10 at 20:16 -0500, H Hartley Sweeten wrote:
-> Use resource_size() for ioremap.
+On Thu, Dec 10, 2009 at 04:32:56PM -0800, Linus Torvalds wrote:
+> > "patches welcome"
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Alexander Clouter <alex@digriz.org.uk>
-
-(Generally speaking, it's best to cc: obscure stuff to a maintainer.)
-
-Looks good to me. Herbert?
-
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-
-> ---
+> The problem is that I have never even heard a Red Hat or Fedora person 
+> actually acknoledge that yes, they should be trying to upstream it.
 > 
-> diff --git a/drivers/char/hw_random/timeriomem-rng.c b/drivers/char/hw_random/timeriomem-rng.c
-> index a94e930..a8428e6 100644
-> --- a/drivers/char/hw_random/timeriomem-rng.c
-> +++ b/drivers/char/hw_random/timeriomem-rng.c
-> @@ -100,8 +100,7 @@ static int __devinit timeriomem_rng_probe(struct platform_device *pdev)
->  
->  	timeriomem_rng_data = pdev->dev.platform_data;
->  
-> -	timeriomem_rng_data->address = ioremap(res->start,
-> -						res->end - res->start + 1);
-> +	timeriomem_rng_data->address = ioremap(res->start, resource_size(res));
->  	if (!timeriomem_rng_data->address)
->  		return -EIO;
->   
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Have Red Hat and Fedora just decided that "upstream first" simply doesn't 
+> matter any more? Because quite frankly, that was kind of the feeling I 
+> came away with from the Kernel summit.
+> 
 
+Well, given that none of the Fedora kernel people were able to attend
+this year for a variety of reasons, this is an interesting revelation to
+me, I wasn't aware I thought this.
 
+I, for one, would very much like nouveau to be upstream. It would
+certainly make my life easier not having to worry about subtlely
+breaking graphics adapters I can't test whenever we rebase to new git
+changes in the DRM. Thankfully Ben and Dave have been ninja at dealing
+with it, otherwise I probably would have punted it by now.
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+> It's like they _want_ to keep it internal.
+>
 
+regards, Kyle
 
