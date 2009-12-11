@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbZLKLHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbZLKLIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933387AbZLKLHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 06:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762254AbZLKLHk
+	id S1762298AbZLKLIj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 06:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbZLKLIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 06:07:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35286 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761146AbZLKLHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 06:07:40 -0500
-Date: Fri, 11 Dec 2009 11:06:32 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tglx@linutronix.de, sfr@canb.auug.org.au,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de, sfr@canb.auug.org.au,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <1260529122-6260-1-git-send-regression-fweisbec@gmail.com>
-References: <1260529122-6260-1-git-send-regression-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] hw-breakpoints: Handle bad modify_user_hw_breakpoint off-case return value
-Message-ID: <tip-99ac64c826e62a07e5818cfde620be4d524f1edf@git.kernel.org>
-Git-Commit-ID: 99ac64c826e62a07e5818cfde620be4d524f1edf
-X-Mailer: tip-git-log-daemon
+	Fri, 11 Dec 2009 06:08:35 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:43300 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762260AbZLKLIf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 06:08:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=bvr4styCDYA8Y1OQR3Oc2RwM59HFBKPuBoq+lV4po6FXwtZKlj4eoP83f0rLPxlQkm
+         C71JFF4zIwB55WtEF9nvEUBrRSDO8tTPIFSEu9Oga/DkP1nWxxY+yY/Z6ocEWjsOmQA6
+         9CZ+R3NQEzUHiqmfd4RSb0716+/ySlOmB3KYE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+In-Reply-To: <20091211110225.GA20831@elte.hu>
+References: <1260523260-15694-1-git-send-email-jamie.iles@picochip.com>
+	 <20091211102316.GB16882@elte.hu>
+	 <20091211103030.GC4164@wear.picochip.com>
+	 <20091211110225.GA20831@elte.hu>
+Date: Fri, 11 Dec 2009 13:08:38 +0200
+X-Google-Sender-Auth: 8793f7f7519ca6a1
+Message-ID: <84144f020912110308m6c8a7acr6b5fdc3f674816f3@mail.gmail.com>
+Subject: Re: [PATCH 1/2] perf tools: allow building for ARM
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Will Deacon <will.deacon@arm.com>, Jamie Iles <jamie.iles@picochip.com>,
+       linux-kernel@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  99ac64c826e62a07e5818cfde620be4d524f1edf
-Gitweb:     http://git.kernel.org/tip/99ac64c826e62a07e5818cfde620be4d524f1edf
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 11 Dec 2009 11:58:42 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 11 Dec 2009 12:03:53 +0100
+On Fri, Dec 11, 2009 at 1:02 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Will Deacon <will.deacon@arm.com> wrote:
+>
+>> > From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org]
+>> > On Behalf Of Jamie Iles
+>> > Sent: 11 December 2009 10:31
+>> >
+>> > The implementation of the barriers depend on the CPU arch revision
+>> > which is defined in the kernel config. As the perf tools don't use
+>> > the kernel config, we don't know here what arch revision we're
+>> > building for. Perhaps we need a LINUX_ARM_ARCH parameter when
+>> > building for ARM so we can pick the correct one.
+>>
+>> Hi Jamie, Ingo,
+>>
+>> Surely a better way to proceed with this would be to build the perf
+>> tool as a side effect of building the kernel? That way the relevant
+>> definitions from system.h could be included directly and there would
+>> be no need to duplicate the architectural conditionals in perf.h.
+>
+> Might make sense.
+>
+>> I'm also working on perf-events for ARM and am using:
+>>
+>> #define rmb()           asm volatile("mcr p15, 0, %0, c7, c10, 5" :: "r" (0) : "memory")
+>>
+>> This will work on v6 and v7 [although the dmb instruction is preferred
+>> here] cores.
+>
+> Note that the codepath where it's used isnt very performance sensitive
+> (we call it about once per batch of event processing), so we could use
+> the broadest instruction that works on as many cores as possible - to
+> keep things simple.
 
-hw-breakpoints: Handle bad modify_user_hw_breakpoint off-case return value
-
-While converting modify_user_hw_breakpoint() return value, we
-forgot to handle the off-case. It's not returning a pointer
-anymore.
-
-This solves the build warning reported by Stephen Rothwell against
-linux-next.
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-LKML-Reference: <1260529122-6260-1-git-send-regression-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
----
- include/linux/hw_breakpoint.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-index 69f07a9..41235c9 100644
---- a/include/linux/hw_breakpoint.h
-+++ b/include/linux/hw_breakpoint.h
-@@ -93,7 +93,7 @@ register_user_hw_breakpoint(struct perf_event_attr *attr,
- 			    struct task_struct *tsk)	{ return NULL; }
- static inline int
- modify_user_hw_breakpoint(struct perf_event *bp,
--			  struct perf_event_attr *attr)	{ return NULL; }
-+			  struct perf_event_attr *attr)	{ return -ENOSYS; }
- static inline struct perf_event *
- register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
- 				perf_overflow_handler_t	 triggered,
+How plausible is it to reuse the bits in
+arch/arm/include/asm/cputype.h and do an version of rmb() that has
+if-else for the v6 and v7 cases?
