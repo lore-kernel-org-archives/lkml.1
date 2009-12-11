@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934886AbZLKHZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZLKH1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934886AbZLKHZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 02:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934827AbZLKHZX
+	id S1754551AbZLKH1F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 02:27:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZLKH06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 02:25:23 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56169 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S934824AbZLKHZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 02:25:23 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/uwP4WMj7uTAwiL63BeGRqH3wEs87rfErbvztyVm
-	t4XNkSbsHq1SsZ
-Subject: Re: check_preempt_tick() check vruntime mistake?
-From: Mike Galbraith <efault@gmx.de>
-To: XingChao Wang <wxc200@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <fd6b62c10912102017g56b8651aj2b8cbe569b0f90a6@mail.gmail.com>
-References: <fd6b62c10912102017g56b8651aj2b8cbe569b0f90a6@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Dec 2009 08:25:26 +0100
-Message-Id: <1260516326.6090.61.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Fri, 11 Dec 2009 02:26:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50061 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbZLKH05 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 02:26:57 -0500
+Message-ID: <4B21F42F.4070400@zytor.com>
+Date: Thu, 10 Dec 2009 23:26:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: James Andrewartha <jamesa@daa.com.au>
+CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: ATA support for 4k sector size
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx>	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>	<20090226025043.GJ1363@mit.edu>	<20090226030735.GA16891@parisc-linux.org> <yq1myc9g9ua.fsf@sermon.lab.mkp.net> <4B21EF54.9070609@daa.com.au>
+In-Reply-To: <4B21EF54.9070609@daa.com.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 12:17 +0800, XingChao Wang wrote:
-> Hi Ingo,peter,
+On 12/10/2009 11:05 PM, James Andrewartha wrote:
+> Martin K. Petersen wrote:
+>>>>>>> "Matthew" == Matthew Wilcox <matthew@wil.cx> writes:
+>>
+>> Matthew> Lowest aligned logical block address=0
+>>
+>> Matthew> This disagrees with Martin's assertion.
+>>
+>> The original roadmap was to transition to 4KB sectors in 2006,
+>> coinciding with the Vista release.
+>>
+>> Given how long this has taken (we're now talking ~2011 for GA) it may
+>> very well be that the alignment knobs will be unused because everybody
+>> will be using Vista or 7 by then.
 > 
-> When check_preempt_tick() selects next leftmost sched_entity,it
-> calculates delta vruntime of curr and leftmost entity, then compares
-> it with ideal_runtime. But ideal_runtime is real-time type, need
-> convert it to virtual-time ,right?
-
-Why?  The scheduler converges vruntimes to within min_granularity,
-that's it's mission.  What this test is trying to say is that if the
-awakened task's lag has grown to be more than your quantum while we
-waited for the tick to come along, you need to get out of it's way so it
-can catch up.
-
-Now, there are a couple ~problems in that in it's current form, it
-offers protection to SCHED_BATCH and SCHED_IDLE tasks, and the test..
-
-if (delta_exec < sysctl_sched_min_granularity)
-	return;
-
-..is... not exactly optimal for light weight tasks, but the lighter you
-get, the more likely you'd already have been preempted...
-
-I have a patch which excludes these, and computes min runtime based on
-differential in task weights.  These are the only things I see ~wrong.
-ideal_runtime is weighted, and is our "fair unit of measure", so using
-it to measure acceptable lag distance is correct AFAIKS.
-
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 37087a7..9b903d4 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -840,7 +840,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct
-> sched_entity *curr)
->                 struct sched_entity *se = __pick_next_entity(cfs_rq);
->                 s64 delta = curr->vruntime - se->vruntime;
+> The plan does seem to have changed - WD's shipping 4k sector drives that
+> are sane and require a drive jumper or tool for WinXP and old cloning
+> utilities.
 > 
-> -               if (delta > ideal_runtime)
-> +               if (delta > calc_delta_fair(ideal_runtime, curr))
->                         resched_task(rq_of(cfs_rq)->curr);
->         }
->  }
+> http://techreport.com/discussions.x/18115
+> http://wdc.com/en/products/advancedformat/
+> http://www.wdc.com/wdproducts/library/whitepapers/en/2579-771430-A00.pdf
 > 
-> thanks
-> --wang xingchao
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+Even more important, the alignment can be changed as opposed to being
+fixed for the manufacture of the disk.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
