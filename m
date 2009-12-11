@@ -1,76 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbZLKFur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZLKFuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933382AbZLKFur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbZLKFup
+	id S1756771AbZLKFuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbZLKFuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:50:45 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:25866 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756132AbZLKFuo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:50:44 -0500
-Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, tony@atomide.com,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
-In-Reply-To: <1260377610.9700.49.camel@tubuntu.research.nokia.com>
-References: <1260377610.9700.49.camel@tubuntu.research.nokia.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Dec 2009 07:49:55 +0200
-Message-Id: <1260510595.12346.148.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 11 Dec 2009 05:50:11.0238 (UTC) FILETIME=[CD6DBC60:01CA7A25]
-X-Nokia-AV: Clean
+	Fri, 11 Dec 2009 00:50:16 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61400 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752396AbZLKFuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:50:14 -0500
+Message-ID: <4B21DD88.7080806@cn.fujitsu.com>
+Date: Fri, 11 Dec 2009 13:50:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: [PATCH 1/2] tracing: Define kmem_trace_alloc_notrace unconditionally
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 18:53 +0200, Tomi Valkeinen wrote:
-> Linus,
-> 
-> Here are the new display subsystem and framebuffer drivers for OMAP2/3.
-> 
-> The drivers have been reviewed on linux-omap and linux-fbdev-devel, and
-> are in use, for example, on N900, Beagle Board and Overo boards.
-> 
-> The drivers are actively maintained and developed further, and I have
-> already a bunch of patches on top of these patches, but I would like to
-> get the big core driver merged first. After the core drivers are merged,
-> other people can send patches to LCD drivers and board files to enable
-> the new display subsystem on their boards.
-> 
-> Please pull the new OMAP2/3 display subsystem drivers from:
-> 
->   git://gitorious.org/linux-omap-dss2/linux.git for-linus
-> 
->  Tomi
+Always define kmem_trace_alloc_{,node}_notrace(), otherwise
+perf-kmem will show wrong stats ifndef CONFIG_KMEMTRACE,
+because a kmalloc() memory allocation may be traced by
+both trace_kmalloc() and trace_kmem_cache_alloc().
 
-Hi Linus,
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/slab_def.h |   24 ++----------------------
+ include/linux/slub_def.h |   27 +++------------------------
+ mm/slab.c                |   12 ------------
+ mm/slub.c                |    4 ----
+ 4 files changed, 5 insertions(+), 62 deletions(-)
 
-I'd like to confirm that DSS2 is used in Nokia both internally and in
-production, namely in N900. Other people use it in production as well,
-e.g. Gumstix.
-
-DSS2 is basically de-facto standard display sub-system in the OMAP3
-world. It is mature, well-written and maintained, being around for at
-least 1+ year, and open from almost very beginning.
-
-ACK and Tested-by from my side. The OMAP maintainer (Tony) gave his Ack
-as well as many other people, e.g., in this thread:
-
-http://marc.info/?l=linux-kernel&m=125146241831217&w=2
-
-DSS2 is in linux-next for some time as well.
-
-Thanks.
-
+diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+index 850d057..1c9ce4b 100644
+--- a/include/linux/slab_def.h
++++ b/include/linux/slab_def.h
+@@ -109,21 +109,12 @@ extern struct cache_sizes malloc_sizes[];
+ 
+ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+ void *__kmalloc(size_t size, gfp_t flags);
++void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
+ 
+-#ifdef CONFIG_KMEMTRACE
+-extern void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags);
+-extern size_t slab_buffer_size(struct kmem_cache *cachep);
+-#else
+-static __always_inline void *
+-kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
+-{
+-	return kmem_cache_alloc(cachep, flags);
+-}
+ static inline size_t slab_buffer_size(struct kmem_cache *cachep)
+ {
+-	return 0;
++	return cachep->buffer_size;
+ }
+-#endif
+ 
+ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+@@ -165,20 +156,9 @@ found:
+ #ifdef CONFIG_NUMA
+ extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ extern void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+-
+-#ifdef CONFIG_KMEMTRACE
+ extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+ 					   gfp_t flags,
+ 					   int nodeid);
+-#else
+-static __always_inline void *
+-kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+-			      gfp_t flags,
+-			      int nodeid)
+-{
+-	return kmem_cache_alloc_node(cachep, flags, nodeid);
+-}
+-#endif
+ 
+ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 5ad70a6..5c5ca0c 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -215,18 +215,9 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
+ #endif
+ 
+ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
++void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
+ void *__kmalloc(size_t size, gfp_t flags);
+ 
+-#ifdef CONFIG_KMEMTRACE
+-extern void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags);
+-#else
+-static __always_inline void *
+-kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
+-{
+-	return kmem_cache_alloc(s, gfpflags);
+-}
+-#endif
+-
+ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+ {
+ 	unsigned int order = get_order(size);
+@@ -265,20 +256,8 @@ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ #ifdef CONFIG_NUMA
+ void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+-
+-#ifdef CONFIG_KMEMTRACE
+-extern void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+-					   gfp_t gfpflags,
+-					   int node);
+-#else
+-static __always_inline void *
+-kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+-			      gfp_t gfpflags,
+-			      int node)
+-{
+-	return kmem_cache_alloc_node(s, gfpflags, node);
+-}
+-#endif
++void *kmem_cache_alloc_node_notrace(struct kmem_cache *s, gfp_t gfpflags,
++				    int node);
+ 
+ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+diff --git a/mm/slab.c b/mm/slab.c
+index 7dfa481..e556380 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -490,14 +490,6 @@ static void **dbg_userword(struct kmem_cache *cachep, void *objp)
+ 
+ #endif
+ 
+-#ifdef CONFIG_KMEMTRACE
+-size_t slab_buffer_size(struct kmem_cache *cachep)
+-{
+-	return cachep->buffer_size;
+-}
+-EXPORT_SYMBOL(slab_buffer_size);
+-#endif
+-
+ /*
+  * Do not go above this order unless 0 objects fit into the slab.
+  */
+@@ -3558,13 +3550,11 @@ void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
+-#ifdef CONFIG_KMEMTRACE
+ void *kmem_cache_alloc_notrace(struct kmem_cache *cachep, gfp_t flags)
+ {
+ 	return __cache_alloc(cachep, flags, __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_notrace);
+-#endif
+ 
+ /**
+  * kmem_ptr_validate - check if an untrusted pointer might be a slab entry.
+@@ -3621,7 +3611,6 @@ void *kmem_cache_alloc_node(struct kmem_cache *cachep, gfp_t flags, int nodeid)
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node);
+ 
+-#ifdef CONFIG_KMEMTRACE
+ void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+ 				    gfp_t flags,
+ 				    int nodeid)
+@@ -3630,7 +3619,6 @@ void *kmem_cache_alloc_node_notrace(struct kmem_cache *cachep,
+ 				  __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
+-#endif
+ 
+ static __always_inline void *
+ __do_kmalloc_node(size_t size, gfp_t flags, int node, void *caller)
+diff --git a/mm/slub.c b/mm/slub.c
+index 4996fc7..a1c8fe5 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1754,13 +1754,11 @@ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
+-#ifdef CONFIG_KMEMTRACE
+ void *kmem_cache_alloc_notrace(struct kmem_cache *s, gfp_t gfpflags)
+ {
+ 	return slab_alloc(s, gfpflags, -1, _RET_IP_);
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_notrace);
+-#endif
+ 
+ #ifdef CONFIG_NUMA
+ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+@@ -1775,7 +1773,6 @@ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+ EXPORT_SYMBOL(kmem_cache_alloc_node);
+ #endif
+ 
+-#ifdef CONFIG_KMEMTRACE
+ void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+ 				    gfp_t gfpflags,
+ 				    int node)
+@@ -1783,7 +1780,6 @@ void *kmem_cache_alloc_node_notrace(struct kmem_cache *s,
+ 	return slab_alloc(s, gfpflags, node, _RET_IP_);
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node_notrace);
+-#endif
+ 
+ /*
+  * Slow patch handling. This may still be called frequently since objects
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+1.6.3
 
