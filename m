@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbZLKRYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbZLKRdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbZLKRYt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 12:24:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZLKRYr
+	id S1757735AbZLKRdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 12:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZLKRde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 12:24:47 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:60364 "EHLO mail.cs.nmsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862AbZLKRYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 12:24:46 -0500
-Message-ID: <d4690bfe19cee0dc8c5355a684fa7e09.squirrel@intranet.cs.nmsu.edu>
-Date: Fri, 11 Dec 2009 10:24:52 -0700
-Subject: Logitech G13 driver + user-space libraries available
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Linux" <linux-kernel@vger.kernel.org>,
-       "Linux Input" <linux-input@vger.kernel.org>,
-       "Linux USB" <linux-usb@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.19
+	Fri, 11 Dec 2009 12:33:34 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58588 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755919AbZLKRdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 12:33:33 -0500
+Date: Fri, 11 Dec 2009 18:33:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Xiaotian Feng <dfeng@redhat.com>, lenb@kernel.org, ming.m.lin@intel.com,
+       robert.moore@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPICA: don't cond_resched() when irq_disabled or
+ in_atomic
+Message-ID: <20091211173333.GB15760@elf.ucw.cz>
+References: <1259900760-6424-1-git-send-email-dfeng@redhat.com>
+ <20091210100907.GA2446@ucw.cz>
+ <4B2136D5.1030402@gmail.com>
+ <20091210181800.GM19454@elf.ucw.cz>
+ <4B214007.2080409@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B214007.2080409@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a first look at the G13 driver I've been playing around with:
-     git://g13.git.sourceforge.net/gitroot/g13/g13
+On Thu 2009-12-10 21:37:59, Alexey Starikovskiy wrote:
+> Pavel Machek ??????????:
+> > On Thu 2009-12-10 20:58:45, Alexey Starikovskiy wrote:
+> >   
+> >> Hi Pavel,
+> >>
+> >> Please elaborate... Your comments "ugly as hell" are too often to be
+> >> specific...
+> >> There is only one use of ACPI_PREEMPTION_POINT(), and it is in the
+> >> ACPICA code,
+> >> which we all agreed to keep OS independent, thus the need for #define.
+> >> Do you see any other way to add preemption point without introducing
+> >> Linux-specific
+> >> code into ACPICA?
+> >>     
+> >
+> > I believe we want linux-specific code in acpica at this point.
+> >
+> >   
+> The point there we call cond_resched() in ACPICA is an interpreter parse
+> loop. This parse loop may be executed from within atomic context and even
+> with interrupts off. In this case, cond_resched() should not be called
+> to not make
+> might_sleep() guards angry.
 
-I've been building the driver out-of-tree and this is my first (untested)
-shot at moving it in-tree. There are still a number of things to do (and
-clean up) in the driver but it is rather functional.
-
-I'll test it later today and update the repo as necessary, but I thought
-I'd throw it out there now.
-
-Here's the repo for the support libraries:
-     svn co https://g13.svn.sourceforge.net/svnroot/g13/trunk g13
-
-The Gtk and Gtkmm libs are empty for now, but I have tested the g13 and
-g13-cairo libs.
-
-The g13 library uses udev for device discovery and exports many of the
-sysfs attributes in a little bit friendlier API. See the 'utilities'
-directory and 'examples/g13-draw-checkerboard' for examples of the API.
-
-The g13-cairo library similarly provides an API that bridges the
-framebuffer functions of the g13 library with cairo making it a little
-more friendly to draw directly on the framebuffer. See
-'examples/cairo/g13-cairo-helloworld' for an animated example drawing with
-cairo to the g13 framebuffer.
-
-Feedback, comments, critiques and flames are welcome.
-
----
-
-Rick
-
-
+Yes, so pass explicit argument to the interpretter, telling it what
+kind of context it runs on. Similar to kmalloc's GFP_KERNEL
+vs. GFP_ATOMIC.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
