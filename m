@@ -1,115 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbZLKL7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbZLKMAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762393AbZLKL7P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 06:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757325AbZLKL7L
+	id S1762592AbZLKMAj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757149AbZLKMAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 06:59:11 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:65084 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756901AbZLKL7K convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 07:00:33 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52920 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756901AbZLKMAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 06:59:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=jNQ1kFWKiYCEjeUA03r0juPh9nK7+1sJE6BdptmrqagMeDIuYK0oRgmO1/hBxobTUt
-         bZqUVzB/WS8EzBTMY9WFr0WdBY9wY/VdUoHKHQtHLaFqoIM1/30dZJ/aAA0hVR1Uzcsm
-         6+v2V561EQusw5a2WJVuJKG9l7SIqLHQCosAA=
+	Fri, 11 Dec 2009 07:00:32 -0500
+Date: Fri, 11 Dec 2009 12:00:38 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: [GIT PULL] mmap/mremap fixes
+Message-ID: <20091211120038.GU14381@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
-References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
-	 <1258561957.3918.661.camel@laptop>
-	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
-Date: Fri, 11 Dec 2009 12:59:16 +0100
-Message-ID: <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
-Subject: Re: [PATCH] perf_events: improve Intel event scheduling
-From: stephane eranian <eranian@googlemail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       perfmon2-devel@lists.sf.net, "David S. Miller" <davem@davemloft.net>,
-       eranian@google.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
->>> @@ -1120,9 +1136,15 @@ static void amd_pmu_disable_all(void)
->>>
->>>  void hw_perf_disable(void)
->>>  {
->>> +     struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
->>> +
->>>       if (!x86_pmu_initialized())
->>>               return;
->>> -     return x86_pmu.disable_all();
->>> +
->>> +     if (cpuc->enabled)
->>> +             cpuc->n_events = 0;
->>> +
->>> +     x86_pmu.disable_all();
->>>  }
->>
->> Right, so I cannot directly see the above being correct. You fully erase
->> the PMU state when we disable it, but things like single counter
->> add/remove doesn't reprogram the full PMU afaict.
->>
+	mmap/mremap fixes and cleanups.  Please, pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/mmap.git/ master
 
->>> +int hw_perf_group_sched_in(struct perf_event *leader,
->>> +            struct perf_cpu_context *cpuctx,
->>> +            struct perf_event_context *ctx, int cpu)
->>> +{
->>> +     struct cpu_hw_events *cpuhw = &per_cpu(cpu_hw_events, cpu);
->>> +     int n, ret;
->>> +
->>> +     n = collect_events(cpuhw, leader);
->>> +     if (n < 0)
->>> +             return n;
->>> +
->>> +     ret = schedule_events(cpuhw, n, true);
->>> +     if (ret)
->>> +             return ret;
->>> +
->>> +     /* 0 means successful and enable each event in caller */
->>> +     return 0;
->>> +}
->>
->> This is where powerpc does n_added += n, and it delays the
->> schedule_events() bit to hw_perf_enable() conditional on n_added > 0.
->> When you remove events it simply keeps the current layout and disables
->> the one.
->>
-There is a major difference between PPC and X86 here. PPC has a centralized
-register to control start/stop. This register  uses bitmask  to enable
-or disable counters. Thus, in hw_perf_enable(), if n_added=0, then you
-just need to
-use the pre-computed bitmask. Otherwise, you need to recompute the bitmask to
-include the new registers. The assignment of events and validation is done in
-hw_group_sched_in().
+	Compared to the last posted variant:
+* added Acked-by as posted on l-k
+* fixed braino in do_brk() spotted by Hugh
+* expanded comment on sun3 mmap2()
+* removed useless check in score mmap2()
+* added missing check in score mmap()
+All changes had been discussed in the thread.
 
-In X86, assignment and validation is done in hw_group_sched_in(). Activation is
-done individually for each counter. There is no centralized register
-used here, thus
-no bitmask to update.
+Shortlog:
+Al Viro (20):
+      untangling do_mremap(), part 1
+      do_mremap() untangling, part 2
+      do_mremap() untangling, part 3
+      fix checks for expand-in-place mremap
+      fix the arch checks in MREMAP_FIXED case
+      fix pgoff in "have to relocate" case of mremap()
+      kill useless checks in sparc mremap variants
+      file ->get_unmapped_area() shouldn't duplicate work of get_unmapped_area()
+      arm: add arch_mmap_check(), get rid of sys_arm_mremap()
+      Kill ancient crap in s390 compat mmap
+      arch_mmap_check() on mn10300
+      Cut hugetlb case early for 32bit on ia64
+      Unify sys_mmap*
+      fix a struct file leak in do_mmap_pgoff()
+      Take arch_mmap_check() into get_unmapped_area()
+      switch do_brk() to get_unmapped_area()
+      sparc_brk() is not needed anymore
+      Get rid of open-coding in ia64_brk()
+      fix broken aliasing checks for MAP_FIXED on sparc32, mips, arm and sh
+      Add missing alignment check in arch/score sys_mmap()
 
-Disabling a counter does not trigger a complete reschedule of events.
-This happens
-only when hw_group_sched_in() is called.
-
-The n_events = 0 in hw_perf_disable() is used to signal that something
-is changing.
-It should not be here but here. The problem is that
-hw_group_sched_in() needs a way
-to know that it is called for a completely new series of group
-scheduling so it can
-discard any previous assignment. This goes back to the issue I raised
-in my previous
-email. You could add a parameter to hw_group_sched_in() that would
-indicate this is
-the first group. that would cause n_events =0 and the function would
-start accumulating
-events for the new scheduling period.
+Diffstat:
+ arch/alpha/kernel/osf_sys.c               |   19 +--
+ arch/arm/include/asm/mman.h               |    3 +
+ arch/arm/kernel/calls.S                   |    2 +-
+ arch/arm/kernel/entry-common.S            |    4 +-
+ arch/arm/kernel/sys_arm.c                 |   55 +-------
+ arch/arm/mm/mmap.c                        |    3 +-
+ arch/avr32/include/asm/syscalls.h         |    4 -
+ arch/avr32/kernel/sys_avr32.c             |   31 ----
+ arch/avr32/kernel/syscall-stubs.S         |    2 +-
+ arch/blackfin/kernel/sys_bfin.c           |   33 ----
+ arch/blackfin/mach-common/entry.S         |    2 +-
+ arch/cris/kernel/sys_cris.c               |   30 +----
+ arch/frv/kernel/sys_frv.c                 |   66 +--------
+ arch/h8300/kernel/sys_h8300.c             |   83 +----------
+ arch/h8300/kernel/syscalls.S              |    2 +-
+ arch/ia64/ia32/sys_ia32.c                 |    3 +
+ arch/ia64/kernel/sys_ia64.c               |   83 +----------
+ arch/m32r/kernel/sys_m32r.c               |   24 ---
+ arch/m32r/kernel/syscall_table.S          |    2 +-
+ arch/m68k/kernel/sys_m68k.c               |   83 +---------
+ arch/m68knommu/kernel/sys_m68k.c          |   38 +-----
+ arch/m68knommu/kernel/syscalltable.S      |    2 +-
+ arch/microblaze/kernel/sys_microblaze.c   |   38 +----
+ arch/microblaze/kernel/syscall_table.S    |    2 +-
+ arch/mips/kernel/linux32.c                |   19 +--
+ arch/mips/kernel/syscall.c                |   32 +----
+ arch/mn10300/include/asm/mman.h           |    5 +
+ arch/mn10300/kernel/entry.S               |    2 +-
+ arch/mn10300/kernel/sys_mn10300.c         |   36 +----
+ arch/parisc/kernel/sys_parisc.c           |   30 +---
+ arch/powerpc/kernel/syscalls.c            |   15 +--
+ arch/s390/kernel/compat_linux.c           |   37 +----
+ arch/s390/kernel/sys_s390.c               |   30 +----
+ arch/score/kernel/sys_score.c             |   28 +---
+ arch/sh/kernel/sys_sh.c                   |   28 +---
+ arch/sh/mm/mmap.c                         |    3 +-
+ arch/sparc/kernel/sys_sparc32.c           |   22 ---
+ arch/sparc/kernel/sys_sparc_32.c          |   64 +-------
+ arch/sparc/kernel/sys_sparc_64.c          |   50 ++-----
+ arch/sparc/kernel/systbls.h               |    1 -
+ arch/sparc/kernel/systbls_32.S            |    4 +-
+ arch/sparc/kernel/systbls_64.S            |    6 +-
+ arch/um/kernel/syscall.c                  |   28 +---
+ arch/um/sys-i386/shared/sysdep/syscalls.h |    4 -
+ arch/x86/ia32/ia32entry.S                 |    2 +-
+ arch/x86/ia32/sys_ia32.c                  |   43 +-----
+ arch/x86/include/asm/sys_ia32.h           |    3 -
+ arch/x86/include/asm/syscalls.h           |    2 -
+ arch/x86/kernel/sys_i386_32.c             |   27 +---
+ arch/x86/kernel/sys_x86_64.c              |   17 +--
+ arch/x86/kernel/syscall_table_32.S        |    2 +-
+ arch/xtensa/include/asm/syscall.h         |    2 -
+ arch/xtensa/include/asm/unistd.h          |    2 +-
+ arch/xtensa/kernel/syscall.c              |   25 ---
+ include/linux/syscalls.h                  |    4 +
+ ipc/shm.c                                 |   31 ++--
+ mm/mmap.c                                 |   42 ++----
+ mm/mremap.c                               |  241 +++++++++++++++++++----------
+ mm/util.c                                 |   44 ++++++
+ 59 files changed, 343 insertions(+), 1202 deletions(-)
