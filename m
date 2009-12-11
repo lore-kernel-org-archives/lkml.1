@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbZLKILA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934887AbZLKIPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762218AbZLKILA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 03:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760783AbZLKIK5
+	id S934887AbZLKIPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 03:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760919AbZLKIPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 03:10:57 -0500
-Received: from mga09.intel.com ([134.134.136.24]:10151 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757738AbZLKIK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 03:10:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,381,1257148800"; 
-   d="scan'208";a="577744736"
-Subject: Re: mmotm-2009-12-08-17-45 resume slowly
-From: Zhu Yi <yi.zhu@intel.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <a8e1da0912101935g99a0902m43136a05edea938b@mail.gmail.com>
-References: <a8e1da0912100127k4dcddd65gfe5ff0b1330fe63b@mail.gmail.com>
-	 <a8e1da0912100130i2e654796mf899dd27df869673@mail.gmail.com>
-	 <20091210184931.257A.A69D9226@jp.fujitsu.com>
-	 <4B217219.6040109@crca.org.au>
-	 <a8e1da0912101747l7e0e9fcbh8a7007e95e7c8509@mail.gmail.com>
-	 <1260499048.12157.219.camel@debian>
-	 <a8e1da0912101935g99a0902m43136a05edea938b@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Dec 2009 16:10:40 +0800
-Message-ID: <1260519040.12157.233.camel@debian>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Fri, 11 Dec 2009 03:15:15 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52247 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1760914AbZLKIPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 03:15:14 -0500
+Message-ID: <4B21FF84.3010509@cn.fujitsu.com>
+Date: Fri, 11 Dec 2009 16:15:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Wenji Huang <wenji.huang@oracle.com>
+CC: linux-kernel@vger.kernel.org, rostedt@goodmis.org, fweisbec@gmail.com,
+       tzanussi@gmail.com
+Subject: Re: [PATCH]tracing: Fix inaccurate function definition in trace_events_filter.c
+References: <1260518338-16034-1-git-send-email-wenji.huang@oracle.com>
+In-Reply-To: <1260518338-16034-1-git-send-email-wenji.huang@oracle.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 11:35 +0800, Dave Young wrote:
-> > Try powering off the AP before resume?
+Wenji Huang wrote:
+> Use strcmp instead of strncmp to do full match.
 > 
-> Unfortunately, I use public wireless resouce, so I cann't do that. 
 
-Then move the laptop away.
+It's intended to use strncmp instead of strcmp..
 
-Thanks,
--yi
+field(char, name, size) will be treated as a STATIC_STRING by
+filter code. But this field isn't necessarily a string, it
+can be an array of chars, which may not be ended with '\0'.
+So in this case, we can't use strcmp.
 
+So do you really see incorrect filter results?
+
+I think STATIC_STRING and DYN_STRING should be fine, because
+the "len" parameter is not the length of the string, but
+the length of the array, which including the tailing '\0'.
+
+For FILTER_PTR_STRING, the filter is not working correctly:
+
+  # echo 'func == vt' > events/bkl/lock_kernel/filter
+  # echo 1 > events/bkl/lock_kernel/enable
+  ...
+  # cat trace
+   Xorg-1484  [000]  1973.392586: lock_kernel: ... func=vt_ioctl()
+    gpm-1402  [001]  1974.027740: lock_kernel: ... func=vt_ioctl()
+
+Actually I already made 2 patches to fix this, and fix another
+bug in regex_match_end(). I'll send them out soon.
+
+> Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+> ---
+>  kernel/trace/trace_events_filter.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 50504cb..06dc376 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -254,7 +254,7 @@ static int filter_pred_none(struct filter_pred *pred, void *event,
+>  /* Basic regex callbacks */
+>  static int regex_match_full(char *str, struct regex *r, int len)
+>  {
+> -	if (strncmp(str, r->pattern, len) == 0)
+> +	if (strcmp(str, r->pattern) == 0)
+>  		return 1;
+>  	return 0;
+>  }
