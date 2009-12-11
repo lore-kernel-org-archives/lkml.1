@@ -1,92 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbZLKNl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbZLKNmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbZLKNl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbZLKNlX
+	id S1757831AbZLKNmA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757859AbZLKNly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:41:23 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:43306 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757183AbZLKNlV (ORCPT
+	Fri, 11 Dec 2009 08:41:54 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33726 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757449AbZLKNlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:41:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=sYWxKriBixeQQHSDwFTuSHiSHLpBycwsaQbYjPPCq//QzV5vK+oHcrG0+ZOk4AGa6n
-         IurKQSX0NLoxfloI+4sq9vj0ys6fjDQgwpe46NF0bOIaaITcmq1Hj9AK81JXSCPtvfPs
-         E8FizNRMeM9eTP1D+HQwMRa7A2UYu+wfJYNZM=
-MIME-Version: 1.0
-In-Reply-To: <4B2235F0.4080606@redhat.com>
-References: <20091210185626.26f9828a@cuia.bos.redhat.com>
-	 <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
-	 <4B2235F0.4080606@redhat.com>
-Date: Fri, 11 Dec 2009 22:41:27 +0900
-Message-ID: <28c262360912110541m2839e151hc9d49b0c251e1b67@mail.gmail.com>
-Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
-From: Minchan Kim <minchan.kim@gmail.com>
-To: lwoodman@redhat.com
-Cc: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-Content-Type: text/plain; charset=UTF-8
+	Fri, 11 Dec 2009 08:41:51 -0500
+Date: Fri, 11 Dec 2009 13:42:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>
+Subject: Re: [PATCH] kfifo: add DMA capabilities
+Message-ID: <20091211134236.7b9af57b@lxorguk.ukuu.org.uk>
+In-Reply-To: <1260538589.3925.11.camel@wall-e>
+References: <1260538589.3925.11.camel@wall-e>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Larry.
+On Fri, 11 Dec 2009 14:36:29 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-On Fri, Dec 11, 2009 at 9:07 PM, Larry Woodman <lwoodman@redhat.com> wrote:
-> Minchan Kim wrote:
->>
->> I like this. but why do you select default value as constant 8?
->> Do you have any reason?
->>
->> I think it would be better to select the number proportional to NR_CPU.
->> ex) NR_CPU * 2 or something.
->>
->> Otherwise looks good to me.
->>
->> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
->>
->>
->
-> This is a per-zone count so perhaps a reasonable default is the number of
-> CPUs on the
-> NUMA node that the zone resides on ?
+> As requested by Shargorodsky Atal:
+> 
+> This patch adds functions for DMA handling to the new kfifo API. 
+> 
+> To prepare a DMA one of the kfifo_dma_..._prepare() Funktions must be
+> called. This results in a scatterlist structure which can passed to the
+> kernel DMA functions.
 
-For example, It assume one CPU per node.
-It means your default value is 1.
-On the CPU, process A try to reclaim HIGH zone.
-Process B want to reclaim NORMAL zone.
-But Process B can't enter reclaim path sincev throttle default value is 1
-Even kswap can't reclaim.
+Looks good to me - the tty buffering has similar functions to some bits
+of this for the same reasons.
 
-I think it's really agressive throttle approach although it would
-solve your problem.
-
-I have another idea.
-
-We make default value rather big and we provide latency vaule as knob.
-So first many processes can enter reclaim path. When shrinking time exceeds
-our konb(ex, some HZ), we can decrease default value of number of concurrent
-reclaim process. If shrink time is still long alghouth we do it, we
-can decrease
-default vaule again. When shrink time is fast, we can allow to enter
-reclaim path of another processes as increase the number.
-
-It's like old pdflush mechanism. but it's more complex than Rik's one.
-If Rik's approach solve this problem well, my approach is rather
-overkill, I think.
-
-I am looking forward to Rik's approach work well.
-
->
->
-
-
-
--- 
-Kind regards,
-Minchan Kim
+Alan
