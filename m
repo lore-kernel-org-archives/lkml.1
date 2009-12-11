@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbZLKVQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbZLKVTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759026AbZLKVQK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 16:16:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZLKVQE
+	id S1757625AbZLKVTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 16:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932731AbZLKVTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 16:16:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52807 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755107AbZLKVQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 16:16:03 -0500
-Message-ID: <4B22B672.9060402@redhat.com>
-Date: Fri, 11 Dec 2009 16:15:30 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 16:19:47 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52159 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932655AbZLKVTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 16:19:45 -0500
+Date: Fri, 11 Dec 2009 21:19:23 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, jamie.iles@picochip.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 1/2] perf tools: allow building for ARM
+Message-ID: <20091211211923.GC12628@n2100.arm.linux.org.uk>
+References: <1260523260-15694-1-git-send-email-jamie.iles@picochip.com> <20091211102316.GB16882@elte.hu> <20091211.023808.233094506.davem@davemloft.net>
 MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip 0/8] perf-probe updates
-References: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com> <20091209072220.GA4328@elte.hu> <20091209084341.GA21333@elte.hu> <4B1FE022.1030704@redhat.com> <4B201993.9020005@redhat.com> <20091211205141.GA1949@ghostprotocols.net>
-In-Reply-To: <20091211205141.GA1949@ghostprotocols.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091211.023808.233094506.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo wrote:
-> Em Wed, Dec 09, 2009 at 04:41:39PM -0500, Masami Hiramatsu escreveu:
->> Masami Hiramatsu wrote:
->>>> Here the failure was because the symbol does not exist.
->>>
->>> Yeah, so that's what I'm expecting to be implemented with below item :-)
->>>
->>>    - Symbol search by libelf/kallsyms
->>>
->>> I guess it will be done by using symbol.c.
->>> (Actually, current
->>
->> Oops, I might miss something, forgot it.
->> actually, current perf probe doesn't decode kallsyms/elf, it just depends on
->> kprobe-tracer. And kprobe-tracer will return -EINVAL not only if the symbol
->> was not found, but also other reasons.
->>
->> So, if we want to show below message, we need to decode elf or kallsyms.
+On Fri, Dec 11, 2009 at 02:38:08AM -0800, David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 11 Dec 2009 11:23:16 +0100
 > 
-> Should be easy now with my latest patch :-)
+> > 
+> > * Jamie Iles <jamie.iles@picochip.com> wrote:
+> > 
+> >> +#ifdef __arm__
+> >> +#include "../../arch/arm/include/asm/unistd.h"
+> >> +#define rmb()		asm volatile("":::"memory")
+> >> +#define cpu_relax()	asm volatile("":::"memory")
+> >> +#endif
+> > 
+> > cpu_relax() looks fine, but rmb() seems not to match the one that can be 
+> > found in arch/arm/:
+> 
+> I think he did it this way so it can compile in the meantime,
+> and that doing it right requires runtime cpu detection to
+> select which barrier instruction is even available on the
+> current ARM cpu.
 
-Thanks! that's looks very useful for me!
+We provide a way for userspace to be independent of the CPU for these
+operations by providing code snippets up in the vector page for userspace
+to call.  The kernel places the correct code there according to the CPU
+it's built for.
 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Look for __kuser_memory_barrier in arch/arm/kernel/entry-armv.S
