@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbZLKNix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbZLKNkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756977AbZLKNix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZLKNit
+	id S1757274AbZLKNkS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbZLKNkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:38:49 -0500
-Received: from snt0-omc1-s29.snt0.hotmail.com ([65.55.90.40]:27087 "EHLO
-	snt0-omc1-s29.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750925AbZLKNis (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:38:48 -0500
-X-Originating-IP: [94.195.177.167]
-X-Originating-Email: [johnkyr83@hotmail.com]
-Message-ID: <SNT111-DS372EC73016B4FB39E0ACAA78C0@phx.gbl>
-From: "Ioannis Kyriakopoulos" <johnkyr83@hotmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Finding and chaniging registered clocksources
-Date: Fri, 11 Dec 2009 13:38:52 +0000
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acp6Z0bbLOxQQ22ETvKw9IEUZpJf7w==
-Content-Language: en-gb
-X-OriginalArrivalTime: 11 Dec 2009 13:38:55.0526 (UTC) FILETIME=[48CF8460:01CA7A67]
+	Fri, 11 Dec 2009 08:40:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23680 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755809AbZLKNkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 08:40:14 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20091210001308.247025548@linutronix.de>
+References: <20091210001308.247025548@linutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: dhowells@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/9] Fix various __task_cred related invalid RCU assumptions
+Date: Fri, 11 Dec 2009 13:39:06 +0000
+Message-ID: <13056.1260538746@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-I have some questions regarding clocksource and I will really appreciate it
-if someone is willing to help me.
+> While auditing the read_lock(&tasklist_lock) sites for a possible
+> conversion to rcu-read_lock() I stumbled over an unprotected user of
+> __task_cred in kernel/sys.c
 
-I know how to force the kernel to use a specific clocksource for driving the
-scheduler and verify that this clocksource is used.
+I'm sure last time I looked, spinlock primitives implied RCU read locks.
+Maybe I was mistaken or maybe it's changed.  Whatever, good catch, Thomas!
 
-However, I don't know how to found out what clocksource Linux has assigned
-for other activities apart from the one mentioned (e.g. for timekeeping) and
-how to change it, if possible.
-
-For example, I want to find out which clocksource getnstimeofday() is using.
-It could be also useful if there is a way to see all the registered
-clocksources in the system. 
-
-Thanks in advance. 
-
-P.S. please cc me.
-
+Thanks,
+David
