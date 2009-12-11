@@ -1,103 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbZLKU4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762599AbZLKU7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758552AbZLKU4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 15:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbZLKU4k
+	id S1762599AbZLKU7x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 15:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762506AbZLKU7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 15:56:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52940 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756138AbZLKU4j (ORCPT
+	Fri, 11 Dec 2009 15:59:47 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37223 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761493AbZLKU7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 15:56:39 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf symbols: Ditch dso->find_symbol
-Date: Fri, 11 Dec 2009 18:56:39 -0200
-Message-Id: <1260564999-13371-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Fri, 11 Dec 2009 15:59:46 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 11 Dec 2009 21:59:02 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire fix
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.71d11155e1b4d897@s5r6.in-berlin.de>
+Message-ID: <tkrat.c98ccacd8716c278@s5r6.in-berlin.de>
+References: <tkrat.71d11155e1b4d897@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Linus, please pull from the for-linus branch at
 
-It is always wired to dso__find_symbol.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/map.c    |    2 +-
- tools/perf/util/symbol.c |    2 --
- tools/perf/util/symbol.h |    3 +--
- 3 files changed, 2 insertions(+), 5 deletions(-)
+to receive a FireWire subsystem fix.
 
-diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
-index 175f1f6..76bdca6 100644
---- a/tools/perf/util/map.c
-+++ b/tools/perf/util/map.c
-@@ -149,7 +149,7 @@ struct symbol *map__find_symbol(struct map *self, u64 addr,
- 	if (!dso__loaded(self->dso, self->type) && map__load(self, filter) < 0)
- 		return NULL;
+Jay Fenlason (1):
+      firewire: ohci: handle receive packets with a data length of zero
+
+ drivers/firewire/ohci.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
+
+Thanks.
+
+
+commit 8c0c0cc2d9f4c523fde04bdfe41e4380dec8ee54
+Author: Jay Fenlason <fenlason@redhat.com>
+Date:   Fri Dec 11 14:23:58 2009 -0500
+
+    firewire: ohci: handle receive packets with a data length of zero
+    
+    Queueing to receive an ISO packet with a payload length of zero
+    silently does nothing in dualbuffer mode, and crashes the kernel in
+    packet-per-buffer mode.  Return an error in dualbuffer mode, because
+    the DMA controller won't let us do what we want, and work correctly in
+    packet-per-buffer mode.
+    
+    Signed-off-by: Jay Fenlason <fenlason@redhat.com>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+    Cc: stable@kernel.org
+
+diff --git a/drivers/firewire/ohci.c b/drivers/firewire/ohci.c
+index a714775..553c74e 100644
+--- a/drivers/firewire/ohci.c
++++ b/drivers/firewire/ohci.c
+@@ -2189,6 +2189,13 @@ static int ohci_queue_iso_receive_dualbuffer(struct fw_iso_context *base,
+ 	page     = payload >> PAGE_SHIFT;
+ 	offset   = payload & ~PAGE_MASK;
+ 	rest     = p->payload_length;
++	/*
++	 * The controllers I've tested have not worked correctly when
++	 * second_req_count is zero.  Rather than do something we know won't
++	 * work, return an error
++	 */
++	if (rest == 0)
++		return -EINVAL;
  
--	return self->dso->find_symbol(self->dso, self->type, addr);
-+	return dso__find_symbol(self->dso, self->type, addr);
- }
+ 	/* FIXME: make packet-per-buffer/dual-buffer a context option */
+ 	while (rest > 0) {
+@@ -2242,7 +2249,7 @@ static int ohci_queue_iso_receive_packet_per_buffer(struct fw_iso_context *base,
+ 					unsigned long payload)
+ {
+ 	struct iso_context *ctx = container_of(base, struct iso_context, base);
+-	struct descriptor *d = NULL, *pd = NULL;
++	struct descriptor *d, *pd;
+ 	struct fw_iso_packet *p = packet;
+ 	dma_addr_t d_bus, page_bus;
+ 	u32 z, header_z, rest;
+@@ -2280,8 +2287,9 @@ static int ohci_queue_iso_receive_packet_per_buffer(struct fw_iso_context *base,
+ 		d->data_address = cpu_to_le32(d_bus + (z * sizeof(*d)));
  
- struct symbol *map__find_symbol_by_name(struct map *self, const char *name,
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 8134c49..d3d9fed 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -30,7 +30,6 @@ enum dso_origin {
- 
- static void dsos__add(struct list_head *head, struct dso *dso);
- static struct map *map__new2(u64 start, struct dso *dso, enum map_type type);
--struct symbol *dso__find_symbol(struct dso *self, enum map_type type, u64 addr);
- static int dso__load_kernel_sym(struct dso *self, struct map *map,
- 				struct map_groups *mg, symbol_filter_t filter);
- unsigned int symbol__priv_size;
-@@ -186,7 +185,6 @@ struct dso *dso__new(const char *name)
- 		self->short_name = self->name;
- 		for (i = 0; i < MAP__NR_TYPES; ++i)
- 			self->symbols[i] = self->symbol_names[i] = RB_ROOT;
--		self->find_symbol = dso__find_symbol;
- 		self->slen_calculated = 0;
- 		self->origin = DSO__ORIG_NOT_FOUND;
- 		self->loaded = 0;
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 51c4013..cf99f88 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -76,8 +76,6 @@ struct dso {
- 	struct list_head node;
- 	struct rb_root	 symbols[MAP__NR_TYPES];
- 	struct rb_root	 symbol_names[MAP__NR_TYPES];
--	struct symbol    *(*find_symbol)(struct dso *self,
--					 enum map_type type, u64 addr);
- 	u8		 adjust_symbols:1;
- 	u8		 slen_calculated:1;
- 	u8		 has_build_id:1;
-@@ -109,6 +107,7 @@ size_t dso__fprintf_buildid(struct dso *self, FILE *fp);
- size_t dso__fprintf(struct dso *self, enum map_type type, FILE *fp);
- char dso__symtab_origin(const struct dso *self);
- void dso__set_build_id(struct dso *self, void *build_id);
-+struct symbol *dso__find_symbol(struct dso *self, enum map_type type, u64 addr);
- struct symbol *dso__find_symbol_by_name(struct dso *self, enum map_type type,
- 					const char *name);
+ 		rest = payload_per_buffer;
++		pd = d;
+ 		for (j = 1; j < z; j++) {
+-			pd = d + j;
++			pd++;
+ 			pd->control = cpu_to_le16(DESCRIPTOR_STATUS |
+ 						  DESCRIPTOR_INPUT_MORE);
  
 -- 
-1.6.2.5
+Stefan Richter
+-=====-==--= ==-- -=-==
+http://arcgraph.de/sr/
 
