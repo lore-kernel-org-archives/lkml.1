@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbZLKF3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZLKFh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752016AbZLKF3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:29:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbZLKF3F
+	id S1753083AbZLKFh0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbZLKFhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:29:05 -0500
-Received: from kroah.org ([198.145.64.141]:53417 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750820AbZLKF3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:29:02 -0500
-Date: Thu, 10 Dec 2009 21:28:58 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [00/34] 2.6.32.1-stable review
-Message-ID: <20091211052858.GA23229@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 11 Dec 2009 00:37:25 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:23522 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbZLKFhY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:37:24 -0500
+Subject: Re: [PATCH 3/3] gpiolib: use chip->names for symlinks, always use
+ gpioN for device names
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+To: Greg KH <gregkh@suse.de>
+Cc: David Brownell <david-b@pacbell.net>,
+       Jani Nikula <ext-jani.1.nikula@nokia.com>,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       dsilvers@simtec.co.uk, ben@simtec.co.uk, akpm@linux-foundation.org
+In-Reply-To: <20091211043849.GA18007@suse.de>
+References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com>
+	 <200912101939.30446.david-b@pacbell.net> <20091211034711.GA2773@suse.de>
+	 <200912102013.59329.david-b@pacbell.net>  <20091211043849.GA18007@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Nokia
+Date: Fri, 11 Dec 2009 07:36:11 +0200
+Message-Id: <1260509771.12346.138.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 11 Dec 2009 05:36:14.0186 (UTC) FILETIME=[DA81BCA0:01CA7A23]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.32.1 release.
-There are 34 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+On Thu, 2009-12-10 at 20:38 -0800, Greg KH wrote:
+> On Thu, Dec 10, 2009 at 08:13:58PM -0800, David Brownell wrote:
+> > On Thursday 10 December 2009, Greg KH wrote:
+> > > 
+> > > > IMO a "good" solution in this space needs to accept that
+> > > > those names are not going to be globally unique ... but
+> > > > that they'll be unique within some context, of necessity.
+> > > > 
+> > > > If Greg doesn't want to see those names under classes,
+> > > > so be it ... but where should they then appear?
+> > > 
+> > > As a sysfs file within the device directory called 'name'? ?Then just
+> > > grep through the tree to find the right device, that also handles
+> > > duplicates just fine, right?
+> > 
+> > I want a concrete example.  Those chip->names things don't
+> > seem helpful to me though...
+> > 
+> > If for example I were building a JTAG adapter on Linux, it
+> > might consist of a spidev node (chardev) plus a handful of
+> > GPIOs.  So "the device directory" would be the sysfs home
+> > of that spidev node (or some variant)?  And inside that
+> > directory would be files named after various signals that
+> > are used as GPIOs ... maybe SRST, TRST, and DETECT to start
+> > with?  Holding some cookie that gets mapped to those GPIO's
+> > sysfs entries?
+> 
+> Um, I really don't know, as I don't know the GPIO subsystem, nor why you
+> all have this problem in the first place :)
+> 
+> I also find it funny that you think changing the kernel is easier than
+> userspace, that's a strange situation.
 
-As was done with the 2.6.31.8-rc1 release, this is not all of the
-patches in the -stable queue, just a huge chunk of ext4 patches here,
-and a few scsi ones, which should all get out sooner rather than later.
-So note that there will be more 2.6.32-stable releases coming, this is
-just the first in the series.
+User-space does not know which GPIO number is what. E.g., is the
+"power_button" GPIO number 6 or 99? It just does not have this
+information.
 
-Responses should be made by Sunday, Dec 13 04:00:00 UTC 2009
-Anything received after that time might be too late.
+Kernel knows this, either because it was compiled for a specific board
+revision, or it got this information from the bootloader.
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.1-rc1.gz
-and the diffstat can be found below.
+And the whole idea is to make kernel export this name. Currently, the
+kernel exports only the numbers in sysfs, which is not enough.
 
-thanks,
+And because gpiolib is designed as it is designed, we found that having
+additional link in /sys/class/gpio is the nicest solution from gpiolib's
+POW. It just fits naturally to the existing design.
 
-greg k-h
+And no, we do not have per-gpio struct device, so we cannot add a new
+"name" attribute there. We need to either persuade you to accept our
+solution or make you take closer look at gpoiolib subsystem and suggest
+us the right way to go :-)
 
- Documentation/filesystems/ext4.txt   |   10 +-
- Makefile                             |    2 +-
- drivers/scsi/hosts.c                 |   13 ++-
- drivers/scsi/lpfc/lpfc_init.c        |    2 +-
- drivers/scsi/megaraid/megaraid_sas.c |    8 +-
- drivers/scsi/qla2xxx/qla_attr.c      |    3 +-
- drivers/scsi/scsi_lib_dma.c          |    4 +-
- fs/ext4/balloc.c                     |    8 +-
- fs/ext4/block_validity.c             |    2 +-
- fs/ext4/ext4.h                       |    8 +
- fs/ext4/ext4_jbd2.h                  |   21 +++-
- fs/ext4/extents.c                    |   22 ++-
- fs/ext4/fsync.c                      |   54 +++----
- fs/ext4/inode.c                      |   81 +++++++---
- fs/ext4/ioctl.c                      |   29 +++--
- fs/ext4/mballoc.c                    |   40 ++++-
- fs/ext4/migrate.c                    |    4 +-
- fs/ext4/move_extent.c                |  278 ++++++++++++++++------------------
- fs/ext4/namei.c                      |   38 ++---
- fs/ext4/resize.c                     |    2 +-
- fs/ext4/super.c                      |   40 ++++--
- fs/ext4/xattr.c                      |    7 +-
- fs/jbd2/commit.c                     |    4 +
- fs/jbd2/journal.c                    |    5 +
- include/linux/sched.h                |   13 ++-
- include/scsi/osd_protocol.h          |    1 +
- include/scsi/scsi_host.h             |   16 ++-
- 27 files changed, 424 insertions(+), 291 deletions(-)
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
+
