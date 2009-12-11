@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZLKP3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZLKPbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbZLKP3t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 10:29:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbZLKP3n
+	id S1758894AbZLKPbZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 10:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbZLKPbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 10:29:43 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:45882 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758469AbZLKP3m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 10:29:42 -0500
-Date: Fri, 11 Dec 2009 23:29:47 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: hwrng: pasemi - Use __devexit_p
-Message-ID: <20091211152947.GA1012@gondor.apana.org.au>
+	Fri, 11 Dec 2009 10:31:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43019 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758538AbZLKPbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 10:31:20 -0500
+Message-ID: <4B2265D2.6000400@suse.cz>
+Date: Fri, 11 Dec 2009 16:31:30 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH 1/3] Replace kernel/timeconst.pl with kernel/timeconst.sh
+References: <200912080317.08254.rob@landley.net> <200912091740.43147.rob@landley.net> <4B20FD2C.1010804@suse.cz> <200912101717.00049.rob@landley.net>
+In-Reply-To: <200912101717.00049.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Found this while trying to track down section mismatches in hwrng.
+Rob Landley wrote:
+> On Thursday 10 December 2009 07:52:44 Michal Marek wrote:
+>> and the makefile would run timeconst.pl to generate timeconst_custom.h
+>> iff HZ is set to something arbitrary. I don't have a patch for that, but
+>> I don't see a fundamental problem with such approach.
+> 
+> I looked at that when I was attempting to update (rather than replace) my 
+> original patch.  There's a reason I didn't go there.  You're suggesting there 
+> be two code paths, one maintained by hand and the other just about never 
+> tested against bit-rot.
 
-commit af304da7bbc35a72828cd8c5ef3c4e62ddaf0518
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Fri Dec 11 23:13:33 2009 +0800
+OK, that's valid point, indeed. Peter, would you ack Rob's patch with
+the oneline fix added (http://lkml.org/lkml/2009/12/8/94 plus
+http://lkml.org/lkml/2009/12/9/435)?
 
-    hwrng: pasemi - Use __devexit_p
-    
-    We must wrap __devexit functions with __devexit_p.
-    
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
-index 7fa61dd..5ec40af 100644
---- a/drivers/char/hw_random/pasemi-rng.c
-+++ b/drivers/char/hw_random/pasemi-rng.c
-@@ -143,7 +143,7 @@ static struct of_platform_driver rng_driver = {
- 	.name		= "pasemi-rng",
- 	.match_table	= rng_match,
- 	.probe		= rng_probe,
--	.remove		= rng_remove,
-+	.remove		= __devexit_p(rng_remove),
- };
- 
- static int __init rng_init(void)
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Michal
