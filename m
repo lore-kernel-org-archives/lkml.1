@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbZLKBYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbZLKBZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933313AbZLKBYy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 20:24:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761788AbZLKBYx
+	id S1762059AbZLKBZH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 20:25:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbZLKBZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 20:24:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50487 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761625AbZLKBYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 20:24:52 -0500
-Date: Fri, 11 Dec 2009 01:24:35 GMT
-From: tip-bot for Prarit Bhargava <prarit@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, prarit@redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, prarit@redhat.com
-In-Reply-To: <20091209183336.17855.98708.sendpatchset@prarit.bos.redhat.com>
-References: <20091209183336.17855.98708.sendpatchset@prarit.bos.redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, AMD: Fix stale cpuid4_info shared_map data in shared_cpu_map cpumasks
-Message-ID: <tip-ebb682f522411abbe358059a256a8672ec0bd55b@git.kernel.org>
-Git-Commit-ID: ebb682f522411abbe358059a256a8672ec0bd55b
-X-Mailer: tip-git-log-daemon
+	Thu, 10 Dec 2009 20:25:03 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57335 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933324AbZLKBY5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 20:24:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CoR1ONU/iDP6yozF+vWumTLokVItTwKmbUXsM0WQcmxO1Hrjm4SeDKEpCMcKHYPRL3
+         9gxJzB+NpOe9+5S6QKwYwnJgOtDFNVGed4lwBo1nFUM9hVC4tVCwnGYYq1jqw5dsasbv
+         BjqlC34mctlk4fIEpT8QA/cfsZg8lEOtcQVWU=
 MIME-Version: 1.0
+In-Reply-To: <20091211095159.6472a009.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262360912101640y4b90db76w61a7a5dab5f8e796@mail.gmail.com>
+	 <20091211095159.6472a009.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 11 Dec 2009 10:25:03 +0900
+Message-ID: <28c262360912101725ydb0a0d9i12a91c1d4fe57672@mail.gmail.com>
+Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ebb682f522411abbe358059a256a8672ec0bd55b
-Gitweb:     http://git.kernel.org/tip/ebb682f522411abbe358059a256a8672ec0bd55b
-Author:     Prarit Bhargava <prarit@redhat.com>
-AuthorDate: Wed, 9 Dec 2009 13:36:45 -0500
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 10 Dec 2009 17:19:03 -0800
+On Fri, Dec 11, 2009 at 9:51 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Fri, 11 Dec 2009 09:40:07 +0900
+> Minchan Kim <minchan.kim@gmail.com> wrote:
+>> > static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
+>> >  {
+>> > -       return (unsigned long)atomic_long_read(&(mm)->counters[member]);
+>> > +       long ret;
+>> > +       /*
+>> > +        * Because this counter is loosely synchronized with percpu cached
+>> > +        * information, it's possible that value gets to be minus. For user's
+>> > +        * convenience/sanity, avoid returning minus.
+>> > +        */
+>> > +       ret = atomic_long_read(&(mm)->counters[member]);
+>> > +       if (unlikely(ret < 0))
+>> > +               return 0;
+>> > +       return (unsigned long)ret;
+>> >  }
+>>
+>> Now, your sync point is only task switching time.
+>> So we can't show exact number if many counting of mm happens
+>> in short time.(ie, before context switching).
+>> It isn't matter?
+>>
+> I think it's not a matter from 2 reasons.
+>
+> 1. Now, considering servers which requires continuous memory usage monitoring
+> as ps/top, when there are 2000 processes, "ps -elf" takes 0.8sec.
+> Because system admins know that gathering process information consumes
+> some amount of cpu resource, they will not do that so frequently.(I hope)
+>
+> 2. When chains of page faults occur continously in a period, the monitor
+> of memory usage just see a snapshot of current numbers and "snapshot of what
+> moment" is at random, always. No one can get precise number in that kind of situation.
+>
 
-x86, AMD: Fix stale cpuid4_info shared_map data in shared_cpu_map cpumasks
+Yes. I understand that.
 
-The per_cpu cpuid4_info shared_map can contain stale data when CPUs are added
-and removed.
+But we did rss updating as batch until now.
+It was also stale. Just only your patch make stale period longer.
+Hmm. I hope people don't expect mm count is precise.
 
-The stale data can lead to a NULL pointer derefernce panic on a remove of a
-CPU that has had siblings previously removed.
+I saw the many people believed sanpshot of mm counting is real in
+embedded system.
+They want to know the exact memory usage in system.
+Maybe embedded system doesn't use SPLIT_LOCK so that there is no regression.
 
-This patch resolves the panic by verifying a cpu is actually online before
-adding it to the shared_cpu_map, only examining cpus that are part of
-the same lower level cache, and by updating other siblings lowest level cache
-maps when a cpu is added.
+At least, I would like to add comment "It's not precise value." on
+statm's Documentation.
+Of course, It's off topic.  :)
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-LKML-Reference: <20091209183336.17855.98708.sendpatchset@prarit.bos.redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 6c40f6b..63ada17 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -507,18 +507,19 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
- {
- 	struct _cpuid4_info	*this_leaf, *sibling_leaf;
- 	unsigned long num_threads_sharing;
--	int index_msb, i;
-+	int index_msb, i, sibling;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 
- 	if ((index == 3) && (c->x86_vendor == X86_VENDOR_AMD)) {
--		struct cpuinfo_x86 *d;
--		for_each_online_cpu(i) {
-+		for_each_cpu(i, c->llc_shared_map) {
- 			if (!per_cpu(cpuid4_info, i))
- 				continue;
--			d = &cpu_data(i);
- 			this_leaf = CPUID4_INFO_IDX(i, index);
--			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
--				     d->llc_shared_map);
-+			for_each_cpu(sibling, c->llc_shared_map) {
-+				if (!cpu_online(sibling))
-+					continue;
-+				set_bit(sibling, this_leaf->shared_cpu_map);
-+			}
- 		}
- 		return;
- 	}
+Thanks for commenting. Kame.
+-- 
+Kind regards,
+Minchan Kim
