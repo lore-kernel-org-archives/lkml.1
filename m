@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327AbZLKFea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZLKFaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756327AbZLKFea (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZLKF3y
+	id S1754971AbZLKFaA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZLKF34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:29:54 -0500
-Received: from kroah.org ([198.145.64.141]:53478 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 00:29:56 -0500
+Received: from kroah.org ([198.145.64.141]:53481 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753819AbZLKF3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:29:47 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:45 2009
-Message-Id: <20091211052545.443549269@linux.site>
+	id S1753791AbZLKF3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:29:48 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:46 2009
+Message-Id: <20091211052545.995802406@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 21:23:22 -0800
+Date: Thu, 10 Dec 2009 21:23:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [10/34] ext4: plug a buffer_head leak in an error path of ext4_iget()
+Subject: [11/34] ext4: make sure directory and symlink blocks are revoked
 References: <20091211052312.805428372@linux.site>
-Content-Disposition: inline; filename=0006-ext4-plug-a-buffer_head-leak-in-an-error-path-of-ext.patch
+Content-Disposition: inline; filename=0007-ext4-make-sure-directory-and-symlink-blocks-are-revo.patch
 In-Reply-To: <20091211052858.GA23229@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,86 +30,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-(cherry picked from commit 567f3e9a70d71e5c9be03701b8578be77857293b)
+(cherry picked from commit 50689696867d95b38d9c7be640a311494a04fb86)
 
-One of the invalid error paths in ext4_iget() forgot to brelse() the
-inode buffer head.  Fix it by adding a brelse() in the common error
-return path, which also simplifies function.
+When an inode gets unlinked, the functions ext4_clear_blocks() and
+ext4_remove_blocks() call ext4_forget() for all the buffer heads
+corresponding to the deleted inode's data blocks.  If the inode is a
+directory or a symlink, the is_metadata parameter must be non-zero so
+ext4_forget() will revoke them via jbd2_journal_revoke().  Otherwise,
+if these blocks are reused for a data file, and the system crashes
+before a journal checkpoint, the journal replay could end up
+corrupting these data blocks.
 
-Thanks to Andi Kleen <ak@linux.intel.com> reporting the problem.
+Thanks to Curt Wohlgemuth for pointing out potential problems in this
+area.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/inode.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ fs/ext4/extents.c |    2 +-
+ fs/ext4/inode.c   |    6 ++++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -2074,7 +2074,7 @@ static int ext4_remove_blocks(handle_t *
+ 		ext_debug("free last %u blocks starting %llu\n", num, start);
+ 		for (i = 0; i < num; i++) {
+ 			bh = sb_find_get_block(inode->i_sb, start + i);
+-			ext4_forget(handle, 0, inode, bh, start + i);
++			ext4_forget(handle, metadata, inode, bh, start + i);
+ 		}
+ 		ext4_free_blocks(handle, inode, start, num, metadata);
+ 	} else if (from == le32_to_cpu(ex->ee_block)
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -4781,7 +4781,6 @@ struct inode *ext4_iget(struct super_blo
- 	struct ext4_iloc iloc;
- 	struct ext4_inode *raw_inode;
- 	struct ext4_inode_info *ei;
--	struct buffer_head *bh;
- 	struct inode *inode;
- 	long ret;
- 	int block;
-@@ -4793,11 +4792,11 @@ struct inode *ext4_iget(struct super_blo
- 		return inode;
+@@ -4120,6 +4120,8 @@ static void ext4_clear_blocks(handle_t *
+ 			      __le32 *last)
+ {
+ 	__le32 *p;
++	int	is_metadata = S_ISDIR(inode->i_mode) || S_ISLNK(inode->i_mode);
++
+ 	if (try_to_extend_transaction(handle, inode)) {
+ 		if (bh) {
+ 			BUFFER_TRACE(bh, "call ext4_handle_dirty_metadata");
+@@ -4150,11 +4152,11 @@ static void ext4_clear_blocks(handle_t *
  
- 	ei = EXT4_I(inode);
-+	iloc.bh = 0;
- 
- 	ret = __ext4_get_inode_loc(inode, &iloc, 0);
- 	if (ret < 0)
- 		goto bad_inode;
--	bh = iloc.bh;
- 	raw_inode = ext4_raw_inode(&iloc);
- 	inode->i_mode = le16_to_cpu(raw_inode->i_mode);
- 	inode->i_uid = (uid_t)le16_to_cpu(raw_inode->i_uid_low);
-@@ -4820,7 +4819,6 @@ struct inode *ext4_iget(struct super_blo
- 		if (inode->i_mode == 0 ||
- 		    !(EXT4_SB(inode->i_sb)->s_mount_state & EXT4_ORPHAN_FS)) {
- 			/* this inode is deleted */
--			brelse(bh);
- 			ret = -ESTALE;
- 			goto bad_inode;
+ 			*p = 0;
+ 			tbh = sb_find_get_block(inode->i_sb, nr);
+-			ext4_forget(handle, 0, inode, tbh, nr);
++			ext4_forget(handle, is_metadata, inode, tbh, nr);
  		}
-@@ -4852,7 +4850,6 @@ struct inode *ext4_iget(struct super_blo
- 		ei->i_extra_isize = le16_to_cpu(raw_inode->i_extra_isize);
- 		if (EXT4_GOOD_OLD_INODE_SIZE + ei->i_extra_isize >
- 		    EXT4_INODE_SIZE(inode->i_sb)) {
--			brelse(bh);
- 			ret = -EIO;
- 			goto bad_inode;
- 		}
-@@ -4905,10 +4902,8 @@ struct inode *ext4_iget(struct super_blo
- 		/* Validate block references which are part of inode */
- 		ret = ext4_check_inode_blockref(inode);
  	}
--	if (ret) {
--		brelse(bh);
-+	if (ret)
- 		goto bad_inode;
--	}
  
- 	if (S_ISREG(inode->i_mode)) {
- 		inode->i_op = &ext4_file_inode_operations;
-@@ -4936,7 +4931,6 @@ struct inode *ext4_iget(struct super_blo
- 			init_special_inode(inode, inode->i_mode,
- 			   new_decode_dev(le32_to_cpu(raw_inode->i_block[1])));
- 	} else {
--		brelse(bh);
- 		ret = -EIO;
- 		ext4_error(inode->i_sb, __func__,
- 			   "bogus i_mode (%o) for inode=%lu",
-@@ -4949,6 +4943,7 @@ struct inode *ext4_iget(struct super_blo
- 	return inode;
- 
- bad_inode:
-+	brelse(iloc.bh);
- 	iget_failed(inode);
- 	return ERR_PTR(ret);
+-	ext4_free_blocks(handle, inode, block_to_free, count, 0);
++	ext4_free_blocks(handle, inode, block_to_free, count, is_metadata);
  }
+ 
+ /**
 
 
