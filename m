@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZLKPAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbZLKPB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbZLKPAu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 10:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbZLKPAr
+	id S1758688AbZLKPB2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 10:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbZLKPBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 10:00:47 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40466 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758583AbZLKPAp (ORCPT
+	Fri, 11 Dec 2009 10:01:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:7684 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757244AbZLKPBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 10:00:45 -0500
-X-Authority-Analysis: v=1.0 c=1 a=gSC5VE2jCJUA:10 a=7U3hwN5JcxgA:10 a=yPCof4ZbAAAA:8 a=UZdbuvYJDVwc9a6knykA:9 a=XOe5ZsDZAUf6tTi0e_-2WUZmg6kA:4 a=7DSvI1NPTFQA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH] tracing: add checks for printing graph irq
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Wenji Huang <wenji.huang@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091211111946.GC5244@nowhere>
-References: <1260524315-17807-1-git-send-email-wenji.huang@oracle.com>
-	 <20091211111946.GC5244@nowhere>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Fri, 11 Dec 2009 10:00:50 -0500
-Message-ID: <1260543650.2146.358.camel@gandalf.stny.rr.com>
+	Fri, 11 Dec 2009 10:01:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=IuRA5lPyYP1waWX4vRZ8RtHkpXTw6tMy83htD7LLfj/8cA7MMf2KVSNXdmWbBbp9lX
+         CXvlYBgG/LMIewK6JvNydNdzKYzbdiaKVcRZR1+Go1PFzD06pgETO7j2qtjPp4nulCgr
+         tPvSOOn1aeGyW54eMTiq/KPVj9wPOsnA+9tCY=
+Date: Fri, 11 Dec 2009 16:01:24 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Add support for Sphairon Homelink 1202 USB WLAN
+Message-ID: <20091211160124.4db2da76@strolchi.home.s3e.de>
+In-Reply-To: <20091211144221.GA6663@tuxdriver.com>
+References: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
+	<20091211133603.46bec686@strolchi.home.s3e.de>
+	<20091211144221.GA6663@tuxdriver.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.1; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 12:19 +0100, Frederic Weisbecker wrote:
-> On Fri, Dec 11, 2009 at 05:38:35PM +0800, Wenji Huang wrote:
-> > Check return value of trace_seq_printf.
-> > 
-> > Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
-> > ---
-> 
-> 
-> I'm applying it, I'll send the fix for the problem you've reported
-> at the same time.
+On Fri, 11 Dec 2009 09:42:22 -0500
+"John W. Linville" <linville@tuxdriver.com> wrote:
 
-As for my comment to the patch. Please do not apply this.
+> On Fri, Dec 11, 2009 at 01:36:03PM +0100, Stefan Seyfried wrote:
+> > Is anyhting wrong with those?
+> > Are those too trivial and "USB only" and thus better suited for direct
+> > submission to Greg?
+> 
+> Trivial or not, they are wireless LAN patches and they go here.
+
+That's what i guessed, too. I was just deafened by the silence ;)
+
+> It strikes me as strange that you are hitting two drivers to support
+> one device.  Are you saying that your ar9170usb has the goofy storage
+> device thing using the same USB IDs that the zd1211rw devices like that
+> used?  I suppose that makes some sense given the shared heritage...
+
+Yes, exactly. And a different configuration (different endpoint),
+that's why I had to touch the zd1211rw driver, even though it is
+otherwise totally unrelated to the device.
+
+The method with the reverse loop counting down from ep1 to ep0 was
+chosen to be as sure as possible to not break the other devices that
+are already working.
+
+> We did just have a long (and possibly unresolved thread) about
+> this type of practice (i.e. eject in the driver) not too long ago.
+> But since zd1211rw is already doing this, maybe this patch is
+> acceptable...?
+
+Maybe a separate driver that is ejecting all those fake storage
+devices, be it 3G modems or wireless LAN might be a good idea, but I am
+probably not the right one to code that ;)
+Or maybe we decide that userspace should handle it for all devices...
+
+> Anyway, I have your patch.  Please be patient.
 
 Thanks,
 
--- Steve
+	Stefan
 
+-- 
+Stefan Seyfried
 
+"Any ideas, John?"
+"Well, surrounding them's out."
