@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbZLKBe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbZLKBfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbZLKBe1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 20:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762224AbZLKBeW
+	id S933374AbZLKBfN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 20:35:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762216AbZLKBeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 20:34:22 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:52578 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762045AbZLKBeE (ORCPT
+	Thu, 10 Dec 2009 20:34:18 -0500
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:47322 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761741AbZLKBeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Dec 2009 20:34:04 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH V2 3/8] Squashfs: add a decompressor framework
-Message-Id: <E1NIuOW-0001oT-I6@dylan.lougher.demon.co.uk>
+Subject: [PATCH V2 1/8] Squashfs: move zlib decompression wrapper code into a separate file
+Message-Id: <E1NIuOW-0001oJ-Bb@dylan.lougher.demon.co.uk>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Fri, 11 Dec 2009 01:34:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,62 +22,145 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This adds a decompressor framework which allows multiple compression
-algorithms to be cleanly supported.
-
-Also update zlib wrapper and other code to use the new framework.
-
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/Makefile         |    2 +-
- fs/squashfs/block.c          |    3 +-
- fs/squashfs/decompressor.c   |   58 ++++++++++++++++++++++++++++++++++++++++++
- fs/squashfs/decompressor.h   |   55 +++++++++++++++++++++++++++++++++++++++
- fs/squashfs/squashfs.h       |   14 +++++-----
- fs/squashfs/squashfs_fs_sb.h |   41 +++++++++++++++--------------
- fs/squashfs/super.c          |   45 ++++++++++++++++++-------------
- fs/squashfs/zlib_wrapper.c   |   17 ++++++++++--
- 8 files changed, 184 insertions(+), 51 deletions(-)
- create mode 100644 fs/squashfs/decompressor.c
- create mode 100644 fs/squashfs/decompressor.h
+ fs/squashfs/Makefile       |    2 +-
+ fs/squashfs/block.c        |   74 ++----------------------------
+ fs/squashfs/squashfs.h     |    4 ++
+ fs/squashfs/zlib_wrapper.c |  109 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 118 insertions(+), 71 deletions(-)
+ create mode 100644 fs/squashfs/zlib_wrapper.c
 
 diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
-index a397e6f..df8a19e 100644
+index 70e3244..a397e6f 100644
 --- a/fs/squashfs/Makefile
 +++ b/fs/squashfs/Makefile
 @@ -4,4 +4,4 @@
  
  obj-$(CONFIG_SQUASHFS) += squashfs.o
  squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
--squashfs-y += namei.o super.o symlink.o zlib_wrapper.o
-+squashfs-y += namei.o super.o symlink.o zlib_wrapper.o decompressor.o
+-squashfs-y += namei.o super.o symlink.o
++squashfs-y += namei.o super.o symlink.o zlib_wrapper.o
 diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
-index 3f836e1..1cb0d81 100644
+index 2a79603..b8addfd 100644
 --- a/fs/squashfs/block.c
 +++ b/fs/squashfs/block.c
-@@ -36,6 +36,7 @@
- #include "squashfs_fs_sb.h"
- #include "squashfs_fs_i.h"
- #include "squashfs.h"
-+#include "decompressor.h"
- 
- /*
-  * Read the metadata block length, this is stored in the first two
-@@ -151,7 +152,7 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+@@ -29,7 +29,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/mutex.h>
+ #include <linux/string.h>
+ #include <linux/buffer_head.h>
+ #include <linux/zlib.h>
+@@ -153,72 +152,10 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
  	}
  
  	if (compressed) {
--		length = squashfs_zlib_uncompress(msblk, buffer, bh, b, offset,
-+		length = squashfs_decompress(msblk, buffer, bh, b, offset,
- 			 length, srclength, pages);
- 		if (length < 0)
- 			goto read_failure;
-diff --git a/fs/squashfs/decompressor.c b/fs/squashfs/decompressor.c
+-		int zlib_err = 0, zlib_init = 0;
+-
+-		/*
+-		 * Uncompress block.
+-		 */
+-
+-		mutex_lock(&msblk->read_data_mutex);
+-
+-		msblk->stream.avail_out = 0;
+-		msblk->stream.avail_in = 0;
+-
+-		bytes = length;
+-		do {
+-			if (msblk->stream.avail_in == 0 && k < b) {
+-				avail = min(bytes, msblk->devblksize - offset);
+-				bytes -= avail;
+-				wait_on_buffer(bh[k]);
+-				if (!buffer_uptodate(bh[k]))
+-					goto release_mutex;
+-
+-				if (avail == 0) {
+-					offset = 0;
+-					put_bh(bh[k++]);
+-					continue;
+-				}
+-
+-				msblk->stream.next_in = bh[k]->b_data + offset;
+-				msblk->stream.avail_in = avail;
+-				offset = 0;
+-			}
+-
+-			if (msblk->stream.avail_out == 0 && page < pages) {
+-				msblk->stream.next_out = buffer[page++];
+-				msblk->stream.avail_out = PAGE_CACHE_SIZE;
+-			}
+-
+-			if (!zlib_init) {
+-				zlib_err = zlib_inflateInit(&msblk->stream);
+-				if (zlib_err != Z_OK) {
+-					ERROR("zlib_inflateInit returned"
+-						" unexpected result 0x%x,"
+-						" srclength %d\n", zlib_err,
+-						srclength);
+-					goto release_mutex;
+-				}
+-				zlib_init = 1;
+-			}
+-
+-			zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
+-
+-			if (msblk->stream.avail_in == 0 && k < b)
+-				put_bh(bh[k++]);
+-		} while (zlib_err == Z_OK);
+-
+-		if (zlib_err != Z_STREAM_END) {
+-			ERROR("zlib_inflate error, data probably corrupt\n");
+-			goto release_mutex;
+-		}
+-
+-		zlib_err = zlib_inflateEnd(&msblk->stream);
+-		if (zlib_err != Z_OK) {
+-			ERROR("zlib_inflate error, data probably corrupt\n");
+-			goto release_mutex;
+-		}
+-		length = msblk->stream.total_out;
+-		mutex_unlock(&msblk->read_data_mutex);
++		length = squashfs_zlib_uncompress(msblk, buffer, bh, b, offset,
++			 length, srclength, pages);
++		if (length < 0)
++			goto read_failure;
+ 	} else {
+ 		/*
+ 		 * Block is uncompressed.
+@@ -255,9 +192,6 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 	kfree(bh);
+ 	return length;
+ 
+-release_mutex:
+-	mutex_unlock(&msblk->read_data_mutex);
+-
+ block_release:
+ 	for (; k < b; k++)
+ 		put_bh(bh[k]);
+diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
+index 0e9feb6..ba87db6 100644
+--- a/fs/squashfs/squashfs.h
++++ b/fs/squashfs/squashfs.h
+@@ -70,6 +70,10 @@ extern struct inode *squashfs_iget(struct super_block *, long long,
+ 				unsigned int);
+ extern int squashfs_read_inode(struct inode *, long long);
+ 
++/* zlib_wrapper.c */
++extern int squashfs_zlib_uncompress(struct squashfs_sb_info *, void **,
++				struct buffer_head **, int, int, int, int, int);
++
+ /*
+  * Inodes and files operations
+  */
+diff --git a/fs/squashfs/zlib_wrapper.c b/fs/squashfs/zlib_wrapper.c
 new file mode 100644
-index 0000000..0072ccd
+index 0000000..3be9964
 --- /dev/null
-+++ b/fs/squashfs/decompressor.c
-@@ -0,0 +1,58 @@
++++ b/fs/squashfs/zlib_wrapper.c
+@@ -0,0 +1,109 @@
 +/*
 + * Squashfs - a compressed read only filesystem for Linux
 + *
@@ -98,366 +181,95 @@ index 0000000..0072ccd
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 + *
-+ * decompressor.c
++ * zlib_wrapper.c
 + */
 +
-+#include <linux/types.h>
++
 +#include <linux/mutex.h>
 +#include <linux/buffer_head.h>
++#include <linux/zlib.h>
 +
 +#include "squashfs_fs.h"
 +#include "squashfs_fs_sb.h"
 +#include "squashfs_fs_i.h"
-+#include "decompressor.h"
 +#include "squashfs.h"
 +
-+/*
-+ * This file (and decompressor.h) implements a decompressor framework for
-+ * Squashfs, allowing multiple decompressors to be easily supported
-+ */
-+
-+static const struct squashfs_decompressor squashfs_unknown_comp_ops = {
-+	NULL, NULL, NULL, 0, "unknown", 0
-+};
-+
-+static const struct squashfs_decompressor *decompressor[] = {
-+	&squashfs_zlib_comp_ops,
-+	&squashfs_unknown_comp_ops
-+};
-+
-+
-+const struct squashfs_decompressor *squashfs_lookup_decompressor(int id)
++int squashfs_zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
++	struct buffer_head **bh, int b, int offset, int length, int srclength,
++	int pages)
 +{
-+	int i;
++	int zlib_err = 0, zlib_init = 0;
++	int avail, bytes, k = 0, page = 0;
 +
-+	for (i = 0; decompressor[i]->id; i++)
-+		if (id == decompressor[i]->id)
-+			break;
++	mutex_lock(&msblk->read_data_mutex);
 +
-+	return decompressor[i];
-+}
-diff --git a/fs/squashfs/decompressor.h b/fs/squashfs/decompressor.h
-new file mode 100644
-index 0000000..7425f80
---- /dev/null
-+++ b/fs/squashfs/decompressor.h
-@@ -0,0 +1,55 @@
-+#ifndef DECOMPRESSOR_H
-+#define DECOMPRESSOR_H
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * decompressor.h
-+ */
++	msblk->stream.avail_out = 0;
++	msblk->stream.avail_in = 0;
 +
-+struct squashfs_decompressor {
-+	void	*(*init)(struct squashfs_sb_info *);
-+	void	(*free)(void *);
-+	int	(*decompress)(struct squashfs_sb_info *, void **,
-+		struct buffer_head **, int, int, int, int, int);
-+	int	id;
-+	char	*name;
-+	int	supported;
-+};
++	bytes = length;
++	do {
++		if (msblk->stream.avail_in == 0 && k < b) {
++			avail = min(bytes, msblk->devblksize - offset);
++			bytes -= avail;
++			wait_on_buffer(bh[k]);
++			if (!buffer_uptodate(bh[k]))
++				goto release_mutex;
 +
-+static inline void *squashfs_decompressor_init(struct squashfs_sb_info *msblk)
-+{
-+	return msblk->decompressor->init(msblk);
-+}
++			if (avail == 0) {
++				offset = 0;
++				put_bh(bh[k++]);
++				continue;
++			}
 +
-+static inline void squashfs_decompressor_free(struct squashfs_sb_info *msblk,
-+	void *s)
-+{
-+	if (msblk->decompressor)
-+		msblk->decompressor->free(s);
-+}
++			msblk->stream.next_in = bh[k]->b_data + offset;
++			msblk->stream.avail_in = avail;
++			offset = 0;
++		}
 +
-+static inline int squashfs_decompress(struct squashfs_sb_info *msblk,
-+	void **buffer, struct buffer_head **bh, int b, int offset, int length,
-+	int srclength, int pages)
-+{
-+	return msblk->decompressor->decompress(msblk, buffer, bh, b, offset,
-+		length, srclength, pages);
-+}
-+#endif
-diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
-index 9c2f76a..fe2587a 100644
---- a/fs/squashfs/squashfs.h
-+++ b/fs/squashfs/squashfs.h
-@@ -51,6 +51,9 @@ extern struct squashfs_cache_entry *squashfs_get_datablock(struct super_block *,
- 				u64, int);
- extern int squashfs_read_table(struct super_block *, void *, u64, int);
- 
-+/* decompressor.c */
-+extern const struct squashfs_decompressor *squashfs_lookup_decompressor(int);
++		if (msblk->stream.avail_out == 0 && page < pages) {
++			msblk->stream.next_out = buffer[page++];
++			msblk->stream.avail_out = PAGE_CACHE_SIZE;
++		}
 +
- /* export.c */
- extern __le64 *squashfs_read_inode_lookup_table(struct super_block *, u64,
- 				unsigned int);
-@@ -70,14 +73,8 @@ extern struct inode *squashfs_iget(struct super_block *, long long,
- 				unsigned int);
- extern int squashfs_read_inode(struct inode *, long long);
- 
--/* zlib_wrapper.c */
--extern void *squashfs_zlib_init(void);
--extern void squashfs_zlib_free(void *);
--extern int squashfs_zlib_uncompress(struct squashfs_sb_info *, void **,
--				struct buffer_head **, int, int, int, int, int);
--
- /*
-- * Inodes and files operations
-+ * Inodes, files and decompressor operations
-  */
- 
- /* dir.c */
-@@ -94,3 +91,6 @@ extern const struct inode_operations squashfs_dir_inode_ops;
- 
- /* symlink.c */
- extern const struct address_space_operations squashfs_symlink_aops;
++		if (!zlib_init) {
++			zlib_err = zlib_inflateInit(&msblk->stream);
++			if (zlib_err != Z_OK) {
++				ERROR("zlib_inflateInit returned unexpected "
++					"result 0x%x, srclength %d\n",
++					zlib_err, srclength);
++				goto release_mutex;
++			}
++			zlib_init = 1;
++		}
 +
-+/* zlib_wrapper.c */
-+extern const struct squashfs_decompressor squashfs_zlib_comp_ops;
-diff --git a/fs/squashfs/squashfs_fs_sb.h b/fs/squashfs/squashfs_fs_sb.h
-index 23a67fa..7533350 100644
---- a/fs/squashfs/squashfs_fs_sb.h
-+++ b/fs/squashfs/squashfs_fs_sb.h
-@@ -52,25 +52,26 @@ struct squashfs_cache_entry {
- };
- 
- struct squashfs_sb_info {
--	int			devblksize;
--	int			devblksize_log2;
--	struct squashfs_cache	*block_cache;
--	struct squashfs_cache	*fragment_cache;
--	struct squashfs_cache	*read_page;
--	int			next_meta_index;
--	__le64			*id_table;
--	__le64			*fragment_index;
--	unsigned int		*fragment_index_2;
--	struct mutex		read_data_mutex;
--	struct mutex		meta_index_mutex;
--	struct meta_index	*meta_index;
--	void			*stream;
--	__le64			*inode_lookup_table;
--	u64			inode_table;
--	u64			directory_table;
--	unsigned int		block_size;
--	unsigned short		block_log;
--	long long		bytes_used;
--	unsigned int		inodes;
-+	const struct squashfs_decompressor	*decompressor;
-+	int					devblksize;
-+	int					devblksize_log2;
-+	struct squashfs_cache			*block_cache;
-+	struct squashfs_cache			*fragment_cache;
-+	struct squashfs_cache			*read_page;
-+	int					next_meta_index;
-+	__le64					*id_table;
-+	__le64					*fragment_index;
-+	unsigned int				*fragment_index_2;
-+	struct mutex				read_data_mutex;
-+	struct mutex				meta_index_mutex;
-+	struct meta_index			*meta_index;
-+	void					*stream;
-+	__le64					*inode_lookup_table;
-+	u64					inode_table;
-+	u64					directory_table;
-+	unsigned int				block_size;
-+	unsigned short				block_log;
-+	long long				bytes_used;
-+	unsigned int				inodes;
- };
- #endif
-diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
-index b9f8c6a..3550aec 100644
---- a/fs/squashfs/super.c
-+++ b/fs/squashfs/super.c
-@@ -41,27 +41,35 @@
- #include "squashfs_fs_sb.h"
- #include "squashfs_fs_i.h"
- #include "squashfs.h"
-+#include "decompressor.h"
- 
- static struct file_system_type squashfs_fs_type;
- static const struct super_operations squashfs_super_ops;
- 
--static int supported_squashfs_filesystem(short major, short minor, short comp)
-+static const struct squashfs_decompressor *supported_squashfs_filesystem(short
-+	major, short minor, short id)
- {
-+	const struct squashfs_decompressor *decompressor;
++		zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
 +
- 	if (major < SQUASHFS_MAJOR) {
- 		ERROR("Major/Minor mismatch, older Squashfs %d.%d "
- 			"filesystems are unsupported\n", major, minor);
--		return -EINVAL;
-+		return NULL;
- 	} else if (major > SQUASHFS_MAJOR || minor > SQUASHFS_MINOR) {
- 		ERROR("Major/Minor mismatch, trying to mount newer "
- 			"%d.%d filesystem\n", major, minor);
- 		ERROR("Please update your kernel\n");
--		return -EINVAL;
-+		return NULL;
- 	}
- 
--	if (comp != ZLIB_COMPRESSION)
--		return -EINVAL;
-+	decompressor = squashfs_lookup_decompressor(id);
-+	if (!decompressor->supported) {
-+		ERROR("Filesystem uses \"%s\" compression. This is not "
-+			"supported\n", decompressor->name);
-+		return NULL;
++		if (msblk->stream.avail_in == 0 && k < b)
++			put_bh(bh[k++]);
++	} while (zlib_err == Z_OK);
++
++	if (zlib_err != Z_STREAM_END) {
++		ERROR("zlib_inflate error, data probably corrupt\n");
++		goto release_mutex;
 +	}
- 
--	return 0;
-+	return decompressor;
- }
- 
- 
-@@ -86,10 +94,6 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
- 	}
- 	msblk = sb->s_fs_info;
- 
--	msblk->stream = squashfs_zlib_init();
--	if (msblk->stream == NULL)
--		goto failure;
--
- 	sblk = kzalloc(sizeof(*sblk), GFP_KERNEL);
- 	if (sblk == NULL) {
- 		ERROR("Failed to allocate squashfs_super_block\n");
-@@ -116,25 +120,25 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
- 		goto failed_mount;
- 	}
- 
-+	err = -EINVAL;
 +
- 	/* Check it is a SQUASHFS superblock */
- 	sb->s_magic = le32_to_cpu(sblk->s_magic);
- 	if (sb->s_magic != SQUASHFS_MAGIC) {
- 		if (!silent)
- 			ERROR("Can't find a SQUASHFS superblock on %s\n",
- 						bdevname(sb->s_bdev, b));
--		err = -EINVAL;
- 		goto failed_mount;
- 	}
- 
--	/* Check the MAJOR & MINOR versions and compression type */
--	err = supported_squashfs_filesystem(le16_to_cpu(sblk->s_major),
-+	/* Check the MAJOR & MINOR versions and lookup compression type */
-+	msblk->decompressor = supported_squashfs_filesystem(
-+			le16_to_cpu(sblk->s_major),
- 			le16_to_cpu(sblk->s_minor),
- 			le16_to_cpu(sblk->compression));
--	if (err < 0)
-+	if (msblk->decompressor == NULL)
- 		goto failed_mount;
- 
--	err = -EINVAL;
--
- 	/*
- 	 * Check if there's xattrs in the filesystem.  These are not
- 	 * supported in this version, so warn that they will be ignored.
-@@ -201,6 +205,10 @@ static int squashfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	err = -ENOMEM;
- 
-+	msblk->stream = squashfs_decompressor_init(msblk);
-+	if (msblk->stream == NULL)
-+		goto failed_mount;
++	zlib_err = zlib_inflateEnd(&msblk->stream);
++	if (zlib_err != Z_OK) {
++		ERROR("zlib_inflate error, data probably corrupt\n");
++		goto release_mutex;
++	}
 +
- 	msblk->block_cache = squashfs_cache_init("metadata",
- 			SQUASHFS_CACHED_BLKS, SQUASHFS_METADATA_SIZE);
- 	if (msblk->block_cache == NULL)
-@@ -288,7 +296,7 @@ failed_mount:
- 	squashfs_cache_delete(msblk->block_cache);
- 	squashfs_cache_delete(msblk->fragment_cache);
- 	squashfs_cache_delete(msblk->read_page);
--	squashfs_zlib_free(msblk->stream);
-+	squashfs_decompressor_free(msblk, msblk->stream);
- 	kfree(msblk->inode_lookup_table);
- 	kfree(msblk->fragment_index);
- 	kfree(msblk->id_table);
-@@ -298,7 +306,6 @@ failed_mount:
- 	return err;
- 
- failure:
--	squashfs_zlib_free(msblk->stream);
- 	kfree(sb->s_fs_info);
- 	sb->s_fs_info = NULL;
- 	return -ENOMEM;
-@@ -342,7 +349,7 @@ static void squashfs_put_super(struct super_block *sb)
- 		squashfs_cache_delete(sbi->block_cache);
- 		squashfs_cache_delete(sbi->fragment_cache);
- 		squashfs_cache_delete(sbi->read_page);
--		squashfs_zlib_free(sbi->stream);
-+		squashfs_decompressor_free(sbi, sbi->stream);
- 		kfree(sbi->id_table);
- 		kfree(sbi->fragment_index);
- 		kfree(sbi->meta_index);
-diff --git a/fs/squashfs/zlib_wrapper.c b/fs/squashfs/zlib_wrapper.c
-index c814594..4dd70e0 100644
---- a/fs/squashfs/zlib_wrapper.c
-+++ b/fs/squashfs/zlib_wrapper.c
-@@ -30,8 +30,9 @@
- #include "squashfs_fs_sb.h"
- #include "squashfs_fs_i.h"
- #include "squashfs.h"
-+#include "decompressor.h"
- 
--void *squashfs_zlib_init()
-+static void *zlib_init(struct squashfs_sb_info *dummy)
- {
- 	z_stream *stream = kmalloc(sizeof(z_stream), GFP_KERNEL);
- 	if (stream == NULL)
-@@ -50,7 +51,7 @@ failed:
- }
- 
- 
--void squashfs_zlib_free(void *strm)
-+static void zlib_free(void *strm)
- {
- 	z_stream *stream = strm;
- 
-@@ -60,7 +61,7 @@ void squashfs_zlib_free(void *strm)
- }
- 
- 
--int squashfs_zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
-+static int zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
- 	struct buffer_head **bh, int b, int offset, int length, int srclength,
- 	int pages)
- {
-@@ -137,3 +138,13 @@ release_mutex:
- 
- 	return -EIO;
- }
++	mutex_unlock(&msblk->read_data_mutex);
++	return msblk->stream.total_out;
 +
-+const struct squashfs_decompressor squashfs_zlib_comp_ops = {
-+	.init = zlib_init,
-+	.free = zlib_free,
-+	.decompress = zlib_uncompress,
-+	.id = ZLIB_COMPRESSION,
-+	.name = "zlib",
-+	.supported = 1
-+};
++release_mutex:
++	mutex_unlock(&msblk->read_data_mutex);
 +
++	for (; k < b; k++)
++		put_bh(bh[k]);
++
++	return -EIO;
++}
 -- 
 1.6.3.3
 
