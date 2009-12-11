@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762419AbZLKLkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbZLKLsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762419AbZLKLkz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 06:40:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761013AbZLKLkt
+	id S1762512AbZLKLsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 06:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762587AbZLKLsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 06:40:49 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:34458 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757380AbZLKLks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 06:40:48 -0500
-Date: Fri, 11 Dec 2009 12:40:54 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org
-Cc: wey-yi.w.guy@intel.com
-Subject: [PATCH] Fix iwl typo
-Message-ID: <20091211114054.GZ8742@kernel.dk>
+	Fri, 11 Dec 2009 06:48:21 -0500
+Received: from nat.nue.novell.com ([195.135.221.3]:47939 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761013AbZLKLsU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 06:48:20 -0500
+Message-ID: <4B223185.80202@suse.de>
+Date: Fri, 11 Dec 2009 14:48:21 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: Lin Ming <ming.m.lin@intel.com>
+CC: Xiaotian Feng <dfeng@redhat.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -V2] acpi: don't cond_resched if irq is disabled
+References: <20091210100907.GA2446@ucw.cz>	 <1260446205-16868-1-git-send-email-dfeng@redhat.com>	 <4B20E7B2.1010208@suse.de> <1260510373.10543.17.camel@minggr.sh.intel.com>
+In-Reply-To: <1260510373.10543.17.camel@minggr.sh.intel.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-I came across this one:
-
-drivers/net/wireless/iwlwifi/iwl-tx.c: In function ?iwl_tx_agg_stop?:
-drivers/net/wireless/iwlwifi/iwl-tx.c:1356: warning: passing argument 1
-of ?ieee80211_stop_tx_ba_cb_irqsafe? from incompatible pointer type
-include/net/mac80211.h:2128: note: expected ?struct ieee80211_vif *? but
-argument is of type ?struct ieee80211_hw *?
-
-which just looks like a simple typo, priv->hw should be priv->vif.
-
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
-index 58b132f..00da5e1 100644
---- a/drivers/net/wireless/iwlwifi/iwl-tx.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
-@@ -1353,7 +1353,7 @@ int iwl_tx_agg_stop(struct iwl_priv *priv , const u8 *ra, u16 tid)
- 	if (priv->stations[sta_id].tid[tid].agg.state ==
- 				IWL_EMPTYING_HW_QUEUE_ADDBA) {
- 		IWL_DEBUG_HT(priv, "AGG stop before setup done\n");
--		ieee80211_stop_tx_ba_cb_irqsafe(priv->hw, ra, tid);
-+		ieee80211_stop_tx_ba_cb_irqsafe(priv->vif, ra, tid);
- 		priv->stations[sta_id].tid[tid].agg.state = IWL_AGG_OFF;
- 		return 0;
- 	}
-
--- 
-Jens Axboe
+Lin Ming пишет:
+> On Thu, 2009-12-10 at 20:21 +0800, Alexey Starikovskiy wrote:
+>> Hi Xiaotian,
+>>
+>> I think, this is another round of "armor vs. bullet" race... It will hold until
+>> might_sleep() logic changes again.
+>>
+>> Please consider using preemptible() -- IMHO this is the check we should perform 
+>> in our case of voluntary preemption.
+> 
+> preemptible() may not work here because it always returns 0 for
+> non-preemptible kernel.
+Right, and it means that this machine does not care about low latency that much.
+The reason we introduced the preemption point in the first place, was unacceptable latency
+due to very long AML methods on some machines. We don't need this preemption point for normal
+operation, this is exactly what voluntary preemption does -- allows those in hurry to pass by.
+If there are none, fine.
+> 
+> #ifdef CONFIG_PREEMPT
+> # define preemptible()  (preempt_count() == 0 && !irqs_disabled())
+> # define IRQ_EXIT_OFFSET (HARDIRQ_OFFSET-1)
+> #else
+> # define preemptible()  0
+> # define IRQ_EXIT_OFFSET HARDIRQ_OFFSET
+> #endif
+> 
+Regards,
+Alex.
 
