@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762305AbZLKMEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751370AbZLKMNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762305AbZLKMEw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 07:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbZLKMEr
+	id S1751370AbZLKMNK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 07:13:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbZLKMNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 07:04:47 -0500
-Received: from mail-out.m-online.net ([212.18.0.10]:42946 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756700AbZLKMEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 07:04:46 -0500
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Ivan Zahariev <famzah@icdsoft.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: EUID != root + EGID = root, and CAP_SETGID
-References: <4B222C3D.2070807@icdsoft.com>
-X-Yow: I'm gliding over a NUCLEAR WASTE DUMP near ATLANTA, Georgia!!
-Date: Fri, 11 Dec 2009 13:04:49 +0100
-In-Reply-To: <4B222C3D.2070807@icdsoft.com> (Ivan Zahariev's message of "Fri,
-	11 Dec 2009 13:25:49 +0200")
-Message-ID: <m2r5r1lnry.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
+	Fri, 11 Dec 2009 07:13:05 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45957 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbZLKMNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 07:13:05 -0500
+Message-ID: <4B2235F0.4080606@redhat.com>
+Date: Fri, 11 Dec 2009 07:07:12 -0500
+From: Larry Woodman <lwoodman@redhat.com>
+Reply-To: lwoodman@redhat.com
+Organization: RedHat
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, aarcange@redhat.com
+Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
+References: <20091210185626.26f9828a@cuia.bos.redhat.com> <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
+In-Reply-To: <28c262360912101803i7b43db78se8cf9ec61d92ee0f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Zahariev <famzah@icdsoft.com> writes:
+Minchan Kim wrote:
+>
+> I like this. but why do you select default value as constant 8?
+> Do you have any reason?
+>
+> I think it would be better to select the number proportional to NR_CPU.
+> ex) NR_CPU * 2 or something.
+>
+> Otherwise looks good to me.
+>
+> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+>
+>   
+This is a per-zone count so perhaps a reasonable default is the number 
+of CPUs on the
+NUMA node that the zone resides on ?
 
-> As a result, such a process cannot change its EGID to an arbitrary one,
-> even though the current EGID is the super-user "root" one.
-
-There is no such thing as a "super-user group".  No group has any
-special privleges.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
