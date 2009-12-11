@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934887AbZLKIPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbZLKJSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934887AbZLKIPS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 03:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760919AbZLKIPP
+	id S1754344AbZLKJSs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 04:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZLKJSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 03:15:15 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52247 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1760914AbZLKIPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 03:15:14 -0500
-Message-ID: <4B21FF84.3010509@cn.fujitsu.com>
-Date: Fri, 11 Dec 2009 16:15:00 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 11 Dec 2009 04:18:44 -0500
+Received: from linuxhacker.ru ([217.76.32.60]:41283 "EHLO fiona.linuxhacker.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbZLKJSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 04:18:43 -0500
+X-Greylist: delayed 3759 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Dec 2009 04:18:42 EST
+Date: Fri, 11 Dec 2009 11:16:08 +0300
+From: Oleg Drokin <green@linuxhacker.ru>
+To: linux-kernel@vger.kernel.org, linux-ext3@vger.kernel.org,
+       linux-ext4@vger.kernel.org, reiserfs-devel@vger.kernel.org
+Subject: [PATCH] Possible data loss on ext[34], reiserfs with external
+	journal
+Message-ID: <20091211081608.GA597088@fiona.linuxhacker.ru>
 MIME-Version: 1.0
-To: Wenji Huang <wenji.huang@oracle.com>
-CC: linux-kernel@vger.kernel.org, rostedt@goodmis.org, fweisbec@gmail.com,
-       tzanussi@gmail.com
-Subject: Re: [PATCH]tracing: Fix inaccurate function definition in trace_events_filter.c
-References: <1260518338-16034-1-git-send-email-wenji.huang@oracle.com>
-In-Reply-To: <1260518338-16034-1-git-send-email-wenji.huang@oracle.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wenji Huang wrote:
-> Use strcmp instead of strncmp to do full match.
-> 
+Hello!
 
-It's intended to use strncmp instead of strcmp..
+   It seems when external journal device is used for ext3, ext4 and reiserfs
+   (possibly others, but I can only readily confirm these three) and
+   main filesystem device had writeback cache enabled, a very real
+   data loss is possible because we never flush main device cache on commit.
+   As a result if we just wrote some files in ordered mode and then
+   transaction was committed, the journal data makes it to the disk
+   (provided that barriers are in use), but the actual file data only made
+   it to the device cache. As such sudden loss of power at this stage
+   would lead to files in place, but their content replaced with
+   whatever happened to be in those blocks before.
 
-field(char, name, size) will be treated as a STATIC_STRING by
-filter code. But this field isn't necessarily a string, it
-can be an array of chars, which may not be ended with '\0'.
-So in this case, we can't use strcmp.
+   This simple patch at the end should remedy the problem.
 
-So do you really see incorrect filter results?
+   Also I wonder if there would be a strong opposition to add async version
+   of blkdev_issue_flush()? Essentially it would be current blkdev_issue_flush
+   that returns straight after submit_bio() call and returns the bio itself
+   as a void *cookie for later waiting by the caller. (natirally the completion
+   would need to be allocated on stack)
 
-I think STATIC_STRING and DYN_STRING should be fine, because
-the "len" parameter is not the length of the string, but
-the length of the array, which including the tailing '\0'.
+   This would allow us to have extra optimization to avoid dead waiting and
+   submit the barrier to data device right after we scheduled all data
+   blocks and then call completion waiting right before we submit commit
+   record. We'll have actual transaction preparation and writing in between.
 
-For FILTER_PTR_STRING, the filter is not working correctly:
+Signed-off-by: Oleg Drokin <green@linuxhacker.ru>
+ 
+ jbd/commit.c       |    7 +++++++
+ jbd2/commit.c      |    8 ++++++++
+ reiserfs/journal.c |    5 +++++
+ 3 files changed, 20 insertions(+)
 
-  # echo 'func == vt' > events/bkl/lock_kernel/filter
-  # echo 1 > events/bkl/lock_kernel/enable
-  ...
-  # cat trace
-   Xorg-1484  [000]  1973.392586: lock_kernel: ... func=vt_ioctl()
-    gpm-1402  [001]  1974.027740: lock_kernel: ... func=vt_ioctl()
-
-Actually I already made 2 patches to fix this, and fix another
-bug in regex_match_end(). I'll send them out soon.
-
-> Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
-> ---
->  kernel/trace/trace_events_filter.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 50504cb..06dc376 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -254,7 +254,7 @@ static int filter_pred_none(struct filter_pred *pred, void *event,
->  /* Basic regex callbacks */
->  static int regex_match_full(char *str, struct regex *r, int len)
->  {
-> -	if (strncmp(str, r->pattern, len) == 0)
-> +	if (strcmp(str, r->pattern) == 0)
->  		return 1;
->  	return 0;
->  }
+diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
+index 4bd8825..60c190c 100644
+--- a/fs/jbd/commit.c
++++ b/fs/jbd/commit.c
+@@ -21,6 +21,7 @@
+ #include <linux/mm.h>
+ #include <linux/pagemap.h>
+ #include <linux/bio.h>
++#include <linux/blkdev.h>
+ 
+ /*
+  * Default IO end handler for temporary BJ_IO buffer_heads.
+@@ -787,6 +788,12 @@ wait_for_iobuf:
+ 
+ 	jbd_debug(3, "JBD: commit phase 6\n");
+ 
++	/* Flush the external data device first */
++	if ((journal->j_fs_dev != journal->j_dev) &&
++	    journal->j_flags & JFS_BARRIER)
++		blkdev_issue_flush(journal->j_fs_dev, NULL);
++
++
+ 	if (journal_write_commit_record(journal, commit_transaction))
+ 		err = -EIO;
+ 
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 8896c1d..e653d72 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -712,6 +712,10 @@ start_journal_io:
+ 
+ 	if (JBD2_HAS_INCOMPAT_FEATURE(journal,
+ 				      JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT)) {
++		/* Flush the external data device first */
++		if ((journal->j_fs_dev != journal->j_dev) &&
++		    journal->j_flags & JBD2_BARRIER)
++			blkdev_issue_flush(journal->j_fs_dev, NULL);
+ 		err = journal_submit_commit_record(journal, commit_transaction,
+ 						 &cbh, crc32_sum);
+ 		if (err)
+@@ -841,6 +845,10 @@ wait_for_iobuf:
+ 
+ 	if (!JBD2_HAS_INCOMPAT_FEATURE(journal,
+ 				       JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT)) {
++		/* Flush the external data device first */
++		if ((journal->j_fs_dev != journal->j_dev) &&
++		    journal->j_flags & JBD2_BARRIER)
++			blkdev_issue_flush(journal->j_fs_dev, NULL);
+ 		err = journal_submit_commit_record(journal, commit_transaction,
+ 						&cbh, crc32_sum);
+ 		if (err)
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 2f8a7e7..c49f5a3 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -1104,6 +1104,11 @@ static int flush_commit_list(struct super_block *s,
+ 	barrier = reiserfs_barrier_flush(s);
+ 	if (barrier) {
+ 		int ret;
++
++		/* Wait for data device flush to finish first */
++		if ((s->s_dev != journal->j_dev_bd))
++			blkdev_issue_flush(s->s_dev, NULL);
++	
+ 		lock_buffer(jl->j_commit_bh);
+ 		ret = submit_barrier_buffer(jl->j_commit_bh);
+ 		if (ret == -EOPNOTSUPP) {
