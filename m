@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbZLKK2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbZLKK2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757081AbZLKK2M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 05:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbZLKK2J
+	id S1757738AbZLKK2l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 05:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbZLKK2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 05:28:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38640 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754374AbZLKK2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 05:28:08 -0500
-Date: Fri, 11 Dec 2009 10:27:32 GMT
-From: tip-bot for Jamie Iles <jamie.iles@picochip.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, jamie.iles@picochip.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, jamie.iles@picochip.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1260523260-15694-2-git-send-email-jamie.iles@picochip.com>
-References: <1260523260-15694-2-git-send-email-jamie.iles@picochip.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf tools: Allow cross compiling
-Message-ID: <tip-cc835752ae3634acd2d487fdf5152f6075f45aef@git.kernel.org>
-Git-Commit-ID: cc835752ae3634acd2d487fdf5152f6075f45aef
-X-Mailer: tip-git-log-daemon
+	Fri, 11 Dec 2009 05:28:39 -0500
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:57859 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754374AbZLKK2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 05:28:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=U/al9cRAyntnKj37CtSTwVGLuwJbdUnA6Civt4+2CDbTeQggOC8KzfYA8zXEmQ61Mb
+         g5g+36tlbu1kIg9l+QvFC7JpvO0PqizbRdiAsNx51tGvzsbVNmoStj27rlHuYaVHSWAN
+         7dSxa4+fNynFp5uq7oruE0jfEMnR/zc5Elg+Y=
+Message-ID: <4B221EDA.5020902@garzik.org>
+Date: Fri, 11 Dec 2009 05:28:42 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephane Marchesin <stephane.marchesin@gmail.com>,
+       Maarten Maathuis <madman2003@gmail.com>,
+       Xavier Bestel <xavier.bestel@free.fr>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>	<alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>	<1260459601.18520.26.camel@skunk>	<alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>	<6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>	<alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>	<6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com>	<alpine.LFD.2.00.0912101531180.3560@localhost.localdomain>	<20091210235835.20e2269d@lxorguk.ukuu.org.uk>	<alpine.LFD.2.00.0912101601100.3560@localhost.localdomain> <20091211091843.0a543136@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091211091843.0a543136@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cc835752ae3634acd2d487fdf5152f6075f45aef
-Gitweb:     http://git.kernel.org/tip/cc835752ae3634acd2d487fdf5152f6075f45aef
-Author:     Jamie Iles <jamie.iles@picochip.com>
-AuthorDate: Fri, 11 Dec 2009 09:21:00 +0000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 11 Dec 2009 11:24:13 +0100
+On 12/11/2009 04:18 AM, Alan Cox wrote:
+> F11 certainly shipped some bits of it for 2D support. I am not sure if
+> F10 shipped a purely userspace set up. Neither had it enabled as the
+> default driver - they used "nv" or "vesa" depending upon the card.
 
-perf tools: Allow cross compiling
+F11 uses nouveau here.  It is actually a pain to get 'nv' going as an 
+alternate -- bugs have been filed.  Makes kernel dev more difficult for 
+me.  I was actually told, by Fedora people, that I should be hacking on 
+the Fedora (rpm-based) kernel, rather than a 100% upstream kernel like I 
+have been hacking/booting for the past decade, as a result of this setup 
+(needing nouveau kernel support, thus needing Fedora rather than 
+upstream kernel).
 
-For embedded platforms, we want to be able to build the perf
-tools on a build machine to run on a different arch. This patch
-allows $CROSS_COMPILE to set the cross compiler.
+	Jeff
 
-Additionally, if NO_LIBPERL is set, then don't use perl include
-paths as they will be for the host arch.
 
-Signed-off-by: Jamie Iles <jamie.iles@picochip.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <1260523260-15694-2-git-send-email-jamie.iles@picochip.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/Makefile |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 23ec660..e2ee3b5 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -237,8 +237,8 @@ lib = lib
- 
- export prefix bindir sharedir sysconfdir
- 
--CC = gcc
--AR = ar
-+CC = $(CROSS_COMPILE)gcc
-+AR = $(CROSS_COMPILE)ar
- RM = rm -f
- TAR = tar
- FIND = find
-@@ -492,8 +492,10 @@ else
- 	LIB_OBJS += util/probe-finder.o
- endif
- 
-+ifndef NO_LIBPERL
- PERL_EMBED_LDOPTS = `perl -MExtUtils::Embed -e ldopts 2>/dev/null`
- PERL_EMBED_CCOPTS = `perl -MExtUtils::Embed -e ccopts 2>/dev/null`
-+endif
- 
- ifneq ($(shell sh -c "(echo '\#include <EXTERN.h>'; echo '\#include <perl.h>'; echo 'int main(void) { perl_alloc(); return 0; }') | $(CC) -x c - $(PERL_EMBED_CCOPTS) -o /dev/null $(PERL_EMBED_LDOPTS) > /dev/null 2>&1 && echo y"), y)
- 	BASIC_CFLAGS += -DNO_LIBPERL
