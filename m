@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZLKNX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZLKNX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbZLKNX0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 08:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbZLKNXV
+	id S1756167AbZLKNX5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 08:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZLKNXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 08:23:21 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49107 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752644AbZLKNXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 08:23:21 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+S5tFshTSSAhXWklMCWC8YzdHtbXMVklpe4TVIuq
-	16uF94IPXzlFx/
-Subject: Re: [git pull] drm nouveau pony for Xmas.
-From: Mike Galbraith <efault@gmx.de>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
-References: <alpine.DEB.2.00.0912111148250.4178@skynet.skynet.ie>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Dec 2009 14:23:24 +0100
-Message-Id: <1260537804.6126.71.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+	Fri, 11 Dec 2009 08:23:52 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:10969 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755087AbZLKNXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 08:23:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TmyNWT9JRZdJ7mNUQrMxIBlNV8OnbqKDgfT7RuVjfk0TN8WbAztqC0yW1cUJai9IFj
+         HFhg3Hi96ELLKAN5vaJV1cXxPue0fqGN0+tgx0/hEdmOf75xGBCtLPbL0UNl0hy8xx0F
+         M3fMxcd6SJQc3Z3yH2GbnTUzNNCUhKU2ypNt4=
+Date: Fri, 11 Dec 2009 14:23:54 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH v2] x86, amd: Make check_c1e_idle explicit
+Message-ID: <20091211132354.GA30604@alberich.amd.com>
+References: <20091210133232.GA5471@alberich.amd.com>
+ <4B219A6F.1060801@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B219A6F.1060801@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 11:57 +0000, Dave Airlie wrote:
 
->     This driver is reverse engineered, and is in no way supported by nVidia.
->     
->     Support for nearly the complete range of nvidia hw from nv04->g80 (nv50)
->     is available, and the kms driver should support driving nearly all
->     output types (displayport is under development still) along with supporting
->     suspend/resume.
->     
->     This work is all from the upstream nouveau project found at
->     nouveau.freedesktop.org.
->     
->     The original authors list from nouveau git tree is:
->     Anssi Hannula <anssi.hannula@iki.fi>
->     Ben Skeggs <bskeggs@redhat.com>
->     Francisco Jerez <currojerez@riseup.net>
->     Maarten Maathuis <madman2003@gmail.com>
->     Marcin Kościelnicki <koriakin@0x04.net>
->     Matthew Garrett <mjg@redhat.com>
->     Matt Parnell <mparnell@gmail.com>
->     Patrice Mandin <patmandin@gmail.com>
->     Pekka Paalanen <pq@iki.fi>
->     Xavier Chantry <shiningxc@gmail.com>
->     along with project founder Stephane Marchesin <marchesin@icps.u-strasbg.fr>
->     
->     Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
->     Signed-off-by: Dave Airlie <airlied@redhat.com>
+With current code c1e_idle() will try to access MSR 0xc0010055 for all
+future AMD CPUs. But that MSR is not architectural. So it's wrong to
+access the MSR unconditionally.
 
-Oh, so _that's_ what a noveau is.  Cool.  I've got a darn nvidia card,
-and look forward to someday having eye-candy.. and being able to not
-only suspend, but _resume_ too :)
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/process.c |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
 
-	-Mike
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index ea54ce8..1bf98b1 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -494,21 +494,19 @@ static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+ }
+ 
+ /*
+- * Check for AMD CPUs, which have potentially C1E support
++ * Check for AMD CPUs, which potentially use SMI or hardware initiated C1E
+  */
+ static int __cpuinit check_c1e_idle(const struct cpuinfo_x86 *c)
+ {
+ 	if (c->x86_vendor != X86_VENDOR_AMD)
+ 		return 0;
+ 
+-	if (c->x86 < 0x0F)
+-		return 0;
+-
+-	/* Family 0x0f models < rev F do not have C1E */
+-	if (c->x86 == 0x0f && c->x86_model < 0x40)
+-		return 0;
++	if ((c->x86 == 0x0F && c->x86_model >= 0x40) ||
++	    (c->x86 == 0x10) ||
++	    (c->x86 == 0x11))
++		return 1;
+ 
+-	return 1;
++	return 0;
+ }
+ 
+ static cpumask_var_t c1e_mask;
+-- 
+1.6.4.2
 
