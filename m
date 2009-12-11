@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZLKFdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZLKFcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbZLKFdF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 00:33:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbZLKFcu
+	id S1752956AbZLKFcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 00:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZLKFaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 00:32:50 -0500
-Received: from kroah.org ([198.145.64.141]:53549 "EHLO coco.kroah.org"
+	Fri, 11 Dec 2009 00:30:03 -0500
+Received: from kroah.org ([198.145.64.141]:53557 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754876AbZLKF37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 00:29:59 -0500
-X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:52 2009
-Message-Id: <20091211052552.134440580@linux.site>
+	id S1754909AbZLKFaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 00:30:00 -0500
+X-Mailbox-Line: From linux@linux.site Thu Dec 10 21:25:53 2009
+Message-Id: <20091211052552.682377360@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 10 Dec 2009 21:23:34 -0800
+Date: Thu, 10 Dec 2009 21:23:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kazuya Mio <k-mio@sx.jp.nec.com>, Akira Fujita <a-fujita@rs.jp.nec.com>,
-       "Theodore Tso" <tytso@mit.edu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [22/34] ext4: initialize moved_len before calling ext4_move_extents()
+       Akira Fujita <a-fujita@rs.jp.nec.com>, "Theodore Tso" <tytso@mit.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [23/34] ext4: move_extent_per_page() cleanup
 References: <20091211052312.805428372@linux.site>
-Content-Disposition: inline; filename=0018-ext4-initialize-moved_len-before-calling-ext4_move_e.patch
+Content-Disposition: inline; filename=0019-ext4-move_extent_per_page-cleanup.patch
 In-Reply-To: <20091211052858.GA23229@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,76 +31,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-(cherry picked from commit 446aaa6e7e993b38a6f21c6acfa68f3f1af3dbe3)
+(cherry picked from commit ac48b0a1d068887141581bea8285de5fcab182b0)
 
-The move_extent.moved_len is used to pass back the number of exchanged
-blocks count to user space.  Currently the caller must clear this
-field; but we spend more code space checking for this requirement than
-simply zeroing the field ourselves, so let's just make life easier for
-everyone all around.
+Integrate duplicate lines (acquire/release semaphore and invalidate
+extent cache in move_extent_per_page()) into mext_replace_branches(),
+to reduce source and object code size.
 
-Signed-off-by: Kazuya Mio <k-mio@sx.jp.nec.com>
 Signed-off-by: Akira Fujita <a-fujita@rs.jp.nec.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ioctl.c       |    1 +
- fs/ext4/move_extent.c |   14 +++-----------
- 2 files changed, 4 insertions(+), 11 deletions(-)
+ fs/ext4/move_extent.c |   30 +++++++++---------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
 
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -239,6 +239,7 @@ setversion_out:
- 			}
- 		}
- 
-+		me.moved_len = 0;
- 		err = ext4_move_extents(filp, donor_filp, me.orig_start,
- 					me.donor_start, me.len, &me.moved_len);
- 		fput(donor_filp);
 --- a/fs/ext4/move_extent.c
 +++ b/fs/ext4/move_extent.c
-@@ -947,7 +947,6 @@ out2:
-  * @orig_start:		logical start offset in block for orig
-  * @donor_start:	logical start offset in block for donor
-  * @len:		the number of blocks to be moved
-- * @moved_len:		moved block length
-  *
-  * Check the arguments of ext4_move_extents() whether the files can be
-  * exchanged with each other.
-@@ -955,8 +954,8 @@ out2:
-  */
- static int
- mext_check_arguments(struct inode *orig_inode,
--			  struct inode *donor_inode, __u64 orig_start,
--			  __u64 donor_start, __u64 *len, __u64 moved_len)
-+		     struct inode *donor_inode, __u64 orig_start,
-+		     __u64 donor_start, __u64 *len)
- {
- 	ext4_lblk_t orig_blocks, donor_blocks;
- 	unsigned int blkbits = orig_inode->i_blkbits;
-@@ -1010,13 +1009,6 @@ mext_check_arguments(struct inode *orig_
- 		return -EINVAL;
+@@ -660,6 +660,9 @@ mext_replace_branches(handle_t *handle,
+ 	int replaced_count = 0;
+ 	int dext_alen;
+ 
++	/* Protect extent trees against block allocations via delalloc */
++	double_down_write_data_sem(orig_inode, donor_inode);
++
+ 	/* Get the original extent for the block "orig_off" */
+ 	*err = get_ext_path(orig_inode, orig_off, &orig_path);
+ 	if (*err)
+@@ -755,6 +758,11 @@ out:
+ 		kfree(donor_path);
  	}
  
--	if (moved_len) {
--		ext4_debug("ext4 move extent: moved_len should be 0 "
--			"[ino:orig %lu, donor %lu]\n", orig_inode->i_ino,
--			donor_inode->i_ino);
--		return -EINVAL;
--	}
++	ext4_ext_invalidate_cache(orig_inode);
++	ext4_ext_invalidate_cache(donor_inode);
++
++	double_up_write_data_sem(orig_inode, donor_inode);
++
+ 	return replaced_count;
+ }
+ 
+@@ -820,19 +828,9 @@ move_extent_per_page(struct file *o_filp
+ 	 * Just swap data blocks between orig and donor.
+ 	 */
+ 	if (uninit) {
+-		/*
+-		 * Protect extent trees against block allocations
+-		 * via delalloc
+-		 */
+-		double_down_write_data_sem(orig_inode, donor_inode);
+ 		replaced_count = mext_replace_branches(handle, orig_inode,
+ 						donor_inode, orig_blk_offset,
+ 						block_len_in_page, err);
 -
- 	if ((orig_start > EXT_MAX_BLOCK) ||
- 	    (donor_start > EXT_MAX_BLOCK) ||
- 	    (*len > EXT_MAX_BLOCK) ||
-@@ -1226,7 +1218,7 @@ ext4_move_extents(struct file *o_filp, s
- 	double_down_write_data_sem(orig_inode, donor_inode);
- 	/* Check the filesystem environment whether move_extent can be done */
- 	ret1 = mext_check_arguments(orig_inode, donor_inode, orig_start,
--					donor_start, &len, *moved_len);
-+				    donor_start, &len);
- 	if (ret1)
- 		goto out;
+-		/* Clear the inode cache not to refer to the old data */
+-		ext4_ext_invalidate_cache(orig_inode);
+-		ext4_ext_invalidate_cache(donor_inode);
+-		double_up_write_data_sem(orig_inode, donor_inode);
+ 		goto out2;
+ 	}
+ 
+@@ -880,8 +878,6 @@ move_extent_per_page(struct file *o_filp
+ 	/* Release old bh and drop refs */
+ 	try_to_release_page(page, 0);
+ 
+-	/* Protect extent trees against block allocations via delalloc */
+-	double_down_write_data_sem(orig_inode, donor_inode);
+ 	replaced_count = mext_replace_branches(handle, orig_inode, donor_inode,
+ 					orig_blk_offset, block_len_in_page,
+ 					&err2);
+@@ -890,18 +886,10 @@ move_extent_per_page(struct file *o_filp
+ 			block_len_in_page = replaced_count;
+ 			replaced_size =
+ 				block_len_in_page << orig_inode->i_blkbits;
+-		} else {
+-			double_up_write_data_sem(orig_inode, donor_inode);
++		} else
+ 			goto out;
+-		}
+ 	}
+ 
+-	/* Clear the inode cache not to refer to the old data */
+-	ext4_ext_invalidate_cache(orig_inode);
+-	ext4_ext_invalidate_cache(donor_inode);
+-
+-	double_up_write_data_sem(orig_inode, donor_inode);
+-
+ 	if (!page_has_buffers(page))
+ 		create_empty_buffers(page, 1 << orig_inode->i_blkbits, 0);
  
 
 
