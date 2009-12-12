@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbZLLDw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbZLLEFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761722AbZLLDw5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761349AbZLLDw4
+	id S1761585AbZLLEFV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 23:05:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbZLLEFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:52:56 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38796 "EHLO mx1.suse.de"
+	Fri, 11 Dec 2009 23:05:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42702 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754129AbZLLDwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:52:55 -0500
-Date: Fri, 11 Dec 2009 19:52:54 -0800
+	id S1754735AbZLLEFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 23:05:20 -0500
+Date: Fri, 11 Dec 2009 20:05:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: David Miller <davem@davemloft.net>
 Cc: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: usb_autopm_*() removal build failure...
-Message-ID: <20091212035254.GB11096@suse.de>
+Message-ID: <20091212040524.GA11212@suse.de>
 References: <20091211.174551.123151540.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -44,8 +44,10 @@ On Fri, Dec 11, 2009 at 05:45:51PM -0800, David Miller wrote:
 > 
 > Just FYI...
 
-That was resolved with a patch that Oliver sent you a while ago.  I'll
-dig it up and resend it.
+Here's the patch, sent back in August:
+	 http://marc.info/?l=linux-netdev&m=125071045301270&w=2
+
+Can you take it from there, or do you need me to forward it on?
 
 thanks,
 
