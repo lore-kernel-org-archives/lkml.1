@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbZLLGHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbZLLGKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761426AbZLLGHe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 01:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761361AbZLLGHd
+	id S1752349AbZLLGKv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 01:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbZLLGKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 01:07:33 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46282 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761274AbZLLGHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 01:07:32 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/8n/pAkSz8mzIE7LZPdwmsCYlbM2jKpr1VcxdY5a
-	VT676GlnIAw2l9
-Subject: Re: [tip:sched/urgent] sched: Set correct normal_prio and prio
- values  in sched_fork()
-From: Mike Galbraith <efault@gmx.de>
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, pwil3058@bigpond.net.au,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-In-Reply-To: <d6200be20912112155w6eca7452x550bc77330f236b0@mail.gmail.com>
-References: <f8f46736fd4e7f090ac0.1253774830@mudlark.pw.nest>
-	 <tip-f83f9ac2632732bd1678150b5a03d152f912fe72@git.kernel.org>
-	 <d6200be20912112155w6eca7452x550bc77330f236b0@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 12 Dec 2009 07:07:35 +0100
-Message-Id: <1260598055.6306.1.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+	Sat, 12 Dec 2009 01:10:48 -0500
+Received: from home.kolivas.org ([59.167.196.135]:48595 "EHLO home.kolivas.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750968AbZLLGKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 01:10:47 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
+Date: Sat, 12 Dec 2009 17:10:44 +1100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-ck1; KDE/4.3.2; x86_64; ; )
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200912111124.18118.kernel@kolivas.org> <200912121300.54803.kernel@kolivas.org> <20091212055459.GC32739@1wt.eu>
+In-Reply-To: <20091212055459.GC32739@1wt.eu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912121710.44216.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 21:55 -0800, Arve Hjønnevåg wrote:
-> On Mon, Oct 5, 2009 at 3:47 AM, tip-bot for Peter Williams
-> <pwil3058@bigpond.net.au> wrote:
-> > Commit-ID:  f83f9ac2632732bd1678150b5a03d152f912fe72
-> > Gitweb:     http://git.kernel.org/tip/f83f9ac2632732bd1678150b5a03d152f912fe72
-> > Author:     Peter Williams <pwil3058@bigpond.net.au>
-> > AuthorDate: Thu, 24 Sep 2009 06:47:10 +0000
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Mon, 5 Oct 2009 13:42:20 +0200
-> >
-> > sched: Set correct normal_prio and prio values in sched_fork()
-> >
-> > normal_prio should be updated if policy changes from RT to
-> > SCHED_MORMAL or if static_prio/nice is changed.
-> >
-> > Some paths through sched_fork() ignore this requirement and may
-> > result in normal_prio having an invalid value.
-> >
-> > Fixing this issue allows the call to effective_prio() in
-> > wake_up_new_task() to be removed.
-> >
+On Sat, 12 Dec 2009 16:54:59 Willy Tarreau wrote:
+> Hi Con,
 > 
-> This change causes a lot of threads with a 0 nice value to get a prio
-> value of 140 instead of 120 (at least on my android arm msm build). I
-> don't know if this has any impact on how they are scheduled since the
-> load weight is unaffected, but it at least makes the output of ps more
-> confusing.
+> On Sat, Dec 12, 2009 at 01:00:54PM +1100, Con Kolivas wrote:
+> > > If you are not doing your unpaid kernel work for yourself and for
+> > > people who recognize/use it then upstream maintainers not liking your
+> > > changes should really be the least of your worries..
+> >
+> > Wait, this does not make sense. There's a cyclical flaw in this
+> > reasoning. If I cared about their acknowledgment, I would make it
+> > mainline mergeable and argue a case for it, which I do not want to do.
+> >
+> > I'm happy to make reasonable changes to the code consistent with what
+> > people who use it want, but what exactly is the point of making it
+> > mainline mergeable if it will not be merged?
+> 
+> Many people build their own kernels by :
+>   1) applying a lot of patches on them (stable + features)
+>   2) using machine-specific configs
+> 
+> You will get far more testers if they can use the same kernel and
+> just play with their config files than if they have to patch/unpatch
+> depending on what they need to have.
+> 
+> I personally would love to be able to add BFS into my kernels for
+> testing purposes, comparison, and possibly to propose enhancements
+> and fixes. But I don't want to *replace* mainline code.
+> 
+> Also, I like to have the same kernel sources used on my desktop,
+> notebook, eeepc, and my bootable USB key. It is a lot easier to
+> upgrade and a lot easier to spot bugs before they strike in sensible
+> environments.
 
-There's a patch in tip to correct this, hasn't swam upstream yet.
+Thanks Willy. 
 
-	-Mike
+That's the first meaningful reason I've heard for it. I may have to consider 
+it now. It still would be compile time limited so probably not quite what 
+you're hoping for. I don't have the time and energy to do and maintain the 
+whole plugsched crap for boottime selection all over again, and that adds 
+overhead which goes against one of my prime objectives.
 
+Regards,
+-- 
+-ck
