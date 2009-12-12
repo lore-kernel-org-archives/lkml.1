@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZLLG7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbZLLG7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbZLLG7d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 01:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZLLG73
+	id S1756835AbZLLG7z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 01:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZLLG7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 01:59:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41901 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbZLLG72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 01:59:28 -0500
-Date: Sat, 12 Dec 2009 07:59:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: [build failure] Re: [GIT PATCH] USB patches for 2.6.33-git
-Message-ID: <20091212065923.GA8500@elte.hu>
-References: <20091211212646.GB6624@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091211212646.GB6624@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 12 Dec 2009 01:59:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42123
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750699AbZLLG7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 01:59:52 -0500
+Date: Fri, 11 Dec 2009 22:59:59 -0800 (PST)
+Message-Id: <20091211.225959.102565811.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: gregkh@suse.de, stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: usb_autopm_*() removal build failure...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091212175642.364e5734.sfr@canb.auug.org.au>
+References: <20091212040524.GA11212@suse.de>
+	<20091211.214714.41966763.davem@davemloft.net>
+	<20091212175642.364e5734.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Sat, 12 Dec 2009 17:56:42 +1100
 
-FYI, there's a new build breakage on latest upstream, on allyesconfig 
-x86:
+> Hi Dave,
+> 
+> On Fri, 11 Dec 2009 21:47:14 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+>>
+>> This also means you weren't doing allmodconfig builds on your USB tree
+>> this entire time, because if you had you would have realized that this
+>> fix belonged there not in net-2.6 :-)  And if the USB bits were
+>> going in via -next I'm really surprised Stephen Rothwell wasn't
+>> complaining about this too :)
+> 
+> I did - a posting on Dec 9 with subject "linux-next: staging tree build
+> failure" (which should have been "usb tree" - and I corrected that).
 
- drivers/net/usb/kaweth.c: In function kaweth_open:
- drivers/net/usb/kaweth.c:719: error: implicit declaration of function usb_autopm_enable
-
-The problem appears to be that usb_autopm_enable() is obsolete and got 
-eliminated recently via:
-
-| commit 8e4ceb38eb5bbaef22fc00abe9bc11e26bea2ab5
-| Author: Alan Stern <stern@rowland.harvard.edu>
-| Date:   Mon Dec 7 13:01:37 2009 -0500
-|
-|    USB: prepare for changover to Runtime PM framework
-
-	Ingo
+Awesome, my faith in the human race is restored :-)
