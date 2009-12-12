@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZLLFrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbZLLFzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932555AbZLLFrJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 00:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbZLLFrJ
+	id S1761782AbZLLFzD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 00:55:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbZLLFzC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 00:47:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56516
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758095AbZLLFrI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 00:47:08 -0500
-Date: Fri, 11 Dec 2009 21:47:14 -0800 (PST)
-Message-Id: <20091211.214714.41966763.davem@davemloft.net>
-To: gregkh@suse.de
-Cc: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+	Sat, 12 Dec 2009 00:55:02 -0500
+Received: from 1wt.eu ([62.212.114.60]:52670 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761218AbZLLFzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 00:55:01 -0500
+Date: Sat, 12 Dec 2009 06:54:59 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: usb_autopm_*() removal build failure...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091212040524.GA11212@suse.de>
-References: <20091211.174551.123151540.davem@davemloft.net>
-	<20091212040524.GA11212@suse.de>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
+Message-ID: <20091212055459.GC32739@1wt.eu>
+References: <200912111124.18118.kernel@kolivas.org> <200912120937.42943.kernel@kolivas.org> <200912120155.39197.bzolnier@gmail.com> <200912121300.54803.kernel@kolivas.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912121300.54803.kernel@kolivas.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <gregkh@suse.de>
-Date: Fri, 11 Dec 2009 20:05:24 -0800
+Hi Con,
 
-> Here's the patch, sent back in August:
-> 	 http://marc.info/?l=linux-netdev&m=125071045301270&w=2
+On Sat, Dec 12, 2009 at 01:00:54PM +1100, Con Kolivas wrote:
+> > If you are not doing your unpaid kernel work for yourself and for people
+> > who recognize/use it then upstream maintainers not liking your changes
+> > should really be the least of your worries..
+> > 
 > 
-> Can you take it from there, or do you need me to forward it on?
+> Wait, this does not make sense. There's a cyclical flaw in this reasoning. If 
+> I cared about their acknowledgment, I would make it mainline mergeable and 
+> argue a case for it, which I do not want to do. 
+> 
+> I'm happy to make reasonable changes to the code consistent with what people 
+> who use it want, but what exactly is the point of making it mainline mergeable 
+> if it will not be merged?
 
-I tossed this into the net-2.6 tree, but...
+Many people build their own kernels by :
+  1) applying a lot of patches on them (stable + features)
+  2) using machine-specific configs
 
-I would recommend that in the future when you have the
-dependency of an API change that's going to break the
-build, you take in the necessary change.  And you make
-sure such a commit is in your tree before the commit
-that removes the API.
+You will get far more testers if they can use the same kernel and
+just play with their config files than if they have to patch/unpatch
+depending on what they need to have.
 
-That posting had all the markings of something that wasn't
-my business applying:
+I personally would love to be able to add BFS into my kernels for
+testing purposes, comparison, and possibly to propose enhancements
+and fixes. But I don't want to *replace* mainline code.
 
-1) the subject said "usb" and nothing about networking or
-   a specific networking driver
+Also, I like to have the same kernel sources used on my desktop,
+notebook, eeepc, and my bootable USB key. It is a lot easier to
+upgrade and a lot easier to spot bugs before they strike in sensible
+environments.
 
-2) it was resolving an API issue introduced by another tree
-
-This also means you weren't doing allmodconfig builds on your USB tree
-this entire time, because if you had you would have realized that this
-fix belonged there not in net-2.6 :-)  And if the USB bits were
-going in via -next I'm really surprised Stephen Rothwell wasn't
-complaining about this too :)
-
-Anyways, next time, please resolve API issues internally when you
-do things that will break the build otherwise.
-
-We can merge it all together during the merge window just fine.
-
-Thanks!
-
+Regards,
+Willy
 
