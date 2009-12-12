@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbZLLAiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbZLLAi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760874AbZLLAiI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 19:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZLLAiF
+	id S1761487AbZLLAi1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 19:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761406AbZLLAiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 19:38:05 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:64082 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbZLLAiE (ORCPT
+	Fri, 11 Dec 2009 19:38:22 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:54205 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756445AbZLLAiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 19:38:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=f6hxvcJVN8OYccDdO5K2Q0EKn1n32chCyS0we411Wjhwmx15qinEwwQVzs2ssEssWa
-         647fCDUHimlhpB7Pw5LLW7/Gvs7i42l0zIlxaHE/6rqCSmjZLxlpI3Xd9l7VPd22arij
-         FpEVkb1KZPMGhLKVoWYijwx2wV93Y7c0TRW5I=
+	Fri, 11 Dec 2009 19:38:21 -0500
+Date: Fri, 11 Dec 2009 19:38:25 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <200912112317.31668.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0912111928130.32493-100000@netrider.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <1260577137.8536.20.camel@maxim-laptop>
-References: <1260567582.5983.23.camel@maxim-laptop>
-	 <4B22DEA7.8040202@gmail.com> <1260577137.8536.20.camel@maxim-laptop>
-Date: Fri, 11 Dec 2009 18:38:09 -0600
-Message-ID: <51f3faa70912111638h5940612em5e6a14c166e108b1@mail.gmail.com>
-Subject: Re: Does pci_map_single magicly work on > 32 bit address for 32bit 
-	capable device?
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 6:18 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
->> The kernel should set up an IOMMU (either hardware or software) mapping
->> for that memory so that the device can access it through an address
->> below 4GB. This is assuming it's a 64-bit kernel (on 32-bit, a kernel
->> memory address will always be below 4GB).
->
-> What do you mean by software IOMMU?
->
-> On my system there is no IOMMU present, so only way to ensure 32 bit
-> address is to copy pages.
-> pci_map_single could copy the data for write case, and pci_unmap_single
-> for read case, but I now strongly doubt they do.
+On Fri, 11 Dec 2009, Rafael J. Wysocki wrote:
 
-It does. See the swiotlb code. You should see some message on bootup like:
+> > > .. and I've told you several times that we should simply not do such 
+> > > devices asynchronously. At least not unless there is some _overriding_ 
+> > > reason to. And so far, nobody has suggested anything even remotely 
+> > > likely for that.
+> > 
+> > Agreed.  The fact that async non-tree suspend constraints are difficult 
+> > with rwsems isn't a drawback if nobody needs to use them.
+> 
+> Well, see my reply to Linus.  The only thing that bothers me is that if we use
+> rwsems, there's no way to handle that even if it turns out that someone
+> needs them after all.
 
-PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-Placing 64MB software IO TLB between ffff880020000000 - ffff880024000000
-software IO TLB at phys 0x20000000 - 0x24000000
+This is now a totally moot point, but I want to make it anyway just to
+show how perverse life can be.  It turns out that by combining some of
+the worst parts of the rwsem approach and the completion approach, it
+_is_ possible to have async non-tree suspend constraints with rwsems.  
+The key is to imitate the way the completions work.
 
-> I am not sure at all that these functions will fail if too high address
-> is specified....
->
-> Also, very recently, I found that in
-> Documentation/DMA-API.txt, there is a statement that says that
-> pci_map_single fails for >32 bit memory address.
+The resume algorithm doesn't change, but the suspend algorithm does.  
+Currently, when suspending a device you first read-lock the parent (to 
+prevent it from suspending too soon), then you asynchronously 
+write-lock the device and suspend it, and finally read-unlock the 
+parent.
 
-Where do you see this?
+Instead, you could first write-lock the device (to prevent the parent
+and any other dependents from suspending too soon), then asynchronously
+read-lock each of the children and anything else the device needs to
+wait for, then suspend the device, and finally write-unlock it.  This
+really is analogous to completions:  down_write() is like
+init_completion(), up_write() is like complete_all(), and
+down_read()+up_read() is like wait_for_completion().  I got the idea
+from Linus's comment that completions really are nothing but locks
+initialized in the "locked" state.
 
->
-> I guess I just do a memcpy...
+Of course, you would have to iterate over all the children and deal
+with lockdep complaints.  So this obviously is not to be considered as
+a serious proposal.
 
-This isn't optimal because if there is a hardware IOMMU, the copy can
-be avoided.
+Alan Stern
+
