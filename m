@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762914AbZLLAWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762895AbZLLAZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762914AbZLLAWz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 19:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762850AbZLLAWy
+	id S1762895AbZLLAZN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 19:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762771AbZLLAZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 19:22:54 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:60327 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762703AbZLLAWy (ORCPT
+	Fri, 11 Dec 2009 19:25:09 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:24035 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762758AbZLLAZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 19:22:54 -0500
-Date: Sat, 12 Dec 2009 01:21:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       samr@ravnborg.org
-Subject: Re: hwrng: virtio - Rename driver object to remove section
-	mismatch warning
-Message-ID: <20091212002148.GA9586@merkur.ravnborg.org>
-References: <20091211153658.GA1207@gondor.apana.org.au> <1260559557.24459.1320.camel@calx> <20091211120849.012c43d8.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091211120849.012c43d8.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 11 Dec 2009 19:25:08 -0500
+Date: Fri, 11 Dec 2009 16:23:23 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Greg KH <greg@kroah.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, devel@driverdev.osuosl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] STAGING patches for 2.6.33-git
+Message-Id: <20091211162323.1ec395b6.randy.dunlap@oracle.com>
+In-Reply-To: <20091211234017.GA11006@kroah.com>
+References: <20091211212704.GC6624@kroah.com>
+	<alpine.LFD.2.00.0912111527480.3526@localhost.localdomain>
+	<20091211234017.GA11006@kroah.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt358.oracle.com [141.146.40.158]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B22E2DD.0144:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 12:08:49PM -0800, Randy Dunlap wrote:
-> On Fri, 11 Dec 2009 13:25:57 -0600 Matt Mackall wrote:
-> 
-> > On Fri, 2009-12-11 at 23:36 +0800, Herbert Xu wrote:
-> > > Hi:
-> > > 
-> > > Finally found the cause of the section mismatch warning in hwrng.
-> > > Apparently in addition to __devexit_p we now have to name the
-> > > variable in a certain way.
+On Fri, 11 Dec 2009 15:40:17 -0800 Greg KH wrote:
+
+> On Fri, Dec 11, 2009 at 03:29:09PM -0800, Linus Torvalds wrote:
 > > 
-> > That's fairly appalling. Any idea why?
+> > 
+> > On Fri, 11 Dec 2009, Greg KH wrote:
+> > >
+> > > Here is the big staging merge for the 2.6.33-git tree
+> > 
+> > "B.A.T.M.A.N. Advanced Meshing Protocol"?
 > 
-> (I haven't read the rest of this thread..)
+> I just take the patches, I don't pick the names :)
 > 
-> scripts/mod/modpost.c looks for certain variable names to identify
-> variables that can have references to other (non-data) sections.
-> It's mostly explained there.
+> > Oh, and I think I found a bug in BATMAN already: if you say 'no' to him, 
+> > he still asks whether you want to debug him. 
+> > 
+> > Please, Greg, teach BATMAN that "No means no!". 
+> 
+> Doh, I have a patch for that around here from Randy, it didn't make it
+> in...  Hm, no, he didn't send the patch, just pointed it out.  Here it
+> is below, or you can pull from the same tree and get it:
+> 
+> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+> 
 
-Another option is to annotate the relevant variable.
+but one of the maintainers did you send a patch for this...
 
->From init.h:
-/* modpost check for section mismatches during the kernel build.
- * A section mismatch happens when there are references from a
- * code or data section to an init section (both code or data).
- * The init sections are (for most archs) discarded by the kernel
- * when early init has completed so all such references are potential bugs.
- * For exit sections the same issue exists.
- * The following markers are used for the cases where the reference to
- * the *init / *exit section (code or data) is valid and will teach
- * modpost not to issue a warning.
- * The markers follow same syntax rules as __init / __initdata. */
-#define __ref            __section(.ref.text) noinline
-#define __refdata        __section(.ref.data)
-#define __refconst       __section(.ref.rodata)
 
-	Sam
+> thanks,
+> 
+> greg k-h
+> 
+> From: Greg Kroah-Hartman <gregkh@suse.de>
+> Subject: [PATCH] Staging: batman: fix debug Kconfig option
+> 
+> The debug batman option needs to depend on the correct
+> config option.
+> 
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> diff --git a/drivers/staging/batman-adv/Kconfig b/drivers/staging/batman-adv/Kconfig
+> index b9742e7..7632f57 100644
+> --- a/drivers/staging/batman-adv/Kconfig
+> +++ b/drivers/staging/batman-adv/Kconfig
+> @@ -15,7 +15,7 @@ config BATMAN_ADV
+>  
+>  config BATMAN_DEBUG
+>  	bool "B.A.T.M.A.N. debugging"
+> -	depends on BATMAN != n
+> +	depends on BATMAN_ADV != n
+>  	help
+>  
+>  	  This is an option for use by developers; most people should
+> _______________________________________________
+
+
+---
+~Randy
