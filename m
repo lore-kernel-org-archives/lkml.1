@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762687AbZLLC0C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbZLLCoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762687AbZLLC0C (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 21:26:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760806AbZLLCZ5
+	id S1762877AbZLLCoo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 21:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbZLLCoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 21:25:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48890 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759208AbZLLCZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 21:25:57 -0500
-Message-ID: <4B22FEFD.9050002@zytor.com>
-Date: Fri, 11 Dec 2009 18:25:01 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 21:44:39 -0500
+Received: from arroyo.ext.ti.com ([192.94.94.40]:53984 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760984AbZLLCoj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 21:44:39 -0500
+Message-ID: <4B23039C.8040004@ti.com>
+Date: Fri, 11 Dec 2009 20:44:44 -0600
+From: Nishanth Menon <nm@ti.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Gertjan van Wingerde <gwingerde@gmail.com>
-Subject: Re: [PATCH 61/7] x86/pci: add cap_4g
-References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org> <4B22FBEB.7040204@kernel.org> <4B22FD0B.10506@zytor.com> <4B22FDEF.5050600@kernel.org>
-In-Reply-To: <4B22FDEF.5050600@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: Andy Whitcroft <apw@canonical.com>, <linux-kernel@vger.kernel.org>
+CC: "Pandita, Vikram" <vikram.pandita@ti.com>
+Subject: possible bug in checkpatch.pl with __deprecated?
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/11/2009 06:20 PM, Yinghai Lu wrote:
->>
->> How about:
->>
->> static inline resource_size_t cap_resource(u64 val)
->> {
->> 	if (val > ~(resource_size_t)0)
->> 		return ~(resource_size_t)0;
->> 	else
->> 		return val;
->> }
-> 
-> ok
+Hi Andy, Folks,
 
-Stylisically I guess the idiom:
+I have two patches of the code. I goofed up on [1] and seemingly fixed 
+it on [2] as per checkpatch.pl(I am using pastebin to prevent spamming 
+the mailing list - apologies on that). This behavior seems to be related 
+to the usage __deprecated with structure fields.
 
-	(resource_size_t)~0
+The code in question is:
+(fail.patch)
+struct omap_opp {
+        bool enabled;
+        unsigned long rate;
+        u8 opp_id __deprecated;
+        u16 vsel __deprecated;
+};
+Vs:
+(ok.patch)
+struct omap_opp {
+        bool enabled;
+        unsigned long rate;
+        u8 __deprecated opp_id;
+        u16 __deprecated vsel;
+};
 
-... is better, not that it matters in this case, but the (type)~0 idiom
-gets the correct answer even when sizeof(type) < sizeof(int).
+kernel tag used: v2.6.32
 
-	-hpa
+$scripts/checkpatch.pl --strict ../fail.patch:
+
+ERROR: space prohibited after that '&&' (ctx:WxW)
+#380: FILE: arch/arm/plat-omap/opp.c:25:
++#define OPP_TERM(opp) (!(opp)->rate && !(opp)->vsel && !(opp)->enabled)
+                                                      ^
+
+ERROR: space prohibited after that '*' (ctx:WxW)
+#389: FILE: arch/arm/plat-omap/opp.c:34:
++	return (((vsel * 125) + 6000)) * 100;
+  	               ^
+
+total: 2 errors, 0 warnings, 0 checks, 511 lines checked
+
+../fail.patch has style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+
+
+$scripts/checkpatch.pl --strict ../ok.patch
+total: 0 errors, 0 warnings, 0 checks, 511 lines checked
+
+../ok.patch has no obvious style problems and is ready for submission.
+
+The failure with fail.patch seems to be a false positive and wonder if 
+someone has seen this before.
+
+Just checking if someone has seen this issue before. (musing as to what 
+the ideal style of __deprecated is)..
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Regards,
+Nishanth Menon
 
+Ref:
+[1] http://pastebin.mozilla.org/690162 (fail.patch)
+[2] http://pastebin.mozilla.org/690160 (ok.patch)
+	Usage in line 150
