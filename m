@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934009AbZLMBn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZLLG4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934009AbZLMBn2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933911AbZLMBn1
+	id S1756311AbZLLG4o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 01:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZLLG4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:43:27 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:45375 "HELO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933894AbZLMBn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:43:26 -0500
-Date: Fri, 11 Dec 2009 22:46:20 -0800
-From: Greg KH <gregkh@suse.de>
+	Sat, 12 Dec 2009 01:56:43 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60916 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbZLLG4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 01:56:42 -0500
+Date: Sat, 12 Dec 2009 17:56:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: David Miller <davem@davemloft.net>
-Cc: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+Cc: gregkh@suse.de, stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: usb_autopm_*() removal build failure...
-Message-ID: <20091212064620.GA13405@suse.de>
-References: <20091211.174551.123151540.davem@davemloft.net> <20091212040524.GA11212@suse.de> <20091211.214714.41966763.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-Id: <20091212175642.364e5734.sfr@canb.auug.org.au>
 In-Reply-To: <20091211.214714.41966763.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20091211.174551.123151540.davem@davemloft.net>
+	<20091212040524.GA11212@suse.de>
+	<20091211.214714.41966763.davem@davemloft.net>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__12_Dec_2009_17_56_42_+1100_.xJoufU5m6VdNsCQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 09:47:14PM -0800, David Miller wrote:
-> From: Greg KH <gregkh@suse.de>
-> Date: Fri, 11 Dec 2009 20:05:24 -0800
-> 
-> > Here's the patch, sent back in August:
-> > 	 http://marc.info/?l=linux-netdev&m=125071045301270&w=2
-> > 
-> > Can you take it from there, or do you need me to forward it on?
-> 
-> I tossed this into the net-2.6 tree, but...
-> 
-> I would recommend that in the future when you have the
-> dependency of an API change that's going to break the
-> build, you take in the necessary change.  And you make
-> sure such a commit is in your tree before the commit
-> that removes the API.
+--Signature=_Sat__12_Dec_2009_17_56_42_+1100_.xJoufU5m6VdNsCQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I did at first, so I dropped the API change from my tree.  Then Alan and
-Oliver pointed out that the changes were already in your tree, and I
-looked and saw the first one, so just assumed the 2 other ones were
-there, and turned off all network USB drivers in my build in order to
-handle this.
+Hi Dave,
 
-Then yesterday, Stephen reported that this one driver failed to build,
-which I didn't pick up on until today, after the tree had been sent to
-Linus.
+On Fri, 11 Dec 2009 21:47:14 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> This also means you weren't doing allmodconfig builds on your USB tree
+> this entire time, because if you had you would have realized that this
+> fix belonged there not in net-2.6 :-)  And if the USB bits were
+> going in via -next I'm really surprised Stephen Rothwell wasn't
+> complaining about this too :)
 
-So, a mixup on my part, I'm sorry about that.
+I did - a posting on Dec 9 with subject "linux-next: staging tree build
+failure" (which should have been "usb tree" - and I corrected that).
 
-> Anyways, next time, please resolve API issues internally when you
-> do things that will break the build otherwise.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Will do.
+--Signature=_Sat__12_Dec_2009_17_56_42_+1100_.xJoufU5m6VdNsCQ
+Content-Type: application/pgp-signature
 
-thanks for your patience.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-greg k-h
+iEYEARECAAYFAksjPqoACgkQjjKRsyhoI8zd+QCeK6X3omsOs0Olx9/+kX8UToVh
+JEIAni3ViflkHkgf7QR6iNvjPDB+O0Lq
+=I7Sp
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__12_Dec_2009_17_56_42_+1100_.xJoufU5m6VdNsCQ--
