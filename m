@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZLLHnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZLLH7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbZLLHnH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 02:43:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZLLHnG
+	id S1757404AbZLLH7h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 02:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZLLH7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 02:43:06 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:64528 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbZLLHnF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 02:43:05 -0500
-Date: Fri, 11 Dec 2009 23:43:10 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: netdev@vger.kernel.org
-Subject: Badness at net/ipv4/inet_connection_sock.c:293
-Message-ID: <alpine.DEB.2.01.0912112335440.2915@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19KjRoSpI6qFmbI+bVbvGw7m7af3HqT5biMwRW
- bTbhrTspxIyEkjH1cATWfAwcMNIQY6w0KZohaFBjlSco5Bup2g
- hKw7HNOatYs6X4vmXM+Mg==
+	Sat, 12 Dec 2009 02:59:36 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44097 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751562AbZLLH7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 02:59:35 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18Okttu8PEOAlBsurnsFamRj8xp4OGwLRSbb4ZUo8
+	8r/RvEck4X+7ZX
+Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200912120937.42943.kernel@kolivas.org>
+References: <200912111124.18118.kernel@kolivas.org>
+	 <200912120204.51547.kernel@kolivas.org>
+	 <alpine.DEB.2.00.0912110910490.32415@router.home>
+	 <200912120937.42943.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Sat, 12 Dec 2009 08:59:39 +0100
+Message-Id: <1260604779.6571.28.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On Sat, 2009-12-12 at 09:37 +1100, Con Kolivas wrote:
+> On Sat, 12 Dec 2009 02:12:58 Christoph Lameter wrote:
+> > On Sat, 12 Dec 2009, Con Kolivas wrote:
+> > > On Sat, 12 Dec 2009 01:10:39 Christoph Lameter wrote:
+> > > > Could you make the scheduler build time configurable instead of
+> > > > replacing the existing one? Embedded folks in particular may love a low
+> > > > footprint scheduler.
+> > >
+> > > It's not a bad idea, but the kernel still needs to be patched either way.
+> > > To get BFS they'd need to patch the kernel. If they didn't want BFS, they
+> > > wouldn't patch it in the first place.
+> > 
+> > BFS would have a chance to be merged as an alternate scheduler for
+> > specialized situations (such as embedded or desktop use).
+> > 
+> 
+> Nice idea, but regardless of who else might want that, the mainline 
+> maintainers have already made it clear they do not.
 
-today I upgraded from 2.6.32-rc7 to the latest -git (mainline) and after a 
-few hours the messages below appeared in the log. Apparently "privoxy" was 
-very busy handling connections, but the messages never appeared with 
-earlier kernels. 
+Hm.  You made it very clear from the onset that BFS was not intended to
+be a merge candidate.  Of course, you're free to change your mind any
+time you feel like it.
 
-Full dmesg & .config is on:
-http://nerdbynature.de/bits/2.6.33-git/inet_accept/
+	-Mike
 
-Thanks,
-Christian.
-
- ------------[ cut here ]------------
- Badness at net/ipv4/inet_connection_sock.c:293
- NIP: c02a0914 LR: c02a0904 CTR: 00000000
- REGS: eeecbd30 TRAP: 0700   Not tainted  (2.6.32)
- MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002442  XER: 00000000
- TASK = eee9a820[1756] 'privoxy' THREAD: eeeca000
- GPR00: 00000001 eeecbde0 eee9a820 c03f7094 d4e86ba0 00000000 00001d40 00000000 
- GPR08: eeecbdf4 d4e86b40 00000000 c0d42000 00000000 10054804 bfedd9fc 10038614 
- GPR16: 100385f8 100385c8 00000000 1004c824 100385dc 1004c80c 1004c9d0 100385a4 
- GPR24: 1004c824 7fffffff fffffe04 eeecbe38 eeecbde8 7fffffff cb3b4840 eecc6520 
- NIP [c02a0914] inet_csk_accept+0x94/0x1f0
- LR [c02a0904] inet_csk_accept+0x84/0x1f0
- Call Trace:
- [eeecbde0] [c02a0904] inet_csk_accept+0x84/0x1f0 (unreliable)
- [eeecbe30] [c02c3794] inet_accept+0x40/0xb8
- [eeecbe50] [c0268448] sys_accept4+0xfc/0x1fc
- [eeecbf00] [c0268bd4] sys_socketcall+0x1d4/0x204
- [eeecbf40] [c0012dcc] ret_from_syscall+0x0/0x38
- --- Exception: c01 at 0xff393d4
-     LR = 0xff393c0
- Instruction dump:
- 0f000000 a13f00b4 7d645b78 3929ffff b13f00b4 816b0018 806b0008 4bdf0e41 
- 881e0016 68000003 7c000034 5400d97e <0f000000> 7fe3fb78 4bfc948d 80010054 
-
-
- ------------[ cut here ]------------
- Badness at net/ipv4/af_inet.c:668
- NIP: c02c37b8 LR: c02c37a4 CTR: 00000000
- REGS: eeecbd80 TRAP: 0700   Tainted: G        W   (2.6.32)
- MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002442  XER: 00000000
- TASK = eee9a820[1756] 'privoxy' THREAD: eeeca000
- GPR00: 00000001 eeecbe30 eee9a820 cb3b4840 00000000 00000000 00001d40 00000000 
- GPR08: eeecbdf4 00000003 00000000 eeeca000 00000000 10054804 bfedd9fc 10038614 
- GPR16: 100385f8 100385c8 00000000 1004c824 100385dc 1004c80c 1004c9d0 100385a4 
- GPR24: 1004c824 ffffffff 00000010 bfedd9a8 bfedd9ac ef645580 e5a5dc60 cb3b4840 
- NIP [c02c37b8] inet_accept+0x64/0xb8
- LR [c02c37a4] inet_accept+0x50/0xb8
- Call Trace:
- [eeecbe30] [c02c37a4] inet_accept+0x50/0xb8 (unreliable)
- [eeecbe50] [c0268448] sys_accept4+0xfc/0x1fc
- [eeecbf00] [c0268bd4] sys_socketcall+0x1d4/0x204
- [eeecbf40] [c0012dcc] ret_from_syscall+0x0/0x38
- --- Exception: c01 at 0xff393d4
-     LR = 0xff393c0
- Instruction dump:
- 816b000c 7d6903a6 4e800421 7c7f1b79 4182005c 38800000 4bfa66b1 893f0016 
- 38000182 7c004e30 68000001 540007fe <0f000000> 4bd722c9 381e0010 901f0044 
-
-
-
--- 
-BOFH excuse #137:
-
-User was distributing pornography on server; system seized by FBI.
