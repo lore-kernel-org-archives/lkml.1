@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbZLMCsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935148AbZLMBze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752717AbZLMCsl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 21:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZLMCsk
+	id S935148AbZLMBze (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935049AbZLMBzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 21:48:40 -0500
-Received: from fallback.mail.elte.hu ([157.181.151.13]:54054 "HELO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751425AbZLMCsk (ORCPT
+	Sat, 12 Dec 2009 20:55:21 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53508 "HELO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S935052AbZLMBzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 21:48:40 -0500
-Date: Sat, 12 Dec 2009 14:24:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] Fix 2.6.33 x86 regression to kgdb hw breakpoints - due to
- perf API changes
-Message-ID: <20091212132428.GB22389@elte.hu>
-References: <4B227F2C.7050403@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B227F2C.7050403@windriver.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Sat, 12 Dec 2009 20:55:18 -0500
+Date: Sat, 12 Dec 2009 13:50:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Cypher Wu <cypher.w@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Questions about Watch Dog Timer under Linux.
+Message-ID: <20091212135035.0d01018d@lxorguk.ukuu.org.uk>
+In-Reply-To: <f9f38a550912111946w665b267dkc42d184bdc437d02@mail.gmail.com>
+References: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
+	<20091209145919.GH9018@sirena.org.uk>
+	<f9f38a550912110027r70710867k3a08c6d5913ce13@mail.gmail.com>
+	<20091211102159.GB18825@rakim.wolfsonmicro.main>
+	<f9f38a550912111946w665b267dkc42d184bdc437d02@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> timer. This type of WDT is widely used in our embedded systems and we
+> usually install a callback in timer interrupt to clearing WD before
+> BSP starting the RTOS kernel, and then starting a task to clear WD and
+> uninstall the callback.
+> I'm wonder when cope with that type of WD, is there any framework
+> already in the Linux kernel and booter, or I've to modify them by
+> myself?
 
-* Jason Wessel <jason.wessel@windriver.com> wrote:
+Without knowing which boot environment you are using I don't know. For
+the kernel itself you may need to touch the timer early on in boot (in
+your platform setup code), then set up the driver early on.
 
-> I'll lead with a question.  Are the people making the Perf API changes 
-> booting allyesconfig kernels?
->
-> The regression tests built into the kernel for kgdb fail as a result 
-> of the perf API changes and can result in a hard kernel hang.
->
-> My hope would have been that someone would have reported the problem, 
-> created a patch to disable the test that hangs the kernel, or to fix 
-> kgdb such that it works with the API changes.  Likewise, if there are 
-> tests I should run to regression test the changes to the perf API, I 
-> would like to know since we all want to make use of the same hw 
-> resource.
-> 
-> A patch has been included in this mail which allows kgdb to pass the 
-> internal regression tests for hw breakpoints.  I would like to get 
-> some comments or start a discussion as to how to solve this problem in 
-> the 2.6.33 cycle, as it is a regression in functionality.
+There isn't a general framework for this although there may be one I
+don't know about implemented in some other specific platform.
 
-Hm, the kgdb hw-breakpoint changes freshly put into v2.6.33 look pretty 
-broken: they access the raw hw registers and ignore the higher level 
-abstraction. Your patch still uses way too low level primitives. Please 
-use the highlevel abstraction: register/unregister_wide_hw_breakpoint() 
-should do the trick. (if there's any changes/extensions needed to it 
-then please let us know about it.)
-
-If that's too much for v2.6.33 then i guess we need to revert or disable 
-the kgdb hw-breakpoint changes for now.
-
-Thanks,
-
-	Ingo
+Alan
