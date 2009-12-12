@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZLMDIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933417AbZLMB2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZLMDIp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 22:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZLMDIp
+	id S933417AbZLMB2b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbZLMB2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 22:08:45 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:62417 "HELO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755174AbZLMDIp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 22:08:45 -0500
-MIME-Version: 1.0
-In-Reply-To: <20091212233409.60da66fb.d-nishimura@mtf.biglobe.ne.jp>
-References: <cover.1260571675.git.kirill@shutemov.name>
-	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
-	 <c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
-	 <747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
-	 <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
-	 <cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
-	 <20091212233409.60da66fb.d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 12 Dec 2009 21:46:08 +0200
-Message-ID: <cc557aab0912121146y276a8d26v8baee15be1f83a97@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
+	Sat, 12 Dec 2009 20:28:31 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40252 "HELO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933394AbZLMB2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:28:30 -0500
+Date: Sat, 12 Dec 2009 20:10:56 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jean Delvare <jdelvare@suse.de>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Mahoney <jeffm@suse.de>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH] fb/intelfb: Do not depend on EMBEDDED
+In-Reply-To: <200912121419.18617.jdelvare@suse.de>
+Message-ID: <alpine.DEB.2.00.0912122008570.23394@skynet.skynet.ie>
+References: <200912121419.18617.jdelvare@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2009 at 4:34 PM, Daisuke Nishimura
-<d-nishimura@mtf.biglobe.ne.jp> wrote:
-> On Sat, 12 Dec 2009 15:06:52 +0200
-> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
->
->> On Sat, Dec 12, 2009 at 5:50 AM, Daisuke Nishimura
->> <d-nishimura@mtf.biglobe.ne.jp> wrote:
->> > And IIUC, it's the same for your threshold feature, right ?
->> > I think it would be better:
->> >
->> > - discard this change.
->> > - in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
->> >  and instead of adding a new STAT counter, do like:
->> >
->> >        if (mem_cgroup_event_check(mem)) {
->> >                mem_cgroup_update_tree(mem, page);
->> >                mem_cgroup_threshold(mem);
->> >        }
->>
->> I think that mem_cgroup_update_tree() and mem_cgroup_threshold() should be
->> run with different frequency. How to share MEM_CGROUP_STAT_EVENTS
->> between soft limits and thresholds in this case?
->>
-> hmm, both softlimit and your threshold count events at the same place(charge and uncharge).
-> So, I think those events can be shared.
-> Is there any reason they should run in different frequency ?
 
-SOFTLIMIT_EVENTS_THRESH is 1000. If use the same value for thresholds,
-a threshold can
-be exceed on 1000*nr_cpu_id pages. It's too many. I think, that 100 is
-a reasonable value.
+> I am worried that the intelfb driver depends on EMBEDDED. I consider
+> this an abuse of the EMBEDDED configuration option, which as I
+> understand it was originally meant to expose fine-tuning options,
+> rather than to arbitrarily disable drivers when not selected.
 
-mem_cgroup_soft_limit_check() resets MEM_CGROUP_STAT_EVENTS when it reaches
-SOFTLIMIT_EVENTS_THRESH. If I will do the same thing for
-THRESHOLDS_EVENTS_THRESH
-(which is 100) , mem_cgroup_event_check() will never be 'true'. Any
-idea how to share
-MEM_CGROUP_STAT_EVENTS in this case?
+Since we merged a kms driver for Intel hw that supports all intel chipsets
+and more importantly all the outputs on Intel chipsets, intelfb should
+be considered legacy at the least and broken on > 50% of intel hw.
+
+We left it in in that most ppl who wanted it were using it in embedded 
+configs, whereas for most users it just doesn't work, like I don't thinkit
+supports LVDS which means loading it on a laptop will trash it.
+
+Dave
+
+
+> 
+> So I suggest that we drop this dependency now.
+> 
+> Signed-off-by: Jean Delvare <jdelvare@suse.de>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Dave Airlie <airlied@linux.ie>
+> ---
+> Jesse, in the original commit, you wrote that intelfb was "really a
+> special purpose embedded driver". It looks like a perfectly standard
+> framebuffer driver to me, which means that it may have users beyond
+> embedded. For example I always prefer framebuffer over X for my
+> servers. Or am I missing something and intelfb is really special?
+> 
+>  drivers/video/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.32.orig/drivers/video/Kconfig	2009-12-03 08:48:34.000000000 +0100
+> +++ linux-2.6.32/drivers/video/Kconfig	2009-12-11 10:57:43.000000000 +0100
+> @@ -1121,7 +1121,7 @@ config FB_CARILLO_RANCH
+>  
+>  config FB_INTEL
+>  	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
+> -	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL && EMBEDDED
+> +	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
+>  	select FB_MODE_HELPERS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+> 
+> 
