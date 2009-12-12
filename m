@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbZLLFzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761926AbZLLFze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761782AbZLLFzD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 00:55:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbZLLFzC
+	id S1761926AbZLLFze (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 00:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761862AbZLLFzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 00:55:02 -0500
-Received: from 1wt.eu ([62.212.114.60]:52670 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761218AbZLLFzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 00:55:01 -0500
-Date: Sat, 12 Dec 2009 06:54:59 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
-Message-ID: <20091212055459.GC32739@1wt.eu>
-References: <200912111124.18118.kernel@kolivas.org> <200912120937.42943.kernel@kolivas.org> <200912120155.39197.bzolnier@gmail.com> <200912121300.54803.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912121300.54803.kernel@kolivas.org>
-User-Agent: Mutt/1.5.11
+	Sat, 12 Dec 2009 00:55:32 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:56025 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761851AbZLLFzW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 00:55:22 -0500
+MIME-Version: 1.0
+In-Reply-To: <tip-f83f9ac2632732bd1678150b5a03d152f912fe72@git.kernel.org>
+References: <f8f46736fd4e7f090ac0.1253774830@mudlark.pw.nest>
+	 <tip-f83f9ac2632732bd1678150b5a03d152f912fe72@git.kernel.org>
+Date: Fri, 11 Dec 2009 21:55:28 -0800
+Message-ID: <d6200be20912112155w6eca7452x550bc77330f236b0@mail.gmail.com>
+Subject: Re: [tip:sched/urgent] sched: Set correct normal_prio and prio values 
+	in sched_fork()
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       pwil3058@bigpond.net.au, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Con,
+On Mon, Oct 5, 2009 at 3:47 AM, tip-bot for Peter Williams
+<pwil3058@bigpond.net.au> wrote:
+> Commit-ID:  f83f9ac2632732bd1678150b5a03d152f912fe72
+> Gitweb:     http://git.kernel.org/tip/f83f9ac2632732bd1678150b5a03d152f912fe72
+> Author:     Peter Williams <pwil3058@bigpond.net.au>
+> AuthorDate: Thu, 24 Sep 2009 06:47:10 +0000
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Mon, 5 Oct 2009 13:42:20 +0200
+>
+> sched: Set correct normal_prio and prio values in sched_fork()
+>
+> normal_prio should be updated if policy changes from RT to
+> SCHED_MORMAL or if static_prio/nice is changed.
+>
+> Some paths through sched_fork() ignore this requirement and may
+> result in normal_prio having an invalid value.
+>
+> Fixing this issue allows the call to effective_prio() in
+> wake_up_new_task() to be removed.
+>
 
-On Sat, Dec 12, 2009 at 01:00:54PM +1100, Con Kolivas wrote:
-> > If you are not doing your unpaid kernel work for yourself and for people
-> > who recognize/use it then upstream maintainers not liking your changes
-> > should really be the least of your worries..
-> > 
-> 
-> Wait, this does not make sense. There's a cyclical flaw in this reasoning. If 
-> I cared about their acknowledgment, I would make it mainline mergeable and 
-> argue a case for it, which I do not want to do. 
-> 
-> I'm happy to make reasonable changes to the code consistent with what people 
-> who use it want, but what exactly is the point of making it mainline mergeable 
-> if it will not be merged?
+This change causes a lot of threads with a 0 nice value to get a prio
+value of 140 instead of 120 (at least on my android arm msm build). I
+don't know if this has any impact on how they are scheduled since the
+load weight is unaffected, but it at least makes the output of ps more
+confusing.
 
-Many people build their own kernels by :
-  1) applying a lot of patches on them (stable + features)
-  2) using machine-specific configs
-
-You will get far more testers if they can use the same kernel and
-just play with their config files than if they have to patch/unpatch
-depending on what they need to have.
-
-I personally would love to be able to add BFS into my kernels for
-testing purposes, comparison, and possibly to propose enhancements
-and fixes. But I don't want to *replace* mainline code.
-
-Also, I like to have the same kernel sources used on my desktop,
-notebook, eeepc, and my bootable USB key. It is a lot easier to
-upgrade and a lot easier to spot bugs before they strike in sensible
-environments.
-
-Regards,
-Willy
-
+-- 
+Arve Hjønnevåg
