@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZLMCSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935305AbZLMB6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZLMCSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 21:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZLMCSW
+	id S935305AbZLMB6k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935295AbZLMB6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 21:18:22 -0500
-Received: from kroah.org ([198.145.64.141]:40083 "HELO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752043AbZLMCSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 21:18:21 -0500
-Date: Sat, 12 Dec 2009 11:02:05 -0800
-From: Greg KH <greg@kroah.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 2/3] staging/dream: add missing include files
-Message-ID: <20091212190205.GA16364@kroah.com>
-References: <20091101222717.GB20740@elf.ucw.cz> <20091119225602.GC18710@kroah.com> <20091120105726.GH11212@elf.ucw.cz> <20091120153054.GA23007@kroah.com> <20091206215257.GA14137@elf.ucw.cz>
+	Sat, 12 Dec 2009 20:58:39 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:55009 "HELO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935292AbZLMB6h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:58:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=rm7SsQc4+hb6noHCyR8urtpf6f6ui0ZixVVUocLQkIFPB4nXLRc9A1h1PdhfimPJ26
+         UriqG1jGUhqq217XaHTSQ3k/7Z/dOfxbMS0nsbeKqy2GfDm6EeBq0urKBgZC63S7SmeL
+         HEnTSALBwXeoGC/pDGFNG13XzioGtlkB6Q/84=
+Message-ID: <4B23EA51.30504@gmail.com>
+Date: Sat, 12 Dec 2009 20:09:05 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091206215257.GA14137@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: netdev@vger.kernel.org, yevgenyp@mellanox.co.il,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mlx4_core: return a negative error value
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 10:52:57PM +0100, Pavel Machek wrote:
-> On Fri 2009-11-20 07:30:54, Greg KH wrote:
-> > On Fri, Nov 20, 2009 at 11:57:26AM +0100, Pavel Machek wrote:
-> > > Where can I get the tree to diff against?
-> > > gregkh-08-staging-2.6.32-rc7-git4.patch just reverts everything.
-> > > 
-> > > I guess I can extract it from
-> > > ://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/series ...
-> > 
-> > Or grab the linux-next tree and branch from right before the "delete the
-> > drivers/staging/dream/ directory" patch.
-> 
-> What is the status here, BTW? staging/dream is still there in git pull
-> from today. Would it be possible to avoid pushing that huge revert to
-> Linus, after all? Fixes are available, and it would be nice to avoid
-> big churn.... Pretty please...
+The return value should be negative.
 
-Sorry for the delay.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/net/mlx4/sense.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I've pushed out the staging patches for .33, and left in the Dream
-files, as you are trying very hard to get this to work, and to delete
-them now would just be rude of me.  I'll drop the patch from -next that
-removes the files as well when I sync up with Linus later today.
+This is a cleanup, its only caller, mlx4_do_sense_ports()
+acts on any non-zero error values as well.
 
-I'll also work through the patches you have sent me so far that I
-haven't applied, I think there are still a few.
-
-Hope this helps,
-
-greg k-h
+diff --git a/drivers/net/mlx4/sense.c b/drivers/net/mlx4/sense.c
+index f36ae69..015fbe7 100644
+--- a/drivers/net/mlx4/sense.c
++++ b/drivers/net/mlx4/sense.c
+@@ -53,7 +53,7 @@ static int mlx4_SENSE_PORT(struct mlx4_dev *dev, int port,
+ 
+ 	if (out_param > 2) {
+ 		mlx4_err(dev, "Sense returned illegal value: 0x%llx\n", out_param);
+-		return EINVAL;
++		return -EINVAL;
+ 	}
+ 
+ 	*type = out_param;
