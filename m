@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbZLLFlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761616AbZLLFmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761419AbZLLFlN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 00:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbZLLFlM
+	id S1761616AbZLLFmD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 00:42:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbZLLFmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 00:41:12 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60931
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757439AbZLLFlL (ORCPT
+	Sat, 12 Dec 2009 00:42:01 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:37321 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757838AbZLLFmA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 00:41:11 -0500
-Date: Fri, 11 Dec 2009 21:41:17 -0800 (PST)
-Message-Id: <20091211.214117.200029438.davem@davemloft.net>
-To: yhlu.kernel@gmail.com
-Cc: mingo@elte.hu, sri@us.ibm.com, herbert@gondor.apana.org.au,
-       torvalds@linux-foundation.org, sjayaraman@suse.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: nfs broken in net-next? -- now in mainline -- bisected:
- d9f5950f90292f7cc42834338dfd5f44dc4cc4ca
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <86802c440912112125v4aa72189ifcc2d16ecbf79cc4@mail.gmail.com>
-References: <86802c440912112125v4aa72189ifcc2d16ecbf79cc4@mail.gmail.com>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Dec 2009 00:42:00 -0500
+MIME-Version: 1.0
+In-Reply-To: <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+References: <20091205221100.GA32522@elf.ucw.cz>
+	 <1260054737.23633.35.camel@desktop>
+	 <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+Date: Fri, 11 Dec 2009 21:42:07 -0800
+Message-ID: <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+Subject: Re: tree with htc dream support
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Daniel Walker <dwalker@codeaurora.org>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Date: Fri, 11 Dec 2009 21:25:49 -0800
+On Sat, Dec 5, 2009 at 4:38 PM, Brian Swetland <swetland@google.com> wrote:
+> Arve's about to take our common and msm trees and rebase them over the .32,
+> which may be useful for reference -- at least as a snapshot of a fully
+> functional set of patches that android donut and eclair run on, on
+> production hardware.  We'll make that available as soon as we have something
+> that's bootable.
+>
+> Brian
+>
+>
 
-> [linux-2.6]# git bisect good
-> d9f5950f90292f7cc42834338dfd5f44dc4cc4ca is first bad commit
-> commit d9f5950f90292f7cc42834338dfd5f44dc4cc4ca
-> Author: Sridhar Samudrala <sri@us.ibm.com>
-> Date:   Wed Oct 7 12:24:25 2009 +0000
-> 
->     net: Make UFO on master device independent of attached devices
+A first pass of this is available in the android-msm-2.6.32-test1
+branch at git://android.git.kernel.org/kernel/experimental.git.
 
-Thanks.
+http://android.git.kernel.org/?p=kernel/experimental.git;a=shortlog;h=refs/heads/android-msm-2.6.32-test1
 
-If I don't hear anything from Sridhar in a day or two I'll simply
-revert that change.
+-- 
+Arve Hjønnevåg
