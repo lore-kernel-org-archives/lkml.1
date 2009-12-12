@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZLMC5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZLMDIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZLMC5M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 21:57:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZLMC5L
+	id S1755888AbZLMDIp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 22:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZLMDIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 21:57:11 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:35602 "HELO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753611AbZLMC5K (ORCPT
+	Sat, 12 Dec 2009 22:08:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:62417 "HELO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755174AbZLMDIp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 21:57:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:x-url:user-agent;
-        b=NcOuIHKzjYL57+eCFRF4Bp203p0xgf5O/cFt96NuN3zmT4Fq3fuVgdW63jua7256+r
-         NDEtvlTorSnmjjyCjgTpBmlGh4BIylQLiFoY+gEsalJ2LGNPPmNYh0WEJQYLKFBKpmm7
-         lTmy7+nvGmX95I0gM9YS1zfpg92QDkWASKZik=
-Date: Sat, 12 Dec 2009 17:42:22 -0200
-From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: William Allen Simpson <william.allen.simpson@gmail.com>,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-Message-ID: <20091212194222.GC1949@ghostprotocols.net>
-References: <20091211.181712.211179737.davem@davemloft.net>
- <4B236C18.4050007@gmail.com>
- <4B237528.8020708@gmail.com>
+	Sat, 12 Dec 2009 22:08:45 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B237528.8020708@gmail.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20091212233409.60da66fb.d-nishimura@mtf.biglobe.ne.jp>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	 <c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
+	 <747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+	 <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
+	 <cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
+	 <20091212233409.60da66fb.d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 12 Dec 2009 21:46:08 +0200
+Message-ID: <cc557aab0912121146y276a8d26v8baee15be1f83a97@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sat, Dec 12, 2009 at 11:49:12AM +0100, Eric Dumazet escreveu:
-> Le 12/12/2009 11:10, William Allen Simpson a �crit :
-> > David Miller wrote:
-> >> David S. Miller (4):
-> >>       Merge branch 'master' of
-> > This is a poor patch that was never sent to the netdev list for review. 
-> 
-> William, as I already said, you wont solve your problem with David
-> alerting whole earth, Linus, God, whoever, because we dont care,
-> we have our own problems.
-> 
-> This drama is really ridiculous, could we go forward, correct bugs,
-> add documentation, and so on ?
+On Sat, Dec 12, 2009 at 4:34 PM, Daisuke Nishimura
+<d-nishimura@mtf.biglobe.ne.jp> wrote:
+> On Sat, 12 Dec 2009 15:06:52 +0200
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+>
+>> On Sat, Dec 12, 2009 at 5:50 AM, Daisuke Nishimura
+>> <d-nishimura@mtf.biglobe.ne.jp> wrote:
+>> > And IIUC, it's the same for your threshold feature, right ?
+>> > I think it would be better:
+>> >
+>> > - discard this change.
+>> > - in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
+>> >  and instead of adding a new STAT counter, do like:
+>> >
+>> >        if (mem_cgroup_event_check(mem)) {
+>> >                mem_cgroup_update_tree(mem, page);
+>> >                mem_cgroup_threshold(mem);
+>> >        }
+>>
+>> I think that mem_cgroup_update_tree() and mem_cgroup_threshold() should be
+>> run with different frequency. How to share MEM_CGROUP_STAT_EVENTS
+>> between soft limits and thresholds in this case?
+>>
+> hmm, both softlimit and your threshold count events at the same place(charge and uncharge).
+> So, I think those events can be shared.
+> Is there any reason they should run in different frequency ?
 
-Indeed, this is over the top, either try to get along with people that
-proved their worth thru almost decades of hard work, even being difficult
-to deal with when treated unreasonably (and sometimes when in a bad mood
-;-)) or get the highway and never look back!
+SOFTLIMIT_EVENTS_THRESH is 1000. If use the same value for thresholds,
+a threshold can
+be exceed on 1000*nr_cpu_id pages. It's too many. I think, that 100 is
+a reasonable value.
 
-- Arnaldo
+mem_cgroup_soft_limit_check() resets MEM_CGROUP_STAT_EVENTS when it reaches
+SOFTLIMIT_EVENTS_THRESH. If I will do the same thing for
+THRESHOLDS_EVENTS_THRESH
+(which is 100) , mem_cgroup_event_check() will never be 'true'. Any
+idea how to share
+MEM_CGROUP_STAT_EVENTS in this case?
