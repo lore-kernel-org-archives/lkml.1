@@ -1,48 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761788AbZLLA5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbZLLA7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761788AbZLLA5H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 19:57:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZLLA5D
+	id S1762950AbZLLA7w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 19:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763032AbZLLA7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 19:57:03 -0500
-Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:42602 "EHLO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756207AbZLLA5C convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 19:59:45 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49888 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762993AbZLLA7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 19:57:02 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 11 Dec 2009 19:59:35 -0500
+Message-ID: <4B22EA7A.2050309@bx.jp.nec.com>
+Date: Fri, 11 Dec 2009 19:57:30 -0500
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Question: drivers/misc/hdpuftrs
-Date: Fri, 11 Dec 2009 19:57:10 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901FB1116@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Question: drivers/misc/hdpuftrs
-Thread-Index: Acp6xgkCZteRaiEzRmipluJjNFs8IA==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 12 Dec 2009 00:57:08.0422 (UTC) FILETIME=[07AAAE60:01CA7AC6]
+To: linux-kernel@vger.kernel.org
+CC: Keiichi KII <k-keiichi@bx.jp.nec.com>, lwoodman@redhat.com,
+       linux-mm@kvack.org, mingo@elte.hu,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: [RFC PATCH -tip 1/1] tracepoints: add tracepoints for pagecache
+References: <4B22E64E.1@bx.jp.nec.com> <4B22E9F6.4000100@bx.jp.nec.com>
+In-Reply-To: <4B22E9F6.4000100@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+This patch adds several tracepoints to track pagecach behavior.
+These trecepoints would help us monitor pagecache usage with high resolution.
 
-Are the drivers in drivers/misc/hdpuftrs dead?
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
+Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com> 
+---
+ include/trace/events/filemap.h |   83 +++++++++++++++++++++++++++++++++++++++++
+ mm/filemap.c                   |    5 ++
+ mm/truncate.c                  |    2 
+ mm/vmscan.c                    |    3 +
+ 4 files changed, 93 insertions(+)
 
-I can't locate anywhere to enable CONFIG_HDPU_FEATURES.  Also, both
-hdpu_cpustate.c and hdpu_nexus.c register as platform drivers but I
-can't find any users in the mainline tree.
+Index: linux-2.6-tip/include/trace/events/filemap.h
+===================================================================
+--- /dev/null
++++ linux-2.6-tip/include/trace/events/filemap.h
+@@ -0,0 +1,83 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM filemap
++
++#if !defined(_TRACE_FILEMAP_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_FILEMAP_H
++
++#include <linux/fs.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(find_get_page,
++
++	TP_PROTO(struct address_space *mapping, pgoff_t offset,
++		struct page * page),
++
++	TP_ARGS(mapping, offset, page),
++
++	TP_STRUCT__entry(
++		__field(dev_t, s_dev)
++		__field(ino_t, i_ino)
++		__field(pgoff_t, offset)
++		__field(struct page *, page)
++		),
++
++	TP_fast_assign(
++		__entry->s_dev = mapping->host ? mapping->host->i_sb->s_dev : 0;
++		__entry->i_ino = mapping->host ? mapping->host->i_ino : 0;
++		__entry->offset = offset;
++		__entry->page = page;
++		),
++
++	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu %s", MAJOR(__entry->s_dev),
++		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset,
++		__entry->page == NULL ? "page_not_found" : "page_found")
++);
++
++TRACE_EVENT(add_to_page_cache,
++
++	TP_PROTO(struct address_space *mapping, pgoff_t offset),
++
++	TP_ARGS(mapping, offset),
++
++	TP_STRUCT__entry(
++		__field(dev_t, s_dev)
++		__field(ino_t, i_ino)
++		__field(pgoff_t, offset)
++		),
++
++	TP_fast_assign(
++		__entry->s_dev = mapping->host->i_sb->s_dev;
++		__entry->i_ino = mapping->host->i_ino;
++		__entry->offset = offset;
++		),
++
++	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
++		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
++);
++
++TRACE_EVENT(remove_from_page_cache,
++
++	TP_PROTO(struct address_space *mapping, pgoff_t offset),
++
++	TP_ARGS(mapping, offset),
++
++	TP_STRUCT__entry(
++		__field(dev_t, s_dev)
++		__field(ino_t, i_ino)
++		__field(pgoff_t, offset)
++		),
++
++	TP_fast_assign(
++		__entry->s_dev = mapping->host->i_sb->s_dev;
++		__entry->i_ino = mapping->host->i_ino;
++		__entry->offset = offset;
++		),
++
++	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
++		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
++);
++
++#endif /* _TRACE_FILEMAP_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+Index: linux-2.6-tip/mm/filemap.c
+===================================================================
+--- linux-2.6-tip.orig/mm/filemap.c
++++ linux-2.6-tip/mm/filemap.c
+@@ -34,6 +34,8 @@
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
++#define CREATE_TRACE_POINTS
++#include <trace/events/filemap.h>
+ #include "internal.h"
+ 
+ /*
+@@ -149,6 +151,7 @@ void remove_from_page_cache(struct page 
+ 	spin_lock_irq(&mapping->tree_lock);
+ 	__remove_from_page_cache(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
++	trace_remove_from_page_cache(mapping, page->index);
+ 	mem_cgroup_uncharge_cache_page(page);
+ }
+ 
+@@ -440,6 +443,7 @@ int add_to_page_cache_locked(struct page
+ 			if (PageSwapBacked(page))
+ 				__inc_zone_page_state(page, NR_SHMEM);
+ 			spin_unlock_irq(&mapping->tree_lock);
++			trace_add_to_page_cache(mapping, offset);
+ 		} else {
+ 			page->mapping = NULL;
+ 			spin_unlock_irq(&mapping->tree_lock);
+@@ -663,6 +667,7 @@ repeat:
+ 	}
+ 	rcu_read_unlock();
+ 
++	trace_find_get_page(mapping, offset, page);
+ 	return page;
+ }
+ EXPORT_SYMBOL(find_get_page);
+Index: linux-2.6-tip/mm/truncate.c
+===================================================================
+--- linux-2.6-tip.orig/mm/truncate.c
++++ linux-2.6-tip/mm/truncate.c
+@@ -20,6 +20,7 @@
+ 				   do_invalidatepage */
+ #include "internal.h"
+ 
++#include <trace/events/filemap.h>
+ 
+ /**
+  * do_invalidatepage - invalidate part or all of a page
+@@ -384,6 +385,7 @@ invalidate_complete_page2(struct address
+ 	BUG_ON(page_has_private(page));
+ 	__remove_from_page_cache(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
++	trace_remove_from_page_cache(mapping, page->index);
+ 	mem_cgroup_uncharge_cache_page(page);
+ 	page_cache_release(page);	/* pagecache ref */
+ 	return 1;
+Index: linux-2.6-tip/mm/vmscan.c
+===================================================================
+--- linux-2.6-tip.orig/mm/vmscan.c
++++ linux-2.6-tip/mm/vmscan.c
+@@ -48,6 +48,8 @@
+ 
+ #include "internal.h"
+ 
++#include <trace/events/filemap.h>
++
+ struct scan_control {
+ 	/* Incremented by the number of inactive pages that were scanned */
+ 	unsigned long nr_scanned;
+@@ -478,6 +480,7 @@ static int __remove_mapping(struct addre
+ 	} else {
+ 		__remove_from_page_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
++		trace_remove_from_page_cache(mapping, page->index);
+ 		mem_cgroup_uncharge_cache_page(page);
+ 	}
+ 
 
-Both drivers seem kind of... ugly...
 
-hdpu_cpustate.c does a lock_kernel() in the open file_operation.  Then
-does a spin_lock() when checking if the open is O_EXCL.
 
-I'm no expert on locking but the lock_kernel() seems unnecessary.
-
-Regards,
-Hartley
