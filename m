@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762049AbZLLL3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762089AbZLLL3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762049AbZLLL3O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 06:29:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762007AbZLLL3N
+	id S1762089AbZLLL3d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 06:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761966AbZLLL3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 06:29:13 -0500
-Received: from 9.204-13-211.reverse.enterhost.com ([204.13.211.9]:1326 "EHLO
-	mail.rapidpat.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761851AbZLLL3N (ORCPT
+	Sat, 12 Dec 2009 06:29:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34332
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762027AbZLLL3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 06:29:13 -0500
-From: "infos@rapidpat.com" <infos@rapidpat.com>
-Subject: I Need Your Assistance
-Date: Sat, 12 Dec 2009 06:28:52 -0500
-Reply-To: cpt.allandavis@gmail.com
-Message-ID: <74fbcacc$1614f35$4773f8d0$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Sat, 12 Dec 2009 06:29:31 -0500
+Date: Sat, 12 Dec 2009 03:29:38 -0800 (PST)
+Message-Id: <20091212.032938.136002802.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [217.117.2.135]
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-My name is Capt. Allan Davis,i am looking for a business partiner to invest 
-my money with in your country. 
+I'm doing a quick push to fix the Kaweth USB driver build
+failure.  It's due to a miscommunication between Greg KH
+and myself, and we'll make sure this doesn't happen again.
 
-Can you be of any assistance to me?
+There's also two Intel gigabit fixes from Alexander Duyck and
+a be2net driver fix from Ajit Khaparde.
 
-You can write me on my Email address: cpt.allandavis@gmail.com
+Please pull, thanks a lot!
 
-Waiting for your response ASAP.
+The following changes since commit 053fe57ac249a9531c396175778160d9e9509399:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-Best Regards
-Capt. Allan  Davis
+are available in the git repository at:
 
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
+Ajit Khaparde (1):
+      be2net: fix error in rx completion processing.
+
+Alexander Duyck (2):
+      igb: fix handling of mailbox collisions between PF/VF
+      igbvf: avoid reset storms due to mailbox issues
+
+Oliver Neukum (1):
+      usb: remove rare pm primitive for conversion to new API
+
+ drivers/net/benet/be_main.c |    4 ++--
+ drivers/net/igb/igb_main.c  |   22 +++++++++++++---------
+ drivers/net/igbvf/igbvf.h   |    1 +
+ drivers/net/igbvf/netdev.c  |    8 +++++++-
+ drivers/net/usb/kaweth.c    |    4 ++--
+ 5 files changed, 25 insertions(+), 14 deletions(-)
