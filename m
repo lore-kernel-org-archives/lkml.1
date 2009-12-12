@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763023AbZLLCPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933493AbZLLCR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763023AbZLLCPa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 21:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762969AbZLLCPZ
+	id S933493AbZLLCR6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 21:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbZLLCRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 21:15:25 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:62445 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762926AbZLLCPZ convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 21:17:55 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47550 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763080AbZLLCRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 21:15:25 -0500
+	Fri, 11 Dec 2009 21:17:54 -0500
+Message-ID: <4B22FD0B.10506@zytor.com>
+Date: Fri, 11 Dec 2009 18:16:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091211080254.GB7625@linux-sh.org>
-References: <Pine.LNX.4.64.0912101826010.4487@axis700.grange> 
-	<Pine.LNX.4.64.0912101833170.4487@axis700.grange> <20091211080254.GB7625@linux-sh.org>
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Date: Sat, 12 Dec 2009 11:15:10 +0900
-Message-ID: <29ab51dc0912111815s2095539cjc3d0450435725452@mail.gmail.com>
-Subject: Re: [PATCH 2/3 v2] sh: fix DMA driver's descriptor chaining and 
-	cookie assignment
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
-       linux-sh@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Gertjan van Wingerde <gwingerde@gmail.com>
+Subject: Re: [PATCH 61/7] x86/pci: add cap_4g
+References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org> <4B22FBEB.7040204@kernel.org>
+In-Reply-To: <4B22FBEB.7040204@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 12/11/2009 06:11 PM, Yinghai Lu wrote:
+>  
+> +static inline u64 cap_4g(u64 val)
+> +{
+> +	if (sizeof(resource_size_t) >= sizeof(u64))
+> +		return val;
+> +
+> +	if (val < 1ULL)
+> +		return val;
+> +
+> +	return 0xffffffff;
+> +}
+>  #endif
 
-Oh, I was going to check an old patch.
+How about:
 
-2009/12/11 Paul Mundt <lethal@linux-sh.org>:
-> On Thu, Dec 10, 2009 at 06:35:11PM +0100, Guennadi Liakhovetski wrote:
->> The SH DMA driver wrongly assigns negative cookies to transfer descriptors,
->> also, its chaining of partial descriptors is broken. The latter problem is
->> usually invisible, because maximum transfer size per chunk is 16M, but if you
->> artificially set this limit lower, the driver fails. Since cookies are also
->> used in chunk management, both these problems are fixed in one patch. As side
->> effects a possible memory leak, when descriptors are prepared, but not
->> submitted, and multiple races have also been fixed.
->>
->> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->
-> Looks good to me.
-Me too.
-
-But I want to check other CPU of sh. I will do next week.
-Please wait "Acked-by".
-
->
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
-
-Best regards,
-  Nobuhiro
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+static inline resource_size_t cap_resource(u64 val)
+{
+	if (val > ~(resource_size_t)0)
+		return ~(resource_size_t)0;
+	else
+		return val;
+}
 
 
 -- 
-Nobuhiro Iwamatsu
-   iwamatsu at {nigauri.org / debian.org}
-   GPG ID: 40AD1FA6
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
