@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762844AbZLLAMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762858AbZLLAQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762844AbZLLAMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 19:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762564AbZLLAMI
+	id S1762858AbZLLAQF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 19:16:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762841AbZLLAQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 19:12:08 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:4496 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761542AbZLLAMH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 19:12:07 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5829"; a="29700391"
-Message-ID: <4B22DFDC.5060300@codeaurora.org>
-Date: Fri, 11 Dec 2009 16:12:12 -0800
-From: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Fri, 11 Dec 2009 19:16:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53813 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762839AbZLLAP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 19:15:59 -0500
+Date: Sat, 12 Dec 2009 00:15:37 GMT
+From: tip-bot for Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, travis@sgi.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, travis@sgi.com, tglx@linutronix.de
+In-Reply-To: <4B226E92.5080904@sgi.com>
+References: <4B226E92.5080904@sgi.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Remove enabling x2apic message for every CPU
+Message-ID: <tip-450b1e8dd10f41b5adad73f48ce8f6707d17c5c4@git.kernel.org>
+Git-Commit-ID: 450b1e8dd10f41b5adad73f48ce8f6707d17c5c4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: non barrier versions of dma_map functions
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  450b1e8dd10f41b5adad73f48ce8f6707d17c5c4
+Gitweb:     http://git.kernel.org/tip/450b1e8dd10f41b5adad73f48ce8f6707d17c5c4
+Author:     Mike Travis <travis@sgi.com>
+AuthorDate: Fri, 11 Dec 2009 08:08:50 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 11 Dec 2009 14:32:31 -0800
 
-Hello  All,
+x86: Remove enabling x2apic message for every CPU
 
-   This is a request for extending the DMA api for efficient handling of 
-multiple buffers or scatter gather mapping/unmapping operations.
+Print only once that the system is supporting x2apic mode.
 
-   I am based on an ARMv7 device and we have a situation where we need 
-to dma map multiple cached buffers for a single dma transaction.
+Signed-off-by: Mike Travis <travis@sgi.com>
+Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
+LKML-Reference: <4B226E92.5080904@sgi.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/apic/apic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-   The current DMA api suggests the use of dma_map_single/ 
-dma_unmap_single for cache consistency. On ARMv7 it performs the 
-necessary cache-operations and calls data sync barrier instruction 
-(DSB). In our case we would be executing multiple DSB instructions
-before starting the dma operation - we need memory to be consistent
-only after we map the last buffer.
-
-   I am thinking we could define "no barrier" version's of all the 
-mapping/unmapping functions and then a barrier function that results
-in DSB before the dma is started.
-
-   Here are numbers from a test ran on my board.
-
-It kmallocs N buffers of size 'size', dirties their cache by writing
-to them and calls dma_map_single that calls the arch specific clean
-operations with and without DSB. In "without DSB" case a dsb is executed
-after the last buffer is mapped. The time is in microseconds
-
-size    N    map_single    map_single w/o DSB    delta
-128    16    8             5                     60%
-512    16    9             6                     50%
-512    32    15            8                     88%
-512    48    20            11                    82%
-512    64    27            14                    93%
-64     4     4             3                     33%
-64     8     4             3                     33%
-64     16    7             4                     75%
-64     32    12            4                     200%
-64     48    17            6                     183%
-64     64    21            7                     200%
-1024   16    9             7                     29%
-
-These buffer sizes and N are very close to real world sizes the
-framebuffer driver handles. Cases where N is large happen the most
-often.
-
-Clearly,we could benefit from the nobarrier versions of the cache
-operations and we could use them in scatter gather mappings as well.
-
-Since this kind of API change will affect all the platforms, I was 
-directed by the arm-linux community to take this up on the linux kernel 
-mailing list.
-
-For architectures that don't need a barrier for the completions of
-cache operations we can simply call the existing
-dma_map_signle/dma_unmap_single.
-
-Requesting alternative ideas or code design to get the desired 
-nonbarrier versions of the mapping functions.
-
-Thanks,
-Abhijeet Dharmapurikar
-
-
-
-
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index efb2b9c..aa57c07 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1341,7 +1341,7 @@ void enable_x2apic(void)
+ 
+ 	rdmsr(MSR_IA32_APICBASE, msr, msr2);
+ 	if (!(msr & X2APIC_ENABLE)) {
+-		pr_info("Enabling x2apic\n");
++		printk_once(KERN_INFO "Enabling x2apic\n");
+ 		wrmsr(MSR_IA32_APICBASE, msr | X2APIC_ENABLE, 0);
+ 	}
+ }
