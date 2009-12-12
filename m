@@ -1,211 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbZLLA7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762899AbZLLA67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762950AbZLLA7w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 19:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763032AbZLLA7p
+	id S1762899AbZLLA67 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 19:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759163AbZLLA6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 19:59:45 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49888 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762993AbZLLA7f (ORCPT
+	Fri, 11 Dec 2009 19:58:53 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:54021 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756445AbZLLA6w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 19:59:35 -0500
-Message-ID: <4B22EA7A.2050309@bx.jp.nec.com>
-Date: Fri, 11 Dec 2009 19:57:30 -0500
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Fri, 11 Dec 2009 19:58:52 -0500
+Date: Sat, 12 Dec 2009 08:58:54 +0800
+From: Daniel Mack <daniel@caiaq.de>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: Matt Fleming <matt@console-pimps.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "madhu.cr@ti.com >> Madhusudhan Chikkature" <madhu.cr@ti.com>,
+       Cliff Brake <cbrake@bec-systems.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Pierre Ossman <pierre@ossman.eu>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [PATCH] mmc: move regulator handling to core
+Message-ID: <20091212005854.GV28375@buzzloop.caiaq.de>
+References: <1259844390-10541-1-git-send-email-daniel@caiaq.de>
+ <4B17CADB.1070406@nokia.com>
+ <20091203192044.GJ14091@buzzloop.caiaq.de>
+ <4B181BB4.1020800@nokia.com>
+ <20091204115805.GS14091@buzzloop.caiaq.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Keiichi KII <k-keiichi@bx.jp.nec.com>, lwoodman@redhat.com,
-       linux-mm@kvack.org, mingo@elte.hu,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: [RFC PATCH -tip 1/1] tracepoints: add tracepoints for pagecache
-References: <4B22E64E.1@bx.jp.nec.com> <4B22E9F6.4000100@bx.jp.nec.com>
-In-Reply-To: <4B22E9F6.4000100@bx.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091204115805.GS14091@buzzloop.caiaq.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds several tracepoints to track pagecach behavior.
-These trecepoints would help us monitor pagecache usage with high resolution.
+On Fri, Dec 04, 2009 at 12:58:05PM +0100, Daniel Mack wrote:
+> > >On Thu, Dec 03, 2009 at 04:27:39PM +0200, Adrian Hunter wrote:
+> 
+> > >>What about arch/arm/mach-omap2/mmc-twl4030.c ?
+> > >
+> > >Argh, missed that one. And this particular case doesn't fit to my
+> > >modifications. I don't know the code well ...  We would need to
+> > >have a struct mmc_host * in all the functions there calling
+> > >mmc_regulator_{set,get}_ocr. Any idea how to resolve that?
+> > >
+> > 
+> > Pass it down from the omap_hsmmc driver.
+> 
+> It's not that easy, unfortunately, because this code does not conform to
+> all the other mmc host drivers in tree.
+> 
+> I don't understand why things are done the way it is currently
+> implemented. Why isn't there a mmc_host for each slot, and why is a
+> regulator reference acquired for each slot, and not once for the whole
+> device?
+> 
+> Even with the default 'vcc' supply factored out to the mmc core, the
+> 'vmmc_aux' regulator would still need some extra attention, but I would
+> also do that from the omap_hsmmc driver rather than in the plaform
+> support code.
+> 
+> Moving the regulator handling to the mmc core would require a major
+> cleanup to all this code, but I don't have such hardware to test my
+> modifications. Can anyone help here?
 
-Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com> 
----
- include/trace/events/filemap.h |   83 +++++++++++++++++++++++++++++++++++++++++
- mm/filemap.c                   |    5 ++
- mm/truncate.c                  |    2 
- mm/vmscan.c                    |    3 +
- 4 files changed, 93 insertions(+)
+Can anyone of the OMAP people help sort this out?
 
-Index: linux-2.6-tip/include/trace/events/filemap.h
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/include/trace/events/filemap.h
-@@ -0,0 +1,83 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM filemap
-+
-+#if !defined(_TRACE_FILEMAP_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_FILEMAP_H
-+
-+#include <linux/fs.h>
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(find_get_page,
-+
-+	TP_PROTO(struct address_space *mapping, pgoff_t offset,
-+		struct page * page),
-+
-+	TP_ARGS(mapping, offset, page),
-+
-+	TP_STRUCT__entry(
-+		__field(dev_t, s_dev)
-+		__field(ino_t, i_ino)
-+		__field(pgoff_t, offset)
-+		__field(struct page *, page)
-+		),
-+
-+	TP_fast_assign(
-+		__entry->s_dev = mapping->host ? mapping->host->i_sb->s_dev : 0;
-+		__entry->i_ino = mapping->host ? mapping->host->i_ino : 0;
-+		__entry->offset = offset;
-+		__entry->page = page;
-+		),
-+
-+	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu %s", MAJOR(__entry->s_dev),
-+		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset,
-+		__entry->page == NULL ? "page_not_found" : "page_found")
-+);
-+
-+TRACE_EVENT(add_to_page_cache,
-+
-+	TP_PROTO(struct address_space *mapping, pgoff_t offset),
-+
-+	TP_ARGS(mapping, offset),
-+
-+	TP_STRUCT__entry(
-+		__field(dev_t, s_dev)
-+		__field(ino_t, i_ino)
-+		__field(pgoff_t, offset)
-+		),
-+
-+	TP_fast_assign(
-+		__entry->s_dev = mapping->host->i_sb->s_dev;
-+		__entry->i_ino = mapping->host->i_ino;
-+		__entry->offset = offset;
-+		),
-+
-+	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
-+		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
-+);
-+
-+TRACE_EVENT(remove_from_page_cache,
-+
-+	TP_PROTO(struct address_space *mapping, pgoff_t offset),
-+
-+	TP_ARGS(mapping, offset),
-+
-+	TP_STRUCT__entry(
-+		__field(dev_t, s_dev)
-+		__field(ino_t, i_ino)
-+		__field(pgoff_t, offset)
-+		),
-+
-+	TP_fast_assign(
-+		__entry->s_dev = mapping->host->i_sb->s_dev;
-+		__entry->i_ino = mapping->host->i_ino;
-+		__entry->offset = offset;
-+		),
-+
-+	TP_printk("s_dev=%u:%u i_ino=%lu offset=%lu", MAJOR(__entry->s_dev),
-+		MINOR(__entry->s_dev), __entry->i_ino, __entry->offset)
-+);
-+
-+#endif /* _TRACE_FILEMAP_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-Index: linux-2.6-tip/mm/filemap.c
-===================================================================
---- linux-2.6-tip.orig/mm/filemap.c
-+++ linux-2.6-tip/mm/filemap.c
-@@ -34,6 +34,8 @@
- #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
- #include <linux/memcontrol.h>
- #include <linux/mm_inline.h> /* for page_is_file_cache() */
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/filemap.h>
- #include "internal.h"
- 
- /*
-@@ -149,6 +151,7 @@ void remove_from_page_cache(struct page 
- 	spin_lock_irq(&mapping->tree_lock);
- 	__remove_from_page_cache(page);
- 	spin_unlock_irq(&mapping->tree_lock);
-+	trace_remove_from_page_cache(mapping, page->index);
- 	mem_cgroup_uncharge_cache_page(page);
- }
- 
-@@ -440,6 +443,7 @@ int add_to_page_cache_locked(struct page
- 			if (PageSwapBacked(page))
- 				__inc_zone_page_state(page, NR_SHMEM);
- 			spin_unlock_irq(&mapping->tree_lock);
-+			trace_add_to_page_cache(mapping, offset);
- 		} else {
- 			page->mapping = NULL;
- 			spin_unlock_irq(&mapping->tree_lock);
-@@ -663,6 +667,7 @@ repeat:
- 	}
- 	rcu_read_unlock();
- 
-+	trace_find_get_page(mapping, offset, page);
- 	return page;
- }
- EXPORT_SYMBOL(find_get_page);
-Index: linux-2.6-tip/mm/truncate.c
-===================================================================
---- linux-2.6-tip.orig/mm/truncate.c
-+++ linux-2.6-tip/mm/truncate.c
-@@ -20,6 +20,7 @@
- 				   do_invalidatepage */
- #include "internal.h"
- 
-+#include <trace/events/filemap.h>
- 
- /**
-  * do_invalidatepage - invalidate part or all of a page
-@@ -384,6 +385,7 @@ invalidate_complete_page2(struct address
- 	BUG_ON(page_has_private(page));
- 	__remove_from_page_cache(page);
- 	spin_unlock_irq(&mapping->tree_lock);
-+	trace_remove_from_page_cache(mapping, page->index);
- 	mem_cgroup_uncharge_cache_page(page);
- 	page_cache_release(page);	/* pagecache ref */
- 	return 1;
-Index: linux-2.6-tip/mm/vmscan.c
-===================================================================
---- linux-2.6-tip.orig/mm/vmscan.c
-+++ linux-2.6-tip/mm/vmscan.c
-@@ -48,6 +48,8 @@
- 
- #include "internal.h"
- 
-+#include <trace/events/filemap.h>
-+
- struct scan_control {
- 	/* Incremented by the number of inactive pages that were scanned */
- 	unsigned long nr_scanned;
-@@ -478,6 +480,7 @@ static int __remove_mapping(struct addre
- 	} else {
- 		__remove_from_page_cache(page);
- 		spin_unlock_irq(&mapping->tree_lock);
-+		trace_remove_from_page_cache(mapping, page->index);
- 		mem_cgroup_uncharge_cache_page(page);
- 	}
- 
-
-
-
+Thanks,
+Daniel
