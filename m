@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935322AbZLMB7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935338AbZLMB7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935322AbZLMB7P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935308AbZLMB7O
+	id S935338AbZLMB7Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935325AbZLMB7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:59:14 -0500
+	Sat, 12 Dec 2009 20:59:17 -0500
 Received: from zfrontend2.aha.ru ([195.2.83.148]:65000 "HELO aha.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S935295AbZLMB7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:59:10 -0500
+	id S935310AbZLMB7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:59:15 -0500
 From: "werner" <w.landgraf@ru.ru>
 Subject: 2.6.32-git9 kernel problem , ipr problem , kaweth problem , xd
  out-of-memory problem
 To: linux-kernel@vger.kernel.org
 X-Mailer: CommuniGate Pro WebUser Interface v.4.3.12
-Date: Sat, 12 Dec 2009 13:59:12 -0400
-Message-ID: <web-110085594@zbackend1.aha.ru>
+Date: Sat, 12 Dec 2009 13:59:16 -0400
+Message-ID: <web-110085615@zbackend1.aha.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format="flowed"
 Content-Transfer-Encoding: 8bit
