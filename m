@@ -1,124 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbZLLCOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763023AbZLLCPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762992AbZLLCOV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 21:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762838AbZLLCOR
+	id S1763023AbZLLCPa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 21:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762969AbZLLCPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 21:14:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47275 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756445AbZLLCOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 21:14:16 -0500
-Message-ID: <4B22FC35.5090305@kernel.org>
-Date: Fri, 11 Dec 2009 18:13:09 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 11 Dec 2009 21:15:25 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:62445 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762926AbZLLCPZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 21:15:25 -0500
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Gertjan van Wingerde <gwingerde@gmail.com>
-Subject: [PATCH 6/7] x86/pci: enable pci root res read out for 32bit too -v2
-References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org>
-In-Reply-To: <4B22D74D.4020201@kernel.org>
+In-Reply-To: <20091211080254.GB7625@linux-sh.org>
+References: <Pine.LNX.4.64.0912101826010.4487@axis700.grange> 
+	<Pine.LNX.4.64.0912101833170.4487@axis700.grange> <20091211080254.GB7625@linux-sh.org>
+From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Date: Sat, 12 Dec 2009 11:15:10 +0900
+Message-ID: <29ab51dc0912111815s2095539cjc3d0450435725452@mail.gmail.com>
+Subject: Re: [PATCH 2/3 v2] sh: fix DMA driver's descriptor chaining and 
+	cookie assignment
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+       linux-sh@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-should be good for 32bit too.
+Oh, I was going to check an old patch.
 
-v2: split out cap_4g to 61
+2009/12/11 Paul Mundt <lethal@linux-sh.org>:
+> On Thu, Dec 10, 2009 at 06:35:11PM +0100, Guennadi Liakhovetski wrote:
+>> The SH DMA driver wrongly assigns negative cookies to transfer descriptors,
+>> also, its chaining of partial descriptors is broken. The latter problem is
+>> usually invisible, because maximum transfer size per chunk is 16M, but if you
+>> artificially set this limit lower, the driver fails. Since cookies are also
+>> used in chunk management, both these problems are fixed in one patch. As side
+>> effects a possible memory leak, when descriptors are prepared, but not
+>> submitted, and multiple races have also been fixed.
+>>
+>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+>
+> Looks good to me.
+Me too.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+But I want to check other CPU of sh. I will do next week.
+Please wait "Acked-by".
 
----
- arch/x86/pci/Makefile   |    3 +--
- arch/x86/pci/amd_bus.c  |   12 ------------
- arch/x86/pci/bus_numa.h |    4 ++--
- arch/x86/pci/i386.c     |    4 ----
- 4 files changed, 3 insertions(+), 20 deletions(-)
+>
+> Acked-by: Paul Mundt <lethal@linux-sh.org>
 
-Index: linux-2.6/arch/x86/pci/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/pci/Makefile
-+++ linux-2.6/arch/x86/pci/Makefile
-@@ -14,8 +14,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
- obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
- 
- obj-y				+= common.o early.o
--obj-y				+= amd_bus.o
--obj-$(CONFIG_X86_64)		+= bus_numa.o intel_bus.o
-+obj-y				+= amd_bus.o bus_numa.o intel_bus.o
- 
- ifeq ($(CONFIG_PCI_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
-Index: linux-2.6/arch/x86/pci/amd_bus.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/amd_bus.c
-+++ linux-2.6/arch/x86/pci/amd_bus.c
-@@ -6,9 +6,7 @@
- 
- #include <asm/pci_x86.h>
- 
--#ifdef CONFIG_X86_64
- #include <asm/pci-direct.h>
--#endif
- 
- #include "bus_numa.h"
- 
-@@ -17,8 +15,6 @@
-  * also get peer root bus resource for io,mmio
-  */
- 
--#ifdef CONFIG_X86_64
--
- struct pci_hostbridge_probe {
- 	u32 bus;
- 	u32 slot;
-@@ -348,14 +344,6 @@ static int __init early_fill_mp_bus_info
- 	return 0;
- }
- 
--#else  /* !CONFIG_X86_64 */
--
--static int __init early_fill_mp_bus_info(void) { return 0; }
--
--#endif /* !CONFIG_X86_64 */
--
--/* common 32/64 bit code */
--
- #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
- 
- static void enable_pci_io_ecs(void *unused)
-Index: linux-2.6/arch/x86/pci/i386.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/i386.c
-+++ linux-2.6/arch/x86/pci/i386.c
-@@ -257,10 +257,6 @@ void __init pcibios_resource_survey(void
-  */
- fs_initcall(pcibios_assign_resources);
- 
--void __weak x86_pci_root_bus_res_quirks(struct pci_bus *b)
--{
--}
--
- /*
-  *  If we set up a device for bus mastering, we need to check the latency
-  *  timer as certain crappy BIOSes forget to set it properly.
-Index: linux-2.6/arch/x86/pci/bus_numa.h
-===================================================================
---- linux-2.6.orig/arch/x86/pci/bus_numa.h
-+++ linux-2.6/arch/x86/pci/bus_numa.h
-@@ -1,5 +1,5 @@
--#ifdef CONFIG_X86_64
--
-+#ifndef __BUS_NUMA_H
-+#define __BUS_NUMA_H
- /*
-  * sub bus (transparent) will use entres from 3 to store extra from
-  * root, so need to make sure we have enough slot there, Should we
+Best regards,
+  Nobuhiro
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
+
+
+-- 
+Nobuhiro Iwamatsu
+   iwamatsu at {nigauri.org / debian.org}
+   GPG ID: 40AD1FA6
