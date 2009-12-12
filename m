@@ -1,122 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933816AbZLLD0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933775AbZLLD3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933816AbZLLD0G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbZLLDZu
+	id S933775AbZLLD3j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 22:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932962AbZLLD3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:25:50 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:62349 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933082AbZLLDZm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:25:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=krKqQ2HbqS9VQzBwtaVsGkCMjjwgA82WOdYznPafCFZcAo3duC5MVBxlLpRa5xz4Sc
-         10DHZwVZCCUXqsukfGVKdoUf82xf5kSfKX2urECNTrM9ArklsOeHD62vlTTHkI32OqVC
-         AMYk0UM+dOGV2EtTvpXVD+s8oVQaPHFZwBa1c=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: david@lang.hm
-Subject: Re: [PATCH 00/86] PATA fixes
-Date: Sat, 12 Dec 2009 04:23:46 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912032201.55115.bzolnier@gmail.com> <alpine.DEB.2.00.0912111801420.10307@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.2.00.0912111801420.10307@asgard.lang.hm>
+	Fri, 11 Dec 2009 22:29:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34369 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932897AbZLLD3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 22:29:32 -0500
+Message-ID: <4B230DDA.5030006@kernel.org>
+Date: Fri, 11 Dec 2009 19:28:26 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Message-Id: <200912120423.46712.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Gertjan van Wingerde <gwingerde@gmail.com>
+Subject: [PATCH 6/7] x86/pci: enable pci root res read out for 32bit too -v3
+References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org> <4B22FC35.5090305@kernel.org>
+In-Reply-To: <4B22FC35.5090305@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 December 2009 03:02:43 am david@lang.hm wrote:
-> On Thu, 3 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
-> 
-> > On Thursday 03 December 2009 09:39:39 pm Jeff Garzik wrote:
-> >> On 12/03/2009 03:26 PM, Bartlomiej Zolnierkiewicz wrote:
-> >>> On Thursday 03 December 2009 09:11:19 pm Jeff Garzik wrote:
-> >>>> On 12/03/2009 02:45 PM, Bartlomiej Zolnierkiewicz wrote:
-> >>>>> On Thursday 03 December 2009 06:53:59 pm Jeff Garzik wrote:
-> >>>>>> On 12/03/2009 07:39 AM, Bartlomiej Zolnierkiewicz wrote:
-> >>>>>>> On Thursday 03 December 2009 09:07:41 am Jeff Garzik wrote:
-> >>>>>>>> The merge window is upon us, which by strict rules means that anything
-> >>>>>>>> not already in libata-dev.git#upstream needs to wait until 2.6.34.
-> >>>>>>>>
-> >>>>>>>> However, bug fixes and the like should definitely be in 2.6.33.
-> >>>>>>>> ->init_host is definitely 2.6.34 material.  Some of the other stuff
-> >>>>>>>> could go either way.
-> >>>>>>
-> >>>>>>> If you would like to apply some of my patches to 2.6.33 you are more than
-> >>>>>>> welcome to do it.  I can even prepare separate git tree with specific changes
-> >>>>>>> to make it easier for you once you tell me which changes you would like to
-> >>>>>>> see in it.
-> >>>>>>
-> >>>>>> OK, great.
-> >>>>>>
-> >>>>>> Can you prepare a patchset containing only fixes?  Comment-only changes
-> >>>>>> are acceptable too.  Trivial changes too, if they are extremely trivial :)
-> >>>>>>
-> >>>>>> Include nothing that adds features, removes or unifies drivers, etc.
-> >>>>>
-> >>>>> Since this is pretty high-level description and some changes fall into
-> >>>>> many categories at once (i.e. addition of proper PCI Power Management
-> >>>>> handling could be considered both as a fix and as a feature) I prepared
-> >>>>> a rather conservative set of changes (which means that unfortunately
-> >>>>> it misses many enhancements available in my tree):
-> >>>>>
-> >>>>>> Please do it in standard kernel submit form, which is either
-> >>>>>> (a) repost the patches (yes, again) being submitted for 2.6.33, or
-> >>>>>> (b) a standard git pull request, which includes shortlog, diffstat, and
-> >>>>>> all-in-one diff.
-> >>>>>
-> >>>>> Thank you for the detailed explanation of the standard kernel submit
-> >>>>> form (I wonder how would I know this otherwise :) but the thing is that
-> >>>>> at the current moment I'm not submitting anything to the upstream.
-> >>>>
-> >>>> Ok, that explains my confusion, then.  I had thought you intended to get
-> >>>> this stuff upstream, and into users' hands.
-> >>>
-> >>> Interesting argument but the vast majority of users use distribution kernels
-> >>> which are not upstream and I doubt that any self-respecting distribution would
-> >>> miss such amount of fixes.
-> >>
-> >> Interesting argument, but applied across 1000+ developers this is
-> >> clearly an unscalable development model for distributions.  Thus,
-> >
-> > Interesting that you have brought distributions' convenience before
-> > non-distribution developers' one.
-> 
-> and you are leaving those of us who use kernel.org out in the cold 
-> (forcing all non-distribution users to go through all the work that Jeff 
-> described)
 
-[ ..and you believed it? ;) ]
 
-> I'm not sure who you see as benifiting from this approach.
+should be good for 32bit too.
 
-I'm not the maintainer of the affected code (according to MAINTAINERS
-at least PATA code is unmaintained and to add more confusion it has been
-in such state forever despite numerous claims of said code being the
-'official' one ) so I think that you are barking at the wrong tree here..
+-v3: cast res->start
 
-Moreover the claim of forcing people to do the work was completely
-ridiculous (BTW all the changes happen in my own time) since I did/do
-a lot to make review/merge easier for people:
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-- My tree is based on top of libata tree and stays up-to-date with it.
+---
+ arch/x86/pci/Makefile    |    3 +--
+ arch/x86/pci/amd_bus.c   |   14 +-------------
+ arch/x86/pci/bus_numa.h  |    4 ++--
+ arch/x86/pci/i386.c      |    4 ----
+ arch/x86/pci/intel_bus.c |    2 +-
+ 5 files changed, 5 insertions(+), 22 deletions(-)
 
-- All changes have been posted to linux-ide and linux-kernel, and they
-  had review concerns addressed already (there was only one real issue,
-  Alan has noticed that scc_pata change is unnecessary).
-
-- I'm OK with providing additional branches with only selected changes
-  to ease the merging process.
-
---
-Bartlomiej Zolnierkiewicz
+Index: linux-2.6/arch/x86/pci/Makefile
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/Makefile
++++ linux-2.6/arch/x86/pci/Makefile
+@@ -14,8 +14,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
+ obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+ 
+ obj-y				+= common.o early.o
+-obj-y				+= amd_bus.o
+-obj-$(CONFIG_X86_64)		+= bus_numa.o intel_bus.o
++obj-y				+= amd_bus.o bus_numa.o intel_bus.o
+ 
+ ifeq ($(CONFIG_PCI_DEBUG),y)
+ EXTRA_CFLAGS += -DDEBUG
+Index: linux-2.6/arch/x86/pci/amd_bus.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/amd_bus.c
++++ linux-2.6/arch/x86/pci/amd_bus.c
+@@ -6,9 +6,7 @@
+ 
+ #include <asm/pci_x86.h>
+ 
+-#ifdef CONFIG_X86_64
+ #include <asm/pci-direct.h>
+-#endif
+ 
+ #include "bus_numa.h"
+ 
+@@ -17,8 +15,6 @@
+  * also get peer root bus resource for io,mmio
+  */
+ 
+-#ifdef CONFIG_X86_64
+-
+ struct pci_hostbridge_probe {
+ 	u32 bus;
+ 	u32 slot;
+@@ -342,21 +338,13 @@ static int __init early_fill_mp_bus_info
+ 			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
+ 			       busnum, j,
+ 			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
+-			       res->start, res->end);
++			       (u64)res->start, (u64)res->end);
+ 		}
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-#else  /* !CONFIG_X86_64 */
+-
+-static int __init early_fill_mp_bus_info(void) { return 0; }
+-
+-#endif /* !CONFIG_X86_64 */
+-
+-/* common 32/64 bit code */
+-
+ #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
+ 
+ static void enable_pci_io_ecs(void *unused)
+Index: linux-2.6/arch/x86/pci/i386.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/i386.c
++++ linux-2.6/arch/x86/pci/i386.c
+@@ -257,10 +257,6 @@ void __init pcibios_resource_survey(void
+  */
+ fs_initcall(pcibios_assign_resources);
+ 
+-void __weak x86_pci_root_bus_res_quirks(struct pci_bus *b)
+-{
+-}
+-
+ /*
+  *  If we set up a device for bus mastering, we need to check the latency
+  *  timer as certain crappy BIOSes forget to set it properly.
+Index: linux-2.6/arch/x86/pci/bus_numa.h
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/bus_numa.h
++++ linux-2.6/arch/x86/pci/bus_numa.h
+@@ -1,5 +1,5 @@
+-#ifdef CONFIG_X86_64
+-
++#ifndef __BUS_NUMA_H
++#define __BUS_NUMA_H
+ /*
+  * sub bus (transparent) will use entres from 3 to store extra from
+  * root, so need to make sure we have enough slot there, Should we
+Index: linux-2.6/arch/x86/pci/intel_bus.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/intel_bus.c
++++ linux-2.6/arch/x86/pci/intel_bus.c
+@@ -30,7 +30,7 @@ static inline void print_ioh_resources(s
+ 			busnum, i,
+ 			(res->flags & IORESOURCE_IO) ? "io port" :
+ 							"mmio",
+-			res->start, res->end);
++			(u64)res->start, (u64)res->end);
+ 	}
+ }
+ 
