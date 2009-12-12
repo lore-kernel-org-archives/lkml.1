@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZLLJDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbZLLJWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbZLLJDj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 04:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbZLLJDh
+	id S1758974AbZLLJWI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 04:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZLLJWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 04:03:37 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48702
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758029AbZLLJDf (ORCPT
+	Sat, 12 Dec 2009 04:22:07 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:33189 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbZLLJWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 04:03:35 -0500
-Date: Sat, 12 Dec 2009 01:03:40 -0800 (PST)
-Message-Id: <20091212.010340.227842186.davem@davemloft.net>
-To: lists@nerdbynature.de
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	Sat, 12 Dec 2009 04:22:06 -0500
+Message-ID: <4B2360BF.5000102@gmail.com>
+Date: Sat, 12 Dec 2009 10:22:07 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: lists@nerdbynature.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
 Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.2.01.0912112335440.2915@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0912112335440.2915@bogon.housecafe.de>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+References: <alpine.DEB.2.01.0912112335440.2915@bogon.housecafe.de> <20091212.010340.227842186.davem@davemloft.net>
+In-Reply-To: <20091212.010340.227842186.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 12 Dec 2009 10:22:09 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Kujau <lists@nerdbynature.de>
-Date: Fri, 11 Dec 2009 23:43:10 -0800 (PST)
-
-> today I upgraded from 2.6.32-rc7 to the latest -git (mainline) and after a 
-> few hours the messages below appeared in the log. Apparently "privoxy" was 
-> very busy handling connections, but the messages never appeared with 
-> earlier kernels. 
+Le 12/12/2009 10:03, David Miller a écrit :
+> From: Christian Kujau <lists@nerdbynature.de>
+> Date: Fri, 11 Dec 2009 23:43:10 -0800 (PST)
 > 
-> Full dmesg & .config is on:
-> http://nerdbynature.de/bits/2.6.33-git/inet_accept/
+>> today I upgraded from 2.6.32-rc7 to the latest -git (mainline) and after a 
+>> few hours the messages below appeared in the log. Apparently "privoxy" was 
+>> very busy handling connections, but the messages never appeared with 
+>> earlier kernels. 
+>>
+>> Full dmesg & .config is on:
+>> http://nerdbynature.de/bits/2.6.33-git/inet_accept/
+> 
+> Yeah I started seeing this on one of my machines too, the
+> assertion is:
+> 
+> 	WARN_ON(newsk->sk_state == TCP_SYN_RECV);
+> 
+> I wonder if some of the refactorings we did to allow per-route
+> SACK/DSACK/etc. controls messed some sequence of state changes
+> on TCP sockets.  But I can't find anything obvious in those
+> commits.
 
-Yeah I started seeing this on one of my machines too, the
-assertion is:
+Could it be about syncookies patches ?
 
-	WARN_ON(newsk->sk_state == TCP_SYN_RECV);
+tcp_create_openreq_child() changes ?
 
-I wonder if some of the refactorings we did to allow per-route
-SACK/DSACK/etc. controls messed some sequence of state changes
-on TCP sockets.  But I can't find anything obvious in those
-commits.
