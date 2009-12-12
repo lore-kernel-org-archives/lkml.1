@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbZLLKHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761415AbZLLKIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761377AbZLLKHG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 05:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZLLKHE
+	id S1761415AbZLLKIH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 05:08:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZLLKIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 05:07:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50752 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbZLLKHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 05:07:03 -0500
-Date: Sat, 12 Dec 2009 11:06:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-Message-ID: <20091212100656.GA25286@elte.hu>
-References: <20091211232805.GA10652@kroah.com>
- <20091212084611.GA28266@elte.hu>
- <20091212013927.58d386d1.akpm@linux-foundation.org>
+	Sat, 12 Dec 2009 05:08:06 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:47116 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753124AbZLLKIF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 05:08:05 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091212013927.58d386d1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1257460103.2126.0.camel@yio.site>
+References: <1257460103.2126.0.camel@yio.site>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 12 Dec 2009 11:07:54 +0100
+Message-ID: <ac3eb2510912120207r528229f6uf8bd0535a6ce76a@mail.gmail.com>
+Subject: Re: get_sb_single() - do not pass options twice
+To: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 5, 2009 at 23:28, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: vfs: get_sb_single() - do not pass options twice
+>
+> Filesystem code usually destroys the option buffer while
+> parsing it, which leads to errors when the same buffer is
+> passed twice. In case we fill a new superblock with the
+> options, do not pass the options again to the remount()
+> call.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Ping! Can someone please have a look and comment on that?
+Something like this will now be needed for 2.6.33 to silent a warning.
 
-> Have a trace.  I'm actually wondering if perhaps there's a missing 
-> unlock_kernel() somewhere else, and the tty code is just the victim of 
-> that.
+Thanks,
+Kay
 
-Unlikely i'd say. I have 1000+ successful overnight tests on the latest 
-tree Linus pushed out:
-
- 3ef884b: Merge branch 'drm-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/airlied/d
-
-So that's a guaranteed 'good' kernel.
-
-The moment i merged 053fe57 into -tip the lockups started, so that's a 
-guaranteed 'bad' kernel. There's only the TTY changes between those two 
-points that look remotely related.
-
-It's spurious though so quite hard to bisect. I tried one bisection 
-today already and it got on the wrong track. I'll do a brute-force 
-revert of the commits i quoted, lets see what happens.
-
-	Ingo
+> Cc: Greg KH <greg@kroah.com>
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> ---
+>  fs/super.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -900,6 +900,8 @@ int get_sb_single(struct file_system_typ
+>                        deactivate_locked_super(s);
+>                        return error;
+>                }
+> +               /* options usually get mangled and can only be parsed once */
+> +               data = NULL;
+>                s->s_flags |= MS_ACTIVE;
+>        }
+>        do_remount_sb(s, flags, data, 0);
