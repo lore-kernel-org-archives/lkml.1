@@ -1,62 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbZLLDp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZLLDvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbZLLDp7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:45:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZLLDp6
+	id S1758762AbZLLDvV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 22:51:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbZLLDvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:45:58 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64773 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbZLLDp5 (ORCPT
+	Fri, 11 Dec 2009 22:51:19 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.67]:32869 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbZLLDvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:45:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=nTr2pfOtXD6uOX3mIxssHq9uZT8L8F08ZXDyc+Ob8JuXoBDy/Jve0U5DO3ln7S1b3G
-         VGjVig1R2kHPJ2ZthyLstA/fQyiMylH7aYVLV2U6dwIEkUIUtbI4uMZZ18YrT0DdTP/n
-         X0CGyAVReRdg+NDY8dKGLMT4qhXhFuFDSYhf8=
-MIME-Version: 1.0
-In-Reply-To: <20091211102159.GB18825@rakim.wolfsonmicro.main>
-References: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
-	 <20091209145919.GH9018@sirena.org.uk>
-	 <f9f38a550912110027r70710867k3a08c6d5913ce13@mail.gmail.com>
-	 <20091211102159.GB18825@rakim.wolfsonmicro.main>
-Date: Sat, 12 Dec 2009 11:46:04 +0800
-Message-ID: <f9f38a550912111946w665b267dkc42d184bdc437d02@mail.gmail.com>
-Subject: Re: Questions about Watch Dog Timer under Linux.
-From: Cypher Wu <cypher.w@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Dec 2009 22:51:18 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 12 Dec 2009 12:50:46 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
+Message-Id: <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	<c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
+	<747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 6:21 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Fri, Dec 11, 2009 at 04:27:55PM +0800, Cypher Wu wrote:
->
-> Please reply in-line to e-mails, it makes the conversation much easier
-> to follow.
->
->> It seems WATCHDOG_NOWAYOUT is a software mechanism? If it is defined
->> as 1 then the WDT can't be stopped if it has been started whether bye
->> closing the device file or writing the magic character 'V'.
->
-> Yes, it's a kernel build time configurable option to select this
-> behaviour.  In effect all you'd be doing is making a driver which turns
-> it on all the time.
->
+Sorry, I disagree this change.
 
-My point is not making a driver which turns WDT on all the time, but
-how to work with a WDT hardware which will startup to working just
-after power on and the only interface it provides is clearing the
-timer. This type of WDT is widely used in our embedded systems and we
-usually install a callback in timer interrupt to clearing WD before
-BSP starting the RTOS kernel, and then starting a task to clear WD and
-uninstall the callback.
-I'm wonder when cope with that type of WD, is there any framework
-already in the Linux kernel and booter, or I've to modify them by
-myself?
+mem_cgroup_soft_limit_check() is used for checking how much current usage exceeds
+the soft_limit_in_bytes and updating softlimit tree asynchronously, instead of
+checking every charge/uncharge. What if you change the soft_limit_in_bytes,
+but the number of charges and uncharges are very balanced afterwards ?
+The softlimit tree will not be updated for a long time.
+
+And IIUC, it's the same for your threshold feature, right ?
+I think it would be better:
+
+- discard this change.
+- in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
+  and instead of adding a new STAT counter, do like:
+
+	if (mem_cgroup_event_check(mem)) {
+		mem_cgroup_update_tree(mem, page);
+		mem_cgroup_threshold(mem);
+	}
+
+Ah, yes. Current code doesn't call mem_cgroup_soft_limit_check() for root cgroup
+in charge path as you said in http://marc.info/?l=linux-mm&m=126021128400687&w=2.
+I think you can change there as you want, I can change my patch
+(http://marc.info/?l=linux-mm&m=126023467303178&w=2, it has not yet sent to
+Andrew anyway) to check mem_cgroup_is_root() in mem_cgroup_update_tree().
+
+Thanks,
+Daisuke Nishimura.
+
+On Sat, 12 Dec 2009 00:59:18 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+
+> Instead of incrementing counter on each page in/out and comparing it
+> with constant, we set counter to constant, decrement counter on each
+> page in/out and compare it with zero. We want to make comparing as fast
+> as possible. On many RISC systems (probably not only RISC) comparing
+> with zero is more effective than comparing with a constant, since not
+> every constant can be immediate operand for compare instruction.
+> 
+> Also, I've renamed MEM_CGROUP_STAT_EVENTS to MEM_CGROUP_STAT_SOFTLIMIT,
+> since really it's not a generic counter.
+> 
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> ---
+>  mm/memcontrol.c |   19 ++++++++++++++-----
+>  1 files changed, 14 insertions(+), 5 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 0ff65ed..c6081cc 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -69,8 +69,9 @@ enum mem_cgroup_stat_index {
+>  	MEM_CGROUP_STAT_MAPPED_FILE,  /* # of pages charged as file rss */
+>  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+>  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+> -	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
+>  	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+> +	MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
+> +					used by soft limit implementation */
+>  
+>  	MEM_CGROUP_STAT_NSTATS,
+>  };
+> @@ -90,6 +91,13 @@ __mem_cgroup_stat_reset_safe(struct mem_cgroup_stat_cpu *stat,
+>  	stat->count[idx] = 0;
+>  }
+>  
+> +static inline void
+> +__mem_cgroup_stat_set(struct mem_cgroup_stat_cpu *stat,
+> +		enum mem_cgroup_stat_index idx, s64 val)
+> +{
+> +	stat->count[idx] = val;
+> +}
+> +
+>  static inline s64
+>  __mem_cgroup_stat_read_local(struct mem_cgroup_stat_cpu *stat,
+>  				enum mem_cgroup_stat_index idx)
+> @@ -374,9 +382,10 @@ static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
+>  
+>  	cpu = get_cpu();
+>  	cpustat = &mem->stat.cpustat[cpu];
+> -	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_EVENTS);
+> -	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
+> -		__mem_cgroup_stat_reset_safe(cpustat, MEM_CGROUP_STAT_EVENTS);
+> +	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_SOFTLIMIT);
+> +	if (unlikely(val < 0)) {
+> +		__mem_cgroup_stat_set(cpustat, MEM_CGROUP_STAT_SOFTLIMIT,
+> +				SOFTLIMIT_EVENTS_THRESH);
+>  		ret = true;
+>  	}
+>  	put_cpu();
+> @@ -509,7 +518,7 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+>  	else
+>  		__mem_cgroup_stat_add_safe(cpustat,
+>  				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+> -	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_EVENTS, 1);
+> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_SOFTLIMIT, -1);
+>  	put_cpu();
+>  }
+>  
+> -- 
+> 1.6.5.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
