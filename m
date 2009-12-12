@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934244AbZLMBsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbZLMBP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934244AbZLMBsi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934211AbZLMBse
+	id S932462AbZLMBP6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932321AbZLMBPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:48:34 -0500
-Received: from www.tglx.de ([62.245.132.106]:34360 "HELO www.tglx.de"
+	Sat, 12 Dec 2009 20:15:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40332 "HELO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S934156AbZLMBsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:48:32 -0500
-Date: Sat, 12 Dec 2009 23:34:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <gregkh@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-In-Reply-To: <20091212110240.194760cc@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.00.0912122333260.3089@localhost.localdomain>
-References: <20091211232805.GA10652@kroah.com> <20091212084611.GA28266@elte.hu> <20091212013927.58d386d1.akpm@linux-foundation.org> <20091212110240.194760cc@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S932261AbZLMBPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:15:50 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Sat, 12 Dec 2009 23:34:08 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912121848.33062.rjw@sisk.pl> <alpine.LFD.2.00.0912121049390.3526@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912121049390.3526@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912122334.08367.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 12 December 2009, Linus Torvalds wrote:
+> 
+> On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > I'd like to put it into my tree in this form, if you don't mind.
+> 
+> This version still has a major problem, which is not related to 
+> completions vs rwsems, but simply to the fact that you wanted to do this 
+> at the generic device layer level rather than do it at the actual 
+> low-level suspend/resume level.
+> 
+> Namely that there's no apparent sane way to say "don't wait for children".
+> 
+> PCI bridges that don't suspend at all - or any other device that only 
+> suspends in the 'suspend_late()' thing, for that matter - don't have any 
+> reason what-so-ever to wait for children, since they aren't actually 
+> suspending in the first place. But you make them wait regardless, which 
+> then serializes things unnecessarily (for example, two unrelated USB 
+> controllers).
 
+This is a problem that needs to be solved.
 
-On Sat, 12 Dec 2009, Alan Cox wrote:
+One solution that we have discussed on linux-pm is to start a bunch of async
+threads searching for async devices that can be suspended and suspending
+them (assuming suspend is considered) out of order with respect to dpm_list.
+For example, leaf async devices can always be suspended at the same time
+regardless of their positions in dpm_list.  This way we could get almost the
+entire gain resulting from suspending or resuming devices in parallel without
+bothering drivers with the problem of dependencies that need to be honoured.
 
-> > The do_tty_hangup()->tty_fasync() path takes the locks in the
-> > file_list_lock()->lock_kernel() direction whereas most other code takes
-> > them in the other direction, which cannot be good.  But I'm not sure
-> 
-> Thats a bug - the BKL does want to be taken first (and will
-> sleep/yield/drop)
-> 
-> > Have a trace.  I'm actually wondering if perhaps there's a missing
-> > unlock_kernel() somewhere else, and the tty code is just the victim of
-> > that.
-> 
-> It's introduced by the BKL shuffle. Try the following
-> 
-> 
-> commit 1f61f07a985c7e8cfc20ad8fcced2f3d226bd0dc
-> Author: Alan Cox <alan@linux.intel.com>
-> Date:   Sat Dec 12 10:32:36 2009 +0000
-> 
->     tty: Fix the AB-BA locking bug introduced in the BKL split
->     
->     The fasync path takes the BKL (it probably doesn't need to in fact) but
->     this causes lock inversions and deadlocks so we can't do that. Leave the
->     BKL over that bit for the moment.
->     
->     Identified by AKPM.
->     
->     Signed-off-by: Alan Cox <alan@linux.intel.com>
+That's something we can add on top of this patch, though, not to complicate
+things from the start and it surely requires more discussion.
 
-Acked-and-Tested-by: Thomas Gleixner <tglx@linutronix.de>
+> And no, making _everything_ be async is _not_ the answer.
 
- 
-> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-> index 684f0e0..f15df40 100644
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -516,7 +516,6 @@ static void do_tty_hangup(struct work_struct *work)
->  	/* inuse_filps is protected by the single kernel lock */
->  	lock_kernel();
->  	check_tty_count(tty, "do_tty_hangup");
-> -	unlock_kernel();
->  
->  	file_list_lock();
->  	/* This breaks for file handles being sent over AF_UNIX sockets ? */
-> @@ -531,7 +530,6 @@ static void do_tty_hangup(struct work_struct *work)
->  	}
->  	file_list_unlock();
->  
-> -	lock_kernel();
->  	tty_ldisc_hangup(tty);
->  
->  	read_lock(&tasklist_lock);
-> 
+I'm not sure what you mean, really.
+
+Speaking of PCI bridges, even though they don't "suspend" in the sense of
+being put into low power states or something, we still need to save their
+registers on suspend and restore them on resume, and that restore has to
+be done before we start to access devices below the bridge.
+
+There are devices with totally null suspend and resume routines that even
+the bus type doesn't really handle, but those can be marked as "async" from
+the start and they won't really get in the way any more (this creates another
+issue to solve, namely that we shouldn't really start a new async thread for
+each of them; we have considered that too).
+
+Even if we move that all to drivers, the constraints won't go away and someone
+will have to take care of them.  Now, since _we_ have problems with reaching
+an agreement about how to do it, the driver writers will be even less likely to
+figure that out.
+
+Rafael
