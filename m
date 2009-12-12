@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZLMCbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZLMC5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbZLMCbz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 21:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZLMCbx
+	id S1754541AbZLMC5M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 21:57:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZLMC5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 21:31:53 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39697 "HELO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751398AbZLMCbw (ORCPT
+	Sat, 12 Dec 2009 21:57:11 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:35602 "HELO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753611AbZLMC5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 21:31:52 -0500
-Date: Sat, 12 Dec 2009 20:33:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       maximlevitsky@gmail.com, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091212193301.GE1308@ucw.cz>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> <4B116954.5050706@s5r6.in-berlin.de> <9e4733910911281058i1b28f33bh64c724a89dcb8cf5@mail.gmail.com> <4B117DEA.3030400@s5r6.in-berlin.de> <9e4733910911281208t23c938a2l7537e248e1eda4ae@mail.gmail.com> <m3fx7ywgbe.fsf@intrepid.localdomain>
+	Sat, 12 Dec 2009 21:57:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:x-url:user-agent;
+        b=NcOuIHKzjYL57+eCFRF4Bp203p0xgf5O/cFt96NuN3zmT4Fq3fuVgdW63jua7256+r
+         NDEtvlTorSnmjjyCjgTpBmlGh4BIylQLiFoY+gEsalJ2LGNPPmNYh0WEJQYLKFBKpmm7
+         lTmy7+nvGmX95I0gM9YS1zfpg92QDkWASKZik=
+Date: Sat, 12 Dec 2009 17:42:22 -0200
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: William Allen Simpson <william.allen.simpson@gmail.com>,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20091212194222.GC1949@ghostprotocols.net>
+References: <20091211.181712.211179737.davem@davemloft.net>
+ <4B236C18.4050007@gmail.com>
+ <4B237528.8020708@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <m3fx7ywgbe.fsf@intrepid.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B237528.8020708@gmail.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-11-28 21:21:57, Krzysztof Halasa wrote:
-> Jon Smirl <jonsmirl@gmail.com> writes:
+Em Sat, Dec 12, 2009 at 11:49:12AM +0100, Eric Dumazet escreveu:
+> Le 12/12/2009 11:10, William Allen Simpson a écrit :
+> > David Miller wrote:
+> >> David S. Miller (4):
+> >>       Merge branch 'master' of
+> > This is a poor patch that was never sent to the netdev list for review. 
 > 
-> > We have one IR receiver device and multiple remotes. How does the
-> > input system know how many devices to create corresponding to how many
-> > remotes you have? There is no current mechanism to do that. You need
-> > an input device for each remote so that you can do the EVIOCSKEYCODE
-> > against it. Some type of "create subdevice" IOCTL will need to be
-> > built.
+> William, as I already said, you wont solve your problem with David
+> alerting whole earth, Linus, God, whoever, because we dont care,
+> we have our own problems.
 > 
-> Thinking about it, I'm not sure. Why do we want multiple remote devices?
-> (not multiple remotes, that's clear).
+> This drama is really ridiculous, could we go forward, correct bugs,
+> add documentation, and so on ?
 
-Computer in the basement, one ir receiver + usb speakers in kitchen,
-second ir receiver + speakers + monitor in living room.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Indeed, this is over the top, either try to get along with people that
+proved their worth thru almost decades of hard work, even being difficult
+to deal with when treated unreasonably (and sometimes when in a bad mood
+;-)) or get the highway and never look back!
+
+- Arnaldo
