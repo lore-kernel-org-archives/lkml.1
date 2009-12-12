@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933252AbZLLBwC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933834AbZLLCAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933252AbZLLBwC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 20:52:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbZLLBv7
+	id S933834AbZLLCAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 21:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933097AbZLLCAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 20:51:59 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:52849 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932786AbZLLBv7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 20:51:59 -0500
-Date: Fri, 11 Dec 2009 17:51:56 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Heinz Diehl <htd@fancy-poultry.org>, LKML <linux-kernel@vger.kernel.org>,
-       martin.petersen@oracle.com
-Subject: Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device
- mapper warnings
-In-Reply-To: <20091209220749.GD8742@kernel.dk>
-Message-ID: <alpine.DEB.2.01.0912111748003.2915@bogon.housecafe.de>
-References: <200912091049.12604.borntraeger@de.ibm.com> <20091209212516.GA6206@fancy-poultry.org> <20091209214501.GC8742@kernel.dk> <20091209220749.GD8742@kernel.dk>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Fri, 11 Dec 2009 21:00:49 -0500
+Received: from home.kolivas.org ([59.167.196.135]:49371 "EHLO home.kolivas.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933088AbZLLCAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 21:00:49 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
+Date: Sat, 12 Dec 2009 13:00:54 +1100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-ck1; KDE/4.3.2; x86_64; ; )
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200912111124.18118.kernel@kolivas.org> <200912120937.42943.kernel@kolivas.org> <200912120155.39197.bzolnier@gmail.com>
+In-Reply-To: <200912120155.39197.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/5n+AEGFxUBV3SXFU5W233mtvQ3OnAuqjA6fQ
- lDP8eDJU1V7P+HKsef8KGzZBLMSuvAN2fSK1xqZsloJZPdH8UO
- /EtpkcKC5zvIkTrY9yZWA==
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912121300.54803.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Dec 2009 at 23:07, Jens Axboe wrote:
-> Does this work?
+On Sat, 12 Dec 2009 11:55:39 Bartlomiej Zolnierkiewicz wrote:
+> On Friday 11 December 2009 11:37:42 pm Con Kolivas wrote:
+> > On Sat, 12 Dec 2009 02:12:58 Christoph Lameter wrote:
+> > > On Sat, 12 Dec 2009, Con Kolivas wrote:
+> > > > On Sat, 12 Dec 2009 01:10:39 Christoph Lameter wrote:
+> > > > > Could you make the scheduler build time configurable instead of
+> > > > > replacing the existing one? Embedded folks in particular may love a
+> > > > > low footprint scheduler.
+> > > >
+> > > > It's not a bad idea, but the kernel still needs to be patched either
+> > > > way. To get BFS they'd need to patch the kernel. If they didn't want
+> > > > BFS, they wouldn't patch it in the first place.
+> > >
+> > > BFS would have a chance to be merged as an alternate scheduler for
+> > > specialized situations (such as embedded or desktop use).
+> >
+> > Nice idea, but regardless of who else might want that, the mainline
+> 
+> FWIW I would also love to see it happen.
 
-Although not using LVM, these messages were popping up here too. Your 
-patch made these go away with no ill effects so far.
-Dmesg and .config: http://nerdbynature.de/bits/2.6.33-git/dm/
+Thanks!
 
-Thanks,
-Christian.
+> > maintainers have already made it clear they do not.
+> 
+> Oh, those upstream bastards.. ;)
+> 
+> Why do you care so much about their acknowledgment?
+
+Whaa...?
 
 > 
-> diff --git a/block/blk-settings.c b/block/blk-settings.c
-> index dd1f1e0..0116d29 100644
-> --- a/block/blk-settings.c
-> +++ b/block/blk-settings.c
-> @@ -554,11 +554,13 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
->  		ret = -1;
->  	}
->  
-> +#if 0
->  	if (offset &&
->  	    (offset & (b->discard_granularity - 1)) != b->discard_alignment) {
->  		t->discard_misaligned = 1;
->  		ret = -1;
->  	}
-> +#endif
->  
->  	/* If top has no alignment offset, inherit from bottom */
->  	if (!t->alignment_offset)
+> If you are not doing your unpaid kernel work for yourself and for people
+> who recognize/use it then upstream maintainers not liking your changes
+> should really be the least of your worries..
+> 
 
+Wait, this does not make sense. There's a cyclical flaw in this reasoning. If 
+I cared about their acknowledgment, I would make it mainline mergeable and 
+argue a case for it, which I do not want to do. 
+
+I'm happy to make reasonable changes to the code consistent with what people 
+who use it want, but what exactly is the point of making it mainline mergeable 
+if it will not be merged?
+
+Regards,
 -- 
-BOFH excuse #254:
-
-Interference from lunar radiation
+-ck
