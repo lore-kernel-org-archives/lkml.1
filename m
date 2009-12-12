@@ -1,134 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933411AbZLLDT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933527AbZLLDZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933411AbZLLDT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762860AbZLLDT0
+	id S933527AbZLLDZp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 22:25:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932843AbZLLDZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:19:26 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.65]:45362 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762750AbZLLDT0 (ORCPT
+	Fri, 11 Dec 2009 22:25:40 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:31048 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932584AbZLLDZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:19:26 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 12 Dec 2009 12:19:02 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC v2 4/4] memcg: implement memory thresholds
-Message-Id: <20091212121902.e95f9561.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
-References: <cover.1260571675.git.kirill@shutemov.name>
-	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
-	<c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
-	<747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
-	<9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Dec 2009 22:25:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=arIpzkyn1kSy66EhrEJgEsvyfS1vEnA8phz4z7xCCmVqnYHvB/HgKyU6pV5Xxc5Poc
+         sj+W0PkesVETHXPKVDX+xaKjMlQnXXfEIqtfvZzizrYI2lbx+lVFVWCbKUcDcIuNv/C3
+         uTFmBE5i7U3qZTEDTVjV9aTpb9r801Y3w/vbY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Con Kolivas <kernel@kolivas.org>
+Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
+Date: Sat, 12 Dec 2009 04:22:15 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200912111124.18118.kernel@kolivas.org> <200912120155.39197.bzolnier@gmail.com> <200912121300.54803.kernel@kolivas.org>
+In-Reply-To: <200912121300.54803.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912120422.15372.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Dec 2009 00:59:19 +0200
-"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
-
-> It allows to register multiple memory and memsw thresholds and gets
-> notifications when it crosses.
+On Saturday 12 December 2009 03:00:54 am Con Kolivas wrote:
+> On Sat, 12 Dec 2009 11:55:39 Bartlomiej Zolnierkiewicz wrote:
+> > On Friday 11 December 2009 11:37:42 pm Con Kolivas wrote:
+> > > On Sat, 12 Dec 2009 02:12:58 Christoph Lameter wrote:
+> > > > On Sat, 12 Dec 2009, Con Kolivas wrote:
+> > > > > On Sat, 12 Dec 2009 01:10:39 Christoph Lameter wrote:
+> > > > > > Could you make the scheduler build time configurable instead of
+> > > > > > replacing the existing one? Embedded folks in particular may love a
+> > > > > > low footprint scheduler.
+> > > > >
+> > > > > It's not a bad idea, but the kernel still needs to be patched either
+> > > > > way. To get BFS they'd need to patch the kernel. If they didn't want
+> > > > > BFS, they wouldn't patch it in the first place.
+> > > >
+> > > > BFS would have a chance to be merged as an alternate scheduler for
+> > > > specialized situations (such as embedded or desktop use).
+> > >
+> > > Nice idea, but regardless of who else might want that, the mainline
+> > 
+> > FWIW I would also love to see it happen.
 > 
-> To register a threshold application need:
-> - create an eventfd;
-> - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
-> - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
->   cgroup.event_control.
+> Thanks!
 > 
-> Application will be notified through eventfd when memory usage crosses
-> threshold in any direction.
+> > > maintainers have already made it clear they do not.
+> > 
+> > Oh, those upstream bastards.. ;)
+> > 
+> > Why do you care so much about their acknowledgment?
 > 
-> It's applicable for root and non-root cgroup.
+> Whaa...?
 > 
-> It uses stats to track memory usage, simmilar to soft limits. It checks
-> if we need to send event to userspace on every 100 page in/out. I guess
-> it's good compromise between performance and accuracy of thresholds.
+> > 
+> > If you are not doing your unpaid kernel work for yourself and for people
+> > who recognize/use it then upstream maintainers not liking your changes
+> > should really be the least of your worries..
+> > 
 > 
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-> ---
->  mm/memcontrol.c |  263 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 263 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index c6081cc..5ba2140 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -6,6 +6,10 @@
->   * Copyright 2007 OpenVZ SWsoft Inc
->   * Author: Pavel Emelianov <xemul@openvz.org>
->   *
-> + * Memory thresholds
-> + * Copyright (C) 2009 Nokia Corporation
-> + * Author: Kirill A. Shutemov
-> + *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License as published by
->   * the Free Software Foundation; either version 2 of the License, or
-> @@ -38,6 +42,7 @@
->  #include <linux/vmalloc.h>
->  #include <linux/mm_inline.h>
->  #include <linux/page_cgroup.h>
-> +#include <linux/eventfd.h>
->  #include "internal.h"
->  
->  #include <asm/uaccess.h>
-> @@ -56,6 +61,7 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
->  
->  static DEFINE_MUTEX(memcg_tasklist);	/* can be hold under cgroup_mutex */
-This mutex has already removed in current mmotm.
-Please write a patch for memcg based on mmot.
+> Wait, this does not make sense. There's a cyclical flaw in this reasoning. If 
+> I cared about their acknowledgment, I would make it mainline mergeable and 
+> argue a case for it, which I do not want to do. 
 
->  #define SOFTLIMIT_EVENTS_THRESH (1000)
-> +#define THRESHOLDS_EVENTS_THRESH (100)
->  
->  /*
->   * Statistics for memory cgroup.
+Unfortunately the flaw is in your reasoning..
 
-(snip)
+> I'm happy to make reasonable changes to the code consistent with what people 
+> who use it want, but what exactly is the point of making it mainline mergeable 
+> if it will not be merged?
 
-> @@ -1363,6 +1395,11 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
->  	if (mem_cgroup_soft_limit_check(mem))
->  		mem_cgroup_update_tree(mem, page);
->  done:
-> +	if (mem_cgroup_threshold_check(mem)) {
-> +		mem_cgroup_threshold(mem, false);
-> +		if (do_swap_account)
-> +			mem_cgroup_threshold(mem, true);
-> +	}
->  	return 0;
->  nomem:
->  	css_put(&mem->css);
-> @@ -1906,6 +1943,11 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
->  
->  	if (mem_cgroup_soft_limit_check(mem))
->  		mem_cgroup_update_tree(mem, page);
-> +	if (mem_cgroup_threshold_check(mem)) {
-> +		mem_cgroup_threshold(mem, false);
-> +		if (do_swap_account)
-> +			mem_cgroup_threshold(mem, true);
-> +	}
->  	/* at swapout, this memcg will be accessed to record to swap */
->  	if (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
->  		css_put(&mem->css);
-Can "if (do_swap_account)" check be moved into mem_cgroup_threshold ?
+The thing is that those two points are not necessarily a conflicting ones..
 
-
-Thanks,
-Daisuke Nishimura.
+--
+Bartlomiej Zolnierkiewicz
