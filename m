@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZLLMYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbZLLNGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZLLMYk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 07:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZLLMYi
+	id S1759606AbZLLNGs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 08:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759506AbZLLNGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 07:24:38 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:46099 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbZLLMYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 07:24:38 -0500
-Date: Sat, 12 Dec 2009 13:24:43 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] laptop-mode: Make flushes per-device
-Message-ID: <20091212122443.GA8742@kernel.dk>
-References: <20091211164433.GA1980@srcf.ucam.org> <1260554071-2190-1-git-send-email-mjg@redhat.com>
+	Sat, 12 Dec 2009 08:06:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:9715 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758565AbZLLNGq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 08:06:46 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260554071-2190-1-git-send-email-mjg@redhat.com>
+In-Reply-To: <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	 <c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
+	 <747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+	 <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 12 Dec 2009 15:06:52 +0200
+Message-ID: <cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11 2009, Matthew Garrett wrote:
-> One of the features of laptop-mode is that it forces a writeout of dirty
-> pages if something else triggers a physical read or write from a device.
-> The current implementation flushes pages on all devices, rather than only
-> the one that triggered the flush. This patch alters the behaviour so that
-> only the recently accessed block device is flushed, preventing other
-> disks being spun up for no terribly good reason.
-> 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> ---
-> 
-> The forward struct declaration in writeback.h seems messy, but I'm not
-> sure there's a cleaner way to do this. I'm also still woefully
-> unfamiliar with the block layer - I /think/ this does the right thing,
-> but some review would be nice.
+On Sat, Dec 12, 2009 at 5:50 AM, Daisuke Nishimura
+<d-nishimura@mtf.biglobe.ne.jp> wrote:
+> Sorry, I disagree this change.
+>
+> mem_cgroup_soft_limit_check() is used for checking how much current usage exceeds
+> the soft_limit_in_bytes and updating softlimit tree asynchronously, instead of
+> checking every charge/uncharge. What if you change the soft_limit_in_bytes,
+> but the number of charges and uncharges are very balanced afterwards ?
+> The softlimit tree will not be updated for a long time.
 
-That's because it is messy, why are you passing the request in? It
-would be a lot more sane to pass in the queue, better still the backing
-device.
+I don't see how my patch affects the logic you've described.
+Statistics updates and
+checks in the same place. It just uses decrement instead of increment.
 
-What guarentees that the timer isn't running when the bdi goes away?
+>
+> And IIUC, it's the same for your threshold feature, right ?
+> I think it would be better:
+>
+> - discard this change.
+> - in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
+>  and instead of adding a new STAT counter, do like:
+>
+>        if (mem_cgroup_event_check(mem)) {
+>                mem_cgroup_update_tree(mem, page);
+>                mem_cgroup_threshold(mem);
+>        }
 
--- 
-Jens Axboe
-
+I think that mem_cgroup_update_tree() and mem_cgroup_threshold() should be
+run with different frequency. How to share MEM_CGROUP_STAT_EVENTS
+between soft limits and thresholds in this case?
