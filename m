@@ -1,293 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbZLLHmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZLLHnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbZLLHmQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 02:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZLLHmP
+	id S1757202AbZLLHnH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 02:43:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZLLHnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 02:42:15 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:52731 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbZLLHmO (ORCPT
+	Sat, 12 Dec 2009 02:43:06 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:64528 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZLLHnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 02:42:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=s8xl0Di2WRe8GZ4Nj+qooeiCaeUjnhW5ZVGbVQQGfkU3lJ5L7mNLDamOvfxJK/eRwO
-         Vq7HxQSoD0PR+vui0Lws44/kHUMam2Q9XZQ8nkr+URY5njfY5XSr/nNiEdDZCWJDtaPt
-         L36Cd/ppJtu6lRqJXb4ixzve5X0vxRXf+R8js=
-Date: Fri, 11 Dec 2009 23:42:14 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-input@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] [input] add mc13783 touchscreen driver
-Message-ID: <20091212074214.GB2956@core.coreip.homeip.net>
-References: <20090813162321.5A2F5526EC9@mailhub.coreip.homeip.net> <1259956377-32173-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Sat, 12 Dec 2009 02:43:05 -0500
+Date: Fri, 11 Dec 2009 23:43:10 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: netdev@vger.kernel.org
+Subject: Badness at net/ipv4/inet_connection_sock.c:293
+Message-ID: <alpine.DEB.2.01.0912112335440.2915@bogon.housecafe.de>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1259956377-32173-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19KjRoSpI6qFmbI+bVbvGw7m7af3HqT5biMwRW
+ bTbhrTspxIyEkjH1cATWfAwcMNIQY6w0KZohaFBjlSco5Bup2g
+ hKw7HNOatYs6X4vmXM+Mg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe,
+Hi there,
 
-On Fri, Dec 04, 2009 at 08:52:57PM +0100, Uwe Kleine-König wrote:
-> From: Sascha Hauer <s.hauer@pengutronix.de>
-> 
-> This driver provides support for the touchscreen interface
-> integrated into the Freescale MC13783.
-> 
+today I upgraded from 2.6.32-rc7 to the latest -git (mainline) and after a 
+few hours the messages below appeared in the log. Apparently "privoxy" was 
+very busy handling connections, but the messages never appeared with 
+earlier kernels. 
 
-Unfortunately the driver as presented does not compile because changes
-to mc13783 core that are needed by this driver are not in mainline (and
-therefore are not in my tree) yet. Do you know when they willbe
-submitted to Linus?
+Full dmesg & .config is on:
+http://nerdbynature.de/bits/2.6.33-git/inet_accept/
 
-At this point we have 2 option - wait till the necessary changes hit
-mainline or merge through some other tree. I am OK with merging through
-other tree (MFD?) provided that the patch below is applied (just fold it
-into original patch). The main changes:
+Thanks,
+Christian.
 
- - we should free IRQ if we fail to activate the device. The old code
-   was returning error from mc13783_ts_open() but was leaving IRQ
-   registered
+ ------------[ cut here ]------------
+ Badness at net/ipv4/inet_connection_sock.c:293
+ NIP: c02a0914 LR: c02a0904 CTR: 00000000
+ REGS: eeecbd30 TRAP: 0700   Not tainted  (2.6.32)
+ MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002442  XER: 00000000
+ TASK = eee9a820[1756] 'privoxy' THREAD: eeeca000
+ GPR00: 00000001 eeecbde0 eee9a820 c03f7094 d4e86ba0 00000000 00001d40 00000000 
+ GPR08: eeecbdf4 d4e86b40 00000000 c0d42000 00000000 10054804 bfedd9fc 10038614 
+ GPR16: 100385f8 100385c8 00000000 1004c824 100385dc 1004c80c 1004c9d0 100385a4 
+ GPR24: 1004c824 7fffffff fffffe04 eeecbe38 eeecbde8 7fffffff cb3b4840 eecc6520 
+ NIP [c02a0914] inet_csk_accept+0x94/0x1f0
+ LR [c02a0904] inet_csk_accept+0x84/0x1f0
+ Call Trace:
+ [eeecbde0] [c02a0904] inet_csk_accept+0x84/0x1f0 (unreliable)
+ [eeecbe30] [c02c3794] inet_accept+0x40/0xb8
+ [eeecbe50] [c0268448] sys_accept4+0xfc/0x1fc
+ [eeecbf00] [c0268bd4] sys_socketcall+0x1d4/0x204
+ [eeecbf40] [c0012dcc] ret_from_syscall+0x0/0x38
+ --- Exception: c01 at 0xff393d4
+     LR = 0xff393c0
+ Instruction dump:
+ 0f000000 a13f00b4 7d645b78 3929ffff b13f00b4 816b0018 806b0008 4bdf0e41 
+ 881e0016 68000003 7c000034 5400d97e <0f000000> 7fe3fb78 4bfc948d 80010054 
 
- - use cancel_delayed_work_sync() instead of cancel_delayed_work(). You
-   want to make sure that work function is not running. It also should
-   be called form mc13783_ts_close() and not mc13783_ts_remove()
 
- - miscellaneous formatting changes.
+ ------------[ cut here ]------------
+ Badness at net/ipv4/af_inet.c:668
+ NIP: c02c37b8 LR: c02c37a4 CTR: 00000000
+ REGS: eeecbd80 TRAP: 0700   Tainted: G        W   (2.6.32)
+ MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002442  XER: 00000000
+ TASK = eee9a820[1756] 'privoxy' THREAD: eeeca000
+ GPR00: 00000001 eeecbe30 eee9a820 cb3b4840 00000000 00000000 00001d40 00000000 
+ GPR08: eeecbdf4 00000003 00000000 eeeca000 00000000 10054804 bfedd9fc 10038614 
+ GPR16: 100385f8 100385c8 00000000 1004c824 100385dc 1004c80c 1004c9d0 100385a4 
+ GPR24: 1004c824 ffffffff 00000010 bfedd9a8 bfedd9ac ef645580 e5a5dc60 cb3b4840 
+ NIP [c02c37b8] inet_accept+0x64/0xb8
+ LR [c02c37a4] inet_accept+0x50/0xb8
+ Call Trace:
+ [eeecbe30] [c02c37a4] inet_accept+0x50/0xb8 (unreliable)
+ [eeecbe50] [c0268448] sys_accept4+0xfc/0x1fc
+ [eeecbf00] [c0268bd4] sys_socketcall+0x1d4/0x204
+ [eeecbf40] [c0012dcc] ret_from_syscall+0x0/0x38
+ --- Exception: c01 at 0xff393d4
+     LR = 0xff393c0
+ Instruction dump:
+ 816b000c 7d6903a6 4e800421 7c7f1b79 4182005c 38800000 4bfa66b1 893f0016 
+ 38000182 7c004e30 68000001 540007fe <0f000000> 4bd722c9 381e0010 901f0044 
 
-In this case please feel free add:
 
-	Acked-by: Dmitry Torokhov <dtor@mail.ru>
-
-Thanks.
 
 -- 
-Dmitry
+BOFH excuse #137:
 
-
-diff -u b/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
---- b/drivers/input/touchscreen/mc13783_ts.c
-+++ b/drivers/input/touchscreen/mc13783_ts.c
-@@ -46,6 +46,12 @@
- 
- 	mc13783_ackirq(priv->mc13783, irq);
- 
-+	/*
-+	 * Kick off reading coordinates. Note that if work happens already
-+	 * be queued for future execution (it rearms itself) it will not
-+	 * be rescheduled for immediate execution here. However the rearm
-+	 * delay is HZ / 50 which is acceptable.
-+	 */
- 	queue_delayed_work(priv->workq, &priv->work, 0);
- 
- 	return IRQ_HANDLED;
-@@ -62,6 +68,7 @@
- 
- static void mc13783_ts_report_sample(struct mc13783_ts_priv *priv)
- {
-+	struct input_dev *idev = priv->idev;
- 	int x0, x1, x2, y0, y1, y2;
- 	int cr0, cr1;
- 
-@@ -78,8 +85,9 @@
- 	cr0 = (priv->sample[2] >> 12) & 0xfff;
- 	cr1 = (priv->sample[3] >> 12) & 0xfff;
- 
--	dev_dbg(&priv->idev->dev, "x: (% 4d,% 4d,% 4d) y: (% 4d, % 4d,% 4d) "
--			"cr: (% 4d, % 4d)\n", x0, x1, x2, y0, y1, y2, cr0, cr1);
-+	dev_dbg(&idev->dev,
-+		"x: (% 4d,% 4d,% 4d) y: (% 4d, % 4d,% 4d) cr: (% 4d, % 4d)\n",
-+		x0, x1, x2, y0, y1, y2, cr0, cr1);
- 
- 	sort3(x0, x1, x2);
- 	sort3(y0, y1, y2);
-@@ -87,26 +95,24 @@
- 	cr0 = (cr0 + cr1) / 2;
- 
- 	if (!cr0 || !sample_tolerance ||
--			(x2 - x0 < sample_tolerance &&
--			 y2 - y0 < sample_tolerance))
--	{
-+	    (x2 - x0 < sample_tolerance && y2 - y0 < sample_tolerance)) {
- 		/* report the median coordinate and average pressure */
- 		if (cr0) {
--			input_report_abs(priv->idev, ABS_X, x1);
--			input_report_abs(priv->idev, ABS_Y, y1);
-+			input_report_abs(idev, ABS_X, x1);
-+			input_report_abs(idev, ABS_Y, y1);
- 
--			dev_dbg(&priv->idev->dev, "report (%d, %d, %d)\n",
--					x1, y1, 0x1000 - cr0);
-+			dev_dbg(&idev->dev,
-+				"report (%d, %d, %d)\n", x1, y1, 0x1000 - cr0);
- 			queue_delayed_work(priv->workq, &priv->work, HZ / 50);
- 		} else
--			dev_dbg(&priv->idev->dev, "report release\n");
-+			dev_dbg(&idev->dev, "report release\n");
- 
--		input_report_abs(priv->idev, ABS_PRESSURE,
--				cr0 ? 0x1000 - cr0 : cr0);
--		input_report_key(priv->idev, BTN_TOUCH, !!cr0);
--		input_sync(priv->idev);
-+		input_report_abs(idev, ABS_PRESSURE,
-+				 cr0 ? 0x1000 - cr0 : cr0);
-+		input_report_key(idev, BTN_TOUCH, cr0);
-+		input_sync(idev);
- 	} else
--		dev_dbg(&priv->idev->dev, "discard event\n");
-+		dev_dbg(&idev->dev, "discard event\n");
- }
- 
- static void mc13783_ts_work(struct work_struct *work)
-@@ -115,13 +121,11 @@
- 		container_of(work, struct mc13783_ts_priv, work.work);
- 	unsigned int mode = MC13783_ADC_MODE_TS;
- 	unsigned int channel = 12;
--	int ret;
- 
--	ret = mc13783_adc_do_conversion(priv->mc13783, mode, channel,
--			priv->sample);
--
--	if (!ret)
-+	if (mc13783_adc_do_conversion(priv->mc13783,
-+				      mode, channel, priv->sample) == 0) {
- 		mc13783_ts_report_sample(priv);
-+	}
- }
- 
- static int mc13783_ts_open(struct input_dev *dev)
-@@ -140,10 +144,10 @@
- 
- 	ret = mc13783_reg_rmw(priv->mc13783, MC13783_ADC0,
- 			MC13783_ADC0_TSMOD_MASK, MC13783_ADC0_TSMOD0);
--
-+	if (ret)
-+		mc13783_irq_free(priv->mc13783, MC13783_IRQ_TS, priv);
- out:
- 	mc13783_unlock(priv->mc13783);
--
- 	return ret;
- }
- 
-@@ -156,65 +160,67 @@
- 			MC13783_ADC0_TSMOD_MASK, 0);
- 	mc13783_irq_free(priv->mc13783, MC13783_IRQ_TS, priv);
- 	mc13783_unlock(priv->mc13783);
-+
-+	cancel_delayed_work_sync(&priv->work);
- }
- 
- static int __init mc13783_ts_probe(struct platform_device *pdev)
- {
- 	struct mc13783_ts_priv *priv;
- 	struct input_dev *idev;
--	int ret;
-+	int error;
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
--	if (!priv)
--		return -ENOMEM;
-+	idev = input_allocate_device();
-+	if (!priv || !idev) {
-+		error = -ENOMEM;
-+		goto err_free_mem;
-+	}
- 
-+	INIT_DELAYED_WORK(&priv->work, mc13783_ts_work);
- 	priv->mc13783 = dev_get_drvdata(pdev->dev.parent);
-+	priv->idev = idev;
- 
--	idev = input_allocate_device();
--	if (!idev) {
--		ret = -ENOMEM;
--		goto err_input_alloc;
-+	/*
-+	 * We need separate workqueue because mc13783_adc_do_conversion
-+	 * uses keventd and thus would deadlock.
-+	 */
-+	priv->workq = create_singlethread_workqueue("mc13783_ts");
-+	if (!priv->workq) {
-+		error = -ENOMEM;
-+		goto err_free_mem;
- 	}
- 
--	priv->idev = idev;
- 	idev->name = MC13783_TS_NAME;
-+	idev->dev.parent = &pdev->dev;
-+
- 	idev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
- 	idev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
--	idev->open = mc13783_ts_open;
--	idev->close = mc13783_ts_close;
- 	input_set_abs_params(idev, ABS_X, 0, 0xfff, 0, 0);
- 	input_set_abs_params(idev, ABS_Y, 0, 0xfff, 0, 0);
- 	input_set_abs_params(idev, ABS_PRESSURE, 0, 0xfff, 0, 0);
- 
--	platform_set_drvdata(pdev, priv);
--
--	INIT_DELAYED_WORK(&priv->work, mc13783_ts_work);
--
--	priv->workq = create_singlethread_workqueue("mc13783_ts");
--	if (!priv->workq) {
--		ret = -ENOMEM;
--		goto err_input_alloc;
--	}
-+	idev->open = mc13783_ts_open;
-+	idev->close = mc13783_ts_close;
- 
- 	input_set_drvdata(idev, priv);
- 
--	ret = input_register_device(priv->idev);
--	if (ret) {
-+	error = input_register_device(priv->idev);
-+	if (error) {
- 		dev_err(&pdev->dev,
--				"register input device failed with %d\n", ret);
--		goto err_failed_register;
-+			"register input device failed with %d\n", error);
-+		goto err_destroy_wq;
- 	}
- 
-+	platform_set_drvdata(pdev, priv);
- 	return 0;
- 
--err_failed_register:
--	input_free_device(priv->idev);
--
--err_input_alloc:
--	platform_set_drvdata(pdev, NULL);
-+err_destroy_wq:
-+	destroy_workqueue(priv->workq);
-+err_free_mem:
-+	input_free_device(idev);
- 	kfree(priv);
--
--	return ret;
-+	return error;
- }
- 
- static int __devexit mc13783_ts_remove(struct platform_device *pdev)
-@@ -223,11 +229,8 @@
- 
- 	platform_set_drvdata(pdev, NULL);
- 
--	cancel_delayed_work(&priv->work);
- 	destroy_workqueue(priv->workq);
--
- 	input_unregister_device(priv->idev);
--
- 	kfree(priv);
- 
- 	return 0;
+User was distributing pornography on server; system seized by FBI.
