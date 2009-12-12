@@ -1,79 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933954AbZLLDBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933411AbZLLDT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933954AbZLLDBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbZLLDB3
+	id S933411AbZLLDT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 22:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762860AbZLLDT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:01:29 -0500
-Received: from web53501.mail.re2.yahoo.com ([206.190.37.62]:27730 "HELO
-	web53501.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761500AbZLLDB2 (ORCPT
+	Fri, 11 Dec 2009 22:19:26 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.65]:45362 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762750AbZLLDT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:01:28 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Dec 2009 22:01:28 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type;
-  b=wYoqskIMCX0uJdUZp3QWRhCpCqEmnOek5v7hZsV05X8EnhCBIjdI8/9cjsGzIUpXdaT04s7KNmwG0vYj4zI0iMpLBK4HLUN2QDHmc5KAub5dE023O+x3/Mt2/R456eXFyCT+6yKIUI+wENm5HYfMtNd+k0cmz853GnIi3GRE0gs=;
-Message-ID: <994.13667.qm@web53501.mail.re2.yahoo.com>
-X-YMail-OSG: S9LS4LoVM1lXdIckyG_QXruOt1HeexhjbV6g4Ka6q_Ua.irgi0nCvJljj_2RbsIIezKql8vx.B6rSpWD93ryyyx2Xcidl58M7Ksk_rlLg6q5ugRPQ6.JK_XL2HVxcyERpmS7BiAt21HXABJZJw67qihqAey4YEI84iA2LifhrKhobG7Y1SzVOGr0M755im2dsqUSdwU7ZbV4lDOUSPZWTRqBGIQUNKuQ3GTJ4jUSaPEXPg.ijG6RbkYMWjJYsrfDKYgEWmGktDEoUfa5SkKqLX6XKQNXaqL9le4cOWs6SZmolNnE__vaayojIX0PsdqerpQ_s9Cv9HnW6Cvq29LL3T2s2w--
-X-Mailer: YahooMailRC/240.3 YahooMailWebService/0.8.100.260964
-Date: Fri, 11 Dec 2009 18:54:54 -0800 (PST)
-From: roger blofeld <blofeldus@yahoo.com>
-Subject: [PATCH] adt7462: Fix pin 28 monitoring
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, lm-sensors@lm-sensors.org,
-       lkml <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-27544763-1260586494=:13667"
+	Fri, 11 Dec 2009 22:19:26 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 12 Dec 2009 12:19:02 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v2 4/4] memcg: implement memory thresholds
+Message-Id: <20091212121902.e95f9561.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	<c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
+	<747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+	<9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0-27544763-1260586494=:13667
-Content-Type: text/plain; charset=us-ascii
+On Sat, 12 Dec 2009 00:59:19 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 
-The ADT7462_PIN28_VOLT value is a 4-bit field, so the corresponding shift must be 4.
+> It allows to register multiple memory and memsw thresholds and gets
+> notifications when it crosses.
+> 
+> To register a threshold application need:
+> - create an eventfd;
+> - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
+> - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
+>   cgroup.event_control.
+> 
+> Application will be notified through eventfd when memory usage crosses
+> threshold in any direction.
+> 
+> It's applicable for root and non-root cgroup.
+> 
+> It uses stats to track memory usage, simmilar to soft limits. It checks
+> if we need to send event to userspace on every 100 page in/out. I guess
+> it's good compromise between performance and accuracy of thresholds.
+> 
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> ---
+>  mm/memcontrol.c |  263 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 263 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index c6081cc..5ba2140 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -6,6 +6,10 @@
+>   * Copyright 2007 OpenVZ SWsoft Inc
+>   * Author: Pavel Emelianov <xemul@openvz.org>
+>   *
+> + * Memory thresholds
+> + * Copyright (C) 2009 Nokia Corporation
+> + * Author: Kirill A. Shutemov
+> + *
+>   * This program is free software; you can redistribute it and/or modify
+>   * it under the terms of the GNU General Public License as published by
+>   * the Free Software Foundation; either version 2 of the License, or
+> @@ -38,6 +42,7 @@
+>  #include <linux/vmalloc.h>
+>  #include <linux/mm_inline.h>
+>  #include <linux/page_cgroup.h>
+> +#include <linux/eventfd.h>
+>  #include "internal.h"
+>  
+>  #include <asm/uaccess.h>
+> @@ -56,6 +61,7 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
+>  
+>  static DEFINE_MUTEX(memcg_tasklist);	/* can be hold under cgroup_mutex */
+This mutex has already removed in current mmotm.
+Please write a patch for memcg based on mmot.
 
-Signed-off-by: Roger Blofeld <blofeldus@yahoo.com>
----
-My mailer will whitespace damage the inline copy of the patch.
-The attached version should be OK.
+>  #define SOFTLIMIT_EVENTS_THRESH (1000)
+> +#define THRESHOLDS_EVENTS_THRESH (100)
+>  
+>  /*
+>   * Statistics for memory cgroup.
 
-diff --git a/drivers/hwmon/adt7462.c b/drivers/hwmon/adt7462.c
-index 1852f27..262c133 100644
---- a/drivers/hwmon/adt7462.c
-+++ b/drivers/hwmon/adt7462.c
-@@ -97,7 +97,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
- #define        ADT7462_PIN24_SHIFT        6
- #define        ADT7462_PIN26_VOLT_INPUT    0x08
- #define        ADT7462_PIN25_VOLT_INPUT    0x20
--#define        ADT7462_PIN28_SHIFT        6    /* cfg3 */
-+#define        ADT7462_PIN28_SHIFT        4    /* cfg3 */
- #define        ADT7462_PIN28_VOLT        0x5
- 
- #define ADT7462_REG_ALARM1            0xB8
+(snip)
+
+> @@ -1363,6 +1395,11 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>  	if (mem_cgroup_soft_limit_check(mem))
+>  		mem_cgroup_update_tree(mem, page);
+>  done:
+> +	if (mem_cgroup_threshold_check(mem)) {
+> +		mem_cgroup_threshold(mem, false);
+> +		if (do_swap_account)
+> +			mem_cgroup_threshold(mem, true);
+> +	}
+>  	return 0;
+>  nomem:
+>  	css_put(&mem->css);
+> @@ -1906,6 +1943,11 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+>  
+>  	if (mem_cgroup_soft_limit_check(mem))
+>  		mem_cgroup_update_tree(mem, page);
+> +	if (mem_cgroup_threshold_check(mem)) {
+> +		mem_cgroup_threshold(mem, false);
+> +		if (do_swap_account)
+> +			mem_cgroup_threshold(mem, true);
+> +	}
+>  	/* at swapout, this memcg will be accessed to record to swap */
+>  	if (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+>  		css_put(&mem->css);
+Can "if (do_swap_account)" check be moved into mem_cgroup_threshold ?
 
 
-      
---0-27544763-1260586494=:13667
-Content-Type: application/octet-stream; name="adt7462-p28-shift.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="adt7462-p28-shift.patch"
-
-VGhlIEFEVDc0NjJfUElOMjhfVk9MVCB2YWx1ZSBpcyBhIDQtYml0IGZpZWxk
-LCBzbyB0aGUgY29ycmVzcG9uZGluZyBzaGlmdCBtdXN0IGJlIDQuCgpTaWdu
-ZWQtb2ZmLWJ5OiBSb2dlciBCbG9mZWxkIDxibG9mZWxkdXNAeWFob28uY29t
-PgotLS0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvaHdtb24vYWR0NzQ2Mi5jIGIv
-ZHJpdmVycy9od21vbi9hZHQ3NDYyLmMKaW5kZXggMTg1MmYyNy4uMjYyYzEz
-MyAxMDA2NDQKLS0tIGEvZHJpdmVycy9od21vbi9hZHQ3NDYyLmMKKysrIGIv
-ZHJpdmVycy9od21vbi9hZHQ3NDYyLmMKQEAgLTk3LDcgKzk3LDcgQEAgSTJD
-X0NMSUVOVF9JTlNNT0RfMShhZHQ3NDYyKTsKICNkZWZpbmUJCUFEVDc0NjJf
-UElOMjRfU0hJRlQJCTYKICNkZWZpbmUJCUFEVDc0NjJfUElOMjZfVk9MVF9J
-TlBVVAkweDA4CiAjZGVmaW5lCQlBRFQ3NDYyX1BJTjI1X1ZPTFRfSU5QVVQJ
-MHgyMAotI2RlZmluZQkJQURUNzQ2Ml9QSU4yOF9TSElGVAkJNgkvKiBjZmcz
-ICovCisjZGVmaW5lCQlBRFQ3NDYyX1BJTjI4X1NISUZUCQk0CS8qIGNmZzMg
-Ki8KICNkZWZpbmUJCUFEVDc0NjJfUElOMjhfVk9MVAkJMHg1CiAKICNkZWZp
-bmUgQURUNzQ2Ml9SRUdfQUxBUk0xCQkJMHhCOAo=
-
---0-27544763-1260586494=:13667--
+Thanks,
+Daisuke Nishimura.
