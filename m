@@ -1,147 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933775AbZLLD3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbZLLDa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933775AbZLLD3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932962AbZLLD3d
+	id S933898AbZLLDa1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 22:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933489AbZLLDaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:29:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34369 "EHLO hera.kernel.org"
+	Fri, 11 Dec 2009 22:30:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34414 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932897AbZLLD3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:29:32 -0500
-Message-ID: <4B230DDA.5030006@kernel.org>
-Date: Fri, 11 Dec 2009 19:28:26 -0800
+	id S932962AbZLLDaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 22:30:21 -0500
+Message-ID: <4B230E0F.9000705@kernel.org>
+Date: Fri, 11 Dec 2009 19:29:19 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
        Gertjan van Wingerde <gwingerde@gmail.com>
-Subject: [PATCH 6/7] x86/pci: enable pci root res read out for 32bit too -v3
-References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org> <4B22FC35.5090305@kernel.org>
-In-Reply-To: <4B22FC35.5090305@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH 61/7] x86/pci: add cap_resource -v2
+References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org> <4B22FBEB.7040204@kernel.org> <4B22FD0B.10506@zytor.com> <4B22FDEF.5050600@kernel.org> <4B22FEFD.9050002@zytor.com>
+In-Reply-To: <4B22FEFD.9050002@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+prepare for 32bit pci root bus
 
-should be good for 32bit too.
-
--v3: cast res->start
+-v2: hpa said we should compare with (resource_size_t)~0
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- arch/x86/pci/Makefile    |    3 +--
- arch/x86/pci/amd_bus.c   |   14 +-------------
- arch/x86/pci/bus_numa.h  |    4 ++--
- arch/x86/pci/i386.c      |    4 ----
- arch/x86/pci/intel_bus.c |    2 +-
- 5 files changed, 5 insertions(+), 22 deletions(-)
+ arch/x86/pci/amd_bus.c   |    8 +++++---
+ arch/x86/pci/bus_numa.c  |    3 +++
+ arch/x86/pci/intel_bus.c |    5 ++++-
+ include/linux/range.h    |    8 ++++++++
+ 4 files changed, 20 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/arch/x86/pci/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/pci/Makefile
-+++ linux-2.6/arch/x86/pci/Makefile
-@@ -14,8 +14,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
- obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
- 
- obj-y				+= common.o early.o
--obj-y				+= amd_bus.o
--obj-$(CONFIG_X86_64)		+= bus_numa.o intel_bus.o
-+obj-y				+= amd_bus.o bus_numa.o intel_bus.o
- 
- ifeq ($(CONFIG_PCI_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
 Index: linux-2.6/arch/x86/pci/amd_bus.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/pci/amd_bus.c
 +++ linux-2.6/arch/x86/pci/amd_bus.c
-@@ -6,9 +6,7 @@
+@@ -201,7 +201,7 @@ static int __init early_fill_mp_bus_info
  
- #include <asm/pci_x86.h>
+ 	memset(range, 0, sizeof(range));
+ 	/* 0xfd00000000-0xffffffffff for HT */
+-	range[0].end = (0xfdULL<<32) - 1;
++	range[0].end = cap_resource((0xfdULL<<32) - 1);
  
--#ifdef CONFIG_X86_64
- #include <asm/pci-direct.h>
--#endif
+ 	/* need to take out [0, TOM) for RAM*/
+ 	address = MSR_K8_TOP_MEM1;
+@@ -286,7 +286,8 @@ static int __init early_fill_mp_bus_info
+ 			}
+ 		}
  
- #include "bus_numa.h"
+-		update_res(info, start, end, IORESOURCE_MEM, 1);
++		update_res(info, cap_resource(start), cap_resource(end),
++				 IORESOURCE_MEM, 1);
+ 		subtract_range(range, RANGE_NUM, start, end);
+ 		printk(KERN_CONT "\n");
+ 	}
+@@ -321,7 +322,8 @@ static int __init early_fill_mp_bus_info
+ 			if (!range[i].end)
+ 				continue;
  
-@@ -17,8 +15,6 @@
-  * also get peer root bus resource for io,mmio
-  */
- 
--#ifdef CONFIG_X86_64
--
- struct pci_hostbridge_probe {
- 	u32 bus;
- 	u32 slot;
-@@ -342,21 +338,13 @@ static int __init early_fill_mp_bus_info
- 			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
- 			       busnum, j,
- 			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
--			       res->start, res->end);
-+			       (u64)res->start, (u64)res->end);
+-			update_res(info, range[i].start, range[i].end,
++			update_res(info, cap_resource(range[i].start),
++				   cap_resource(range[i].end),
+ 				   IORESOURCE_MEM, 1);
  		}
  	}
- 
- 	return 0;
- }
- 
--#else  /* !CONFIG_X86_64 */
--
--static int __init early_fill_mp_bus_info(void) { return 0; }
--
--#endif /* !CONFIG_X86_64 */
--
--/* common 32/64 bit code */
--
- #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
- 
- static void enable_pci_io_ecs(void *unused)
-Index: linux-2.6/arch/x86/pci/i386.c
+Index: linux-2.6/arch/x86/pci/bus_numa.c
 ===================================================================
---- linux-2.6.orig/arch/x86/pci/i386.c
-+++ linux-2.6/arch/x86/pci/i386.c
-@@ -257,10 +257,6 @@ void __init pcibios_resource_survey(void
-  */
- fs_initcall(pcibios_assign_resources);
+--- linux-2.6.orig/arch/x86/pci/bus_numa.c
++++ linux-2.6/arch/x86/pci/bus_numa.c
+@@ -55,6 +55,9 @@ void __init update_res(struct pci_root_i
+ 	if (start > end)
+ 		return;
  
--void __weak x86_pci_root_bus_res_quirks(struct pci_bus *b)
--{
--}
--
- /*
-  *  If we set up a device for bus mastering, we need to check the latency
-  *  timer as certain crappy BIOSes forget to set it properly.
-Index: linux-2.6/arch/x86/pci/bus_numa.h
-===================================================================
---- linux-2.6.orig/arch/x86/pci/bus_numa.h
-+++ linux-2.6/arch/x86/pci/bus_numa.h
-@@ -1,5 +1,5 @@
--#ifdef CONFIG_X86_64
--
-+#ifndef __BUS_NUMA_H
-+#define __BUS_NUMA_H
- /*
-  * sub bus (transparent) will use entres from 3 to store extra from
-  * root, so need to make sure we have enough slot there, Should we
++	if (start == (resource_size_t)~0)
++		return;
++
+ 	if (!merge)
+ 		goto addit;
+ 
 Index: linux-2.6/arch/x86/pci/intel_bus.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/pci/intel_bus.c
 +++ linux-2.6/arch/x86/pci/intel_bus.c
-@@ -30,7 +30,7 @@ static inline void print_ioh_resources(s
- 			busnum, i,
- 			(res->flags & IORESOURCE_IO) ? "io port" :
- 							"mmio",
--			res->start, res->end);
-+			(u64)res->start, (u64)res->end);
- 	}
- }
+@@ -6,6 +6,8 @@
+ #include <linux/dmi.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
++#include <linux/range.h>
++
+ #include <asm/pci_x86.h>
  
+ #include "bus_numa.h"
+@@ -81,7 +83,8 @@ static void __devinit pci_root_bus_res(s
+ 	mmioh_base |= ((u64)(dword & 0x7ffff)) << 32;
+ 	pci_read_config_dword(dev, IOH_LMMIOH_LIMITU, &dword);
+ 	mmioh_end |= ((u64)(dword & 0x7ffff)) << 32;
+-	update_res(info, mmioh_base, mmioh_end, IORESOURCE_MEM, 0);
++	update_res(info, cap_resource(mmioh_base), cap_resource(mmioh_end),
++			 IORESOURCE_MEM, 0);
+ 
+ 	print_ioh_resources(info);
+ }
+Index: linux-2.6/include/linux/range.h
+===================================================================
+--- linux-2.6.orig/include/linux/range.h
++++ linux-2.6/include/linux/range.h
+@@ -19,4 +19,12 @@ int clean_sort_range(struct range *range
+ 
+ void sort_range(struct range *range, int nr_range);
+ 
++
++static inline resource_size_t cap_resource(u64 val)
++{
++	if (val > (resource_size_t)~0)
++		return (resource_size_t)~0;
++	else
++		return val;
++}
+ #endif
