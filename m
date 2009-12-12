@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933417AbZLMB2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbZLOJSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933417AbZLMB2b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbZLMB2b
+	id S1759439AbZLOJSt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbZLOJSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:28:31 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:40252 "HELO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933394AbZLMB2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:28:30 -0500
-Date: Sat, 12 Dec 2009 20:10:56 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jean Delvare <jdelvare@suse.de>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Mahoney <jeffm@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fb/intelfb: Do not depend on EMBEDDED
-In-Reply-To: <200912121419.18617.jdelvare@suse.de>
-Message-ID: <alpine.DEB.2.00.0912122008570.23394@skynet.skynet.ie>
-References: <200912121419.18617.jdelvare@suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Dec 2009 04:18:46 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:60770 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbZLOJSn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 04:18:43 -0500
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Dan Williams <dcbw@redhat.com>,
+       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, stable@kernel.org
+Subject: [PATCH] wireless: wext: allocate space for NULL-termination for 32byte SSIDs
+Date: Sun, 13 Dec 2009 04:47:30 +0800
+Message-Id: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We've experienced a long standing bug when quickly switching from
+ad-hoc to managed mode on a hardware using a Libertas chipset.
 
-> I am worried that the intelfb driver depends on EMBEDDED. I consider
-> this an abuse of the EMBEDDED configuration option, which as I
-> understand it was originally meant to expose fine-tuning options,
-> rather than to arbitrarily disable drivers when not selected.
+The effect is that after a number of mode transistions (sometimes as few
+as two sufficed), the kernel will oops at very strange locations, mostly
+in something like __kmem_alloc().
 
-Since we merged a kms driver for Intel hw that supports all intel chipsets
-and more importantly all the outputs on Intel chipsets, intelfb should
-be considered legacy at the least and broken on > 50% of intel hw.
+While the root cause turned out to be an issue with the wpa-supplicant
+which feeds the kernel driver with garbage, this occasion pointed out a
+bug in the wireless wext core when SSIDs with 32 byte lengths are passed
+from userspace. In this case, the string is not properly NULL-terminated
+which causes some other part to corrupt memory.
 
-We left it in in that most ppl who wanted it were using it in embedded 
-configs, whereas for most users it just doesn't work, like I don't thinkit
-supports LVDS which means loading it on a laptop will trash it.
+(In the particular case I observed, an SIOCSIWESSID was issued with
+ bogus data in iwp->pointer but iwp->length=32).
 
-Dave
+I admitedly couldn't find where the actual corruption itself happens,
+but with this trivial fix, I can't reproduce the bug anymore.
 
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Dan Williams <dcbw@redhat.com>
+Cc: Michael Hirsch <m.hirsch@raumfeld.com>
+Cc: netdev@vger.kernel.org
+Cc: libertas-dev@lists.infradead.org
+Cc: stable@kernel.org
+---
+ net/wireless/wext.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+---
+ net/wireless/wext-core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> 
-> So I suggest that we drop this dependency now.
-> 
-> Signed-off-by: Jean Delvare <jdelvare@suse.de>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Cc: Dave Airlie <airlied@linux.ie>
-> ---
-> Jesse, in the original commit, you wrote that intelfb was "really a
-> special purpose embedded driver". It looks like a perfectly standard
-> framebuffer driver to me, which means that it may have users beyond
-> embedded. For example I always prefer framebuffer over X for my
-> servers. Or am I missing something and intelfb is really special?
-> 
->  drivers/video/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.32.orig/drivers/video/Kconfig	2009-12-03 08:48:34.000000000 +0100
-> +++ linux-2.6.32/drivers/video/Kconfig	2009-12-11 10:57:43.000000000 +0100
-> @@ -1121,7 +1121,7 @@ config FB_CARILLO_RANCH
->  
->  config FB_INTEL
->  	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
-> -	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL && EMBEDDED
-> +	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
->  	select FB_MODE_HELPERS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
-> 
-> 
+diff --git a/net/wireless/wext-core.c b/net/wireless/wext-core.c
+index 5e1656b..3d8f4b0 100644
+--- a/net/wireless/wext-core.c
++++ b/net/wireless/wext-core.c
+@@ -759,8 +759,8 @@ static int ioctl_standard_iw_point(struct iw_point *iwp, unsigned int cmd,
+ 		}
+ 	}
+ 
+-	/* kzalloc() ensures NULL-termination for essid_compat. */
+-	extra = kzalloc(extra_size, GFP_KERNEL);
++	/* kzalloc() +1 ensures NULL-termination for essid_compat. */
++	extra = kzalloc(extra_size + 1, GFP_KERNEL);
+ 	if (!extra)
+ 		return -ENOMEM;
+ 
+-- 
+1.6.3.3
+
