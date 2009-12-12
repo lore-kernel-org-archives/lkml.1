@@ -1,133 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbZLLDa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbZLLDp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898AbZLLDa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 22:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933489AbZLLDaW
+	id S1756395AbZLLDp7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 22:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZLLDp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 22:30:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34414 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932962AbZLLDaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 22:30:21 -0500
-Message-ID: <4B230E0F.9000705@kernel.org>
-Date: Fri, 11 Dec 2009 19:29:19 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 11 Dec 2009 22:45:58 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:64773 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZLLDp5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 22:45:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=nTr2pfOtXD6uOX3mIxssHq9uZT8L8F08ZXDyc+Ob8JuXoBDy/Jve0U5DO3ln7S1b3G
+         VGjVig1R2kHPJ2ZthyLstA/fQyiMylH7aYVLV2U6dwIEkUIUtbI4uMZZ18YrT0DdTP/n
+         X0CGyAVReRdg+NDY8dKGLMT4qhXhFuFDSYhf8=
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Gertjan van Wingerde <gwingerde@gmail.com>
-Subject: [PATCH 61/7] x86/pci: add cap_resource -v2
-References: <4B22D4DA.2000104@kernel.org> <4B22D74D.4020201@kernel.org> <4B22FBEB.7040204@kernel.org> <4B22FD0B.10506@zytor.com> <4B22FDEF.5050600@kernel.org> <4B22FEFD.9050002@zytor.com>
-In-Reply-To: <4B22FEFD.9050002@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091211102159.GB18825@rakim.wolfsonmicro.main>
+References: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
+	 <20091209145919.GH9018@sirena.org.uk>
+	 <f9f38a550912110027r70710867k3a08c6d5913ce13@mail.gmail.com>
+	 <20091211102159.GB18825@rakim.wolfsonmicro.main>
+Date: Sat, 12 Dec 2009 11:46:04 +0800
+Message-ID: <f9f38a550912111946w665b267dkc42d184bdc437d02@mail.gmail.com>
+Subject: Re: Questions about Watch Dog Timer under Linux.
+From: Cypher Wu <cypher.w@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 11, 2009 at 6:21 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Fri, Dec 11, 2009 at 04:27:55PM +0800, Cypher Wu wrote:
+>
+> Please reply in-line to e-mails, it makes the conversation much easier
+> to follow.
+>
+>> It seems WATCHDOG_NOWAYOUT is a software mechanism? If it is defined
+>> as 1 then the WDT can't be stopped if it has been started whether bye
+>> closing the device file or writing the magic character 'V'.
+>
+> Yes, it's a kernel build time configurable option to select this
+> behaviour.  In effect all you'd be doing is making a driver which turns
+> it on all the time.
+>
 
-prepare for 32bit pci root bus
-
--v2: hpa said we should compare with (resource_size_t)~0
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/pci/amd_bus.c   |    8 +++++---
- arch/x86/pci/bus_numa.c  |    3 +++
- arch/x86/pci/intel_bus.c |    5 ++++-
- include/linux/range.h    |    8 ++++++++
- 4 files changed, 20 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/arch/x86/pci/amd_bus.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/amd_bus.c
-+++ linux-2.6/arch/x86/pci/amd_bus.c
-@@ -201,7 +201,7 @@ static int __init early_fill_mp_bus_info
- 
- 	memset(range, 0, sizeof(range));
- 	/* 0xfd00000000-0xffffffffff for HT */
--	range[0].end = (0xfdULL<<32) - 1;
-+	range[0].end = cap_resource((0xfdULL<<32) - 1);
- 
- 	/* need to take out [0, TOM) for RAM*/
- 	address = MSR_K8_TOP_MEM1;
-@@ -286,7 +286,8 @@ static int __init early_fill_mp_bus_info
- 			}
- 		}
- 
--		update_res(info, start, end, IORESOURCE_MEM, 1);
-+		update_res(info, cap_resource(start), cap_resource(end),
-+				 IORESOURCE_MEM, 1);
- 		subtract_range(range, RANGE_NUM, start, end);
- 		printk(KERN_CONT "\n");
- 	}
-@@ -321,7 +322,8 @@ static int __init early_fill_mp_bus_info
- 			if (!range[i].end)
- 				continue;
- 
--			update_res(info, range[i].start, range[i].end,
-+			update_res(info, cap_resource(range[i].start),
-+				   cap_resource(range[i].end),
- 				   IORESOURCE_MEM, 1);
- 		}
- 	}
-Index: linux-2.6/arch/x86/pci/bus_numa.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/bus_numa.c
-+++ linux-2.6/arch/x86/pci/bus_numa.c
-@@ -55,6 +55,9 @@ void __init update_res(struct pci_root_i
- 	if (start > end)
- 		return;
- 
-+	if (start == (resource_size_t)~0)
-+		return;
-+
- 	if (!merge)
- 		goto addit;
- 
-Index: linux-2.6/arch/x86/pci/intel_bus.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/intel_bus.c
-+++ linux-2.6/arch/x86/pci/intel_bus.c
-@@ -6,6 +6,8 @@
- #include <linux/dmi.h>
- #include <linux/pci.h>
- #include <linux/init.h>
-+#include <linux/range.h>
-+
- #include <asm/pci_x86.h>
- 
- #include "bus_numa.h"
-@@ -81,7 +83,8 @@ static void __devinit pci_root_bus_res(s
- 	mmioh_base |= ((u64)(dword & 0x7ffff)) << 32;
- 	pci_read_config_dword(dev, IOH_LMMIOH_LIMITU, &dword);
- 	mmioh_end |= ((u64)(dword & 0x7ffff)) << 32;
--	update_res(info, mmioh_base, mmioh_end, IORESOURCE_MEM, 0);
-+	update_res(info, cap_resource(mmioh_base), cap_resource(mmioh_end),
-+			 IORESOURCE_MEM, 0);
- 
- 	print_ioh_resources(info);
- }
-Index: linux-2.6/include/linux/range.h
-===================================================================
---- linux-2.6.orig/include/linux/range.h
-+++ linux-2.6/include/linux/range.h
-@@ -19,4 +19,12 @@ int clean_sort_range(struct range *range
- 
- void sort_range(struct range *range, int nr_range);
- 
-+
-+static inline resource_size_t cap_resource(u64 val)
-+{
-+	if (val > (resource_size_t)~0)
-+		return (resource_size_t)~0;
-+	else
-+		return val;
-+}
- #endif
+My point is not making a driver which turns WDT on all the time, but
+how to work with a WDT hardware which will startup to working just
+after power on and the only interface it provides is clearing the
+timer. This type of WDT is widely used in our embedded systems and we
+usually install a callback in timer interrupt to clearing WD before
+BSP starting the RTOS kernel, and then starting a task to clear WD and
+uninstall the callback.
+I'm wonder when cope with that type of WD, is there any framework
+already in the Linux kernel and booter, or I've to modify them by
+myself?
