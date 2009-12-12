@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbZLMC3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933893AbZLMBlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032AbZLMC3c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 21:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216AbZLMC3c
+	id S933893AbZLMBlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933851AbZLMBlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 21:29:32 -0500
-Received: from qmta04.westchester.pa.mail.comcast.net ([76.96.62.40]:36172
-	"HELO QMTA04.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932214AbZLMC3c (ORCPT
+	Sat, 12 Dec 2009 20:41:18 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:41380 "HELO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933858AbZLMBlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 21:29:32 -0500
-Date: Sat, 12 Dec 2009 11:39:27 -0500
-From: Frank Peters <frank.peters@comcast.net>
-To: linux-kernel@vger.kernel.org
-Subject: Microcode Module Hangs - Won't Load Microcode
-Message-Id: <20091212113927.398ef513.frank.peters@comcast.net>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-unknown-linux-gnu)
+	Sat, 12 Dec 2009 20:41:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=o4ElqE0pszrHuUQ6NvepMdQ9oSETDV/fCENma8igD6GoaEGUB98SLfLgMweXLnXPpz
+         Oj9xW77YWY7PzQ82FoxjTuSPfm3dD428SOJVtejVh9JacgGAhYoBLlbtA2mtbemWuQGb
+         +F2XqKjgED0e36wRy0EEArGb+hi325xoSo+wc=
+Subject: [PATCH 1/4] mfd: mc13783: Take care of semantic inversion between
+ read and write value of two bits in POWER_MISCELLANEUS register.
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sascha linux-arm <s.hauer@pengutronix.de>,
+       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1260635829.2054.16.camel@climbing-alby>
+References: <1260635829.2054.16.camel@climbing-alby>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 12 Dec 2009 17:48:43 +0100
+Message-ID: <1260636523.2054.28.camel@climbing-alby>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is not a new problem.  I do not recall exactly when I first noticed
-it but it has existed for at least a few years.  The issue is not serious
-and thus I have not reported it previously.
+MC13783_REGCTRL_PWGTnSPIEN controls the states of the corresponding
+PWGTn_DRV output.
+Reading 1 on the corresponding bit mean that the output is enabled
+Writing 1 on the corresponding bit disable that output!
 
-Whenever I load the microcode module using modprobe, the process seems
-to hang and requires about four minutes to complete.  After the module
-is finally loaded, the microcode data cannot be installed to the CPU using
-the microcode_ctl utility. 
+So, if not asked directly to modify those bits, write the inverted
+value.
 
-Here is the kernel log after executing "modprobe microcode."  My machine
-is a Core 2 Quad and has four CPU's.
+Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+---
+ drivers/mfd/mc13783-core.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-Dec 11 23:24:25 (none) kernel: microcode: CPU0 sig=0x6fb, pf=0x10, revision=0xb6
-Dec 11 23:24:25 (none) kernel: platform microcode: firmware: requesting intel-ucode/06-0f-0b
-Dec 11 23:25:25 (none) kernel: microcode: CPU1 sig=0x6fb, pf=0x10, revision=0xb6
-Dec 11 23:25:25 (none) kernel: platform microcode: firmware: requesting intel-ucode/06-0f-0b
-Dec 11 23:26:25 (none) kernel: microcode: CPU2 sig=0x6fb, pf=0x10, revision=0xb6
-Dec 11 23:26:25 (none) kernel: platform microcode: firmware: requesting intel-ucode/06-0f-0b
-Dec 11 23:27:25 (none) kernel: microcode: CPU3 sig=0x6fb, pf=0x10, revision=0xb6
-Dec 11 23:27:25 (none) kernel: platform microcode: firmware: requesting intel-ucode/06-0f-0b
-Dec 11 23:28:25 (none) kernel: Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+diff --git a/drivers/mfd/mc13783-core.c b/drivers/mfd/mc13783-core.c
+index a1ade23..aa1f79a 100644
+--- a/drivers/mfd/mc13783-core.c
++++ b/drivers/mfd/mc13783-core.c
+@@ -207,6 +207,9 @@ int mc13783_reg_write(struct mc13783 *mc13783, unsigned int offset, u32 val)
+ }
+ EXPORT_SYMBOL(mc13783_reg_write);
+ 
++#define MC13783_REG_POWER_MISCELLANEOUS	34
++#define MC13783_REGCTRL_PWGT1SPIEN	(1 << 15)
++#define MC13783_REGCTRL_PWGT2SPIEN	(1 << 16)
+ int mc13783_reg_rmw(struct mc13783 *mc13783, unsigned int offset,
+ 		u32 mask, u32 val)
+ {
+@@ -221,6 +225,14 @@ int mc13783_reg_rmw(struct mc13783 *mc13783, unsigned int offset,
+ 
+ 	valread = (valread & ~mask) | val;
+ 
++	if ((offset == MC13783_REG_POWER_MISCELLANEOUS) &&
++	   !(mask & MC13783_REGCTRL_PWGT1SPIEN))
++		valread ^= MC13783_REGCTRL_PWGT1SPIEN;
++
++	if ((offset == MC13783_REG_POWER_MISCELLANEOUS) &&
++	   !(mask & MC13783_REGCTRL_PWGT2SPIEN))
++		valread ^= MC13783_REGCTRL_PWGT2SPIEN;
++
+ 	return mc13783_reg_write(mc13783, offset, valread);
+ }
+ EXPORT_SYMBOL(mc13783_reg_rmw);
+-- 
+1.6.3.3
 
-Notice that there is a one minute wait for each CPU.  This should not
-be happening.
 
-Furthermore, the log indicates that the microcode module is successfully loaded,
-but yet no microcode data can be installed using the command:
 
-microcode_ctl -f /etc/microcode.dat
 
-The result of the command reports that the microcode data has been loaded
-but the kernel log shows nothing when it should indicate a successful install.
-Also, the same command can be repeated again and again and it will always
-report that new microcode data has been loaded. This behavior indicates that
-the microcode data has not been loaded.
 
-Currently I am using kernel 2.6.32 but this problem has been observed
-for several previous versions (how far back it goes I cannot be certain).
 
-What can be done to solve or debug this issue?
-
-As I mentioned, the problem is not serious, but the microcode driver
-should function as advertised.
-
-Please CC to "frank.peters at comcast.net" as I am not subscribed
-to the list.
-
-Frank Peters
