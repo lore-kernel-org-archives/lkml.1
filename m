@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759801AbZLLNNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZLLNTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759801AbZLLNNs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 08:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759590AbZLLNNr
+	id S1759827AbZLLNTK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 08:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759817AbZLLNTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 08:13:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:16521 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759585AbZLLNNq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 08:13:46 -0500
-MIME-Version: 1.0
-In-Reply-To: <cc557aab0912120511r7c83e97di3f97d2bb5eae326c@mail.gmail.com>
-References: <cover.1260571675.git.kirill@shutemov.name>
-	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
-	 <c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
-	 <747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
-	 <9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
-	 <20091212121902.e95f9561.d-nishimura@mtf.biglobe.ne.jp>
-	 <cc557aab0912120511r7c83e97di3f97d2bb5eae326c@mail.gmail.com>
-Date: Sat, 12 Dec 2009 15:13:52 +0200
-Message-ID: <cc557aab0912120513q6e9cd518y1af2c6fbbd407b85@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 4/4] memcg: implement memory thresholds
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
+	Sat, 12 Dec 2009 08:19:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55681 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759811AbZLLNTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 08:19:08 -0500
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH] fb/intelfb: Do not depend on EMBEDDED
+Date: Sat, 12 Dec 2009 14:19:18 +0100
+User-Agent: KMail/1.9.1
+Cc: Dave Airlie <airlied@linux.ie>, Jeff Mahoney <jeffm@suse.de>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912121419.18617.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2009 at 3:11 PM, Kirill A. Shutemov
-<kirill@shutemov.name> wrote:
-> Ok, I'll move it. It will affect performance of
-> mem_cgroup_invalidate_thresholds(),
-> but I don't think that it's important.
+I am worried that the intelfb driver depends on EMBEDDED. I consider
+this an abuse of the EMBEDDED configuration option, which as I
+understand it was originally meant to expose fine-tuning options,
+rather than to arbitrarily disable drivers when not selected.
 
-s/mem_cgroup_invalidate_thresholds()/mem_cgroup_register_event() and
-mem_cgroup_unregister_event()/
+So I suggest that we drop this dependency now.
+
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Dave Airlie <airlied@linux.ie>
+---
+Jesse, in the original commit, you wrote that intelfb was "really a
+special purpose embedded driver". It looks like a perfectly standard
+framebuffer driver to me, which means that it may have users beyond
+embedded. For example I always prefer framebuffer over X for my
+servers. Or am I missing something and intelfb is really special?
+
+ drivers/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.32.orig/drivers/video/Kconfig	2009-12-03 08:48:34.000000000 +0100
++++ linux-2.6.32/drivers/video/Kconfig	2009-12-11 10:57:43.000000000 +0100
+@@ -1121,7 +1121,7 @@ config FB_CARILLO_RANCH
+ 
+ config FB_INTEL
+ 	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL && EMBEDDED
++	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+
+-- 
+Jean Delvare
+Suse L3
