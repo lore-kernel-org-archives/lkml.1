@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbZLMBSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933369AbZLMBX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933069AbZLMBSi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932980AbZLMBSh
+	id S933369AbZLMBX7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbZLMBX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:18:37 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:52254 "HELO
+	Sat, 12 Dec 2009 20:23:58 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:48357 "HELO
 	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932975AbZLMBSg (ORCPT
+	with SMTP id S933327AbZLMBX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:18:36 -0500
+	Sat, 12 Dec 2009 20:23:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=G8IUT7OWkowFPPKbHsQnsLQ1PcFy4cYmv+kSRafu3U8CLrtczi2O0p4bxsDnFWQ1AN
-         cwHG+GNrW4AiYYIxWTIXfJIXSg3Rubf0BFFJimSNAbmMagj8lSMigVZUDPTHJyry4HAp
-         VzRszgwSpBqS5V7kMsfeUUv9QzlxHvUUgq22A=
+        b=Zm9Z2mlw0/kkQoL13M2g4F3mjjxtEMq1gKl6zHUxvVUL/w09Dzy3AtX841LtAIpisc
+         Pe98Nfb/X2+rZEfZekyllrBtdmtik0/G+x7XfhD/nqwhheXCYiDHnWWcuF35YXRNbqFf
+         chiKnkkSRCgDcljja2xJy6wGrQsuHTBL1wSIA=
 MIME-Version: 1.0
-Date: Sat, 12 Dec 2009 11:04:25 -0500
-Message-ID: <2e3fcd490912120804x63417289j3e716f0c262d7b80@mail.gmail.com>
-Subject: 
+Date: Sat, 12 Dec 2009 11:07:51 -0500
+Message-ID: <2e3fcd490912120807y335bd573u5126f9411edc918b@mail.gmail.com>
+Subject: [PATCH] trival: fix typo akin/asking for documentation
 From: T Dent <tdent48227@gmail.com>
 To: rdunlap@xenotime.net
 Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -27,6 +27,12 @@ Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+From: T Dent <tdent48227@gmail.com>
+Date: Sat, 12 Dec 2009 11:04:25 -0500
+Subject:
+To: rdunlap@xenotime.net
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Fixed typo in Documentation/CodingStyle
 
