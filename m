@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbZLLFhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761447AbZLLFhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758293AbZLLFhN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 00:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbZLLFhM
+	id S1761447AbZLLFhe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 00:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZLLFhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 00:37:12 -0500
-Received: from wolff.to ([65.117.131.163]:59308 "HELO wolff.to"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758114AbZLLFhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 00:37:12 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Dec 2009 00:37:11 EST
-Date: Fri, 11 Dec 2009 23:29:22 -0600
-From: Bruno Wolff III <bruno@wolff.to>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9] Squashfs: Add support for LZMA compressed filesystems
-Message-ID: <20091212052922.GB31742@wolff.to>
-References: <E1NHZ6K-00029J-Sw@dylan.lougher.demon.co.uk>
+	Sat, 12 Dec 2009 00:37:33 -0500
+Received: from home.kolivas.org ([59.167.196.135]:49076 "EHLO home.kolivas.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757551AbZLLFhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 00:37:32 -0500
+From: Con Kolivas <kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.32-ck1
+Date: Sat, 12 Dec 2009 16:37:39 +1100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-ck1; KDE/4.3.2; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1NHZ6K-00029J-Sw@dylan.lougher.demon.co.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912121637.39425.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 08:37:48 +0000,
-  Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-> Hi,
-> 
-> The following patches add LZMA decompression support to Squashfs, using the
-> in-kernel LZMA decompression library.
 
-I am a member of the Spins SIG and the Games Spin maintainer for Fedora.
-Thanks for working to get LZMA squashfs included in 2.6.33. If this
-gets accepted, we will have livecd-creator using it in F13 in order
-to include more packages in size limited images (such as the Games Spin)
-or reduce the size other images.
-Possibly it will be mentioned as a "feature" for the F13 release. I have
-a proposed feature page set up and waiting for these patches to be accepted at:
-https://fedoraproject.org/wiki/Features/LZMA_for_Live_Images
+http://kernel.kolivas.org
+
+Direct link:
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.32/2.6.32-
+ck1/patch-2.6.32-ck1.bz2
+
+
+This is also a good opportunity to plug a few updated apps that are kernel 
+related:
+
+interbench v0.31
+http://interbench.kolivas.org
+
+kernbench v0.50
+http://kernbench.kolivas.org
+
+and not strictly kernel related, but good for compressing kernels, lrzip v0.42
+http://lrzip.kolivas.org
+
+summary of lrzip compression capabilities: 
+http://ck.kolivas.org/apps/lrzip/README.benchmarks
+
+
+Have fun.
+
+-- 
+-ck
