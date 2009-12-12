@@ -1,67 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933822AbZLMBks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZLMBcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933822AbZLMBks (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZLMBkr
+	id S1756894AbZLMBcl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbZLMBck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:40:47 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:27692 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S933752AbZLMBkq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:40:46 -0500
-Message-ID: <4B241F10.7050706@ru.mvista.com>
-Date: Sun, 13 Dec 2009 01:54:08 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 12 Dec 2009 20:32:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40382 "HELO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754316AbZLMBci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:32:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] sched: Make wakeup side variants of completion API irq safe (was: Re: spinlock in completion_done())
+Date: Sun, 13 Dec 2009 00:07:30 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Chinner <david@fromorbit.com>, Lachlan McIlroy <lachlan@sgi.com>
+References: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org> <200912092337.52492.rjw@sisk.pl> <20091210075947.GD25549@elte.hu>
+In-Reply-To: <20091210075947.GD25549@elte.hu>
 MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
-References: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912130007.30541.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thursday 10 December 2009, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Wednesday 09 December 2009, Ingo Molnar wrote:
+> > > 
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Tuesday 08 December 2009, Alan Stern wrote:
+> > > > > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> > > > > 
+> > > > > > BTW, is there a good reason why completion_done() doesn't use spin_lock_irqsave
+> > > > > > and spin_unlock_irqrestore?  complete() and complete_all() use them, so why not
+> > > > > > here?
+> > > > > 
+> > > > > And likewise in try_wait_for_completion().  It looks like a bug.  Maybe 
+> > > > > these routines were not intended to be called with interrupts disabled, 
+> > > > > but that requirement doesn't seem to be documented.  And it isn't a 
+> > > > > natural requirement anyway.
+> > > > 
+> > > > OK, let's ask Ingo about that.
+> > > > 
+> > > > Ingo, is there any particular reason why completion_done() and
+> > > > try_wait_for_completion() don't use spin_lock_irqsave() and
+> > > > spin_unlock_irqrestore()?
+> > > 
+> > > that's a bug that should be fixed - all the wakeup side (and atomic) 
+> > > variants of completetion API should be irq safe.
+> > > 
+> > > It appears that these new completion APIs were added via the XFS tree 
+> > > about a year ago:
+> > > 
+> > >   39d2f1a: [XFS] extend completions to provide XFS object flush requirements
+> > > 
+> > > Please Cc: scheduler folks to all scheduler patches.
+> > 
+> > If you haven't fixed it locally yet, would you mind me posting a fix?
+> 
+> I wouldnt mind it at all.
 
-H Hartley Sweeten wrote:
+Is appended.
 
-> The ioremap return value is an __iomem *, not an integer.  Update the
-> private structure to reflect this.  While here, remove the typedef
-> for _auide_hwif and just use struct auide_hwif instead as recommended
-> by Documentation/CodingStyle.
->
-> auide_setup_ports() still needs to cast the regbase back to an integer
-> to correctly setup the io_ports_array.
->
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: David Miller <davem@davemloft.net>
->
-> ---
->
-> diff --git a/Documentation/mips/AU1xxx_IDE.README b/Documentation/mips/AU1xxx_IDE.README
-> index 8ace35e..37c6c34 100644
-> --- a/Documentation/mips/AU1xxx_IDE.README
-> +++ b/Documentation/mips/AU1xxx_IDE.README
-> @@ -45,7 +45,7 @@ FILES, CONFIGS AND COMPATABILITY
->  Two files are introduced:
->  
->    a) 'arch/mips/include/asm/mach-au1x00/au1xxx_ide.h'
-> -     containes : struct _auide_hwif
-> +     containes : struct auide_hwif
->   
+Thanks,
+Rafael
 
-   Contains?
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: sched: Make wakeup side variants of completion API irq safe
 
-   Other than that,
+All the wakeup side variants of the completion API shoild be irq
+safe, but completion_done() and try_wait_for_completion() aren't.
+Fix the problem by making them use spin_lock_irqsave() and
+spin_lock_irqrestore().
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/sched.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-MBR, Sergei
-
-
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -5931,14 +5931,15 @@ EXPORT_SYMBOL(wait_for_completion_killab
+  */
+ bool try_wait_for_completion(struct completion *x)
+ {
++	unsigned long flags;
+ 	int ret = 1;
+ 
+-	spin_lock_irq(&x->wait.lock);
++	spin_lock_irqsave(&x->wait.lock, flags);
+ 	if (!x->done)
+ 		ret = 0;
+ 	else
+ 		x->done--;
+-	spin_unlock_irq(&x->wait.lock);
++	spin_unlock_irqrestore(&x->wait.lock, flags);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(try_wait_for_completion);
+@@ -5953,12 +5954,13 @@ EXPORT_SYMBOL(try_wait_for_completion);
+  */
+ bool completion_done(struct completion *x)
+ {
++	unsigned long flags;
+ 	int ret = 1;
+ 
+-	spin_lock_irq(&x->wait.lock);
++	spin_lock_irqsave(&x->wait.lock, flags);
+ 	if (!x->done)
+ 		ret = 0;
+-	spin_unlock_irq(&x->wait.lock);
++	spin_unlock_irqrestore(&x->wait.lock, flags);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(completion_done);
