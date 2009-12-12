@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbZLLAdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbZLLAiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759002AbZLLAdS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 19:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZLLAdP
+	id S1760874AbZLLAiI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 19:38:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZLLAiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 19:33:15 -0500
-Received: from waste.org ([173.11.57.241]:47879 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754830AbZLLAdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 19:33:14 -0500
-Subject: Re: hwrng: virtio - Rename driver object to remove section
- mismatch warning
-From: Matt Mackall <mpm@selenic.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       samr@ravnborg.org
-In-Reply-To: <20091212002148.GA9586@merkur.ravnborg.org>
-References: <20091211153658.GA1207@gondor.apana.org.au>
-	 <1260559557.24459.1320.camel@calx>
-	 <20091211120849.012c43d8.randy.dunlap@oracle.com>
-	 <20091212002148.GA9586@merkur.ravnborg.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Dec 2009 18:33:17 -0600
-Message-ID: <1260577997.24459.1405.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Dec 2009 19:38:05 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:64082 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753726AbZLLAiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 19:38:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=f6hxvcJVN8OYccDdO5K2Q0EKn1n32chCyS0we411Wjhwmx15qinEwwQVzs2ssEssWa
+         647fCDUHimlhpB7Pw5LLW7/Gvs7i42l0zIlxaHE/6rqCSmjZLxlpI3Xd9l7VPd22arij
+         FpEVkb1KZPMGhLKVoWYijwx2wV93Y7c0TRW5I=
+MIME-Version: 1.0
+In-Reply-To: <1260577137.8536.20.camel@maxim-laptop>
+References: <1260567582.5983.23.camel@maxim-laptop>
+	 <4B22DEA7.8040202@gmail.com> <1260577137.8536.20.camel@maxim-laptop>
+Date: Fri, 11 Dec 2009 18:38:09 -0600
+Message-ID: <51f3faa70912111638h5940612em5e6a14c166e108b1@mail.gmail.com>
+Subject: Re: Does pci_map_single magicly work on > 32 bit address for 32bit 
+	capable device?
+From: Robert Hancock <hancockrwd@gmail.com>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-12-12 at 01:21 +0100, Sam Ravnborg wrote:
-> On Fri, Dec 11, 2009 at 12:08:49PM -0800, Randy Dunlap wrote:
-> > On Fri, 11 Dec 2009 13:25:57 -0600 Matt Mackall wrote:
-> > 
-> > > On Fri, 2009-12-11 at 23:36 +0800, Herbert Xu wrote:
-> > > > Hi:
-> > > > 
-> > > > Finally found the cause of the section mismatch warning in hwrng.
-> > > > Apparently in addition to __devexit_p we now have to name the
-> > > > variable in a certain way.
-> > > 
-> > > That's fairly appalling. Any idea why?
-> > 
-> > (I haven't read the rest of this thread..)
-> > 
-> > scripts/mod/modpost.c looks for certain variable names to identify
-> > variables that can have references to other (non-data) sections.
-> > It's mostly explained there.
-> 
-> Another option is to annotate the relevant variable.
+On Fri, Dec 11, 2009 at 6:18 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+>> The kernel should set up an IOMMU (either hardware or software) mapping
+>> for that memory so that the device can access it through an address
+>> below 4GB. This is assuming it's a 64-bit kernel (on 32-bit, a kernel
+>> memory address will always be below 4GB).
+>
+> What do you mean by software IOMMU?
+>
+> On my system there is no IOMMU present, so only way to ensure 32 bit
+> address is to copy pages.
+> pci_map_single could copy the data for write case, and pci_unmap_single
+> for read case, but I now strongly doubt they do.
 
-Ok, I guess I knew about the annotations. So I take it the name magic
-exists just for convenience or to hit the common cases?
+It does. See the swiotlb code. You should see some message on bootup like:
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+Placing 64MB software IO TLB between ffff880020000000 - ffff880024000000
+software IO TLB at phys 0x20000000 - 0x24000000
 
+> I am not sure at all that these functions will fail if too high address
+> is specified....
+>
+> Also, very recently, I found that in
+> Documentation/DMA-API.txt, there is a statement that says that
+> pci_map_single fails for >32 bit memory address.
 
+Where do you see this?
+
+>
+> I guess I just do a memcpy...
+
+This isn't optimal because if there is a hardware IOMMU, the copy can
+be avoided.
