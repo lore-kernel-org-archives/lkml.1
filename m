@@ -1,88 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbZLMBtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbZLMBxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934316AbZLMBtp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934296AbZLMBto
+	id S933097AbZLMBxa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932988AbZLMBx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:49:44 -0500
-Received: from rcpt-mqugw.biglobe.ne.jp ([133.205.19.69]:56932 "HELO
-	rcpt-mqugw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934287AbZLMBtn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:49:43 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 12 Dec 2009 23:34:09 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       linux-kernel@vger.kernel.org,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
-Message-Id: <20091212233409.60da66fb.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
-References: <cover.1260571675.git.kirill@shutemov.name>
-	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
-	<c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
-	<747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
-	<20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
-	<cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-MIME-Autoconverted: from 8bit to quoted-printable by rcpt-mqugw.biglobe.ne.jp id nBCEaxdU030812
+	Sat, 12 Dec 2009 20:53:28 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42662 "HELO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932765AbZLMBx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:53:27 -0500
+Date: Sat, 12 Dec 2009 15:47:30 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [resend][GIT PULL] kbuild updates for 2.6.33
+Message-ID: <20091212144730.GA6788@sepie.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Dec 2009 15:06:52 +0200
-"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+Hi Linus,
 
-> On Sat, Dec 12, 2009 at 5:50 AM, Daisuke Nishimura
-> <d-nishimura@mtf.biglobe.ne.jp> wrote:
-> > Sorry, I disagree this change.
-> >
-> > mem_cgroup_soft_limit_check() is used for checking how much current usage exceeds
-> > the soft_limit_in_bytes and updating softlimit tree asynchronously, instead of
-> > checking every charge/uncharge. What if you change the soft_limit_in_bytes,
-> > but the number of charges and uncharges are very balanced afterwards ?
-> > The softlimit tree will not be updated for a long time.
-> 
-> I don't see how my patch affects the logic you've described.
-> Statistics updates and
-> checks in the same place. It just uses decrement instead of increment.
-> 
-Ah... my bad. Ignore this comment, please.
-I misunderstood this patch.
+I'm resending the pull request because the previous one seems to have
+lost. I rebased the branch and added the two patches I sent as email
+previously, so that it merges ok and doesn't introduce new build
+failures (I just tested x86_64/allmodconfig). I also added one small fix
+from Mike Frisinger, otherwise it's the same stuff I sent before. The
+most interesting part is Sam's series that moves generated header files
+to include/generated, simplifying gitingnore rules and killing the
+include{,2}/asm symlink, the rest are small but worthwhile fixes and
+improvements.
 
-> >
-> > And IIUC, it's the same for your threshold feature, right ?
-> > I think it would be better:
-> >
-> > - discard this change.
-> > - in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
-> >  and instead of adding a new STAT counter, do like:
-> >
-> >        if (mem_cgroup_event_check(mem)) {
-> >                mem_cgroup_update_tree(mem, page);
-> >                mem_cgroup_threshold(mem);
-> >        }
-> 
-> I think that mem_cgroup_update_tree() and mem_cgroup_threshold() should be
-> run with different frequency. How to share MEM_CGROUP_STAT_EVENTS
-> between soft limits and thresholds in this case?
-> 
-hmm, both softlimit and your threshold count events at the same place(charge and uncharge).
-So, I think those events can be shared.
-Is there any reason they should run in different frequency ?
+Thanks!
+Michal
 
 
-Thanks,
-Daisuke Nishimura.
+The following changes since commit 053fe57ac249a9531c396175778160d9e9509399:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
+
+are available in the git repository at:
+
+  git://repo.or.cz/linux-kbuild.git for-33
+
+Daniel Vetter (1):
+      kbuild: specify absolute paths for cscope
+
+Jan Beulich (1):
+      genksyms: properly consider  EXPORT_UNUSED_SYMBOL{,_GPL}()
+
+Jie Zhang (1):
+      net: add net_tstamp.h to headers_install
+
+Jonathan Nieder (2):
+      scripts/package: add KBUILD_PKG_ROOTCMD variable
+      scripts/package: deb-pkg: use fakeroot if available
+
+Michael Tokarev (1):
+      kbuild: fix bzImage build for x86
+
+Michal Marek (5):
+      scripts/package: tar-pkg: use tar --owner=root
+      kbuild: create include/generated in silentoldconfig
+      score: add asm/asm-offsets.h wrapper
+      kbuild: generate modules.builtin
+      kbuild: fix make clean after mismerge
+
+Mike Frysinger (1):
+      gen_init_cpio: fixed fwrite warning
+
+Sam Ravnborg (14):
+      kbuild: search arch/$ARCH/include before include/
+      dontdiff: add generated
+      kbuild: move bounds.h to include/generated
+      kbuild: move asm-offsets.h to include/generated
+      ia64: move nr-irqs.h to include/generated
+      arm: move mach-types to include/generated
+      sh: move machtypes.h to include/generated
+      kbuild: drop include2/ used for O=... builds
+      kbuild: do not check for include/asm-$ARCH
+      kbuild: drop include/asm
+      kbuild: move compile.h to include/generated
+      drop explicit include of autoconf.h
+      kbuild: move autoconf.h to include/generated
+      kbuild: move utsrelease.h to include/generated
+
+Stephen Rothwell (1):
+      net: fix for utsrelease.h moving to generated
+
+Tony Finch (1):
+      unifdef: update to upstream revision 1.190
+
+Wenji Huang (1):
+      Kbuild: clean up marker
+
+ .gitignore                                      |    7 +-
+ Documentation/dontdiff                          |    1 +
+ Documentation/kbuild/kbuild.txt                 |   14 +
+ Documentation/kbuild/kconfig.txt                |    8 +-
+ Kbuild                                          |    4 +-
+ MAINTAINERS                                     |    6 +
+ Makefile                                        |   96 ++-----
+ arch/alpha/boot/bootp.c                         |    2 +-
+ arch/alpha/boot/bootpz.c                        |    2 +-
+ arch/alpha/boot/main.c                          |    2 +-
+ arch/alpha/include/asm/asm-offsets.h            |    1 +
+ arch/arm/Makefile                               |   14 +-
+ arch/arm/include/asm/asm-offsets.h              |    1 +
+ arch/arm/include/asm/mach-types.h               |    1 +
+ arch/arm/tools/Makefile                         |    2 +-
+ arch/arm/tools/gen-mach-types                   |    2 +-
+ arch/avr32/include/asm/asm-offsets.h            |    1 +
+ arch/blackfin/include/asm/asm-offsets.h         |    1 +
+ arch/cris/arch-v32/kernel/head.S                |    1 -
+ arch/cris/include/asm/asm-offsets.h             |    1 +
+ arch/cris/kernel/asm-offsets.c                  |    1 -
+ arch/cris/kernel/vmlinux.lds.S                  |    1 -
+ arch/frv/include/asm/asm-offsets.h              |    1 +
+ arch/frv/kernel/setup.c                         |    2 +-
+ arch/h8300/include/asm/asm-offsets.h            |    1 +
+ arch/ia64/Makefile                              |    2 +-
+ arch/ia64/include/asm/asm-offsets.h             |    1 +
+ arch/ia64/include/asm/irq.h                     |    2 +-
+ arch/ia64/kernel/Makefile                       |    7 +-
+ arch/ia64/kvm/asm-offsets.c                     |    1 -
+ arch/m68k/include/asm/asm-offsets.h             |    1 +
+ arch/m68k/kernel/head.S                         |    2 +-
+ arch/microblaze/include/asm/asm-offsets.h       |    1 +
+ arch/mips/include/asm/asm-offsets.h             |    1 +
+ arch/mn10300/include/asm/asm-offsets.h          |    1 +
+ arch/parisc/include/asm/asm-offsets.h           |    1 +
+ arch/powerpc/include/asm/asm-offsets.h          |    1 +
+ arch/powerpc/platforms/52xx/efika.c             |    2 +-
+ arch/powerpc/platforms/amigaone/setup.c         |    2 +-
+ arch/powerpc/platforms/cell/spufs/Makefile      |    6 +-
+ arch/powerpc/platforms/chrp/setup.c             |    2 +-
+ arch/powerpc/platforms/powermac/bootx_init.c    |    2 +-
+ arch/s390/include/asm/asm-offsets.h             |    1 +
+ arch/score/include/asm/asm-offsets.h            |    1 +
+ arch/sh/Makefile                                |   10 +-
+ arch/sh/drivers/pci/fixups-rts7751r2d.c         |    2 +-
+ arch/sh/include/asm/.gitignore                  |    1 -
+ arch/sh/include/asm/asm-offsets.h               |    1 +
+ arch/sh/include/asm/machvec.h                   |    2 +-
+ arch/sh/tools/Makefile                          |    4 +-
+ arch/sh/tools/gen-mach-types                    |    2 +-
+ arch/sparc/include/asm/asm-offsets.h            |    1 +
+ arch/um/Makefile                                |    2 +-
+ arch/um/include/asm/asm-offsets.h               |    1 +
+ arch/x86/boot/header.S                          |    2 +-
+ arch/x86/boot/version.c                         |    4 +-
+ arch/x86/include/asm/asm-offsets.h              |    1 +
+ arch/xtensa/include/asm/asm-offsets.h           |    1 +
+ drivers/accessibility/braille/braille_console.c |    1 -
+ drivers/hid/hid-lg.h                            |    2 -
+ drivers/net/wireless/iwlwifi/iwl-core.h         |    2 +-
+ drivers/platform/x86/compal-laptop.c            |    1 -
+ drivers/staging/iio/ring_sw.h                   |    1 -
+ drivers/staging/panel/panel.c                   |    2 +-
+ include/linux/Kbuild                            |    1 +
+ include/linux/mmdebug.h                         |    2 -
+ include/linux/mmzone.h                          |    2 +-
+ include/linux/page-flags.h                      |    2 +-
+ include/linux/vermagic.h                        |    2 +-
+ init/Makefile                                   |    8 +-
+ init/version.c                                  |    4 +-
+ kernel/bounds.c                                 |    2 +-
+ kernel/kexec.c                                  |    2 +-
+ kernel/trace/trace.c                            |    2 +-
+ scripts/Kbuild.include                          |    6 +
+ scripts/Makefile.lib                            |    2 +-
+ scripts/Makefile.modbuiltin                     |   55 ++++
+ scripts/basic/fixdep.c                          |   10 +-
+ scripts/genksyms/keywords.c_shipped             |  191 +++++++------
+ scripts/genksyms/keywords.gperf                 |    2 +
+ scripts/headers.sh                              |    2 -
+ scripts/kconfig/Makefile                        |    1 +
+ scripts/kconfig/confdata.c                      |   24 ++-
+ scripts/mkcompile_h                             |    2 +-
+ scripts/package/Makefile                        |   20 ++-
+ scripts/package/buildtar                        |    6 +-
+ scripts/tags.sh                                 |    8 +-
+ scripts/unifdef.c                               |  343 ++++++++++++++---------
+ usr/gen_init_cpio.c                             |    5 +-
+ 89 files changed, 556 insertions(+), 401 deletions(-)
+ create mode 100644 arch/alpha/include/asm/asm-offsets.h
+ create mode 100644 arch/arm/include/asm/asm-offsets.h
+ create mode 100644 arch/arm/include/asm/mach-types.h
+ create mode 100644 arch/avr32/include/asm/asm-offsets.h
+ create mode 100644 arch/blackfin/include/asm/asm-offsets.h
+ create mode 100644 arch/cris/include/asm/asm-offsets.h
+ create mode 100644 arch/frv/include/asm/asm-offsets.h
+ create mode 100644 arch/h8300/include/asm/asm-offsets.h
+ create mode 100644 arch/ia64/include/asm/asm-offsets.h
+ create mode 100644 arch/m68k/include/asm/asm-offsets.h
+ create mode 100644 arch/microblaze/include/asm/asm-offsets.h
+ create mode 100644 arch/mips/include/asm/asm-offsets.h
+ create mode 100644 arch/mn10300/include/asm/asm-offsets.h
+ create mode 100644 arch/parisc/include/asm/asm-offsets.h
+ create mode 100644 arch/powerpc/include/asm/asm-offsets.h
+ create mode 100644 arch/s390/include/asm/asm-offsets.h
+ create mode 100644 arch/score/include/asm/asm-offsets.h
+ delete mode 100644 arch/sh/include/asm/.gitignore
+ create mode 100644 arch/sh/include/asm/asm-offsets.h
+ create mode 100644 arch/sparc/include/asm/asm-offsets.h
+ create mode 100644 arch/um/include/asm/asm-offsets.h
+ create mode 100644 arch/x86/include/asm/asm-offsets.h
+ create mode 100644 arch/xtensa/include/asm/asm-offsets.h
+ create mode 100644 scripts/Makefile.modbuiltin
