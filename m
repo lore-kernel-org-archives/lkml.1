@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbZLMBRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933822AbZLMBks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932949AbZLMBRj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932910AbZLMBRg
+	id S933822AbZLMBks (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZLMBkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:17:36 -0500
-Received: from mail.lang.hm ([64.81.33.126]:60564 "HELO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932650AbZLMBRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:17:12 -0500
-Date: Sat, 12 Dec 2009 14:52:33 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Andy Walls <awalls@radix.net>, Jon Smirl <jonsmirl@gmail.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-In-Reply-To: <m3aaxw6mjz.fsf@intrepid.localdomain>
-Message-ID: <alpine.DEB.2.00.0912121445290.3370@asgard.lang.hm>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1259977687.27969.18.camel@localhost> <9e4733910912041945g14732dcfgbb2ef6437ef62bb6@mail.gmail.com>
- <1260066624.3105.33.camel@palomino.walls.org> <m3aaxw6mjz.fsf@intrepid.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 12 Dec 2009 20:40:47 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:27692 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S933752AbZLMBkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:40:46 -0500
+Message-ID: <4B241F10.7050706@ru.mvista.com>
+Date: Sun, 13 Dec 2009 01:54:08 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
+References: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Dec 2009, Krzysztof Halasa wrote:
+Hello.
 
-> Andy Walls <awalls@radix.net> writes:
+H Hartley Sweeten wrote:
+
+> The ioremap return value is an __iomem *, not an integer.  Update the
+> private structure to reflect this.  While here, remove the typedef
+> for _auide_hwif and just use struct auide_hwif instead as recommended
+> by Documentation/CodingStyle.
 >
->> Yes, I agree.  I do not know what percentage of current Linux users are
->> technical vs non-technical, so I cannot gauge the current improtance.
->>
->> I can see the trend line though: as time goes by, the percentage of all
->> linux users that have a technical bent will only get smaller.
+> auide_setup_ports() still needs to cast the regbase back to an integer
+> to correctly setup the io_ports_array.
 >
-> This IMHO shouldn't matter. If users can configure their keymaps for
-> e.g. games with a graphical utility (and  they easily can), they can do
-> the same with their remotes, at least with these using common sane
-> protocols. The only thing needed is a good GUI utility. Ergo - it's not
-> a kernel issue.
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: David Miller <davem@davemloft.net>
 >
-> The "default bundled", or PnP, won't work well in comparison to a GUI
-> utility, I wouldn't worry about it too much (though adding it to udev
-> and co is trivial and we should do it - even if not PnP but asking first
-> about the actual remote used).
+> ---
+>
+> diff --git a/Documentation/mips/AU1xxx_IDE.README b/Documentation/mips/AU1xxx_IDE.README
+> index 8ace35e..37c6c34 100644
+> --- a/Documentation/mips/AU1xxx_IDE.README
+> +++ b/Documentation/mips/AU1xxx_IDE.README
+> @@ -45,7 +45,7 @@ FILES, CONFIGS AND COMPATABILITY
+>  Two files are introduced:
+>  
+>    a) 'arch/mips/include/asm/mach-au1x00/au1xxx_ide.h'
+> -     containes : struct _auide_hwif
+> +     containes : struct auide_hwif
+>   
 
-how is this problem any different from figuring out the keymap of a 
-keyboard?
+   Contains?
 
-there are many defined keymaps (including cases where keys are labled 
-different things on the keyboard but send identical codes)
+   Other than that,
 
-currently in linux distros the user can either select the keymap, or the 
-installer will ask the user to press specific keys (or indicate that they 
-don't exist) until the installer can guess the keymap to use.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-why would this not work for IR remotes as well?
+MBR, Sergei
 
-and just like linux has some default keymaps that it uses that mostly work 
-for the common case, there could be default IR keymaps that map the common 
-keys for all remotes to the appropriate keycodes. it will mean that by 
-default you won't see a difference between a DVD, VCR, DVR, etc play 
-button, but it will mean that someone picking up a random remote and 
-pointing it at the linux box will probably get minimal functionality.
 
-then with a utility to tweak the keymap (or load a more specific one) the 
-user can do better.
-
-this would also integrate very nicely with they 'multimedia keyboards' 
-that have lots of buttons on them as well, unless you tell it otherwise, 
-play is play is play no matter which play button is pressed.
-
-David Lang
