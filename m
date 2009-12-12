@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbZLLNGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759787AbZLLNLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759606AbZLLNGs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 08:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759506AbZLLNGr
+	id S1759787AbZLLNLa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 08:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbZLLNL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 08:06:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:9715 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758565AbZLLNGq convert rfc822-to-8bit (ORCPT
+	Sat, 12 Dec 2009 08:11:28 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:49542 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbZLLNL1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 08:06:46 -0500
+	Sat, 12 Dec 2009 08:11:27 -0500
 MIME-Version: 1.0
-In-Reply-To: <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20091212121902.e95f9561.d-nishimura@mtf.biglobe.ne.jp>
 References: <cover.1260571675.git.kirill@shutemov.name>
 	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
 	 <c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
 	 <747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
-	 <20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 12 Dec 2009 15:06:52 +0200
-Message-ID: <cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
-Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
+	 <9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
+	 <20091212121902.e95f9561.d-nishimura@mtf.biglobe.ne.jp>
+Date: Sat, 12 Dec 2009 15:11:33 +0200
+Message-ID: <cc557aab0912120511r7c83e97di3f97d2bb5eae326c@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 4/4] memcg: implement memory thresholds
 From: "Kirill A. Shutemov" <kirill@shutemov.name>
 To: nishimura@mxp.nes.nec.co.jp
 Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
@@ -36,33 +37,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2009 at 5:50 AM, Daisuke Nishimura
+On Sat, Dec 12, 2009 at 5:19 AM, Daisuke Nishimura
 <d-nishimura@mtf.biglobe.ne.jp> wrote:
-> Sorry, I disagree this change.
->
-> mem_cgroup_soft_limit_check() is used for checking how much current usage exceeds
-> the soft_limit_in_bytes and updating softlimit tree asynchronously, instead of
-> checking every charge/uncharge. What if you change the soft_limit_in_bytes,
-> but the number of charges and uncharges are very balanced afterwards ?
-> The softlimit tree will not be updated for a long time.
+>> @@ -56,6 +61,7 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
+>>
+>>  static DEFINE_MUTEX(memcg_tasklist); /* can be hold under cgroup_mutex */
+> This mutex has already removed in current mmotm.
+> Please write a patch for memcg based on mmot.
 
-I don't see how my patch affects the logic you've described.
-Statistics updates and
-checks in the same place. It just uses decrement instead of increment.
+Ok.
 
 >
-> And IIUC, it's the same for your threshold feature, right ?
-> I think it would be better:
+>>  #define SOFTLIMIT_EVENTS_THRESH (1000)
+>> +#define THRESHOLDS_EVENTS_THRESH (100)
+>>
+>>  /*
+>>   * Statistics for memory cgroup.
 >
-> - discard this change.
-> - in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
->  and instead of adding a new STAT counter, do like:
+> (snip)
 >
->        if (mem_cgroup_event_check(mem)) {
->                mem_cgroup_update_tree(mem, page);
->                mem_cgroup_threshold(mem);
->        }
+>> @@ -1363,6 +1395,11 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+>>       if (mem_cgroup_soft_limit_check(mem))
+>>               mem_cgroup_update_tree(mem, page);
+>>  done:
+>> +     if (mem_cgroup_threshold_check(mem)) {
+>> +             mem_cgroup_threshold(mem, false);
+>> +             if (do_swap_account)
+>> +                     mem_cgroup_threshold(mem, true);
+>> +     }
+>>       return 0;
+>>  nomem:
+>>       css_put(&mem->css);
+>> @@ -1906,6 +1943,11 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+>>
+>>       if (mem_cgroup_soft_limit_check(mem))
+>>               mem_cgroup_update_tree(mem, page);
+>> +     if (mem_cgroup_threshold_check(mem)) {
+>> +             mem_cgroup_threshold(mem, false);
+>> +             if (do_swap_account)
+>> +                     mem_cgroup_threshold(mem, true);
+>> +     }
+>>       /* at swapout, this memcg will be accessed to record to swap */
+>>       if (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+>>               css_put(&mem->css);
+> Can "if (do_swap_account)" check be moved into mem_cgroup_threshold ?
 
-I think that mem_cgroup_update_tree() and mem_cgroup_threshold() should be
-run with different frequency. How to share MEM_CGROUP_STAT_EVENTS
-between soft limits and thresholds in this case?
+Ok, I'll move it. It will affect performance of
+mem_cgroup_invalidate_thresholds(),
+but I don't think that it's important.
