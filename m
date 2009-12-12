@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbZLLGSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934009AbZLMBn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516AbZLLGSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 01:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZLLGSU
+	id S934009AbZLMBn2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933911AbZLMBn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 01:18:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43701 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbZLLGST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 01:18:19 -0500
-Date: Sat, 12 Dec 2009 07:16:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Arve Hj?nnev?g <arve@android.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, pwil3058@bigpond.net.au,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/urgent] sched: Set correct normal_prio and prio
- values  in sched_fork()
-Message-ID: <20091212061613.GA2822@elte.hu>
-References: <f8f46736fd4e7f090ac0.1253774830@mudlark.pw.nest>
- <tip-f83f9ac2632732bd1678150b5a03d152f912fe72@git.kernel.org>
- <d6200be20912112155w6eca7452x550bc77330f236b0@mail.gmail.com>
- <1260598055.6306.1.camel@marge.simson.net>
+	Sat, 12 Dec 2009 20:43:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45375 "HELO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933894AbZLMBn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Dec 2009 20:43:26 -0500
+Date: Fri, 11 Dec 2009 22:46:20 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: usb_autopm_*() removal build failure...
+Message-ID: <20091212064620.GA13405@suse.de>
+References: <20091211.174551.123151540.davem@davemloft.net> <20091212040524.GA11212@suse.de> <20091211.214714.41966763.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260598055.6306.1.camel@marge.simson.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20091211.214714.41966763.davem@davemloft.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> On Fri, 2009-12-11 at 21:55 -0800, Arve Hj??nnev??g wrote:
-> > On Mon, Oct 5, 2009 at 3:47 AM, tip-bot for Peter Williams
-> > <pwil3058@bigpond.net.au> wrote:
-> > > Commit-ID:  f83f9ac2632732bd1678150b5a03d152f912fe72
-> > > Gitweb:     http://git.kernel.org/tip/f83f9ac2632732bd1678150b5a03d152f912fe72
-> > > Author:     Peter Williams <pwil3058@bigpond.net.au>
-> > > AuthorDate: Thu, 24 Sep 2009 06:47:10 +0000
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Mon, 5 Oct 2009 13:42:20 +0200
-> > >
-> > > sched: Set correct normal_prio and prio values in sched_fork()
-> > >
-> > > normal_prio should be updated if policy changes from RT to
-> > > SCHED_MORMAL or if static_prio/nice is changed.
-> > >
-> > > Some paths through sched_fork() ignore this requirement and may
-> > > result in normal_prio having an invalid value.
-> > >
-> > > Fixing this issue allows the call to effective_prio() in
-> > > wake_up_new_task() to be removed.
-> > >
-> > 
-> > This change causes a lot of threads with a 0 nice value to get a prio
-> > value of 140 instead of 120 (at least on my android arm msm build). I
-> > don't know if this has any impact on how they are scheduled since the
-> > load weight is unaffected, but it at least makes the output of ps more
-> > confusing.
+On Fri, Dec 11, 2009 at 09:47:14PM -0800, David Miller wrote:
+> From: Greg KH <gregkh@suse.de>
+> Date: Fri, 11 Dec 2009 20:05:24 -0800
 > 
-> There's a patch in tip to correct this, hasn't swam upstream yet.
+> > Here's the patch, sent back in August:
+> > 	 http://marc.info/?l=linux-netdev&m=125071045301270&w=2
+> > 
+> > Can you take it from there, or do you need me to forward it on?
+> 
+> I tossed this into the net-2.6 tree, but...
+> 
+> I would recommend that in the future when you have the
+> dependency of an API change that's going to break the
+> build, you take in the necessary change.  And you make
+> sure such a commit is in your tree before the commit
+> that removes the API.
 
-just sent the pull request to Linus for the latest scheduler fixes. 
-Meanwhile you can try latest -tip with the fix:
+I did at first, so I dropped the API change from my tree.  Then Alan and
+Oliver pointed out that the changes were already in your tree, and I
+looked and saw the first one, so just assumed the 2 other ones were
+there, and turned off all network USB drivers in my build in order to
+handle this.
 
-  http://people.redhat.com/mingo/tip.git/README
+Then yesterday, Stephen reported that this one driver failed to build,
+which I didn't pick up on until today, after the tree had been sent to
+Linus.
 
-	Ingo
+So, a mixup on my part, I'm sorry about that.
+
+> Anyways, next time, please resolve API issues internally when you
+> do things that will break the build otherwise.
+
+Will do.
+
+thanks for your patience.
+
+greg k-h
