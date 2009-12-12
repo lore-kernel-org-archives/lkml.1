@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbZLLLDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761984AbZLLLRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761924AbZLLLDO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 06:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756258AbZLLLDO
+	id S1761984AbZLLLRf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 06:17:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761468AbZLLLRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 06:03:14 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60869 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756041AbZLLLDN (ORCPT
+	Sat, 12 Dec 2009 06:17:34 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37910 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761327AbZLLLRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 06:03:13 -0500
-Date: Sat, 12 Dec 2009 11:02:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-Message-ID: <20091212110240.194760cc@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091212013927.58d386d1.akpm@linux-foundation.org>
-References: <20091211232805.GA10652@kroah.com>
-	<20091212084611.GA28266@elte.hu>
-	<20091212013927.58d386d1.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Dec 2009 06:17:33 -0500
+Date: Sat, 12 Dec 2009 12:17:32 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org
+Subject: Re: tree with htc dream support
+Message-ID: <20091212111731.GA24713@elf.ucw.cz>
+References: <20091205221100.GA32522@elf.ucw.cz>
+ <1260054737.23633.35.camel@desktop>
+ <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+ <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The do_tty_hangup()->tty_fasync() path takes the locks in the
-> file_list_lock()->lock_kernel() direction whereas most other code takes
-> them in the other direction, which cannot be good.  But I'm not sure
+On Fri 2009-12-11 21:42:07, Arve Hj?nnev?g wrote:
+> On Sat, Dec 5, 2009 at 4:38 PM, Brian Swetland <swetland@google.com> wrote:
+> > Arve's about to take our common and msm trees and rebase them over the .32,
+> > which may be useful for reference -- at least as a snapshot of a fully
+> > functional set of patches that android donut and eclair run on, on
+> > production hardware.  We'll make that available as soon as we have something
+> > that's bootable.
+> 
+> A first pass of this is available in the android-msm-2.6.32-test1
+> branch at git://android.git.kernel.org/kernel/experimental.git.
 
-Thats a bug - the BKL does want to be taken first (and will
-sleep/yield/drop)
+Thanks!
 
-> Have a trace.  I'm actually wondering if perhaps there's a missing
-> unlock_kernel() somewhere else, and the tty code is just the victim of
-> that.
+I get 
 
-It's introduced by the BKL shuffle. Try the following
+  CC      drivers/i2c/chips/mt9t013.o
+drivers/i2c/chips/mt9t013.c: In function 'mt9t013_remove':
+drivers/i2c/chips/mt9t013.c:1301: error: implicit declaration of
+function 'i2c_detach_client'
+make[3]: *** [drivers/i2c/chips/mt9t013.o] Error 1
+make[2]: *** [drivers/i2c/chips] Error 2
+make[1]: *** [drivers/i2c] Error 2
 
-
-commit 1f61f07a985c7e8cfc20ad8fcced2f3d226bd0dc
-Author: Alan Cox <alan@linux.intel.com>
-Date:   Sat Dec 12 10:32:36 2009 +0000
-
-    tty: Fix the AB-BA locking bug introduced in the BKL split
-    
-    The fasync path takes the BKL (it probably doesn't need to in fact) but
-    this causes lock inversions and deadlocks so we can't do that. Leave the
-    BKL over that bit for the moment.
-    
-    Identified by AKPM.
-    
-    Signed-off-by: Alan Cox <alan@linux.intel.com>
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 684f0e0..f15df40 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -516,7 +516,6 @@ static void do_tty_hangup(struct work_struct *work)
- 	/* inuse_filps is protected by the single kernel lock */
- 	lock_kernel();
- 	check_tty_count(tty, "do_tty_hangup");
--	unlock_kernel();
- 
- 	file_list_lock();
- 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
-@@ -531,7 +530,6 @@ static void do_tty_hangup(struct work_struct *work)
- 	}
- 	file_list_unlock();
- 
--	lock_kernel();
- 	tty_ldisc_hangup(tty);
- 
- 	read_lock(&tasklist_lock);
+... I guess mt9t013 should depend on i2c? I'll try to fix the config.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
