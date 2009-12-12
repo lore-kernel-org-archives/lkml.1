@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761616AbZLLFmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZLLFrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761616AbZLLFmD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 00:42:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbZLLFmB
+	id S932555AbZLLFrJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 00:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbZLLFrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 00:42:01 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:37321 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757838AbZLLFmA convert rfc822-to-8bit (ORCPT
+	Sat, 12 Dec 2009 00:47:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56516
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758095AbZLLFrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 00:42:00 -0500
-MIME-Version: 1.0
-In-Reply-To: <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
-References: <20091205221100.GA32522@elf.ucw.cz>
-	 <1260054737.23633.35.camel@desktop>
-	 <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
-Date: Fri, 11 Dec 2009 21:42:07 -0800
-Message-ID: <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
-Subject: Re: tree with htc dream support
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Brian Swetland <swetland@google.com>
-Cc: Daniel Walker <dwalker@codeaurora.org>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 12 Dec 2009 00:47:08 -0500
+Date: Fri, 11 Dec 2009 21:47:14 -0800 (PST)
+Message-Id: <20091211.214714.41966763.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: usb_autopm_*() removal build failure...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091212040524.GA11212@suse.de>
+References: <20091211.174551.123151540.davem@davemloft.net>
+	<20091212040524.GA11212@suse.de>
+X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 5, 2009 at 4:38 PM, Brian Swetland <swetland@google.com> wrote:
-> Arve's about to take our common and msm trees and rebase them over the .32,
-> which may be useful for reference -- at least as a snapshot of a fully
-> functional set of patches that android donut and eclair run on, on
-> production hardware.  We'll make that available as soon as we have something
-> that's bootable.
->
-> Brian
->
->
+From: Greg KH <gregkh@suse.de>
+Date: Fri, 11 Dec 2009 20:05:24 -0800
 
-A first pass of this is available in the android-msm-2.6.32-test1
-branch at git://android.git.kernel.org/kernel/experimental.git.
+> Here's the patch, sent back in August:
+> 	 http://marc.info/?l=linux-netdev&m=125071045301270&w=2
+> 
+> Can you take it from there, or do you need me to forward it on?
 
-http://android.git.kernel.org/?p=kernel/experimental.git;a=shortlog;h=refs/heads/android-msm-2.6.32-test1
+I tossed this into the net-2.6 tree, but...
 
--- 
-Arve Hjønnevåg
+I would recommend that in the future when you have the
+dependency of an API change that's going to break the
+build, you take in the necessary change.  And you make
+sure such a commit is in your tree before the commit
+that removes the API.
+
+That posting had all the markings of something that wasn't
+my business applying:
+
+1) the subject said "usb" and nothing about networking or
+   a specific networking driver
+
+2) it was resolving an API issue introduced by another tree
+
+This also means you weren't doing allmodconfig builds on your USB tree
+this entire time, because if you had you would have realized that this
+fix belonged there not in net-2.6 :-)  And if the USB bits were
+going in via -next I'm really surprised Stephen Rothwell wasn't
+complaining about this too :)
+
+Anyways, next time, please resolve API issues internally when you
+do things that will break the build otherwise.
+
+We can merge it all together during the merge window just fine.
+
+Thanks!
+
+
