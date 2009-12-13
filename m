@@ -1,239 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZLML1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbZLMLfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438AbZLML1o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 06:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZLML1n
+	id S1752573AbZLMLfH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 06:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZLMLfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 06:27:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50482 "HELO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751918AbZLML1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 06:27:42 -0500
-Date: Sun, 13 Dec 2009 13:24:52 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Shirley Ma <mashirle@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH v2 2/4] Defer skb allocation -- new skb_set calls &
-	chain pages in virtio_net
-Message-ID: <20091213112452.GB7074@redhat.com>
-References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260535382.30371.20.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260535382.30371.20.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sun, 13 Dec 2009 06:35:06 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44039 "HELO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751918AbZLMLfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 06:35:05 -0500
+Date: Sun, 13 Dec 2009 11:36:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
+Message-ID: <20091213113626.7a854941@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091213065844.GA20244@elte.hu>
+References: <20091212084611.GA28266@elte.hu>
+	<20091212013927.58d386d1.akpm@linux-foundation.org>
+	<20091212101032.GB25286@elte.hu>
+	<20091212023603.93768833.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
+	<alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
+	<20091212214235.31429790@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
+	<alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
+	<alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
+	<20091213065844.GA20244@elte.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 04:43:02AM -0800, Shirley Ma wrote:
-> Signed-off-by: Shirley Ma <xma@us.ibm.com>
-> --------------
-> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-> index bb5eb7b..100b4b9 100644
-> --- a/drivers/net/virtio_net.c
-> +++ b/drivers/net/virtio_net.c
-> @@ -80,29 +80,25 @@ static inline struct skb_vnet_hdr *skb_vnet_hdr(struct sk_buff *skb)
->  	return (struct skb_vnet_hdr *)skb->cb;
->  }
->  
-> -static void give_a_page(struct virtnet_info *vi, struct page *page)
-> +static void give_pages(struct virtnet_info *vi, struct page *page)
->  {
-> -	page->private = (unsigned long)vi->pages;
-> -	vi->pages = page;
-> -}
-> +	struct page *end;
->  
-> -static void trim_pages(struct virtnet_info *vi, struct sk_buff *skb)
-> -{
-> -	unsigned int i;
-> -
-> -	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
-> -		give_a_page(vi, skb_shinfo(skb)->frags[i].page);
-> -	skb_shinfo(skb)->nr_frags = 0;
-> -	skb->data_len = 0;
-> +	/* Find end of list, sew whole thing into vi->pages. */
-> +	for (end = page; end->private; end = (struct page *)end->private);
-
-Hmm, this scans the whole list each time.
-OTOH, the caller probably can easily get list tail as well as head.
-If we ask caller to give us list tail, and chain them at head, then
-1. we won't have to scan the list each time
-2. we get better memory locality reusing same pages over and over again
-
-
-> +	end->private = (unsigned long)vi->pages;
-> +	vi->pages = page;
->  }
->  
->  static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
->  {
->  	struct page *p = vi->pages;
->  
-> -	if (p)
-> +	if (p) {
->  		vi->pages = (struct page *)p->private;
-> -	else
-> +		/* use private to chain pages for big packets */
-> +		p->private = 0;
-
-So this comment does not explain why this = 0 is here.
-clearly = 0 does not chain anything.
-Please add a bigger comment.
-
-I think you also want to extend the comment at top of
-file, where datastructure is, that explains the deferred
-alogorigthm and how pages are chained.
-
-> +	} else
->  		p = alloc_page(gfp_mask);
->  	return p;
->  }
-> @@ -128,6 +124,85 @@ static void skb_xmit_done(struct virtqueue *svq)
->  	netif_wake_queue(vi->dev);
->  }
->  
-> +static int skb_set_frag(struct sk_buff *skb, struct page *page,
-> +				int offset, int len)
-
-Maybe it's better not to prefix functions with skb_, one
-tries to look them up in skbuff.h immediately.
-
-> +{
-> +	int i = skb_shinfo(skb)->nr_frags;
-> +	skb_frag_t *f;
-> +
-> +	i = skb_shinfo(skb)->nr_frags;
-> +	f = &skb_shinfo(skb)->frags[i];
-
-i seems unused below, so opencode it.
-
-> +	f->page = page;
-> +	f->page_offset = offset;
-> +
-> +	if (len > PAGE_SIZE - f->page_offset)
-> +		f->size = PAGE_SIZE - f->page_offset;
-
-Will be a bit clearer with s/f->page_offset/offset/.
-
-> +	else
-> +		f->size = len;
-
-Use min for clarity instead of opencoded if.
-This will make it obvious that len won't ever become
-negative below.
-
-> +
-> +	skb_shinfo(skb)->nr_frags++;
-> +	skb->data_len += f->size;
-> +	skb->len += f->size;
-
-
-> +
-> +	len -= f->size;
-> +	return len;
-> +}
-> +
-> +static struct sk_buff *skb_goodcopy(struct virtnet_info *vi, struct page **page,
-
-I know you got this name from GOOD_COPY_LEN, but it's not
-very good for a function :) and skb_ prefix is also confusing.
-Just copy_small_skb or something like that?
-
-> +				    unsigned int *len)
-
-Comments about splitting patches  apply here as well.
-No way to understand what this should do and whether it
-does it correctly just by looking at patch.
-
-> +{
-> +	struct sk_buff *skb;
-> +	struct skb_vnet_hdr *hdr;
-> +	int copy, hdr_len, offset;
-> +	char *p;
-> +
-> +	p = page_address(*page);
-> +
-> +	skb = netdev_alloc_skb(vi->dev, GOOD_COPY_LEN + NET_IP_ALIGN);
-> +	if (unlikely(!skb))
-> +		return NULL;
-> +
-> +	skb_reserve(skb, NET_IP_ALIGN);
-> +	hdr = skb_vnet_hdr(skb);
-> +
-> +	if (vi->mergeable_rx_bufs) {
-> +		hdr_len = sizeof(hdr->mhdr);
-
-sizeof(hdr->mhdr) -> sizeof hdr->mhdr
-
-> +		offset = hdr_len;
-> +	} else {
-> +		/* share one page between virtio_net header and data */
-> +		struct padded_vnet_hdr {
-> +			struct virtio_net_hdr hdr;
-> +			/* This padding makes our data 16 byte aligned */
-
-I think reader will still wonder about is "why does it
-need to be 16 byte aligned?". And this is what
-comment should explain I think.
-
-> +			char padding[6];
-> +		};
-> +		hdr_len = sizeof(hdr->hdr);
-> +		offset = sizeof(struct padded_vnet_hdr);
-> +	}
-> +
-> +	memcpy(hdr, p, hdr_len);
-> +
-> +	*len -= hdr_len;
-> +	p += offset;
-> +
-> +	copy = *len;
-> +	if (copy > skb_tailroom(skb))
-> +		copy = skb_tailroom(skb);
-> +	memcpy(skb_put(skb, copy), p, copy);
-> +
-> +	*len -= copy;
-> +	offset += copy;
-> +
-> +	if (*len) {
-> +		*len = skb_set_frag(skb, *page, offset, *len);
-
-So you are overriding *len here? why bother calculating it
-then?
-
-Also - this does *not* always copy all of data, and *page
-tells us whether it did a copy or not? This is pretty confusing,
-as APIs go. Also, if we have scatter/gather anyway,
-why do we bother copying the head?
-Also, before skb_set_frag skb is linear, right?
-So in fact you do not need generic skb_set_frag,
-you can just put stuff in the first fragment.
-For example, pass the fragment number to skb_set_frag,
-compiler will be able to better optimize.
-
-> +		*page = (struct page *)(*page)->private;
-> +	} else {
-> +		give_pages(vi, *page);
-> +		*page = NULL;
-> +	}
-> +
-> +	return skb;
-> +}
-> +
->  static void receive_skb(struct net_device *dev, struct sk_buff *skb,
->  			unsigned len)
->  {
-> @@ -162,7 +237,7 @@ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
->  		len -= copy;
->  
->  		if (!len) {
-> -			give_a_page(vi, skb_shinfo(skb)->frags[0].page);
-> +			give_pages(vi, skb_shinfo(skb)->frags[0].page);
->  			skb_shinfo(skb)->nr_frags--;
->  		} else {
->  			skb_shinfo(skb)->frags[0].page_offset +=
+>  earth4:~/tip> git checkout linus
+>  Date:   Fri Dec 11 20:58:20 2009 -0800
+>  earth4:~/tip> git grep -w unlock_kernel | wc -l
+>  841
 > 
+> we grew the (absolute) number of BKL sites by ~15%. Certainly the kernel grew 
+> at a much faster rate, so the relative proportion of the BKL shrunk.
+
+Thats actually very misleading. The reason is we have created more
+lock/unlock points as we remove and drive down the lock.
+
+By your metric the original SMP kernel was best - it had one of each 8)
+	
+> Also, a lot of BKL use was hidden before, and due to the BKL removal 
+> activities (by Thomas, Frederic, Jon, Alan and others) the remaining BKL using 
+> sites are a lot more well defined, a lot more isolated and thus a lot more 
+> removable than ever before.
+
+ioctl is almost done and I've gont some other random ones in my tree.
+lseek is close. At that point most of the nasties are squashed except tty.
+
+We do have some remaining locking horrors some partly introduced by the
+finer locking work in the past including the rather nasty device
+unload/load v open file handle races.
+
