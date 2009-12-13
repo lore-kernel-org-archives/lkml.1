@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZLMTJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZLMTLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbZLMTJe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 14:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZLMTJd
+	id S1753954AbZLMTLO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 14:11:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZLMTLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 14:09:33 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:50398 "HELO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753909AbZLMTJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 14:09:32 -0500
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091213190410.GA7297@nowhere>
-References: <20091212023603.93768833.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
-	 <alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
-	 <20091212214235.31429790@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
-	 <alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
-	 <alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
-	 <20091213065844.GA20244@elte.hu>
-	 <alpine.LFD.2.00.0912130941050.5516@localhost.localdomain>
-	 <20091213181726.GA14558@elte.hu>  <20091213190410.GA7297@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 13 Dec 2009 14:09:14 -0500
-Message-Id: <1260731354.2612.14.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 9 msgs/h 1 sum rcpts/h 14 sum msgs/h 1 total rcpts 2023 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 55CC870E7E17DADA6451DDEBB53138A4DF238380
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 39 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	Sun, 13 Dec 2009 14:11:13 -0500
+Received: from jacques.telenet-ops.be ([195.130.132.50]:45087 "HELO
+	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753913AbZLMTLM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 14:11:12 -0500
+Date: Sun, 13 Dec 2009 20:11:06 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Christian Pellegrin <chripell@fsfe.org>,
+       Wolfgang Grandegger <wg@grandegger.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+cc: netdev@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] can: CAN_MCP251X should depend on HAS_DMA
+Message-ID: <alpine.DEB.2.00.0912132008100.21225@ayla.of.borg>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-13 at 20:04 +0100, Frederic Weisbecker wrote: 
-> In the above cases we have the following comment:
-> 
-> /* Protect inode->i_flock using the BKL */
-> 
-> And really it doesn't seem to protect anything else,
-> fortunately it is acquired in a short path.
+When building for Sun 3:
 
-As I said in my reply, this is the tough one, because the BKL protection
-is imposed by the VFS locking scheme used in fs/locks.c.
+drivers/net/can/mcp251x.c:1074: undefined reference to `dma_free_coherent'
+drivers/net/can/mcp251x.c:976: undefined reference to `dma_alloc_coherent'
+drivers/net/can/mcp251x.c:1050: undefined reference to `dma_free_coherent'
 
-There is a similar dependency imposed upon fs/lockd/
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/net/can/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'm working on this, but I don't have anything ready for 2.6.33. 
+diff --git a/drivers/net/can/Kconfig b/drivers/net/can/Kconfig
+index 8c485aa..05b7517 100644
+--- a/drivers/net/can/Kconfig
++++ b/drivers/net/can/Kconfig
+@@ -50,7 +50,7 @@ config CAN_TI_HECC
+ 
+ config CAN_MCP251X
+ 	tristate "Microchip MCP251x SPI CAN controllers"
+-	depends on CAN_DEV && SPI
++	depends on CAN_DEV && SPI && HAS_DMA
+ 	---help---
+ 	  Driver for the Microchip MCP251x SPI CAN controllers.
+ 
+-- 
+1.6.0.4
 
-> fs/nfs/super.c: unlock_kernel();
-> fs/nfs/super.c: unlock_kernel();
-> 
-> Protect the mount/unmount path, a bit trickier there.
-> 
-> But really that looks way much easier to fix than it was
-> with reiserfs.
+Gr{oetje,eeting}s,
 
-All the other cases you list should be fixed in the GIT PULL request
-that I just put out.
+						Geert
 
-Trond
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
