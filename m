@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZLMTn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZLMT4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbZLMTn6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 14:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZLMTn4
+	id S1754080AbZLMT4O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 14:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZLMT4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 14:43:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44534 "HELO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754043AbZLMTny (ORCPT
+	Sun, 13 Dec 2009 14:56:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:38594 "HELO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754046AbZLMT4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 14:43:54 -0500
-Date: Sun, 13 Dec 2009 11:43:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Julia Lawall <julia@diku.dk>, JosephChan@via.com.tw,
-       Scott Fang <ScottFang@viatech.com.cn>, linux-fbdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 7/9] drivers/video: Correct code taking the size of a
- pointer
-Message-Id: <20091213114343.a60828d3.akpm@linux-foundation.org>
-In-Reply-To: <4B24E3AB.9040609@gmx.de>
-References: <Pine.LNX.4.64.0912131242240.24267@ask.diku.dk>
-	<4B24E3AB.9040609@gmx.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Dec 2009 14:56:12 -0500
+Date: Sun, 13 Dec 2009 20:56:07 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sascha linux-arm <s.hauer@pengutronix.de>,
+       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] mfd: mc13783: Take care of semantic inversion
+	between read and write value of two bits in POWER_MISCELLANEUS
+	register.
+Message-ID: <20091213195606.GA14024@pengutronix.de>
+References: <1260635829.2054.16.camel@climbing-alby> <1260636523.2054.28.camel@climbing-alby>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1260636523.2054.28.camel@climbing-alby>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Dec 2009 13:52:59 +0100 Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-
-> Hi Julia, Andrew,
+On Sat, Dec 12, 2009 at 05:48:43PM +0100, Alberto Panizzo wrote:
+> MC13783_REGCTRL_PWGTnSPIEN controls the states of the corresponding
+> PWGTn_DRV output.
+> Reading 1 on the corresponding bit mean that the output is enabled
+> Writing 1 on the corresponding bit disable that output!
 > 
-> Julia Lawall schrieb:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > sizeof(viafb_gamma_table) is just the size of the pointer.  This is changed
-> > to the size used when calling kmalloc to initialize the pointer.
-> 
-> this is the second patch addressing this issue ending up in my mailbox. 
-> At least this one is technically correct so feel free to upstream it.
-> However I vote for removing this ioctl hell from viafb as most of them 
-> duplicate framebuffer functionality or have unknown (not clearly 
-> defined) functionality or at least solve a generic problem with a custom 
-> ioctl (which I consider bad). I had a patch ready to move this stuff to 
-> an extra file and print a warning that it is subject to be removed. I 
-> feel a bit uncomfortable about repairing broken stuff prior to removing it.
-> Any comments on this subject?
-> 
+> So, if not asked directly to modify those bits, write the inverted
+> value.
+Hmm, I'm not sure this completely right.  The Spec has:
 
-I favour both repairing and removing broken stuff ;)
+        Bit PWGTxSPIEN | Pin PWGTxEN | PWGTxDRV |  Read Back
+          0 = default  |             |          | PWGTxSPIEN
+        ---------------+-------------+----------+------------
+              1        |      x      |   Low    |     0
+              0        |      0      |   High   |     1
+              0        |      1      |   Low    |     0
 
-We may as well fix it if problems are known.  Perhaps someone is
-hitting the problem at runtime in an older kernel and needs a patch to
-backport.  Perhaps we later decide to revert the removal, thus
-reinstating the known bug.
+So it looks a bit harder than just inverting the read bit.
 
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
