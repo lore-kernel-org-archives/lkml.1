@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbZLMNOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbZLMNTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753311AbZLMNOO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 08:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZLMNOM
+	id S1753329AbZLMNTd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 08:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZLMNTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 08:14:12 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:59394 "HELO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752643AbZLMNOG (ORCPT
+	Sun, 13 Dec 2009 08:19:32 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44675 "HELO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753047AbZLMNTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 08:14:06 -0500
-Subject: Re: 2.6.32-git5+, CONFIG_WEXT_PRIV and Broadcom's driver for
- BCM4322  Wireless chips
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <5a4c581d0912120740j38a20f8eu3f616f3a477d922f@mail.gmail.com>
-References: <5a4c581d0912120740j38a20f8eu3f616f3a477d922f@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-wkhPQRTd0KRkgvOFmC/2"
-Date: Sun, 13 Dec 2009 14:14:02 +0100
-Message-ID: <1260710042.2442.340.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sun, 13 Dec 2009 08:19:31 -0500
+Date: Sun, 13 Dec 2009 14:19:22 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, cbou@mail.ru,
+       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [POWER] battery calibration parameters from sysfs
+Message-ID: <20091213131921.GA1437@ucw.cz>
+References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se> <20091204104930.GA28625@sirena.org.uk> <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se> <20091207114825.GA26965@rakim.wolfsonmicro.main> <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> One of the things we're facing is Android, which has
+> its userspace in plain Java JNI at the end of this link:
+> http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob;f=s
+> ervices/jni/com_android_server_BatteryService.cpp;h=8e7cadc6b680fc420d34
+> 1faa094c71922946fdab;hb=HEAD
+> 
+> If you browse down to line 275 you can see it parse the sysfs
+> attribute "capacity", then this propagates up to the battery
+> status indicator on *all* Android phones out there. So if
+> you want to run Android unmodified, this is what you need to
+> provide. They are effectively using the power sysfs as
+> their hardware abstraction layer in this case.
+> 
+> Note: I'm not claiming that Android is doing it right or that
+> we can't modify this code or so, it's just that this is the way
+> a few million Android devices out there are actually doing it.
 
---=-wkhPQRTd0KRkgvOFmC/2
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Users can't modify them, so they don't count...
 
-On Sat, 2009-12-12 at 16:40 +0100, Alessandro Suardi wrote:
+...but then there are all the systems that rely on /proc/apm
+emulation, like openembedded popular on sharp zaurus...
 
-> But: what is the best option here to make CONFIG_WEXT_PRIV visible at
->  kernel build time if only an external module should select it - but sele=
-ction
->  is not actually happening at kernel build time ?
-> Could CONFIG_WEXT_PRIV be made a separate user-selectable option ?
-
-Your only option is selecting some other (ancient) driver that selects
-WEXT_PRIV. We will not make that Kconfig symbol visible just because
-Broadcom decided that they want to continue screwing their users :)
-
-IOW -- there's no such option available to you at all. Select
-PCMCIA_RAYCS or whatever.
-
-johannes
-
---=-wkhPQRTd0KRkgvOFmC/2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLJOiVAAoJEODzc/N7+QmaxOIP/1O6lcOyXLU5T/jq8NDqD7At
-3Txb995jr84fEviZ28rE6WpclvatmXB9TGXOYiQrbVRCPEZtwGA87+KRRZezKc8M
-RZn+xNaUE0UOyBUzb+9Ubd83msnqFhzZ3X9HFPSOV5NfbAyH2gbqjXke+rOUqvjO
-80fbwjMhy5yf3klTN3UyI9/oTyXEfHkzZq1X45cJL283aFyYL1NLzawSD4yCTfHw
-ZBqP1ZTDb/ewAf+dV+KHRf2iSU0G77+5KmOfKII1WFcv3Mb0SYWmQ0xuU0zZWNkK
-LdSnpkXi0r7GgJvGAkJwReV9yaWbY8OOWdVwp3Hk0U7c6COggfGbX8PHvKD76V+M
-YuzLdMO5XHpkiZ/gKt7J88iWHeogGrxsBvpxWt103/fTVNvoKQOo021PiiOB7pKL
-40mX6HyLNbuV8f/TNulwUZ/l37NkxvMEE9rpcrKLU6DcHiZho2crvfI2XIWPaMOx
-VI/HBK7mh29nP58m0jgQeDE2fF3MTqadTVapgX+YY1jsPbxgjpgNG4MtLtXdmrW8
-3CB55GeIZ9d0GaxOoTH61Ry+xm2u/tLz/Zh95pyvQxey3gnhpDT6v7MCxDyJhy1J
-8Ctm73cmtIbokSW251A5xX+Z3HAUBW+yIts2hTpneVLm3F3rvC0qCFWa60UxmX90
-qVD2WXkpISCNaR4+FU8l
-=7LY+
------END PGP SIGNATURE-----
-
---=-wkhPQRTd0KRkgvOFmC/2--
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
