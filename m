@@ -1,83 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbZLMVMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZLMVMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbZLMVMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 16:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbZLMVMT
+	id S1754286AbZLMVMc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 16:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZLMVM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 16:12:19 -0500
-Received: from www84.your-server.de ([213.133.104.84]:46094 "HELO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753789AbZLMVMT (ORCPT
+	Sun, 13 Dec 2009 16:12:29 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:49756 "HELO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754253AbZLMVM0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 16:12:19 -0500
-Subject: Re: [PATCH 0/1] RFC: new kqueue API
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Joe Perches <joe@perches.com>, Roger Quadros <quadros.roger@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>
-In-Reply-To: <20091213183741.GB18989@one.firstfloor.org>
-References: <1260700633.17424.18.camel@wall-e>
-	 <20091213183741.GB18989@one.firstfloor.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sun, 13 Dec 2009 22:11:56 +0100
-Message-ID: <1260738716.22305.22.camel@wall-e>
+	Sun, 13 Dec 2009 16:12:26 -0500
+Date: Sun, 13 Dec 2009 22:12:22 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: sonic zhang <sonic.adi@gmail.com>
+Cc: linux-i2c@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] driver i2c-core: i2c bus should support PM entries in 
+ struct dev_pm_ops.
+Message-ID: <20091213221222.724bef54@hyperion.delvare>
+In-Reply-To: <1259744920.25505.2.camel@eight.analog.com>
+References: <1259744920.25505.2.camel@eight.analog.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, den 13.12.2009, 19:37 +0100 schrieb Andi Kleen:
-> On Sun, Dec 13, 2009 at 11:37:13AM +0100, Stefani Seibold wrote:
-> > As i figured out during the port the old kfifo API users, most of them
-> > did not need a streamed fifo, because there work only with fixed size
-> > entries. The kfifo is oversized for this kind of users, so i decided to
-> > write a new kqueue API which is optimized for fixed size entries. 
-> > 
-> > There are a some benefits:
-> > 
-> > - Performance (a put or get of an integer does only generate 4 assembly
-> > instructions on a x86) 
-> > - Type save
-> > - Cleaner interface
-> > - Easier to use
-> > - Less error prone
-> > - Smaller footprint
-> > 
-> > The API is similar to the new kfifo API, but there is no need for a
-> > length paramter, because the size of the entry is know by the queue
-> > structure.
+Hi Sonic,
+
+On Wed, 2 Dec 2009 17:08:40 +0800, sonic zhang wrote:
+> Struct dev_pm_ops is not configured in current i2c bus type. i2c drivers
+> only depends on suspend/resume entries in struct dev_pm_ops are not
+> informed of PM suspend and resume events by i2c framework.
+
+Good point. I was wondering some times ago what was the status of
+pm_ops. I seem to understand this is the future of power management,
+and "direct" .suspend and .resume callbacks will stop being supported
+at some point in the future? If so, what is the migration plan? I don't
+really want to support both forever.
+
+Your patch introduces the following warnings:
+
+drivers/i2c/i2c-core.c: In function ‘i2c_device_pm_suspend’:
+drivers/i2c/i2c-core.c:167: warning: assignment discards qualifiers from pointer target type
+drivers/i2c/i2c-core.c: In function ‘i2c_device_pm_resume’:
+drivers/i2c/i2c-core.c:181: warning: assignment discards qualifiers from pointer target type
+
+You will obviously have to fix them before I can accept your patch.
+Missing const...
+
 > 
-> I must say I'm a bit sceptical if the advantages are really worth
-> the additional code. That code would be always compiled in in addition
-> to kfifo, so at least the code footprint would be always larger.
+> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+> ---
+>  drivers/i2c/i2c-core.c |   39 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 39 insertions(+), 0 deletions(-)
 > 
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index 2965043..9713c0d 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -155,6 +155,39 @@ static void i2c_device_shutdown(struct device *dev)
+>  		driver->shutdown(client);
+>  }
+>  
+> +#ifdef CONFIG_SUSPEND
+> +static int i2c_device_pm_suspend(struct device *dev)
+> +{
+> +	struct i2c_driver *driver;
+> +	struct dev_pm_ops *pm;
+> +
+> +	if (!dev->driver)
+> +		return 0;
+> +	driver = to_i2c_driver(dev->driver);
+> +	pm = driver->driver.pm;
 
-The additional code is very tiny... less than 1 kb ;-) Changing the
-fixed size user to the new kqueue API would result on the other side in
-less footprint and a much better performance.
+This makes little sense, sorry. Why go from device_driver to i2c_driver
+and then again to device_driver? The following is equivalent and more
+efficient:
 
-> Perhaps you could get the advantages for type-safety using
-> inline wrappers to kfifo?
-> 
+	pm = dev->driver->pm;
 
-No, i have no idea how to do this. If you give me the okay to use C++ it
-could be easy done with templates (just kidding...)
+> +	if (!pm || !pm->suspend)
+> +		return 0;
+> +	return pm->suspend(dev);
+> +}
+> +
+> +static int i2c_device_pm_resume(struct device *dev)
+> +{
+> +	struct i2c_driver *driver;
+> +	struct dev_pm_ops *pm;
+> +
+> +	if (!dev->driver)
+> +		return 0;
+> +	driver = to_i2c_driver(dev->driver);
+> +	pm = driver->driver.pm;
 
-The next step after merging of the new kfifo API would be the
-deinlineing of the code... This will also reduce the footprint of the
-kfifo API users, but not as much as with the kqueue API.
+Same here.
 
-But have a look to the new interfaces. It is quite simple and natural to
-use and faster than light ;-)
+> +	if (!pm || !pm->resume)
+> +		return 0;
+> +	return pm->resume(dev);
+> +}
+> +#else
+> +# define i2c_device_pm_suspend	NULL
+> +# define i2c_device_pm_resume	NULL
 
-Stefani
+No space between "#" and "define", please.
 
+> +#endif
+> +
+>  static int i2c_device_suspend(struct device *dev, pm_message_t mesg)
+>  {
+>  	struct i2c_client *client = i2c_verify_client(dev);
+> @@ -219,6 +252,11 @@ static const struct attribute_group *i2c_dev_attr_groups[] = {
+>  	NULL
+>  };
+>  
+> +static struct dev_pm_ops i2c_device_pm_ops = {
 
+Could be const.
+
+> +	.suspend = i2c_device_pm_suspend,
+> +	.resume = i2c_device_pm_resume,
+> +};
+> +
+>  struct bus_type i2c_bus_type = {
+>  	.name		= "i2c",
+>  	.match		= i2c_device_match,
+> @@ -227,6 +265,7 @@ struct bus_type i2c_bus_type = {
+>  	.shutdown	= i2c_device_shutdown,
+>  	.suspend	= i2c_device_suspend,
+>  	.resume		= i2c_device_resume,
+> +	.pm		= &i2c_device_pm_ops,
+>  };
+>  EXPORT_SYMBOL_GPL(i2c_bus_type);
+>  
+
+I've made all the changes above myself, it build OK but I can't test.
+Modified patch is here:
+ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-core-i2c-bus-should-support-pm-entries-in-struct-dev_pm_ops.patch
+
+Please test and report if anything's wrong.
+
+Thanks,
+-- 
+Jean Delvare
