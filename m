@@ -1,419 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZLMLgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZLMLko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbZLMLgi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 06:36:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbZLMLgf
+	id S1752619AbZLMLko (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 06:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZLMLkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 06:36:35 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:57119 "HELO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752536AbZLMLge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 06:36:34 -0500
-Message-ID: <4B24D1C2.9010807@pardus.org.tr>
-Date: Sun, 13 Dec 2009 13:36:34 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 13 Dec 2009 06:40:43 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34118 "HELO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752579AbZLMLkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 06:40:42 -0500
+Date: Sun, 13 Dec 2009 12:40:39 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: ralf@linux-mips.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/9] arch/mips/alchemy: Correct code taking the size of a
+ pointer
+Message-ID: <Pine.LNX.4.64.0912131240100.24267@ask.diku.dk>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>
-Subject: Re: Poor KVM guest performance on an HP rack server
-References: <4B243B2B.806@pardus.org.tr> <4B24BE52.6060703@redhat.com>
-In-Reply-To: <4B24BE52.6060703@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
->
-> First, are you sure that kvm is enabled?  'info kvm' in the monitor.
-(qemu) info kvm
-kvm support: enabled
+From: Julia Lawall <julia@diku.dk>
 
-(qemu) info cpus
-* CPU #0: pc=0x00000000c011ceb3 (halted) thread_id=26023
-  CPU #1: pc=0x00000000c011ceb3 (halted) thread_id=26024
+sizeof(dp) is just the size of the pointer.  Change it to the size of the
+referenced structure.
 
-(qemu) info block
-virtio0: type=hd removable=0 file=/dev/cciss/c1d0p1 ro=0 drv=host_device
-encrypted=0
-ide1-cd0: type=cdrom removable=1 locked=0 [not inserted]
-floppy0: type=floppy removable=1 locked=0 [not inserted]
-sd0: type=floppy removable=1 locked=0 [not inserted]
+A simplified version of the semantic patch that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
--------
+// <smpl>
+@@
+expression *x;
+expression f;
+type T;
+@@
 
-KVM related messages on the host server:
+*f(...,(T)x,...)
+// </smpl>
 
-~ # dmesg |grep kvm
-[ 3649.058945] loaded kvm module (kvm-kmod-2.6.32)
-[ 3683.736737] kvm: emulating exchange as write (It's interesting, what
-does it mean?)
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-On the guest side:
+---
+ arch/mips/alchemy/common/dbdma.c    |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-~ # dmesg | grep kvm
-[    0.000000] kvm-clock: cpu 0, msr 0:64a3e1, boot clock
-[    0.000000] kvm-clock: cpu 0, msr 0:20103e1, primary cpu clock
-[    0.065075] kvm-clock: cpu 1, msr 0:20203e1, secondary cpu clock
-
->
-> Second, is the workload cpu bound or I/O bound?  Both from the guest's
-> and host's point of view.
->
-First of all if there are some specific outputs that will reveal the
-IO/CPU boundness of the workload, I'd like to give them too. I'm not
-much familiar with diagnostic/analysis tools..
-
->From host's POV:
-----------------
-
-Guest is idle:
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-26117 root      20   0 2153m 175m 1356 S    5  0.5   0:33.57 qemu-kvm
-
-Guest is configuring CUPS:
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-26117 root      20   0 2129m 180m 1356 S  143  0.6   0:44.34 qemu-kvm (
-<-- peak at 140,150~ %CPU)
-
-load average reached 0.91 at the end of the configuration.
-
-SMP view of top command shows that only Cpu2 and Cpu9 are involved,
-other ones are zeroed (maybe coherent with -smp 2, don't have much idea):
-
-Cpu2  : 28.4%us, 31.4%sy,  0.0%ni, 40.2%id,  0.0%wa,  0.0%hi,  0.0%si, 
-0.0%st
-Cpu9  : 27.7%us, 26.7%sy,  0.0%ni, 45.5%id,  0.0%wa,  0.0%hi,  0.0%si, 
-0.0%st
-
-
-vmstat -n 1 output on host:
-
-procs -----------memory---------- ---swap-- -----io---- -system--
------cpu------
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy
-id wa st
- .
- .
- .
- 2  0      0 30161636 117300 116416    0    0     0    36 20366 3868  2 
-2 96  0  0 (./configure)
- 1  0      0 30161468 117300 116416    0    0     0     4 21673 4153  2 
-3 95  0  0
- 2  0      0 30160848 117300 116416    0    0     0     0 16549 4215  2 
-2 95  0  0
- 2  0      0 30160396 117300 116416    0    0     0     0 21089 4196  2 
-3 95  0  0
- 1  0      0 30160308 117300 116416    0    0     0     0 17031 4189  2 
-3 95  0  0
- 1  0      0 30160088 117300 116420    0    0     0   128 21772 4184  2 
-3 95  0  0
- 4  0      0 30159848 117304 116416    0    0     0    28 22378 4117  2 
-3 95  0  0
- 2  0      0 30159704 117312 116420    0    0     0    20 23530 4082  2 
-3 95  0  0
- 1  0      0 30159624 117312 116420    0    0     0     0 20997 4098  2 
-3 95  0  0
- 1  0      0 30159608 117324 116416    0    0     0    40 18519 4290  2 
-3 95  0  0
- 1  0      0 30159600 117324 116416    0    0     0    76 20959 4187  2 
-3 95  0  0
- 1  0      0 30159764 117324 116416    0    0     0     0 19718 4205  2 
-3 95  0  0
- 1  0      0 30159848 117324 116416    0    0     0     0 19934 4095  2 
-3 95  0  0
- 1  0      0 30159724 117324 116416    0    0     0     0 21821 4094  2 
-3 95  0  0
- 1  0      0 30159684 117328 116412    0    0     0    16 19621 4093  2 
-2 95  0  0
- 1  0      0 30159848 117328 116416    0    0     0    76 19630 4162  2 
-3 95  0  0
- 1  0      0 30159724 117328 116416    0    0     0     0 22810 4033  2 
-3 95  0  0
- 1  0      0 30159848 117328 116416    0    0     0     0 20525 4105  2 
-3 95  0  0
- 1  0      0 30159560 117328 116416    0    0     0     0 15715 4188  2 
-2 95  0  0
- 1  0      0 30159516 117328 116416    0    0     0     0 17686 4223  2 
-2 95  0  0
- 1  0      0 30159476 117328 116416    0    0     0    76 17308 4174  2 
-2 95  0  0
- 1  0      0 30159888 117328 116416    0    0     0     0 17973 4186  2 
-3 95  0  0
- 1  0      0 30159848 117328 116416    0    0     0     0 18795 4147  2 
-3 95  0  0
- 1  0      0 30159808 117328 116416    0    0     0     0 18346 4181  2 
-2 95  0  0
- 1  0      0 30160096 117328 116416    0    0     0     0 17054 4202  2 
-2 95  0  0
- 1  0      0 30159892 117328 116416    0    0     0    76 16767 4256  2 
-2 95  0  0
- 2  0      0 30159600 117328 116416    0    0     0     8 19817 4191  2 
-3 95  0  0
- 2  0      0 30159600 117328 116416    0    0     0     0 19709 4125  2 
-3 95  0  0
- 1  0      0 30159476 117328 116416    0    0     0     0 17322 4153  2 
-2 95  0  0
- 1  0      0 30159600 117328 116416    0    0     0     0 20106 4189  2 
-3 95  0  0
- 1  0      0 30159808 117328 116416    0    0     0    80 17810 4202  2 
-2 95  0  0
- 1  0      0 30159848 117328 116416    0    0     0     0 16723 4217  2 
-2 95  0  0
- 1  0      0 30160052 117328 116416    0    0     0     0 17799 4140  2 
-2 95  0  0
- 1  0      0 30159560 117328 116416    0    0     0     0 15878 4244  2 
-2 95  0  0
- 2  0      0 30159764 117328 116416    0    0     0     0 19632 4124  2 
-3 95  0  0
- 1  0      0 30160144 117328 116416    0    0     0   188 18119 4255  2 
-2 95  0  0
- 1  0      0 30159860 117328 116416    0    0     0     0 17664 4139  2 
-2 95  0  0
- 2  0      0 30159856 117328 116416    0    0     0     0 23323 4099  2 
-3 95  0  0
- 2  0      0 30159776 117328 116416    0    0     0    12 30120 3790  2 
-3 94  0  0
- 1  0      0 30159484 117328 116416    0    0     0     0 25599 4172  2 
-3 95  0  0
- 2  0      0 30159732 117328 116416    0    0     0   128 41030 3579  2 
-4 94  0  0
- 2  0      0 30159528 117328 116416    0    0     0     0 39064 3644  2 
-4 94  0  0
- 1  0      0 30159816 117328 116416    0    0     0     0 39337 3556  2 
-4 94  0  0
- 1  0      0 30159940 117328 116416    0    0     0     0 41252 3617  2 
-4 94  0  0
- 2  0      0 30160112 117328 116416    0    0     0     0 36845 3668  2 
-3 94  0  0
- 2  0      0 30160484 117328 116416    0    0     0   116 39011 3737  2 
-4 94  0  0
- 1  0      0 30160196 117328 116416    0    0     0     0 38782 3646  2 
-4 94  0  0
- 1  0      0 30160072 117328 116416    0    0     0     0 38546 3684  2 
-4 94  0  0
- 1  0      0 30160444 117328 116416    0    0     0     0 37738 3641  2 
-4 94  0  0
- 0  0      0 30160336 117328 116416    0    0     0    20 26019 3596  2 
-3 95  0  0
- 0  0      0 30160460 117328 116416    0    0     0   184 2373 2286  0 
-0 100  0  0 (finished)
- 0  0      0 30160460 117328 116416    0    0     0     0 2398 2279  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2356 2251  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2395 2275  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2354 2249  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2395 2283  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2367 2230  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2396 2277  0 
-0 100  0  0
- 0  0      0 30160460 117328 116416    0    0     0     0 2344 2223  0 
-0 100  0  0
-
-I also checked iotop on host and qemu-kvm appears occasionally with disk
-writes at max 200 K/s.
-
->From guest's POV:
------------------
-
-Configuring CUPS:
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-19258 root      20   0  3396 1656 1192 R   18  0.1   0:05.20 configure (
-Saw maximum 22 %CPU)
-
-The following is the highest load average instant during configuration:
-
-top - 11:35:32 up 33 min,  3 users,  load average: 0.56, 0.25, 0.15
-Tasks:  99 total,   4 running,  95 sleeping,   0 stopped,   0 zombie
-Cpu0  :  4.7%us, 68.3%sy,  0.0%ni, 27.0%id,  0.0%wa,  0.0%hi,  0.0%si, 
-0.0%st
-Cpu1  :  4.3%us, 66.3%sy,  0.0%ni, 29.3%id,  0.0%wa,  0.0%hi,  0.0%si, 
-0.0%st
-Mem:   2061660k total,   137564k used,  1924096k free,    58672k buffers
-Swap:   307192k total,        0k used,   307192k free,    49240k cached
-
-vmstat -n 1:
-------------
-
-(context switches and interrupts are much more higher during
-configuration than the idle state)
-
-procs -----------memory---------- ---swap-- -----io---- -system--
------cpu------
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy
-id wa st
- 0  0      0 1926012  58552  49172    0    0    27     4  165   46  1  8
-91  0  0
- 0  0      0 1925956  58552  49176    0    0     0     0   33   18  0  0
-100  0  0
- 0  0      0 1925832  58560  49172    0    0     0    32   71   78  0  0
-100  0  0
- 0  0      0 1925832  58560  49176    0    0     0     0   42   21  0  0
-100  0  0
- 0  0      0 1925832  58560  49176    0    0     0     0   74   73  0  1
-99  0  0
- 0  0      0 1925832  58560  49176    0    0     0     0   26   15  0  0
-100  0  0
- 0  0      0 1925832  58560  49176    0    0     0     0   95  216  0  0
-100  0  0
- 0  0      0 1925832  58560  49176    0    0     0     0   33   35  0  0
-100  0  0
- 0  0      0 1925832  58568  49176    0    0     0    12  143  166  1  0
-99  0  0
- 0  0      0 1925840  58568  49176    0    0     0     0  181  224  0  1
-99  0  0
- 0  0      0 1925880  58568  49176    0    0     0     0   67   71  0  0
-100  0  0
- 0  0      0 1925880  58568  49176    0    0     0     0   22   12  0  0
-100  0  0
- 2  0      0 1925880  58568  49176    0    0     0     0  108  119  0  0
-100  0  0
- 0  0      0 1925624  58576  49176    0    0     0    12  222  212  1  4
-95  0  0
- 0  0      0 1925540  58576  49176    0    0     0     0  220  185  0  2
-98  0  0
- 0  0      0 1925500  58576  49176    0    0     0     0   34   26  0  0
-100  0  0
- 0  0      0 1925508  58576  49176    0    0     0    12  164  121  0  1
-98  0  0
- 0  0      0 1925508  58576  49176    0    0     0     0   54   59  0  0
-100  0  0
- 0  0      0 1925508  58584  49176    0    0     0    36   81   87  0  0
-100  0  0
- 0  0      0 1925508  58584  49176    0    0     0     0   47   30  0  1
-100  0  0
- 0  0      0 1925508  58584  49176    0    0     0     0   77   80  0  0
-100  0  0
- 0  0      0 1925508  58584  49176    0    0     0     0   71   78  0  0
-100  0  0
- 0  0      0 1925436  58584  49176    0    0     0     0  175  216  0  0
-100  0  0
- 0  0      0 1925428  58584  49176    0    0     0     0   80   66  0  1
-99  0  0
- 0  0      0 1925428  58592  49176    0    0     0    48   84   91  0  0
-100  0  0
- 1  0      0 1924788  58592  49176    0    0     0     0 1413  401  2 33
-65  0  0  (./configure)
- 1  0      0 1924092  58592  49072    0    0     0     4 2210  599  5 57
-38  0  0
- 1  0      0 1924544  58592  49080    0    0     0     0 2131  349  5 51
-45  0  0
- 1  0      0 1924580  58592  49088    0    0     0     0 2188  564  5 54
-42  0  0
- 2  0      0 1924796  58592  49092    0    0     0     0 2153  386  5 53
-42  0  0
- 2  0      0 1924892  58604  49092    0    0     0   112 2148  409  5 54
-41  0  0
- 1  0      0 1924732  58604  49096    0    0     0     0 2153  415  5 56
-39  0  0
- 1  0      0 1924916  58604  49100    0    0     0     0 2197  508  5 56
-39  0  0
- 1  0      0 1924788  58604  49100    0    0     0     0 2134  376  5 56
-40  0  0
- 1  0      0 1924612  58604  49100    0    0     0     4 2199  522  6 52
-42  0  0
- 1  0      0 1924772  58612  49100    0    0     0    84 2184  405  6 53
-41  0  0
- 3  0      0 1924960  58612  49116    0    0     0     0 2187  453  5 53
-42  0  0
- 1  0      0 1924600  58612  49112    0    0     0     0 2156  474  5 54
-42  0  0
- 1  0      0 1924164  58612  49128    0    0     0     0 2151  420  5 55
-40  0  0
- 2  0      0 1924944  58612  49116    0    0     0     0 2130  357  5 53
-42  0  0
- 2  0      0 1924536  58620  49120    0    0     0    80 2218  691  6 54
-41  0  0
- 1  0      0 1924252  58620  49144    0    0     0     0 2121  358  5 54
-41  0  0
- 1  0      0 1924888  58620  49128    0    0     0     0 2158  422  6 54
-41  0  0
- 1  0      0 1922456  58620  49132    0    0     0     0 2125  386  6 50
-44  0  0
- 1  0      0 1924696  58620  49144    0    0     0     0 2195  451  5 53
-43  0  0
- 2  0      0 1924780  58628  49140    0    0     0    80 2143  379  6 51
-44  0  0
- 2  0      0 1924660  58628  49144    0    0     0     0 2151  389  6 51
-44  0  0
- 1  0      0 1924380  58628  49144    0    0     0     0 2130  315  7 50
-43  0  0
- 1  0      0 1924504  58628  49152    0    0     0     0 2169  400  6 52
-42  0  0
- 2  0      0 1924548  58628  49156    0    0     0     0 2126  320  6 51
-44  0  0
- 1  0      0 1924660  58636  49156    0    0     0    80 2161  367  5 52
-43  0  0
- 1  0      0 1924412  58636  49160    0    0     0     8 2133  323  5 52
-43  0  0
- 1  0      0 1924392  58636  49176    0    0     0     0 2182  575  5 55
-40  0  0
- 1  0      0 1924516  58636  49180    0    0     0     0 2128  318  6 52
-43  0  0
- 1  0      0 1923572  58636  49180    0    0     0     0 2164  432  7 51
-43  0  0
- 1  0      0 1924192  58644  49184    0    0     0    80 2164  451  5 52
-43  0  0
- 1  0      0 1923980  58644  49192    0    0     0     0 2160  389  7 50
-44  0  0
- 2  0      0 1924528  58644  49192    0    0     0     0 2122  318  6 51
-43  0  0
- 2  0      0 1924448  58644  49212    0    0     0     0 2166  418  7 51
-43  0  0
- 1  0      0 1923872  58644  49200    0    0     0    72 2137  322  6 52
-43  0  0
- 1  0      0 1923276  58652  49208    0    0     0    84 2171  401  5 53
-42  0  0
- 1  0      0 1923052  58652  49220    0    0     0     0 2175  554  6 54
-41  0  0
- 1  0      0 1924736  58652  49220    0    0     0     0 2172  395  6 54
-40  0  0
- 2  0      0 1924560  58652  49100    0    0     0     4 2145 1591  6 59
-36  0  0
- 2  0      0 1924460  58652  49212    0    0     0    28 2212  573  5 60
-36  0  0
- 3  0      0 1924060  58660  49224    0    0     0    96 2201  583  5 63
-33  0  0
- 1  0      0 1924128  58660  49240    0    0     0     0 2189  611  5 67
-28  0  0
- 1  0      0 1923668  58660  49240    0    0     0     0 2169  652  6 67
-28  0  0
- 4  0      0 1924212  58660  49240    0    0     0     0 2225  705  4 68
-28  0  0
- 1  0      0 1924136  58660  49240    0    0     0     0 2158  571  5 66
-29  0  0
- 1  0      0 1924176  58672  49228    0    0     0   152 2211  693  4 69
-27  0  0
- 2  0      0 1924072  58672  49240    0    0     0     0 2169  569  5 67
-29  0  0
- 4  0      0 1924180  58672  49240    0    0     0     0 2183  620  5 68
-28  0  0
- 1  0      0 1924140  58672  49240    0    0     0     0 2208  811  4 68
-28  0  0
- 1  0      0 1924240  58672  49244    0    0     0    20 2190  606  4 64
-32  0  0
- 0  0      0 1924800  58672  49236    0    0     0     0  646 1352  3 18
-78  0  0
- 0  0      0 1924808  58684  49236    0    0     0   200  111  162  0  1
-99  0  0
- 0  0      0 1924808  58684  49236    0    0     0     0   74   84  0  0
-100  0  0 (finished)
- 0  0      0 1924808  58684  49236    0    0     0     0  139  170  0  0
-100  0  0
- 0  0      0 1924808  58684  49236    0    0     0     0   53   67  0  0
-99  0  0
-
-
-Thanks a lot.
+diff --git a/arch/mips/alchemy/common/dbdma.c b/arch/mips/alchemy/common/dbdma.c
+index 4851308..40071bd 100644
+--- a/arch/mips/alchemy/common/dbdma.c
++++ b/arch/mips/alchemy/common/dbdma.c
+@@ -612,7 +612,7 @@ u32 au1xxx_dbdma_put_source(u32 chanid, dma_addr_t buf, int nbytes, u32 flags)
+ 	dma_cache_wback_inv((unsigned long)buf, nbytes);
+ 	dp->dscr_cmd0 |= DSCR_CMD0_V;	/* Let it rip */
+ 	au_sync();
+-	dma_cache_wback_inv((unsigned long)dp, sizeof(dp));
++	dma_cache_wback_inv((unsigned long)dp, sizeof(*dp));
+ 	ctp->chan_ptr->ddma_dbell = 0;
+ 
+ 	/* Get next descriptor pointer.	*/
+@@ -674,7 +674,7 @@ u32 au1xxx_dbdma_put_dest(u32 chanid, dma_addr_t buf, int nbytes, u32 flags)
+ 	dma_cache_inv((unsigned long)buf, nbytes);
+ 	dp->dscr_cmd0 |= DSCR_CMD0_V;	/* Let it rip */
+ 	au_sync();
+-	dma_cache_wback_inv((unsigned long)dp, sizeof(dp));
++	dma_cache_wback_inv((unsigned long)dp, sizeof(*dp));
+ 	ctp->chan_ptr->ddma_dbell = 0;
+ 
+ 	/* Get next descriptor pointer.	*/
