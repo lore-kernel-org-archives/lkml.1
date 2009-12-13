@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZLMBMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZLMBMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbZLMBMS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbZLMBMQ
+	id S1755070AbZLMBMf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZLMBMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:12:16 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:53265 "HELO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754880AbZLMBMJ (ORCPT
+	Sat, 12 Dec 2009 20:12:32 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:45121 "HELO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754031AbZLMBMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:12:09 -0500
-Message-ID: <4B2432CA.1090800@pardus.org.tr>
-Date: Sun, 13 Dec 2009 02:18:18 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 12 Dec 2009 20:12:30 -0500
+Date: Sun, 13 Dec 2009 00:34:54 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       David Miller <davem@davemloft.net>, xiyou.wangcong@gmail.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       mingo@redhat.com
+Subject: Re: [PATCH] irq: handle irq0 special only on x86
+In-Reply-To: <4B21246B.4070804@zytor.com>
+Message-ID: <alpine.LFD.2.00.0912130022090.14955@eddie.linux-mips.org>
+References: <1260350401-9858-1-git-send-email-u.kleine-koenig@pengutronix.de> <2375c9f90912090128k70f54ee1n99421caa81c53a8f@mail.gmail.com> <20091209.014151.140337246.davem@davemloft.net> <20091210082452.GA2420@pengutronix.de> <4B21246B.4070804@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9] Squashfs: Add support for LZMA compressed filesystems
-References: <E1NHZ6K-00029J-Sw@dylan.lougher.demon.co.uk> <20091212052922.GB31742@wolff.to>
-In-Reply-To: <20091212052922.GB31742@wolff.to>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bruno Wolff III wrote:
-> On Mon, Dec 07, 2009 at 08:37:48 +0000,
->   Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
->   
->> Hi,
->>
->> The following patches add LZMA decompression support to Squashfs, using the
->> in-kernel LZMA decompression library.
->>     
->
-> I am a member of the Spins SIG and the Games Spin maintainer for Fedora.
-> Thanks for working to get LZMA squashfs included in 2.6.33. If this
-> gets accepted, we will have livecd-creator using it in F13 in order
-> to include more packages in size limited images (such as the Games Spin)
-> or reduce the size other images
->   
+On Thu, 10 Dec 2009, H. Peter Anvin wrote:
 
-Similar, I was looking forward to squashfs-lzma to use it on our
-distribution's installation/live medium. I once digged into the openwrt
-patches and failed. Now I tested your patches (on top of 2.6.30.9) +
-userspace from CVS patched with lzma 4.65, it's working flawlessly. With
-lzma, our live cd image's size decreased from 820mb to 692mb.
+> > Note, I fully agree to use 0 for NO_IRQ if you have an int-sized value
+> > that holds either NO_IRQ or a valid irq number.  But in practise I'd not
+> > recommend to use this idiom.
+> > 
+> 
+> You're tilting at windmills about something that was settled long ago,
+> like it or not.
 
-Thanks a lot for your work
-Ozan Caglayan
+ This is nothing that couldn't be changed; my personal preference would be 
+quite the obvious choice of something along the lines of:
 
+#define NO_IRQ -1U
+
+that would also have the benefit of forcing all the relevant places to use 
+the macro rather than an expression like !irq, improving code readability 
+and greppability.
+
+ My motivation to push any such change at the moment is rather weak though 
+-- it's been a while since I was last pissed off by the weirdness of 
+assumptions about IRQ 0 in Linux.
+
+  Maciej
