@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZLMOZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZLMOvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbZLMOZU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 09:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZLMOZS
+	id S1753551AbZLMOvJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 09:51:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZLMOvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 09:25:18 -0500
-Received: from borg.medozas.de ([188.40.89.202]:55431 "HELO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752117AbZLMOZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 09:25:16 -0500
-Date: Sun, 13 Dec 2009 15:25:14 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Nir Tzachar <nir.tzachar@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org
-Subject: Re: nconfig v7
-In-Reply-To: <20091213115546.GA10592@merkur.ravnborg.org>
-Message-ID: <alpine.LSU.2.01.0912131524250.6621@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.0912112023170.32039@obet.zrqbmnf.qr> <9b2db90b0912122323w25d2d815o70d0bd2f1e19a228@mail.gmail.com> <alpine.LSU.2.01.0912131118280.28039@obet.zrqbmnf.qr> <20091213115546.GA10592@merkur.ravnborg.org>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	Sun, 13 Dec 2009 09:51:07 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:45012 "HELO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753472AbZLMOvD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 09:51:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RNlqThV306AXFB9/BmUfaq9mMWXiWiP3KHyCXji1WJOMJWqzyNKxLxMOJv7yoF8KNu
+         EQtGksktfBH9dqvNMobHN8CGwKLaAjF69fiFRZM8M3LZm3k+AK7NQA9YQU9Ejady3JDk
+         5py79D6WuFk09jF7Kf4K/U+APl0TvgG0Cp1cU=
+Date: Sun, 13 Dec 2009 15:50:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joe@perches.com, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/urgent] ftrace.h: Use common pr_info fmt string
+Message-ID: <20091213145056.GA5268@nowhere>
+References: <1260651974.2637.4.camel@Joe-Laptop.home> <tip-4819568f23a8bef0ca99b740ca60fe2450ab0aac@git.kernel.org> <1260715695.2146.412.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260715695.2146.412.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Dec 13, 2009 at 09:48:15AM -0500, Steven Rostedt wrote:
+> On Sun, 2009-12-13 at 07:37 +0000, tip-bot for Joe Perches wrote:
+> > Commit-ID:  4819568f23a8bef0ca99b740ca60fe2450ab0aac
+> > Gitweb:     http://git.kernel.org/tip/4819568f23a8bef0ca99b740ca60fe2450ab0aac
+> > Author:     Joe Perches <joe@perches.com>
+> > AuthorDate: Sat, 12 Dec 2009 13:06:13 -0800
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Sun, 13 Dec 2009 08:14:45 +0100
+> > 
+> > ftrace.h: Use common pr_info fmt string
+> > 
+> > Reduces fmt string space a bit.
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > LKML-Reference: <1260651974.2637.4.camel@Joe-Laptop.home>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >  include/trace/ftrace.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> > index d1b3de9..c4eca38 100644
+> > --- a/include/trace/ftrace.h
+> > +++ b/include/trace/ftrace.h
+> > @@ -733,7 +733,7 @@ static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+> >  	ret = register_trace_##call(ftrace_raw_event_##call);		\
+> >  	if (ret)							\
+> >  		pr_info("event trace: Could not activate trace point "	\
+> > -			"probe to " #call "\n");			\
+> > +			"probe to %s\n", #call);			\
+> 
+> This reduces format string space a bit, but doesn't it just add another
+> string to the string tables #func == "func" as well as add code to pass
+> in another parameter?
+> 
+> -- Steve
 
-On Sunday 2009-12-13 12:55, Sam Ravnborg wrote:
->
->> >Thanks for catching this. It is a by-product of the code for
->> >presenting everything inside a single menu. Easily fixed in the next
->> >version. By the way, is anyone using this option at all? It would much
->> >simplify the code if I did not have to support the one giant menu
->> >option.
->> 
->> Well nconfig is the first to provide that option. (Note: I don't use 
->> gconfig or xconfig, so I cannot tell if they have something like that.)
->> So to see whether there is use, you would have to wait a number of 
->> kernel releases that have nconfig integrated.
->
->We already have:
->Optional personality available                                        
->  . ------------------------------                                     
->  . If you prefer to have all of the kernel options listed in a single  
->  . menu, rather than the default multimenu hierarchy, run the menuconfig
->  . with MENUCONFIG_MODE environment variable set to single_menu. Example:
->  .                                                                   
->  . make MENUCONFIG_MODE=single_menu menuconfig                        
 
-I think the discussion went about "show hidden symbols" rather than
-"show everything in a single menu". Or at least that was my intention -
-sorry for any confusion.
+Yeah, I don't understand the purpose of this patch either...
 
