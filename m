@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZLMX5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZLNAWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbZLMX5l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 18:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZLMX5j
+	id S1756117AbZLNAWL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:22:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbZLNAU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:57:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34675 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Dec 2009 19:20:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34058 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754826AbZLMX5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:36 -0500
+	id S1754844AbZLMX5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:38 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, philipp.reisner@linbit.com
-Subject: [PATCH 1/3] Constify struct block_device_operations for 2.6.32-git-053fe57ac v2
+Cc: Emese Revfy <re.emese@gmail.com>, sfr@canb.auug.org.au,
+       benh@kernel.crashing.org, gregkh@suse.de, geoffrey.levand@am.sony.com,
+       torvalds@linux-foundation.org
+Subject: [PATCH 05/10] Constify struct dma_map_ops for 2.6.32-git-053fe57ac v2
 Date: Mon, 14 Dec 2009 00:59:20 +0100
-Message-Id: <cd6ad05207a2c539266329444e8db829d143f451.1260662995.git.re.emese@gmail.com>
+Message-Id: <c3fc8eaec7176bccaa9f3259a05af67385380088.1260662996.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662995.git.re.emese@gmail.com>
 References: <cover.1260662995.git.re.emese@gmail.com>
-X-ELTE-SpamScore: 0.0
+X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,22 +36,31 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/block/drbd/drbd_main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/ps3/system-bus.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index 157d1e4..af30ca9 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -151,7 +151,7 @@ wait_queue_head_t drbd_pp_wait;
+diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+index e34b305..20e48ec 100644
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -694,7 +694,7 @@ static int ps3_dma_supported(struct device *_dev, u64 mask)
+ 	return mask >= DMA_BIT_MASK(32);
+ }
  
- DEFINE_RATELIMIT_STATE(drbd_ratelimit_state, 5 * HZ, 5);
+-static struct dma_map_ops ps3_sb_dma_ops = {
++static const struct dma_map_ops ps3_sb_dma_ops = {
+ 	.alloc_coherent = ps3_alloc_coherent,
+ 	.free_coherent = ps3_free_coherent,
+ 	.map_sg = ps3_sb_map_sg,
+@@ -704,7 +704,7 @@ static struct dma_map_ops ps3_sb_dma_ops = {
+ 	.unmap_page = ps3_unmap_page,
+ };
  
--static struct block_device_operations drbd_ops = {
-+static const struct block_device_operations drbd_ops = {
- 	.owner =   THIS_MODULE,
- 	.open =    drbd_open,
- 	.release = drbd_release,
+-static struct dma_map_ops ps3_ioc0_dma_ops = {
++static const struct dma_map_ops ps3_ioc0_dma_ops = {
+ 	.alloc_coherent = ps3_alloc_coherent,
+ 	.free_coherent = ps3_free_coherent,
+ 	.map_sg = ps3_ioc0_map_sg,
 -- 
 1.6.5.3
 
