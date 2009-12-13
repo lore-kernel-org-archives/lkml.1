@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbZLMLlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbZLMLlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbZLMLlF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 06:41:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZLMLlA
+	id S1752688AbZLMLlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 06:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZLMLlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 06:41:00 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:39071 "HELO mgw2.diku.dk"
+	Sun, 13 Dec 2009 06:41:18 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:39085 "HELO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752565AbZLMLk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 06:40:58 -0500
-Date: Sun, 13 Dec 2009 12:40:55 +0100 (CET)
+	id S1752613AbZLMLlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 06:41:15 -0500
+Date: Sun, 13 Dec 2009 12:41:12 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: chas@cmf.nrl.navy.mil, linux-atm-general@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/9] drivers/atm: Correct code taking the size of a pointer
-Message-ID: <Pine.LNX.4.64.0912131240400.24267@ask.diku.dk>
+To: mchehab@infradead.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/9] drivers/media: Correct code taking the size of a pointer
+Message-ID: <Pine.LNX.4.64.0912131240560.24267@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,8 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-sizeof(TstSchedTbl) is just the size of the pointer.  Change it to the size
-of the referenced data.
+sizeof(print_buf) is just the size of the pointer.  Change it to the size
+used in the allocation of print_buf earlier in the same function.
 
 A simplified version of the semantic patch that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -43,19 +42,35 @@ type T;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/atm/iphase.c                |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/media/video/hdpvr/hdpvr-core.c         |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/atm/iphase.c b/drivers/atm/iphase.c
-index f734b34..6b73c2b 100644
---- a/drivers/atm/iphase.c
-+++ b/drivers/atm/iphase.c
-@@ -557,7 +557,7 @@ static int ia_cbr_setup (IADEV *dev, struct atm_vcc *vcc) {
-           memcpy((caddr_t)&cbrVC,(caddr_t)TstSchedTbl,sizeof(cbrVC));
-        } /* while */
-        // Move this VCI number into this location of the CBR Sched table.
--       memcpy((caddr_t)TstSchedTbl, (caddr_t)&vcIndex,sizeof(TstSchedTbl));
-+       memcpy((caddr_t)TstSchedTbl, (caddr_t)&vcIndex, sizeof(*TstSchedTbl));
-        dev->CbrRemEntries--;
-        toBeAssigned--;
-    } /* while */ 
+diff --git a/drivers/media/video/hdpvr/hdpvr-core.c b/drivers/media/video/hdpvr/hdpvr-core.c
+index e280eb1..51f393d 100644
+--- a/drivers/media/video/hdpvr/hdpvr-core.c
++++ b/drivers/media/video/hdpvr/hdpvr-core.c
+@@ -145,7 +145,7 @@ static int device_authorization(struct hdpvr_device *dev)
+ #ifdef HDPVR_DEBUG
+ 	else {
+ 		hex_dump_to_buffer(dev->usbc_buf, 46, 16, 1, print_buf,
+-				   sizeof(print_buf), 0);
++				   5*buf_size+1, 0);
+ 		v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev,
+ 			 "Status request returned, len %d: %s\n",
+ 			 ret, print_buf);
+@@ -168,13 +168,13 @@ static int device_authorization(struct hdpvr_device *dev)
+ 
+ 	response = dev->usbc_buf+38;
+ #ifdef HDPVR_DEBUG
+-	hex_dump_to_buffer(response, 8, 16, 1, print_buf, sizeof(print_buf), 0);
++	hex_dump_to_buffer(response, 8, 16, 1, print_buf, 5*buf_size+1, 0);
+ 	v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev, "challenge: %s\n",
+ 		 print_buf);
+ #endif
+ 	challenge(response);
+ #ifdef HDPVR_DEBUG
+-	hex_dump_to_buffer(response, 8, 16, 1, print_buf, sizeof(print_buf), 0);
++	hex_dump_to_buffer(response, 8, 16, 1, print_buf, 5*buf_size+1, 0);
+ 	v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev, " response: %s\n",
+ 		 print_buf);
+ #endif
