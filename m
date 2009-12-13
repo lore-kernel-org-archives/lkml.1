@@ -1,105 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZLMV34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZLMVc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbZLMV34 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 16:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366AbZLMV3y
+	id S1754366AbZLMVc0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 16:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZLMVcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 16:29:54 -0500
-Received: from tundra.namei.org ([65.99.196.166]:39437 "HELO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754340AbZLMV3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 16:29:53 -0500
-Date: Mon, 14 Dec 2009 08:29:20 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: David Howells <dhowells@redhat.com>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Mike Frysinger <vapier@gentoo.org>, Chris Zankel <chris@zankel.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] Keys: KEYCTL_SESSION_TO_PARENT needs TIF_NOTIFY_RESUME
- architecture support
-In-Reply-To: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg>
-Message-ID: <alpine.LRH.2.00.0912140828430.25093@tundra.namei.org>
-References: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Sun, 13 Dec 2009 16:32:25 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:49222 "HELO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753352AbZLMVcY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 16:32:24 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Daniel Vetter <daniel@ffwll.ch>
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes when ..."
+Date: Sun, 13 Dec 2009 21:31:07 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00047-g0430296; KDE/4.3.2; x86_64; ; )
+Cc: Dave Airlie <airlied@redhat.com>, Adam Jackson <ajax@redhat.com>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
+       keithp@keithp.com, eric@anholt.net, jbarnes@virtuousgeek.org,
+       Daniel Vetter <daniel.vetter@ffwll.ch>
+References: <200912071830.14697.arnd@arndb.de> <200912131230.25781.arnd@arndb.de> <20091213200017.GA3522@viiv.ffwll.ch>
+In-Reply-To: <20091213200017.GA3522@viiv.ffwll.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912132131.07100.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19B5A0YqSZCTUnbFutUd3S0pzHsoZOoj7E8Hli
+ mxk0BcCG//I0zqCOdMPCDblumABolUQpzenPCgLo4sOfTFPp/b
+ 2vL0UmtqgNqbheJzFbWgA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Dec 2009, Geert Uytterhoeven wrote:
+On Sunday 13 December 2009 20:00:18 Daniel Vetter wrote:
+> On Sun, Dec 13, 2009 at 12:30:25PM +0000, Arnd Bergmann wrote:
+> > And now it's obvious that my computer hates me. 12 hours of uptime, one reboot
+> > to check the old other version is broken, it crashes. I reboot into the
+> > good version, send out the above email and the next minute it crashes again.
+> > c05422d52ee6b is not the culprit. Sorry Daniel for blaming your patch.
+> 
+> No problem. Looks like your hunting a pretty ugly Heisenbug. There's quite
+> a interesting blog post by Paul McKenney, esp. the solution to "Quick Quiz 1"
+> might be usefull in your case:
+> 
+> http://paulmck.livejournal.com/14639.html
 
-> As of commit ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to
-> install a process's session keyring on its parent [try #6]"), CONFIG_KEYS=y
-> fails to build on architectures that haven't implemented TIF_NOTIFY_RESUME yet:
-> 
-> security/keys/keyctl.c: In function 'keyctl_session_to_parent':
-> security/keys/keyctl.c:1312: error: 'TIF_NOTIFY_RESUME' undeclared (first use in this function)
-> security/keys/keyctl.c:1312: error: (Each undeclared identifier is reported only once
-> security/keys/keyctl.c:1312: error: for each function it appears in.)
-> 
-> Make KEYCTL_SESSION_TO_PARENT depend on TIF_NOTIFY_RESUME until blackfin,
-> m68k, and xtensa have implemented it.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: stable@kernel.org
+Thanks! In fact I've actually read that post on the kernel planet and decided
+to do basically a linear search through the i915 patches merged into 2.6.32.
 
-Looks ok to me -- once we have an ack from David, I'll add it to my tree 
-and push to Linus with another fix.
+The current result is 67cf781bea5 "drm/i915: Make the downclocking debug code
+be under DRM_DEBUG not DRM_ERROR." is known bad, while 043029655 "drm/i915:
+Support IGD EOS" is probably good, pointing to Jesses 652c393a33 "drm/i915:
+add dynamic clock frequency control" as the next best guess. Unfortunately,
+that is a rather large change that is not easy to revert on current kernels.
 
-> ---
-> 1. This fixes a regression in 2.6.32.
-> 2. Long-time build issues like this make linux-next miss newer build 
->    problems.
-> 
->  security/keys/keyctl.c |   10 ++++++++++
->  1 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-> index 06ec722..3a9ad87 100644
-> --- a/security/keys/keyctl.c
-> +++ b/security/keys/keyctl.c
-> @@ -1236,6 +1236,7 @@ long keyctl_get_security(key_serial_t keyid,
->   */
->  long keyctl_session_to_parent(void)
->  {
-> +#ifdef TIF_NOTIFY_RESUME
->  	struct task_struct *me, *parent;
->  	const struct cred *mycred, *pcred;
->  	struct cred *cred, *oldcred;
-> @@ -1326,6 +1327,15 @@ not_permitted:
->  error_keyring:
->  	key_ref_put(keyring_r);
->  	return ret;
-> +
-> +#else /* !TIF_NOTIFY_RESUME */
-> +	/*
-> +	 * To be removed when TIF_NOTIFY_RESUME has been implemented on
-> +	 * blackfin/m68k/xtensa
-> +	 */
-> +#warning TIF_NOTIFY_RESUME not implemented
-> +	return -EOPNOTSUPP;
-> +#endif /* !TIF_NOTIFY_RESUME */
->  }
->  
->  /*****************************************************************************/
-> -- 
-> 1.6.0.4
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
+I'll keep running my machine on the 043029655 level and tell you if it keeps
+working a few more days.
 
--- 
-James Morris
-<jmorris@namei.org>
+	Arnd
