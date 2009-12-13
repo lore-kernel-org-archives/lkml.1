@@ -1,105 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbZLMLCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbZLMLLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbZLMLCW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 06:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZLMLCV
+	id S1752489AbZLMLLO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 06:11:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZLMLLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 06:02:21 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39099 "HELO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752361AbZLMLCU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 06:02:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=IHK6zKME/k9jrMzpiXBsie6LSbK7VdYZ+gMAZFvQbLU2UBZ591mDh3G40mWGzT9bpr
-         RBT1/ADYKNG6r52d5hPXAtpozjIUpqHX19omFYqzL6UlRyCX8WM+HuTuopvtegCHmicW
-         is6I7auhnnywieCYVQSbZ++1Ebn92AWIJSPx4=
+	Sun, 13 Dec 2009 06:11:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50299 "HELO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752275AbZLMLLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 06:11:12 -0500
+Date: Sun, 13 Dec 2009 13:08:22 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [PATCH v2 4/4] Defer skb allocation -- change allocation &
+	receiving in recv path
+Message-ID: <20091213110822.GA7074@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260535793.30371.27.camel@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <1260474540.16132.166.camel@pasglop>
-References: <8b8dd87a0912080914h3d71ea6x3052582b662d5f73@mail.gmail.com>
-	 <1260342524.16132.28.camel@pasglop>
-	 <8b8dd87a0912100320q7d4ec39btd450a571be291e2b@mail.gmail.com>
-	 <1260474540.16132.166.camel@pasglop>
-Date: Sun, 13 Dec 2009 13:02:18 +0200
-Message-ID: <8b8dd87a0912130302iae9a62cj7afc2e056373a283@mail.gmail.com>
-Subject: Re: Badness at arch/powerpc/mm/pgtable.c:286
-From: kordex - <kordex@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260535793.30371.27.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+On Fri, Dec 11, 2009 at 04:49:53AM -0800, Shirley Ma wrote:
+> Signed-off-by: Shirley Ma <xma@us.ibm.com>
+> -------------
 
-Thank you it fixed the problem.
+Comments about splitting up this patch apply here.
 
---Mikko Kortelainen
 
-2009/12/10 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> On Thu, 2009-12-10 at 13:20 +0200, kordex - wrote:
->> arch/powerpc/mm/pgtable_32.c:362: error: too few arguments to function
->> ‘__set_pte_at’
->
-> Right, you want to add an argument and set it to 0 :
->
->  -       set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
->  +       __set_pte_at(&init_mm, address, kpte, mk_pte(page, prot), 0);
->
-> That should do it. Please let me know if that works.
->
-> Cheers,
-> Ben.
->
->> 2009/12/9 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
->> > On Tue, 2009-12-08 at 19:14 +0200, kordex - wrote:
->> >> Hello,
->> >>
->> >> I turned some debuging options in order to trace rcutree problems but
->> >> after turning debugging on it began just to loop on this:
->> >>
->> >> http://xnet.fi/opt/pics/pgtable_badness.jpg
->> >> 1.5M   pgtable_badness.jpg
->> >>
->> >> I am sorry that I could not produce full dmesg.
->> >>
->> >> Kernel config: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.debug.config.txt
->> >
->> > Thanks for your report.
->> >
->> > Does that patch fixes it ?
->> >
->> > powerpc/mm: Fix a WARN_ON() with CONFIG_DEBUG_PAGEALLOC and CONFIG_DEBUG_VM
->> >
->> > Set need to call __set_pte_at() and not set_pte_at() from __change_page_attr()
->> > since the later will perform checks with CONFIG_DEBUG_VM that aren't suitable
->> > to the way we override an existing PTE. (More specifically, it doesn't let
->> > you write over a present PTE).
->> >
->> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> > ---
->> >
->> > Index: linux-work/arch/powerpc/mm/pgtable_32.c
->> > ===================================================================
->> > --- linux-work.orig/arch/powerpc/mm/pgtable_32.c        2009-12-09 18:06:14.000000000 +1100
->> > +++ linux-work/arch/powerpc/mm/pgtable_32.c     2009-12-09 18:06:16.000000000 +1100
->> > @@ -356,7 +356,7 @@ static int __change_page_attr(struct pag
->> >                return 0;
->> >        if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
->> >                return -EINVAL;
->> > -       set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
->> > +       __set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
->> >        wmb();
->> >  #ifdef CONFIG_PPC_STD_MMU
->> >        flush_hash_pages(0, address, pmd_val(*kpmd), 1);
->> >
->> >
->> >
->
->
->
+> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+> index dde8060..b919169 100644
+> --- a/drivers/net/virtio_net.c
+> +++ b/drivers/net/virtio_net.c
+> @@ -270,99 +270,44 @@ static struct sk_buff *receive_mergeable(struct virtnet_info *vi,
+>  	return skb;
+>  }
+>  
+> -static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+> -			unsigned len)
+> +static void receive_buf(struct net_device *dev, void *buf, unsigned int len)
+>  {
+>  	struct virtnet_info *vi = netdev_priv(dev);
+> -	struct skb_vnet_hdr *hdr = skb_vnet_hdr(skb);
+> -	int err;
+> -	int i;
+> +	struct sk_buff *skb = (struct sk_buff *)buf;
+> +	struct page *page = (struct page *)buf;
+> +	struct skb_vnet_hdr *hdr;
+
+Do not cast away void*.
+This initialization above looks very strange: in
+fact only one of skb, page makes sense.
+So I think you should either get rid of both page and
+skb variables (routines such as give_pages get page *
+so they will accept void* just as happily) or
+move initialization or even use of these variables to
+where they are used.
+
+>  
+>  	if (unlikely(len < sizeof(struct virtio_net_hdr) + ETH_HLEN)) {
+>  		pr_debug("%s: short packet %i\n", dev->name, len);
+>  		dev->stats.rx_length_errors++;
+> -		goto drop;
+> -	}
+> -
+> -	if (vi->mergeable_rx_bufs) {
+> -		unsigned int copy;
+> -		char *p = page_address(skb_shinfo(skb)->frags[0].page);
+> -
+> -		if (len > PAGE_SIZE)
+> -			len = PAGE_SIZE;
+> -		len -= sizeof(struct virtio_net_hdr_mrg_rxbuf);
+> -
+> -		memcpy(&hdr->mhdr, p, sizeof(hdr->mhdr));
+> -		p += sizeof(hdr->mhdr);
+> -
+> -		copy = len;
+> -		if (copy > skb_tailroom(skb))
+> -			copy = skb_tailroom(skb);
+> -
+> -		memcpy(skb_put(skb, copy), p, copy);
+> -
+> -		len -= copy;
+> -
+> -		if (!len) {
+> -			give_pages(vi, skb_shinfo(skb)->frags[0].page);
+> -			skb_shinfo(skb)->nr_frags--;
+> +		if (vi->mergeable_rx_bufs || vi->big_packets) {
+> +			give_pages(vi, page);
+> +			return;
+>  		} else {
+> -			skb_shinfo(skb)->frags[0].page_offset +=
+> -				sizeof(hdr->mhdr) + copy;
+> -			skb_shinfo(skb)->frags[0].size = len;
+> -			skb->data_len += len;
+> -			skb->len += len;
+> -		}
+> -
+> -		while (--hdr->mhdr.num_buffers) {
+> -			struct sk_buff *nskb;
+> -
+> -			i = skb_shinfo(skb)->nr_frags;
+> -			if (i >= MAX_SKB_FRAGS) {
+> -				pr_debug("%s: packet too long %d\n", dev->name,
+> -					 len);
+> -				dev->stats.rx_length_errors++;
+> -				goto drop;
+> -			}
+> -
+> -			nskb = vi->rvq->vq_ops->get_buf(vi->rvq, &len);
+> -			if (!nskb) {
+> -				pr_debug("%s: rx error: %d buffers missing\n",
+> -					 dev->name, hdr->mhdr.num_buffers);
+> -				dev->stats.rx_length_errors++;
+> -				goto drop;
+> -			}
+> -
+> -			__skb_unlink(nskb, &vi->recv);
+> -			vi->num--;
+> -
+> -			skb_shinfo(skb)->frags[i] = skb_shinfo(nskb)->frags[0];
+> -			skb_shinfo(nskb)->nr_frags = 0;
+> -			kfree_skb(nskb);
+> -
+> -			if (len > PAGE_SIZE)
+> -				len = PAGE_SIZE;
+> -
+> -			skb_shinfo(skb)->frags[i].size = len;
+> -			skb_shinfo(skb)->nr_frags++;
+> -			skb->data_len += len;
+> -			skb->len += len;
+> +			skb_unlink(skb, &vi->recv);
+> +			goto drop;
+>  		}
+> -	} else {
+> -		len -= sizeof(hdr->hdr);
+> +	}
+>  
+> -		if (len <= MAX_PACKET_LEN)
+> -			trim_pages(vi, skb);
+> +	if (vi->mergeable_rx_bufs)
+> +		skb = receive_mergeable(vi, page, len);
+> +	else if (vi->big_packets)
+> +		skb = receive_big(vi, page, len);
+> +	else {
+> +		__skb_unlink(skb, &vi->recv);
+> +		len -= sizeof(struct virtio_net_hdr);
+> +		skb_trim(skb, len);
+
+So above you override skb that you initialized
+at the start of function. It would be better
+to do in the 3'd case:
+		skb = buf;
+as well. And then it would be clear why
+" Only for mergeable and big" comment below
+is true.
+
+> +	}
+>  
+> -		err = pskb_trim(skb, len);
+> -		if (err) {
+> -			pr_debug("%s: pskb_trim failed %i %d\n", dev->name,
+> -				 len, err);
+> -			dev->stats.rx_dropped++;
+> -			goto drop;
+> -		}
+> +	if (unlikely(!skb)) {
+> +		dev->stats.rx_dropped++;
+> +		/* only for mergeable buf and big packets */
+> +		give_pages(vi, page);
+> +		return;
+
+Did you remove drop: label? If no, is it unused now?
+
+>  	}
+>  
+> +	hdr = skb_vnet_hdr(skb);
+> +
+>  	skb->truesize += skb->data_len;
+>  	dev->stats.rx_bytes += skb->len;
+>  	dev->stats.rx_packets++;
+> @@ -520,105 +465,22 @@ static int add_recvbuf_mergeable(struct virtnet_info *vi, gfp_t gfp, bool *oom)
+>  	return err;
+>  }
+>  
+> -static bool try_fill_recv_maxbufs(struct virtnet_info *vi, gfp_t gfp)
+> -{
+> -	struct sk_buff *skb;
+> -	struct scatterlist sg[2+MAX_SKB_FRAGS];
+> -	int num, err, i;
+> -	bool oom = false;
+> -
+> -	sg_init_table(sg, 2+MAX_SKB_FRAGS);
+> -	do {
+> -		struct skb_vnet_hdr *hdr;
+> -
+> -		skb = netdev_alloc_skb_ip_align(vi->dev, MAX_PACKET_LEN);
+> -		if (unlikely(!skb)) {
+> -			oom = true;
+> -			break;
+> -		}
+> -
+> -		skb_put(skb, MAX_PACKET_LEN);
+> -
+> -		hdr = skb_vnet_hdr(skb);
+> -		sg_set_buf(sg, &hdr->hdr, sizeof(hdr->hdr));
+> -
+> -		if (vi->big_packets) {
+> -			for (i = 0; i < MAX_SKB_FRAGS; i++) {
+> -				skb_frag_t *f = &skb_shinfo(skb)->frags[i];
+> -				f->page = get_a_page(vi, gfp);
+> -				if (!f->page)
+> -					break;
+> -
+> -				f->page_offset = 0;
+> -				f->size = PAGE_SIZE;
+> -
+> -				skb->data_len += PAGE_SIZE;
+> -				skb->len += PAGE_SIZE;
+> -
+> -				skb_shinfo(skb)->nr_frags++;
+> -			}
+> -		}
+> -
+> -		num = skb_to_sgvec(skb, sg+1, 0, skb->len) + 1;
+> -		skb_queue_head(&vi->recv, skb);
+> -
+> -		err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, num, skb);
+> -		if (err < 0) {
+> -			skb_unlink(skb, &vi->recv);
+> -			trim_pages(vi, skb);
+> -			kfree_skb(skb);
+> -			break;
+> -		}
+> -		vi->num++;
+> -	} while (err >= num);
+> -	if (unlikely(vi->num > vi->max))
+> -		vi->max = vi->num;
+> -	vi->rvq->vq_ops->kick(vi->rvq);
+> -	return !oom;
+> -}
+> -
+>  /* Returns false if we couldn't fill entirely (OOM). */
+>  static bool try_fill_recv(struct virtnet_info *vi, gfp_t gfp)
+>  {
+> -	struct sk_buff *skb;
+> -	struct scatterlist sg[1];
+>  	int err;
+>  	bool oom = false;
+>  
+> -	if (!vi->mergeable_rx_bufs)
+> -		return try_fill_recv_maxbufs(vi, gfp);
+> -
+>  	do {
+> -		skb_frag_t *f;
+> -
+> -		skb = netdev_alloc_skb_ip_align(vi->dev, GOOD_COPY_LEN);
+> -		if (unlikely(!skb)) {
+> -			oom = true;
+> -			break;
+> -		}
+> -
+> -		f = &skb_shinfo(skb)->frags[0];
+> -		f->page = get_a_page(vi, gfp);
+> -		if (!f->page) {
+> -			oom = true;
+> -			kfree_skb(skb);
+> -			break;
+> -		}
+> -
+> -		f->page_offset = 0;
+> -		f->size = PAGE_SIZE;
+> -
+> -		skb_shinfo(skb)->nr_frags++;
+> -
+> -		sg_init_one(sg, page_address(f->page), PAGE_SIZE);
+> -		skb_queue_head(&vi->recv, skb);
+> +		if (vi->mergeable_rx_bufs)
+> +			err = add_recvbuf_mergeable(vi, gfp, &oom);
+> +		else if (vi->big_packets)
+> +			err = add_recvbuf_big(vi, gfp, &oom);
+> +		else
+> +			err = add_recvbuf_small(vi, gfp, &oom);
+>  
+> -		err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, 1, skb);
+> -		if (err < 0) {
+> -			skb_unlink(skb, &vi->recv);
+> -			kfree_skb(skb);
+> +		if (oom || err < 0)
+>  			break;
+> -		}
+>  		vi->num++;
+>  	} while (err > 0);
+>  	if (unlikely(vi->num > vi->max))
+> @@ -657,14 +519,13 @@ static void refill_work(struct work_struct *work)
+>  static int virtnet_poll(struct napi_struct *napi, int budget)
+>  {
+>  	struct virtnet_info *vi = container_of(napi, struct virtnet_info, napi);
+> -	struct sk_buff *skb = NULL;
+> +	void *buf = NULL;
+
+Does this have to be initialized? If not (as it seems) better not do it.
+
+>  	unsigned int len, received = 0;
+>  
+>  again:
+>  	while (received < budget &&
+> -	       (skb = vi->rvq->vq_ops->get_buf(vi->rvq, &len)) != NULL) {
+> -		__skb_unlink(skb, &vi->recv);
+> -		receive_skb(vi->dev, skb, len);
+> +	       (buf = vi->rvq->vq_ops->get_buf(vi->rvq, &len)) != NULL) {
+> +		receive_buf(vi->dev, buf, len);
+>  		vi->num--;
+>  		received++;
+>  	}
+> @@ -1205,6 +1066,7 @@ static void __devexit virtnet_remove(struct virtio_device *vdev)
+>  {
+>  	struct virtnet_info *vi = vdev->priv;
+>  	struct sk_buff *skb;
+> +	int freed;
+>  
+>  	/* Stop all the virtqueues. */
+>  	vdev->config->reset(vdev);
+> @@ -1216,11 +1078,14 @@ static void __devexit virtnet_remove(struct virtio_device *vdev)
+>  	}
+>  	__skb_queue_purge(&vi->send);
+>  
+> -	BUG_ON(vi->num != 0);
+> -
+>  	unregister_netdev(vi->dev);
+>  	cancel_delayed_work_sync(&vi->refill);
+>  
+> +	freed = vi->rvq->vq_ops->destroy_bufs(vi->rvq, virtio_net_free_pages);
+
+This looks like double free to me: should not you remove code that does
+__skb_dequeue on recv above?
+
+> +	vi->num -= freed;
+> +
+> +	BUG_ON(vi->num != 0);
+> +
+>  	vdev->config->del_vqs(vi->vdev);
+>  
+>  	while (vi->pages)
+> 
