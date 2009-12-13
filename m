@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZLNAOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZLNAUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZLNAOZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZLMX54
+	id S932086AbZLNAUT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbZLNATs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:57:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34152 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:19:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34095 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754888AbZLMX5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:46 -0500
+	id S1754867AbZLMX5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:41 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, lethal@linux-sh.org, damm@opensource.se,
-       matt@console-pimps.org, torvalds@linux-foundation.org
-Subject: [PATCH 07/10] Constify struct dma_map_ops for 2.6.32-git-053fe57ac v2
+Cc: Emese Revfy <re.emese@gmail.com>, jens.axboe@oracle.com, tj@kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: [PATCH 3/3] Constify struct block_device_operations for 2.6.32-git-053fe57ac v2
 Date: Mon, 14 Dec 2009 00:59:22 +0100
-Message-Id: <0b7ff7b7eed063c944688061ba51e7f510edd0e0.1260662996.git.re.emese@gmail.com>
+Message-Id: <c1fac38d462d0b325ed4d5f59f6ab1b3470bc38a.1260662995.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662995.git.re.emese@gmail.com>
 References: <cover.1260662995.git.re.emese@gmail.com>
-X-ELTE-SpamScore: -2.0
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,99 +34,44 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- arch/sh/include/asm/dma-mapping.h |   14 +++++++-------
- arch/sh/kernel/dma-nommu.c        |    2 +-
- arch/sh/mm/consistent.c           |    2 +-
- 3 files changed, 9 insertions(+), 9 deletions(-)
+ include/linux/blkdev.h |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/sh/include/asm/dma-mapping.h b/arch/sh/include/asm/dma-mapping.h
-index 87ced13..b28e1d9 100644
---- a/arch/sh/include/asm/dma-mapping.h
-+++ b/arch/sh/include/asm/dma-mapping.h
-@@ -1,10 +1,10 @@
- #ifndef __ASM_SH_DMA_MAPPING_H
- #define __ASM_SH_DMA_MAPPING_H
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 784a919..ec674e7 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -1283,19 +1283,19 @@ static inline int blk_integrity_rq(struct request *rq)
+ #endif /* CONFIG_BLK_DEV_INTEGRITY */
  
--extern struct dma_map_ops *dma_ops;
-+extern const struct dma_map_ops *dma_ops;
- extern void no_iommu_init(void);
+ struct block_device_operations {
+-	int (*open) (struct block_device *, fmode_t);
+-	int (*release) (struct gendisk *, fmode_t);
+-	int (*locked_ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
+-	int (*ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
+-	int (*compat_ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
+-	int (*direct_access) (struct block_device *, sector_t,
++	int (* const open) (struct block_device *, fmode_t);
++	int (* const release) (struct gendisk *, fmode_t);
++	int (* const locked_ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
++	int (* const ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
++	int (* const compat_ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
++	int (* const direct_access) (struct block_device *, sector_t,
+ 						void **, unsigned long *);
+-	int (*media_changed) (struct gendisk *);
+-	unsigned long long (*set_capacity) (struct gendisk *,
++	int (* const media_changed) (struct gendisk *);
++	unsigned long long (* const set_capacity) (struct gendisk *,
+ 						unsigned long long);
+-	int (*revalidate_disk) (struct gendisk *);
+-	int (*getgeo)(struct block_device *, struct hd_geometry *);
+-	struct module *owner;
++	int (* const revalidate_disk) (struct gendisk *);
++	int (*const getgeo)(struct block_device *, struct hd_geometry *);
++	struct module * const owner;
+ };
  
--static inline struct dma_map_ops *get_dma_ops(struct device *dev)
-+static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
- {
- 	return dma_ops;
- }
-@@ -14,7 +14,7 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
- 
- static inline int dma_supported(struct device *dev, u64 mask)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	if (ops->dma_supported)
- 		return ops->dma_supported(dev, mask);
-@@ -24,7 +24,7 @@ static inline int dma_supported(struct device *dev, u64 mask)
- 
- static inline int dma_set_mask(struct device *dev, u64 mask)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	if (!dev->dma_mask || !dma_supported(dev, mask))
- 		return -EIO;
-@@ -59,7 +59,7 @@ static inline int dma_get_cache_alignment(void)
- 
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	if (ops->mapping_error)
- 		return ops->mapping_error(dev, dma_addr);
-@@ -70,7 +70,7 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t gfp)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	void *memory;
- 
- 	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
-@@ -87,7 +87,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 				     void *vaddr, dma_addr_t dma_handle)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	WARN_ON(irqs_disabled());	/* for portability */
- 
-diff --git a/arch/sh/kernel/dma-nommu.c b/arch/sh/kernel/dma-nommu.c
-index 3c55b87..92ccab3 100644
---- a/arch/sh/kernel/dma-nommu.c
-+++ b/arch/sh/kernel/dma-nommu.c
-@@ -62,7 +62,7 @@ static void nommu_sync_sg(struct device *dev, struct scatterlist *sg,
- }
- #endif
- 
--struct dma_map_ops nommu_dma_ops = {
-+const struct dma_map_ops nommu_dma_ops = {
- 	.alloc_coherent		= dma_generic_alloc_coherent,
- 	.free_coherent		= dma_generic_free_coherent,
- 	.map_page		= nommu_map_page,
-diff --git a/arch/sh/mm/consistent.c b/arch/sh/mm/consistent.c
-index 902967e..904d1ce 100644
---- a/arch/sh/mm/consistent.c
-+++ b/arch/sh/mm/consistent.c
-@@ -21,7 +21,7 @@
- 
- #define PREALLOC_DMA_DEBUG_ENTRIES	4096
- 
--struct dma_map_ops *dma_ops;
-+const struct dma_map_ops *dma_ops;
- EXPORT_SYMBOL(dma_ops);
- 
- static int __init dma_init(void)
+ extern int __blkdev_driver_ioctl(struct block_device *, fmode_t, unsigned int,
 -- 
 1.6.5.3
 
