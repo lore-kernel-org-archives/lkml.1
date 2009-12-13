@@ -1,133 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933301AbZLMBXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933476AbZLMBbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933301AbZLMBXW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933163AbZLMBXV
+	id S933476AbZLMBbn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933465AbZLMBbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:23:21 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:35243 "HELO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933139AbZLMBXU (ORCPT
+	Sat, 12 Dec 2009 20:31:42 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.68]:38733 "HELO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933463AbZLMBbl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:23:20 -0500
-Message-ID: <4B2441A6.5050404@vflare.org>
-Date: Sun, 13 Dec 2009 06:51:42 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ramzswap: remove ARM specific d-cache hack
-References: <1260598486-12623-1-git-send-email-ngupta@vflare.org> <84144f020912112341jc7fdc1eqac719578e2aa746b@mail.gmail.com>
-In-Reply-To: <84144f020912112341jc7fdc1eqac719578e2aa746b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Dec 2009 20:31:41 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Sun, 13 Dec 2009 10:30:21 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       linux-kernel@vger.kernel.org,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH RFC v2 3/4] memcg: rework usage of stats by soft limit
+Message-Id: <20091213103021.405374b4.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <cc557aab0912121146y276a8d26v8baee15be1f83a97@mail.gmail.com>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	<c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
+	<747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+	<20091212125046.14df3134.d-nishimura@mtf.biglobe.ne.jp>
+	<cc557aab0912120506x56b9a707ob556035fdcf40a22@mail.gmail.com>
+	<20091212233409.60da66fb.d-nishimura@mtf.biglobe.ne.jp>
+	<cc557aab0912121146y276a8d26v8baee15be1f83a97@mail.gmail.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-MIME-Autoconverted: from 8bit to quoted-printable by rcpt-expgw.biglobe.ne.jp id nBD1UL2v007581
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/12/2009 01:11 PM, Pekka Enberg wrote:
-> On Sat, Dec 12, 2009 at 8:14 AM, Nitin Gupta <ngupta@vflare.org> wrote:
->> Remove d-cache hack in ramzswap driver that was needed
->> to workaround a bug in ARM version of update_mmu_cache()
->> which caused stale data in d-cache to be transferred to
->> userspace. This bug was fixed by git commit:
->>        787b2faadc4356b6c2c71feb42fb944fece9a12f
->> This also brings down one entry in TODO file.
->>
->> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+On Sat, 12 Dec 2009 21:46:08 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+
+> On Sat, Dec 12, 2009 at 4:34 PM, Daisuke Nishimura
+> <d-nishimura@mtf.biglobe.ne.jp> wrote:
+> > On Sat, 12 Dec 2009 15:06:52 +0200
+> > "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> >
+> >> On Sat, Dec 12, 2009 at 5:50 AM, Daisuke Nishimura
+> >> <d-nishimura@mtf.biglobe.ne.jp> wrote:
+> >> > And IIUC, it's the same for your threshold feature, right ?
+> >> > I think it would be better:
+> >> >
+> >> > - discard this change.
+> >> > - in 4/4, rename mem_cgroup_soft_limit_check to mem_cgroup_event_check,
+> >> >  and instead of adding a new STAT counter, do like:
+> >> >
+> >> >        if (mem_cgroup_event_check(mem)) {
+> >> >                mem_cgroup_update_tree(mem, page);
+> >> >                mem_cgroup_threshold(mem);
+> >> >        }
+> >>
+> >> I think that mem_cgroup_update_tree() and mem_cgroup_threshold() should be
+> >> run with different frequency. How to share MEM_CGROUP_STAT_EVENTS
+> >> between soft limits and thresholds in this case?
+> >>
+> > hmm, both softlimit and your threshold count events at the same place(charge and uncharge).
+> > So, I think those events can be shared.
+> > Is there any reason they should run in different frequency ?
 > 
-> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-
-Thanks for review Pekka.
-Now wondering when this patch will be committed to mainline.
-
-Nitin
-
+> SOFTLIMIT_EVENTS_THRESH is 1000. If use the same value for thresholds,
+> a threshold can
+> be exceed on 1000*nr_cpu_id pages. It's too many. I think, that 100 is
+> a reasonable value.
 > 
->> ---
->>  drivers/staging/ramzswap/TODO           |    1 -
->>  drivers/staging/ramzswap/ramzswap_drv.c |   28 +++-------------------------
->>  2 files changed, 3 insertions(+), 26 deletions(-)
->>
->> diff --git a/drivers/staging/ramzswap/TODO b/drivers/staging/ramzswap/TODO
->> index bac40d6..8d64e28 100644
->> --- a/drivers/staging/ramzswap/TODO
->> +++ b/drivers/staging/ramzswap/TODO
->> @@ -1,6 +1,5 @@
->>  TODO:
->>        - Add support for swap notifiers
->> -       - Remove CONFIG_ARM hack
->>
->>  Please send patches to Greg Kroah-Hartman <greg@kroah.com> and
->>  Nitin Gupta <ngupta@vflare.org>
->> diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
->> index b839f05..989fac5 100644
->> --- a/drivers/staging/ramzswap/ramzswap_drv.c
->> +++ b/drivers/staging/ramzswap/ramzswap_drv.c
->> @@ -222,28 +222,6 @@ out:
->>        return ret;
->>  }
->>
->> -static void ramzswap_flush_dcache_page(struct page *page)
->> -{
->> -#ifdef CONFIG_ARM
->> -       int flag = 0;
->> -       /*
->> -        * Ugly hack to get flush_dcache_page() work on ARM.
->> -        * page_mapping(page) == NULL after clearing this swap cache flag.
->> -        * Without clearing this flag, flush_dcache_page() will simply set
->> -        * "PG_dcache_dirty" bit and return.
->> -        */
->> -       if (PageSwapCache(page)) {
->> -               flag = 1;
->> -               ClearPageSwapCache(page);
->> -       }
->> -#endif
->> -       flush_dcache_page(page);
->> -#ifdef CONFIG_ARM
->> -       if (flag)
->> -               SetPageSwapCache(page);
->> -#endif
->> -}
->> -
->>  void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
->>                        struct ramzswap_ioctl_stats *s)
->>  {
->> @@ -655,7 +633,7 @@ static int handle_zero_page(struct bio *bio)
->>        memset(user_mem, 0, PAGE_SIZE);
->>        kunmap_atomic(user_mem, KM_USER0);
->>
->> -       ramzswap_flush_dcache_page(page);
->> +       flush_dcache_page(page);
->>
->>        set_bit(BIO_UPTODATE, &bio->bi_flags);
->>        bio_endio(bio, 0);
->> @@ -679,7 +657,7 @@ static int handle_uncompressed_page(struct ramzswap *rzs, struct bio *bio)
->>        kunmap_atomic(user_mem, KM_USER0);
->>        kunmap_atomic(cmem, KM_USER1);
->>
->> -       ramzswap_flush_dcache_page(page);
->> +       flush_dcache_page(page);
->>
->>        set_bit(BIO_UPTODATE, &bio->bi_flags);
->>        bio_endio(bio, 0);
->> @@ -779,7 +757,7 @@ static int ramzswap_read(struct ramzswap *rzs, struct bio *bio)
->>                goto out;
->>        }
->>
->> -       ramzswap_flush_dcache_page(page);
->> +       flush_dcache_page(page);
->>
->>        set_bit(BIO_UPTODATE, &bio->bi_flags);
->>        bio_endio(bio, 0);
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
+O.K. I see.
 
+> mem_cgroup_soft_limit_check() resets MEM_CGROUP_STAT_EVENTS when it reaches
+> SOFTLIMIT_EVENTS_THRESH. If I will do the same thing for
+> THRESHOLDS_EVENTS_THRESH
+> (which is 100) , mem_cgroup_event_check() will never be 'true'. Any
+> idea how to share
+> MEM_CGROUP_STAT_EVENTS in this case?
+> 
+It's impossible if they have different frequency as you say.
+
+Thank you for your clarification.
+
+
+Daisuke Nishimura.
