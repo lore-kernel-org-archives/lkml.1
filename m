@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751135AbZLMFHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751437AbZLMFp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751135AbZLMFHL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 00:07:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbZLMFHJ
+	id S1751437AbZLMFp1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 00:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZLMFp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 00:07:09 -0500
-Received: from lists.laptop.org ([18.85.2.145]:39679 "HELO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750780AbZLMFHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 00:07:08 -0500
-Date: Sun, 13 Dec 2009 00:09:00 -0500
-From: Michael Stone <michael@laptop.org>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Cc: Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>,
-       =?iso-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Michael Stone <michael@laptop.org>
-Subject: setrlimit(RLIMIT_NETWORK) vs. prctl(???)
-Message-ID: <20091213050900.GC4369@heat>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20091213034418.GA4416@heat>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 13 Dec 2009 00:45:26 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:36218 "HELO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750900AbZLMFp0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 00:45:26 -0500
+X-Greylist: delayed 1529 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Dec 2009 00:45:26 EST
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: EUID != root + EGID = root, and CAP_SETGID
+Date: Sun, 13 Dec 2009 05:19:56 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hg1ths$g05$1@taverner.cs.berkeley.edu>
+References: <4B222C3D.2070807@icdsoft.com>
+Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1260681596 16389 128.32.153.193 (13 Dec 2009 05:19:56 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sun, 13 Dec 2009 05:19:56 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
+Ivan Zahariev  wrote:
+>Is this an intended behavior?
 
-A colleague just asked me an excellent question about my approach which I'd
-like to share with you. Paraphrasing, he wrote:
+Yes.  Setuid/setgid are a mess.  For more details, you might
+find the following research papers interesting:
 
-> rlimits seem very heavy for a simple inherited boolean flag. Also, creating
-> a new one will require modifying a lot of delicate userland software.
-> Wouldn't some new prctl() flags be a better choice?
+http://www.cs.berkeley.edu/~daw/papers/setuid-usenix02.pdf 
+http://www.cs.berkeley.edu/~daw/papers/setuid-login08b.pdf 
 
-Here's my response:
+See, e.g., Section 5.2 of the former paper, which says:
 
-> You're absolutely right that choosing to expose this functionality as an
-> rlimit (as opposed to as a new syscall or as a flag to an old syscall like
-> prctl()) is a decision with complex consequences.
-> 
-> I picked rlimits for this patch (after trying the "new syscall" approach
-> privately) because doing so provides exactly the interface, semantics, and
-> userland integration that I want:
->
-> interface: "unprivileged", "temporarily drop", "permanently drop", "get
-> current state", "persist current state across exec()", and some room for
-> future expansion of semantics by definining new state values between 0 and
-> RLIMIT_INFINITY.
-> 
-> integration: lots of sandboxing code already contains logic to drop rlimits
-> when starting up an isolated process. Furthermore, I think it would be really
-> great to be able to limit networking from the shell via ulimit and on a
-> per-user basis via /etc/security/limits.conf.
-> 
-> That being said, I'm not wedded to the decision. Could you give me some more
-> specific examples of the kinds of changes in low-level userspace code that
-> you're worried about?
-
-Regards,
-
-Michael
+  "an effective group ID of zero does not accord any
+  special privileges to change groups. This is a potential
+  source of confusion: it is tempting to assume incorrectly
+  that since appropriate privileges are carried by the euid
+  in the setuid-like calls, they will be carried by the
+  egid in the setgid-like calls, but this is not how it
+  actually works. This misconception caused a mistake in
+  the manual page of setgid in Redhat Linux 7.2 (Section
+  6.4.1)."
