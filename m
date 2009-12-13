@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZLMPrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbZLMQ6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZLMPrK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 10:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZLMPrJ
+	id S1753778AbZLMQ6i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 11:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZLMQ6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 10:47:09 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:60531 "HELO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752025AbZLMPrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 10:47:07 -0500
-Date: Sun, 13 Dec 2009 16:47:04 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Petko Manolov <petkan@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/net/usb: Correct code taking the size of a pointer
-Message-ID: <Pine.LNX.4.64.0912131646400.27767@ask.diku.dk>
+	Sun, 13 Dec 2009 11:58:37 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:38212 "HELO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750817AbZLMQ6g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 11:58:36 -0500
+Message-ID: <4B251CE4.9080401@gmail.com>
+Date: Sun, 13 Dec 2009 17:57:08 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Yinghai Lu <yinghai@kernel.org>
+CC: David Miller <davem@davemloft.net>, mingo@elte.hu, sri@us.ibm.com,
+       herbert@gondor.apana.org.au, torvalds@linux-foundation.org,
+       sjayaraman@suse.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: nfs broken in net-next? -- now in mainline -- bisected: d9f5950f90292f7cc42834338dfd5f44dc4cc4ca
+References: <86802c440912112125v4aa72189ifcc2d16ecbf79cc4@mail.gmail.com>	 <20091211.214117.200029438.davem@davemloft.net>	 <86802c440912121705y59eea3ebq3bdbd3e7459e748e@mail.gmail.com>	 <86802c440912121757g474a7df4od6b50f6d5a210cf0@mail.gmail.com>	 <86802c440912121825h20663affv9ff8d004974d0d31@mail.gmail.com> <86802c440912121841j34cde8ecv892d7d74a32313ac@mail.gmail.com>
+In-Reply-To: <86802c440912121841j34cde8ecv892d7d74a32313ac@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 13 Dec 2009 17:57:11 +0100 (CET)
+Content-Transfer-Encoding: 8BIT
+X-MIME-Autoconverted: from 8bit to quoted-printable by gw1.cosmosbay.com id nBDGv8Pc018433
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Le 13/12/2009 03:41, Yinghai Lu a écrit :
+>
+>>> cause the problem: nfs mount fail.
+>>>
+>>> the setup is:
+>>> 64bit kernel, have all needed drivers in kernel, and boot with
+>>> ip=dhcp, root disk is 256M ramdisk.
+>>> then try to mount nfs....
+>>>
+>>
+>> change entries default value from 65536 to 256,
+>> nfs mount will work.
+>>
+> interesting:
+> 
+> m:~/dump # grep UDP dmesg.txt
+> [   28.996034] UDP hash table entries: 65536 (order: 11, 10485760 bytes)
+> [   29.032364] UDP-Lite hash table entries: 65536 (order: 11, 10485760 bytes)
+> 
+> will not work
+> 
+> but 32768 will work.
 
-sizeof(dev->dev_addr) is the size of a pointer.  A few lines above, the
-size of this field is obtained using netdev->addr_len for a call to memcpy,
-so do the same here.
+Thanks a lot for this work Yinghai !
+This last bit helped me a lot ...
 
-A simplified version of the semantic patch that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+Hmm, udp_lib_get_port() assumes it can loop at least one time in :
 
-// <smpl>
-@@
-expression *x;
-expression f;
-type T;
-@@
+for (last = first + udptable->mask + 1;
+	first != last;
+	first++) {
+// unit_work
+}
 
-*f(...,(T)x,...)
-// </smpl>
+but if udptable->mask == 65535, loop is not entered at all (since last == first)
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+We should convert it to a do { } while(...); construct, or use 32bit variables
+and (u16) casts.
 
+Thanks
+
+[PATCH] udp: udp_lib_get_port() fix
+
+Now we can have a large udp hash table, udp_lib_get_port() loop
+should be converted to a do {} while (cond) form,
+or we dont enter it at all if hash table size is exactly 65536.
+
+Reported-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 ---
- drivers/net/usb/rtl8150.c           |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/usb/rtl8150.c b/drivers/net/usb/rtl8150.c
-index b091e20..f14d225 100644
---- a/drivers/net/usb/rtl8150.c
-+++ b/drivers/net/usb/rtl8150.c
-@@ -324,7 +324,7 @@ static int rtl8150_set_mac_address(struct net_device *netdev, void *p)
- 		dbg("%02X:", netdev->dev_addr[i]);
- 	dbg("%02X\n", netdev->dev_addr[i]);
- 	/* Set the IDR registers. */
--	set_registers(dev, IDR, sizeof(netdev->dev_addr), netdev->dev_addr);
-+	set_registers(dev, IDR, netdev->addr_len, netdev->dev_addr);
- #ifdef EEPROM_WRITE
- 	{
- 	u8 cr;
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 1f95348..f0126fd 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -216,9 +216,8 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
+ 		 * force rand to be an odd multiple of UDP_HTABLE_SIZE
+ 		 */
+ 		rand = (rand | 1) * (udptable->mask + 1);
+-		for (last = first + udptable->mask + 1;
+-		     first != last;
+-		     first++) {
++		last = first + udptable->mask + 1;
++		do {
+ 			hslot = udp_hashslot(udptable, net, first);
+ 			bitmap_zero(bitmap, PORTS_PER_CHAIN);
+ 			spin_lock_bh(&hslot->lock);
+@@ -238,7 +237,7 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
+ 				snum += rand;
+ 			} while (snum != first);
+ 			spin_unlock_bh(&hslot->lock);
+-		}
++		} while (++first != last);
+ 		goto fail;
+ 	} else {
+ 		hslot = udp_hashslot(udptable, net, snum);
