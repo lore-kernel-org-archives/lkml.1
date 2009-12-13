@@ -1,97 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbZLMLJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZLML1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452AbZLMLJP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 06:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZLMLJN
+	id S1752438AbZLML1o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 06:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZLML1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 06:09:13 -0500
-Received: from borg.medozas.de ([188.40.89.202]:47419 "HELO borg.medozas.de"
+	Sun, 13 Dec 2009 06:27:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50482 "HELO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752409AbZLMLJM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 06:09:12 -0500
-Date: Sun, 13 Dec 2009 12:09:09 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Nir Tzachar <nir.tzachar@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org
-Subject: Re: nconfig v7
-In-Reply-To: <9b2db90b0912122323w25d2d815o70d0bd2f1e19a228@mail.gmail.com>
-Message-ID: <alpine.LSU.2.01.0912131118280.28039@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.0912112023170.32039@obet.zrqbmnf.qr> <9b2db90b0912122323w25d2d815o70d0bd2f1e19a228@mail.gmail.com>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	id S1751918AbZLML1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 06:27:42 -0500
+Date: Sun, 13 Dec 2009 13:24:52 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [PATCH v2 2/4] Defer skb allocation -- new skb_set calls &
+	chain pages in virtio_net
+Message-ID: <20091213112452.GB7074@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260535382.30371.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260535382.30371.20.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 11, 2009 at 04:43:02AM -0800, Shirley Ma wrote:
+> Signed-off-by: Shirley Ma <xma@us.ibm.com>
+> --------------
+> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+> index bb5eb7b..100b4b9 100644
+> --- a/drivers/net/virtio_net.c
+> +++ b/drivers/net/virtio_net.c
+> @@ -80,29 +80,25 @@ static inline struct skb_vnet_hdr *skb_vnet_hdr(struct sk_buff *skb)
+>  	return (struct skb_vnet_hdr *)skb->cb;
+>  }
+>  
+> -static void give_a_page(struct virtnet_info *vi, struct page *page)
+> +static void give_pages(struct virtnet_info *vi, struct page *page)
+>  {
+> -	page->private = (unsigned long)vi->pages;
+> -	vi->pages = page;
+> -}
+> +	struct page *end;
+>  
+> -static void trim_pages(struct virtnet_info *vi, struct sk_buff *skb)
+> -{
+> -	unsigned int i;
+> -
+> -	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+> -		give_a_page(vi, skb_shinfo(skb)->frags[i].page);
+> -	skb_shinfo(skb)->nr_frags = 0;
+> -	skb->data_len = 0;
+> +	/* Find end of list, sew whole thing into vi->pages. */
+> +	for (end = page; end->private; end = (struct page *)end->private);
 
-On Sunday 2009-12-13 08:23, Nir Tzachar wrote:
->On Fri, Dec 11, 2009 at 9:55 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
->> Hi,
->>
->>
->> I gave nconfig a try, and here are a few suggestive points:
->
->10x ;)
-
-Ten times what?
-
->> - provide the same color scheme as menuconfig
->
->As far as colrs are involved, I think it is best to not impose any
->color scheme. You can never satisfy everyone, and will get into
->endless fights about which is best.
-
-Well, menuconfig seems to have had the least fights. There was exactly 
-one color scheme imposed, and that did not change for years; when themes 
-were added, not much happened. There was a bit of discussion and 
-submissions about themes (including myself), but in the end, it was 
-sort-of agreed upon that four were enough. And they seem to work for 
-everybody.
-
->I believe the current approach in nconfig works best, as I am using 
->the default terminal colors for the main body of text (menus, help 
->text, etc), and only use colors for emphasis (headings, boxes, etc). 
-
-No sorry. Black-on-blue does not work very much, for the physical fact 
-that blue is recognized as faint. Let me put in some numbers (30,59,11% 
-are the common RGB weighting for grayscale/luminance)
-
- Blue:                       Effective Lum:
- - xterm standard (#0000EE): 26.18
- - VGA standard (#0000AA):   18.70
- Cyan:
- - VGA (#00AAAA)             119.00
-
-So you see why Midnight Commander, htop, etc. all use Black-on-Cyan for 
-their Fn keybar instead of Blue.
-
->This is based on the belief that users have already chosen the colors 
->which work best for them, and are already using them in their teminal's 
->config.
->
->> - I get a visual glitch (see Exhibit A below) in General setup (patch
->>  slapped onto 2.6.32); the left frame part is missing.
->
->I cannot reproduce this. Can you provide some more details? (e.g.,
->which terminal, $LINES, $COLUMNS, $TERM)
-
-xterm -bg black -fg gray -geometry 80x25
+Hmm, this scans the whole list each time.
+OTOH, the caller probably can easily get list tail as well as head.
+If we ask caller to give us list tail, and chain them at head, then
+1. we won't have to scan the list each time
+2. we get better memory locality reusing same pages over and over again
 
 
->> - I certainly like F4-Config-ShowAll :)  but it has some glitches
->>  interfering near ARCH_DEFCONFIG (see Exhibit B).
->
->Thanks for catching this. It is a by-product of the code for
->presenting everything inside a single menu. Easily fixed in the next
->version. By the way, is anyone using this option at all? It would much
->simplify the code if I did not have to support the one giant menu
->option.
+> +	end->private = (unsigned long)vi->pages;
+> +	vi->pages = page;
+>  }
+>  
+>  static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
+>  {
+>  	struct page *p = vi->pages;
+>  
+> -	if (p)
+> +	if (p) {
+>  		vi->pages = (struct page *)p->private;
+> -	else
+> +		/* use private to chain pages for big packets */
+> +		p->private = 0;
 
-Well nconfig is the first to provide that option. (Note: I don't use 
-gconfig or xconfig, so I cannot tell if they have something like that.)
-So to see whether there is use, you would have to wait a number of 
-kernel releases that have nconfig integrated.
+So this comment does not explain why this = 0 is here.
+clearly = 0 does not chain anything.
+Please add a bigger comment.
+
+I think you also want to extend the comment at top of
+file, where datastructure is, that explains the deferred
+alogorigthm and how pages are chained.
+
+> +	} else
+>  		p = alloc_page(gfp_mask);
+>  	return p;
+>  }
+> @@ -128,6 +124,85 @@ static void skb_xmit_done(struct virtqueue *svq)
+>  	netif_wake_queue(vi->dev);
+>  }
+>  
+> +static int skb_set_frag(struct sk_buff *skb, struct page *page,
+> +				int offset, int len)
+
+Maybe it's better not to prefix functions with skb_, one
+tries to look them up in skbuff.h immediately.
+
+> +{
+> +	int i = skb_shinfo(skb)->nr_frags;
+> +	skb_frag_t *f;
+> +
+> +	i = skb_shinfo(skb)->nr_frags;
+> +	f = &skb_shinfo(skb)->frags[i];
+
+i seems unused below, so opencode it.
+
+> +	f->page = page;
+> +	f->page_offset = offset;
+> +
+> +	if (len > PAGE_SIZE - f->page_offset)
+> +		f->size = PAGE_SIZE - f->page_offset;
+
+Will be a bit clearer with s/f->page_offset/offset/.
+
+> +	else
+> +		f->size = len;
+
+Use min for clarity instead of opencoded if.
+This will make it obvious that len won't ever become
+negative below.
+
+> +
+> +	skb_shinfo(skb)->nr_frags++;
+> +	skb->data_len += f->size;
+> +	skb->len += f->size;
+
+
+> +
+> +	len -= f->size;
+> +	return len;
+> +}
+> +
+> +static struct sk_buff *skb_goodcopy(struct virtnet_info *vi, struct page **page,
+
+I know you got this name from GOOD_COPY_LEN, but it's not
+very good for a function :) and skb_ prefix is also confusing.
+Just copy_small_skb or something like that?
+
+> +				    unsigned int *len)
+
+Comments about splitting patches  apply here as well.
+No way to understand what this should do and whether it
+does it correctly just by looking at patch.
+
+> +{
+> +	struct sk_buff *skb;
+> +	struct skb_vnet_hdr *hdr;
+> +	int copy, hdr_len, offset;
+> +	char *p;
+> +
+> +	p = page_address(*page);
+> +
+> +	skb = netdev_alloc_skb(vi->dev, GOOD_COPY_LEN + NET_IP_ALIGN);
+> +	if (unlikely(!skb))
+> +		return NULL;
+> +
+> +	skb_reserve(skb, NET_IP_ALIGN);
+> +	hdr = skb_vnet_hdr(skb);
+> +
+> +	if (vi->mergeable_rx_bufs) {
+> +		hdr_len = sizeof(hdr->mhdr);
+
+sizeof(hdr->mhdr) -> sizeof hdr->mhdr
+
+> +		offset = hdr_len;
+> +	} else {
+> +		/* share one page between virtio_net header and data */
+> +		struct padded_vnet_hdr {
+> +			struct virtio_net_hdr hdr;
+> +			/* This padding makes our data 16 byte aligned */
+
+I think reader will still wonder about is "why does it
+need to be 16 byte aligned?". And this is what
+comment should explain I think.
+
+> +			char padding[6];
+> +		};
+> +		hdr_len = sizeof(hdr->hdr);
+> +		offset = sizeof(struct padded_vnet_hdr);
+> +	}
+> +
+> +	memcpy(hdr, p, hdr_len);
+> +
+> +	*len -= hdr_len;
+> +	p += offset;
+> +
+> +	copy = *len;
+> +	if (copy > skb_tailroom(skb))
+> +		copy = skb_tailroom(skb);
+> +	memcpy(skb_put(skb, copy), p, copy);
+> +
+> +	*len -= copy;
+> +	offset += copy;
+> +
+> +	if (*len) {
+> +		*len = skb_set_frag(skb, *page, offset, *len);
+
+So you are overriding *len here? why bother calculating it
+then?
+
+Also - this does *not* always copy all of data, and *page
+tells us whether it did a copy or not? This is pretty confusing,
+as APIs go. Also, if we have scatter/gather anyway,
+why do we bother copying the head?
+Also, before skb_set_frag skb is linear, right?
+So in fact you do not need generic skb_set_frag,
+you can just put stuff in the first fragment.
+For example, pass the fragment number to skb_set_frag,
+compiler will be able to better optimize.
+
+> +		*page = (struct page *)(*page)->private;
+> +	} else {
+> +		give_pages(vi, *page);
+> +		*page = NULL;
+> +	}
+> +
+> +	return skb;
+> +}
+> +
+>  static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+>  			unsigned len)
+>  {
+> @@ -162,7 +237,7 @@ static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+>  		len -= copy;
+>  
+>  		if (!len) {
+> -			give_a_page(vi, skb_shinfo(skb)->frags[0].page);
+> +			give_pages(vi, skb_shinfo(skb)->frags[0].page);
+>  			skb_shinfo(skb)->nr_frags--;
+>  		} else {
+>  			skb_shinfo(skb)->frags[0].page_offset +=
+> 
