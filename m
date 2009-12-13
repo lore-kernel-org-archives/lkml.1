@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZLNARA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZLNAP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbZLNARA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZLNAQV
+	id S1755966AbZLNAP5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZLNAPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:16:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34221 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:15:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34227 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754938AbZLMX5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:53 -0500
+	id S1754949AbZLMX5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:54 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, netdev@vger.kernel.org,
-       torvalds@linux-foundation.org, davem@davemloft.net
-Subject: [PATCH 3/3] Constify struct e1000_nvm_operations 2.6.32-git-a252e7 v2
-Date: Mon, 14 Dec 2009 00:59:42 +0100
-Message-Id: <a05ba74a237aeb4b1c744e665190ebdc495e1ed6.1260707013.git.re.emese@gmail.com>
+Cc: Emese Revfy <re.emese@gmail.com>, gregkh@suse.de,
+       akpm@linux-foundation.org, alan@linux.intel.com,
+       torvalds@linux-foundation.org
+Subject: [PATCH 1/3] Constify struct hv_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:59:43 +0100
+Message-Id: <87be709edd4008d051dee9cd9ea9d888ddc07d69.1260662998.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <cover.1260707013.git.re.emese@gmail.com>
-References: <cover.1260707013.git.re.emese@gmail.com>
-X-ELTE-SpamScore: 0.0
+In-Reply-To: <cover.1260662998.git.re.emese@gmail.com>
+References: <cover.1260662998.git.re.emese@gmail.com>
+X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,135 +36,138 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/net/e1000e/82571.c    |    2 +-
- drivers/net/e1000e/e1000.h    |    2 +-
- drivers/net/e1000e/es2lan.c   |    2 +-
- drivers/net/e1000e/hw.h       |   16 ++++++++--------
- drivers/net/e1000e/ich8lan.c  |    2 +-
- drivers/net/igb/e1000_82575.c |    2 +-
- drivers/net/igb/e1000_hw.h    |    3 ++-
- 7 files changed, 15 insertions(+), 14 deletions(-)
+ drivers/char/hvc_beat.c    |    2 +-
+ drivers/char/hvc_console.c |    6 +++---
+ drivers/char/hvc_console.h |    6 +++---
+ drivers/char/hvc_iucv.c    |    2 +-
+ drivers/char/hvc_rtas.c    |    2 +-
+ drivers/char/hvc_udbg.c    |    2 +-
+ drivers/char/hvc_xen.c     |    2 +-
+ 7 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-index 12ff45a..738f51d 100644
---- a/drivers/net/e1000e/82571.c
-+++ b/drivers/net/e1000e/82571.c
-@@ -1767,7 +1767,7 @@ static const struct e1000_phy_operations e82_phy_ops_bm = {
- 	.cfg_on_link_up      	= NULL,
+diff --git a/drivers/char/hvc_beat.c b/drivers/char/hvc_beat.c
+index 0afc8b8..6913fc3 100644
+--- a/drivers/char/hvc_beat.c
++++ b/drivers/char/hvc_beat.c
+@@ -84,7 +84,7 @@ static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
+ 	return cnt;
+ }
+ 
+-static struct hv_ops hvc_beat_get_put_ops = {
++static const struct hv_ops hvc_beat_get_put_ops = {
+ 	.get_chars = hvc_beat_get_chars,
+ 	.put_chars = hvc_beat_put_chars,
+ };
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index a632f25..e622e05 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -125,7 +125,7 @@ static struct hvc_struct *hvc_get_by_index(int index)
+  * console interfaces but can still be used as a tty device.  This has to be
+  * static because kmalloc will not work during early console init.
+  */
+-static struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
++static const struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
+ static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
+ 	{[0 ... MAX_NR_HVC_CONSOLES - 1] = -1};
+ 
+@@ -247,7 +247,7 @@ static void destroy_hvc_struct(struct kref *kref)
+  * vty adapters do NOT get an hvc_instantiate() callback since they
+  * appear after early console init.
+  */
+-int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
++int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
+ {
+ 	struct hvc_struct *hp;
+ 
+@@ -749,7 +749,7 @@ static const struct tty_operations hvc_ops = {
  };
  
--static struct e1000_nvm_operations e82571_nvm_ops = {
-+static const struct e1000_nvm_operations e82571_nvm_ops = {
- 	.acquire		= e1000_acquire_nvm_82571,
- 	.read			= e1000e_read_nvm_eerd,
- 	.release		= e1000_release_nvm_82571,
-diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index 24b704c..2b42fba 100644
---- a/drivers/net/e1000e/e1000.h
-+++ b/drivers/net/e1000e/e1000.h
-@@ -381,7 +381,7 @@ struct e1000_info {
- 	s32			(*get_variants)(struct e1000_adapter *);
- 	const struct e1000_mac_operations *mac_ops;
- 	const struct e1000_phy_operations *phy_ops;
--	struct e1000_nvm_operations *nvm_ops;
-+	const struct e1000_nvm_operations *nvm_ops;
+ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int data,
+-					struct hv_ops *ops, int outbuf_size)
++					const struct hv_ops *ops, int outbuf_size)
+ {
+ 	struct hvc_struct *hp;
+ 	int i;
+diff --git a/drivers/char/hvc_console.h b/drivers/char/hvc_console.h
+index 10950ca..ed176c3 100644
+--- a/drivers/char/hvc_console.h
++++ b/drivers/char/hvc_console.h
+@@ -55,7 +55,7 @@ struct hvc_struct {
+ 	int outbuf_size;
+ 	int n_outbuf;
+ 	uint32_t vtermno;
+-	struct hv_ops *ops;
++	const struct hv_ops *ops;
+ 	int irq_requested;
+ 	int data;
+ 	struct winsize ws;
+@@ -76,11 +76,11 @@ struct hv_ops {
  };
  
- /* hardware capability, feature, and workaround flags */
-diff --git a/drivers/net/e1000e/es2lan.c b/drivers/net/e1000e/es2lan.c
-index 2e8217e..9ce2d30 100644
---- a/drivers/net/e1000e/es2lan.c
-+++ b/drivers/net/e1000e/es2lan.c
-@@ -1408,7 +1408,7 @@ static const struct e1000_phy_operations es2_phy_ops = {
- 	.cfg_on_link_up      	= e1000_cfg_on_link_up_80003es2lan,
+ /* Register a vterm and a slot index for use as a console (console_init) */
+-extern int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops);
++extern int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops);
+ 
+ /* register a vterm for hvc tty operation (module_init or hotplug add) */
+ extern struct hvc_struct * __devinit hvc_alloc(uint32_t vtermno, int data,
+-				struct hv_ops *ops, int outbuf_size);
++				const struct hv_ops *ops, int outbuf_size);
+ /* remove a vterm from hvc tty operation (module_exit or hotplug remove) */
+ extern int hvc_remove(struct hvc_struct *hp);
+ 
+diff --git a/drivers/char/hvc_iucv.c b/drivers/char/hvc_iucv.c
+index b8a5d65..619f7d1 100644
+--- a/drivers/char/hvc_iucv.c
++++ b/drivers/char/hvc_iucv.c
+@@ -922,7 +922,7 @@ static int hvc_iucv_pm_restore_thaw(struct device *dev)
+ 
+ 
+ /* HVC operations */
+-static struct hv_ops hvc_iucv_ops = {
++static const struct hv_ops hvc_iucv_ops = {
+ 	.get_chars = hvc_iucv_get_chars,
+ 	.put_chars = hvc_iucv_put_chars,
+ 	.notifier_add = hvc_iucv_notifier_add,
+diff --git a/drivers/char/hvc_rtas.c b/drivers/char/hvc_rtas.c
+index 88590d0..61c4a61 100644
+--- a/drivers/char/hvc_rtas.c
++++ b/drivers/char/hvc_rtas.c
+@@ -71,7 +71,7 @@ static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
+ 	return i;
+ }
+ 
+-static struct hv_ops hvc_rtas_get_put_ops = {
++static const struct hv_ops hvc_rtas_get_put_ops = {
+ 	.get_chars = hvc_rtas_read_console,
+ 	.put_chars = hvc_rtas_write_console,
  };
+diff --git a/drivers/char/hvc_udbg.c b/drivers/char/hvc_udbg.c
+index bd63ba8..b0957e6 100644
+--- a/drivers/char/hvc_udbg.c
++++ b/drivers/char/hvc_udbg.c
+@@ -58,7 +58,7 @@ static int hvc_udbg_get(uint32_t vtermno, char *buf, int count)
+ 	return i;
+ }
  
--static struct e1000_nvm_operations es2_nvm_ops = {
-+static const struct e1000_nvm_operations es2_nvm_ops = {
- 	.acquire		= e1000_acquire_nvm_80003es2lan,
- 	.read			= e1000e_read_nvm_eerd,
- 	.release		= e1000_release_nvm_80003es2lan,
-diff --git a/drivers/net/e1000e/hw.h b/drivers/net/e1000e/hw.h
-index a51cbeb..d40e9af 100644
---- a/drivers/net/e1000e/hw.h
-+++ b/drivers/net/e1000e/hw.h
-@@ -781,13 +781,13 @@ struct e1000_phy_operations {
- 
- /* Function pointers for the NVM. */
- struct e1000_nvm_operations {
--	s32  (*acquire)(struct e1000_hw *);
--	s32  (*read)(struct e1000_hw *, u16, u16, u16 *);
--	void (*release)(struct e1000_hw *);
--	s32  (*update)(struct e1000_hw *);
--	s32  (*valid_led_default)(struct e1000_hw *, u16 *);
--	s32  (*validate)(struct e1000_hw *);
--	s32  (*write)(struct e1000_hw *, u16, u16, u16 *);
-+	s32  (* const acquire)(struct e1000_hw *);
-+	s32  (* const read)(struct e1000_hw *, u16, u16, u16 *);
-+	void (* const release)(struct e1000_hw *);
-+	s32  (* const update)(struct e1000_hw *);
-+	s32  (* const valid_led_default)(struct e1000_hw *, u16 *);
-+	s32  (* const validate)(struct e1000_hw *);
-+	s32  (* const write)(struct e1000_hw *, u16, u16, u16 *);
+-static struct hv_ops hvc_udbg_ops = {
++static const struct hv_ops hvc_udbg_ops = {
+ 	.get_chars = hvc_udbg_get,
+ 	.put_chars = hvc_udbg_put,
  };
+diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
+index b1a7163..60446f8 100644
+--- a/drivers/char/hvc_xen.c
++++ b/drivers/char/hvc_xen.c
+@@ -122,7 +122,7 @@ static int read_console(uint32_t vtermno, char *buf, int len)
+ 	return recv;
+ }
  
- struct e1000_mac_info {
-@@ -863,7 +863,7 @@ struct e1000_phy_info {
- };
- 
- struct e1000_nvm_info {
--	struct e1000_nvm_operations ops;
-+	const struct e1000_nvm_operations ops;
- 
- 	enum e1000_nvm_type type;
- 	enum e1000_nvm_override override;
-diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index eefef85..e3efb4a 100644
---- a/drivers/net/e1000e/ich8lan.c
-+++ b/drivers/net/e1000e/ich8lan.c
-@@ -3323,7 +3323,7 @@ static const struct e1000_phy_operations ich8_phy_ops = {
- 	.write_reg		= e1000e_write_phy_reg_igp,
- };
- 
--static struct e1000_nvm_operations ich8_nvm_ops = {
-+static const struct e1000_nvm_operations ich8_nvm_ops = {
- 	.acquire		= e1000_acquire_nvm_ich8lan,
- 	.read		 	= e1000_read_nvm_ich8lan,
- 	.release		= e1000_release_nvm_ich8lan,
-diff --git a/drivers/net/igb/e1000_82575.c b/drivers/net/igb/e1000_82575.c
-index 050dc32..0c52265 100644
---- a/drivers/net/igb/e1000_82575.c
-+++ b/drivers/net/igb/e1000_82575.c
-@@ -1599,7 +1599,7 @@ static const struct e1000_phy_operations e1000_phy_ops_82575 = {
- 	.release              = igb_release_phy_82575,
- };
- 
--static struct e1000_nvm_operations e1000_nvm_ops_82575 = {
-+static const struct e1000_nvm_operations e1000_nvm_ops_82575 = {
- 	.acquire              = igb_acquire_nvm_82575,
- 	.read                 = igb_read_nvm_eerd,
- 	.release              = igb_release_nvm_82575,
-diff --git a/drivers/net/igb/e1000_hw.h b/drivers/net/igb/e1000_hw.h
-index 937540f..678f006 100644
---- a/drivers/net/igb/e1000_hw.h
-+++ b/drivers/net/igb/e1000_hw.h
-@@ -326,7 +326,7 @@ struct e1000_info {
- 	s32 (*get_invariants)(struct e1000_hw *);
- 	const struct e1000_mac_operations *mac_ops;
- 	struct e1000_phy_operations *phy_ops;
--	struct e1000_nvm_operations *nvm_ops;
-+	const struct e1000_nvm_operations *nvm_ops;
- };
- 
- extern const struct e1000_info e1000_82575_info;
-@@ -414,6 +414,7 @@ struct e1000_phy_info {
- };
- 
- struct e1000_nvm_info {
-+	/* cannot be const, see drivers/net/igb/igb_main.c:igb_probe */
- 	struct e1000_nvm_operations ops;
- 
- 	enum e1000_nvm_type type;
+-static struct hv_ops hvc_ops = {
++static const struct hv_ops hvc_ops = {
+ 	.get_chars = read_console,
+ 	.put_chars = write_console,
+ 	.notifier_add = notifier_add_irq,
 -- 
 1.6.5.3
 
