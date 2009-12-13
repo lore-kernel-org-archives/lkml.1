@@ -1,148 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZLMVMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZLMVPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZLMVMc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 16:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZLMVM3
+	id S1754261AbZLMVPO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 16:15:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZLMVPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 16:12:29 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:49756 "HELO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754253AbZLMVM0 convert rfc822-to-8bit (ORCPT
+	Sun, 13 Dec 2009 16:15:13 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59851 "HELO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754204AbZLMVPL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 16:12:26 -0500
-Date: Sun, 13 Dec 2009 22:12:22 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: sonic zhang <sonic.adi@gmail.com>
-Cc: linux-i2c@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] driver i2c-core: i2c bus should support PM entries in 
- struct dev_pm_ops.
-Message-ID: <20091213221222.724bef54@hyperion.delvare>
-In-Reply-To: <1259744920.25505.2.camel@eight.analog.com>
-References: <1259744920.25505.2.camel@eight.analog.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 13 Dec 2009 16:15:11 -0500
+Date: Sun, 13 Dec 2009 22:15:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>
+Subject: Re: [PATCH 2/3] staging/dream: add missing include files
+Message-ID: <20091213211502.GC5114@elf.ucw.cz>
+References: <20091101222717.GB20740@elf.ucw.cz>
+ <20091119225602.GC18710@kroah.com>
+ <20091120105726.GH11212@elf.ucw.cz>
+ <20091120153054.GA23007@kroah.com>
+ <20091206215257.GA14137@elf.ucw.cz>
+ <20091212190205.GA16364@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091212190205.GA16364@kroah.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sonic,
-
-On Wed, 2 Dec 2009 17:08:40 +0800, sonic zhang wrote:
-> Struct dev_pm_ops is not configured in current i2c bus type. i2c drivers
-> only depends on suspend/resume entries in struct dev_pm_ops are not
-> informed of PM suspend and resume events by i2c framework.
-
-Good point. I was wondering some times ago what was the status of
-pm_ops. I seem to understand this is the future of power management,
-and "direct" .suspend and .resume callbacks will stop being supported
-at some point in the future? If so, what is the migration plan? I don't
-really want to support both forever.
-
-Your patch introduces the following warnings:
-
-drivers/i2c/i2c-core.c: In function ‘i2c_device_pm_suspend’:
-drivers/i2c/i2c-core.c:167: warning: assignment discards qualifiers from pointer target type
-drivers/i2c/i2c-core.c: In function ‘i2c_device_pm_resume’:
-drivers/i2c/i2c-core.c:181: warning: assignment discards qualifiers from pointer target type
-
-You will obviously have to fix them before I can accept your patch.
-Missing const...
-
+On Sat 2009-12-12 11:02:05, Greg KH wrote:
+> On Sun, Dec 06, 2009 at 10:52:57PM +0100, Pavel Machek wrote:
+> > On Fri 2009-11-20 07:30:54, Greg KH wrote:
+> > > On Fri, Nov 20, 2009 at 11:57:26AM +0100, Pavel Machek wrote:
+> > > > Where can I get the tree to diff against?
+> > > > gregkh-08-staging-2.6.32-rc7-git4.patch just reverts everything.
+> > > > 
+> > > > I guess I can extract it from
+> > > > ://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/series ...
+> > > 
+> > > Or grab the linux-next tree and branch from right before the "delete the
+> > > drivers/staging/dream/ directory" patch.
+> > 
+> > What is the status here, BTW? staging/dream is still there in git pull
+> > from today. Would it be possible to avoid pushing that huge revert to
+> > Linus, after all? Fixes are available, and it would be nice to avoid
+> > big churn.... Pretty please...
 > 
-> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-> ---
->  drivers/i2c/i2c-core.c |   39 +++++++++++++++++++++++++++++++++++++++
->  1 files changed, 39 insertions(+), 0 deletions(-)
+> Sorry for the delay.
 > 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 2965043..9713c0d 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -155,6 +155,39 @@ static void i2c_device_shutdown(struct device *dev)
->  		driver->shutdown(client);
->  }
->  
-> +#ifdef CONFIG_SUSPEND
-> +static int i2c_device_pm_suspend(struct device *dev)
-> +{
-> +	struct i2c_driver *driver;
-> +	struct dev_pm_ops *pm;
-> +
-> +	if (!dev->driver)
-> +		return 0;
-> +	driver = to_i2c_driver(dev->driver);
-> +	pm = driver->driver.pm;
+> I've pushed out the staging patches for .33, and left in the Dream
+> files, as you are trying very hard to get this to work, and to delete
+> them now would just be rude of me.  I'll drop the patch from -next that
+> removes the files as well when I sync up with Linus later today.
+> 
+> I'll also work through the patches you have sent me so far that I
+> haven't applied, I think there are still a few.
+> 
+> Hope this helps,
 
-This makes little sense, sorry. Why go from device_driver to i2c_driver
-and then again to device_driver? The following is equivalent and more
-efficient:
+Yep, thanks!
 
-	pm = dev->driver->pm;
-
-> +	if (!pm || !pm->suspend)
-> +		return 0;
-> +	return pm->suspend(dev);
-> +}
-> +
-> +static int i2c_device_pm_resume(struct device *dev)
-> +{
-> +	struct i2c_driver *driver;
-> +	struct dev_pm_ops *pm;
-> +
-> +	if (!dev->driver)
-> +		return 0;
-> +	driver = to_i2c_driver(dev->driver);
-> +	pm = driver->driver.pm;
-
-Same here.
-
-> +	if (!pm || !pm->resume)
-> +		return 0;
-> +	return pm->resume(dev);
-> +}
-> +#else
-> +# define i2c_device_pm_suspend	NULL
-> +# define i2c_device_pm_resume	NULL
-
-No space between "#" and "define", please.
-
-> +#endif
-> +
->  static int i2c_device_suspend(struct device *dev, pm_message_t mesg)
->  {
->  	struct i2c_client *client = i2c_verify_client(dev);
-> @@ -219,6 +252,11 @@ static const struct attribute_group *i2c_dev_attr_groups[] = {
->  	NULL
->  };
->  
-> +static struct dev_pm_ops i2c_device_pm_ops = {
-
-Could be const.
-
-> +	.suspend = i2c_device_pm_suspend,
-> +	.resume = i2c_device_pm_resume,
-> +};
-> +
->  struct bus_type i2c_bus_type = {
->  	.name		= "i2c",
->  	.match		= i2c_device_match,
-> @@ -227,6 +265,7 @@ struct bus_type i2c_bus_type = {
->  	.shutdown	= i2c_device_shutdown,
->  	.suspend	= i2c_device_suspend,
->  	.resume		= i2c_device_resume,
-> +	.pm		= &i2c_device_pm_ops,
->  };
->  EXPORT_SYMBOL_GPL(i2c_bus_type);
->  
-
-I've made all the changes above myself, it build OK but I can't test.
-Modified patch is here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-core-i2c-bus-should-support-pm-entries-in-struct-dev_pm_ops.patch
-
-Please test and report if anything's wrong.
-
-Thanks,
+(Things are getting better... slowly. Google now has android/dream
+tree based on 2.6.32, and first bits of dream support are being merged...)
+									Pavel
 -- 
-Jean Delvare
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
