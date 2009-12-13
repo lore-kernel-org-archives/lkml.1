@@ -1,76 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750926AbZLMG7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751147AbZLMHDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750926AbZLMG7O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 01:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbZLMG7N
+	id S1751147AbZLMHDK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 02:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZLMHDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 01:59:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60529 "HELO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 02:03:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56763 "HELO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750746AbZLMG7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 01:59:10 -0500
-Date: Sun, 13 Dec 2009 07:58:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-Message-ID: <20091213065844.GA20244@elte.hu>
-References: <20091212084611.GA28266@elte.hu>
- <20091212013927.58d386d1.akpm@linux-foundation.org>
- <20091212101032.GB25286@elte.hu>
- <20091212023603.93768833.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
- <alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
- <20091212214235.31429790@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
- <alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
- <alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
+	id S1750832AbZLMHDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 02:03:07 -0500
+Message-ID: <4B249143.5050300@kernel.org>
+Date: Sat, 12 Dec 2009 23:01:23 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix checking of SRAT when node0 ram is not from 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Found one system that boot from socket1 instead of socket0, SRAT get rejected...
 
-> We've had quite a bit of BKL work this merge-window. Maybe we'll even get 
-> rid of it one of these days. There are "only" about 600 instances of 
-> "lock_kernel()" in the tree right now ;)
+[    0.000000] SRAT: Node 1 PXM 0 0-a0000
+[    0.000000] SRAT: Node 1 PXM 0 100000-80000000
+[    0.000000] SRAT: Node 1 PXM 0 100000000-2080000000
+[    0.000000] SRAT: Node 0 PXM 1 2080000000-4080000000
+[    0.000000] SRAT: Node 2 PXM 2 4080000000-6080000000
+[    0.000000] SRAT: Node 3 PXM 3 6080000000-8080000000
+[    0.000000] SRAT: Node 4 PXM 4 8080000000-a080000000
+[    0.000000] SRAT: Node 5 PXM 5 a080000000-c080000000
+[    0.000000] SRAT: Node 6 PXM 6 c080000000-e080000000
+[    0.000000] SRAT: Node 7 PXM 7 e080000000-10080000000
+...
+[    0.000000] NUMA: Allocated memnodemap from 500000 - 701040
+[    0.000000] NUMA: Using 20 for the hash shift.
+[    0.000000] Adding active range (0, 0x2080000, 0x4080000) 0 entries of 3200 used
+[    0.000000] Adding active range (1, 0x0, 0x96) 1 entries of 3200 used
+[    0.000000] Adding active range (1, 0x100, 0x7f750) 2 entries of 3200 used
+[    0.000000] Adding active range (1, 0x100000, 0x2080000) 3 entries of 3200 used
+[    0.000000] Adding active range (2, 0x4080000, 0x6080000) 4 entries of 3200 used
+[    0.000000] Adding active range (3, 0x6080000, 0x8080000) 5 entries of 3200 used
+[    0.000000] Adding active range (4, 0x8080000, 0xa080000) 6 entries of 3200 used
+[    0.000000] Adding active range (5, 0xa080000, 0xc080000) 7 entries of 3200 used
+[    0.000000] Adding active range (6, 0xc080000, 0xe080000) 8 entries of 3200 used
+[    0.000000] Adding active range (7, 0xe080000, 0x10080000) 9 entries of 3200 used
+[    0.000000] SRAT: PXMs only cover 917504MB of your 1048566MB e820 RAM. Not used.
+[    0.000000] SRAT: SRAT not used.
 
-I tend to use unlock_kernel() as the metric. (as it's more precisely greppable 
-and it is also more indicative of the underlying complexity of locking, as it 
-gets used more in more complex scenarios)
+the early_node_map is not sorted because node0 with non zero start come first.
 
-In the last ~4.5 years:
+so try to sort it right away after all regions are registered.
 
- earth4:~/tip> git checkout v2.6.12
- Date:   Fri Jun 17 12:48:29 2005 -0700
- earth4:~/tip> git grep -w unlock_kernel | wc -l
- 713
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
- earth4:~/tip> git checkout linus
- Date:   Fri Dec 11 20:58:20 2009 -0800
- earth4:~/tip> git grep -w unlock_kernel | wc -l
- 841
 
-we grew the (absolute) number of BKL sites by ~15%. Certainly the kernel grew 
-at a much faster rate, so the relative proportion of the BKL shrunk.
+---
+ arch/x86/mm/srat_32.c |    2 ++
+ arch/x86/mm/srat_64.c |    2 ++
+ include/linux/mm.h    |    1 +
+ mm/page_alloc.c       |    2 +-
+ 4 files changed, 6 insertions(+), 1 deletion(-)
 
-Also, a lot of BKL use was hidden before, and due to the BKL removal 
-activities (by Thomas, Frederic, Jon, Alan and others) the remaining BKL using 
-sites are a lot more well defined, a lot more isolated and thus a lot more 
-removable than ever before.
-
-	Ingo
+Index: linux-2.6/arch/x86/mm/srat_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_32.c
++++ linux-2.6/arch/x86/mm/srat_32.c
+@@ -267,6 +267,8 @@ int __init get_memcfg_from_srat(void)
+ 		e820_register_active_regions(chunk->nid, chunk->start_pfn,
+ 					     min(chunk->end_pfn, max_pfn));
+ 	}
++	/* for out of order entries in SRAT */
++	sort_node_map();
+ 
+ 	for_each_online_node(nid) {
+ 		unsigned long start = node_start_pfn[nid];
+Index: linux-2.6/arch/x86/mm/srat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_64.c
++++ linux-2.6/arch/x86/mm/srat_64.c
+@@ -373,6 +373,8 @@ int __init acpi_scan_nodes(unsigned long
+ 	for_each_node_mask(i, nodes_parsed)
+ 		e820_register_active_regions(i, nodes[i].start >> PAGE_SHIFT,
+ 						nodes[i].end >> PAGE_SHIFT);
++	/* for out of order entries in SRAT */
++	sort_node_map();
+ 	if (!nodes_cover_memory(nodes)) {
+ 		bad_srat();
+ 		return -1;
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h
++++ linux-2.6/include/linux/mm.h
+@@ -1022,6 +1022,7 @@ extern void add_active_range(unsigned in
+ extern void remove_active_range(unsigned int nid, unsigned long start_pfn,
+ 					unsigned long end_pfn);
+ extern void remove_all_active_ranges(void);
++void sort_node_map(void);
+ extern unsigned long absent_pages_in_range(unsigned long start_pfn,
+ 						unsigned long end_pfn);
+ extern void get_pfn_range_for_nid(unsigned int nid,
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -4102,7 +4102,7 @@ static int __init cmp_node_active_region
+ }
+ 
+ /* sort the node_map by start_pfn */
+-static void __init sort_node_map(void)
++void __init sort_node_map(void)
+ {
+ 	sort(early_node_map, (size_t)nr_nodemap_entries,
+ 			sizeof(struct node_active_region),
