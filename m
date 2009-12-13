@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZLMXii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbZLNAVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbZLMXii (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 18:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZLMXih
+	id S1756140AbZLNAVq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZLNAVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:38:37 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46851 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZLMXig (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:38:36 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: arjan@infradead.org, mingo@redhat.com, hpa@zytor.com,
-       Brice.Goglin@inria.fr, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [tip:x86/urgent] mm: Adjust do_pages_stat() so gcc can see copy_from_user() is safe
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-tip-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Brice.Goglin@inria.fr, hpa@zytor.com,
-       mingo@redhat.com, arjan@infradead.org, akpm@linux-foundation.org,
-       tglx@linutronix.de
-In-Reply-To: <tip-b925585039cf39275c2e0e57512e5df27fa73aad@git.kernel.org>
-References: <20090926205406.30d55b08@infradead.org> <tip-b925585039cf39275c2e0e57512e5df27fa73aad@git.kernel.org>
-Message-Id: <20091214082228.BB96.A69D9226@jp.fujitsu.com>
+	Sun, 13 Dec 2009 19:21:42 -0500
+Received: from [76.245.85.235] ([76.245.85.235]:39865 "EHLO cynthia.pants.nu"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751535AbZLNAVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 19:21:41 -0500
+X-Greylist: delayed 1916 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Dec 2009 19:21:40 EST
+Date: Sun, 13 Dec 2009 15:49:09 -0800
+From: Brad Boyer <flar@allandria.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       James Morris <jmorris@namei.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Mike Frysinger <vapier@gentoo.org>, Chris Zankel <chris@zankel.net>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Keys: KEYCTL_SESSION_TO_PARENT needs TIF_NOTIFY_RESUME architecture support
+Message-ID: <20091213234909.GA10609@cynthia.pants.nu>
+References: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg> <21796.1260743776@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 14 Dec 2009 08:38:31 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21796.1260743776@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Commit-ID:  b925585039cf39275c2e0e57512e5df27fa73aad
-> Gitweb:     http://git.kernel.org/tip/b925585039cf39275c2e0e57512e5df27fa73aad
-> Author:     H. Peter Anvin <hpa@zytor.com>
-> AuthorDate: Tue, 8 Dec 2009 14:01:32 -0800
-> Committer:  H. Peter Anvin <hpa@zytor.com>
-> CommitDate: Fri, 11 Dec 2009 15:27:47 -0800
+On Sun, Dec 13, 2009 at 10:36:16PM +0000, David Howells wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > 
-> mm: Adjust do_pages_stat() so gcc can see copy_from_user() is safe
+> > +#warning TIF_NOTIFY_RESUME not implemented
+> > +	return -EOPNOTSUPP;
 > 
-> Slightly adjust the logic for determining the size of the
-> copy_form_user() in do_pages_stat(); with this change, gcc can see
-> that the copying is safe.
-> 
-> Without this, we get a build error for i386 allyesconfig:
-> 
-> /home/hpa/kernel/linux-2.6-tip.urgent/arch/x86/include/asm/uaccess_32.h:213:
-> error: call to ‘copy_from_user_overflow’ declared with attribute
-> error: copy_from_user() buffer size is not provably correct
-> 
-> Unlike an earlier patch from Arjan, this doesn't introduce new
-> variables; merely reshuffles the compare so that gcc can see that an
-> overflow cannot happen.
-> 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> Cc: Brice Goglin <Brice.Goglin@inria.fr>
-> Cc: Arjan van de Ven <arjan@infradead.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> LKML-Reference: <20090926205406.30d55b08@infradead.org>
-> ---
->  mm/migrate.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index 7dbcb22..0bc640f 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -1044,7 +1044,7 @@ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
->  	int err;
->  
->  	for (i = 0; i < nr_pages; i += chunk_nr) {
-> -		if (chunk_nr + i > nr_pages)
-> +		if (chunk_nr > nr_pages - i)
->  			chunk_nr = nr_pages - i;
+> I wonder if it should printk() too.
 
-Ah, good. Thank you.
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+I would think something like WARN_ONCE() or something rate limited would
+be more appropriate.
 
-
-
-
+	Brad Boyer
+	flar@allandria.com
 
