@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbZLMTIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZLMTJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753935AbZLMTIf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 14:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZLMTIe
+	id S1753947AbZLMTJe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 14:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZLMTJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 14:08:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38249 "HELO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753871AbZLMTId (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 14:08:33 -0500
-Date: Sun, 13 Dec 2009 11:07:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Sun, 13 Dec 2009 14:09:33 -0500
+Received: from mail-out1.uio.no ([129.240.10.57]:50398 "HELO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753909AbZLMTJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 14:09:32 -0500
+Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-In-Reply-To: <1260729195.2612.7.camel@localhost>
-Message-ID: <alpine.LFD.2.00.0912131052080.13952@localhost.localdomain>
-References: <20091212101032.GB25286@elte.hu>  <20091212023603.93768833.akpm@linux-foundation.org>  <alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>  <alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>  <20091212214235.31429790@lxorguk.ukuu.org.uk>
-  <alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>  <alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>  <alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>  <20091213065844.GA20244@elte.hu>  <alpine.LFD.2.00.0912130941050.5516@localhost.localdomain>
-  <20091213181726.GA14558@elte.hu> <1260729195.2612.7.camel@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20091213190410.GA7297@nowhere>
+References: <20091212023603.93768833.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
+	 <alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
+	 <20091212214235.31429790@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
+	 <alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
+	 <alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
+	 <20091213065844.GA20244@elte.hu>
+	 <alpine.LFD.2.00.0912130941050.5516@localhost.localdomain>
+	 <20091213181726.GA14558@elte.hu>  <20091213190410.GA7297@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Dec 2009 14:09:14 -0500
+Message-Id: <1260731354.2612.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 9 msgs/h 1 sum rcpts/h 14 sum msgs/h 1 total rcpts 2023 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 55CC870E7E17DADA6451DDEBB53138A4DF238380
+X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 39 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 13 Dec 2009, Trond Myklebust wrote:
+On Sun, 2009-12-13 at 20:04 +0100, Frederic Weisbecker wrote: 
+> In the above cases we have the following comment:
 > 
-> The main remaining problem area is that of file locking (i.e. anything
-> that references inode->i_flock). I've started work on that, but a couple
-> of higher interrupts have prevented me from pulling it all together in
-> time for this merge window...
+> /* Protect inode->i_flock using the BKL */
+> 
+> And really it doesn't seem to protect anything else,
+> fortunately it is acquired in a short path.
 
-I'm pretty sure we've had at least two trees with the file locking code 
-fixed, but NFS in a status of "unknown".
+As I said in my reply, this is the tough one, because the BKL protection
+is imposed by the VFS locking scheme used in fs/locks.c.
 
-If I recall correctly, the file locking code itself is not that hard: 
-we've done it without the kernel lock in the past (long long ago), and the 
-lock usage doesn't nest (or at least it didn't at some point back then ;). 
-In fact, I think we even do the actual lock data structure allocations 
-outside of the kernel lock exactly because we at one time had a patch that 
-used a spinlock for protection of the lists.
+There is a similar dependency imposed upon fs/lockd/
 
-(Again, not only my memory, but the code itself may have bitrotted in the 
-meantime, of course).
+I'm working on this, but I don't have anything ready for 2.6.33. 
 
-		Linus
+> fs/nfs/super.c: unlock_kernel();
+> fs/nfs/super.c: unlock_kernel();
+> 
+> Protect the mount/unmount path, a bit trickier there.
+> 
+> But really that looks way much easier to fix than it was
+> with reiserfs.
+
+All the other cases you list should be fixed in the GIT PULL request
+that I just put out.
+
+Trond
+
