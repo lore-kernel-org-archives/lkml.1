@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZLNAXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZLNAYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZLNAXl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbZLMX5d
+	id S1754851AbZLNAYM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:24:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbZLMX5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:57:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34622 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Dec 2009 18:57:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34618 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754771AbZLMX51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:27 -0500
+	id S1754768AbZLMX50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:26 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, len.brown@intel.com, adobriyan@gmail.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: [PATCH 20/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:59:12 +0100
-Message-Id: <d94c5c3f88b03eb7c7c36c8b4f908e3795ba8ae4.1260662995.git.re.emese@gmail.com>
+Cc: Emese Revfy <re.emese@gmail.com>, gregkh@suse.de,
+       torvalds@linux-foundation.org
+Subject: [PATCH 21/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:59:13 +0100
+Message-Id: <8a5ff343bee02da0bf38bacca22cde6bfaeeeca6.1260662995.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662994.git.re.emese@gmail.com>
 References: <cover.1260662994.git.re.emese@gmail.com>
@@ -35,21 +35,21 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/platform/x86/toshiba_acpi.c |    2 +-
+ drivers/usb/misc/appledisplay.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
-index 51c0a8b..0786629 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -671,7 +671,7 @@ static acpi_status remove_device(void)
- 	return AE_OK;
+diff --git a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisplay.c
+index 1d8e39a..7aef786 100644
+--- a/drivers/usb/misc/appledisplay.c
++++ b/drivers/usb/misc/appledisplay.c
+@@ -178,7 +178,7 @@ static int appledisplay_bl_get_brightness(struct backlight_device *bd)
+ 		return pdata->msgdata[1];
  }
  
--static struct backlight_ops toshiba_backlight_data = {
-+static const struct backlight_ops toshiba_backlight_data = {
-         .get_brightness = get_lcd,
-         .update_status  = set_lcd_status,
+-static struct backlight_ops appledisplay_bl_data = {
++static const struct backlight_ops appledisplay_bl_data = {
+ 	.get_brightness	= appledisplay_bl_get_brightness,
+ 	.update_status	= appledisplay_bl_update_status,
  };
 -- 
 1.6.5.3
