@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZLNA3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZLNAZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbZLNA3A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZLNA24
+	id S1756213AbZLNAZB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbZLMX53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:28:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33810 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 18:57:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34606 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754729AbZLMX5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:21 -0500
+	id S1754763AbZLMX5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:25 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, jgarzik@pobox.com, tj@kernel.org,
-       torvalds@linux-foundation.org
-Subject: [PATCH 3/3] Constify struct acpi_dock_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:59:01 +0100
-Message-Id: <9285f4ed778df468f8287def65083a4d340c9b88.1260662994.git.re.emese@gmail.com>
+Cc: Emese Revfy <re.emese@gmail.com>, len.brown@intel.com, tony@linx.net,
+       jwoithe@physics.adelaide.edu.au, torvalds@linux-foundation.org
+Subject: [PATCH 10/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:59:02 +0100
+Message-Id: <d9e382d265c6c101d536284758dc8b6cb608ab6b.1260662995.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662994.git.re.emese@gmail.com>
 References: <cover.1260662994.git.re.emese@gmail.com>
@@ -35,27 +35,21 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/ata/libata-acpi.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/platform/x86/fujitsu-laptop.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index 1245838..667111d 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -223,12 +223,12 @@ static void ata_acpi_dev_uevent(acpi_handle handle, u32 event, void *data)
- 	ata_acpi_uevent(dev->link->ap, dev, event);
+diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
+index bcd4ba8..a249b35 100644
+--- a/drivers/platform/x86/fujitsu-laptop.c
++++ b/drivers/platform/x86/fujitsu-laptop.c
+@@ -436,7 +436,7 @@ static int bl_update_status(struct backlight_device *b)
+ 	return ret;
  }
  
--static struct acpi_dock_ops ata_acpi_dev_dock_ops = {
-+static const struct acpi_dock_ops ata_acpi_dev_dock_ops = {
- 	.handler = ata_acpi_dev_notify_dock,
- 	.uevent = ata_acpi_dev_uevent,
- };
- 
--static struct acpi_dock_ops ata_acpi_ap_dock_ops = {
-+static const struct acpi_dock_ops ata_acpi_ap_dock_ops = {
- 	.handler = ata_acpi_ap_notify_dock,
- 	.uevent = ata_acpi_ap_uevent,
+-static struct backlight_ops fujitsubl_ops = {
++static const struct backlight_ops fujitsubl_ops = {
+ 	.get_brightness = bl_get_brightness,
+ 	.update_status = bl_update_status,
  };
 -- 
 1.6.5.3
