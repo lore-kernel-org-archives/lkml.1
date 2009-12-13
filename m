@@ -1,51 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbZLMSzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZLMTHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbZLMSzA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 13:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZLMSy7
+	id S1753919AbZLMTHI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 14:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZLMTHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 13:54:59 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46879 "HELO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753047AbZLMSy6 convert rfc822-to-8bit (ORCPT
+	Sun, 13 Dec 2009 14:07:06 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52877 "HELO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753865AbZLMTHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 13:54:58 -0500
-Subject: Re: [patch 0/9] Fix various __task_cred related invalid RCU
- assumptions
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Al Viro <viro@zeniv.linux.org.uk>,
-       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20091210053457.GB6720@linux.vnet.ibm.com>
-References: <20091210001308.247025548@linutronix.de>
-	 <20091210022825.GG6938@linux.vnet.ibm.com>
-	 <alpine.LFD.2.00.0912091914540.3560@localhost.localdomain>
-	 <1260422031.4165.1.camel@twins>  <20091210053457.GB6720@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Sun, 13 Dec 2009 19:56:17 +0100
-Message-ID: <1260730577.4165.7.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sun, 13 Dec 2009 14:07:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=EdvGzngxiX9wz9m+ulb74sqV/kpMXYiJgZ+vgl6E+PCLad9WwJp3qf+Xr9FELK6+A2
+         IDKvBhbOTpMXDYDQoJbFosDMrunaFaygndH0NuSdVX4TGebRws5b4YD9evcwt2pM5CIP
+         JgmPARqX71eF4rNQOBdMctRaiIEsV7zBonQRU=
+Message-ID: <4B2539DB.5020805@gmail.com>
+Date: Sun, 13 Dec 2009 14:00:43 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <20091211.181712.211179737.davem@davemloft.net>	<4B236C18.4050007@gmail.com> <20091212022439.fae86037.akpm@linux-foundation.org>
+In-Reply-To: <20091212022439.fae86037.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 21:34 -0800, Paul E. McKenney wrote:
+Andrew Morton wrote:
+> On Sat, 12 Dec 2009 05:10:32 -0500 William Allen Simpson <william.allen.simpson@gmail.com> wrote:
+> 
+>> David Miller wrote:
+>>> David S. Miller (4):
+>>>       Merge branch 'master' of git://git.kernel.org/.../linville/wireless-next-2.6
+>>>       tcp: Remove runtime check that can never be true.
+>> This is a poor patch that was never sent to the netdev list for review.
+> 
+> It's better than the original code, which was checking to see whether a
+> u8 exceeded 536!
+> 
+It's preventative, to insure against changes to field sizes.  And it's
+correct C in form that has compiled without error for a dozen years.  But
+as you pointed out, gcc 4.0 generates a warning, while gcc 4.4 doesn't....
 
-> Ah -- I have a related lockdep question.  Is there a primitive that says
-> whether or not the current task holds at least one lock of any type?
-> If so, I would like to make rcu_dereference() do at least a little crude
-> checking for this problem.
+In the olden days, we'd have done these tests with preprocessor code, and
+that's apparently the style that Linux still prefers.  Sorry, I've not paid
+much attention since early debian, so I'm not up on the current state of
+undocumented Linux defines.
 
-Hmm, no, but that's not hard to do, however I actually implemented
-something like that for RCU a long while ago and that gives a metric TON
-of false positives due to things like the radix tree which are RCU-safe
-but are not required to be used with RCU.
+As I mentioned in an early post to the netdev list, while I've long had
+credit in BSD-derived systems, this is the first I've tried to implement for
+Linux kernel -- although I did give permission 15 or so years ago for a fair
+amount of my stuff to be ported here under GPL....
+
+Thanks in advance for your patience.
 
 
+>> Please substitute the better patch in the main tree.
+> 
+> Linus won't remove a commit from the middle of David's merge and
+> replace it with some unchangelogged, un-signed-off alternative.
+> 
+Actually, it *was* change-logged, discussed, and signed-off:
+
+   http://www.spinics.net/lists/netdev/msg115570.html
+
+David rejected it with the deeply explanatory message:
+
+   "Guess again."
+
+   http://www.spinics.net/lists/netdev/msg115585.html
+
+I'll also remind you that David has previously rejected range-checking in
+other patches of mine, with the message:
+
+   "You're being way too anal here, and adding these checks to
+   drivers would be just a lot of rediculious bloat." [sic]
+
+So, we have a fundamental difference about checking for negative before
+stuffing a signed value into an unsigned value.
+
+Then again, in 30+ years, AFAIK I've never shipped code that had a
+serious denial of service attack because of a failure to range check.
+Yes, I'm referring to 2.6.29, .30, and .31.
+
+I may not be perfect, but I try really, really hard to get it right.
+
+
+> An appropriate way to handle this is to prepare a new patch against
+> Linus or David's tree after this merge has been performed.  Package
+> that patch in the usual way and send it to the usual recipients. That's
+> the no-fuss, no-drama, stuff-gets-done path.
+> 
+It was ready before the merge was performed -- instead we got Miller-lite
+drama, fuss, and no-stuff-gets-done....
+
+Since David has rejected it, I was using this message to appeal.
+
+Is there no ability to appeal poor decisions by a maintainer?
