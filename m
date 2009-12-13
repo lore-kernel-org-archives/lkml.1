@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbZLMNLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZLMNMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbZLMNLY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 08:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZLMNLQ
+	id S1753325AbZLMNMM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 08:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZLMNLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 08:11:16 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:36226 "HELO mgw1.diku.dk"
+	Sun, 13 Dec 2009 08:11:44 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:38866 "HELO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753276AbZLMNLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 08:11:12 -0500
-Date: Sun, 13 Dec 2009 14:11:09 +0100 (CET)
+	id S1753102AbZLMNLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 08:11:43 -0500
+Date: Sun, 13 Dec 2009 14:11:39 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: airlied@linux.ie, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/2] drivers/gpu/drm: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0912131410330.24267@ask.diku.dk>
+To: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/2] drivers/staging/batman-adv: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0912131411100.24267@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -68,41 +68,22 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/gpu/drm/i915/intel_overlay.c           |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+ drivers/staging/batman-adv/send.c   |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_overlay.c b/drivers/gpu/drm/i915/intel_overlay.c
-index 49110b3..8ad6851 100644
---- a/drivers/gpu/drm/i915/intel_overlay.c
-+++ b/drivers/gpu/drm/i915/intel_overlay.c
-@@ -1083,14 +1083,18 @@ int intel_overlay_put_image(struct drm_device *dev, void *data,
+diff --git a/drivers/staging/batman-adv/send.c b/drivers/staging/batman-adv/send.c
+index d724798..eb61750 100644
+--- a/drivers/staging/batman-adv/send.c
++++ b/drivers/staging/batman-adv/send.c
+@@ -363,8 +363,10 @@ void add_bcast_packet_to_list(unsigned char *packet_buff, int packet_len)
+ 		return;
  
- 	drmmode_obj = drm_mode_object_find(dev, put_image_rec->crtc_id,
-                         DRM_MODE_OBJECT_CRTC);
--	if (!drmmode_obj)
--		return -ENOENT;
-+	if (!drmmode_obj) {
-+		ret = -ENOENT;
-+		goto out_free;
-+	}
- 	crtc = to_intel_crtc(obj_to_crtc(drmmode_obj));
- 
- 	new_bo = drm_gem_object_lookup(dev, file_priv,
- 			put_image_rec->bo_handle);
--	if (!new_bo)
--		return -ENOENT;
-+	if (!new_bo) {
-+		ret = -ENOENT;
-+		goto out_free;
+ 	forw_packet->packet_buff = kmalloc(packet_len, GFP_ATOMIC);
+-	if (!forw_packet->packet_buff)
++	if (!forw_packet->packet_buff) {
++		kfree(forw_packet);
+ 		return;
 +	}
  
- 	mutex_lock(&dev->mode_config.mutex);
- 	mutex_lock(&dev->struct_mutex);
-@@ -1180,6 +1184,7 @@ out_unlock:
- 	mutex_unlock(&dev->struct_mutex);
- 	mutex_unlock(&dev->mode_config.mutex);
- 	drm_gem_object_unreference(new_bo);
-+out_free:
- 	kfree(params);
- 
- 	return ret;
+ 	forw_packet->packet_len = packet_len;
+ 	memcpy(forw_packet->packet_buff, packet_buff, forw_packet->packet_len);
