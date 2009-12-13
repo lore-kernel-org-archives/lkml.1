@@ -1,68 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZLMNjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZLMNmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbZLMNjY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 08:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZLMNjX
+	id S1753396AbZLMNmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 08:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZLMNmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 08:39:23 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:52196 "HELO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753260AbZLMNjX (ORCPT
+	Sun, 13 Dec 2009 08:42:31 -0500
+Received: from lists.laptop.org ([18.85.2.145]:36993 "HELO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753353AbZLMNma convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 08:39:23 -0500
-Subject: Re: 2.6.32-git5+, CONFIG_WEXT_PRIV and Broadcom's driver for
- BCM4322  Wireless chips
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <5a4c581d0912130536r46b13b95pcd1364ee83cd39c0@mail.gmail.com>
-References: <5a4c581d0912120740j38a20f8eu3f616f3a477d922f@mail.gmail.com>
-	 <1260710042.2442.340.camel@johannes.local>
-	 <5a4c581d0912130536r46b13b95pcd1364ee83cd39c0@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-V6IwLmP/ZRrPiUFbkJ4t"
-Date: Sun, 13 Dec 2009 14:39:18 +0100
-Message-ID: <1260711558.2442.341.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sun, 13 Dec 2009 08:42:30 -0500
+Date: Sun, 13 Dec 2009 08:44:25 -0500
+From: Michael Stone <michael@laptop.org>
+To: =?iso-8859-1?Q?R=E9mi?= Denis-Courmont <remi@remlab.net>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>
+Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
+Message-ID: <20091213134425.GA4777@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Disposition: inline
+In-Reply-To: <200912131032.24251.remi@remlab.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rémi,                                                                                                                                                                                                                                                               
+> You explicitly mention the need to connect to the X server over local sockets.
+> But won't that allow the sandboxed application to send synthetic events to any
+> other X11 applications? 
 
---=-V6IwLmP/ZRrPiUFbkJ4t
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X11 cookie authentication and socket ownership+permissions effectively control
+access to the X server by local processes. Thus, as an isolation author, I may
+easily grant my isolated process any of:
 
-On Sun, 2009-12-13 at 14:36 +0100, Alessandro Suardi wrote:
+   a) full access to the main X server 
+   b) some access to a nested X server (like a Xephyr) which I'm using to do
+      some event filtering
+   c) no access to any X server by witholding thec cookies or by changing the
+      permissions on the X socket to be more restrictive
 
-> Thanks - you clipped the part of my message where I explain that my
->  "workaround" has been to select IPW2200 :)
+with existing techniques.
 
-Ah, sorry, I actually missed that completely. IPW2200 works just as
-well, of course, RAYCS was just the first one I saw :)
+> Hence unless the whole X server has restricted network access, this seems a
+> bit broken? 
 
-johannes
+Not broken for the reasons I mentioned above. However, using this rlimit to
+disable fresh network access for the whole X server actually sounds like a
+rather nice idea; thanks for suggesting it.
 
---=-V6IwLmP/ZRrPiUFbkJ4t
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> D-Bus, which also uses local sockets, will exhibit similar issues, 
 
------BEGIN PGP SIGNATURE-----
+Absolutely. However, D-Bus, like X, already has strong authentication
+mechanisms in place that permit me to use pre-existing Unix discretionary 
+access control to limit what communication takes place. More specifically, I can 
 
-iQIcBAABAgAGBQJLJO6DAAoJEODzc/N7+QmacjMP/1UXIM8oavNW6Fw8av/pRA7R
-d59u7hMulzUj/+JONE9hMoMHEItoUBFCfHoFuA94iSiaB7LVti6QUOUXTE9RX6Eu
-yEZGoCNB3oAklvDRL6Bco/8wB4s0uITLqoyljKtCXBVITpjXYm8qBrldm3R+S7ef
-qO7Y81hbEWJzbqWuYlEuViYNVSy8JExRthQzRNUKbXQQ8h0NXsHPBwEWIUfWP8MI
-Cw3iwib+23dP2Wcg4m58/TVtOCFKnpS+p6Nsr5NyTUjqtF6xEWjLCq4eDKo0UWXV
-2aG16P+51Hh1P/mZDBMut9YpvX1udzg/8Uf/rPqwZpNsmFE7qymanwRaEb7J1MTV
-/fN07upEV/lU2MiOL72VsJtFcEDS2piRJRwuS5A0uTtpuF0D9nHyUFJDsLluCal3
-lwRTa/mq2JBzcFmLvc00sRY61U+OK5ykzgofIBhAEsz03ydVWRKQH8CaKviHd1Q5
-8ZOiKTQm4Bsuw8lXN6+l2ZUefPuD9h6aynb/50NlkApTQReQQY7IMg+6UXNt1Qok
-/vnwVM63CGEh98CVCg8LhIDwWuumR9T+uJXs+PkXSpEOzaRrlb/igJ9PhOvAumsm
-Ky1WI0XXmRAp7XKvoMLKB0G1pS/n88Rfbp8+KI6LCogW7swhT8yTGst/uVkptdIt
-WsJSA5tiIij64kkeqkNa
-=ZyOQ
------END PGP SIGNATURE-----
+   a) tell D-Bus to use a file-system socket and change the credentials on that
+      socket
 
---=-V6IwLmP/ZRrPiUFbkJ4t--
+   b) use cookies to authenticate incoming connections
 
+   c) explicitly tell D-Bus what users and groups may connect via configuration
+      files
+
+   d) explicitly tell D-Bus what users and groups may send and receive which
+      messages via configuration files
+
+> as will any unrestricted IPC mechanism in fact. I am not sure if restricting
+> network access but not other file descriptors makes that much sense...? Then
+> again, I'm not entirely clear what you are trying to solve.
+
+Inadequately access-controlled IPC mechanisms are the specific problem that I
+am trying to address. Fortunately, these mechanisms seem to be rare: the only
+two that I know of are non-AF_UNIX sockets and ptrace(). All the other IPC
+mechanisms that I have seen may be adequately restricted by changing file
+permissions and ownership.
+
+> If I had to sandbox something, I'd drop the process file limit to 0. 
+
+That is a technique that is commonly used by many people in this space. It
+works well for some limited use cases and, like SECCOMP, is too restrictive for
+the kinds of general-purpose applications that I'm sandboxing.
+
+If you're interested,
+
+   http://cr.yp.to/unix/disablenetwork.html
+
+lists several specific problems. To see more, just try dropping RLIMIT_NOFILE
+to 0 before launching all your favorite apps. I'd be curious to hear how far
+you get.
+
+Regards,
+
+Michael
