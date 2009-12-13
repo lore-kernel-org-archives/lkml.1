@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZLMTFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZLMTMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbZLMTFb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 14:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZLMTFa
+	id S1753972AbZLMTMh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 14:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZLMTMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 14:05:30 -0500
-Received: from blu0-omc1-s4.blu0.hotmail.com ([65.55.116.15]:4744 "HELO
-	blu0-omc1-s4.blu0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753848AbZLMTFa convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 14:05:30 -0500
-Message-ID: <BLU118-W2048C3510A781E30899013E68A0@phx.gbl>
-X-Originating-IP: [78.23.100.244]
-From: Nico <segfault2@hotmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: ksoftirqd problem
-Date: Sun, 13 Dec 2009 20:05:29 +0100
-Importance: Normal
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Sun, 13 Dec 2009 14:12:36 -0500
+Received: from georges.telenet-ops.be ([195.130.137.68]:34416 "HELO
+	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753927AbZLMTMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 14:12:35 -0500
+Date: Sun, 13 Dec 2009 20:07:31 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jiri Kosina <jkosina@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ataflop: Killl warning about unused variable flags
+Message-ID: <alpine.DEB.2.00.0912132006430.19895@ayla.of.borg>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-X-OriginalArrivalTime: 13 Dec 2009 19:05:29.0531 (UTC) FILETIME=[3C92E8B0:01CA7C27]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After commit e0c0978699a83f26f2341f7eedc1463b79e31aff ("ataflop: remove
+buggy/commented-out IRQ disable from do_fd_request()") the `flags' variable
+became unused:
 
-Hi,
+drivers/block/ataflop.c:1473: warning: unused variable 'flags'
 
-I recently switched to kernel 2.6.32 (self configured/compiled) and I've noticed an odd behavior on one of my servers. I run a bittorrent tracker on one of my servers and when using kernel 2.6.32, every now and then ksoftirqd will jump up to 20% of my CPU for almost a minute. The tracker has a total peers amount of ~45000 peers (if it matters) and this behavior seems to only happen under kernel 2.6.32. Switching back to kernel 2.6.31.1 on the server, ksoftirdq does not behave that way.
+Hence remove it.
 
-Any thoughts?
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/block/ataflop.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-PS: please CC me as I'm not subscribed to the list
+diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
+index a5af1d6..e35cf59 100644
+--- a/drivers/block/ataflop.c
++++ b/drivers/block/ataflop.c
+@@ -1470,8 +1470,6 @@ repeat:
+ 
+ void do_fd_request(struct request_queue * q)
+ {
+- 	unsigned long flags;
+-
+ 	DPRINT(("do_fd_request for pid %d\n",current->pid));
+ 	while( fdc_busy ) sleep_on( &fdc_wait );
+ 	fdc_busy = 1;
+-- 
+1.6.0.4
 
-Thanks :)
- 		 	   		  
-_________________________________________________________________
-Windows Live: Friends get your Flickr, Yelp, and Digg updates when they e-mail you.
-http://www.microsoft.com/middleeast/windows/windowslive/see-it-in-action/social-network-basics.aspx?ocid=PID23461::T:WLMTAGL:ON:WL:en-xm:SI_SB_3:092010
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
