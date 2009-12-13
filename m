@@ -1,80 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZLMOJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZLMOT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbZLMOJf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 09:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZLMOJf
+	id S1753510AbZLMOT5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 09:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZLMOT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 09:09:35 -0500
-Received: from mx.sz.bfs.de ([194.94.69.70]:40829 "HELO mx.sz.bfs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751382AbZLMOJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 09:09:34 -0500
-Message-ID: <4B24F58C.4050502@bfs.de>
-Date: Sun, 13 Dec 2009 15:09:16 +0100
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 13 Dec 2009 09:19:56 -0500
+Received: from lists.laptop.org ([18.85.2.145]:47749 "HELO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753231AbZLMOTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 09:19:55 -0500
+Date: Sun, 13 Dec 2009 09:21:50 -0500
+From: Michael Stone <michael@laptop.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       =?iso-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
+Message-ID: <20091213142149.GB4777@heat>
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 9/9] sound/soc/codecs: Correct code taking the size of
- a pointer
-References: <Pine.LNX.4.64.0912131242570.24267@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0912131242570.24267@ask.diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <m1ljh7jijk.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Biederman wrote:
 
+> I have added the container's list to the cc as there is some overlap.
 
-Julia Lawall schrieb:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> sizeof(codec->reg_cache) is just the size of the pointer.  Elsewhere in the
-> file, codec->reg_cache is used with sizeof(wm8900_reg_defaults), so the
-> code is changed to do the same here.
-> 
-> A simplified version of the semantic patch that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression *x;
-> expression f;
-> type T;
-> @@
-> 
-> *f(...,(T)x,...)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  sound/soc/codecs/wm8900.c           |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/sound/soc/codecs/wm8900.c b/sound/soc/codecs/wm8900.c
-> index c9438dd..dbc368c 100644
-> --- a/sound/soc/codecs/wm8900.c
-> +++ b/sound/soc/codecs/wm8900.c
-> @@ -199,7 +199,7 @@ static void wm8900_reset(struct snd_soc_codec *codec)
->  	snd_soc_write(codec, WM8900_REG_RESET, 0);
->  
->  	memcpy(codec->reg_cache, wm8900_reg_defaults,
-> -	       sizeof(codec->reg_cache));
-> +	       sizeof(wm8900_reg_defaults));
->  }
+Good idea; thanks.
 
-I do not think that this was the intention of the original author,
-I guess the idea behind sizeof(*codec->reg_cache) was to protect
-the area behind it (in case wm8900_reg_defaults are badly defined).
+> Overall what you have looks ad-hoc, and very special case which is
+> likely to impair maintenance in the future.
 
-re,
- wh
+Unfortunately, these are the semantics which are necessary to make further
+progress on sandboxing real Linux apps with the discretionary access control
+facilities which are available today.
 
+> You can in theory confuse a suid root application and cause it to take action
+> with it's elevated privileges that violate the security policy. 
+
+You're right, in theory. In practice, the setuid-root facility is a rather
+special escape hatch which *everyone* in this field knows must be carefully
+audited and maintained when building or updating trustworthy systems.
+
+Also, in practice, I'm not expecting perfection today. Nor was I last year, nor
+am I next year. What I am expecting is that the kernel will supply me (perhaps
+with my assistance along the way) with the access control facilities that I
+need to do my job in userland. This is one of them.
+
+> The network namespace has more potential to confuse existing applications
+> than your mechanism, but the problem seems to remain.
+
+I'm glad to hear that you find this mechanism to be comparatively less
+confusing.
+
+>>   1. ptrace() 
+>>      
+>>      It was pointed out by Alan Cox, Andi Kleen, and others that processes
+>>      which dropped their RLIMIT_NETWORK rlimit were still able to directly
+>>      perform networking through a ptrace()'d victim.
+>> 
+>>      The new patchset adds an access check to __ptrace_may_access() to prevent
+>>      this behavior.
+> 
+> Solve that with an unused uid.  
+
+I already do, in general. (As do the other people requesting this facility.)
+
+The reason for the __ptrace_may_access() check is that the logical way for
+*application authors* whose code is *already* running in a fresh uid to further
+improve system security is to separate their network I/O from their parsing
+code a process boundary and to drop networking privileges in the parser.
+
+>>   2. unshare(CLONE_NEWNET)
+>> 
+>>      It was pointed out by James Morris that network namespaces could be used
+>>      to implement behavior similar to the behavior this patchset is designed to
+>>      implement. To address this criticism, I added support for network
+>>      namespaces to my sandboxing utility (Rainbow).
+>> 
+>>      Unfortunately, I have discovered that network namespaces in their current
+>>      form are not appropriate for my use cases because they prevent the
+>>      namespace'd apps from connecting to the X server, even over plain old
+>>      AF_UNIX sockets.
+>
+>We discussed that a while ago, and there is no fundamental reason to
+>disallow opening unix domain sockets from another network namespace.
+
+I disagree. I like that the network namespaces have (fairly) clear semantics.
+They are excellent semantics for some of my other use cases, like testing
+networked software [1]. They're probably quite nice for full-blown
+containerization. They're just not right for the kind of lightweight sandboxing
+of complicated legacy apps that I'm doing.
+
+[1]: http://dev.laptop.org/git/users/mstone/dnshash/tree/docs/unit_testing.txt
+
+>> The RLIMIT_NETWORK facility I propose contains a specific exception for
+>> AF_UNIX filesystem sockets since those sockets are already bound by
+>> regular Unix discretionary access control.
+> 
+> What is more significant than unix discretionary access control is the
+> fact that the set of available af_unix sockets you can bind to is filtered
+> by the mount namespace.
+
+Actually, the Unix DAC is far more important for my purposes. The reason is
+that it's unprivileged, already understood by literally *everyone* involved in
+Unix security, and it has the best tools support of any access control
+mechanism.
+
+For comparison, I do use CLONE_NEWNS mount namespaces and they've been a real
+pain because
+
+   a) unlike in Plan 9, they're privileged,
+
+   b) they greatly complicate debugging the isolated app because you see
+      different things inside and outside the namespace,
+
+   c) there's no good way to manipulate them from userland, and
+
+   d) they're poorly documented outside of the mount man page.
+
+Regards,
+
+Michael
