@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZLNAP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZLNANY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZLNAP5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZLNAPo
+	id S1755835AbZLNANY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbZLMX57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:15:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34227 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 18:57:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34821 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754949AbZLMX5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:54 -0500
+	id S1754853AbZLMX54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:56 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
 Cc: Emese Revfy <re.emese@gmail.com>, gregkh@suse.de,
        akpm@linux-foundation.org, alan@linux.intel.com,
-       torvalds@linux-foundation.org
-Subject: [PATCH 1/3] Constify struct hv_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:59:43 +0100
-Message-Id: <87be709edd4008d051dee9cd9ea9d888ddc07d69.1260662998.git.re.emese@gmail.com>
+       torvalds@linux-foundation.org, apier@gentoo.org,
+       benh@kernel.crashing.org
+Subject: [PATCH 2/3] Constify struct hv_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:59:44 +0100
+Message-Id: <3b52cb491533869cce143c69373c298c34ef9f77.1260662998.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662998.git.re.emese@gmail.com>
 References: <cover.1260662998.git.re.emese@gmail.com>
@@ -36,137 +37,35 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/char/hvc_beat.c    |    2 +-
- drivers/char/hvc_console.c |    6 +++---
- drivers/char/hvc_console.h |    6 +++---
- drivers/char/hvc_iucv.c    |    2 +-
- drivers/char/hvc_rtas.c    |    2 +-
- drivers/char/hvc_udbg.c    |    2 +-
- drivers/char/hvc_xen.c     |    2 +-
- 7 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/char/hvc_iseries.c |    2 +-
+ drivers/char/hvc_vio.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/hvc_beat.c b/drivers/char/hvc_beat.c
-index 0afc8b8..6913fc3 100644
---- a/drivers/char/hvc_beat.c
-+++ b/drivers/char/hvc_beat.c
-@@ -84,7 +84,7 @@ static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
- 	return cnt;
+diff --git a/drivers/char/hvc_iseries.c b/drivers/char/hvc_iseries.c
+index 936d05b..fd02426 100644
+--- a/drivers/char/hvc_iseries.c
++++ b/drivers/char/hvc_iseries.c
+@@ -197,7 +197,7 @@ done:
+ 	return sent;
  }
  
--static struct hv_ops hvc_beat_get_put_ops = {
-+static const struct hv_ops hvc_beat_get_put_ops = {
- 	.get_chars = hvc_beat_get_chars,
- 	.put_chars = hvc_beat_put_chars,
- };
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index a632f25..e622e05 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -125,7 +125,7 @@ static struct hvc_struct *hvc_get_by_index(int index)
-  * console interfaces but can still be used as a tty device.  This has to be
-  * static because kmalloc will not work during early console init.
-  */
--static struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
-+static const struct hv_ops *cons_ops[MAX_NR_HVC_CONSOLES];
- static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
- 	{[0 ... MAX_NR_HVC_CONSOLES - 1] = -1};
- 
-@@ -247,7 +247,7 @@ static void destroy_hvc_struct(struct kref *kref)
-  * vty adapters do NOT get an hvc_instantiate() callback since they
-  * appear after early console init.
-  */
--int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
-+int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
- {
- 	struct hvc_struct *hp;
- 
-@@ -749,7 +749,7 @@ static const struct tty_operations hvc_ops = {
- };
- 
- struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int data,
--					struct hv_ops *ops, int outbuf_size)
-+					const struct hv_ops *ops, int outbuf_size)
- {
- 	struct hvc_struct *hp;
- 	int i;
-diff --git a/drivers/char/hvc_console.h b/drivers/char/hvc_console.h
-index 10950ca..ed176c3 100644
---- a/drivers/char/hvc_console.h
-+++ b/drivers/char/hvc_console.h
-@@ -55,7 +55,7 @@ struct hvc_struct {
- 	int outbuf_size;
- 	int n_outbuf;
- 	uint32_t vtermno;
--	struct hv_ops *ops;
-+	const struct hv_ops *ops;
- 	int irq_requested;
- 	int data;
- 	struct winsize ws;
-@@ -76,11 +76,11 @@ struct hv_ops {
- };
- 
- /* Register a vterm and a slot index for use as a console (console_init) */
--extern int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops);
-+extern int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops);
- 
- /* register a vterm for hvc tty operation (module_init or hotplug add) */
- extern struct hvc_struct * __devinit hvc_alloc(uint32_t vtermno, int data,
--				struct hv_ops *ops, int outbuf_size);
-+				const struct hv_ops *ops, int outbuf_size);
- /* remove a vterm from hvc tty operation (module_exit or hotplug remove) */
- extern int hvc_remove(struct hvc_struct *hp);
- 
-diff --git a/drivers/char/hvc_iucv.c b/drivers/char/hvc_iucv.c
-index b8a5d65..619f7d1 100644
---- a/drivers/char/hvc_iucv.c
-+++ b/drivers/char/hvc_iucv.c
-@@ -922,7 +922,7 @@ static int hvc_iucv_pm_restore_thaw(struct device *dev)
- 
- 
- /* HVC operations */
--static struct hv_ops hvc_iucv_ops = {
-+static const struct hv_ops hvc_iucv_ops = {
- 	.get_chars = hvc_iucv_get_chars,
- 	.put_chars = hvc_iucv_put_chars,
- 	.notifier_add = hvc_iucv_notifier_add,
-diff --git a/drivers/char/hvc_rtas.c b/drivers/char/hvc_rtas.c
-index 88590d0..61c4a61 100644
---- a/drivers/char/hvc_rtas.c
-+++ b/drivers/char/hvc_rtas.c
-@@ -71,7 +71,7 @@ static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
- 	return i;
+-static struct hv_ops hvc_get_put_ops = {
++static const struct hv_ops hvc_get_put_ops = {
+ 	.get_chars = get_chars,
+ 	.put_chars = put_chars,
+ 	.notifier_add = notifier_add_irq,
+diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
+index 10be343..27370e9 100644
+--- a/drivers/char/hvc_vio.c
++++ b/drivers/char/hvc_vio.c
+@@ -77,7 +77,7 @@ static int filtered_get_chars(uint32_t vtermno, char *buf, int count)
+ 	return got;
  }
  
--static struct hv_ops hvc_rtas_get_put_ops = {
-+static const struct hv_ops hvc_rtas_get_put_ops = {
- 	.get_chars = hvc_rtas_read_console,
- 	.put_chars = hvc_rtas_write_console,
- };
-diff --git a/drivers/char/hvc_udbg.c b/drivers/char/hvc_udbg.c
-index bd63ba8..b0957e6 100644
---- a/drivers/char/hvc_udbg.c
-+++ b/drivers/char/hvc_udbg.c
-@@ -58,7 +58,7 @@ static int hvc_udbg_get(uint32_t vtermno, char *buf, int count)
- 	return i;
- }
- 
--static struct hv_ops hvc_udbg_ops = {
-+static const struct hv_ops hvc_udbg_ops = {
- 	.get_chars = hvc_udbg_get,
- 	.put_chars = hvc_udbg_put,
- };
-diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
-index b1a7163..60446f8 100644
---- a/drivers/char/hvc_xen.c
-+++ b/drivers/char/hvc_xen.c
-@@ -122,7 +122,7 @@ static int read_console(uint32_t vtermno, char *buf, int len)
- 	return recv;
- }
- 
--static struct hv_ops hvc_ops = {
-+static const struct hv_ops hvc_ops = {
- 	.get_chars = read_console,
- 	.put_chars = write_console,
+-static struct hv_ops hvc_get_put_ops = {
++static const struct hv_ops hvc_get_put_ops = {
+ 	.get_chars = filtered_get_chars,
+ 	.put_chars = hvc_put_chars,
  	.notifier_add = notifier_add_irq,
 -- 
 1.6.5.3
