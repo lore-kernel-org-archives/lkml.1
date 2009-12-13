@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751437AbZLMFp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751257AbZLMFUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751437AbZLMFp1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 00:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZLMFp0
+	id S1751257AbZLMFUh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 00:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZLMFUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 00:45:26 -0500
-Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:36218 "HELO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750900AbZLMFp0 (ORCPT
+	Sun, 13 Dec 2009 00:20:36 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:19257 "HELO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750780AbZLMFUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 00:45:26 -0500
-X-Greylist: delayed 1529 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 Dec 2009 00:45:26 EST
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: EUID != root + EGID = root, and CAP_SETGID
-Date: Sun, 13 Dec 2009 05:19:56 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <hg1ths$g05$1@taverner.cs.berkeley.edu>
-References: <4B222C3D.2070807@icdsoft.com>
-Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1260681596 16389 128.32.153.193 (13 Dec 2009 05:19:56 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Sun, 13 Dec 2009 05:19:56 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Sun, 13 Dec 2009 00:20:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=VfrCGigQGN3w/GgvdbQvQidIs3baeMDVqXfr4h9FKh+Oj144+rN+CuNbn9Qea3wmZE
+         H9XfKBjQmGWSuaUwxdyQo0wWHksOBdKk71WUjhrtSyUvzhYageYaNmStqDuLClfEbQvc
+         cO3NfYrs6MW3YiWGPDd9vawZC+YMX4mg+lEZw=
+MIME-Version: 1.0
+In-Reply-To: <20091213050900.GC4369@heat>
+References: <20091213034418.GA4416@heat> <20091213050900.GC4369@heat>
+From: Ulrich Drepper <drepper@gmail.com>
+Date: Sat, 12 Dec 2009 21:20:13 -0800
+Message-ID: <a36005b50912122120n4656b97bx6a6d862a57671e6d@mail.gmail.com>
+Subject: Re: setrlimit(RLIMIT_NETWORK) vs. prctl(???)
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       =?UTF-8?Q?R=C3=A9mi_Denis=2DCourmont?= <rdenis@simphalempin.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ivan Zahariev  wrote:
->Is this an intended behavior?
+On Sat, Dec 12, 2009 at 21:09, Michael Stone <michael@laptop.org> wrote:
+>> That being said, I'm not wedded to the decision. Could you give me some
+>> more
+>> specific examples of the kinds of changes in low-level userspace code that
+>> you're worried about?
 
-Yes.  Setuid/setgid are a mess.  For more details, you might
-find the following research papers interesting:
+It was an accident that I sent the email privately.
 
-http://www.cs.berkeley.edu/~daw/papers/setuid-usenix02.pdf 
-http://www.cs.berkeley.edu/~daw/papers/setuid-login08b.pdf 
-
-See, e.g., Section 5.2 of the former paper, which says:
-
-  "an effective group ID of zero does not accord any
-  special privileges to change groups. This is a potential
-  source of confusion: it is tempting to assume incorrectly
-  that since appropriate privileges are carried by the euid
-  in the setuid-like calls, they will be carried by the
-  egid in the setgid-like calls, but this is not how it
-  actually works. This misconception caused a mistake in
-  the manual page of setgid in Redhat Linux 7.2 (Section
-  6.4.1)."
+As summarized in the paraphrased comment, it's a pain to deal with
+rlimit extensions.  It's easy enough to do all this using prctl() with
+the same semantics and without forcing any other code to be modified.
+I let others more competent to judge the usefulness.  But using rlimit
+as the interface is just plain wrong.
