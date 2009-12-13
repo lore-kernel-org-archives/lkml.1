@@ -1,38 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbZLMHEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751334AbZLMHX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751213AbZLMHEw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 02:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbZLMHEu
+	id S1751334AbZLMHX5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 02:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZLMHX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 02:04:50 -0500
-Received: from claw.goop.org ([74.207.240.146]:45511 "HELO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750852AbZLMHEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 02:04:49 -0500
-Message-ID: <4B249210.7060103@goop.org>
-Date: Sat, 12 Dec 2009 23:04:48 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
+	Sun, 13 Dec 2009 02:23:56 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:44032 "HELO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751189AbZLMHXz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 02:23:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kuL02yUpIa9USVTkSKpqrBRICjx/uXgU8UB8XqGtgTSkfqL7WpzWDDp3ItVdLS0Wqu
+         mHJS0aYz17V3zoF8OxJAMAVw31rfG8o0urUxDcHnX+BoCaE3WNBPjfVMNdfbaLEXLvA6
+         BdBG1MGsmN9nBRQDlm4VC78Hs2iA8SSilPhsk=
 MIME-Version: 1.0
-To: liu weni <qingshenlwy@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Toralf_?= =?ISO-8859-1?Q?F=F6rster?= 
-	<toralf.foerster@gmx.de>
-Subject: Re: [PATCH v2]kernel: remove mess codes
-References: <b3657a100912122255j138bb9e6s785bdc8152a27691@mail.gmail.com>
-In-Reply-To: <b3657a100912122255j138bb9e6s785bdc8152a27691@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LSU.2.01.0912112023170.32039@obet.zrqbmnf.qr>
+References: <alpine.LSU.2.01.0912112023170.32039@obet.zrqbmnf.qr>
+Date: Sun, 13 Dec 2009 09:23:52 +0200
+Message-ID: <9b2db90b0912122323w25d2d815o70d0bd2f1e19a228@mail.gmail.com>
+Subject: Re: nconfig v7
+From: Nir Tzachar <nir.tzachar@gmail.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/12/09 22:55, liu weni wrote:
-> I found some mess characters(0x0c) in the kernel source code.
-> Then I suggest remove it.
->    
+Hello.
 
-Those are form-feed characters.   Some editors use them to separate 
-logically distinct blocks of code into separate "pages".
+On Fri, Dec 11, 2009 at 9:55 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
+> Hi,
+>
+>
+> I gave nconfig a try, and here are a few suggestive points:
 
-     J
+10x ;)
+
+> - provide the same color scheme as menuconfig
+
+As far as colrs are involved, I think it is best to not impose any
+color scheme. You can never satisfy everyone, and will get into
+endless fights about which is best. I believe the current approach in
+nconfig works best, as I am using the default terminal colors for the
+main body of text (menus, help text, etc), and only use colors for
+emphasis (headings, boxes, etc). This is based on the belief that
+users have already chosen the colors which work best for them, and are
+already using them in their teminal's config.
+
+> - I get a visual glitch (see Exhibit A below) in General setup (patch
+>  slapped onto 2.6.32); the left frame part is missing.
+
+I cannot reproduce this. Can you provide some more details? (e.g.,
+which terminal, $LINES, $COLUMNS, $TERM)
+
+> - For symbol info, it would be cool if it wrapped the "Selected by"
+>  line (menuconfig also "suffers" from this), because that one can
+>  get exceptionally long and awkward to scroll.
+
+I took a look at the patch by Vadim Bendebury, should be easy to adapt nconfig.
+
+> - I certainly like F4-Config-ShowAll :)  but it has some glitches
+>  interfering near ARCH_DEFCONFIG (see Exhibit B).
+
+Thanks for catching this. It is a by-product of the code for
+presenting everything inside a single menu. Easily fixed in the next
+version. By the way, is anyone using this option at all? It would much
+simplify the code if I did not have to support the one giant menu
+option.
+
+Chhers,
+Nir.
