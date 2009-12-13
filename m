@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZLNAMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZLNAMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbZLNAMr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZLNAMh
+	id S1755813AbZLNAMB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:12:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZLNALl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:12:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34281 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:11:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34907 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754993AbZLMX57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:59 -0500
+	id S1755023AbZLMX6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:58:06 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, viro@zeniv.linux.org.uk, jeffm@suse.com,
+Cc: Emese Revfy <re.emese@gmail.com>, vapier@gentoo.org,
        torvalds@linux-foundation.org
-Subject: [PATCH 1/2] Constify struct item_operations for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:59:49 +0100
-Message-Id: <bd7230a64d3686cfabccfaad63d10b0e4d28b88b.1260662998.git.re.emese@gmail.com>
+Subject: [PATCH 2/8] Constify struct kgdb_arch for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:59:50 +0100
+Message-Id: <f2d1d095dd0c5433c46022cb34165d98c2bf4884.1260662999.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <cover.1260662998.git.re.emese@gmail.com>
-References: <cover.1260662998.git.re.emese@gmail.com>
+In-Reply-To: <cover.1260662999.git.re.emese@gmail.com>
+References: <cover.1260662999.git.re.emese@gmail.com>
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
@@ -34,67 +34,22 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- fs/reiserfs/item_ops.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/blackfin/kernel/kgdb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/reiserfs/item_ops.c b/fs/reiserfs/item_ops.c
-index 72cb1cc..d0e3181 100644
---- a/fs/reiserfs/item_ops.c
-+++ b/fs/reiserfs/item_ops.c
-@@ -102,7 +102,7 @@ static void sd_print_vi(struct virtual_item *vi)
- 			 vi->vi_index, vi->vi_type, vi->vi_ih);
+diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
+index cce79d0..c406c85 100644
+--- a/arch/blackfin/kernel/kgdb.c
++++ b/arch/blackfin/kernel/kgdb.c
+@@ -428,7 +428,7 @@ int kgdb_arch_handle_exception(int vector, int signo,
+ 	return -1;		/* this means that we do not want to exit from the handler */
  }
  
--static struct item_operations stat_data_ops = {
-+static const struct item_operations stat_data_ops = {
- 	.bytes_number = sd_bytes_number,
- 	.decrement_key = sd_decrement_key,
- 	.is_left_mergeable = sd_is_left_mergeable,
-@@ -196,7 +196,7 @@ static void direct_print_vi(struct virtual_item *vi)
- 			 vi->vi_index, vi->vi_type, vi->vi_ih);
- }
- 
--static struct item_operations direct_ops = {
-+static const struct item_operations direct_ops = {
- 	.bytes_number = direct_bytes_number,
- 	.decrement_key = direct_decrement_key,
- 	.is_left_mergeable = direct_is_left_mergeable,
-@@ -341,7 +341,7 @@ static void indirect_print_vi(struct virtual_item *vi)
- 			 vi->vi_index, vi->vi_type, vi->vi_ih);
- }
- 
--static struct item_operations indirect_ops = {
-+static const struct item_operations indirect_ops = {
- 	.bytes_number = indirect_bytes_number,
- 	.decrement_key = indirect_decrement_key,
- 	.is_left_mergeable = indirect_is_left_mergeable,
-@@ -628,7 +628,7 @@ static void direntry_print_vi(struct virtual_item *vi)
- 	printk("\n");
- }
- 
--static struct item_operations direntry_ops = {
-+static const struct item_operations direntry_ops = {
- 	.bytes_number = direntry_bytes_number,
- 	.decrement_key = direntry_decrement_key,
- 	.is_left_mergeable = direntry_is_left_mergeable,
-@@ -724,7 +724,7 @@ static void errcatch_print_vi(struct virtual_item *vi)
- 			 "Invalid item type observed, run fsck ASAP");
- }
- 
--static struct item_operations errcatch_ops = {
-+static const struct item_operations errcatch_ops = {
- 	errcatch_bytes_number,
- 	errcatch_decrement_key,
- 	errcatch_is_left_mergeable,
-@@ -746,7 +746,7 @@ static struct item_operations errcatch_ops = {
- #error Item types must use disk-format assigned values.
- #endif
- 
--struct item_operations *item_ops[TYPE_ANY + 1] = {
-+const struct item_operations * const item_ops[TYPE_ANY + 1] = {
- 	&stat_data_ops,
- 	&indirect_ops,
- 	&direct_ops,
+-struct kgdb_arch arch_kgdb_ops = {
++const struct kgdb_arch arch_kgdb_ops = {
+ 	.gdb_bpt_instr = {0xa1},
+ #ifdef CONFIG_SMP
+ 	.flags = KGDB_HW_BREAKPOINT|KGDB_THR_PROC_SWAP,
 -- 
 1.6.5.3
 
