@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbZLNARv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZLNAVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932070AbZLNARv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbZLNARs
+	id S1756128AbZLNAVM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZLNAU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:17:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34199 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:20:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34064 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754805AbZLMX5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:50 -0500
+	id S1754802AbZLMX5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:39 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, netdev@vger.kernel.org,
-       torvalds@linux-foundation.org, linville@tuxdriver.com, mb@bu3sch.de
-Subject: [PATCH 6/9] Constify struct file_operations for 2.6.32-git-053fe57ac v2
+Cc: Emese Revfy <re.emese@gmail.com>, akpm@linux-foundation.org, mingo@elte.hu,
+       matthew@wil.cx, torvalds@linux-foundation.org
+Subject: [PATCH 1/1] Constify struct file_lock_operations for 2.6.32-git-053fe57ac v2
 Date: Mon, 14 Dec 2009 00:59:34 +0100
-Message-Id: <4b2b1606720535a684ced304318278c3c5ba63ef.1260662997.git.re.emese@gmail.com>
+Message-Id: <482ce9967027b3ce51ca7e1e38f024fd4eab9169.1260662997.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662997.git.re.emese@gmail.com>
 References: <cover.1260662997.git.re.emese@gmail.com>
@@ -35,50 +35,24 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/net/wireless/b43/debugfs.c       |    2 +-
- drivers/net/wireless/b43legacy/debugfs.c |    2 +-
- drivers/net/wireless/libertas/debugfs.c  |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/fs.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/wireless/b43/debugfs.c b/drivers/net/wireless/b43/debugfs.c
-index 80b19a4..dab3a45 100644
---- a/drivers/net/wireless/b43/debugfs.c
-+++ b/drivers/net/wireless/b43/debugfs.c
-@@ -43,7 +43,7 @@ static struct dentry *rootdir;
- struct b43_debugfs_fops {
- 	ssize_t (*read)(struct b43_wldev *dev, char *buf, size_t bufsize);
- 	int (*write)(struct b43_wldev *dev, const char *buf, size_t count);
--	struct file_operations fops;
-+	const struct file_operations fops;
- 	/* Offset of struct b43_dfs_file in struct b43_dfsentry */
- 	size_t file_struct_offset;
- };
-diff --git a/drivers/net/wireless/b43legacy/debugfs.c b/drivers/net/wireless/b43legacy/debugfs.c
-index 1f85ac5..c99b4b4 100644
---- a/drivers/net/wireless/b43legacy/debugfs.c
-+++ b/drivers/net/wireless/b43legacy/debugfs.c
-@@ -44,7 +44,7 @@ static struct dentry *rootdir;
- struct b43legacy_debugfs_fops {
- 	ssize_t (*read)(struct b43legacy_wldev *dev, char *buf, size_t bufsize);
- 	int (*write)(struct b43legacy_wldev *dev, const char *buf, size_t count);
--	struct file_operations fops;
-+	const struct file_operations fops;
- 	/* Offset of struct b43legacy_dfs_file in struct b43legacy_dfsentry */
- 	size_t file_struct_offset;
- 	/* Take wl->irq_lock before calling read/write? */
-diff --git a/drivers/net/wireless/libertas/debugfs.c b/drivers/net/wireless/libertas/debugfs.c
-index 587b0cb..27547b0 100644
---- a/drivers/net/wireless/libertas/debugfs.c
-+++ b/drivers/net/wireless/libertas/debugfs.c
-@@ -717,7 +717,7 @@ out_unlock:
- struct lbs_debugfs_files {
- 	const char *name;
- 	int perm;
--	struct file_operations fops;
-+	const struct file_operations fops;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a057f48..c88cb4b 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1028,8 +1028,8 @@ static inline int file_check_writeable(struct file *filp)
+ typedef struct files_struct *fl_owner_t;
+ 
+ struct file_lock_operations {
+-	void (*fl_copy_lock)(struct file_lock *, struct file_lock *);
+-	void (*fl_release_private)(struct file_lock *);
++	void (* const fl_copy_lock)(struct file_lock *, struct file_lock *);
++	void (* const fl_release_private)(struct file_lock *);
  };
  
- static const struct lbs_debugfs_files debugfs_files[] = {
+ struct lock_manager_operations {
 -- 
 1.6.5.3
 
