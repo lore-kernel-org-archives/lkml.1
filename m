@@ -1,114 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZLMKWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbZLMK3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbZLMKWK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 05:22:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZLMKWF
+	id S1752247AbZLMK3d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 05:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZLMK3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 05:22:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50237 "HELO mx1.redhat.com"
+	Sun, 13 Dec 2009 05:29:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42986 "HELO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751480AbZLMKV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 05:21:59 -0500
-Date: Sun, 13 Dec 2009 12:19:08 +0200
+	id S1752198AbZLMK3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 05:29:30 -0500
+Date: Sun, 13 Dec 2009 12:26:33 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Shirley Ma <mashirle@us.ibm.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
        netdev@vger.kernel.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH v2 0/4] Defer skb allocation for both mergeable buffers
-	and big packets in virtio_net
-Message-ID: <20091213101907.GA6789@redhat.com>
-References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain>
+Subject: Re: [PATCH v2 1/4] Defer skb allocation -- add destroy buffers
+	function for virtio
+Message-ID: <20091213102632.GB6789@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260534805.30371.10.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260534506.30371.6.camel@localhost.localdomain>
+In-Reply-To: <1260534805.30371.10.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 04:28:26AM -0800, Shirley Ma wrote:
-> This is a patch-set for deferring skb allocation based on Rusty and
-> Michael's inputs.
-
-Shirley, some advice on packaging patches
-that I hope will be helpful:
-
-You did try to split up the patch logically,
-and it's better than a single huge patch, but it
-can be better.  For example, you add static functions
-in one patch and use them in another patch,
-this works well for new APIs which are documented
-so you can understand from the documentation
-what function should do, but not for internal, static functions:
-one ends up looking at usage, going back to implementation,
-back to usage, each time switching between patches.
-
-One idea on how to split up the patch set better:
-- add new "destroy" API and supply documentation
-- switch current implementation over to use destroy API
-- split current implementation into subfunctions
-  handling mergeable/big cases
-- convert functions to use deferred allocation
-  [would be nice to convert mergeable/big separately,
-   but I am not sure this is possible while keeping
-   patchset bisectable]
-
-Some suggestions on formatting:
-- keep patch names short, and prefix with module name,
-  not patchset name, so that git summaries look nicer. E.g.
-  Defer skb allocation -- add destroy buffers function for virtio
-  Would be better "virtio: add destroy buffers function".
-- please supply commit message with some explanation
-  and motivation that will help someone looking
-  at git history, without background from mailing list.
-  E.g.
-  "Add "destroy" vq API that returns all posted
-   buffers back to caller. This makes it possible
-   to avoid tracking buffers in callers to free
-   them on vq teardown. Will be used by deferred
-   skb allocation patch.".
-- Use "---" to separate description from text,
-  and generally make patch acceptable to git am.
-  It is a good idea to use git to generate patches,
-  for example with git format-patch.
-  I usually use it with --numbered --thread --cover-letter.
-
-
-> Guest virtio_net receives packets from its pre-allocated vring 
-> buffers, then it delivers these packets to upper layer protocols
-> as skb buffs. So it's not necessary to pre-allocate skb for each
-> mergable buffer, then frees it when it's useless. 
-> This patch has deferred skb allocation when receiving packets for
-> both big packets and mergeable buffers. It reduces skb pre-allocations 
-> and skb_frees.
-
-E.g. the above should go into commit message for the virtio net
-part of patchset.
-
+On Fri, Dec 11, 2009 at 04:33:25AM -0800, Shirley Ma wrote:
+> Signed-off-by: <xma@us.ibm.com>
+> -------------
 > 
-> A destroy function has been created to push virtio free buffs to vring
-> for unused pages, and used page private to maintain page list.
+> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+> index c708ecc..bb5eb7b 100644
+> --- a/drivers/net/virtio_net.c
+> +++ b/drivers/net/virtio_net.c
+> @@ -107,6 +107,16 @@ static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
+>  	return p;
+>  }
+>  
+> +static void virtio_net_free_pages(void *buf)
+> +{
+> +	struct page *page, *next;
+> +
+> +	for (page = buf; page; page = next) {
+> +		next = (struct page *)page->private;
+> +		__free_pages(page, 0);
+> +	}
+> +}
+> +
+>  static void skb_xmit_done(struct virtqueue *svq)
+>  {
+>  	struct virtnet_info *vi = svq->vdev->priv;
+
+This is not the best way to split the patch,
+as I commented separately: this adds static function
+but no way to see whether it does what it should do.
+If you think about it, free should always go into same patch
+that does alloc.
+
+> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> index fbd2ecd..db83465 100644
+> --- a/drivers/virtio/virtio_ring.c
+> +++ b/drivers/virtio/virtio_ring.c
+> @@ -334,6 +334,29 @@ static bool vring_enable_cb(struct virtqueue *_vq)
+>  	return true;
+>  }
+>  
+> +static int vring_destroy_bufs(struct virtqueue *_vq, void (*destroy)(void *))
+> +{
+> +	struct vring_virtqueue *vq = to_vvq(_vq);
+> +	void *buf;
+> +	unsigned int i;
+> +	int freed = 0;
+> +
+> +	START_USE(vq);
+> +
+> +	for (i = 0; i < vq->vring.num; i++) {
+
+I prefer ++i in such code personally.
+
+> +		if (vq->data[i]) {
+> +			/* detach_buf clears data, so grab it now. */
+> +			buf = vq->data[i];
+> +			detach_buf(vq, i);
+
+Hmm, you are calling detach on a buffer which was not used.
+It's not safe to call this while host might use buffers, is it?
+Please document this and other assumptions you are making.
+
+> +			destroy(buf);
+> +			freed++;
+
+++freed here as well.
+
+> +		}
+> +	}
+> +
+
+It's usually better not to put {} around single statement blocks.
+
+> +	END_USE(vq);
+> +	return freed;
+> +}
+> +
+>  irqreturn_t vring_interrupt(int irq, void *_vq)
+>  {
+>  	struct vring_virtqueue *vq = to_vvq(_vq);
+> @@ -360,6 +383,7 @@ static struct virtqueue_ops vring_vq_ops = {
+>  	.kick = vring_kick,
+>  	.disable_cb = vring_disable_cb,
+>  	.enable_cb = vring_enable_cb,
+> +	.destroy_bufs = vring_destroy_bufs,
+>  };
+>  
+>  struct virtqueue *vring_new_virtqueue(unsigned int num,
+> diff --git a/include/linux/virtio.h b/include/linux/virtio.h
+> index 057a2e0..e6d7d77 100644
+> --- a/include/linux/virtio.h
+> +++ b/include/linux/virtio.h
+> @@ -71,6 +71,7 @@ struct virtqueue_ops {
+>  
+>  	void (*disable_cb)(struct virtqueue *vq);
+>  	bool (*enable_cb)(struct virtqueue *vq);
+> +	int (*destroy_bufs)(struct virtqueue *vq, void (*destory)(void *));
+
+Typo above.  Please document the new field.
+Also please document assumptions about usage.
+
+I think callback should get struct virtqueue *vq, and decrement num.
+And destroy_bufs should return void, which is much more natural for a
+destructor.
+
+
+That said - do we have to use a callback?
+I think destroy_buf which returns data pointer,
+and which we call repeatedly until we get NULL
+or error, would be an a better, more flexible API.
+This is not critical though.
+
+
+>  };
+>  
+>  /**
 > 
-> This patch has tested and measured against 2.6.32-rc7 git. It is built
-> again 2.6.32 kernel.
-
-I think you need to base your patch on Dave's net-next,
-it's too late to put it in 2.6.32, or even 2.6.33.
-It also should probably go in through Dave's tree because virtio part of
-patch is very small, while most of it deals with net/virtio_net.
-
-> Tests have been done for small packets, big packets
-> and mergeable buffers.
-> 
-> The single netperf TCP_STREAM performance improved for host to guest. 
-> It also reduces UDP packets drop rate.
-
-
-BTW, any numbers?  Also, 2.6.32 has regressed as compared to 2.6.31.
-Did you try with Sridhar Samudrala's patch from net-next applied
-that reportedly fixes this?
-
-> Thanks
-> Shirley
