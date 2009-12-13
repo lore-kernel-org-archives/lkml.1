@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZLMX6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZLNAIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbZLMX6T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 18:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbZLMX6N
+	id S1755540AbZLNAIS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbZLMX6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:58:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34312 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 18:58:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34355 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755014AbZLMX6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:58:03 -0500
+	id S1755028AbZLMX6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:58:09 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, lethal@linux-sh.org,
+Cc: Emese Revfy <re.emese@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       tglx@linutronix.de, akpm@linux-foundation.org, adobriyan@gmail.com,
        torvalds@linux-foundation.org
-Subject: [PATCH 6/8] Constify struct kgdb_arch for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:59:54 +0100
-Message-Id: <ec75bcc4625698b3f153d019b11d1d5356c18374.1260662999.git.re.emese@gmail.com>
+Subject: [PATCH 7/8] Constify struct kgdb_arch for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:59:55 +0100
+Message-Id: <111eab95e3efd3beafd55d21dd8e4a60204f06a8.1260662999.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662999.git.re.emese@gmail.com>
 References: <cover.1260662999.git.re.emese@gmail.com>
@@ -35,22 +36,22 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- arch/sh/kernel/kgdb.c |    2 +-
+ arch/x86/kernel/kgdb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/sh/kernel/kgdb.c b/arch/sh/kernel/kgdb.c
-index 3e532d0..9faa306 100644
---- a/arch/sh/kernel/kgdb.c
-+++ b/arch/sh/kernel/kgdb.c
-@@ -271,7 +271,7 @@ void kgdb_arch_exit(void)
- {
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index dd74fe7..d1bc0f1 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -582,7 +582,7 @@ unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
+ 	return instruction_pointer(regs);
  }
  
 -struct kgdb_arch arch_kgdb_ops = {
 +const struct kgdb_arch arch_kgdb_ops = {
- 	/* Breakpoint instruction: trapa #0x3c */
- #ifdef CONFIG_CPU_LITTLE_ENDIAN
- 	.gdb_bpt_instr		= { 0x3c, 0xc3 },
+ 	/* Breakpoint instruction: */
+ 	.gdb_bpt_instr		= { 0xcc },
+ 	.flags			= KGDB_HW_BREAKPOINT,
 -- 
 1.6.5.3
 
