@@ -1,68 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZLMBMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933301AbZLMBXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbZLMBMH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:12:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZLMBL4
+	id S933301AbZLMBXW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933163AbZLMBXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:11:56 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:60371 "HELO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750709AbZLMBLy convert rfc822-to-8bit (ORCPT
+	Sat, 12 Dec 2009 20:23:21 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:35243 "HELO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933139AbZLMBXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:11:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=g/AG0LsS7MwHMxPJhML9WeVHL7ytV2RI1x3wlgoUYWDoDQS9KU4jNfSbhKiDT1iZrA
-         COJJlPiFdGBN/mEE/t2nM+tm9Q8qvT2GAr2E8xaZi2A3x0wv/2cjMXWy8O6IC7t0UHSn
-         2uQG2akDbo4cMWiRHKatPwoWKhaYotCx+ooIU=
+	Sat, 12 Dec 2009 20:23:20 -0500
+Message-ID: <4B2441A6.5050404@vflare.org>
+Date: Sun, 13 Dec 2009 06:51:42 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091211.214117.200029438.davem@davemloft.net>
-References: <86802c440912112125v4aa72189ifcc2d16ecbf79cc4@mail.gmail.com>
-	 <20091211.214117.200029438.davem@davemloft.net>
-Date: Sat, 12 Dec 2009 17:05:27 -0800
-X-Google-Sender-Auth: 6ca7613019cc45cf
-Message-ID: <86802c440912121705y59eea3ebq3bdbd3e7459e748e@mail.gmail.com>
-Subject: Re: nfs broken in net-next? -- now in mainline -- bisected: 
-	d9f5950f90292f7cc42834338dfd5f44dc4cc4ca
-From: Yinghai Lu <yinghai@kernel.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, sri@us.ibm.com, herbert@gondor.apana.org.au,
-       torvalds@linux-foundation.org, sjayaraman@suse.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ramzswap: remove ARM specific d-cache hack
+References: <1260598486-12623-1-git-send-email-ngupta@vflare.org> <84144f020912112341jc7fdc1eqac719578e2aa746b@mail.gmail.com>
+In-Reply-To: <84144f020912112341jc7fdc1eqac719578e2aa746b@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 9:41 PM, David Miller <davem@davemloft.net> wrote:
-> From: Yinghai Lu <yhlu.kernel@gmail.com>
-> Date: Fri, 11 Dec 2009 21:25:49 -0800
->
->> [linux-2.6]# git bisect good
->> d9f5950f90292f7cc42834338dfd5f44dc4cc4ca is first bad commit
->> commit d9f5950f90292f7cc42834338dfd5f44dc4cc4ca
->> Author: Sridhar Samudrala <sri@us.ibm.com>
->> Date:   Wed Oct 7 12:24:25 2009 +0000
+On 12/12/2009 01:11 PM, Pekka Enberg wrote:
+> On Sat, Dec 12, 2009 at 8:14 AM, Nitin Gupta <ngupta@vflare.org> wrote:
+>> Remove d-cache hack in ramzswap driver that was needed
+>> to workaround a bug in ARM version of update_mmu_cache()
+>> which caused stale data in d-cache to be transferred to
+>> userspace. This bug was fixed by git commit:
+>>        787b2faadc4356b6c2c71feb42fb944fece9a12f
+>> This also brings down one entry in TODO file.
 >>
->>     net: Make UFO on master device independent of attached devices
->
-> Thanks.
->
-> If I don't hear anything from Sridhar in a day or two I'll simply
-> revert that change.
+>> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+> 
+> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-seems revert that doesn't fix the problem.
+Thanks for review Pekka.
+Now wondering when this patch will be committed to mainline.
 
-during bisecting, last several testing, i was using kexec instead of
-boot from BIOS...
+Nitin
 
-could be other commit like
+> 
+>> ---
+>>  drivers/staging/ramzswap/TODO           |    1 -
+>>  drivers/staging/ramzswap/ramzswap_drv.c |   28 +++-------------------------
+>>  2 files changed, 3 insertions(+), 26 deletions(-)
+>>
+>> diff --git a/drivers/staging/ramzswap/TODO b/drivers/staging/ramzswap/TODO
+>> index bac40d6..8d64e28 100644
+>> --- a/drivers/staging/ramzswap/TODO
+>> +++ b/drivers/staging/ramzswap/TODO
+>> @@ -1,6 +1,5 @@
+>>  TODO:
+>>        - Add support for swap notifiers
+>> -       - Remove CONFIG_ARM hack
+>>
+>>  Please send patches to Greg Kroah-Hartman <greg@kroah.com> and
+>>  Nitin Gupta <ngupta@vflare.org>
+>> diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
+>> index b839f05..989fac5 100644
+>> --- a/drivers/staging/ramzswap/ramzswap_drv.c
+>> +++ b/drivers/staging/ramzswap/ramzswap_drv.c
+>> @@ -222,28 +222,6 @@ out:
+>>        return ret;
+>>  }
+>>
+>> -static void ramzswap_flush_dcache_page(struct page *page)
+>> -{
+>> -#ifdef CONFIG_ARM
+>> -       int flag = 0;
+>> -       /*
+>> -        * Ugly hack to get flush_dcache_page() work on ARM.
+>> -        * page_mapping(page) == NULL after clearing this swap cache flag.
+>> -        * Without clearing this flag, flush_dcache_page() will simply set
+>> -        * "PG_dcache_dirty" bit and return.
+>> -        */
+>> -       if (PageSwapCache(page)) {
+>> -               flag = 1;
+>> -               ClearPageSwapCache(page);
+>> -       }
+>> -#endif
+>> -       flush_dcache_page(page);
+>> -#ifdef CONFIG_ARM
+>> -       if (flag)
+>> -               SetPageSwapCache(page);
+>> -#endif
+>> -}
+>> -
+>>  void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
+>>                        struct ramzswap_ioctl_stats *s)
+>>  {
+>> @@ -655,7 +633,7 @@ static int handle_zero_page(struct bio *bio)
+>>        memset(user_mem, 0, PAGE_SIZE);
+>>        kunmap_atomic(user_mem, KM_USER0);
+>>
+>> -       ramzswap_flush_dcache_page(page);
+>> +       flush_dcache_page(page);
+>>
+>>        set_bit(BIO_UPTODATE, &bio->bi_flags);
+>>        bio_endio(bio, 0);
+>> @@ -679,7 +657,7 @@ static int handle_uncompressed_page(struct ramzswap *rzs, struct bio *bio)
+>>        kunmap_atomic(user_mem, KM_USER0);
+>>        kunmap_atomic(cmem, KM_USER1);
+>>
+>> -       ramzswap_flush_dcache_page(page);
+>> +       flush_dcache_page(page);
+>>
+>>        set_bit(BIO_UPTODATE, &bio->bi_flags);
+>>        bio_endio(bio, 0);
+>> @@ -779,7 +757,7 @@ static int ramzswap_read(struct ramzswap *rzs, struct bio *bio)
+>>                goto out;
+>>        }
+>>
+>> -       ramzswap_flush_dcache_page(page);
+>> +       flush_dcache_page(page);
+>>
+>>        set_bit(BIO_UPTODATE, &bio->bi_flags);
+>>        bio_endio(bio, 0);
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
 
-[f86dcc5aa8c7908f2c287e7a211228df599e3e71] udp: dynamically
-size hash tables at boot time
-
-YH
