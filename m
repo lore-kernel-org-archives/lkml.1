@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZLMUBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZLMUEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbZLMUBr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 15:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbZLMUBq
+	id S1754134AbZLMUEh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 15:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZLMUEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 15:01:46 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53423 "HELO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754052AbZLMUBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 15:01:46 -0500
-Date: Sun, 13 Dec 2009 21:01:42 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] regulator: add voltage selection capability to
-	mc13783 regulators.
-Message-ID: <20091213200142.GC14024@pengutronix.de>
-References: <1260635829.2054.16.camel@climbing-alby> <1260636523.2054.28.camel@climbing-alby> <1260636819.2054.33.camel@climbing-alby> <1260636976.2054.36.camel@climbing-alby>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1260636976.2054.36.camel@climbing-alby>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Sun, 13 Dec 2009 15:04:36 -0500
+Received: from mail-out1.uio.no ([129.240.10.57]:45078 "HELO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754064AbZLMUEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 15:04:35 -0500
+Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0912131116360.13952@localhost.localdomain>
+References: <20091212023603.93768833.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
+	 <alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
+	 <20091212214235.31429790@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
+	 <alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
+	 <alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
+	 <20091213065844.GA20244@elte.hu>
+	 <alpine.LFD.2.00.0912130941050.5516@localhost.localdomain>
+	 <20091213181726.GA14558@elte.hu>  <20091213190410.GA7297@nowhere>
+	 <1260731354.2612.14.camel@localhost>
+	 <alpine.LFD.2.00.0912131116360.13952@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Dec 2009 15:04:12 -0500
+Message-Id: <1260734652.2612.31.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 9 msgs/h 1 sum rcpts/h 19 sum msgs/h 2 total rcpts 2040 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 6140DD4EE76378E3FC2B795A326D057E0960414A
+X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 41 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2009 at 05:56:16PM +0100, Alberto Panizzo wrote:
-> This patch, complete the mc13783 regulator subsystem driver with 
-> voltage selecting capability.
-> Main Switches (SW1AB, SW2AB) are not supported yet.
+On Sun, 2009-12-13 at 11:19 -0800, Linus Torvalds wrote: 
 > 
-> Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-> ---
->  drivers/regulator/mc13783-regulator.c |  375 ++++++++++++++++++++++++++++++---
->  1 files changed, 348 insertions(+), 27 deletions(-)
+> On Sun, 13 Dec 2009, Trond Myklebust wrote:
 > 
-> diff --git a/drivers/regulator/mc13783-regulator.c b/drivers/regulator/mc13783-regulator.c
-> index 9f99862..ed78137 100644
-> --- a/drivers/regulator/mc13783-regulator.c
-> +++ b/drivers/regulator/mc13783-regulator.c
-> @@ -2,6 +2,7 @@
->   * Regulator Driver for Freescale MC13783 PMIC
->   *
->   * Copyright (C) 2008 Sascha Hauer, Pengutronix <s.hauer@pengutronix.de>
-> + * Copyright 2009 Alberto Panizzo <maramaopercheseimorto@gmail.com>
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License version 2 as
-> @@ -18,9 +19,47 @@
->  
->  #define MC13783_REG_SWITCHERS4			28
->  #define MC13783_REG_SWITCHERS4_PLLEN			(1 << 18)
-> +#define MC13783_REG_SWITCHERS4_PLLVSEL			(1 << 19)
-> +#define MC13783_REG_SWITCHERS4_PLLVSEL_M		(7 << 19)
->  
->  #define MC13783_REG_SWITCHERS5			29
->  #define MC13783_REG_SWITCHERS5_SW3EN			(1 << 20)
-> +#define MC13783_REG_SWITCHERS5_SW3VSEL			18
-This looks inconsitent:
-	MC13783_REG_SWITCHERS4_PLLVSEL	(1 << 19)
-	MC13783_REG_SWITCHERS5_SW3VSEL	18
+> > On Sun, 2009-12-13 at 20:04 +0100, Frederic Weisbecker wrote: 
+> > > In the above cases we have the following comment:
+> > > 
+> > > /* Protect inode->i_flock using the BKL */
+> > > 
+> > > And really it doesn't seem to protect anything else,
+> > > fortunately it is acquired in a short path.
+> > 
+> > As I said in my reply, this is the tough one, because the BKL protection
+> > is imposed by the VFS locking scheme used in fs/locks.c.
+> > 
+> > There is a similar dependency imposed upon fs/lockd/
+> 
+> Note that since NFS seems to be the only one who really cares, I think the 
+> appropriate course of action is to just replace the BKL - preferably with 
+> a spinlock that you just drop before you do anything that blocks.
+> 
+> Not only does the BKL already do that (so the locking doesn't change), but 
+> I think most _users_ of the BKL actually already do the explicit dropping 
+> of the lock (rather than the implicit one done by schedule()) because it's 
+> already been a scalability issue and we've had some history of trying 
+> alternative approaches that didn't do that whole auto-dropping anyway 
+> (whether those alternate approaches be semaphores or spinlocks).
+> 
+> So don't worry about the "imposed by the VFS" thing. I think you can 
+> fairly easily change the VFS side. 
 
-I didn't check the rest of the patch though it would be great if you
-wouldn't need all those arrays as they occupy much memory.
+That comment applies to the NFSv4 code, which applies the BKL only
+because we need to traverse the inode->i_flock list. There is no
+recursive use of the BKL there, and we can trivially replace it with
+whichever new lock that that is chosen to replace the BKL in fs/locks.c.
 
-Best regards
-Uwe
+To fix the lockd module, we have to backport some of the lessons we
+learned when writing the NFSv4 file locking code. It won't be a huge
+job, but I'd feel uncomfortable if I were to do it in a hurry just in
+order to meet the merge window deadline.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+  Trond
+
