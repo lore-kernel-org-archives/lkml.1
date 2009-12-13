@@ -1,37 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934046AbZLMBo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935289AbZLMB5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934046AbZLMBo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Dec 2009 20:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbZLMBoz
+	id S935289AbZLMB5z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Dec 2009 20:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935256AbZLMB5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Dec 2009 20:44:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56507
-	"HELO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934037AbZLMBoz (ORCPT
+	Sat, 12 Dec 2009 20:57:53 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43463 "HELO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933426AbZLMB5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Dec 2009 20:44:55 -0500
-Date: Sat, 12 Dec 2009 17:44:54 -0800 (PST)
-Message-Id: <20091212.174454.259770149.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-Cc: matti.aarnio@zmailer.org, mgalgoci@redhat.com
-Subject: Re: Vger outage on Dec 12th and 13th
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091208.015956.200531033.davem@davemloft.net>
-References: <20091208.015956.200531033.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Dec 2009 20:57:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=ipW+QZzpnfR+4zrzJtQUep82mEAhhHHgJmAJ3ja+nE0uhVLgU83J6dFJymxUx4yj1T
+         nKiSU3FCChiWwU1IUdkWBM0TZnU/cW8l3JyJNr/u01dG7T1S+c9swu497CqJ8SHUqaDT
+         OYSjv8U9Pwd3/5qY8ySvZObP3yHvFEaCGu01Q=
+MIME-Version: 1.0
+In-Reply-To: <86802c440912121705y59eea3ebq3bdbd3e7459e748e@mail.gmail.com>
+References: <86802c440912112125v4aa72189ifcc2d16ecbf79cc4@mail.gmail.com>
+	 <20091211.214117.200029438.davem@davemloft.net>
+	 <86802c440912121705y59eea3ebq3bdbd3e7459e748e@mail.gmail.com>
+Date: Sat, 12 Dec 2009 17:57:51 -0800
+X-Google-Sender-Auth: 140f87d424c73efd
+Message-ID: <86802c440912121757g474a7df4od6b50f6d5a210cf0@mail.gmail.com>
+Subject: Re: nfs broken in net-next? -- now in mainline -- bisected: 
+	d9f5950f90292f7cc42834338dfd5f44dc4cc4ca
+From: Yinghai Lu <yinghai@kernel.org>
+To: David Miller <davem@davemloft.net>, Eric Dumazet <eric.dumazet@gmail.com>
+Cc: mingo@elte.hu, sri@us.ibm.com, herbert@gondor.apana.org.au,
+       torvalds@linux-foundation.org, sjayaraman@suse.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 08 Dec 2009 01:59:56 -0800 (PST)
+On Sat, Dec 12, 2009 at 5:05 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+>
+> [f86dcc5aa8c7908f2c287e7a211228df599e3e71] udp: dynamically
+> size hash tables at boot time
 
-> 
-> In order to move vger.kernel.org from one co-location facility
-> to another, there will be a downtime on Dec 12th and 13th.
+commit f86dcc5aa8c7908f2c287e7a211228df599e3e71
+Author: Eric Dumazet <eric.dumazet@gmail.com>
+Date:   Wed Oct 7 00:37:59 2009 +0000
 
-The outage is now over.
+    udp: dynamically size hash tables at boot time
 
+    UDP_HTABLE_SIZE was initialy defined to 128, which is a bit small for
+    several setups.
+
+    4000 active UDP sockets -> 32 sockets per chain in average. An
+    incoming frame has to lookup all sockets to find best match, so long
+    chains hurt latency.
+
+    Instead of a fixed size hash table that cant be perfect for every
+    needs, let UDP stack choose its table size at boot time like tcp/ip
+    route, using alloc_large_system_hash() helper
+
+    Add an optional boot parameter, uhash_entries=x so that an admin can
+    force a size between 256 and 65536 if needed, like thash_entries and
+    rhash_entries.
+
+    dmesg logs two new lines :
+    [    0.647039] UDP hash table entries: 512 (order: 0, 4096 bytes)
+    [    0.647099] UDP Lite hash table entries: 512 (order: 0, 4096 bytes)
+
+    Maximal size on 64bit arches would be 65536 slots, ie 1 MBytes for non
+    debugging spinlocks.
+
+    Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+cause the problem: nfs mount fail.
+
+the setup is:
+64bit kernel, have all needed drivers in kernel, and boot with
+ip=dhcp, root disk is 256M ramdisk.
+then try to mount nfs....
+
+YH
