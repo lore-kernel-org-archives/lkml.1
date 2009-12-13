@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZLMXPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZLMXY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbZLMXPl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 18:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZLMXPk
+	id S1754693AbZLMXY0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 18:24:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZLMXYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:15:40 -0500
-Received: from xenotime.net ([72.52.64.118]:41196 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754668AbZLMXPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:15:40 -0500
-Date: Sun, 13 Dec 2009 15:15:45 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix a typo in drivers/acpi/battery.c
-Message-Id: <20091213151545.4ac17532.rdunlap@xenotime.net>
-In-Reply-To: <1260744536-20762-2-git-send-email-justinmattock@gmail.com>
-References: <1260744536-20762-1-git-send-email-justinmattock@gmail.com>
-	<1260744536-20762-2-git-send-email-justinmattock@gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Sun, 13 Dec 2009 18:24:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36733 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751656AbZLMXYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:24:24 -0500
+Date: Mon, 14 Dec 2009 10:24:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joe Perches <joe@perches.com>, Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: origin tree build warning
+Message-Id: <20091214102415.10bdcf24.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Dec_2009_10_24_15_+1100_gCLpXm47BKmHVRUW"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Dec 2009 14:48:56 -0800 Justin P. Mattock wrote:
+--Signature=_Mon__14_Dec_2009_10_24_15_+1100_gCLpXm47BKmHVRUW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
-> ---
->  drivers/acpi/battery.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-> index 3f4602b..cada73f 100644
-> --- a/drivers/acpi/battery.c
-> +++ b/drivers/acpi/battery.c
-> @@ -831,7 +831,7 @@ static void acpi_battery_notify(struct acpi_device *device, u32 event)
->  					dev_name(&device->dev), event,
->  					acpi_battery_present(battery));
->  #ifdef CONFIG_ACPI_SYSFS_POWER
-> -	/* acpi_batter_update could remove power_supply object */
-> +	/* acpi_battery_update could remove power_supply object */
->  	if (battery->bat.dev)
->  		kobject_uevent(&battery->bat.dev->kobj, KOBJ_CHANGE);
->  #endif
-> -- 
+Hi ,
 
-Hi,
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-You don't need an intro patch email and then the patch email
-for such a simple patch.
+arch/x86/mm/mmio-mod.c: In function 'print_pte':
+arch/x86/mm/mmio-mod.c:100: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c:106: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c:110: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c: In function 'die_kmmio_nesting_error':
+arch/x86/mm/mmio-mod.c:123: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c:134: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c:136: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c: In function 'mmiotrace_ioremap':
+arch/x86/mm/mmio-mod.c:286: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c: In function 'iounmap_trace_core':
+arch/x86/mm/mmio-mod.c:305: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c: In function 'clear_trace_list':
+arch/x86/mm/mmio-mod.c:367: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c: In function 'enter_uniprocessor':
+arch/x86/mm/mmio-mod.c:404: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c:406: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c: In function 'leave_uniprocessor':
+arch/x86/mm/mmio-mod.c:426: warning: too many arguments for format
+arch/x86/mm/mmio-mod.c:428: warning: too many arguments for format
 
-Also, please note (from "MAINTAINERS" or from scripts/get_maintainer.pl)
-that acpi patches go to linux-acpi@vger.kernel.org .
+Caused by commit 3a0340be06a9356eb61f6804107480acbe62c069 ("x86:
+mmio-mod.c: Use pr_fmt").  Was this even build tested?  The patch doesn't
+even match the commit message.
 
----
-~Randy
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__14_Dec_2009_10_24_15_+1100_gCLpXm47BKmHVRUW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksld58ACgkQjjKRsyhoI8xhwgCbBcx0vQRNqVKN8/SaZQh65ClA
+4TEAoL0dzrdRoaT5ths94h1QVH9xMrks
+=E2XH
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_Dec_2009_10_24_15_+1100_gCLpXm47BKmHVRUW--
