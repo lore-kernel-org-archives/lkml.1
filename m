@@ -1,147 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbZLMK3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbZLMKhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752247AbZLMK3d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 05:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZLMK3c
+	id S1752288AbZLMKhj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 05:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZLMKhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 05:29:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42986 "HELO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752198AbZLMK3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 05:29:30 -0500
-Date: Sun, 13 Dec 2009 12:26:33 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Shirley Ma <mashirle@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH v2 1/4] Defer skb allocation -- add destroy buffers
-	function for virtio
-Message-ID: <20091213102632.GB6789@redhat.com>
-References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260534805.30371.10.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260534805.30371.10.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sun, 13 Dec 2009 05:37:39 -0500
+Received: from www84.your-server.de ([213.133.104.84]:54163 "HELO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752059AbZLMKhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 05:37:37 -0500
+Subject: [PATCH 0/1] RFC: new kqueue API
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 13 Dec 2009 11:37:13 +0100
+Message-ID: <1260700633.17424.18.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 04:33:25AM -0800, Shirley Ma wrote:
-> Signed-off-by: <xma@us.ibm.com>
-> -------------
-> 
-> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-> index c708ecc..bb5eb7b 100644
-> --- a/drivers/net/virtio_net.c
-> +++ b/drivers/net/virtio_net.c
-> @@ -107,6 +107,16 @@ static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
->  	return p;
->  }
->  
-> +static void virtio_net_free_pages(void *buf)
-> +{
-> +	struct page *page, *next;
-> +
-> +	for (page = buf; page; page = next) {
-> +		next = (struct page *)page->private;
-> +		__free_pages(page, 0);
-> +	}
-> +}
-> +
->  static void skb_xmit_done(struct virtqueue *svq)
->  {
->  	struct virtnet_info *vi = svq->vdev->priv;
+As i figured out during the port the old kfifo API users, most of them
+did not need a streamed fifo, because there work only with fixed size
+entries. The kfifo is oversized for this kind of users, so i decided to
+write a new kqueue API which is optimized for fixed size entries. 
 
-This is not the best way to split the patch,
-as I commented separately: this adds static function
-but no way to see whether it does what it should do.
-If you think about it, free should always go into same patch
-that does alloc.
+There are a some benefits:
 
-> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> index fbd2ecd..db83465 100644
-> --- a/drivers/virtio/virtio_ring.c
-> +++ b/drivers/virtio/virtio_ring.c
-> @@ -334,6 +334,29 @@ static bool vring_enable_cb(struct virtqueue *_vq)
->  	return true;
->  }
->  
-> +static int vring_destroy_bufs(struct virtqueue *_vq, void (*destroy)(void *))
-> +{
-> +	struct vring_virtqueue *vq = to_vvq(_vq);
-> +	void *buf;
-> +	unsigned int i;
-> +	int freed = 0;
-> +
-> +	START_USE(vq);
-> +
-> +	for (i = 0; i < vq->vring.num; i++) {
+- Performance (a put or get of an integer does only generate 4 assembly
+instructions on a x86) 
+- Type save
+- Cleaner interface
+- Easier to use
+- Less error prone
+- Smaller footprint
 
-I prefer ++i in such code personally.
+The API is similar to the new kfifo API, but there is no need for a
+length paramter, because the size of the entry is know by the queue
+structure.
 
-> +		if (vq->data[i]) {
-> +			/* detach_buf clears data, so grab it now. */
-> +			buf = vq->data[i];
-> +			detach_buf(vq, i);
+Here is a small user land example how to use it:
 
-Hmm, you are calling detach on a buffer which was not used.
-It's not safe to call this while host might use buffers, is it?
-Please document this and other assumptions you are making.
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <stddef.h>
 
-> +			destroy(buf);
-> +			freed++;
+#ifndef __KERNEL__
+#define	EXPORT_SYMBOL(x)
+#define	unlikely(x)	x
+#define	likely(x)	x
+#define __must_check
+#define __user
+#define	spinlock_t		void
+#define	gfp_t			unsigned long
+#define	spin_lock_irqsave(a,b)
+#define	spin_unlock_irqsave(a,b)
+#define	BUG_ON(x)
+#define	is_power_of_2(x)	1
+#define	roundup_pow_of_two(x)	(x)
+#define	kmalloc(a,b)		malloc(a)
+#define	kfree(a)		free(a)
+#define	BUG()
 
-++freed here as well.
-
-> +		}
-> +	}
-> +
-
-It's usually better not to put {} around single statement blocks.
-
-> +	END_USE(vq);
-> +	return freed;
-> +}
-> +
->  irqreturn_t vring_interrupt(int irq, void *_vq)
->  {
->  	struct vring_virtqueue *vq = to_vvq(_vq);
-> @@ -360,6 +383,7 @@ static struct virtqueue_ops vring_vq_ops = {
->  	.kick = vring_kick,
->  	.disable_cb = vring_disable_cb,
->  	.enable_cb = vring_enable_cb,
-> +	.destroy_bufs = vring_destroy_bufs,
->  };
->  
->  struct virtqueue *vring_new_virtqueue(unsigned int num,
-> diff --git a/include/linux/virtio.h b/include/linux/virtio.h
-> index 057a2e0..e6d7d77 100644
-> --- a/include/linux/virtio.h
-> +++ b/include/linux/virtio.h
-> @@ -71,6 +71,7 @@ struct virtqueue_ops {
->  
->  	void (*disable_cb)(struct virtqueue *vq);
->  	bool (*enable_cb)(struct virtqueue *vq);
-> +	int (*destroy_bufs)(struct virtqueue *vq, void (*destory)(void *));
-
-Typo above.  Please document the new field.
-Also please document assumptions about usage.
-
-I think callback should get struct virtqueue *vq, and decrement num.
-And destroy_bufs should return void, which is much more natural for a
-destructor.
+#define barrier() __asm__ __volatile__("": : :"memory")
 
 
-That said - do we have to use a callback?
-I think destroy_buf which returns data pointer,
-and which we call repeatedly until we get NULL
-or error, would be an a better, more flexible API.
-This is not critical though.
+#define mb() 	asm volatile("mfence":::"memory")
+#define rmb()	asm volatile("lfence":::"memory")
+#define wmb()	asm volatile("sfence" ::: "memory")
+
+#define smp_mb()	mb()
+#define smp_rmb()	rmb()
+#define smp_wmb() 	wmb()
+
+#define min(X,Y) (((X) < (Y)) ? (X) : (Y))
+#define ARRAY_SIZE(x)	(sizeof(x)/sizeof(*x))
+
+struct scatterlist {
+	unsigned long	page_link;
+	unsigned int	offset;
+	unsigned int	length;
+};
+
+static inline void sg_mark_end(struct scatterlist *sg)
+{
+	sg->page_link |= 0x02;
+	sg->page_link &= ~0x01;
+}
+
+static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
+			      unsigned int buflen)
+{
+}
+
+static unsigned long copy_to_user(void * to, const void * from, unsigned long n)
+{
+	memcpy(to, from, n);
+	return 0;
+}
+
+static unsigned long copy_from_user(void * to, const void * from, unsigned long n)
+{
+	memcpy(to, from, n);
+	return 0;
+}
+#endif
+
+/* --------------------------> test program */
+
+#include "kqueue.h"
+#include "kqueue.c"
+
+//#define	DYNAMIC
+
+#ifdef DYNAMIC
+static DECLARE_KQUEUE(*test, int, 32);
+#else
+typedef STRUCT_KQUEUE(int, 32) mytest;
+
+static mytest testx;
+static mytest *test = &testx;
+#endif
+
+int main(void)
+{
+	unsigned int	i;
+	char	buf[6];
+	int	ret;
+
+#ifdef DYNAMIC
+	if (kqueue_alloc(&test, 64, 0)) {
+		fprintf(stderr,"error kqueue_alloc\n");
+		return 1;
+	}
+#else
+	INIT_KQUEUE(testx);
+#endif
+
+	for(i=0; i != 10; i++) {
+		kqueue_in(test, i);
+	}
+
+	while(!kqueue_is_empty(test)) {
+		i = kqueue_out(test);
+		printf("%d:\n", i);
+	}
+
+	for(i=0; i!=9; i++) {
+		kqueue_in(test, i);
+	}
+
+	ret = kqueue_to_user(test, buf, sizeof(buf));
+	printf("-ret: %d \n", ret);
+	ret = kqueue_from_user(test, buf, sizeof(buf));
+	printf("-ret: %d \n", ret);
+	ret = kqueue_to_user(test, buf, sizeof(buf));
+	printf("-ret: %d \n", ret);
+	ret = kqueue_from_user(test, buf, sizeof(buf));
+	printf("-ret: %d \n", ret);
+
+	while(!kqueue_is_empty(test)) {
+		i = kqueue_out(test);
+		printf("%d:\n", i);
+	}
+
+	i=0;
 
 
->  };
->  
->  /**
-> 
+	while(!kqueue_is_full(test)) {
+		++i;
+
+		kqueue_in(test, i);
+		printf("%u ", kqueue_len(test));
+	}
+	printf("\n");
+
+	while(!kqueue_is_empty(test))
+		printf("%d ", kqueue_out(test));
+
+	printf("\n");
+
+	return 0;
+}
+
+I hope you like it. If yes, i will start to port the kfifo fixed size
+users to the new API.
+
+Stefani
+
+
