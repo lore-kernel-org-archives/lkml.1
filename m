@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZLNA1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZLNAVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZLNA1R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZLNA0s
+	id S1756100AbZLNAVA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbZLNAUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:26:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33844 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:20:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34073 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754744AbZLMX5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:23 -0500
+	id S1754851AbZLMX5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:40 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, len.brown@intel.com,
-       alan-jenkins@tuffmail.co.uk, torvalds@linux-foundation.org
-Subject: [PATCH 01/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:58:53 +0100
-Message-Id: <36524af5614ab1114b75499c5b99755ccac1f188.1260662995.git.re.emese@gmail.com>
+Cc: Emese Revfy <re.emese@gmail.com>, lenb@kernel.org, mjg@redhat.com,
+       torvalds@linux-foundation.org
+Subject: [PATCH 02/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:58:54 +0100
+Message-Id: <7fd2a4cef62039670e32710944f49e07afaa7e20.1260662995.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662994.git.re.emese@gmail.com>
 References: <cover.1260662994.git.re.emese@gmail.com>
@@ -35,21 +35,21 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/platform/x86/acer-wmi.c |    2 +-
+ drivers/acpi/video.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/platform/x86/acer-wmi.c b/drivers/platform/x86/acer-wmi.c
-index 454970d..98f0e9a 100644
---- a/drivers/platform/x86/acer-wmi.c
-+++ b/drivers/platform/x86/acer-wmi.c
-@@ -918,7 +918,7 @@ static int update_bl_status(struct backlight_device *bd)
- 	return 0;
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 05dff63..b662ab7 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -359,7 +359,7 @@ static int acpi_video_set_brightness(struct backlight_device *bd)
+ 				vd->brightness->levels[request_level]);
  }
  
--static struct backlight_ops acer_bl_ops = {
-+static const struct backlight_ops acer_bl_ops = {
- 	.get_brightness = read_brightness,
- 	.update_status = update_bl_status,
+-static struct backlight_ops acpi_backlight_ops = {
++static const struct backlight_ops acpi_backlight_ops = {
+ 	.get_brightness = acpi_video_get_brightness,
+ 	.update_status  = acpi_video_set_brightness,
  };
 -- 
 1.6.5.3
