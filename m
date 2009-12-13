@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbZLMMxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZLMNIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751832AbZLMMxN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 07:53:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZLMMxM
+	id S1752232AbZLMNIU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 08:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZLMNIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 07:53:12 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50037 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750911AbZLMMxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 07:53:09 -0500
-X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1+83Lt/BCC8jE7UYJF8xPykdKe/ZupJ1kHjHDtank
-	XzOYxNNP4otrOJ
-Message-ID: <4B24E3AB.9040609@gmx.de>
-Date: Sun, 13 Dec 2009 13:52:59 +0100
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: JosephChan@via.com.tw, Scott Fang <ScottFang@viatech.com.cn>,
-       linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 7/9] drivers/video: Correct code taking the size of a
- pointer
-References: <Pine.LNX.4.64.0912131242240.24267@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0912131242240.24267@ask.diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Sun, 13 Dec 2009 08:08:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:51043 "HELO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751243AbZLMNIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 08:08:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=K0jpMDCN5G+XES6+fCNn5XM9bV4Vn1waAcaTp3sMs+JBJGiqQ8YkllWDFyIeIY7iDk
+         n8oleJShNCLavf/IQ3Y7AA9oZux6FswlY4M1h0RAwNcQJyEVo215Ps96o9oApNf22fKk
+         aAqJn/jrwdEibtKLlaH5vhWHQW4hk4i4qUNb4=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Jason Baron <jbaron@redhat.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [GIT PULL] tracing updates
+Date: Sun, 13 Dec 2009 14:08:01 +0100
+Message-Id: <1260709694-5166-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Julia, Andrew,
+Ingo,
 
-Julia Lawall schrieb:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> sizeof(viafb_gamma_table) is just the size of the pointer.  This is changed
-> to the size used when calling kmalloc to initialize the pointer.
+Please pull the tracing/core branch that can be found at:
 
-this is the second patch addressing this issue ending up in my mailbox. 
-At least this one is technically correct so feel free to upstream it.
-However I vote for removing this ioctl hell from viafb as most of them 
-duplicate framebuffer functionality or have unknown (not clearly 
-defined) functionality or at least solve a generic problem with a custom 
-ioctl (which I consider bad). I had a patch ready to move this stuff to 
-an extra file and print a warning that it is subject to be removed. I 
-feel a bit uncomfortable about repairing broken stuff prior to removing it.
-Any comments on this subject?
-
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/core
 
 Thanks,
+	Frederic
+---
 
-Florian Tobias Schandinat
+Li Zefan (13):
+      tracing: Extract duplicate ftrace_raw_init_event_foo()
+      tracing: Pull up calls to trace_define_common_fields()
+      tracing: Move a printk out of ftrace_raw_reg_event_foo()
+      ftrace: Return EINVAL when writing invalid val to set_ftrace_filter
+      ftrace: Call trace_parser_clear() properly
+      function-graph: Allow writing the same val to set_graph_function
+      tracing: Use seq file for trace_options
+      tracing: Use seq file for trace_clock
+      tracing: Remove useless trace option
+      tracing: Simplify trace_option_write()
+      tracing: Change event->profile_count to be int type
+      tracing/power: Remove two exports
+      ksym_tracer: Fix compile warnings
 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/video/via/viafbdev.c        |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 56ec696..a0b47f1 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -680,7 +680,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
->  		if (!viafb_gamma_table)
->  			return -ENOMEM;
->  		if (copy_from_user(viafb_gamma_table, argp,
-> -				sizeof(viafb_gamma_table))) {
-> +				256 * sizeof(u32))) {
->  			kfree(viafb_gamma_table);
->  			return -EFAULT;
->  		}
-> @@ -694,7 +694,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
->  			return -ENOMEM;
->  		viafb_get_gamma_table(viafb_gamma_table);
->  		if (copy_to_user(argp, viafb_gamma_table,
-> -			sizeof(viafb_gamma_table))) {
-> +			256 * sizeof(u32))) {
->  			kfree(viafb_gamma_table);
->  			return -EFAULT;
->  		}
+
+ include/linux/ftrace_event.h       |    4 +-
+ include/linux/syscalls.h           |    6 +-
+ include/trace/ftrace.h             |   56 ++-----------
+ kernel/trace/ftrace.c              |   30 ++++---
+ kernel/trace/power-traces.c        |    2 -
+ kernel/trace/trace.c               |  166 +++++++++++++-----------------------
+ kernel/trace/trace.h               |   23 +++---
+ kernel/trace/trace_event_profile.c |    6 +-
+ kernel/trace/trace_events.c        |   41 +++++++--
+ kernel/trace/trace_export.c        |    4 -
+ kernel/trace/trace_kprobe.c        |    9 --
+ kernel/trace/trace_ksym.c          |   13 ++--
+ kernel/trace/trace_syscalls.c      |   18 +----
+ 13 files changed, 146 insertions(+), 232 deletions(-)
