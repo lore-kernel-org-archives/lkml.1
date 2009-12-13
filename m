@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbZLMSda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZLMShs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752226AbZLMSda (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 13:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZLMSd3
+	id S1752587AbZLMShs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 13:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZLMShr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 13:33:29 -0500
-Received: from mail.perches.com ([173.55.12.10]:1159 "HELO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751291AbZLMSd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 13:33:28 -0500
-Subject: Re: [tip:tracing/urgent] ftrace.h: Use common pr_info fmt string
-From: Joe Perches <joe@perches.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20091213145056.GA5268@nowhere>
-References: <1260651974.2637.4.camel@Joe-Laptop.home>
-	 <tip-4819568f23a8bef0ca99b740ca60fe2450ab0aac@git.kernel.org>
-	 <1260715695.2146.412.camel@gandalf.stny.rr.com>
-	 <20091213145056.GA5268@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 13 Dec 2009 10:33:27 -0800
-Message-ID: <1260729207.8189.56.camel@Joe-Laptop.home>
+	Sun, 13 Dec 2009 13:37:47 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47891 "HELO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751918AbZLMShq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 13:37:46 -0500
+Date: Sun, 13 Dec 2009 19:37:41 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>
+Subject: Re: [PATCH 0/1] RFC: new kqueue API
+Message-ID: <20091213183741.GB18989@one.firstfloor.org>
+References: <1260700633.17424.18.camel@wall-e>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260700633.17424.18.camel@wall-e>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-13 at 15:50 +0100, Frederic Weisbecker wrote:
-> On Sun, Dec 13, 2009 at 09:48:15AM -0500, Steven Rostedt wrote:
-> > >  		pr_info("event trace: Could not activate trace point "	\
-> > > -			"probe to " #call "\n");			\
-> > > +			"probe to %s\n", #call);			\
-> > This reduces format string space a bit, but doesn't it just add another
-> > string to the string tables #func == "func" as well as add code to pass
-> > in another parameter?
-> Yeah, I don't understand the purpose of this patch either...
+On Sun, Dec 13, 2009 at 11:37:13AM +0100, Stefani Seibold wrote:
+> As i figured out during the port the old kfifo API users, most of them
+> did not need a streamed fifo, because there work only with fixed size
+> entries. The kfifo is oversized for this kind of users, so i decided to
+> write a new kqueue API which is optimized for fixed size entries. 
+> 
+> There are a some benefits:
+> 
+> - Performance (a put or get of an integer does only generate 4 assembly
+> instructions on a x86) 
+> - Type save
+> - Cleaner interface
+> - Easier to use
+> - Less error prone
+> - Smaller footprint
+> 
+> The API is similar to the new kfifo API, but there is no need for a
+> length paramter, because the size of the entry is know by the queue
+> structure.
 
-The patch from Li Zefan you've already queued is better
+I must say I'm a bit sceptical if the advantages are really worth
+the additional code. That code would be always compiled in in addition
+to kfifo, so at least the code footprint would be always larger.
 
-http://lkml.org/lkml/2009/12/13/60
+Perhaps you could get the advantages for type-safety using
+inline wrappers to kfifo?
 
-Subject: [PATCH 03/13] tracing: Move a printk out of ftrace_raw_reg_event_foo()
-Date: Sun, 13 Dec 2009 14:08:04 +0100
-From: Li Zefan <lizf@cn.fujitsu.com>
-
-Move the printk from each ftrace_raw_reg_event_foo() to
-its caller ftrace_event_enable_disable(). This avoids each
-regfunc trace event callbacks to handle a same error report
-that can be carried from the caller.
-
-
+-Andi
