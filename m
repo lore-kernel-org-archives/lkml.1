@@ -1,124 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZLMUiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZLMUr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbZLMUiC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 15:38:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZLMUiB
+	id S1754188AbZLMUr5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 15:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZLMUr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 15:38:01 -0500
-Received: from claw.goop.org ([74.207.240.146]:47667 "HELO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752853AbZLMUh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 15:37:59 -0500
-Message-ID: <4B2550A6.8030705@goop.org>
-Date: Sun, 13 Dec 2009 12:37:58 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
+	Sun, 13 Dec 2009 15:47:57 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:47562 "HELO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753570AbZLMUrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 15:47:55 -0500
+X-Auth-Info: ZTqB+TqEsVSJyjtweo6EnUUsuKfvgbthQM3sAntGPr4=
+Message-ID: <4B2552C8.4090105@grandegger.com>
+Date: Sun, 13 Dec 2009 21:47:04 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: 2.6.31.6: Intel 82574L devices spontaneously dropping off PCIe?
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Christian Pellegrin <chripell@fsfe.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] can: CAN_MCP251X should depend on HAS_DMA
+References: <alpine.DEB.2.00.0912132008100.21225@ayla.of.borg>
+In-Reply-To: <alpine.DEB.2.00.0912132008100.21225@ayla.of.borg>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a Supermicro X8SIL-F system, which has a couple of on-board 
-82574L gigabit interfaces.  I'm running the stock F12 kernel on it 
-(2.6.31.6-166.fc12.x86_64).   This is a new machine, so I'm trying to 
-work out if this is a hardware problem I should RMA the board for, if 
-this is some kind of driver bug.
+Geert Uytterhoeven wrote:
+> When building for Sun 3:
+> 
+> drivers/net/can/mcp251x.c:1074: undefined reference to `dma_free_coherent'
+> drivers/net/can/mcp251x.c:976: undefined reference to `dma_alloc_coherent'
+> drivers/net/can/mcp251x.c:1050: undefined reference to `dma_free_coherent'
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  drivers/net/can/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/can/Kconfig b/drivers/net/can/Kconfig
+> index 8c485aa..05b7517 100644
+> --- a/drivers/net/can/Kconfig
+> +++ b/drivers/net/can/Kconfig
+> @@ -50,7 +50,7 @@ config CAN_TI_HECC
+>  
+>  config CAN_MCP251X
+>  	tristate "Microchip MCP251x SPI CAN controllers"
+> -	depends on CAN_DEV && SPI
+> +	depends on CAN_DEV && SPI && HAS_DMA
+>  	---help---
+>  	  Driver for the Microchip MCP251x SPI CAN controllers.
+>  
 
-The interfaces come up and apparently work fine - for a while.  But 
-after a bit of load (say, a ~9GB of incoming TCP traffic from another 
-machine on the same switch) the hardware appears to disappear from 
-PCIe.  ifconfig starts showing junk:
+DMA can be selected with the module parameter "mcp251x_enable_dma" and
+is *off* by default. Therefore the driver does in principle not depend
+on HAS_DMA but I'm not sure if it's worth to handle it with #idef's.
+Christian? Any thought?
 
-eth1      Link encap:Ethernet  HWaddr 00:30:48:DD:EB:67
-           inet6 addr: fe80::230:48ff:fedd:eb67/64 Scope:Link
-           UP BROADCAST MULTICAST  MTU:1500  Metric:1
-           RX packets:7910754 errors:532687613729670 dropped:88781268954945 overruns:0 frame:355125075819780
-           TX packets:4104172 errors:177562537909890 dropped:0 overruns:0 carrier:177562537909890
-           collisions:88781268954945 txqueuelen:1000
-           RX bytes:9589212936 (8.9 GiB)  TX bytes:271851778 (259.2 MiB)
-           Memory:fafe0000-fb000000
+Wolfgang.
 
-
-and lspci shows that the config space is all 0xff:
-
-[root@lilith ~]# lspci -s 04:00.0 -x
-04:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection (rev ff)
-00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-
-[root@lilith ~]# lspci -s 05:00.0 -x
-05:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection (rev ff)
-00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-
-
-This seems to happen quietly without the kernel noticing; the only 
-side-effect is the dev watchdog triggering:
-
-------------[ cut here ]------------
-WARNING: at net/sched/sch_generic.c:246 dev_watchdog+0xf3/0x164() (Not tainted)
-Hardware name: X8SIL
-NETDEV WATCHDOG: eth1 (e1000e): transmit queue 0 timed out
-Modules linked in: ip6table_filter ip6_tables bridge stp llc sunrpc xt_physdev ip6t_REJECT nf_conntrack_ipv6 ipv6 cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm_intel kvm uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus snd_seq snd_pcm snd_seq_device snd_timer snd_page_alloc snd_util_mem snd_hwdep snd e1000e i2c_i801 soundcore emu10k1_gp gameport i2c_core joydev cryptd aes_x86_64 aes_generic xts gf128mul dm_crypt raid10 [last unloaded: ip6_tables]
-Pid: 0, comm: swapper Not tainted 2.6.31.6-166.fc12.x86_64 #1
-Call Trace:
-  <IRQ>   [<ffffffff810516f4>] warn_slowpath_common+0x84/0x9c
-  [<ffffffff81051763>] warn_slowpath_fmt+0x41/0x43
-  [<ffffffff8138e831>] ? netif_tx_lock+0x44/0x6d
-  [<ffffffff8138e99b>] dev_watchdog+0xf3/0x164
-  [<ffffffff8105bc52>] ? internal_add_timer+0xcf/0xd1
-  [<ffffffff8105bd0b>] ? cascade+0x6a/0x84
-  [<ffffffff8105bec4>] run_timer_softirq+0x19f/0x21c
-  [<ffffffff8106ae47>] ? hrtimer_interrupt+0x13c/0x153
-  [<ffffffff81057614>] __do_softirq+0xdd/0x1ad
-  [<ffffffff81026936>] ? apic_write+0x16/0x18
-  [<ffffffff81012eac>] call_softirq+0x1c/0x30
-  [<ffffffff810143fb>] do_softirq+0x47/0x8d
-  [<ffffffff81057326>] irq_exit+0x44/0x86
-  [<ffffffff8141ecf5>] do_IRQ+0xa5/0xbc
-  [<ffffffff810126d3>] ret_from_intr+0x0/0x11
-  <EOI>   [<ffffffff812679dd>] ? acpi_idle_enter_bm+0x281/0x2b5
-  [<ffffffff812679d6>] ? acpi_idle_enter_bm+0x27a/0x2b5
-  [<ffffffff81353b7f>] ? cpuidle_idle_call+0x99/0xce
-  [<ffffffff81010c60>] ? cpu_idle+0xa6/0xe9
-  [<ffffffff81405db7>] ? rest_init+0x6b/0x6d
-  [<ffffffff81714dc9>] ? start_kernel+0x3ef/0x3fa
-  [<ffffffff817142a1>] ? x86_64_start_reservations+0xac/0xb0
-  [<ffffffff8171439d>] ? x86_64_start_kernel+0xf8/0x107
----[ end trace f271bce88fe9d682 ]---
-0000:05:00.0: eth1: Error reading PHY register
-e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-
-
-A reboot seems to recover the devices:
-
-[root@lilith ~]# lspci -s 04:00.0 -x
-04:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection
-00: 86 80 d3 10 07 04 10 00 00 00 00 02 10 00 00 00
-10: 00 00 ee fa 00 00 00 00 01 cc 00 00 00 c0 ed fa
-20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 05 06
-30: 00 00 00 00 c8 00 00 00 00 00 00 00 0a 01 00 00
-
-[root@lilith ~]# lspci -s 05:00.0 -x
-05:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection
-00: 86 80 d3 10 07 04 10 00 00 00 00 02 10 00 00 00
-10: 00 00 fe fa 00 00 00 00 01 dc 00 00 00 c0 fd fa
-20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 05 06
-30: 00 00 00 00 c8 00 00 00 00 00 00 00 0b 01 00 00
-
-
-
-
-Any clues?
-
-Thanks,
-     J
