@@ -1,65 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZLMLnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZLMLqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbZLMLnY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 06:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZLMLnV
+	id S1752858AbZLMLqU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 06:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZLMLqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 06:43:21 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51544 "HELO mgw2.diku.dk"
+	Sun, 13 Dec 2009 06:46:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21571 "HELO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752700AbZLMLnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 06:43:17 -0500
-Date: Sun, 13 Dec 2009 12:43:15 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/9] sound/soc/codecs: Correct code taking the size of a
- pointer
-Message-ID: <Pine.LNX.4.64.0912131242570.24267@ask.diku.dk>
+	id S1752643AbZLMLqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 06:46:18 -0500
+Date: Sun, 13 Dec 2009 13:43:20 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: PATCH v2 3/4] Defer skb allocation -- new recvbuf alloc &
+	receive calls
+Message-ID: <20091213114320.GC7074@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260535613.30371.24.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260535613.30371.24.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Fri, Dec 11, 2009 at 04:46:53AM -0800, Shirley Ma wrote:
+> Signed-off-by: Shirley Ma <xma@us.ibm.com>
+> -------------
+> 
+> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+> index 100b4b9..dde8060 100644
+> --- a/drivers/net/virtio_net.c
+> +++ b/drivers/net/virtio_net.c
+> @@ -203,6 +203,73 @@ static struct sk_buff *skb_goodcopy(struct virtnet_info *vi, struct page **page,
+>  	return skb;
+>  }
+>  
+> +static struct sk_buff *receive_big(struct virtnet_info *vi, struct page *page,
+> +				   unsigned int len)
+> +{
+> +	struct sk_buff *skb;
+> +
+> +	skb = skb_goodcopy(vi, &page, &len);
+> +	if (unlikely(!skb))
+> +		return NULL;
+> +
+> +	while (len > 0) {
+> +		len = skb_set_frag(skb, page, 0, len);
+> +		page = (struct page *)page->private;
 
-sizeof(codec->reg_cache) is just the size of the pointer.  Elsewhere in the
-file, codec->reg_cache is used with sizeof(wm8900_reg_defaults), so the
-code is changed to do the same here.
+Interesting. I think skb_goodcopy will sometimes
+set *page to NULL. Will the above crash then?
 
-A simplified version of the semantic patch that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+> +	}
+> +
+> +	if (page)
+> +		give_pages(vi, page);
+> +
+> +	return skb;
+> +}
+> +
+> +static struct sk_buff *receive_mergeable(struct virtnet_info *vi,
+> +					 struct page *page, unsigned int len)
+> +{
+> +	struct sk_buff *skb;
+> +	struct skb_vnet_hdr *hdr;
+> +	int num_buf, i;
+> +
+> +	if (len > PAGE_SIZE)
+> +		len = PAGE_SIZE;
+> +
+> +	skb = skb_goodcopy(vi, &page, &len);
+> +
 
-// <smpl>
-@@
-expression *x;
-expression f;
-type T;
-@@
+don't put empty line here. if below is part of same logical block as
+skb_goodcopy.
 
-*f(...,(T)x,...)
-// </smpl>
+> +	if (unlikely(!skb))
+> +		return NULL;
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+don't we care that *page might not be NULL? why not?
 
----
- sound/soc/codecs/wm8900.c           |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> +
+> +	hdr = skb_vnet_hdr(skb);
+> +	num_buf = hdr->mhdr.num_buffers;
+> +	while (--num_buf) {
+> +		struct page *page;
 
-diff --git a/sound/soc/codecs/wm8900.c b/sound/soc/codecs/wm8900.c
-index c9438dd..dbc368c 100644
---- a/sound/soc/codecs/wm8900.c
-+++ b/sound/soc/codecs/wm8900.c
-@@ -199,7 +199,7 @@ static void wm8900_reset(struct snd_soc_codec *codec)
- 	snd_soc_write(codec, WM8900_REG_RESET, 0);
- 
- 	memcpy(codec->reg_cache, wm8900_reg_defaults,
--	       sizeof(codec->reg_cache));
-+	       sizeof(wm8900_reg_defaults));
- }
- 
- static int wm8900_hp_event(struct snd_soc_dapm_widget *w,
+Local variable shadows a parameter.
+It seems gcc will let you get away with a warning,
+but this is not legal C.
+
+> +
+> +		i = skb_shinfo(skb)->nr_frags;
+> +		if (i >= MAX_SKB_FRAGS) {
+> +			pr_debug("%s: packet too long %d\n", skb->dev->name,
+> +				 len);
+
+
+If this happens, we have corrupted memory already.
+We do need this check, but please put is before you increment
+nr_frags.
+
+> +			skb->dev->stats.rx_length_errors++;
+> +			return skb;
+
+This will propagate the error up the stack and corrupt
+more memory.
+
+> +		}
+> +
+> +		page = vi->rvq->vq_ops->get_buf(vi->rvq, &len);
+> +		if (!page) {
+> +			pr_debug("%s: rx error: %d buffers missing\n",
+> +				 skb->dev->name, hdr->mhdr.num_buffers);
+> +			skb->dev->stats.rx_length_errors++;
+> +			return skb;
+
+Here, skb is some random part of packet, don't propagate
+it up the stack.
+
+> +		}
+> +
+> +		if (len > PAGE_SIZE)
+> +			len = PAGE_SIZE;
+> +
+> +		skb_set_frag(skb, page, 0, len);
+> +
+> +		vi->num--;
+> +	}
+> +
+> +	return skb;
+> +}
+> +
+>  static void receive_skb(struct net_device *dev, struct sk_buff *skb,
+>  			unsigned len)
+>  {
+> @@ -356,6 +423,103 @@ drop:
+>  	dev_kfree_skb(skb);
+>  }
+>  
+> +static int add_recvbuf_small(struct virtnet_info *vi, gfp_t gfp, bool *oom)
+> +{
+> +	struct sk_buff *skb;
+> +	struct skb_vnet_hdr *hdr;
+> +	struct scatterlist sg[2];
+> +	int err = 0;
+> +
+> +	skb = netdev_alloc_skb(vi->dev, MAX_PACKET_LEN + NET_IP_ALIGN);
+> +	if (unlikely(!skb)) {
+> +		*oom = true;
+> +		return err;
+> +	}
+> +
+> +	skb_reserve(skb, NET_IP_ALIGN);
+> +	skb_put(skb, MAX_PACKET_LEN);
+> +
+> +	hdr = skb_vnet_hdr(skb);
+> +	sg_set_buf(sg, &hdr->hdr, sizeof(hdr->hdr));
+
+sizeof hdr->hdr
+
+> +
+> +	skb_to_sgvec(skb, sg+1, 0, skb->len);
+
+space around +
+
+> +
+> +	err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, 2, skb);
+> +	if (err < 0)
+> +		kfree_skb(skb);
+> +	else
+> +		skb_queue_head(&vi->recv, skb);
+
+So why are we queueing this still?
+
+> +
+> +	return err;
+> +}
+> +
+> +static int add_recvbuf_big(struct virtnet_info *vi, gfp_t gfp, bool *oom)
+> +{
+> +	struct scatterlist sg[2 + MAX_SKB_FRAGS];
+
+MAX_SKB_FRAGS + 2 will be more readable.
+Also, create a macro for this constant and document
+why does +2 make sense?
+
+> +	int total = MAX_SKB_FRAGS + 2;
+> +	char *p;
+> +	int err = 0;
+> +	int i, offset;
+> +	struct page *first = NULL;
+> +	struct page *page;
+> +	/* share one page between virtio_net header and data */
+> +	struct padded_vnet_hdr {
+> +		struct virtio_net_hdr hdr;
+> +		/* This padding makes our data 16 byte aligned */
+> +		char padding[6];
+
+Again, pls explain *why* do we want 16 byte alignment.
+Also this code seems duplicated?
+Please put structs at top of file where they
+can be found.
+
+> +	};
+> +
+> +	offset = sizeof(struct padded_vnet_hdr);
+> +
+> +	for (i = total - 1; i > 0; i--) {
+
+I prefer --i.
+Also, total is just a constant.
+So simply MAX_SKB_FRAGS + 1 will be clearer.
+Why do we scan last to first?
+If there's reason, please add a comment.
+
+> +		page = get_a_page(vi, gfp);
+> +		if (!page) {
+> +			if (first)
+> +				give_pages(vi, first);
+> +			*oom = true;
+> +			break;
+> +		}
+> +
+> +		p = page_address(page);
+> +		page->private = (unsigned long)first;
+> +		first = page;
+> +
+> +		/* allocate MAX_SKB_FRAGS + 1 pages for big packets */
+> +		if (i == 1) {
+> +			sg_set_buf(&sg[i-1], p, sizeof(struct virtio_net_hdr));
+
+space around - .
+All the if (i == 1) handling on exit is really hard to grok.
+How about moving common code out of this loop
+into a function, and then you can
+	for (i = total - 1; i > 1; i--) {
+		handle(i);
+	}
+	handle(1);
+	handle(0);
+	add_buf
+	
+
+
+
+> +			sg_set_buf(&sg[i], p + offset, PAGE_SIZE - offset);
+> +			err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, total,
+> +						       first);
+> +			if (err < 0)
+> +				give_pages(vi, first);
+> +		} else
+> +			sg_set_buf(&sg[i], p, PAGE_SIZE);
+> +	}
+> +
+> +	return err;
+> +}
+> +
+> +static int add_recvbuf_mergeable(struct virtnet_info *vi, gfp_t gfp, bool *oom)
+
+
+do we really need *oom here and below?
+We can just set err to ENOMEM, no?
+
+> +{
+> +	struct page *page;
+> +	struct scatterlist sg;
+> +	int err = 0;
+> +
+> +	page = get_a_page(vi, gfp);
+> +	if (!page) {
+> +		*oom = true;
+> +		return err;
+
+Please do not return 0 on failure.
+
+> +	}
+> +
+> +	sg_init_one(&sg, page_address(page), PAGE_SIZE);
+> +
+> +	err = vi->rvq->vq_ops->add_buf(vi->rvq, &sg, 0, 1, page);
+> +	if (err < 0)
+> +		give_pages(vi, page);
+> +
+> +	return err;
+> +}
+> +
+>  static bool try_fill_recv_maxbufs(struct virtnet_info *vi, gfp_t gfp)
+>  {
+>  	struct sk_buff *skb;
+> 
