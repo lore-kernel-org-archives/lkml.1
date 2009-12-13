@@ -1,143 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbZLMX6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZLNATh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024AbZLMX6G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 18:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZLMX5z
+	id S1756082AbZLNATh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZLNATN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:57:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34175 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:19:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34723 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754874AbZLMX5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:47 -0500
+	id S1754846AbZLMX5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:43 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, miklos@szeredi.hu,
+Cc: Emese Revfy <re.emese@gmail.com>, chris.mason@oracle.com,
        torvalds@linux-foundation.org
-Subject: [PATCH 3/9] Constify struct file_operations for 2.6.32-git-053fe57ac v2
+Subject: [PATCH 0/1] Constify struct extent_io_ops for 2.6.32-git-053fe57ac v2
 Date: Mon, 14 Dec 2009 00:59:31 +0100
-Message-Id: <38cdd17089045641da3ed4ae52791ceef283dcea.1260662997.git.re.emese@gmail.com>
+Message-Id: <cover.1260662996.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <cover.1260662997.git.re.emese@gmail.com>
-References: <cover.1260662997.git.re.emese@gmail.com>
-X-ELTE-SpamScore: -2.0
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Emese Revfy <re.emese@gmail.com>
 
+Hello everyone!
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
----
- fs/fuse/cuse.c   |   19 ++++++++++++-------
- fs/fuse/dev.c    |    8 ++++----
- fs/fuse/fuse_i.h |   10 ++++++++++
- 3 files changed, 26 insertions(+), 11 deletions(-)
+The following patch series attempts to constify several structures
+that hold function pointers. This is only the initial batch, there
+are about over 150 candidate structures, some of which can be
+constified as well, I plan to submit them in the future.
 
-diff --git a/fs/fuse/cuse.c b/fs/fuse/cuse.c
-index de792dc..2115e7f 100644
---- a/fs/fuse/cuse.c
-+++ b/fs/fuse/cuse.c
-@@ -528,7 +528,18 @@ static int cuse_channel_release(struct inode *inode, struct file *file)
- 	return rc;
- }
- 
--static struct file_operations cuse_channel_fops; /* initialized during init */
-+static const struct file_operations cuse_channel_fops = { /* initialized during init */
-+	.owner		= THIS_MODULE,
-+	.llseek		= no_llseek,
-+	.read		= do_sync_read,
-+	.aio_read	= fuse_dev_read,
-+	.write		= do_sync_write,
-+	.aio_write	= fuse_dev_write,
-+	.poll		= fuse_dev_poll,
-+	.open		= cuse_channel_open,
-+	.release	= cuse_channel_release,
-+	.fasync		= fuse_dev_fasync,
-+};
- 
- 
- /**************************************************************************
-@@ -575,12 +586,6 @@ static int __init cuse_init(void)
- 	for (i = 0; i < CUSE_CONNTBL_LEN; i++)
- 		INIT_LIST_HEAD(&cuse_conntbl[i]);
- 
--	/* inherit and extend fuse_dev_operations */
--	cuse_channel_fops		= fuse_dev_operations;
--	cuse_channel_fops.owner		= THIS_MODULE;
--	cuse_channel_fops.open		= cuse_channel_open;
--	cuse_channel_fops.release	= cuse_channel_release;
--
- 	cuse_class = class_create(THIS_MODULE, "cuse");
- 	if (IS_ERR(cuse_class))
- 		return PTR_ERR(cuse_class);
-diff --git a/fs/fuse/dev.c b/fs/fuse/dev.c
-index 51d9e33..03c8f95 100644
---- a/fs/fuse/dev.c
-+++ b/fs/fuse/dev.c
-@@ -745,7 +745,7 @@ __releases(&fc->lock)
-  * request_end().  Otherwise add it to the processing list, and set
-  * the 'sent' flag.
-  */
--static ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
-+ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
- 			      unsigned long nr_segs, loff_t pos)
- {
- 	int err;
-@@ -987,7 +987,7 @@ static int copy_out_args(struct fuse_copy_state *cs, struct fuse_out *out,
-  * it from the list and copy the rest of the buffer to the request.
-  * The request is finished by calling request_end()
-  */
--static ssize_t fuse_dev_write(struct kiocb *iocb, const struct iovec *iov,
-+ssize_t fuse_dev_write(struct kiocb *iocb, const struct iovec *iov,
- 			       unsigned long nr_segs, loff_t pos)
- {
- 	int err;
-@@ -1084,7 +1084,7 @@ static ssize_t fuse_dev_write(struct kiocb *iocb, const struct iovec *iov,
- 	return err;
- }
- 
--static unsigned fuse_dev_poll(struct file *file, poll_table *wait)
-+unsigned fuse_dev_poll(struct file *file, poll_table *wait)
- {
- 	unsigned mask = POLLOUT | POLLWRNORM;
- 	struct fuse_conn *fc = fuse_get_conn(file);
-@@ -1210,7 +1210,7 @@ int fuse_dev_release(struct inode *inode, struct file *file)
- }
- EXPORT_SYMBOL_GPL(fuse_dev_release);
- 
--static int fuse_dev_fasync(int fd, struct file *file, int on)
-+int fuse_dev_fasync(int fd, struct file *file, int on)
- {
- 	struct fuse_conn *fc = fuse_get_conn(file);
- 	if (!fc)
-diff --git a/fs/fuse/fuse_i.h b/fs/fuse/fuse_i.h
-index 01cc462..b11fe78 100644
---- a/fs/fuse/fuse_i.h
-+++ b/fs/fuse/fuse_i.h
-@@ -521,6 +521,16 @@ extern const struct file_operations fuse_dev_operations;
- 
- extern const struct dentry_operations fuse_dentry_operations;
- 
-+extern ssize_t fuse_dev_read(struct kiocb *iocb, const struct iovec *iov,
-+			      unsigned long nr_segs, loff_t pos);
-+
-+extern ssize_t fuse_dev_write(struct kiocb *iocb, const struct iovec *iov,
-+			       unsigned long nr_segs, loff_t pos);
-+
-+extern unsigned fuse_dev_poll(struct file *file, poll_table *wait);
-+
-+extern int fuse_dev_fasync(int fd, struct file *file, int on);
-+
- /**
-  * Inode to nodeid comparison.
-  */
--- 
-1.6.5.3
+The list of constified structures in this series (* marks this thread):
+acpi_dock_ops
+address_space_operations
+backlight_ops
+block_device_operations
+dma_map_ops
+* extent_io_ops
+file_lock_operations
+file_operations
+hv_ops
+intel_dvo_dev_ops
+item_operations
+iwl_ops
+kgdb_arch
+kgdb_io
+kset_uevent_ops
+lock_manager_operations
+microcode_ops
+mtrr_ops
+neigh_ops
+nlmsvc_binding
+pci_raw_ops
+platform_hibernation_ops
+platform_suspend_ops
+snd_ac97_build_ops
+sysfs_ops
+usb_mon_operations
+wd_ops
+
+There are certain exceptions where a given instance of the structure
+cannot be const, they are marked with a comment in the patch.
+
+The patches compile fine with an allyesconfig kernel on i386 and x86_64.
+
+Please let me know if any of these structures should not be constified
+and any other issues you see with them.
+
+
+Changelog:
+----------
+v1 -> v2
+	- updated to linus-git-053fe57
+	- extended comments with a reference to code that prevents constification
+	- split up patches by subsystem as suggested by Greg KH, Jiri Slaby
+	- added all Acked-by's received so far
+	- removed patch for super_operations for now
+	- removed patch for ptmx_fops
+
+Thanks,
+   Emese
+
+ fs/btrfs/disk-io.c   |    4 ++--
+ fs/btrfs/extent_io.h |   30 +++++++++++++++---------------
+ fs/btrfs/inode.c     |    4 ++--
+ 3 files changed, 19 insertions(+), 19 deletions(-)
 
