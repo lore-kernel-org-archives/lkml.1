@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZLMWnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZLMWnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbZLMWnR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 17:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZLMWnN
+	id S1754638AbZLMWnb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 17:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZLMWnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 17:43:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42408 "EHLO ogre.sisk.pl"
+	Sun, 13 Dec 2009 17:43:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42412 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754535AbZLMWnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 17:43:09 -0500
+	id S1754555AbZLMWnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 17:43:11 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 4/5] PM: Add a switch for disabling/enabling asynchronous suspend/resume
-Date: Sun, 13 Dec 2009 23:41:44 +0100
+Subject: [PATCH 5/5] PM: Add facility for advanced testing of async suspend/resume
+Date: Sun, 13 Dec 2009 23:42:24 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,122 +24,142 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912132341.44506.rjw@sisk.pl>
+Message-Id: <200912132342.25029.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add sysfs attribute kernel/power/pm_async allowing the user space to
-disable and enable async suspend/resume of devices.
+Add configuration switch CONFIG_PM_ADVANCED_DEBUG for compiling in
+extra PM debugging/testing code allowing one to access some
+PM-related attributes of devices from the user space via sysfs.
+
+If CONFIG_PM_ADVANCED_DEBUG is set, add sysfs attribute power/async
+for every device allowing the user space to access the device's
+power.async_suspend flag and modify it, if desired.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c  |    7 ++++---
- drivers/base/power/power.h |    6 +++---
- kernel/power/main.c        |   31 ++++++++++++++++++++++++++++++-
- 3 files changed, 37 insertions(+), 7 deletions(-)
+ drivers/base/power/sysfs.c |   47 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/device.h     |    5 ++++
+ kernel/power/Kconfig       |   14 +++++++++++++
+ 3 files changed, 66 insertions(+)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/drivers/base/power/sysfs.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
- 			== NOTIFY_BAD) ? -EINVAL : 0;
- }
+--- linux-2.6.orig/drivers/base/power/sysfs.c
++++ linux-2.6/drivers/base/power/sysfs.c
+@@ -38,6 +38,22 @@
+  *	wakeup events internally (unless they are disabled), keeping
+  *	their hardware in low power modes whenever they're unused.  This
+  *	saves runtime power, without requiring system-wide sleep states.
++ *
++ *	async - Report/change current async suspend setting for the device
++ *
++ *	If set, the PM core will attempt to suspend and resume the device during
++ *	system power transitions (e.g. suspend to RAM, hibernation) in parallel
++ *	with other devices it doesn't appear to depend on (to the PM core's
++ *	knowledge).
++ *
++ *	 + "enabled\n" to permit the asynchronous suspend/resume of the device
++ *	 + "disabled\n" to forbid it
++ *
++ *	NOTE: It generally is unsafe to permit the asynchronous suspend/resume
++ *	of a device unless it is certain that all of the PM dependencies of the
++ *	device are known to the PM core.  However, for some devices this
++ *	attribute is set to "enabled" by bus type code or device drivers and in
++ *	that cases it should be safe to leave the default value.
+  */
  
-+/* If set, devices may be suspended and resumed asynchronously. */
-+int pm_async_enabled = 1;
-+
-+static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
+ static const char enabled[] = "enabled";
+@@ -77,9 +93,40 @@ wake_store(struct device * dev, struct d
+ 
+ static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
+ 
++#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
++static ssize_t async_show(struct device *dev, struct device_attribute *attr,
++			  char *buf)
 +{
-+	return sprintf(buf, "%d\n", pm_async_enabled);
++	return sprintf(buf, "%s\n",
++			device_async_suspend_enabled(dev) ? enabled : disabled);
 +}
 +
-+static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			      const char *buf, size_t n)
++static ssize_t async_store(struct device *dev, struct device_attribute *attr,
++			   const char *buf, size_t n)
 +{
-+	unsigned long val;
++	char *cp;
++	int len = n;
 +
-+	if (strict_strtoul(buf, 10, &val))
++	cp = memchr(buf, '\n', n);
++	if (cp)
++		len = cp - buf;
++	if (len == sizeof enabled - 1 && strncmp(buf, enabled, len) == 0)
++		device_enable_async_suspend(dev, true);
++	else if (len == sizeof disabled - 1 && strncmp(buf, disabled, len) == 0)
++		device_enable_async_suspend(dev, false);
++	else
 +		return -EINVAL;
-+
-+	if (val > 1)
-+		return -EINVAL;
-+
-+	pm_async_enabled = val;
 +	return n;
 +}
 +
-+power_attr(pm_async);
-+
- #ifdef CONFIG_PM_DEBUG
- int pm_test_level = TEST_NONE;
++static DEVICE_ATTR(async, 0644, async_show, async_store);
++#endif /* CONFIG_PM_SLEEP_ADVANCED_DEBUG */
  
-@@ -208,9 +234,12 @@ static struct attribute * g[] = {
- #ifdef CONFIG_PM_TRACE
- 	&pm_trace_attr.attr,
- #endif
--#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
-+#ifdef CONFIG_PM_SLEEP
-+	&pm_async_attr.attr,
-+#ifdef CONFIG_PM_DEBUG
- 	&pm_test_attr.attr,
- #endif
+ static struct attribute * power_attrs[] = {
+ 	&dev_attr_wakeup.attr,
++#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
++	&dev_attr_async.attr,
 +#endif
  	NULL,
  };
- 
-Index: linux-2.6/drivers/base/power/power.h
+ static struct attribute_group pm_attr_group = {
+Index: linux-2.6/include/linux/device.h
 ===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -12,10 +12,10 @@ static inline void pm_runtime_remove(str
- 
- #ifdef CONFIG_PM_SLEEP
- 
--/*
-- * main.c
-- */
-+/* kernel/power/main.c */
-+extern int pm_async_enabled;
- 
-+/* drivers/base/power/main.c */
- extern struct list_head dpm_list;	/* The active device list */
- 
- static inline struct device *to_device(struct list_head *entry)
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -175,7 +175,7 @@ static void dpm_wait(struct device *dev,
- 	if (!dev)
- 		return;
- 
--	if (async || dev->power.async_suspend)
-+	if (async || (pm_async_enabled && dev->power.async_suspend))
- 		wait_for_completion(&dev->power.completion);
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -478,6 +478,11 @@ static inline void device_enable_async_s
+ 		dev->power.async_suspend = enable;
  }
  
-@@ -521,7 +521,8 @@ static int device_resume(struct device *
- {
- 	INIT_COMPLETION(dev->power.completion);
++static inline bool device_async_suspend_enabled(struct device *dev)
++{
++	return !!dev->power.async_suspend;
++}
++
+ void driver_init(void);
  
--	if (dev->power.async_suspend && !pm_trace_is_enabled()) {
-+	if (pm_async_enabled && dev->power.async_suspend
-+	    && !pm_trace_is_enabled()) {
- 		get_device(dev);
- 		async_schedule(async_resume, dev);
- 		return 0;
-@@ -806,7 +807,7 @@ static int device_suspend(struct device 
- {
- 	INIT_COMPLETION(dev->power.completion);
+ /*
+Index: linux-2.6/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -27,6 +27,15 @@ config PM_DEBUG
+ 	code. This is helpful when debugging and reporting PM bugs, like
+ 	suspend support.
  
--	if (dev->power.async_suspend) {
-+	if (pm_async_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
- 		return 0;
++config PM_ADVANCED_DEBUG
++	bool "Extra PM attributes in sysfs for low-level debugging/testing"
++	depends on PM_DEBUG
++	default n
++	---help---
++	Add extra sysfs attributes allowing one to access some Power Management
++	fields of device objects from user space.  If you are not a kernel
++	developer interested in debugging/testing Power Management, say "no".
++
+ config PM_VERBOSE
+ 	bool "Verbose Power Management debugging"
+ 	depends on PM_DEBUG
+@@ -85,6 +94,11 @@ config PM_SLEEP
+ 	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
+ 	default y
+ 
++config PM_SLEEP_ADVANCED_DEBUG
++	bool
++	depends on PM_ADVANCED_DEBUG
++	default n
++
+ config SUSPEND
+ 	bool "Suspend to RAM and standby"
+ 	depends on PM && ARCH_SUSPEND_POSSIBLE
 
