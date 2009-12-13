@@ -1,60 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZLMUgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZLMUiC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbZLMUgl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 15:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZLMUgk
+	id S1753326AbZLMUiC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 15:38:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZLMUiB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 15:36:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:27424 "HELO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752843AbZLMUgj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 15:36:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=nFfzPnXxnztGtHbNNGTCv/6JuThXcJ9onnm+xUC7cP5EWvTJekMiXdGodgAzziVOkX
-         1iyTEXFUDWws3vTlVahIby6iGKZ7CgPXStzhD7AtjdZdx1+pYx0PW1PqNXn881T+jVoE
-         ytQXR/jEdRaVrbopTYLZbsdxnfQNZ6zLf2mVc=
+	Sun, 13 Dec 2009 15:38:01 -0500
+Received: from claw.goop.org ([74.207.240.146]:47667 "HELO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752853AbZLMUh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 15:37:59 -0500
+Message-ID: <4B2550A6.8030705@goop.org>
+Date: Sun, 13 Dec 2009 12:37:58 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B2441A6.5050404@vflare.org>
-References: <1260598486-12623-1-git-send-email-ngupta@vflare.org>
-	 <84144f020912112341jc7fdc1eqac719578e2aa746b@mail.gmail.com>
-	 <4B2441A6.5050404@vflare.org>
-Date: Sun, 13 Dec 2009 22:36:26 +0200
-X-Google-Sender-Auth: e6c954591f2b1283
-Message-ID: <84144f020912131236m2739aaa5obe6f8399d9e90aea@mail.gmail.com>
-Subject: Re: [PATCH] ramzswap: remove ARM specific d-cache hack
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: ngupta@vflare.org
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: 2.6.31.6: Intel 82574L devices spontaneously dropping off PCIe?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 13, 2009 at 3:21 AM, Nitin Gupta <ngupta@vflare.org> wrote:
-> On 12/12/2009 01:11 PM, Pekka Enberg wrote:
->> On Sat, Dec 12, 2009 at 8:14 AM, Nitin Gupta <ngupta@vflare.org> wrote:
->>> Remove d-cache hack in ramzswap driver that was needed
->>> to workaround a bug in ARM version of update_mmu_cache()
->>> which caused stale data in d-cache to be transferred to
->>> userspace. This bug was fixed by git commit:
->>>        787b2faadc4356b6c2c71feb42fb944fece9a12f
->>> This also brings down one entry in TODO file.
->>>
->>> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
->>
->> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
->
-> Thanks for review Pekka.
-> Now wondering when this patch will be committed to mainline.
+I have a Supermicro X8SIL-F system, which has a couple of on-board 
+82574L gigabit interfaces.  I'm running the stock F12 kernel on it 
+(2.6.31.6-166.fc12.x86_64).   This is a new machine, so I'm trying to 
+work out if this is a hardware problem I should RMA the board for, if 
+this is some kind of driver bug.
 
-I don't see any reason why this shouldn't go into .33 but that's
-really up to Greg.
+The interfaces come up and apparently work fine - for a while.  But 
+after a bit of load (say, a ~9GB of incoming TCP traffic from another 
+machine on the same switch) the hardware appears to disappear from 
+PCIe.  ifconfig starts showing junk:
 
-                      Pekka
+eth1      Link encap:Ethernet  HWaddr 00:30:48:DD:EB:67
+           inet6 addr: fe80::230:48ff:fedd:eb67/64 Scope:Link
+           UP BROADCAST MULTICAST  MTU:1500  Metric:1
+           RX packets:7910754 errors:532687613729670 dropped:88781268954945 overruns:0 frame:355125075819780
+           TX packets:4104172 errors:177562537909890 dropped:0 overruns:0 carrier:177562537909890
+           collisions:88781268954945 txqueuelen:1000
+           RX bytes:9589212936 (8.9 GiB)  TX bytes:271851778 (259.2 MiB)
+           Memory:fafe0000-fb000000
+
+
+and lspci shows that the config space is all 0xff:
+
+[root@lilith ~]# lspci -s 04:00.0 -x
+04:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection (rev ff)
+00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+[root@lilith ~]# lspci -s 05:00.0 -x
+05:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection (rev ff)
+00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+
+This seems to happen quietly without the kernel noticing; the only 
+side-effect is the dev watchdog triggering:
+
+------------[ cut here ]------------
+WARNING: at net/sched/sch_generic.c:246 dev_watchdog+0xf3/0x164() (Not tainted)
+Hardware name: X8SIL
+NETDEV WATCHDOG: eth1 (e1000e): transmit queue 0 timed out
+Modules linked in: ip6table_filter ip6_tables bridge stp llc sunrpc xt_physdev ip6t_REJECT nf_conntrack_ipv6 ipv6 cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm_intel kvm uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus snd_seq snd_pcm snd_seq_device snd_timer snd_page_alloc snd_util_mem snd_hwdep snd e1000e i2c_i801 soundcore emu10k1_gp gameport i2c_core joydev cryptd aes_x86_64 aes_generic xts gf128mul dm_crypt raid10 [last unloaded: ip6_tables]
+Pid: 0, comm: swapper Not tainted 2.6.31.6-166.fc12.x86_64 #1
+Call Trace:
+  <IRQ>   [<ffffffff810516f4>] warn_slowpath_common+0x84/0x9c
+  [<ffffffff81051763>] warn_slowpath_fmt+0x41/0x43
+  [<ffffffff8138e831>] ? netif_tx_lock+0x44/0x6d
+  [<ffffffff8138e99b>] dev_watchdog+0xf3/0x164
+  [<ffffffff8105bc52>] ? internal_add_timer+0xcf/0xd1
+  [<ffffffff8105bd0b>] ? cascade+0x6a/0x84
+  [<ffffffff8105bec4>] run_timer_softirq+0x19f/0x21c
+  [<ffffffff8106ae47>] ? hrtimer_interrupt+0x13c/0x153
+  [<ffffffff81057614>] __do_softirq+0xdd/0x1ad
+  [<ffffffff81026936>] ? apic_write+0x16/0x18
+  [<ffffffff81012eac>] call_softirq+0x1c/0x30
+  [<ffffffff810143fb>] do_softirq+0x47/0x8d
+  [<ffffffff81057326>] irq_exit+0x44/0x86
+  [<ffffffff8141ecf5>] do_IRQ+0xa5/0xbc
+  [<ffffffff810126d3>] ret_from_intr+0x0/0x11
+  <EOI>   [<ffffffff812679dd>] ? acpi_idle_enter_bm+0x281/0x2b5
+  [<ffffffff812679d6>] ? acpi_idle_enter_bm+0x27a/0x2b5
+  [<ffffffff81353b7f>] ? cpuidle_idle_call+0x99/0xce
+  [<ffffffff81010c60>] ? cpu_idle+0xa6/0xe9
+  [<ffffffff81405db7>] ? rest_init+0x6b/0x6d
+  [<ffffffff81714dc9>] ? start_kernel+0x3ef/0x3fa
+  [<ffffffff817142a1>] ? x86_64_start_reservations+0xac/0xb0
+  [<ffffffff8171439d>] ? x86_64_start_kernel+0xf8/0x107
+---[ end trace f271bce88fe9d682 ]---
+0000:05:00.0: eth1: Error reading PHY register
+e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+
+
+A reboot seems to recover the devices:
+
+[root@lilith ~]# lspci -s 04:00.0 -x
+04:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection
+00: 86 80 d3 10 07 04 10 00 00 00 00 02 10 00 00 00
+10: 00 00 ee fa 00 00 00 00 01 cc 00 00 00 c0 ed fa
+20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 05 06
+30: 00 00 00 00 c8 00 00 00 00 00 00 00 0a 01 00 00
+
+[root@lilith ~]# lspci -s 05:00.0 -x
+05:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network Connection
+00: 86 80 d3 10 07 04 10 00 00 00 00 02 10 00 00 00
+10: 00 00 fe fa 00 00 00 00 01 dc 00 00 00 c0 fd fa
+20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 05 06
+30: 00 00 00 00 c8 00 00 00 00 00 00 00 0b 01 00 00
+
+
+
+
+Any clues?
+
+Thanks,
+     J
