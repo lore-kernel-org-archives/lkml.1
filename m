@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZLNAKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbZLNAL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbZLNAKB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZLMX6L
+	id S1755718AbZLNAL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755690AbZLNAK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:58:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34324 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:10:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34947 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754958AbZLMX6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:58:04 -0500
+	id S1754929AbZLMX6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:58:10 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, netdev@vger.kernel.org,
-       ilw@linux.intel.com, linville@tuxdriver.com, reinette.chatre@intel.com,
-       yi.zhu@intel.com
-Subject: [PATCH 1/1] Constify struct iwl_ops for 2.6.32-git-053fe57ac v2
+Cc: Emese Revfy <re.emese@gmail.com>, davem@davemloft.net,
+       torvalds@linux-foundation.org
+Subject: [PATCH 5/8] Constify struct kgdb_arch for 2.6.32-git-053fe57ac v2
 Date: Mon, 14 Dec 2009 00:59:53 +0100
-Message-Id: <c3f0fed4cb1def7f69464d517fcfff4baa7fa330.1260662999.git.re.emese@gmail.com>
+Message-Id: <355d51b17fbfcd2c574a4a1b79abb328f457abd0.1260662999.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662999.git.re.emese@gmail.com>
 References: <cover.1260662999.git.re.emese@gmail.com>
@@ -35,96 +34,36 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/net/wireless/iwlwifi/iwl-1000.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-3945.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
- drivers/net/wireless/iwlwifi/iwl-5000.c |    4 ++--
- drivers/net/wireless/iwlwifi/iwl-6000.c |    4 ++--
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ arch/sparc/kernel/kgdb_32.c |    2 +-
+ arch/sparc/kernel/kgdb_64.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-1000.c b/drivers/net/wireless/iwlwifi/iwl-1000.c
-index 8414178..ea0150e 100644
---- a/drivers/net/wireless/iwlwifi/iwl-1000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-1000.c
-@@ -140,7 +140,7 @@ static struct iwl_lib_ops iwl1000_lib = {
- 	 },
- };
+diff --git a/arch/sparc/kernel/kgdb_32.c b/arch/sparc/kernel/kgdb_32.c
+index 04df4ed..55c4b6e 100644
+--- a/arch/sparc/kernel/kgdb_32.c
++++ b/arch/sparc/kernel/kgdb_32.c
+@@ -158,7 +158,7 @@ void kgdb_arch_exit(void)
+ {
+ }
  
--static struct iwl_ops iwl1000_ops = {
-+static const struct iwl_ops iwl1000_ops = {
- 	.ucode = &iwl5000_ucode,
- 	.lib = &iwl1000_lib,
- 	.hcmd = &iwl5000_hcmd,
-diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
-index 7da1dab..3708b5c 100644
---- a/drivers/net/wireless/iwlwifi/iwl-3945.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
-@@ -2811,7 +2811,7 @@ static struct iwl_hcmd_utils_ops iwl3945_hcmd_utils = {
- 	.rts_tx_cmd_flag = iwlcore_rts_tx_cmd_flag,
+-struct kgdb_arch arch_kgdb_ops = {
++const struct kgdb_arch arch_kgdb_ops = {
+ 	/* Breakpoint instruction: ta 0x7d */
+ 	.gdb_bpt_instr		= { 0x91, 0xd0, 0x20, 0x7d },
  };
+diff --git a/arch/sparc/kernel/kgdb_64.c b/arch/sparc/kernel/kgdb_64.c
+index f5a0fd4..d886f71 100644
+--- a/arch/sparc/kernel/kgdb_64.c
++++ b/arch/sparc/kernel/kgdb_64.c
+@@ -180,7 +180,7 @@ void kgdb_arch_exit(void)
+ {
+ }
  
--static struct iwl_ops iwl3945_ops = {
-+static const struct iwl_ops iwl3945_ops = {
- 	.ucode = &iwl3945_ucode,
- 	.lib = &iwl3945_lib,
- 	.hcmd = &iwl3945_hcmd,
-diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
-index 386513b..4cfb503 100644
---- a/drivers/net/wireless/iwlwifi/iwl-4965.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
-@@ -2208,7 +2208,7 @@ static struct iwl_lib_ops iwl4965_lib = {
- 	},
+-struct kgdb_arch arch_kgdb_ops = {
++const struct kgdb_arch arch_kgdb_ops = {
+ 	/* Breakpoint instruction: ta 0x72 */
+ 	.gdb_bpt_instr		= { 0x91, 0xd0, 0x20, 0x72 },
  };
- 
--static struct iwl_ops iwl4965_ops = {
-+static const struct iwl_ops iwl4965_ops = {
- 	.ucode = &iwl4965_ucode,
- 	.lib = &iwl4965_lib,
- 	.hcmd = &iwl4965_hcmd,
-diff --git a/drivers/net/wireless/iwlwifi/iwl-5000.c b/drivers/net/wireless/iwlwifi/iwl-5000.c
-index e2f8615..bf44b29 100644
---- a/drivers/net/wireless/iwlwifi/iwl-5000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
-@@ -1554,7 +1554,7 @@ static struct iwl_lib_ops iwl5150_lib = {
- 	 },
- };
- 
--static struct iwl_ops iwl5000_ops = {
-+static const struct iwl_ops iwl5000_ops = {
- 	.ucode = &iwl5000_ucode,
- 	.lib = &iwl5000_lib,
- 	.hcmd = &iwl5000_hcmd,
-@@ -1562,7 +1562,7 @@ static struct iwl_ops iwl5000_ops = {
- 	.led = &iwlagn_led_ops,
- };
- 
--static struct iwl_ops iwl5150_ops = {
-+static const struct iwl_ops iwl5150_ops = {
- 	.ucode = &iwl5000_ucode,
- 	.lib = &iwl5150_lib,
- 	.hcmd = &iwl5000_hcmd,
-diff --git a/drivers/net/wireless/iwlwifi/iwl-6000.c b/drivers/net/wireless/iwlwifi/iwl-6000.c
-index 74e5710..4c19d72 100644
---- a/drivers/net/wireless/iwlwifi/iwl-6000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-6000.c
-@@ -252,7 +252,7 @@ static struct iwl_lib_ops iwl6000_lib = {
- 	 },
- };
- 
--static struct iwl_ops iwl6000_ops = {
-+static const struct iwl_ops iwl6000_ops = {
- 	.ucode = &iwl5000_ucode,
- 	.lib = &iwl6000_lib,
- 	.hcmd = &iwl5000_hcmd,
-@@ -267,7 +267,7 @@ static struct iwl_hcmd_utils_ops iwl6050_hcmd_utils = {
- 	.calc_rssi = iwl5000_calc_rssi,
- };
- 
--static struct iwl_ops iwl6050_ops = {
-+static const struct iwl_ops iwl6050_ops = {
- 	.ucode = &iwl5000_ucode,
- 	.lib = &iwl6000_lib,
- 	.hcmd = &iwl5000_hcmd,
 -- 
 1.6.5.3
 
