@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZLNAVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbZLNA1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbZLNAVA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbZLNAUz
+	id S1756325AbZLNA1y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbZLNA1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:20:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34073 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Dec 2009 19:27:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34564 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754851AbZLMX5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:57:40 -0500
+	id S1754739AbZLMX5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:57:22 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, lenb@kernel.org, mjg@redhat.com,
-       torvalds@linux-foundation.org
-Subject: [PATCH 02/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 00:58:54 +0100
-Message-Id: <7fd2a4cef62039670e32710944f49e07afaa7e20.1260662995.git.re.emese@gmail.com>
+Cc: Emese Revfy <re.emese@gmail.com>, len.brown@intel.com, adobriyan@gmail.com,
+       bjorn.helgaas@hp.com, torvalds@linux-foundation.org
+Subject: [PATCH 03/22] Constify struct backlight_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 00:58:55 +0100
+Message-Id: <ef77bc2edc4618ec59eac54cd4497f2b54a100aa.1260662995.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260662994.git.re.emese@gmail.com>
 References: <cover.1260662994.git.re.emese@gmail.com>
@@ -35,21 +35,35 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/acpi/video.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/platform/x86/asus-laptop.c |    2 +-
+ drivers/platform/x86/asus_acpi.c   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 05dff63..b662ab7 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -359,7 +359,7 @@ static int acpi_video_set_brightness(struct backlight_device *bd)
- 				vd->brightness->levels[request_level]);
+diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
+index b39d2bb..c9a3dc4 100644
+--- a/drivers/platform/x86/asus-laptop.c
++++ b/drivers/platform/x86/asus-laptop.c
+@@ -249,7 +249,7 @@ static struct backlight_device *asus_backlight_device;
+  */
+ static int read_brightness(struct backlight_device *bd);
+ static int update_bl_status(struct backlight_device *bd);
+-static struct backlight_ops asusbl_ops = {
++static const struct backlight_ops asusbl_ops = {
+ 	.get_brightness = read_brightness,
+ 	.update_status = update_bl_status,
+ };
+diff --git a/drivers/platform/x86/asus_acpi.c b/drivers/platform/x86/asus_acpi.c
+index ddf5240..61e6673 100644
+--- a/drivers/platform/x86/asus_acpi.c
++++ b/drivers/platform/x86/asus_acpi.c
+@@ -1402,7 +1402,7 @@ static int asus_hotk_remove(struct acpi_device *device, int type)
+ 	return 0;
  }
  
--static struct backlight_ops acpi_backlight_ops = {
-+static const struct backlight_ops acpi_backlight_ops = {
- 	.get_brightness = acpi_video_get_brightness,
- 	.update_status  = acpi_video_set_brightness,
+-static struct backlight_ops asus_backlight_data = {
++static const struct backlight_ops asus_backlight_data = {
+ 	.get_brightness = read_brightness,
+ 	.update_status  = set_brightness_status,
  };
 -- 
 1.6.5.3
