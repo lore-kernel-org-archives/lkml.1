@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZLMV4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbZLMVum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462AbZLMV4N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 16:56:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZLMV4M
+	id S1754395AbZLMVum (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 16:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZLMVum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 16:56:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25653 "HELO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754332AbZLMV4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 16:56:12 -0500
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
- when ..."
-From: Dave Airlie <airlied@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Daniel Vetter <daniel@ffwll.ch>, Adam Jackson <ajax@redhat.com>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       keithp@keithp.com, eric@anholt.net, jbarnes@virtuousgeek.org,
-       Daniel Vetter <daniel.vetter@ffwll.ch>
-In-Reply-To: <200912132131.07100.arnd@arndb.de>
-References: <200912071830.14697.arnd@arndb.de>
-	 <200912131230.25781.arnd@arndb.de> <20091213200017.GA3522@viiv.ffwll.ch>
-	 <200912132131.07100.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 14 Dec 2009 07:54:05 +1000
-Message-Id: <1260741245.3123.0.camel@t60prh>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Dec 2009 16:50:42 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:55352 "HELO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751966AbZLMVuk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 16:50:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=lLXxYz4Ezb3iPg1F8zFLBR+g69eVh59m5TRHqyPBCaMwQm4RjV8cOP9B5ffwJaIWWX
+         KqT0sOrBwNd80e/BxcVoKAUPPGw4/v/qXsjVjTKHIIPYwqWJq3qI2nq/pLwKSlmnICi8
+         ZSw0yLOycnm8KsmjW/a3kk7Vj0bVWyTml1AQI=
+Date: Sun, 13 Dec 2009 16:04:38 -0600
+From: Jonathan Nieder <jrnieder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org
+Subject: [PATCH] x86: Fix kprobes build with non-gawk awk
+Message-ID: <20091213220437.GA27718@progeny.tock>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-13 at 21:31 +0000, Arnd Bergmann wrote:
-> On Sunday 13 December 2009 20:00:18 Daniel Vetter wrote:
-> > On Sun, Dec 13, 2009 at 12:30:25PM +0000, Arnd Bergmann wrote:
-> > > And now it's obvious that my computer hates me. 12 hours of uptime, one reboot
-> > > to check the old other version is broken, it crashes. I reboot into the
-> > > good version, send out the above email and the next minute it crashes again.
-> > > c05422d52ee6b is not the culprit. Sorry Daniel for blaming your patch.
-> > 
-> > No problem. Looks like your hunting a pretty ugly Heisenbug. There's quite
-> > a interesting blog post by Paul McKenney, esp. the solution to "Quick Quiz 1"
-> > might be usefull in your case:
-> > 
-> > http://paulmck.livejournal.com/14639.html
-> 
-> Thanks! In fact I've actually read that post on the kernel planet and decided
-> to do basically a linear search through the i915 patches merged into 2.6.32.
-> 
-> The current result is 67cf781bea5 "drm/i915: Make the downclocking debug code
-> be under DRM_DEBUG not DRM_ERROR." is known bad, while 043029655 "drm/i915:
-> Support IGD EOS" is probably good, pointing to Jesses 652c393a33 "drm/i915:
-> add dynamic clock frequency control" as the next best guess. Unfortunately,
-> that is a rather large change that is not easy to revert on current kernels.
+The instruction attribute table generator fails when run by mawk
+or original-awk:
 
-That seems the most likely, perhaps jbarnes can comment.
+ $ mawk -f arch/x86/tools/gen-insn-attr-x86.awk \
+	arch/x86/lib/x86-opcode-map.txt > /dev/null
+ Semantic error at 240: Second IMM error
+ $ echo $?
+ 1
 
-Dave.
+Line 240 contains "c8: ENTER Iw,Ib", which indicates that this
+instruction has two immediate operands, the second of which is
+one byte.  The script loops through the immediate operands using
+a for loop.
 
+Unfortunately, there is no guarantee in awk that a for (variable
+in array) loop will return the indices in increasing order.
+Internally, both original-awk and mawk iterate over a hash table
+for this purpose, and both implementations happen to produce the
+index 2 before 1.  The supposed second immediate operand is more
+than one byte wide, producing the error.
+
+So loop over the indices in increasing order instead.  As a
+side-effect, with mawk this means the silly two-entry hash table
+never has to be built.
+
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: x86@kernel.org
+Signed-off-by: Jonathan Nieder <jrnieder@gmail.com>
+---
+ arch/x86/tools/gen-insn-attr-x86.awk |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
+index e34e92a..7a68506 100644
+--- a/arch/x86/tools/gen-insn-attr-x86.awk
++++ b/arch/x86/tools/gen-insn-attr-x86.awk
+@@ -226,12 +226,12 @@ function add_flags(old,new) {
+ }
+ 
+ # convert operands to flags.
+-function convert_operands(opnd,       i,imm,mod)
++function convert_operands(count,opnd,       i,j,imm,mod)
+ {
+ 	imm = null
+ 	mod = null
+-	for (i in opnd) {
+-		i  = opnd[i]
++	for (j = 1; j <= count; j++) {
++		i = opnd[j]
+ 		if (match(i, imm_expr) == 1) {
+ 			if (!imm_flag[i])
+ 				semantic_error("Unknown imm opnd: " i)
+@@ -282,8 +282,8 @@ function convert_operands(opnd,       i,imm,mod)
+ 		# parse one opcode
+ 		if (match($i, opnd_expr)) {
+ 			opnd = $i
+-			split($(i++), opnds, ",")
+-			flags = convert_operands(opnds)
++			count = split($(i++), opnds, ",")
++			flags = convert_operands(count, opnds)
+ 		}
+ 		if (match($i, ext_expr))
+ 			ext = $(i++)
+-- 
+1.6.5.4
 
