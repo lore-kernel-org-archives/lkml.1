@@ -1,116 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZLNILB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751527AbZLNIO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755352AbZLNILB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 03:11:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbZLNILA
+	id S1751527AbZLNIO3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 03:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbZLNIO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 03:11:00 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41808 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214AbZLNIK7 (ORCPT
+	Mon, 14 Dec 2009 03:14:28 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:54011 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbZLNIO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 03:10:59 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B25F2DE.4000703@jp.fujitsu.com>
-Date: Mon, 14 Dec 2009 17:10:06 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 14 Dec 2009 03:14:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=c/c+msdJADM7RFZLa/wQ/cheKG2d7c7ylZcKTJ2jXYmCXEuwL+fjr/VA0JrnX0C3Te
+         xF1UArS2scXrm1GpcjOsucUeRrLFc3vUxxhIUn/q02+bpxvicnFFwT39lVpKaDLM7RcJ
+         BAGn267caMSkDnd/HhCiMG8iIf7ugGp3ZwQq4=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [PATCH] acpi: fix for lapic_timer_propagate_broadcast()
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B25EA8B.1030507@grandegger.com>
+References: <alpine.DEB.2.00.0912132008100.21225@ayla.of.borg>
+	 <4B2552C8.4090105@grandegger.com>
+	 <20091213.174020.26980813.davem@davemloft.net>
+	 <4B25EA8B.1030507@grandegger.com>
+Date: Mon, 14 Dec 2009 09:14:27 +0100
+X-Google-Sender-Auth: d27482d8d94c842b
+Message-ID: <cabda6420912140014i5693f17p2d00a82ff3a4a3bc@mail.gmail.com>
+Subject: Re: [PATCH] can: CAN_MCP251X should depend on HAS_DMA
+From: christian pellegrin <chripell@fsfe.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: David Miller <davem@davemloft.net>, geert@linux-m68k.org,
+       urs.thuermann@volkswagen.de, oliver.hartkopp@volkswagen.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got following warning on ia64 box:
-  In function 'acpi_processor_power_verify':
-  642: warning: passing argument 2 of 'smp_call_function_single' from
-  incompatible pointer type
+On Mon, Dec 14, 2009 at 8:34 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> David Miller wrote:
+>>
+>> I still think it's a reasonable dependency.
+>>
+>> You're not going to find this device on a s390 system. :-)
+>
+> OK, we could change that on request.
+>
+> Wolfgang.
+>
 
-This smp_call_function_single() was introduced by a commit
-f833bab87fca5c3ce13778421b1365845843b976:
+Hi, sorry for the late answer. I agree it's a reasonable dependency.
+Anyway it's easy to #ifdef it out if anyone cares.
 
- > @@ -162,8 +162,9 @@
- >               pr->power.timer_broadcast_on_state = state;
- >  }
- >
- > -static void lapic_timer_propagate_broadcast(struct acpi_processor *pr)
- > +static void lapic_timer_propagate_broadcast(void *arg)
- >  {
- > +       struct acpi_processor *pr = (struct acpi_processor *) arg;
- >         unsigned long reason;
- >
- >         reason = pr->power.timer_broadcast_on_state < INT_MAX ?
- > @@ -635,7 +636,8 @@
- >                 working++;
- >         }
- >
- > -       lapic_timer_propagate_broadcast(pr);
- > +       smp_call_function_single(pr->id, lapic_timer_propagate_broadcast,
- > +                                pr, 1);
- >
- >         return (working);
- >  }
+Bye,
 
-The problem is that the lapic_timer_propagate_broadcast() has 2 versions:
-One is real code that modified in the above commit, and the other is NOP
-code that used when !ARCH_APICTIMER_STOPS_ON_C3:
-
-  static void lapic_timer_propagate_broadcast(struct acpi_processor *pr) { }
-
-So I got warning because of !ARCH_APICTIMER_STOPS_ON_C3.
-
-We really want to do nothing here on !ARCH_APICTIMER_STOPS_ON_C3, so
-modify lapic_timer_propagate_broadcast() of real version to use
-smp_call_function_single() in it.
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Len Brown <len.brown@intel.com>
----
- drivers/acpi/processor_idle.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index bbd066e..d1676b1 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -164,7 +164,7 @@ static void lapic_timer_check_state(int state, struct acpi_processor *pr,
- 		pr->power.timer_broadcast_on_state = state;
- }
- 
--static void lapic_timer_propagate_broadcast(void *arg)
-+static void __lapic_timer_propagate_broadcast(void *arg)
- {
- 	struct acpi_processor *pr = (struct acpi_processor *) arg;
- 	unsigned long reason;
-@@ -175,6 +175,12 @@ static void lapic_timer_propagate_broadcast(void *arg)
- 	clockevents_notify(reason, &pr->id);
- }
- 
-+static void lapic_timer_propagate_broadcast(struct acpi_processor *pr)
-+{
-+	smp_call_function_single(pr->id, __lapic_timer_propagate_broadcast,
-+				 (void *)pr, 1);
-+}
-+
- /* Power(C) State timer broadcast control */
- static void lapic_timer_state_broadcast(struct acpi_processor *pr,
- 				       struct acpi_processor_cx *cx,
-@@ -638,8 +644,7 @@ static int acpi_processor_power_verify(struct acpi_processor *pr)
- 		working++;
- 	}
- 
--	smp_call_function_single(pr->id, lapic_timer_propagate_broadcast,
--				 pr, 1);
-+	lapic_timer_propagate_broadcast(pr);
- 
- 	return (working);
- }
 -- 
-1.6.5.6
-
-
+Christian Pellegrin, see http://www.evolware.org/chri/
+"Real Programmers don't play tennis, or any other sport which requires
+you to change clothes. Mountain climbing is OK, and Real Programmers
+wear their climbing boots to work in case a mountain should suddenly
+spring up in the middle of the computer room."
