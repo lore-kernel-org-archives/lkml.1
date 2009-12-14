@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbZLNMt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZLNMuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbZLNMt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZLNMtz
+	id S1756091AbZLNMuk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZLNMuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:49:55 -0500
-Received: from stinky.trash.net ([213.144.137.162]:61499 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbZLNMty (ORCPT
+	Mon, 14 Dec 2009 07:50:39 -0500
+Received: from mail.turknet.net.tr ([193.192.98.182]:57049 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbZLNMuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:49:54 -0500
-Message-ID: <4B263468.3060406@trash.net>
-Date: Mon, 14 Dec 2009 13:49:44 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Mon, 14 Dec 2009 07:50:39 -0500
+Message-ID: <4B26349D.1080904@netone.com.tr>
+Date: Mon, 14 Dec 2009 14:50:37 +0200
+From: Tarkan Erimer <tarkane@netone.com.tr>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-12.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       "" <davem@davemloft.net>, "Michael S. Tsirkin" <mst@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: [RFC 1/2] macvlan: Allow plugging in additional backends
-References: <1259862720-28432-1-git-send-email-arnd@arndb.de> <1259862720-28432-2-git-send-email-arnd@arndb.de>
-In-Reply-To: <1259862720-28432-2-git-send-email-arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] Linux-2.6.32-git10 drm_i915 error
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Dec 2009 12:50:37.0856 (UTC) FILETIME=[08E76A00:01CA7CBC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> This patch includes only the basic framework for overriding the
-> receive path. With these hooks, we can add the macvtap driver
-> and potentially other drivers that directly interface with a
-> hypervisor.
-> 
-> Loosely based on a patch by Patrick Mullaney based on another
-> patch by Arnd Bergmann.
+Frequently, I hit this bug on Linux-2.6.32-git10. It's always
+re-producible for me on my i945 video device equipped HP machine. When
+hit this bug, it crashes the X server and screen goes black. But,
+possible to switch to console. Here is the error log, I had in dmesg:
 
-This patch looks fine to me.
+[ 2596.328132] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
+elapsed... GPU hung
+[ 2596.328146] render error detected, EIR: 0x00000000
+[ 2596.328167] [drm:i915_do_wait_request] *ERROR* i915_do_wait_request
+returns -5 (awaiting 694588 at 694584)
+[ 2596.439006] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
+elapsed... GPU hung
+[ 2596.439013] render error detected, EIR: 0x00000000
+
+Tarkan
