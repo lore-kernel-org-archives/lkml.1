@@ -1,102 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZLND6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZLND73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZLND6h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 22:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbZLND6d
+	id S1756675AbZLND73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 22:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZLND7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 22:58:33 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53655 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756633AbZLND6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 22:58:32 -0500
-Message-ID: <4B25B7D2.8090505@cn.fujitsu.com>
-Date: Mon, 14 Dec 2009 11:58:10 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Wenji Huang <wenji.huang@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/7] lib: Introduce strnstr()
-References: <4B25B797.1040201@cn.fujitsu.com>
-In-Reply-To: <4B25B797.1040201@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 13 Dec 2009 22:59:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34158
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756622AbZLND6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 22:58:13 -0500
+Date: Sun, 13 Dec 2009 19:58:15 -0800 (PST)
+Message-Id: <20091213.195815.245417086.davem@davemloft.net>
+To: geert@linux-m68k.org
+Cc: chripell@fsfe.org, wg@grandegger.com, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] can: CAN_MCP251X should depend on HAS_DMA
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.DEB.2.00.0912132008100.21225@ayla.of.borg>
+References: <alpine.DEB.2.00.0912132008100.21225@ayla.of.borg>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It differs strstr() in that it limits the length to be searched
-in the first string.
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 13 Dec 2009 20:11:06 +0100 (CET)
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/string.h |    5 ++++-
- lib/string.c           |   27 ++++++++++++++++++++++++++-
- 2 files changed, 30 insertions(+), 2 deletions(-)
+> When building for Sun 3:
+> 
+> drivers/net/can/mcp251x.c:1074: undefined reference to `dma_free_coherent'
+> drivers/net/can/mcp251x.c:976: undefined reference to `dma_alloc_coherent'
+> drivers/net/can/mcp251x.c:1050: undefined reference to `dma_free_coherent'
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index b850886..fa6a5ba 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -64,7 +64,10 @@ extern char * strrchr(const char *,int);
- #endif
- extern char * __must_check strstrip(char *);
- #ifndef __HAVE_ARCH_STRSTR
--extern char * strstr(const char *,const char *);
-+extern char * strstr(const char *, const char *);
-+#endif
-+#ifndef __HAVE_ARCH_STRNSTR
-+extern char * strnstr(const char *, const char *, size_t);
- #endif
- #ifndef __HAVE_ARCH_STRLEN
- extern __kernel_size_t strlen(const char *);
-diff --git a/lib/string.c b/lib/string.c
-index e96421a..a5fff51 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -656,7 +656,7 @@ EXPORT_SYMBOL(memscan);
-  */
- char *strstr(const char *s1, const char *s2)
- {
--	int l1, l2;
-+	size_t l1, l2;
- 
- 	l2 = strlen(s2);
- 	if (!l2)
-@@ -673,6 +673,31 @@ char *strstr(const char *s1, const char *s2)
- EXPORT_SYMBOL(strstr);
- #endif
- 
-+#ifndef __HAVE_ARCH_STRNSTR
-+/**
-+ * strnstr - Find the first substring in a length-limited string
-+ * @s1: The string to be searched
-+ * @s2: The string to search for
-+ * @len: the maximum number of characters to search
-+ */
-+char *strnstr(const char *s1, const char *s2, size_t len)
-+{
-+	size_t l1 = len, l2;
-+
-+	l2 = strlen(s2);
-+	if (!l2)
-+		return (char *)s1;
-+	while (l1 >= l2) {
-+		l1--;
-+		if (!memcmp(s1, s2, l2))
-+			return (char *)s1;
-+		s1++;
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL(strnstr);
-+#endif
-+
- #ifndef __HAVE_ARCH_MEMCHR
- /**
-  * memchr - Find a character in an area of memory.
--- 
-1.6.3
-
+Applied.
