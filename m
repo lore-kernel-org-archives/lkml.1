@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbZLNOHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZLNOKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbZLNOHA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbZLNOHA
+	id S1757340AbZLNOKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbZLNOKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:07:00 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:54855 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757296AbZLNOG7 (ORCPT
+	Mon, 14 Dec 2009 09:10:44 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:32988 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754767AbZLNOKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:06:59 -0500
+	Mon, 14 Dec 2009 09:10:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=U1CBbFLME57a4yCgkZG035ac+qZkcstm5kNxgfnlf0nuSLmx6gqWAgqHftMvyWCFgd
-         wbPqbNXAt7FUQPgFpgHdiv50kCI7BVhp8m/92EjDrpdRCKjYTBk17YTacc0tyC+z1fca
-         YmcWwIsu7AWPZ8seMnym11DAUf8eYwyWDkzzM=
-Date: Mon, 14 Dec 2009 15:06:54 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Fix no-hardware-breakpoint case
-Message-ID: <20091214140652.GM5168@nowhere>
-References: <20091214140326.11689.80251.stgit@warthog.procyon.org.uk>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=OaK7XJmiSnqRPvqF2fwCMUvqaIt0F4ig/Nb06bdgokitrsGRQawqp5bhX29F2fbRIB
+         c0tRoqW7SfPvV8+F26vHfyrW/upJ0kYWhda4f2Kq48JDXnTCk5yhQvN0Gn495czR0jSc
+         wk6JnRrt60UE9TgbL4eesS/KZvaUTn0EEUgi0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091214140326.11689.80251.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091214122649.2d914941@varda>
+References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
+	 <20091214122649.2d914941@varda>
+Date: Mon, 14 Dec 2009 23:10:42 +0900
+Message-ID: <c7ac85d60912140610o1de69703x4d42108b4519ede@mail.gmail.com>
+Subject: Re: [How to upload our driver to "kernel.org"] Would you give me your 
+	advice?
+From: Masa <masa.korg@gmail.com>
+To: =?ISO-8859-1?Q?Alejandro_Riveira_Fern=E1ndez?= <ariveira@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       devel@driverdev.osuosl.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 02:03:27PM +0000, David Howells wrote:
-> If there is no hardware breakpoint support, modify_user_hw_breakpoint() tries
-> to return a NULL pointer through as an 'int' return value:
-> 
-> In file included from kernel/exit.c:53:
-> include/linux/hw_breakpoint.h: In function 'modify_user_hw_breakpoint':
-> include/linux/hw_breakpoint.h:96: warning: return makes integer from pointer without a cast
-> 
-> Return 0 instead.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Thanks,
 
+> Adding I hpe some usefull CC's
+> See also: http://www.linuxdriverproject.org/
+Last week, I saw it.
+But, I could not find the information for "How to upload".
 
-Thanks, we have this fixed in tip:/perf/urgent already. It should
-reach upstream soon.
+Should I make a new topic?
 
+I did not know Foswiki.
+>From now, I started to study it.
