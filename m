@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZLNTX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbZLNTXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932546AbZLNTX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 14:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZLNTXx
+	id S932536AbZLNTXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 14:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZLNTXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 14:23:53 -0500
-Received: from www.tglx.de ([62.245.132.106]:55783 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932506AbZLNTXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 14:23:51 -0500
-Date: Mon, 14 Dec 2009 20:23:23 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Earl Chew <earl_chew@agilent.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       hjk@linutronix.de, gregkh@suse.de, hugh <hugh@veritas.com>,
-       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-Message-ID: <20091214192322.GA3245@bluebox.local>
-References: <1228379942.5092.14.camel@twins> <4B22DD89.2020901@agilent.com>
+	Mon, 14 Dec 2009 14:23:38 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:55839 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932502AbZLNTXh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 14:23:37 -0500
+Message-ID: <4B2690B4.3030604@gmail.com>
+Date: Mon, 14 Dec 2009 20:23:32 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B22DD89.2020901@agilent.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: john.dykstra1@gmail.com, lists@nerdbynature.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
+References: <4B267708.3010202@gmail.com>	<1260817033.9141.8.camel@merlyn>	<20091214.111105.224947761.davem@davemloft.net> <20091214.111638.165984790.davem@davemloft.net>
+In-Reply-To: <20091214.111638.165984790.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Dec 2009 20:23:32 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 04:02:17PM -0800, Earl Chew wrote:
-> I'm taking another look at the changes that were submitted in
+Le 14/12/2009 20:16, David Miller a écrit :
+> From: David Miller <davem@davemloft.net>
+> Date: Mon, 14 Dec 2009 11:11:05 -0800 (PST)
 > 
-> http://lkml.org/lkml/2008/12/3/453
+>> I usually see 2 or 3 three of these bug triggers in the first ten
+>> minutes after bootup and I haven't seen one yet in 20 minutes
+>> with the commit reverted.
 > 
-> to see if they can be made more palatable.
-> 
-> 
-> In http://lkml.org/lkml/2008/12/4/64 you wrote:
-> 
-> > Why not create another special device that will give you DMA memory when
-> > you mmap it? That would also allow you to obtain the physical address
-> > without this utter horrid hack of writing it in the mmap'ed memory.
-> > 
-> > /dev/uioN-dma would seem like a fine name for that.
-> 
-> 
-> I understand the main objection was the hack to return the physical
-> address of the allocated DMA buffer within the buffer itself amongst
-> some other things.
+> Nevermind, I take that back, I just got two triggers :-/
 
-The general thing is this: The UIO core supports only static mappings.
-The possible number of mappings is usually set at compile time or module
-load time and is currently limited to MAX_UIO_MAPS (== 5). This number
-is usually sufficient for devices like PCI cards, which have a limited
-number of mappings, too. All drivers currently in the kernel only need
-one or two.
+ok :)
 
-The current implementation of the UIO core is simply not made for
-dynamic allocation of an unlimited amount of new mappings at runtime. As
-we have seen in this patch, it needs raping of a documented kernel
-interface to userspace. This is not acceptable.
+More investigation needed :)
 
-So the easiest correct solution is to create a new device (e.g.
-/dev/uioN-dma, as Peter suggested). It should only be created for a UIO
-driver if it has a certain flag set, something like UIO_NEEDS_DYN_DMA_ALLOC.
+I wonder which workload triggers this...
 
-> 
-> Your suggestion was to create /dev/uioN-dma for the purpose of
-> allocating DMA memory.
-> 
-> I'm having trouble figuring out how this would help to return the
-> physical (bus) address of the DMA memory in a more elegant manner.
-
-If you create this new device, you can invent any (reasonable) interface you
-like. It should probably be something in sysfs, where you can write to a
-file to allocate a new buffer, and read the address from some other.
-It should also be possible to free a buffer again.
-
-Thanks,
-Hans
+If you disable syncookies, I presume you dont have warnings ?
 
