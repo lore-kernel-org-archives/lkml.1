@@ -1,122 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751561AbZLNFfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbZLNFfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751561AbZLNFfI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 00:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZLNFfB
+	id S1751379AbZLNFfF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 00:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZLNFfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 00:35:01 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56618 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbZLNFe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 00:34:59 -0500
-Date: Mon, 14 Dec 2009 16:34:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Albert Herranz <albert_herranz@yahoo.es>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
-Subject: linux-next: 52xx-and-virtex tree build failure
-Message-Id: <20091214163456.e2e948cc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 00:35:00 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:63447 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbZLNFe6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 00:34:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BfwAtKXD8VOwwMckoCCR+dGnWMDDE3y/NEHUIVFVgV3J38/jPQ7TyLT9TI0GIG2+O9
+         0R9+FMat9l9lZ82k/DB9rf2frfjX0xMiaT5QZQ2VC2KJdzQcyJiuQpqbSYiF3Jpp5ECV
+         32vF8fmPllar4v3fllGC2d/tO1wWCOOZQql3g=
+MIME-Version: 1.0
+In-Reply-To: <20091213172855.GA11741@merkur.ravnborg.org>
+References: <alpine.LSU.2.01.0912112023170.32039@obet.zrqbmnf.qr>
+	 <9b2db90b0912122323w25d2d815o70d0bd2f1e19a228@mail.gmail.com>
+	 <alpine.LSU.2.01.0912131118280.28039@obet.zrqbmnf.qr>
+	 <20091213115546.GA10592@merkur.ravnborg.org>
+	 <alpine.LSU.2.01.0912131524250.6621@obet.zrqbmnf.qr>
+	 <20091213172855.GA11741@merkur.ravnborg.org>
+Date: Mon, 14 Dec 2009 07:34:57 +0200
+Message-ID: <9b2db90b0912132134x48985df9o1ba6c864f649dc1f@mail.gmail.com>
+Subject: Re: nconfig v7
+From: Nir Tzachar <nir.tzachar@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Grant,
+>> I think the discussion went about "show hidden symbols" rather than
+>> "show everything in a single menu". Or at least that was my intention -
+>> sorry for any confusion.
+>
+> I did not check what nconfig does exactly - I just assumed it was
+> the single_menu mode.
+> I know several people has requested the possibility to see all
+> ie. also hidden) symbols before.
+>
+>        Sam
+>
 
-Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+nconfig derives the single menu mode from menuconfig. However, it
+makes the code rather hard to maintain/understand, and if there is no
+use for this feature, I would like to remove it.
 
-arch/powerpc/mm/pgtable_32.c: In function 'mapin_ram':
-arch/powerpc/mm/pgtable_32.c:318: error: too many arguments to function 'mmu_mapin_ram'
-
-Casued by commit de32400dd26e743c5d500aa42d8d6818b79edb73 ("wii: use both
-mem1 and mem2 as ram").
-
-I applied the following patch for today, but this may be too much or
-there may be a better solution.
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 14 Dec 2009 16:04:15 +1100
-Subject: [PATCH] powerpc: fix up for mmu_mapin_ram api change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/40x_mmu.c       |    2 +-
- arch/powerpc/mm/44x_mmu.c       |    2 +-
- arch/powerpc/mm/fsl_booke_mmu.c |    2 +-
- arch/powerpc/mm/mmu_decl.h      |    6 +++---
- 4 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
-index f5e7b9c..08dfa8e 100644
---- a/arch/powerpc/mm/40x_mmu.c
-+++ b/arch/powerpc/mm/40x_mmu.c
-@@ -91,7 +91,7 @@ void __init MMU_init_hw(void)
- #define LARGE_PAGE_SIZE_16M	(1<<24)
- #define LARGE_PAGE_SIZE_4M	(1<<22)
- 
--unsigned long __init mmu_mapin_ram(void)
-+unsigned long __init mmu_mapin_ram(unsigned long top)
- {
- 	unsigned long v, s, mapped;
- 	phys_addr_t p;
-diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
-index 98052ac..3986264 100644
---- a/arch/powerpc/mm/44x_mmu.c
-+++ b/arch/powerpc/mm/44x_mmu.c
-@@ -88,7 +88,7 @@ void __init MMU_init_hw(void)
- 	flush_instruction_cache();
- }
- 
--unsigned long __init mmu_mapin_ram(void)
-+unsigned long __init mmu_mapin_ram(unsigned long top)
- {
- 	unsigned long addr;
- 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index fcfcb6e..c539472 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -207,7 +207,7 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
- 	return amount_mapped;
- }
- 
--unsigned long __init mmu_mapin_ram(void)
-+unsigned long __init mmu_mapin_ram(unsigned long top)
- {
- 	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
- }
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index eef7aaf..d49a775 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -139,15 +139,15 @@ extern void wii_memory_fixups(void);
-  */
- #if defined(CONFIG_8xx)
- #define MMU_init_hw()		do { } while(0)
--#define mmu_mapin_ram()		(0UL)
-+#define mmu_mapin_ram(top)	(0UL)
- 
- #elif defined(CONFIG_4xx)
- extern void MMU_init_hw(void);
--extern unsigned long mmu_mapin_ram(void);
-+extern unsigned long mmu_mapin_ram(unsigned long top);
- 
- #elif defined(CONFIG_FSL_BOOKE)
- extern void MMU_init_hw(void);
--extern unsigned long mmu_mapin_ram(void);
-+extern unsigned long mmu_mapin_ram(unsigned long top);
- extern void adjust_total_lowmem(void);
- 
- #elif defined(CONFIG_PPC32)
--- 
-1.6.5.4
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Nir.
