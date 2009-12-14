@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbZLNVIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbZLNVOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933001AbZLNVIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932620AbZLNVIj
+	id S933007AbZLNVOO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbZLNVOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:08:39 -0500
-Received: from exprod6og112.obsmtp.com ([64.18.1.29]:51818 "EHLO
-	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932609AbZLNVIi convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 16:14:14 -0500
+Received: from exprod6og116.obsmtp.com ([64.18.1.37]:45430 "EHLO
+	exprod6og116.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932644AbZLNVON convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:08:38 -0500
+	Mon, 14 Dec 2009 16:14:13 -0500
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] au1550nd.c: remove unnecessary casts
-Date: Mon, 14 Dec 2009 16:08:37 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EA45@mi8nycmail19.Mi8.com>
+Subject: [PATCH] davinci_nand.c: use resource_size()
+Date: Mon, 14 Dec 2009 16:13:13 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EA46@mi8nycmail19.Mi8.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] au1550nd.c: remove unnecessary casts
-Thread-Index: Acp9AZp1Vjb/zmy4SmSrdy5+yGTH7Q==
+Thread-Topic: [PATCH] davinci_nand.c: use resource_size()
+Thread-Index: Acp9Aj7lSLM6zpGoSka1wxYuzEn5RA==
 From: "H Hartley Sweeten" <hartleys@visionengravers.com>
 To: "kernel list" <linux-kernel@vger.kernel.org>,
        <linux-mtd@lists.infradead.org>
 Cc: "David Woodhouse" <dwmw2@infradead.org>
-X-OriginalArrivalTime: 14 Dec 2009 21:08:36.0150 (UTC) FILETIME=[99C14560:01CA7D01]
+X-OriginalArrivalTime: 14 Dec 2009 21:13:11.0983 (UTC) FILETIME=[3E2A0BF0:01CA7D02]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unnecessary casts for p_nand, it is already a void __iomem *.
+The ioremap'ed sizes are off by 1, use resource_size() for correct value.
 
 Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 Cc: David Woodhouse <dwmw2@infradead.org>
 
 ---
 
-diff --git a/drivers/mtd/nand/au1550nd.c b/drivers/mtd/nand/au1550nd.c
-index 92c334f..35f35f0 100644
---- a/drivers/mtd/nand/au1550nd.c
-+++ b/drivers/mtd/nand/au1550nd.c
-@@ -542,7 +542,7 @@ static int __init au1xxx_nand_init(void)
+diff --git a/drivers/mtd/nand/davinci_nand.c b/drivers/mtd/nand/davinci_nand.c
+index f13f5b9..b6905f8 100644
+--- a/drivers/mtd/nand/davinci_nand.c
++++ b/drivers/mtd/nand/davinci_nand.c
+@@ -566,8 +566,8 @@ static int __init nand_davinci_probe(struct platform_device *pdev)
+ 		goto err_nomem;
  	}
- 	nand_phys = (mem_staddr << 4) & 0xFFFC0000;
  
--	p_nand = (void __iomem *)ioremap(nand_phys, 0x1000);
-+	p_nand = ioremap(nand_phys, 0x1000);
- 
- 	/* make controller and MTD agree */
- 	if (NAND_CS == 0)
-@@ -587,7 +587,7 @@ static int __init au1xxx_nand_init(void)
- 	return 0;
- 
-  outio:
--	iounmap((void *)p_nand);
-+	iounmap(p_nand);
- 
-  outmem:
- 	kfree(au1550_mtd);
-@@ -608,7 +608,7 @@ static void __exit au1550_cleanup(void)
- 	kfree(au1550_mtd);
- 
- 	/* Unmap */
--	iounmap((void *)p_nand);
-+	iounmap(p_nand);
- }
- 
- module_exit(au1550_cleanup); 
+-	vaddr = ioremap(res1->start, res1->end - res1->start);
+-	base = ioremap(res2->start, res2->end - res2->start);
++	vaddr = ioremap(res1->start, resource_size(res1));
++	base = ioremap(res2->start, resource_size(res2));
+ 	if (!vaddr || !base) {
+ 		dev_err(&pdev->dev, "ioremap failed\n");
+ 		ret = -EINVAL; 
