@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750879AbZLNFHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZLNEwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750879AbZLNFHY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 00:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZLNFHV
+	id S1756719AbZLNEwO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 23:52:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbZLNEwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 00:07:21 -0500
-Received: from mga03.intel.com ([143.182.124.21]:55261 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744AbZLNFHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 00:07:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="222421385"
-Subject: Re: [git pull] PCI changes for 2.6.33
-From: Lin Ming <ming.m.lin@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Brown, Len" <len.brown@intel.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0912111216431.3560@localhost.localdomain>
-References: <20091211110222.0ae1d897@jbarnes-piketon>
-	 <alpine.LFD.2.00.0912111216431.3560@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 14 Dec 2009 12:51:54 +0800
-Message-Id: <1260766314.3834.3.camel@minggr.sh.intel.com>
+	Sun, 13 Dec 2009 23:52:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42491
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756702AbZLNEwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 23:52:12 -0500
+Date: Sun, 13 Dec 2009 20:52:12 -0800 (PST)
+Message-Id: <20091213.205212.212692978.davem@davemloft.net>
+To: sshtylyov@ru.mvista.com
+Cc: hartleys@visionengravers.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B241F10.7050706@ru.mvista.com>
+References: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
+	<4B241F10.7050706@ru.mvista.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-12-12 at 04:22 +0800, Linus Torvalds wrote:
-> 
-> On Fri, 11 Dec 2009, Jesse Barnes wrote:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 linux-next
-> > 
-> > I've got a section mismatch in here, but the fix will be part of the next
-> > pull req (updated patch just came in recently).
-> > 
-> > Probably the biggest change here (at least my change count) is Bjorn's
-> > MMCONFIG rework.  It sets the stage for hot plugging of host bridges and
-> > _CBA and includes some nice cleanups besides.
-> 
-> Ok, so I got a few conflicts with the iommu/dmar changes (ACS related 
-> changes versus the iommu_init changes) and with the ACPICA update 
-> (acpi_walk_namespace() change in acpiphp_glue - it now takes a post-order 
-> callback too).
-> 
-> I resolved them all, hopefully even correctly, but people should look over 
-> the end result.
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Date: Sun, 13 Dec 2009 01:54:08 +0300
 
-I checked all calls of acpi_walk_namespace in
-drivers/pci/hotplug/acpiphp_glue.c.
-All are correct.
+> H Hartley Sweeten wrote:
+> 
+>> The ioremap return value is an __iomem *, not an integer.  Update the
+>> private structure to reflect this.  While here, remove the typedef
+>> for _auide_hwif and just use struct auide_hwif instead as recommended
+>> by Documentation/CodingStyle.
+>>
+>> auide_setup_ports() still needs to cast the regbase back to an integer
+>> to correctly setup the io_ports_array.
+>>
+>> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+ ...
+>>     a) 'arch/mips/include/asm/mach-au1x00/au1xxx_ide.h'
+>> -     containes : struct _auide_hwif
+>> +     containes : struct auide_hwif
+>>   
+> 
+>   Contains?
+> 
+>   Other than that,
+> 
+> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Thanks,
-Lin Ming
+Also, this patch doesn't apply to the current tree, the
+au_ide_remove() function has been fixed to use
+resource_size().
 
+Please respin your patch, and also incorporate the
+documentation spelling fix suggested by Sergei (and
+make sure to keep the alignment of that section of
+documentation when you do that).
+
+Thanks.
