@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbZLNVVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZLNVWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbZLNVVQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbZLNVVO
+	id S1757868AbZLNVWp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZLNVWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:21:14 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:34278 "EHLO mail.cs.nmsu.edu"
+	Mon, 14 Dec 2009 16:22:44 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:34332 "EHLO mail.cs.nmsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756787AbZLNVVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:21:11 -0500
+	id S1750746AbZLNVWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 16:22:43 -0500
 From: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
-Message-Id: <200912142120.nBELKsbg001216@mustang.cs.nmsu.edu>
-Date: Mon, 14 Dec 2009 14:20:54 -0700
+Message-Id: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+Date: Mon, 14 Dec 2009 14:22:32 -0700
 To: linux-kernel@vger.kernel.org
 Cc: krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-usb@vger.kernel.org,
        oliver@neukum.org, linux-input@vger.kernel.org, jkosina@suse.cz
-Subject: [PATCH] Logitech G13 driver
+Subject: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
 User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
