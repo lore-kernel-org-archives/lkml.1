@@ -1,75 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbZLNJAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZLNJIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbZLNJAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 04:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZLNJAo
+	id S1753570AbZLNJIm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 04:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZLNJIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 04:00:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39462 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZLNJAn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 04:00:43 -0500
-Subject: Re: cpu_clock() in NMIs
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20091213.182502.215092085.davem@davemloft.net>
-References: <20091213.182502.215092085.davem@davemloft.net>
+	Mon, 14 Dec 2009 04:08:41 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47789 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752059AbZLNJIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 04:08:40 -0500
+Subject: Re: linux-next: 52xx-and-virtex tree build failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Albert Herranz <albert_herranz@yahoo.es>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20091214163456.e2e948cc.sfr@canb.auug.org.au>
+References: <20091214163456.e2e948cc.sfr@canb.auug.org.au>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 14 Dec 2009 10:02:39 +0100
-Message-ID: <1260781359.4165.42.camel@twins>
+Date: Mon, 14 Dec 2009 20:08:17 +1100
+Message-ID: <1260781697.2217.15.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-13 at 18:25 -0800, David Miller wrote:
-> The background is that I was trying to resolve a sparc64 perf
-> issue when I discovered this problem.
+On Mon, 2009-12-14 at 16:34 +1100, Stephen Rothwell wrote:
+> Hi Grant,
 > 
-> On sparc64 I implement pseudo NMIs by simply running the kernel
-> at IRQ level 14 when local_irq_disable() is called, this allows
-> performance counter events to still come in at IRQ level 15.
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 > 
-> This doesn't work if any code in an NMI handler does local_irq_save()
-> or local_irq_disable() since the "disable" will kick us back to cpu
-> IRQ level 14 thus letting NMIs back in and we recurse.
+> arch/powerpc/mm/pgtable_32.c: In function 'mapin_ram':
+> arch/powerpc/mm/pgtable_32.c:318: error: too many arguments to function 'mmu_mapin_ram'
 > 
-> The only path which that does that in the perf event IRQ handling path
-> is the code supporting frequency based events.  It uses cpu_clock().
+> Casued by commit de32400dd26e743c5d500aa42d8d6818b79edb73 ("wii: use both
+> mem1 and mem2 as ram").
 > 
-> cpu_clock() simply invokes sched_clock() with IRQs disabled.
+> I applied the following patch for today, but this may be too much or
+> there may be a better solution.
 > 
-> And that's a fundamental bug all on it's own, particularly for the
-> HAVE_UNSTABLE_SCHED_CLOCK case.  NMIs can thus get into the
-> sched_clock() code interrupting the local IRQ disable code sections
-> of it.
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Mon, 14 Dec 2009 16:04:15 +1100
+> Subject: [PATCH] powerpc: fix up for mmu_mapin_ram api change
 > 
-> Furthermore, for the not-HAVE_UNSTABLE_SCHED_CLOCK case, the IRQ
-> disabling done by cpu_clock() is just pure overhead and completely
-> unnecessary.
-> 
-> So the core problem is that sched_clock() is not NMI safe, but we
-> are invoking it from NMI contexts in the perf events code (via
-> cpu_clock()).
-> 
-> A less important issue is the overhead of IRQ disabling when it isn't
-> necessary in cpu_clock().  Maybe something simple like the patch below
-> to handle that.
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-I'm not sure, traditionally sched_clock() was always called with IRQs
-disabled, and on eg. x86 that is needed because we read the TSC and then
-scale that value depending on CPUfreq state, which can be changed by a
-CPUfreq interrupt. Allowing NMIs in between isn't really a problem,
-allowing IRQs in is.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Now, the SPARC implementation might be good without IRQs disabled, but
-we should at least look at all other arches before we do what you
-propose below. As it removes the IRQ disable from the callsites whereas
-it previously always had that.
+Grant, please add to your tree along with the Nintendo stuff.
 
+Cheers,
+Ben.
+
+> ---
+>  arch/powerpc/mm/40x_mmu.c       |    2 +-
+>  arch/powerpc/mm/44x_mmu.c       |    2 +-
+>  arch/powerpc/mm/fsl_booke_mmu.c |    2 +-
+>  arch/powerpc/mm/mmu_decl.h      |    6 +++---
+>  4 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+> index f5e7b9c..08dfa8e 100644
+> --- a/arch/powerpc/mm/40x_mmu.c
+> +++ b/arch/powerpc/mm/40x_mmu.c
+> @@ -91,7 +91,7 @@ void __init MMU_init_hw(void)
+>  #define LARGE_PAGE_SIZE_16M	(1<<24)
+>  #define LARGE_PAGE_SIZE_4M	(1<<22)
+>  
+> -unsigned long __init mmu_mapin_ram(void)
+> +unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	unsigned long v, s, mapped;
+>  	phys_addr_t p;
+> diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+> index 98052ac..3986264 100644
+> --- a/arch/powerpc/mm/44x_mmu.c
+> +++ b/arch/powerpc/mm/44x_mmu.c
+> @@ -88,7 +88,7 @@ void __init MMU_init_hw(void)
+>  	flush_instruction_cache();
+>  }
+>  
+> -unsigned long __init mmu_mapin_ram(void)
+> +unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	unsigned long addr;
+>  
+> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+> index fcfcb6e..c539472 100644
+> --- a/arch/powerpc/mm/fsl_booke_mmu.c
+> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
+> @@ -207,7 +207,7 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
+>  	return amount_mapped;
+>  }
+>  
+> -unsigned long __init mmu_mapin_ram(void)
+> +unsigned long __init mmu_mapin_ram(unsigned long top)
+>  {
+>  	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
+>  }
+> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+> index eef7aaf..d49a775 100644
+> --- a/arch/powerpc/mm/mmu_decl.h
+> +++ b/arch/powerpc/mm/mmu_decl.h
+> @@ -139,15 +139,15 @@ extern void wii_memory_fixups(void);
+>   */
+>  #if defined(CONFIG_8xx)
+>  #define MMU_init_hw()		do { } while(0)
+> -#define mmu_mapin_ram()		(0UL)
+> +#define mmu_mapin_ram(top)	(0UL)
+>  
+>  #elif defined(CONFIG_4xx)
+>  extern void MMU_init_hw(void);
+> -extern unsigned long mmu_mapin_ram(void);
+> +extern unsigned long mmu_mapin_ram(unsigned long top);
+>  
+>  #elif defined(CONFIG_FSL_BOOKE)
+>  extern void MMU_init_hw(void);
+> -extern unsigned long mmu_mapin_ram(void);
+> +extern unsigned long mmu_mapin_ram(unsigned long top);
+>  extern void adjust_total_lowmem(void);
+>  
+>  #elif defined(CONFIG_PPC32)
+> -- 
+> 1.6.5.4
+> 
 
 
