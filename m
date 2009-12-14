@@ -1,39 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZLNHpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZLNHrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZLNHpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 02:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZLNHpa
+	id S1754881AbZLNHrL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 02:47:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbZLNHrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 02:45:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53753
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751440AbZLNHp3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 02:45:29 -0500
-Date: Sun, 13 Dec 2009 23:45:30 -0800 (PST)
-Message-Id: <20091213.234530.82029083.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Cc: lists@nerdbynature.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B25D38F.1090702@gmail.com>
-References: <20091212.010340.227842186.davem@davemloft.net>
-	<4B2360BF.5000102@gmail.com>
-	<4B25D38F.1090702@gmail.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 14 Dec 2009 02:47:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8226 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752266AbZLNHrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 02:47:09 -0500
+Message-ID: <4B25EE03.9090303@redhat.com>
+Date: Mon, 14 Dec 2009 15:49:23 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, gcosta@redhat.com,
+       mingo@elte.hu
+Subject: Re: [Patch] i386: remove 'usedac' kernel parameter
+References: <20091209062850.4245.11541.sendpatchset@localhost.localdomain> <20091209190649I.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091209190649I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Mon, 14 Dec 2009 06:56:31 +0100
+FUJITA Tomonori wrote:
+> On Wed, 9 Dec 2009 01:25:48 -0500
+> Amerigo Wang <amwang@redhat.com> wrote:
+> 
+>> It is scheduled to be removed.
+>>
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>> Cc: Glauber Costa <gcosta@redhat.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>>
+>> ---
+>> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+>> index 591e944..8c895f6 100644
+>> --- a/Documentation/feature-removal-schedule.txt
+>> +++ b/Documentation/feature-removal-schedule.txt
+>> @@ -291,13 +291,6 @@ Who:	Michael Buesch <mb@bu3sch.de>
+>>  
+>>  ---------------------------
+>>  
+>> -What:	usedac i386 kernel parameter
+>> -When:	2.6.27
+>> -Why:	replaced by allowdac and no dac combination
+>> -Who:	Glauber Costa <gcosta@redhat.com>
+>> -
+>> ----------------------------
+>> -
+> 
+> I'm not sure about the above description, I'm not against removing
+> this option though.
+> 
+> IIUC, the usedac option enables us to stop via_no_dac() setting
+> forbid_dac to 1. That is, someone who uses VIA bridges can use DAC
+> with this option even if some of VIA bridges seem to be broken about
+> DAC. I can't see how we can do the same thing with "allowdac" and
+> "nodac" combination.
 
-> It seems to me tcp_create_openreq_child() doesnt properly initialize
-> newtp->cookie_values to NULL, but this should not produce warnings like that ?
 
-If oldtp->cookie_values is NULL, the child's should be as well
-because of sk_clone().
+Hmm, yes, right, I missed this point.
+
+Thanks!
