@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbZLNWuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758511AbZLNWol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398AbZLNWuG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758488AbZLNWt6
+	id S1758511AbZLNWol (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZLNWoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:49:58 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:64704 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758656AbZLNWty (ORCPT
+	Mon, 14 Dec 2009 17:44:39 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:44392 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbZLNWoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:49:54 -0500
+	Mon, 14 Dec 2009 17:44:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=jZY7SDhtLcLN/k7rLWE5GnPN/v82pRwgW7OiEv+NJIZZ1h6HBroBOYd0WXoQXnsqCD
-         18MJDGlf6+Rs69ZD820laW8fS/fXbvXZjTPs5XRWVw9BwIikdY0o4lwkV0YI7euC3hfy
-         5WigNhBkinasHIRFImlQKrD1k8cZ1Ch5dWXz4=
-Date: Tue, 15 Dec 2009 07:44:23 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-Subject: Re: [PATCH 2/8] Mark sleep_on as deprecated
-Message-Id: <20091215074423.0dd2911c.minchan.kim@barrios-desktop>
-In-Reply-To: <20091214212351.BBB4.A69D9226@jp.fujitsu.com>
-References: <20091211164651.036f5340@annuminas.surriel.com>
-	<20091214210823.BBAE.A69D9226@jp.fujitsu.com>
-	<20091214212351.BBB4.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=iGbayrd6mfBgnx7elkcsX1DVuPgy5toBH6Q+ccWqGIYQc57xz/e6Lg2eno4aqsOj7/
+         YUAvyzxVky37O07wfoYu/A3dgIF8o6CBRbLdq6rYG6auvIbE96twQWjr8z6i+PAc8UCr
+         vwj6xCQRRnUEHjtxesozxv57o1ElCjefC1s7Q=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH] sched: Teach might_sleep about preemptable rcu
+Date: Mon, 14 Dec 2009 23:44:32 +0100
+Message-Id: <1260830672-7166-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 21:24:40 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+In practice, it is harmless to voluntarily sleep in a rcu_read_lock()
+section if we are running under preempt rcu, but it is illegal because
+if we build a kernel running non-preemptable rcu.
 
-> 
-> 
-> sleep_on() function is SMP and/or kernel preemption unsafe. we shouldn't
-> use it on new code.
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Currently, might_sleep() doesn't notice sleepable operations under
+rcu_read_lock() sections if we are running under preemptable rcu
+because preempt_count() is left untouched after rcu_read_lock() in
+this case. But we want developers who test their changes under such
+config to notice the "sleeping while atomic" issues.
 
-We would be better to remove this function.
-But it's enough to that in this patch series.  
-We have to remove sleep_on with another patch series. 
+Then we add rcu_read_lock_nesting to prempt_count() in might_sleep()
+checks.
 
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+---
+ include/linux/rcutree.h |   11 +++++++++++
+ kernel/sched.c          |    2 +-
+ 2 files changed, 12 insertions(+), 1 deletions(-)
 
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index c93eee5..8044b1b 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -45,6 +45,12 @@ extern void __rcu_read_unlock(void);
+ extern void synchronize_rcu(void);
+ extern void exit_rcu(void);
+ 
++/*
++ * Defined as macro as it is a very low level header
++ * included from areas that don't even know about current
++ */
++#define rcu_preempt_depth() (current->rcu_read_lock_nesting)
++
+ #else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+ 
+ static inline void __rcu_read_lock(void)
+@@ -63,6 +69,11 @@ static inline void exit_rcu(void)
+ {
+ }
+ 
++static inline int rcu_preempt_depth(void)
++{
++	return 0;
++}
++
+ #endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
+ 
+ static inline void __rcu_read_lock_bh(void)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index ab42754..586c82c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9658,7 +9658,7 @@ void __init sched_init(void)
+ #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+ static inline int preempt_count_equals(int preempt_offset)
+ {
+-	int nested = preempt_count() & ~PREEMPT_ACTIVE;
++	int nested = (preempt_count() & ~PREEMPT_ACTIVE) + rcu_preempt_depth();
+ 
+ 	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
+ }
 -- 
-Kind regards,
-Minchan Kim
+1.6.2.3
+
