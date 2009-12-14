@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbZLNXbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZLNXd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbZLNXbX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZLNXbV
+	id S1752708AbZLNXd1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZLNXd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:31:21 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55337 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757582AbZLNXbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:31:19 -0500
-Date: Tue, 15 Dec 2009 10:31:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: linux-next: manual merge of the 52xx-and-virtex tree with the  tree
-Message-Id: <20091215103117.dab34f72.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 18:33:26 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:58306 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZLNXdZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:33:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=v7+Xqm+C8fWtFM5znCgnHxif95e3tk8eatozeW0KogDxn53QqW2nxwnprgZ6jP9Vlc
+         XngTRh0MM32Sc3vwO+zvQK1giJnd6kEaJyBMtuF40k7T9f9z8Rug/E4Q1eCFDXSzW53K
+         fs4l/qnRfB+hZ8wluwU5DF4omSC8yms0NAufU=
+MIME-Version: 1.0
+In-Reply-To: <20091210135801.6325.15166.stgit@warthog.procyon.org.uk>
+References: <20091210135755.6325.78149.stgit@warthog.procyon.org.uk> 
+	<20091210135801.6325.15166.stgit@warthog.procyon.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 14 Dec 2009 18:33:04 -0500
+Message-ID: <8bd0f97a0912141533wc59a685r77078d60fec77f9b@mail.gmail.com>
+Subject: Re: [PATCH 2/7] NOMMU: Provide per-task stack usage through /proc for 
+	NOMMU
+To: David Howells <dhowells@redhat.com>
+Cc: lethal@linux-sh.org, jie.zhang@analog.com, stefani@seibold.net,
+       gerg@snapgear.com, uclinux-dev@uclinux.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Grant,
+On Thu, Dec 10, 2009 at 08:58, David Howells wrote:
+> Make it possible to get the per-task stack usage through /proc on a NOMMU
+> system.  The MMU-mode routine can't be used because walk_page_range() doesn't
+> work on NOMMU.
+>
+> It can be tested to show the stack usages of non-kernel-thread processes:
+>
+>        # grep "Stack usage:" /proc/*/status | grep -v "0 kB"
+>        /proc/1/status:Stack usage:     2 kB
+>        /proc/57/status:Stack usage:    3 kB
+>        /proc/58/status:Stack usage:    1 kB
+>        /proc/59/status:Stack usage:    3 kB
+>        /proc/60/status:Stack usage:    5 kB
+>        /proc/self/status:Stack usage:  1 kB
+>
+> I've only tested it with ELF-FDPIC, though it should work with FLAT too.
 
-Today's linux-next merge of the 52xx-and-virtex tree got a conflict in
-arch/powerpc/mm/fsl_booke_mmu.c between commit
-8b27f0b61db57f5555fc2d3fc95c3ea9fd1a9d6c ("powerpc/fsl-booke: Rework TLB
-CAM code") from Linus' tree and commit
-ae4cec4736969ec2196a6bbce4ab263ff7cb7eef ("powerpc: fix up for
-mmu_mapin_ram api change") from the 52xx-and-virtex tree.
+both seem to work for me.  a simple FLAT shows 1kB while one with a
+2kB buffer shows 3kB.
 
-I fixed it up (see below) and can carry the fix for a while.  Grant, you
-can (of course) fix this by merging with Linus' tree.  (Or Linus, if you
-merge Grant's tree, I think this fixup is correct).
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc arch/powerpc/mm/fsl_booke_mmu.c
-index fcfcb6e,6da4b90..0000000
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@@ -172,44 -148,27 +172,44 @@@ static void settlbcam(int index, unsign
-  	loadcam_entry(index);
-  }
-  
- -void invalidate_tlbcam_entry(int index)
- -{
- -	TLBCAM[index].MAS0 = MAS0_TLBSEL(1) | MAS0_ESEL(index);
- -	TLBCAM[index].MAS1 = ~MAS1_VALID;
- -
- -	loadcam_entry(index);
- -}
- -
- -unsigned long __init mmu_mapin_ram(unsigned long top)
- +unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx)
-  {
- +	int i;
-  	unsigned long virt = PAGE_OFFSET;
-  	phys_addr_t phys = memstart_addr;
- +	unsigned long amount_mapped = 0;
- +	unsigned long max_cam = (mfspr(SPRN_TLB1CFG) >> 16) & 0xf;
- +
- +	/* Convert (4^max) kB to (2^max) bytes */
- +	max_cam = max_cam * 2 + 10;
-  
- -	while (tlbcam_index < ARRAY_SIZE(cam) && cam[tlbcam_index]) {
- -		settlbcam(tlbcam_index, virt, phys, cam[tlbcam_index], PAGE_KERNEL_X, 0);
- -		virt += cam[tlbcam_index];
- -		phys += cam[tlbcam_index];
- -		tlbcam_index++;
- +	/* Calculate CAM values */
- +	for (i = 0; ram && i < max_cam_idx; i++) {
- +		unsigned int camsize = __ilog2(ram) & ~1U;
- +		unsigned int align = __ffs(virt | phys) & ~1U;
- +		unsigned long cam_sz;
- +
- +		if (camsize > align)
- +			camsize = align;
- +		if (camsize > max_cam)
- +			camsize = max_cam;
- +
- +		cam_sz = 1UL << camsize;
- +		settlbcam(i, virt, phys, cam_sz, PAGE_KERNEL_X, 0);
- +
- +		ram -= cam_sz;
- +		amount_mapped += cam_sz;
- +		virt += cam_sz;
- +		phys += cam_sz;
-  	}
- +	tlbcam_index = i;
- +
- +	return amount_mapped;
- +}
-  
-- unsigned long __init mmu_mapin_ram(void)
- -	return virt - PAGE_OFFSET;
-++unsigned long __init mmu_mapin_ram(unsigned long top)
- +{
- +	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
-  }
-  
-  /*
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+-mike
