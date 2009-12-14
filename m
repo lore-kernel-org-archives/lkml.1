@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbZLNXP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932938AbZLNXPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932913AbZLNXP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbZLNXP0
+	id S932938AbZLNXPl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932925AbZLNXPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:15:26 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:42803 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932677AbZLNXPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:15:24 -0500
-Date: Mon, 14 Dec 2009 15:15:23 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: mroos@linux.ee, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: RCU detected CPU 0 stall after panic on sparc64
-Message-ID: <20091214231523.GH6679@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.SOC.1.00.0912121049030.26625@math.ut.ee> <20091212.014002.173528710.davem@davemloft.net> <20091214202556.GC6679@linux.vnet.ibm.com> <20091214.130201.144162604.davem@davemloft.net>
+	Mon, 14 Dec 2009 18:15:38 -0500
+Received: from exprod6og116.obsmtp.com ([64.18.1.37]:59412 "EHLO
+	exprod6og116.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932921AbZLNXPf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:15:35 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091214.130201.144162604.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] ehci-atmel.c: use resource_size()
+Date: Mon, 14 Dec 2009 18:15:35 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EAA6@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ehci-atmel.c: use resource_size()
+Thread-Index: Acp9E1cuOxGxMUp/QhCOq/Cll5z3Dw==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Cc: "David Brownell" <dbrownell@users.sourceforge.net>
+X-OriginalArrivalTime: 14 Dec 2009 23:15:33.0138 (UTC) FILETIME=[55D56720:01CA7D13]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 01:02:01PM -0800, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Mon, 14 Dec 2009 12:25:56 -0800
-> 
-> > Hmmm...  At first glance, it looks like RCU should put a notifier onto
-> > the panic_notifier_list to disable this check.  Or is there some global
-> > variable that I can check?
-> 
-> Probably the notifier works just fine.
+Use resource_size().
 
-OK, will take that approach.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 
-							Thanx, Paul
+---
+
+diff --git a/drivers/usb/host/ehci-atmel.c b/drivers/usb/host/ehci-atmel.c
+index 87c1b7c..51bd0ed 100644
+--- a/drivers/usb/host/ehci-atmel.c
++++ b/drivers/usb/host/ehci-atmel.c
+@@ -149,7 +149,7 @@ static int __init ehci_atmel_drv_probe(struct platform_device *pdev)
+ 		goto fail_request_resource;
+ 	}
+ 	hcd->rsrc_start = res->start;
+-	hcd->rsrc_len = res->end - res->start + 1;
++	hcd->rsrc_len = resource_size(res);
+ 
+ 	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len,
+ 				driver->description)) { 
