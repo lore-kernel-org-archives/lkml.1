@@ -1,69 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbZLNXRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932894AbZLNXUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbZLNXRi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932852AbZLNXRg
+	id S932894AbZLNXUv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbZLNXUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:17:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49225 "EHLO ogre.sisk.pl"
+	Mon, 14 Dec 2009 18:20:50 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39168 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932698AbZLNXRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:17:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 00:18:11 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912142311.31658.rjw@sisk.pl> <alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S932628AbZLNXUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:20:49 -0500
+Date: Tue, 15 Dec 2009 10:20:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michal Simek <monstr@monstr.eu>, Li Hong <lihong.hi@gmail.com>,
+       Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: linux-next: manual merge of the mips tree with Linus' tree
+Message-Id: <20091215102046.6fc8faa8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912150018.11837.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 December 2009, Linus Torvalds wrote:
-> 
-> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
-> >
-> > OK, what about a two-pass approach in which the first pass only inits the
-> > completions and starts async threads for leaf "async" devices?  I think leaf
-> > devices are most likely to take much time to suspend, so this will give us
-> > a chance to save quite some time.
-> 
-> Why?
-> 
-> Really.
+Hi Ralf,
 
-Because the PCI bridges are not the only case where it matters (I'd say they
-are really a corner case).  Basically, any two async devices separeted by a
-series of sync ones are likely not to be suspended (or resumed) in parallel
-with each other, because the parent is usually next to its children in dpm_list.
-So, if the first device suspends, its "synchronous" parent waits for it and the
-suspend of the second async device won't be started until the first one's
-suspend has returned.  And it doesn't matter at what level we do the async
-thing, because dpm_list is there anyway.
+Today's linux-next merge of the mips tree got a conflict in
+scripts/recordmcount.pl between commits
+e2d753fac5b3954a3b6001f98479f0435fe7c868 ("tracing: Correct the check for
+number of arguments in recordmcount.pl") and
+7d241ff0567b9503d79ee775c40927d09b509f83 ("microblaze: ftrace: Add
+dynamic trace support") from Linus' tree and commits
+84bc2d35f211a83e806711c94f78a227c4810848 ("MIPS: Tracing: Add an endian
+argument to scripts/recordmcount.pl") and
+b2b11a5cb24b8f234bc4746dc40722b01fa45a43 ("MIPS: Tracing: Add dynamic
+function tracer support") from the mips tree.
 
-As Alan said, the real problem is that we generally can't change the ordering
-of dpm_list arbitrarily, because we don't know what's going to happen as a
-result.  The async_suspend flag tells us, basically, what devices can be safely
-moved to different positions in dpm_list without breaking things, as long as
-they are not moved behind their parents or in front of their children.
+These conflicts are now between Linus' tree and the mips tree so, Ralf,
+you should be able to fix them up by merging with Linus' tree.
 
-Starting the async suspends upfront would effectively work in the same way as
-moving those devices to the beginning of dpm_list without breaking the
-parent-child chains, which in turn is likely to allow us to save some extra
-time.
+I have fixed them up (see below) (for the first pair of commits above, I
+used the mips tree version) and can carry the fix for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-That's not only about the PCI bridges, it's more general.  As far as your
-one-liner is concerned, I'm going to test it, because I think we could use it
-anyway.
-
-Rafael
+diff --cc scripts/recordmcount.pl
+index 9cf0a6f,d016c71..0000000
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@@ -295,9 -245,60 +295,63 @@@ if ($arch eq "x86_64") 
+      $ld .= " -m elf64_sparc";
+      $cc .= " -m64";
+      $objcopy .= " -O elf64-sparc";
+ +} elsif ($arch eq "microblaze") {
+ +    # Microblaze calls '_mcount' instead of plain 'mcount'.
+ +    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
++ 
++ } elsif ($arch eq "mips") {
++     # To enable module support, we need to enable the -mlong-calls option
++     # of gcc for module, after using this option, we can not get the real
++     # offset of the calling to _mcount, but the offset of the lui
++     # instruction or the addiu one. herein, we record the address of the
++     # first one, and then we can replace this instruction by a branch
++     # instruction to jump over the profiling function to filter the
++     # indicated functions, or swith back to the lui instruction to trace
++     # them, which means dynamic tracing.
++     #
++     #       c:	3c030000 	lui	v1,0x0
++     #			c: R_MIPS_HI16	_mcount
++     #			c: R_MIPS_NONE	*ABS*
++     #			c: R_MIPS_NONE	*ABS*
++     #      10:	64630000 	daddiu	v1,v1,0
++     #			10: R_MIPS_LO16	_mcount
++     #			10: R_MIPS_NONE	*ABS*
++     #			10: R_MIPS_NONE	*ABS*
++     #      14:	03e0082d 	move	at,ra
++     #      18:	0060f809 	jalr	v1
++     #
++     # for the kernel:
++     #
++     #     10:   03e0082d        move    at,ra
++     #	  14:   0c000000        jal     0 <loongson_halt>
++     #                    14: R_MIPS_26   _mcount
++     #                    14: R_MIPS_NONE *ABS*
++     #                    14: R_MIPS_NONE *ABS*
++     #	 18:   00020021        nop
++     if ($is_module eq "0") {
++ 	    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
++     } else {
++ 	    $mcount_regex = "^\\s*([0-9a-fA-F]+): R_MIPS_HI16\\s+_mcount\$";
++     }
++     $objdump .= " -Melf-trad".$endian."mips ";
++ 
++     if ($endian eq "big") {
++ 	    $endian = " -EB ";
++ 	    $ld .= " -melf".$bits."btsmip";
++     } else {
++ 	    $endian = " -EL ";
++ 	    $ld .= " -melf".$bits."ltsmip";
++     }
++ 
++     $cc .= " -mno-abicalls -fno-pic -mabi=" . $bits . $endian;
++     $ld .= $endian;
++ 
++     if ($bits == 64) {
++ 	    $function_regex =
++ 		"^([0-9a-fA-F]+)\\s+<(.|[^\$]L.*?|\$[^L].*?|[^\$][^L].*?)>:";
++ 	    $type = ".dword";
++     }
++ 
+  } else {
+      die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
+  }
