@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbZLNSVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZLNSW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbZLNSVq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 13:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbZLNSVp
+	id S932393AbZLNSW0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 13:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbZLNSWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 13:21:45 -0500
-Received: from outbound-mail-147.bluehost.com ([67.222.38.37]:47415 "HELO
-	outbound-mail-147.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932355AbZLNSVo (ORCPT
+	Mon, 14 Dec 2009 13:22:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45077 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932356AbZLNSWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 13:21:44 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=GEl4BywCCC12vXJT5VZ4RJ+eSLB9xZlFkfoBs3kDoGcsdv2CuWge0KkfU5ym60ZEkyaza2wDBZtxc/lciL2CZtnq9T8DyC3obRA1JWVvE4+wrIU1k8AUxxxQpIUlZksu;
-Date: Mon, 14 Dec 2009 10:20:15 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Dave Airlie <airlied@redhat.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel@ffwll.ch>,
-       Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
-       Daniel Vetter <daniel.vetter@ffwll.ch>
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
- when ..."
-Message-ID: <20091214102015.2f43f5b4@jbarnes-piketon>
-In-Reply-To: <1260741245.3123.0.camel@t60prh>
-References: <200912071830.14697.arnd@arndb.de>
-	<200912131230.25781.arnd@arndb.de>
-	<20091213200017.GA3522@viiv.ffwll.ch>
-	<200912132131.07100.arnd@arndb.de>
-	<1260741245.3123.0.camel@t60prh>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 14 Dec 2009 13:22:24 -0500
+Date: Mon, 14 Dec 2009 10:21:38 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <200912122334.08367.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0912141015240.26135@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912121848.33062.rjw@sisk.pl> <alpine.LFD.2.00.0912121049390.3526@localhost.localdomain> <200912122334.08367.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 07:54:05 +1000
-Dave Airlie <airlied@redhat.com> wrote:
 
-> On Sun, 2009-12-13 at 21:31 +0000, Arnd Bergmann wrote:
-> > On Sunday 13 December 2009 20:00:18 Daniel Vetter wrote:
-> > > On Sun, Dec 13, 2009 at 12:30:25PM +0000, Arnd Bergmann wrote:
-> > > > And now it's obvious that my computer hates me. 12 hours of
-> > > > uptime, one reboot to check the old other version is broken, it
-> > > > crashes. I reboot into the good version, send out the above
-> > > > email and the next minute it crashes again. c05422d52ee6b is
-> > > > not the culprit. Sorry Daniel for blaming your patch.
-> > > 
-> > > No problem. Looks like your hunting a pretty ugly Heisenbug.
-> > > There's quite a interesting blog post by Paul McKenney, esp. the
-> > > solution to "Quick Quiz 1" might be usefull in your case:
-> > > 
-> > > http://paulmck.livejournal.com/14639.html
-> > 
-> > Thanks! In fact I've actually read that post on the kernel planet
-> > and decided to do basically a linear search through the i915
-> > patches merged into 2.6.32.
-> > 
-> > The current result is 67cf781bea5 "drm/i915: Make the downclocking
-> > debug code be under DRM_DEBUG not DRM_ERROR." is known bad, while
-> > 043029655 "drm/i915: Support IGD EOS" is probably good, pointing to
-> > Jesses 652c393a33 "drm/i915: add dynamic clock frequency control"
-> > as the next best guess. Unfortunately, that is a rather large
-> > change that is not easy to revert on current kernels.
+
+On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> That seems the most likely, perhaps jbarnes can comment.
+> One solution that we have discussed on linux-pm is to start a bunch of async
+> threads searching for async devices that can be suspended and suspending
+> them (assuming suspend is considered) out of order with respect to dpm_list.
 
-You can disable most of that code by loading i915 with 'powersave=0'.
-If that patch really is at fault the powersave=0 should work around the
-issue as well.
+Ok, guys, stop the crazy.
 
-It's been implicated in another issue (some display flicker and
-underruns) so I'm pretty sure there's something wrong with it in some
-configurations at least...
+That's another of those "ok, that's just ttoally stupid and clearly too 
+complex" ideas that I would never pull.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I should seriously suggest that people just stop discussing architectural 
+details on the pm list if they all end up being this level of crazy.
+
+The sane thing to do is to just totally ignore the async layer on PCI 
+bridges and other things that only have a late-suspend/early-resume thing. 
+No need for the above kind of obviously idiotic crap.
+
+However, my point was really that we wouldn't even have _needed_ that kind 
+of special case if we had just decided to let the subsystems do it. But 
+whatever. At worst, the PCI layer can even just mark such devices with 
+just late/early suspend/resume as being asynchronous, even though that 
+ends up resulting in some totally pointless async work that doesn't do 
+anything.
+
+But please guys - reign in the crazy ideas on the pm list. It's not like 
+our suspend/resume has gotten so stable as to be boring, and we want it to 
+become unreliable again.
+
+			Linus
