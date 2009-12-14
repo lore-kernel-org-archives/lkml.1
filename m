@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZLNXJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758713AbZLNXDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbZLNXJH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:09:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZLNXJB
+	id S1758713AbZLNXDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbZLNXDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:09:01 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:34192 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758749AbZLNXJA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:09:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=r4XdYA5JDXd16IOV6e/rzHy+jlq99ZQyigr7Ped/uxEk6G+PU1ofgaszfHPdP45kBw
-         ukkyNi51+RAN2Kzk5Zg7LK3Bz/fOJHzKxGyJAtmq5/Tec/D1UCtWHohz88+ssIQ+dBjt
-         9cCPXcoXFYV3CF3p6HLY+sulZmFaOXDxvDPQo=
-Date: Tue, 15 Dec 2009 08:03:28 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead
- prepare_to_wait()
-Message-Id: <20091215080328.b4af59ad.minchan.kim@barrios-desktop>
-In-Reply-To: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>
-References: <20091211164651.036f5340@annuminas.surriel.com>
-	<20091214210823.BBAE.A69D9226@jp.fujitsu.com>
-	<20091214212936.BBBA.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 18:03:47 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:52863 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758028AbZLNXDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:03:46 -0500
+Date: Mon, 14 Dec 2009 15:03:44 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] sched: Teach might_sleep about preemptable rcu
+Message-ID: <20091214230344.GG6679@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1260830672-7166-1-git-send-regression-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260830672-7166-1-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 21:30:19 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> if we don't use exclusive queue, wake_up() function wake _all_ waited
-> task. This is simply cpu wasting.
+On Mon, Dec 14, 2009 at 11:44:32PM +0100, Frederic Weisbecker wrote:
+> In practice, it is harmless to voluntarily sleep in a rcu_read_lock()
+> section if we are running under preempt rcu, but it is illegal because
+> if we build a kernel running non-preemptable rcu.
 > 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Currently, might_sleep() doesn't notice sleepable operations under
+> rcu_read_lock() sections if we are running under preemptable rcu
+> because preempt_count() is left untouched after rcu_read_lock() in
+> this case. But we want developers who test their changes under such
+> config to notice the "sleeping while atomic" issues.
+> 
+> Then we add rcu_read_lock_nesting to prempt_count() in might_sleep()
+> checks.
+
+Cute!!!
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
 > ---
->  mm/vmscan.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  include/linux/rcutree.h |   11 +++++++++++
+>  kernel/sched.c          |    2 +-
+>  2 files changed, 12 insertions(+), 1 deletions(-)
 > 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index e0cb834..3562a2d 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1618,7 +1618,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
->  	 * we would just make things slower.
->  	 */
->  	for (;;) {
-> -		prepare_to_wait(wq, &wait, TASK_UNINTERRUPTIBLE);
-> +		prepare_to_wait_exclusive(wq, &wait, TASK_UNINTERRUPTIBLE);
->  
->  		if (atomic_read(&zone->concurrent_reclaimers) <=
->  		    max_zone_concurrent_reclaimers)
-> @@ -1632,7 +1632,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
->                  */
->  		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
->  					0, 0)) {
-> -			wake_up(wq);
-> +			wake_up_all(wq);
-
-I think it's typo. The description in changelog says we want "wake_up". 
-Otherwise, looks good to me.
-
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-
--- 
-Kind regards,
-Minchan Kim
+> diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+> index c93eee5..8044b1b 100644
+> --- a/include/linux/rcutree.h
+> +++ b/include/linux/rcutree.h
+> @@ -45,6 +45,12 @@ extern void __rcu_read_unlock(void);
+>  extern void synchronize_rcu(void);
+>  extern void exit_rcu(void);
+> 
+> +/*
+> + * Defined as macro as it is a very low level header
+> + * included from areas that don't even know about current
+> + */
+> +#define rcu_preempt_depth() (current->rcu_read_lock_nesting)
+> +
+>  #else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+> 
+>  static inline void __rcu_read_lock(void)
+> @@ -63,6 +69,11 @@ static inline void exit_rcu(void)
+>  {
+>  }
+> 
+> +static inline int rcu_preempt_depth(void)
+> +{
+> +	return 0;
+> +}
+> +
+>  #endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
+> 
+>  static inline void __rcu_read_lock_bh(void)
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index ab42754..586c82c 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -9658,7 +9658,7 @@ void __init sched_init(void)
+>  #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+>  static inline int preempt_count_equals(int preempt_offset)
+>  {
+> -	int nested = preempt_count() & ~PREEMPT_ACTIVE;
+> +	int nested = (preempt_count() & ~PREEMPT_ACTIVE) + rcu_preempt_depth();
+> 
+>  	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
+>  }
+> -- 
+> 1.6.2.3
+> 
