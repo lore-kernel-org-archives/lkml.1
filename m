@@ -1,131 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZLNNaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZLNNaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZLNNaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 08:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZLNNaY
+	id S1753597AbZLNNaz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 08:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZLNNax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 08:30:24 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:46785 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbZLNNaX (ORCPT
+	Mon, 14 Dec 2009 08:30:53 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:48618 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbZLNNaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 08:30:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=G1dc8MN8W7Qch7KYheu9IVvVTxHBmwBr4zFC0awUiY9K2i5SlZp/AcPY/yjG1BOvm/
-         tiQWZeVJjfSbkAXurUSExoTxFe99dypO1sWpZeoTfKrd4mx/n7D1ycGPepiNblMvgMP+
-         mFdoGp48blgFZpMSOP0xO15a0AXttfJrupGyM=
-Date: Mon, 14 Dec 2009 14:30:17 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH][RFC] perf lock: Distribute numerical IDs for each lock
-	instances
-Message-ID: <20091214133014.GL5168@nowhere>
-References: <1260691344-4724-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260691344-4724-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 14 Dec 2009 08:30:52 -0500
+From: Vishnu Suresh <Vishnu@freescale.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dan.j.williams@intel.com
+Cc: B04825@freescale.com, R58472@freescale.com,
+       Vishnu Suresh <Vishnu@freescale.com>
+Subject: [PATCH v1] fsldma: Delete DMA_INTERRUPT capability
+Date: Mon, 14 Dec 2009 19:00:23 +0530
+Message-Id: <1260797423-7352-1-git-send-email-Vishnu@freescale.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 13, 2009 at 05:02:24PM +0900, Hitoshi Mitake wrote:
-> This patch implements distributing numerical IDs for each lock instances.
-> 
-> Principle:
-> At first, kernel holds lock_idtable. It is an double dimension array
-> for each lock class with LOCK_IDTABLE_LENGTH of struct lock_instance_stat.
-> 
-> struct lock_instance_stat can have many things for lock stats or something,
-> but it isn't important point.
-> 
-> The important point is that index of lock_idtable is used as numerical ID.
-> And this patch makes lockdep_map have this ID. So searching stats data for
-> lock instances are O(1), very fast.
-> 
-> And the second important point is that when numerical IDs are distributed
-> for each lock instances.
-> This patch makes lockdep_map have a new member, do_register. This is a pointer of function.
-> When initialized the lock instances (for example: SPIN_DEP_MAP_INIT in spinlock_types.h),
-> this member is initialized with
-> register_lockdep_id() in kernel/lockdep.c .
-> This function receives the adress of lockdep_map (it's owner),
-> and searches lock_idtable, then if unused ID (unused index) is found,
-> set the owner (spinlock_t, rwlock_t, etc. obtained with container_of) of lockdep_map
-> to lock_idtable's unit determined in above.
-> 
-> When this do_register() called? lock_acquire() calls it.
-> And once initialize completed, nop_register_lockdep_id() will be
-> assigned to do_register(). It is a nop function.
-> 
-> I believe this patch makes implementation of perf lock more easy
-> and precision, and may also help lock people.
-> 
-> Benefit:
->  * Low overhead
->  * int type ID is easy to deal with
-> 
-> Demerit:
->  * What should kernel do when lock_idtable is exhausted?
->    (But I think entire number of lock instances are not so many,
->     and predicting upper limit of it is not hard)
->  * instances before calling lock_acquire() with cannot be identified
->  * end of instances cannot be determined
-> 
-> This patch is a proof of concept version.
-> There are some rest todos, especially the statement in lock_acquire():
-> 	if (lock->do_register)
-> this must be removed in future, this proves that
-> there's some lockdep_map I cannot initializing correctly.
-> For example, rcu_lock_map in kernel/rcupdate.c .
-> 
-> And I implemented debugfs entry, lockdep_idtable
-> for dumping ID and name of instances like this,
-> % cat  lockdep_idtable
->         --- spinlock ---
-> 0: logbuf_lock
-> 1: (console_sem).lock
-> 2: clockevents_lock
-> 3: set_atomicity_lock
-> 4: pgd_lock
-> 5: init_mm.page_table_lock
-> 6: index_init_lock
-> 7: ioapic_lock
-> 8: x86_mce_decoder_chain.lock
-> 9: pcpu_lock
-> 10: perf_resource_lock
-> ...
-> 
-> But it is can be merged according to checkpatch.pl,
-> if you like it, could you merge it into perf/lock branch, Ingo?
-> And I really want to hear comments from people! :)
-> 
-> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+The DMA_INTERRUPT is a NULL transfer, triggering a
+Programming Error. Though this Error is handled in
+the driver with the fix given in "fsldma: Fix the DMA
+halt when using DMA_INTERRUPT async_tx transfer."
+<f79abb627f033c85a6088231f20c85bc4a9bd757>,
+the RAID5 operation, which initiated the transaction
+via Async_tx, hangs.
 
+Hence, this patch removes the DMA_INTERRUPT capability
+and the associated code from the driver.
 
+Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+---
+Changes with respect to v0
+o. The functionality is removed instead of disabling as
+   per comments
+o. Rebased to linux-next as of 20091214
 
-So if I understand well, this maps each lockdep_map
-into a unique index, right?
+ drivers/dma/fsldma.c |   31 -------------------------------
+ 1 files changed, 0 insertions(+), 31 deletions(-)
 
-Then the goal is to be able to identify each lock instances from
-perf lock using a simple array of indexes.
-
-But adding the lockdep_map address from lock events would provide
-you a unique id for each lock instances already. Sure it would
-be addresses instead of indexes but I think a hashlist should do
-the trick already. I'm not sure we need to add more complexity
-inside in-kernel lock debugging while we already have the keys
-to make it scale well in userspace.
-
-Thanks.
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 296f9e7..272097a 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -449,35 +449,6 @@ static void fsl_dma_free_chan_resources(struct dma_chan *chan)
+ 	fsl_chan->desc_pool = NULL;
+ }
+ 
+-static struct dma_async_tx_descriptor *
+-fsl_dma_prep_interrupt(struct dma_chan *chan, unsigned long flags)
+-{
+-	struct fsl_dma_chan *fsl_chan;
+-	struct fsl_desc_sw *new;
+-
+-	if (!chan)
+-		return NULL;
+-
+-	fsl_chan = to_fsl_chan(chan);
+-
+-	new = fsl_dma_alloc_descriptor(fsl_chan);
+-	if (!new) {
+-		dev_err(fsl_chan->dev, "No free memory for link descriptor\n");
+-		return NULL;
+-	}
+-
+-	new->async_tx.cookie = -EBUSY;
+-	new->async_tx.flags = flags;
+-
+-	/* Insert the link descriptor to the LD ring */
+-	list_add_tail(&new->node, &new->tx_list);
+-
+-	/* Set End-of-link to the last link descriptor of new list*/
+-	set_ld_eol(fsl_chan, new);
+-
+-	return &new->async_tx;
+-}
+-
+ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
+ 	size_t len, unsigned long flags)
+@@ -1200,11 +1171,9 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 						- fdev->reg.start + 1);
+ 
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+-	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+ 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
+ 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+-	fdev->common.device_prep_dma_interrupt = fsl_dma_prep_interrupt;
+ 	fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
+ 	fdev->common.device_is_tx_complete = fsl_dma_is_complete;
+ 	fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
+-- 
+1.6.4.2
 
