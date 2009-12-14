@@ -1,37 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbZLNPzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZLNP6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbZLNPzY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 10:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbZLNPzX
+	id S1757572AbZLNP6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 10:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbZLNP6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 10:55:23 -0500
-Received: from mail.gmx.net ([213.165.64.20]:59168 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757534AbZLNPzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 10:55:23 -0500
-X-Authenticated: #3453474
-X-Provags-ID: V01U2FsdGVkX19a9G58nBNaTNZWQtcNmfli7N5xkJoJzYCf2Snrm/
-	PL2wxZrOFCjWx0
-Message-ID: <4B265FEC.6060503@gmx.net>
-Date: Mon, 14 Dec 2009 16:55:24 +0100
-From: Frank Schaefer <schaefer.frank@gmx.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Greg KH <greg@kroah.com>
-Subject: Bug 14594: fix for 2.6.31.8 ?
-Content-Type: text/plain; charset=ISO-8859-15
+	Mon, 14 Dec 2009 10:58:32 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35320 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753700AbZLNP6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 10:58:31 -0500
+Date: Mon, 14 Dec 2009 08:00:49 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Emese Revfy <re.emese@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
+ 2.6.32-git-053fe57ac v2
+Message-ID: <20091214080049.19930729@infradead.org>
+In-Reply-To: <20091214112656.GB1959@elf.ucw.cz>
+References: <cover.1260662994.git.re.emese@gmail.com>
+	<20091214003836.GD7812@parisc-linux.org>
+	<4B2595E7.701@gmail.com>
+	<20091214021916.GB12196@linux-sh.org>
+	<4B25E47C.1010803@gmail.com>
+	<20091214112656.GB1959@elf.ucw.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.72
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bug 14594 has been fixed with commit
-e29d4363174949a7a4e46f670993d7ff43342c1c for 2.6.32 a month ago, but
-2.6.28 - 2.6.31.7 are still affected.
-Any plans to apply this at least for 2.6.31.8, too ?
+On Mon, 14 Dec 2009 12:26:56 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-Regards,
-Frank Schaefer
+> > > Until such a consensus is reached one way or the other, please
+> > > refrain from sending hundreds of patches -- one or two are
+> > > sufficient for showing what you want to do until folks are on
+> > > board with it, as is the typical nature of mechanical changes.
+> > 
+> > I think there is consensus to constify ops variables as much as
+> > possible (e.g., Alexey's similar patches).
+> 
+> No such consensus exists. It is very clear from the patch reactions.
+
+I for one am not opposed to using const where we could be using const.
+It's a fundamental language feature, that helps the compiler and
+developer. Yes there is sparse, and no, almost nobody uses that.
+
+If it's const, it won't be and can't be changed, allowing
+more aggressive optimization. It also means all these structures get
+put in the rodata section, which means by definition they can no longer
+have false sharing with data structures that are written to,.. and that
+section is often even really read only (cpu protection bits), which is
+also a nice, but secundary; _ops are one of those targets for rootkits
+and accidental overwrites.
+
+Rodata is also something that in theory we can replicate between numa
+nodes (we don't do that yet I think, but it's one of those
+chicken-and-egg things.. once rodata contains enough hot/critical
+structures it becomes worth it)
+
+Now, a 300 patch series to lkml is not the way to do this.
+First step is to make checkpatch.pl warn about new cases.
+Second step should be to convert all definitions, but using the "one
+patch per maintainer" rule, not "one patch per file" rule. Yes it's
+somewhat janitorial, but no it's not a big deal as long as it's not 300
+patches to lkml. And it is much better than whitespace changes; it's
+a real quality improvement to the kernel (in terms of code generation
+and API)
+
+Once everything is converted after a kernel release or two, you can
+consider the third step of changing the actual prototypes/definitions,
+which at that point is a small one-liner that isn't a big deal.
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
