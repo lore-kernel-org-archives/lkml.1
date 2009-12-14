@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZLMX7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZLNAP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZLMX7o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 18:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZLMX7k
+	id S1755947AbZLNAP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZLNAPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:59:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35183 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755237AbZLMX6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:58:49 -0500
-From: re.emese@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, mingo@redhat.com, hpa@zytor.com,
-       tglx@linutronix.de, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: [PATCH 1/1] Constify struct wd_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 01:00:38 +0100
-Message-Id: <caf988a9c8087f157203fa3b7a6c172954ee1436.1260663005.git.re.emese@gmail.com>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <cover.1260663005.git.re.emese@gmail.com>
-References: <cover.1260663005.git.re.emese@gmail.com>
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 13 Dec 2009 19:15:00 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:54761 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755822AbZLNAOj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 19:14:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VohBK0jYDd2uZSJY5OAhcGgnDD+UqJ2qgUJOw+oSQxUT8CbXBMuFtqih0cAPhBbWj2
+         2Igqhl8b8XjP/s8xxY7De7ot8nh0/DO4E0H+nu8hvLHF8uEffW8jtG904R1ye5XyZrdh
+         5Plq7V4g5Cki4O18aKozhbOtVjN8NeY8txNL8=
+MIME-Version: 1.0
+In-Reply-To: <20091211164651.036f5340@annuminas.surriel.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+Date: Mon, 14 Dec 2009 09:14:39 +0900
+Message-ID: <28c262360912131614h62d8e0f7qf6ea9ab882f446d4@mail.gmail.com>
+Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: lwoodman@redhat.com, akpm@linux-foundation.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Emese Revfy <re.emese@gmail.com>
+Hi, Rik.
 
+On Sat, Dec 12, 2009 at 6:46 AM, Rik van Riel <riel@redhat.com> wrote:
+> Under very heavy multi-process workloads, like AIM7, the VM can
+> get into trouble in a variety of ways.  The trouble start when
+> there are hundreds, or even thousands of processes active in the
+> page reclaim code.
+>
+> Not only can the system suffer enormous slowdowns because of
+> lock contention (and conditional reschedules) between thousands
+> of processes in the page reclaim code, but each process will try
+> to free up to SWAP_CLUSTER_MAX pages, even when the system already
+> has lots of memory free.
+>
+> It should be possible to avoid both of those issues at once, by
+> simply limiting how many processes are active in the page reclaim
+> code simultaneously.
+>
+> If too many processes are active doing page reclaim in one zone,
+> simply go to sleep in shrink_zone().
+>
+> On wakeup, check whether enough memory has been freed already
+> before jumping into the page reclaim code ourselves.  We want
+> to use the same threshold here that is used in the page allocator
+> for deciding whether or not to call the page reclaim code in the
+> first place, otherwise some unlucky processes could end up freeing
+> memory for the rest of the system.
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
----
- arch/x86/kernel/cpu/perfctr-watchdog.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+I am worried about one.
 
-diff --git a/arch/x86/kernel/cpu/perfctr-watchdog.c b/arch/x86/kernel/cpu/perfctr-watchdog.c
-index 898df97..89dad0b 100644
---- a/arch/x86/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
-@@ -30,11 +30,11 @@ struct nmi_watchdog_ctlblk {
- 
- /* Interface defining a CPU specific perfctr watchdog */
- struct wd_ops {
--	int (*reserve)(void);
--	void (*unreserve)(void);
--	int (*setup)(unsigned nmi_hz);
--	void (*rearm)(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz);
--	void (*stop)(void);
-+	int (* const reserve)(void);
-+	void (* const unreserve)(void);
-+	int (* const setup)(unsigned nmi_hz);
-+	void (* const rearm)(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz);
-+	void (* const stop)(void);
- 	unsigned perfctr;
- 	unsigned evntsel;
- 	u64 checkbit;
-@@ -645,6 +645,7 @@ static const struct wd_ops p4_wd_ops = {
- #define ARCH_PERFMON_NMI_EVENT_SEL	ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL
- #define ARCH_PERFMON_NMI_EVENT_UMASK	ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK
- 
-+/* cannot be const, see probe_nmi_watchdog */
- static struct wd_ops intel_arch_wd_ops;
- 
- static int setup_intel_arch_watchdog(unsigned nmi_hz)
-@@ -697,6 +698,7 @@ static int setup_intel_arch_watchdog(unsigned nmi_hz)
- 	return 1;
- }
- 
-+/* cannot be const, see probe_nmi_watchdog */
- static struct wd_ops intel_arch_wd_ops __read_mostly = {
- 	.reserve	= single_msr_reserve,
- 	.unreserve	= single_msr_unreserve,
+Now, we can put too many processes reclaim_wait with NR_UNINTERRUBTIBLE state.
+If OOM happens, OOM will kill many innocent processes since
+uninterruptible task
+can't handle kill signal until the processes free from reclaim_wait list.
+
+I think reclaim_wait list staying time might be long if VM pressure is heavy.
+Is this a exaggeration?
+
+If it is serious problem, how about this?
+
+We add new PF_RECLAIM_BLOCK flag and don't pick the process
+in select_bad_process.
+
 -- 
-1.6.5.3
-
+Kind regards,
+Minchan Kim
