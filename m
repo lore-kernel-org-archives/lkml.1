@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZLNMJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZLNMCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbZLNMJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZLNMJu
+	id S1757085AbZLNMCB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZLNMCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:09:50 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:59437 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757157AbZLNMJr (ORCPT
+	Mon, 14 Dec 2009 07:02:00 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:42106 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757041AbZLNMCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:09:47 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [RFC] macvlan: add tap device backend
-Date: Mon, 14 Dec 2009 13:00:36 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Patrick McHardy <kaber@trash.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       Or Gerlitz <ogerlitz@voltaire.com>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Edge Virtual Bridging <evb@yahoogroups.com>
-References: <1259862720-28432-1-git-send-email-arnd@arndb.de> <1259862720-28432-3-git-send-email-arnd@arndb.de> <20091212084112.GA8948@gondor.apana.org.au>
-In-Reply-To: <20091212084112.GA8948@gondor.apana.org.au>
+	Mon, 14 Dec 2009 07:02:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=jFJmQUZlxn5+KtmqmTOgvo3bIftAwXZB7405QbKCm+LcLfjFYDBUu0elxwbeWBnLJQ
+         WwYWMNY6EEmNAr2dp9p9pYcT8hjD7zO4QE8Hq8wt/GdSUkiHDO+oVfeEsAF1b/A2iNAL
+         +A6qc793mHo5IfEZ15lgbwCUXlxfigFIy/N8M=
+Date: Mon, 14 Dec 2009 13:01:54 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/10] trace_syscalls: fix SYSCALL_DEFINE0
+Message-ID: <20091214120152.GG5168@nowhere>
+References: <4B1F4E86.9040207@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912141300.37063.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/QQMeaViuJ1kduIhYgosY6wUDJDoXtRwb5aof
- HNbcWVmPFqBUofap64JBcE5tP7HV8vmS0AvNSgdwZA0mwrfJjh
- /ZQjK8h+mGSaRYt1HI08w==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1F4E86.9040207@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 December 2009, Herbert Xu wrote:
-> On Thu, Dec 03, 2009 at 06:52:00PM +0100, Arnd Bergmann wrote:
-> > This is a second prototype of a new interface into the network
-> > stack, to eventually replace tun/tap and the bridge driver
-> > in certain virtual machine setups. The code has changed
-> > significantly, but the goals still remain.
+On Wed, Dec 09, 2009 at 03:15:18PM +0800, Lai Jiangshan wrote:
 > 
-> The idea looks pretty sound to me.
-
-Thanks!
-
-> > I'm posting this mainly to solicit feedback. Not sure how
-> > chances for integration into 2.6.33 are, given that the merge
-> > window is opening already.
+> struct syscall_metadata variable name in SYSCALL_DEFINE0
+> is not the same as SYSCALL_DEFINE1/2/3/4/5/6.
 > 
-> It's way too late for 2.6.33.  But the earlier this becomes ready
-> then the earlier it can go into linux-next.
+> SYSCALL_TRACE_ENTER_EVENT() and SYSCALL_TRACE_EXIT_EVENT() expect
+> struct syscall_metadata's name is __syscall_meta__XXXXXX
+> as SYSCALL_DEFINE1/2/3/4/5/6 defines.
+> 
+> It causes event_enter_##sname->data points to a wrong place.
+> (event_enter_##sname->data points to a dummy struct syscall_metadata)
+> 
+> It causes syscalls which are defined by SYSCALL_DEFINE0() can not be traced.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index 55e7108..bee1d41 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -196,7 +196,7 @@ struct perf_event_attr;
+>  	static const struct syscall_metadata __used		\
+>  	  __attribute__((__aligned__(4)))			\
+>  	  __attribute__((section("__syscalls_metadata")))	\
+> -	  __syscall_meta_##sname = {				\
+> +	  __syscall_meta__##sname = {				\
+>  		.name 		= "sys_"#sname,			\
+>  		.nb_args 	= 0,				\
+>  		.enter_event	= &event_enter__##sname,	\
 
-Right. Since the code is basically working (I have two known bugs
-I'm still working on) and people want to test it, what is the
-best path? I could
-a) keep my git tree for myself,
-b) have it added to linux-next,
-c) prepare a combined patch for net-next.git, or
-d) have it added to drivers/staging
 
-	Arnd
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
