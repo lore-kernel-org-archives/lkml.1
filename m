@@ -1,66 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZLNEwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750791AbZLNFBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbZLNEwO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 23:52:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbZLNEwN
+	id S1750791AbZLNFBB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 00:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbZLNFBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 23:52:13 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42491
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756702AbZLNEwM (ORCPT
+	Mon, 14 Dec 2009 00:01:00 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:56385 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZLNFA7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 23:52:12 -0500
-Date: Sun, 13 Dec 2009 20:52:12 -0800 (PST)
-Message-Id: <20091213.205212.212692978.davem@davemloft.net>
-To: sshtylyov@ru.mvista.com
-Cc: hartleys@visionengravers.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B241F10.7050706@ru.mvista.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com>
-	<4B241F10.7050706@ru.mvista.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 00:00:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pPTE2aEA4aaI01Eiu7BEb53mWn0maPf8OOH0cD7YF+UD5bPQyvq2J5dfwPSlkY35Uq
+         /RrqQGEvQTd/aKU/y8gKkGq4LG1hM2zim3njtDKt4rI1ZS3gGohO8X6LZoHYuIv+4RSy
+         VeJSl1/E0+48Vgg6tvK9LmWeV/8bZTqrTKYgk=
+MIME-Version: 1.0
+In-Reply-To: <4B25BF39.5020401@redhat.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+	 <28c262360912131614h62d8e0f7qf6ea9ab882f446d4@mail.gmail.com>
+	 <4B25BA6E.5010002@redhat.com>
+	 <28c262360912132019u7c0b8efpf89b11a6cbe512b3@mail.gmail.com>
+	 <4B25BF39.5020401@redhat.com>
+Date: Mon, 14 Dec 2009 14:00:57 +0900
+Message-ID: <28c262360912132100u689118fob4b72c40a1393846@mail.gmail.com>
+Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: lwoodman@redhat.com, akpm@linux-foundation.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Date: Sun, 13 Dec 2009 01:54:08 +0300
-
-> H Hartley Sweeten wrote:
-> 
->> The ioremap return value is an __iomem *, not an integer.  Update the
->> private structure to reflect this.  While here, remove the typedef
->> for _auide_hwif and just use struct auide_hwif instead as recommended
->> by Documentation/CodingStyle.
+On Mon, Dec 14, 2009 at 1:29 PM, Rik van Riel <riel@redhat.com> wrote:
+> On 12/13/2009 11:19 PM, Minchan Kim wrote:
 >>
->> auide_setup_ports() still needs to cast the regbase back to an integer
->> to correctly setup the io_ports_array.
+>> On Mon, Dec 14, 2009 at 1:09 PM, Rik van Riel<riel@redhat.com>  wrote:
+>
+>>> A simpler solution may be to use sleep_on_interruptible, and
+>>> simply have the process continue into shrink_zone() if it
+>>> gets a signal.
 >>
->> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
- ...
->>     a) 'arch/mips/include/asm/mach-au1x00/au1xxx_ide.h'
->> -     containes : struct _auide_hwif
->> +     containes : struct auide_hwif
->>   
-> 
->   Contains?
-> 
->   Other than that,
-> 
-> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>> I thought it but I was not sure.
+>> Okay. If it is possible, It' more simple.
+>> Could you repost patch with that?
+>
+> Sure, not a problem.
+>
+>>         +The default value is 8.
+>>         +
+>>         +=============================================================
+>>
+>>
+>>     I like this. but why do you select default value as constant 8?
+>>     Do you have any reason?
+>>
+>>     I think it would be better to select the number proportional to
+>> NR_CPU.
+>>     ex) NR_CPU * 2 or something.
+>>
+>>     Otherwise looks good to me.
+>>
+>>
+>> Pessimistically, I assume that the pageout code spends maybe
+>> 10% of its time on locking (we have seen far, far worse than
+>> this with thousands of processes in the pageout code).  That
+>> means if we have more than 10 threads in the pageout code,
+>> we could end up spending more time on locking and less doing
+>> real work - slowing everybody down.
+>>
+>> I rounded it down to the closest power of 2 to come up with
+>> an arbitrary number that looked safe :)
+>> ===
+>>
+>> We discussed above.
+>> I want to add your desciption into changelog.
+>
+> The thing is, I don't know if 8 is the best value for
+> the default, which is a reason I made it tunable in
+> the first place.
+>
+> There are a lot of assumptions in my reasoning, and
+> they may be wrong.  I suspect that documenting something
+> wrong is probably worse than letting people wonder out
+> the default (and maybe finding a better one).
 
-Also, this patch doesn't apply to the current tree, the
-au_ide_remove() function has been fixed to use
-resource_size().
+Indeed. But whenever I see magic values in kernel, I have a question
+about that.
+Actually I used to doubt the value because I guess
+"that value was determined by server or desktop experiments.
+so probably it don't proper small system."
+At least if we put the logical why which might be wrong,
+later people can think that value is not proper any more now or his
+system(ex, small or super computer and so on) by based on our
+description.
+so they can improve it.
 
-Please respin your patch, and also incorporate the
-documentation spelling fix suggested by Sergei (and
-make sure to keep the alignment of that section of
-documentation when you do that).
+I think it isn't important your reasoning is right or wrong.
+Most important thing is which logical reason determines that value.
 
-Thanks.
+I want to not bother you if you mind my suggestion.
+Pz, think it was just nitpick. :)
+
+
+> --
+> All rights reversed.
+>
+
+
+
+-- 
+Kind regards,
+Minchan Kim
