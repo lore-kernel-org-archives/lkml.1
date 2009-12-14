@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbZLNWpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZLNWtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758652AbZLNWpZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbZLNWpX
+	id S1758699AbZLNWtv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758656AbZLNWtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:45:23 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38730 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Dec 2009 17:49:49 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:37034 "EHLO mail.cs.nmsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758125AbZLNWpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:45:22 -0500
-Message-ID: <4B26C074.9080801@gmail.com>
-Date: Mon, 14 Dec 2009 23:47:16 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	id S1758591AbZLNWts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:49:48 -0500
+Message-ID: <db910869762a655c288c762e82e83d3e.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <20091214220220.GB2052@nokia.com>
+References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+    <20091214220220.GB2052@nokia.com>
+Date: Mon, 14 Dec 2009 15:48:43 -0700
+Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: felipe.balbi@nokia.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "krzysztof.h1@wp.pl" <krzysztof.h1@wp.pl>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "oliver@neukum.org" <oliver@neukum.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "jkosina@suse.cz" <jkosina@suse.cz>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org, len.brown@intel.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH 05/10] Constify struct platform_suspend_ops for 2.6.32-git-053fe57ac
- v2
-References: <cover.1260663003.git.re.emese@gmail.com> <2218084c294878ee335de04178d4c0b93167e248.1260663003.git.re.emese@gmail.com> <20091214051745.GG5114@elf.ucw.cz>
-In-Reply-To: <20091214051745.GG5114@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Mon 2009-12-14 01:00:21, re.emese@gmail.com wrote:
->> From: Emese Revfy <re.emese@gmail.com>
+Hello,
+
+Felipe Balbi wrote:
+> On Mon, Dec 14, 2009 at 10:22:32PM +0100, ext Rick L. Vinyard Jr. wrote:
 >>
->>
->> Signed-off-by: Emese Revfy <re.emese@gmail.com>
-> 
-> It definitely needs an explanation, and it has none.
+>>Signed-off-by: Rick L. Vinyard, Jr <rvinyard@cs.nmsu.edu>
+>
+> there are plenty of style mistakes in this patch. the body message
+> description which you put below should be above the signed-off-by line,
 
-Sorry, you are right, I am just new to git. The next series
-will include the explanation.
---
-Emese
+Fixed in the new patch labelled 0.0.2
 
+> multi-lined comments are of the form:
+>
+> /*
+>   * multi lined comment
+>   * goes here
+>   */
+>
 
+Fixed
+
+> remove the commented code like /* hid_debug = 0 */
+>
+
+Removed
+
+> and some others.. please run your patch through scripts/checkpatch.pl
+> --strict and fix the errors and warnings reported.
+>
+
+I ran it without the --strict option before. That's probably why I didn't
+catch it. It's clean now with --strict.
+
+>>+static int __init g13_init(void)
+>>+{
+>>+       pr_debug("g13 HID driver loaded");
+>
+> don't pr_debug() here.
+>
+
+Removed
+
+>>+       return hid_register_driver(&g13_driver);
+>>+}
+>>+
+>>+static void __exit g13_exit(void)
+>>+{
+>>+       pr_debug("g13 HID driver unloaded");
+>
+> nor here.
+>
+>>+       hid_unregister_driver(&g13_driver);
+>>+}
+
+Removed
+
+Thanks for the input. Everything above is taken into account in v0.0.2 of
+the patch.
+
+---
+
+Rick
 
