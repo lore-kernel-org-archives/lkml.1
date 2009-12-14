@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbZLNReK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbZLNRe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932237AbZLNReK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 12:34:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZLNReJ
+	id S932255AbZLNRe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 12:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZLNRe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 12:34:09 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:53932 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752852AbZLNReI (ORCPT
+	Mon, 14 Dec 2009 12:34:56 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:45942 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbZLNRez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 12:34:08 -0500
-Message-ID: <4B267708.3010202@gmail.com>
-Date: Mon, 14 Dec 2009 18:34:00 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 14 Dec 2009 12:34:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vH+Mo814l9EswaP0HvEhrhO0kloIVGOPi+45nl2bX2bYduYjYGQsUJFCZk6fyz63nN
+         ZgqVz7QTpD5VvqiYbuJ1hBqqTd/yUodH+G/WebBj0T+YJXMJQuSMNCAlRLHPvBboAOJO
+         E9Eksx1SrdUafO/+lxbpf0KOSFZcx4P4l/I5U=
+Date: Mon, 14 Dec 2009 09:34:50 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: synaptics touchpad doesn't click
+Message-ID: <20091214173450.GB2373@core.coreip.homeip.net>
+References: <20091214014828.GA28402@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: lists@nerdbynature.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, John Dykstra <john.dykstra1@gmail.com>
-Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
-References: <20091212.010340.227842186.davem@davemloft.net>	<4B2360BF.5000102@gmail.com>	<4B25D38F.1090702@gmail.com> <20091213.234530.82029083.davem@davemloft.net>
-In-Reply-To: <20091213.234530.82029083.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Dec 2009 18:34:00 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214014828.GA28402@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 14/12/2009 08:45, David Miller a écrit :
-> From: Eric Dumazet <eric.dumazet@gmail.com>
-> Date: Mon, 14 Dec 2009 06:56:31 +0100
+Hi Alex,
+
+On Sun, Dec 13, 2009 at 06:48:28PM -0700, Alex Chiang wrote:
+> Hi Dmitry,
 > 
->> It seems to me tcp_create_openreq_child() doesnt properly initialize
->> newtp->cookie_values to NULL, but this should not produce warnings like that ?
+> I just got a shiny new piece of hardware (HP Envy 15) with a
+> Synaptics touchpad, and I can't seem to make the touchpad work
+> correctly.  In this version of the touchpad, there are actually
+> two physical buttons underneath the pad. In essence, this is a
+> touchpad that you can click too.
 > 
-> If oldtp->cookie_values is NULL, the child's should be as well
-> because of sk_clone().
+> I can't get the clicking to work. Of course, I can tap to click,
+> but lacking access to the physical buttons means that I can't
+> right-click.
+> 
+> Currently, I'm not sure if this is a driver issue or perhaps
+> something higher up the stack, perhaps in X or maybe pilot error.
+> ;)
+> 
+> Distro is Ubuntu Karmic, kernel is latest upstream last pulled on
+> 13 Dec.
+> 
+> Would like some pointers on how to get started debugging.
+> 
+> Thanks,
+> /ac
+> 
+> dmesg snip:
+>  Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+>  brd: module loaded
+>  loop: module loaded
+>  input: Macintosh mouse button emulation as /devices/virtual/input/input3
+>  [...]
+>  Synaptics Touchpad, model: 1, fw: 7.4, id: 0x1e0b1, caps: 0xd04771/0xe40000
+>  input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio1/input/input10
+> 
 
-Right, maybe then its a tcp_ack() or a syncookie validation change ?
+Hmm, that's the new Synaptics "clickpad"... Takashi Iwai just posted a
+coupleof patches for it on the input mailing list.
 
-
-tcp_v4_rcv()
-        bh_lock_sock_nested(sk);
-        if (!sock_owned_by_user(sk)) {
-
-        -> tcp_v4_do_rcv()
-                -> tcp_v4_hnd_req()
-                        -> cookie_v4_check()
-                                -> get_cookie_sock()
-                                        -> child = syn_recv_sock()
-                                        -> inet_csk_reqsk_queue_add(child) (TCP_SYN_RECV socket queued into parent)
-                -> tcp_child_process() (backlog... not)
-                        -> tcp_rcv_state_process()
-                                -> acceptable = tcp_ack() > 0;
-                                -> if (acceptable) -> sk_state = TCP_ESTABLISHED
-                                        (but if tcp_ack() returned <= 0, state unchanged : TCP_SYN_RECV)
-
-
-And commit 96e0bf4b5193d0d97d139f99e2dd128763d55521
-(tcp: Discard segments that ack data not yet sent)
-
-Did change this area a bit :
-
-@@ -5632,7 +5639,7 @@ int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
- 
-        /* step 5: check the ACK field */
-        if (th->ack) {
--               int acceptable = tcp_ack(sk, skb, FLAG_SLOWPATH);
-+               int acceptable = tcp_ack(sk, skb, FLAG_SLOWPATH) > 0;
- 
-                switch (sk->sk_state) {
-                case TCP_SYN_RECV:
-
-
-
+-- 
+Dmitry
