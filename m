@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZLNKxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbZLNKy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbZLNKxq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 05:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbZLNKxp
+	id S1756756AbZLNKy4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 05:54:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756704AbZLNKyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 05:53:45 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:34309 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753073AbZLNKxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 05:53:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Hep/+Bsv4ehzRoQwWjGcNpZiL/QW6Zd040E5MzMe6YjSC73A0QCR5OnAGG6iXK1NU8
-         lhA6O9uTy4D9L+KigRLQQsjK4EYozJGyavtkSx7/nxfHVMVC5/TYXFf0xDXYC/czuNKh
-         Sdh6uJ3flpA4nWtodIXh8gU+CAX1Byt70/NYE=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 1/2] reiserfs: Fix possible recursive lock
-Date: Mon, 14 Dec 2009 11:53:36 +0100
-Message-Id: <1260788016-5468-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <a4423d670912111406g5967eb1fw93e49de242fbf54@mail.gmail.com>
-References: <a4423d670912111406g5967eb1fw93e49de242fbf54@mail.gmail.com>
+	Mon, 14 Dec 2009 05:54:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46517 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756692AbZLNKyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 05:54:54 -0500
+Date: Mon, 14 Dec 2009 11:54:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, heiko.carstens@de.ibm.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/urgent] hw-breakpoints: Let
+ modify_user_hw_breakpoint() return an int
+Message-ID: <20091214105435.GA15766@elte.hu>
+References: <20091214092412.GA5242@osiris.boeblingen.de.ibm.com>
+ <tip-4983ee49cf0393fd786891dd53af41146cf9f98b@git.kernel.org>
+ <20091214213817.dea4fe86.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214213817.dea4fe86.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While allocating the bitmap using vmalloc, we hold the reiserfs lock,
-which makes lockdep later reporting a possible deadlock as we may
-swap out pages to allocate memory and then take the reiserfs lock
-recursively:
 
-inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-kswapd0/312 [HC0[0]:SC0[0]:HE1:SE1] takes:
- (&REISERFS_SB(s)->lock){+.+.?.}, at: [<c11108a8>] reiserfs_write_lock+0x28/0x40
-{RECLAIM_FS-ON-W} state was registered at:
-  [<c104e1c2>] mark_held_locks+0x62/0x90
-  [<c104e28a>] lockdep_trace_alloc+0x9a/0xc0
-  [<c108e396>] kmem_cache_alloc+0x26/0xf0
-  [<c10850ec>] __get_vm_area_node+0x6c/0xf0
-  [<c10857de>] __vmalloc_node+0x7e/0xa0
-  [<c108597b>] vmalloc+0x2b/0x30
-  [<c10e00b9>] reiserfs_init_bitmap_cache+0x39/0x70
-  [<c10f8178>] reiserfs_fill_super+0x2e8/0xb90
-  [<c1094345>] get_sb_bdev+0x145/0x180
-  [<c10f5a11>] get_super_block+0x21/0x30
-  [<c10931f0>] vfs_kern_mount+0x40/0xd0
-  [<c10932d9>] do_kern_mount+0x39/0xd0
-  [<c10a9857>] do_mount+0x2c7/0x6b0
-  [<c10a9ca6>] sys_mount+0x66/0xa0
-  [<c161589b>] mount_block_root+0xc4/0x245
-  [<c1615a75>] mount_root+0x59/0x5f
-  [<c1615b8c>] prepare_namespace+0x111/0x14b
-  [<c1615269>] kernel_init+0xcf/0xdb
-  [<c10031fb>] kernel_thread_helper+0x7/0x1c
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-This is actually fine for two reasons: we call vmalloc at mount time
-then it's not in the swapping out path. Also the reiserfs lock can be
-acquired recursively, but since its implementation depends on a mutex,
-it's hard and not necessary worth it to teach that to lockdep.
+> Hi Ingo,
+> 
+> On Mon, 14 Dec 2009 09:49:44 GMT tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> >
+> > Commit-ID:  4983ee49cf0393fd786891dd53af41146cf9f98b
+> > Gitweb:     http://git.kernel.org/tip/4983ee49cf0393fd786891dd53af41146cf9f98b
+> > Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
+> > AuthorDate: Mon, 14 Dec 2009 10:24:12 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Mon, 14 Dec 2009 10:42:57 +0100
+> > 
+> > hw-breakpoints: Let modify_user_hw_breakpoint() return an int
+> > 
+> > Let modify_user_hw_breakpoint return an int to avoid hundreds of
+> > compile warnings like this one:
+> > 
+> >  include/linux/hw_breakpoint.h: In function 'modify_user_hw_breakpoint':
+> >  include/linux/hw_breakpoint.h:96:
+> >   warning: return makes integer from pointer without a cast
+> > 
+> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > LKML-Reference: <20091214092412.GA5242@osiris.boeblingen.de.ibm.com>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > ---
+> >  include/linux/hw_breakpoint.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+> > index 41235c9..3f3ac2f 100644
+> > --- a/include/linux/hw_breakpoint.h
+> > +++ b/include/linux/hw_breakpoint.h
+> > @@ -90,7 +90,7 @@ static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
+> >  static inline struct perf_event *
+> >  register_user_hw_breakpoint(struct perf_event_attr *attr,
+> >  			    perf_overflow_handler_t triggered,
+> > -			    struct task_struct *tsk)	{ return NULL; }
+> > +			    struct task_struct *tsk)	{ return 0; }
+> >  static inline int
+> >  modify_user_hw_breakpoint(struct perf_event *bp,
+> >  			  struct perf_event_attr *attr)	{ return -ENOSYS; }
+> 
+> This applied incorrectly ... it was a fix for modify_user_hw_breakpoint(), 
+> but that fix has already bee applied to perf/urgent ...
 
-The lock is useless at mount time anyway, at least until we replay the
-journal. But let's remove it from this path later as this needs
-more thinking and is a sensible change.
+yeah ... zapped it.
 
-For now we can just relax the lock around vmalloc,
-
-Reported-by: Alexander Beregalov <a.beregalov@gmail.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- fs/reiserfs/bitmap.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/fs/reiserfs/bitmap.c b/fs/reiserfs/bitmap.c
-index 6854957..65c8727 100644
---- a/fs/reiserfs/bitmap.c
-+++ b/fs/reiserfs/bitmap.c
-@@ -1277,7 +1277,10 @@ int reiserfs_init_bitmap_cache(struct super_block *sb)
- 	struct reiserfs_bitmap_info *bitmap;
- 	unsigned int bmap_nr = reiserfs_bmap_count(sb);
- 
-+	/* Avoid lock recursion in fault case */
-+	reiserfs_write_unlock(sb);
- 	bitmap = vmalloc(sizeof(*bitmap) * bmap_nr);
-+	reiserfs_write_lock(sb);
- 	if (bitmap == NULL)
- 		return -ENOMEM;
- 
--- 
-1.6.2.3
-
+	Ingo
