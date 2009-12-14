@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZLNBuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbZLNBxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbZLNBuK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 20:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbZLNBuH
+	id S1755554AbZLNBxr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 20:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZLNBxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 20:50:07 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:51485 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbZLNBuE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 20:50:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=JyU0x91kqTBJg0SWy8poamzqNpiw+fPijULoITXyoWks1YUc2hlsfb+G7sHX12+UlE
-         AjML6C6MfN5zoT2fxSGEqP5FsP216nSwhtSMZM7o44ztkTU2uTJMU/FTPNNNgrbE7FFi
-         d8hTARwW0Uu9MgymzCBmrmduDxT8lkSrXakSA=
+	Sun, 13 Dec 2009 20:53:46 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:54056 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752555AbZLNBxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 20:53:45 -0500
+Date: Sun, 13 Dec 2009 17:53:47 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Al Viro <viro@zeniv.linux.org.uk>,
+       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 0/9] Fix various __task_cred related invalid RCU
+	assumptions
+Message-ID: <20091214015347.GB7710@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091210001308.247025548@linutronix.de> <20091210022825.GG6938@linux.vnet.ibm.com> <alpine.LFD.2.00.0912091914540.3560@localhost.localdomain> <1260422031.4165.1.camel@twins> <20091210053457.GB6720@linux.vnet.ibm.com> <1260730577.4165.7.camel@twins>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg>
-References: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sun, 13 Dec 2009 20:49:42 -0500
-Message-ID: <8bd0f97a0912131749j3fc1d539m8b65c960026d3535@mail.gmail.com>
-Subject: Re: [PATCH] Keys: KEYCTL_SESSION_TO_PARENT needs TIF_NOTIFY_RESUME 
-	architecture support
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>,
-       Chris Zankel <chris@zankel.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260730577.4165.7.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 13, 2009 at 14:21, Geert Uytterhoeven wrote:
-> As of commit ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to
-> install a process's session keyring on its parent [try #6]"), CONFIG_KEYS=y
-> fails to build on architectures that haven't implemented TIF_NOTIFY_RESUME yet:
->
-> security/keys/keyctl.c: In function 'keyctl_session_to_parent':
-> security/keys/keyctl.c:1312: error: 'TIF_NOTIFY_RESUME' undeclared (first use in this function)
-> security/keys/keyctl.c:1312: error: (Each undeclared identifier is reported only once
-> security/keys/keyctl.c:1312: error: for each function it appears in.)
->
-> Make KEYCTL_SESSION_TO_PARENT depend on TIF_NOTIFY_RESUME until blackfin,
-> m68k, and xtensa have implemented it.
+On Sun, Dec 13, 2009 at 07:56:17PM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-12-09 at 21:34 -0800, Paul E. McKenney wrote:
+> 
+> > Ah -- I have a related lockdep question.  Is there a primitive that says
+> > whether or not the current task holds at least one lock of any type?
+> > If so, I would like to make rcu_dereference() do at least a little crude
+> > checking for this problem.
+> 
+> Hmm, no, but that's not hard to do, however I actually implemented
+> something like that for RCU a long while ago and that gives a metric TON
+> of false positives due to things like the radix tree which are RCU-safe
+> but are not required to be used with RCU.
 
-i'll be pushing a patch for 2.6.32 to add notify support to Blackfin ;)
+Understood -- my current guess is that there needs to be a way to tag
+a variant of the rcu_dereference() API with the conditions that must be
+met, for example, either in an rcu-sched read-side critical section or
+holding a specific type of lock.
 
-but othewise, Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+This does make it a little harder to retroactively add checking to
+existing calls to rcu_dereference(), but should allow a good balance
+between false positives and false negatives going forward.
+
+Seem reasonable, or am I still missing something?
+
+							Thanx, Paul
