@@ -1,114 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZLNORj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZLNOUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbZLNORj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbZLNORi
+	id S1757388AbZLNOUK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZLNOUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:17:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57309 "EHLO mx1.redhat.com"
+	Mon, 14 Dec 2009 09:20:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:31087 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757352AbZLNORh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:17:37 -0500
-Message-ID: <4B2648E6.4050603@redhat.com>
-Date: Mon, 14 Dec 2009 09:17:10 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Jonathan Nieder <jrnieder@gmail.com>
-CC: linux-kernel@vger.kernel.org, Jim Keniston <jkenisto@us.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org
-Subject: Re: [PATCH] x86: Fix kprobes build with non-gawk awk
-References: <20091213220437.GA27718@progeny.tock>
-In-Reply-To: <20091213220437.GA27718@progeny.tock>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757361AbZLNOUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:20:07 -0500
+Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
+From: Larry Woodman <lwoodman@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, aarcange@redhat.com
+In-Reply-To: <20091214131444.GA8990@infradead.org>
+References: <20091210185626.26f9828a@cuia.bos.redhat.com>
+	 <20091214131444.GA8990@infradead.org>
+Content-Type: text/plain
+Date: Mon, 14 Dec 2009 09:22:16 -0500
+Message-Id: <1260800536.6666.2.camel@dhcp-100-19-198.bos.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jonathan,
-
-Jonathan Nieder wrote:
-> The instruction attribute table generator fails when run by mawk
-> or original-awk:
+On Mon, 2009-12-14 at 08:14 -0500, Christoph Hellwig wrote:
+> On Thu, Dec 10, 2009 at 06:56:26PM -0500, Rik van Riel wrote:
+> > Under very heavy multi-process workloads, like AIM7, the VM can
+> > get into trouble in a variety of ways.  The trouble start when
+> > there are hundreds, or even thousands of processes active in the
+> > page reclaim code.
+> > 
+> > Not only can the system suffer enormous slowdowns because of
+> > lock contention (and conditional reschedules) between thousands
+> > of processes in the page reclaim code, but each process will try
+> > to free up to SWAP_CLUSTER_MAX pages, even when the system already
+> > has lots of memory free.  In Larry's case, this resulted in over
+> > 6000 processes fighting over locks in the page reclaim code, even
+> > though the system already had 1.5GB of free memory.
+> >
+> > It should be possible to avoid both of those issues at once, by
+> > simply limiting how many processes are active in the page reclaim
+> > code simultaneously.
+> > 
 > 
->  $ mawk -f arch/x86/tools/gen-insn-attr-x86.awk \
-> 	arch/x86/lib/x86-opcode-map.txt > /dev/null
->  Semantic error at 240: Second IMM error
->  $ echo $?
->  1
-> 
-> Line 240 contains "c8: ENTER Iw,Ib", which indicates that this
-> instruction has two immediate operands, the second of which is
-> one byte.  The script loops through the immediate operands using
-> a for loop.
-> 
-> Unfortunately, there is no guarantee in awk that a for (variable
-> in array) loop will return the indices in increasing order.
-> Internally, both original-awk and mawk iterate over a hash table
-> for this purpose, and both implementations happen to produce the
-> index 2 before 1.  The supposed second immediate operand is more
-> than one byte wide, producing the error.
+> This sounds like a very good argument against using direct reclaim at
+> all.  It reminds a bit of the issue we had in XFS with lots of processes
+> pushing the AIL and causing massive slowdowns due to lock contention
+> and cacheline bonucing.  Moving all the AIL pushing into a dedicated
+> thread solved that nicely.  In the VM we already have that dedicated
+> per-node kswapd thread, so moving off as much as possible work to
+> should be equivalent.
 
-Oh, I see.
-
-> 
-> So loop over the indices in increasing order instead.  As a
-> side-effect, with mawk this means the silly two-entry hash table
-> never has to be built.
-
-Thank you for fixing it!
-
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Some of the new systems have 16 CPUs per-node.
 
 > 
-> Cc: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: x86@kernel.org
-> Signed-off-by: Jonathan Nieder <jrnieder@gmail.com>
-> ---
->  arch/x86/tools/gen-insn-attr-x86.awk |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
+> Of course any of this kind of tuning really requires a lot of testing
+> and benchrmarking to verify those assumptions.
 > 
-> diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
-> index e34e92a..7a68506 100644
-> --- a/arch/x86/tools/gen-insn-attr-x86.awk
-> +++ b/arch/x86/tools/gen-insn-attr-x86.awk
-> @@ -226,12 +226,12 @@ function add_flags(old,new) {
->  }
->  
->  # convert operands to flags.
-> -function convert_operands(opnd,       i,imm,mod)
-> +function convert_operands(count,opnd,       i,j,imm,mod)
->  {
->  	imm = null
->  	mod = null
-> -	for (i in opnd) {
-> -		i  = opnd[i]
-> +	for (j = 1; j <= count; j++) {
-> +		i = opnd[j]
->  		if (match(i, imm_expr) == 1) {
->  			if (!imm_flag[i])
->  				semantic_error("Unknown imm opnd: " i)
-> @@ -282,8 +282,8 @@ function convert_operands(opnd,       i,imm,mod)
->  		# parse one opcode
->  		if (match($i, opnd_expr)) {
->  			opnd = $i
-> -			split($(i++), opnds, ",")
-> -			flags = convert_operands(opnds)
-> +			count = split($(i++), opnds, ",")
-> +			flags = convert_operands(count, opnds)
->  		}
->  		if (match($i, ext_expr))
->  			ext = $(i++)
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
