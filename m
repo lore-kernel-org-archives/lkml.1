@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbZLNWM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933110AbZLNWPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933094AbZLNWM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932847AbZLNWMT
+	id S933110AbZLNWPo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbZLNWPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:12:19 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:47954 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932675AbZLNWMQ (ORCPT
+	Mon, 14 Dec 2009 17:15:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33686 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932795AbZLNWPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:12:16 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Warn people about flush_scheduled_work()
-Date: Mon, 14 Dec 2009 23:12:20 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Tejun Heo <tj@kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0912141701040.2690-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912141701040.2690-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 14 Dec 2009 17:15:40 -0500
+Date: Mon, 14 Dec 2009 14:17:57 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Emese Revfy <re.emese@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
+ 2.6.32-git-053fe57ac v2
+Message-ID: <20091214141757.73606259@infradead.org>
+In-Reply-To: <20091214212526.GB9213@elf.ucw.cz>
+References: <cover.1260662994.git.re.emese@gmail.com>
+	<20091214003836.GD7812@parisc-linux.org>
+	<4B2595E7.701@gmail.com>
+	<20091214021916.GB12196@linux-sh.org>
+	<4B25E47C.1010803@gmail.com>
+	<20091214112656.GB1959@elf.ucw.cz>
+	<20091214080049.19930729@infradead.org>
+	<20091214212526.GB9213@elf.ucw.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912142312.20163.oliver@neukum.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 14. Dezember 2009 23:02:51 schrieb Alan Stern:
-> On Mon, 14 Dec 2009, Oliver Neukum wrote:
-> 
-> > Am Montag, 14. Dezember 2009 22:33:38 schrieb Alan Stern:
-> > >         Consider using cancel_work_sync() or cancel_delayed_work_sync()
-> > >         instead.  In most situations they will accomplish what you 
-> > >         need.
+On Mon, 14 Dec 2009 22:25:26 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
+
+> On Mon 2009-12-14 08:00:49, Arjan van de Ven wrote:
+> > On Mon, 14 Dec 2009 12:26:56 +0100
+> > Pavel Machek <pavel@ucw.cz> wrote:
 > > 
-> > In which respect is cancel_work_sync() fundamentally safer?
-> > If the work is already running and takes a lock you are holding,
-> > then what?
+> > > > > Until such a consensus is reached one way or the other, please
+> > > > > refrain from sending hundreds of patches -- one or two are
+> > > > > sufficient for showing what you want to do until folks are on
+> > > > > board with it, as is the typical nature of mechanical changes.
+> > > > 
+> > > > I think there is consensus to constify ops variables as much as
+> > > > possible (e.g., Alexey's similar patches).
+> > > 
+> > > No such consensus exists. It is very clear from the patch
+> > > reactions.
+> > 
+> > I for one am not opposed to using const where we could be using
+> > const.
 > 
-> With cancel_work_sync() you know what locks the work item is going to
-> take, since it's your work item.  With flush_scheduled_work() you have
-> no idea what locks will be needed by the items on the queue.  They 
-> could come from anywhere.
+> I certainly object "constify ops... as much as possible". If it
+> uglifies the code, it should not be done. If it is as simple as adding
+> const to few lines, its probably ok.
+> 
+> But .... the patch contained huge load of 
+> 
+> -	int (* resume)()
+> +	int (* const resume)()
+> 
+> What is that?
 
-True, but what use is that if you don't know your call chain and the locks
-it takes.
+the ops stuct instantiation itself should be const.
+the members not so much; that makes no sense.
 
-	Regards
-		Oliver
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
