@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZLNAP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZLNA2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbZLNAP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZLNAPA
+	id S1754739AbZLNA2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZLNA2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:15:00 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:54761 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755822AbZLNAOj convert rfc822-to-8bit (ORCPT
+	Sun, 13 Dec 2009 19:28:15 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:59193 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756274AbZLNA2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 19:14:39 -0500
+	Sun, 13 Dec 2009 19:28:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VohBK0jYDd2uZSJY5OAhcGgnDD+UqJ2qgUJOw+oSQxUT8CbXBMuFtqih0cAPhBbWj2
-         2Igqhl8b8XjP/s8xxY7De7ot8nh0/DO4E0H+nu8hvLHF8uEffW8jtG904R1ye5XyZrdh
-         5Plq7V4g5Cki4O18aKozhbOtVjN8NeY8txNL8=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=g0SjOqdp5gRhje9MqGSF/hqjCJNL3FHP9OZ0+fWt9sgKfAfLVlt0p65Jz9r/iM6Kfq
+         CDQq7EgqacMakUbOy5POGcZh6F4jenzEGVNKEGK+5la9OftK6gUt1PW5YuXpQ7cgINI2
+         U7CkWx03XDYcTPg4JdgGrz28V4hBfNpzcI9es=
+Message-ID: <4B258576.3070508@gmail.com>
+Date: Sun, 13 Dec 2009 16:23:18 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091211164651.036f5340@annuminas.surriel.com>
-References: <20091211164651.036f5340@annuminas.surriel.com>
-Date: Mon, 14 Dec 2009 09:14:39 +0900
-Message-ID: <28c262360912131614h62d8e0f7qf6ea9ab882f446d4@mail.gmail.com>
-Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: lwoodman@redhat.com, akpm@linux-foundation.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix a typo in drivers/acpi/battery.c
+References: <1260744536-20762-1-git-send-email-justinmattock@gmail.com>	<1260744536-20762-2-git-send-email-justinmattock@gmail.com> <20091213151545.4ac17532.rdunlap@xenotime.net>
+In-Reply-To: <20091213151545.4ac17532.rdunlap@xenotime.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Rik.
-
-On Sat, Dec 12, 2009 at 6:46 AM, Rik van Riel <riel@redhat.com> wrote:
-> Under very heavy multi-process workloads, like AIM7, the VM can
-> get into trouble in a variety of ways.  The trouble start when
-> there are hundreds, or even thousands of processes active in the
-> page reclaim code.
+On 12/13/09 15:15, Randy Dunlap wrote:
+> On Sun, 13 Dec 2009 14:48:56 -0800 Justin P. Mattock wrote:
 >
-> Not only can the system suffer enormous slowdowns because of
-> lock contention (and conditional reschedules) between thousands
-> of processes in the page reclaim code, but each process will try
-> to free up to SWAP_CLUSTER_MAX pages, even when the system already
-> has lots of memory free.
+>> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
+>> ---
+>>   drivers/acpi/battery.c |    2 +-
+>>   1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+>> index 3f4602b..cada73f 100644
+>> --- a/drivers/acpi/battery.c
+>> +++ b/drivers/acpi/battery.c
+>> @@ -831,7 +831,7 @@ static void acpi_battery_notify(struct acpi_device *device, u32 event)
+>>   					dev_name(&device->dev), event,
+>>   					acpi_battery_present(battery));
+>>   #ifdef CONFIG_ACPI_SYSFS_POWER
+>> -	/* acpi_batter_update could remove power_supply object */
+>> +	/* acpi_battery_update could remove power_supply object */
+>>   	if (battery->bat.dev)
+>>   		kobject_uevent(&battery->bat.dev->kobj, KOBJ_CHANGE);
+>>   #endif
+>> --
 >
-> It should be possible to avoid both of those issues at once, by
-> simply limiting how many processes are active in the page reclaim
-> code simultaneously.
+> Hi,
 >
-> If too many processes are active doing page reclaim in one zone,
-> simply go to sleep in shrink_zone().
+> You don't need an intro patch email and then the patch email
+> for such a simple patch.
 >
-> On wakeup, check whether enough memory has been freed already
-> before jumping into the page reclaim code ourselves.  We want
-> to use the same threshold here that is used in the page allocator
-> for deciding whether or not to call the page reclaim code in the
-> first place, otherwise some unlucky processes could end up freeing
-> memory for the rest of the system.
+> Also, please note (from "MAINTAINERS" or from scripts/get_maintainer.pl)
+> that acpi patches go to linux-acpi@vger.kernel.org .
+>
+> ---
+> ~Randy
+>
 
-I am worried about one.
+So should I resend this to acpi then, or just
+take note of this the next time?
 
-Now, we can put too many processes reclaim_wait with NR_UNINTERRUBTIBLE state.
-If OOM happens, OOM will kill many innocent processes since
-uninterruptible task
-can't handle kill signal until the processes free from reclaim_wait list.
-
-I think reclaim_wait list staying time might be long if VM pressure is heavy.
-Is this a exaggeration?
-
-If it is serious problem, how about this?
-
-We add new PF_RECLAIM_BLOCK flag and don't pick the process
-in select_bad_process.
-
--- 
-Kind regards,
-Minchan Kim
+Justin P. Mattock
