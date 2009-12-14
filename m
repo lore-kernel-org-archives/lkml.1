@@ -1,165 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbZLNRGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbZLNRFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbZLNRGP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 12:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbZLNRGN
+	id S1757999AbZLNRFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 12:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbZLNRFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 12:06:13 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55864 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757986AbZLNRGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 12:06:11 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf session: event statistics also are per session
-Date: Mon, 14 Dec 2009 15:06:01 -0200
-Message-Id: <1260810361-22828-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 14 Dec 2009 12:05:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36648 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757982AbZLNRFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 12:05:48 -0500
+Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
+From: Larry Woodman <lwoodman@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: akpm@linux-foundation.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+In-Reply-To: <20091211164651.036f5340@annuminas.surriel.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+Content-Type: text/plain
+Date: Mon, 14 Dec 2009 12:08:01 -0500
+Message-Id: <1260810481.6666.13.camel@dhcp-100-19-198.bos.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Fri, 2009-12-11 at 16:46 -0500, Rik van Riel wrote:
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-annotate.c |    2 +-
- tools/perf/builtin-report.c   |    7 +++----
- tools/perf/builtin-trace.c    |    2 +-
- tools/perf/util/event.c       |    6 ++----
- tools/perf/util/event.h       |    5 -----
- tools/perf/util/session.h     |    3 +++
- 6 files changed, 10 insertions(+), 15 deletions(-)
+Rik, the latest patch appears to have a problem although I dont know
+what the problem is yet.  When the system ran out of memory we see
+thousands of runnable processes and 100% system time:
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 1f1341f..fa833f5 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -487,7 +487,7 @@ static int __cmd_annotate(void)
- 		dsos__fprintf(stdout);
- 
- 	perf_session__collapse_resort(session);
--	perf_session__output_resort(session, event__total[0]);
-+	perf_session__output_resort(session, session->event_total[0]);
- 	perf_session__find_annotations(session);
- out_delete:
- 	perf_session__delete(session);
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 142c475..d12ea4a 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -619,8 +619,7 @@ static int process_sample_event(event_t *event, struct perf_session *session)
- 		return -1;
- 	}
- 
--	event__stats.total += data.period;
--
-+	session->events_stats.total += data.period;
- 	return 0;
- }
- 
-@@ -731,8 +730,8 @@ static int __cmd_report(void)
- 		dsos__fprintf(stdout);
- 
- 	perf_session__collapse_resort(session);
--	perf_session__output_resort(session, event__stats.total);
--	perf_session__fprintf_hist_entries(session, event__stats.total, stdout);
-+	perf_session__output_resort(session, session->events_stats.total);
-+	perf_session__fprintf_hist_entries(session, session->events_stats.total, stdout);
- 
- 	if (show_threads)
- 		perf_read_values_destroy(&show_threads_values);
-diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
-index 9ee976d..07da665 100644
---- a/tools/perf/builtin-trace.c
-+++ b/tools/perf/builtin-trace.c
-@@ -96,8 +96,8 @@ static int process_sample_event(event_t *event, struct perf_session *session)
- 					     data.raw_size,
- 					     data.time, thread->comm);
- 	}
--	event__stats.total += data.period;
- 
-+	session->events_stats.total += data.period;
- 	return 0;
- }
- 
-diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
-index 222efb1..375fb6d 100644
---- a/tools/perf/util/event.c
-+++ b/tools/perf/util/event.c
-@@ -187,8 +187,6 @@ void event__synthesize_threads(int (*process)(event_t *event,
- 	closedir(proc);
- }
- 
--struct events_stats event__stats;
--
- int event__process_comm(event_t *self, struct perf_session *session)
- {
- 	struct thread *thread = perf_session__findnew(session, self->comm.pid);
-@@ -203,10 +201,10 @@ int event__process_comm(event_t *self, struct perf_session *session)
- 	return 0;
- }
- 
--int event__process_lost(event_t *self, struct perf_session *session __used)
-+int event__process_lost(event_t *self, struct perf_session *session)
- {
- 	dump_printf(": id:%Ld: lost:%Ld\n", self->lost.id, self->lost.lost);
--	event__stats.lost += self->lost.lost;
-+	session->events_stats.lost += self->lost.lost;
- 	return 0;
- }
- 
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 035ecf3..a92e0b0 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -168,11 +168,6 @@ void event__synthesize_threads(int (*process)(event_t *event,
- 					      struct perf_session *session),
- 			       struct perf_session *session);
- 
--extern char *event__cwd;
--extern int  event__cwdlen;
--extern struct events_stats event__stats;
--extern unsigned long event__total[PERF_RECORD_MAX];
--
- int event__process_comm(event_t *self, struct perf_session *session);
- int event__process_lost(event_t *self, struct perf_session *session);
- int event__process_mmap(event_t *self, struct perf_session *session);
-diff --git a/tools/perf/util/session.h b/tools/perf/util/session.h
-index 4e8a21c..bdfc4b8 100644
---- a/tools/perf/util/session.h
-+++ b/tools/perf/util/session.h
-@@ -5,6 +5,7 @@
- #include "header.h"
- #include "thread.h"
- #include <linux/rbtree.h>
-+#include "../../../include/linux/perf_event.h"
- 
- struct ip_callchain;
- struct thread;
-@@ -18,6 +19,8 @@ struct perf_session {
- 	struct map_groups	kmaps;
- 	struct rb_root		threads;
- 	struct thread		*last_match;
-+	struct events_stats	events_stats;
-+	unsigned long		event_total[PERF_RECORD_MAX];
- 	struct rb_root		hists;
- 	u64			sample_type;
- 	int			fd;
--- 
-1.6.2.5
+
+ 9420  2  29824  79856  62676  19564    0    0     0     0 8054  379  0 
+100  0  0  0
+9420  2  29824  79368  62292  19564    0    0     0     0 8691  413  0 
+100  0  0  0
+9421  1  29824  79780  61780  19820    0    0     0     0 8928  408  0 
+100  0  0  0
+
+The system would not respond so I dont know whats going on yet.  I'll
+add debug code to figure out why its in that state as soon as I get
+access to the hardware.
+
+Larry
+
+
+> Under very heavy multi-process workloads, like AIM7, the VM can
+> get into trouble in a variety of ways.  The trouble start when
+> there are hundreds, or even thousands of processes active in the
+> page reclaim code.
+> 
+> Not only can the system suffer enormous slowdowns because of
+> lock contention (and conditional reschedules) between thousands
+> of processes in the page reclaim code, but each process will try
+> to free up to SWAP_CLUSTER_MAX pages, even when the system already
+> has lots of memory free.
+> 
+> It should be possible to avoid both of those issues at once, by
+> simply limiting how many processes are active in the page reclaim
+> code simultaneously.
+> 
+> If too many processes are active doing page reclaim in one zone,
+> simply go to sleep in shrink_zone().
+> 
+> On wakeup, check whether enough memory has been freed already
+> before jumping into the page reclaim code ourselves.  We want
+> to use the same threshold here that is used in the page allocator
+> for deciding whether or not to call the page reclaim code in the
+> first place, otherwise some unlucky processes could end up freeing
+> memory for the rest of the system.
+> 
+> Reported-by: Larry Woodman <lwoodman@redhat.com>
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> 
+> --- 
+> v2:
+> - fix typos in sysctl.c and vm.txt
+> - move the code in sysctl.c out from under the ifdef
+> - only __GFP_FS|__GFP_IO tasks can wait
+> 
+>  Documentation/sysctl/vm.txt |   18 ++++++++++++++
+>  include/linux/mmzone.h      |    4 +++
+>  include/linux/swap.h        |    1 +
+>  kernel/sysctl.c             |    7 +++++
+>  mm/page_alloc.c             |    3 ++
+>  mm/vmscan.c                 |   40 +++++++++++++++++++++++++++++++++
+>  6 files changed, 73 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+> index fc5790d..8bd1a96 100644
+> --- a/Documentation/sysctl/vm.txt
+> +++ b/Documentation/sysctl/vm.txt
+> @@ -32,6 +32,7 @@ Currently, these files are in /proc/sys/vm:
+>  - legacy_va_layout
+>  - lowmem_reserve_ratio
+>  - max_map_count
+> +- max_zone_concurrent_reclaimers
+>  - memory_failure_early_kill
+>  - memory_failure_recovery
+>  - min_free_kbytes
+> @@ -278,6 +279,23 @@ The default value is 65536.
+>  
+>  =============================================================
+>  
+> +max_zone_concurrent_reclaimers:
+> +
+> +The number of processes that are allowed to simultaneously reclaim
+> +memory from a particular memory zone.
+> +
+> +With certain workloads, hundreds of processes end up in the page
+> +reclaim code simultaneously.  This can cause large slowdowns due
+> +to lock contention, freeing of way too much memory and occasionally
+> +false OOM kills.
+> +
+> +To avoid these problems, only allow a smaller number of processes
+> +to reclaim pages from each memory zone simultaneously.
+> +
+> +The default value is 8.
+> +
+> +=============================================================
+> +
+>  memory_failure_early_kill:
+>  
+>  Control how to kill processes when uncorrected memory error (typically
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 30fe668..ed614b8 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -345,6 +345,10 @@ struct zone {
+>  	/* Zone statistics */
+>  	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
+>  
+> +	/* Number of processes running page reclaim code on this zone. */
+> +	atomic_t		concurrent_reclaimers;
+> +	wait_queue_head_t	reclaim_wait;
+> +
+>  	/*
+>  	 * prev_priority holds the scanning priority for this zone.  It is
+>  	 * defined as the scanning priority at which we achieved our reclaim
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index a2602a8..661eec7 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -254,6 +254,7 @@ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+>  extern int vm_swappiness;
+>  extern int remove_mapping(struct address_space *mapping, struct page *page);
+>  extern long vm_total_pages;
+> +extern int max_zone_concurrent_reclaimers;
+>  
+>  #ifdef CONFIG_NUMA
+>  extern int zone_reclaim_mode;
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 6ff0ae6..4ec17ed 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1271,6 +1271,13 @@ static struct ctl_table vm_table[] = {
+>  		.extra2		= &one,
+>  	},
+>  #endif
+> +	{
+> +		.procname	= "max_zone_concurrent_reclaimers",
+> +		.data		= &max_zone_concurrent_reclaimers,
+> +		.maxlen		= sizeof(max_zone_concurrent_reclaimers),
+> +		.mode		= 0644,
+> +		.proc_handler	= &proc_dointvec,
+> +	},
+>  
+>  /*
+>   * NOTE: do not add new entries to this table unless you have read
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 11ae66e..ca9cae1 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -3852,6 +3852,9 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat,
+>  
+>  		zone->prev_priority = DEF_PRIORITY;
+>  
+> +		atomic_set(&zone->concurrent_reclaimers, 0);
+> +		init_waitqueue_head(&zone->reclaim_wait);
+> +
+>  		zone_pcp_init(zone);
+>  		for_each_lru(l) {
+>  			INIT_LIST_HEAD(&zone->lru[l].list);
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 2bbee91..ecfe28c 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -40,6 +40,7 @@
+>  #include <linux/memcontrol.h>
+>  #include <linux/delayacct.h>
+>  #include <linux/sysctl.h>
+> +#include <linux/wait.h>
+>  
+>  #include <asm/tlbflush.h>
+>  #include <asm/div64.h>
+> @@ -129,6 +130,17 @@ struct scan_control {
+>  int vm_swappiness = 60;
+>  long vm_total_pages;	/* The total number of pages which the VM controls */
+>  
+> +/*
+> + * Maximum number of processes concurrently running the page
+> + * reclaim code in a memory zone.  Having too many processes
+> + * just results in them burning CPU time waiting for locks,
+> + * so we're better off limiting page reclaim to a sane number
+> + * of processes at a time.  We do this per zone so local node
+> + * reclaim on one NUMA node will not block other nodes from
+> + * making progress.
+> + */
+> +int max_zone_concurrent_reclaimers = 8;
+> +
+>  static LIST_HEAD(shrinker_list);
+>  static DECLARE_RWSEM(shrinker_rwsem);
+>  
+> @@ -1600,6 +1612,31 @@ static void shrink_zone(int priority, struct zone *zone,
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int noswap = 0;
+>  
+> +	if (!current_is_kswapd() && atomic_read(&zone->concurrent_reclaimers) >
+> +				max_zone_concurrent_reclaimers &&
+> +				(sc->gfp_mask & (__GFP_IO|__GFP_FS)) ==
+> +				(__GFP_IO|__GFP_FS)) {
+> +		/*
+> +		 * Do not add to the lock contention if this zone has
+> +		 * enough processes doing page reclaim already, since
+> +		 * we would just make things slower.
+> +		 */
+> +		sleep_on(&zone->reclaim_wait);
+> +
+> +		/*
+> +		 * If other processes freed enough memory while we waited,
+> +		 * break out of the loop and go back to the allocator.
+> +		 */
+> +		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
+> +					0, 0)) {
+> +			wake_up(&zone->reclaim_wait);
+> +			sc->nr_reclaimed += nr_to_reclaim;
+> +			return;
+> +		}
+> +	}
+> +
+> +	atomic_inc(&zone->concurrent_reclaimers);
+> +
+>  	/* If we have no swap space, do not bother scanning anon pages. */
+>  	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+>  		noswap = 1;
+> @@ -1655,6 +1692,9 @@ static void shrink_zone(int priority, struct zone *zone,
+>  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+>  
+>  	throttle_vm_writeout(sc->gfp_mask);
+> +
+> +	atomic_dec(&zone->concurrent_reclaimers);
+> +	wake_up(&zone->reclaim_wait);
+>  }
+>  
+>  /*
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
