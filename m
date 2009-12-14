@@ -1,176 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbZLNVjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbZLNVkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756367AbZLNVjt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZLNVjr
+	id S1756666AbZLNVkN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbZLNVkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:39:47 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:42437 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753260AbZLNVjq (ORCPT
+	Mon, 14 Dec 2009 16:40:08 -0500
+Received: from mail.bluewatersys.com ([202.124.120.130]:53691 "EHLO
+	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756574AbZLNVkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:39:46 -0500
-Message-ID: <4B26B09A.7050607@gmail.com>
-Date: Mon, 14 Dec 2009 22:39:38 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 14 Dec 2009 16:40:06 -0500
+Message-ID: <4B26B0D6.4080809@bluewatersys.com>
+Date: Tue, 15 Dec 2009 10:40:38 +1300
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: "David S. Miller" <davem@davemloft.net>,
-       Neil Horman <nhorman@tuxdriver.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: packet_sendmsg_spkt sleeping from invalid context
-References: <20091214175211.GA5102@nowhere> <4B2690E7.4030303@gmail.com> <20091214205231.GB5037@nowhere> <4B26AD65.1020004@gmail.com> <20091214213002.GA5203@nowhere>
-In-Reply-To: <20091214213002.GA5203@nowhere>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org,
+       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
+       Joao Ramos <joao.ramos@inov.pt>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>
+Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's EP93xx
+ CPUs
+References: <200911261651.40928.bzolnier@gmail.com> <4B15BAA1.2010408@bluewatersys.com> <200912020206.59659.bzolnier@gmail.com>
+In-Reply-To: <200912020206.59659.bzolnier@gmail.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Dec 2009 22:39:39 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 14/12/2009 22:30, Frederic Weisbecker a écrit :
-> On Mon, Dec 14, 2009 at 10:25:57PM +0100, Eric Dumazet wrote:
->> Le 14/12/2009 21:52, Frederic Weisbecker a écrit :
+Bartlomiej Zolnierkiewicz wrote:
+> On Wednesday 02 December 2009 01:53:53 am Ryan Mallon wrote:
+>   
+>> Bartlomiej Zolnierkiewicz wrote:
+>>     
+>>> Based on the older IDE host driver by Joao Ramos and review comments
+>>> for it from Sergei Shtylyov.  Not yet tested with the real hardware.
 >>>
->>> I also wonder. Are you using PREEMPT_RCU ?
+>>>       
+>> Hi Bartlomiej,
 >>
->> Not at all :)
->>
->> But yes, this is illegal to do the memcpy_fromiovec() in rcu_read_lock() context.
-> 
-> 
-> I've just tested, and with rcu preempt it is mute, no warning :)
-> 
-> 
->>> That may explain why you haven't seen this issue because
->>> might_sleep() doesn't see you are in a rcu read locked
->>> section as preemption is not disabled, but it is illegal to
->>> voluntarily sleep in such area (although it's fine with
->>> preempt rcu) as doing so with non-prempt RCU config would barf.
->>>
->>> I'm trying a patch to handle that.
->>
->> As you want, I also have a patch testing right now :)
-> 
-> 
-> But mine is to teach might_sleep() to handle rcu preempt case,
-> not to fix this net dev thing.
-> 
-> But I'll happily test the fix you have :)
-> 
+>> I have got as far as patching this into my kernel and doing a build test
+>> (still need to find a hard-disk to test). I got some build errors, see
+>> below:
+>>     
+>
+> Hi,
+>
+> Many thanks for picking this driver up.
+>   
+Okay, it now patches in cleanly. However, I get the following crash on boot:
 
-OK here it is, I tested it with PREEMPT_RCU as well
+ep93xx-ide ep93xx-ide: EP93xx PATA host controller driver initialized
+ep93xx-ide: __pata_ep93xx_write - base = ce070000, value = a, addr = 1, t = 0
+Unable to handle kernel NULL pointer dereference at virtual address 00000002
+pgd = c0004000
+[00000002] *pgd=00000000
+Internal error: Oops: 5 [#1]
+last sysfs file: 
+Modules linked in:
+CPU: 0    Not tainted  (2.6.32-06794-g17ded11-dirty #544)
+PC is at __pata_ep93xx_write+0x38/0xc4
+LR is at __pata_ep93xx_write+0x34/0xc4
+pc : [<c0189dac>]    lr : [<c0189da8>]    psr: 60000093
+sp : cd017e70  ip : 00000c3b  fp : 00000000
+r10: cd12a754  r9 : c0351140  r8 : 00000000
+r7 : 00000000  r6 : ce070000  r5 : 0000000a  r4 : 00000061
+r3 : ce070000  r2 : cd017e64  r1 : c0301bda  r0 : 00000054
+Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+Control: c000717f  Table: c0004000  DAC: 00000017
+Process swapper (pid: 1, stack limit = 0xcd016270)
+Stack: (0xcd017e70 to 0xcd018000)
+7e60:                                     00000001 00000000 00000001 cd124000
+7e80: cd124000 00000000 00000000 c018a148 cd124000 c018180c a0000013 c0181918
+7ea0: cd12a750 cd124000 00000000 c01772fc cd12a750 00000028 c0187e6c c0351140
+7ec0: c0344220 cd12a750 00000028 c0187e6c 00000000 c0177edc cd12a750 00000028
+7ee0: c0187e6c 00000000 c0351140 c0344220 c0344218 ce070000 cd12a750 00000028
+7f00: c0344e68 c0014508 c0351140 00000000 c0344220 c0344220 c0351024 cd12a7a0
+7f20: c0350428 00000000 00000000 c0164904 c0344220 c0163a78 c0344220 c0344254
+7f40: c0351024 cd12a7a0 c0350428 c0163b88 00000000 c0163b2c c0351024 c0163330
+7f60: cd0084a8 cd00fb40 c001b3dc c0351024 c0351024 c0162c48 c02e4755 c02e4755
+7f80: ffffffff c001b3dc c0351010 c0351024 c0014354 00000000 00000000 c0163e54
+7fa0: c001b3dc c0351010 00000000 c0014354 00000000 c0164bec c001b3dc 00000000
+7fc0: 00000000 c002038c c0014354 00000000 c035d740 c001b494 c001b3dc 00000000
+7fe0: 00000000 00000000 00000000 c0008578 00000000 c0021ea0 c504c134 c504c136
+[<c0189dac>] (__pata_ep93xx_write+0x38/0xc4) from [<c018a148>] (pata_ep93xx_freeze+0x40/0x6c)
+[<c018a148>] (pata_ep93xx_freeze+0x40/0x6c) from [<c018180c>] (__ata_port_freeze+0x38/0x50)
+[<c018180c>] (__ata_port_freeze+0x38/0x50) from [<c0181918>] (ata_eh_freeze_port+0x2c/0x3c)
+[<c0181918>] (ata_eh_freeze_port+0x2c/0x3c) from [<c01772fc>] (ata_host_start+0x12c/0x1a4)
+[<c01772fc>] (ata_host_start+0x12c/0x1a4) from [<c0177edc>] (ata_host_activate+0x1c/0xe8)
+[<c0177edc>] (ata_host_activate+0x1c/0xe8) from [<c0014508>] (pata_ep93xx_probe+0x1a0/0x1c8)
+[<c0014508>] (pata_ep93xx_probe+0x1a0/0x1c8) from [<c0164904>] (platform_drv_probe+0x18/0x1c)
+[<c0164904>] (platform_drv_probe+0x18/0x1c) from [<c0163a78>] (driver_probe_device+0xa8/0x15c)
+[<c0163a78>] (driver_probe_device+0xa8/0x15c) from [<c0163b88>] (__driver_attach+0x5c/0x7c)
+[<c0163b88>] (__driver_attach+0x5c/0x7c) from [<c0163330>] (bus_for_each_dev+0x48/0x78)
+[<c0163330>] (bus_for_each_dev+0x48/0x78) from [<c0162c48>] (bus_add_driver+0x9c/0x220)
+[<c0162c48>] (bus_add_driver+0x9c/0x220) from [<c0163e54>] (driver_register+0xa4/0x130)
+[<c0163e54>] (driver_register+0xa4/0x130) from [<c0164bec>] (platform_driver_probe+0x18/0x8c)
+[<c0164bec>] (platform_driver_probe+0x18/0x8c) from [<c002038c>] (do_one_initcall+0x5c/0x1b4)
+[<c002038c>] (do_one_initcall+0x5c/0x1b4) from [<c0008578>] (kernel_init+0x94/0x10c)
+[<c0008578>] (kernel_init+0x94/0x10c) from [<c0021ea0>] (kernel_thread_exit+0x0/0x8)
+Code: e58dc000 e58d7004 eb03cb2e e5864000 (e1d700b2) 
+---[ end trace ed0490e29e490c57 ]---
 
-Thanks !
 
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 0205621..bc17351 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -415,7 +415,7 @@ static int packet_sendmsg_spkt(struct kiocb *iocb, struct socket *sock,
- {
- 	struct sock *sk = sock->sk;
- 	struct sockaddr_pkt *saddr = (struct sockaddr_pkt *)msg->msg_name;
--	struct sk_buff *skb;
-+	struct sk_buff *skb = NULL;
- 	struct net_device *dev;
- 	__be16 proto = 0;
- 	int err;
-@@ -437,6 +437,7 @@ static int packet_sendmsg_spkt(struct kiocb *iocb, struct socket *sock,
- 	 */
- 
- 	saddr->spkt_device[13] = 0;
-+retry:
- 	rcu_read_lock();
- 	dev = dev_get_by_name_rcu(sock_net(sk), saddr->spkt_device);
- 	err = -ENODEV;
-@@ -456,58 +457,48 @@ static int packet_sendmsg_spkt(struct kiocb *iocb, struct socket *sock,
- 	if (len > dev->mtu + dev->hard_header_len)
- 		goto out_unlock;
- 
--	err = -ENOBUFS;
--	skb = sock_wmalloc(sk, len + LL_RESERVED_SPACE(dev), 0, GFP_KERNEL);
--
--	/*
--	 * If the write buffer is full, then tough. At this level the user
--	 * gets to deal with the problem - do your own algorithmic backoffs.
--	 * That's far more flexible.
--	 */
--
--	if (skb == NULL)
--		goto out_unlock;
--
--	/*
--	 *	Fill it in
--	 */
--
--	/* FIXME: Save some space for broken drivers that write a
--	 * hard header at transmission time by themselves. PPP is the
--	 * notable one here. This should really be fixed at the driver level.
--	 */
--	skb_reserve(skb, LL_RESERVED_SPACE(dev));
--	skb_reset_network_header(skb);
--
--	/* Try to align data part correctly */
--	if (dev->header_ops) {
--		skb->data -= dev->hard_header_len;
--		skb->tail -= dev->hard_header_len;
--		if (len < dev->hard_header_len)
--			skb_reset_network_header(skb);
-+	if (!skb) {
-+		size_t reserved = LL_RESERVED_SPACE(dev);
-+		unsigned int hhlen = dev->header_ops ? dev->hard_header_len : 0;
-+
-+		rcu_read_unlock();
-+		skb = sock_wmalloc(sk, len + reserved, 0, GFP_KERNEL);
-+		if (skb == NULL)
-+			return -ENOBUFS;
-+		skb_reserve(skb, reserved);
-+		/* FIXME: Save some space for broken drivers that write a hard
-+		 * header at transmission time by themselves. PPP is the notable
-+		 * one here. This should really be fixed at the driver level.
-+		 */
-+		skb_reset_network_header(skb);
-+
-+		/* Try to align data part correctly */
-+		if (hhlen) {
-+			skb->data -= hhlen;
-+			skb->tail -= hhlen;
-+			if (len < hhlen)
-+				skb_reset_network_header(skb);
-+		}
-+		err = memcpy_fromiovec(skb_put(skb, len), msg->msg_iov, len);
-+		if (err)
-+			goto out_free;
-+		goto retry;
- 	}
- 
--	/* Returns -EFAULT on error */
--	err = memcpy_fromiovec(skb_put(skb, len), msg->msg_iov, len);
-+
- 	skb->protocol = proto;
- 	skb->dev = dev;
- 	skb->priority = sk->sk_priority;
- 	skb->mark = sk->sk_mark;
--	if (err)
--		goto out_free;
--
--	/*
--	 *	Now send it
--	 */
- 
- 	dev_queue_xmit(skb);
- 	rcu_read_unlock();
- 	return len;
- 
--out_free:
--	kfree_skb(skb);
- out_unlock:
- 	rcu_read_unlock();
-+out_free:
-+	kfree_skb(skb);
- 	return err;
- }
- 
+I have added some of my own debugging. The problem appears to be that
+__pata_ep93xx_write gets called from probe (via ata_host_activate), but
+ap->private_data (ata_timing) is still null. The timing private_data is
+set by pata_ep93xx_set_piomode, but that needs adev->pio_mode set, but I
+don't know where this happens. I assume the ATA core handles this. Do I
+need to call pata_ep93xx_set_piomode from pata_ep93xx_probe before
+ata_host_activate, or should the private_data timing be set to some
+default in the probe?
+
+Thanks,
+~Ryan
+
+-- 
+Bluewater Systems Ltd - ARM Technology Solution Centre
+
+Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
+ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
+http://www.bluewatersys.com	New Zealand
+Phone: +64 3 3779127		Freecall: Australia 1800 148 751 
+Fax:   +64 3 3779135			  USA 1800 261 2934
 
