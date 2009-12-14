@@ -1,62 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbZLNVpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZLNVqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758323AbZLNVpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZLNVpu
+	id S1758347AbZLNVqt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbZLNVqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:45:50 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:42310 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbZLNVpu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:45:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=JC4bXxpPixb+rmgoVja6i1vy2N1A74zGYBy1FDgwSjjjeq+cXJnwO80dKPrMyHyKmu
-         fA+JtwwpDTrnRoOSfts98RgFKrPFb6LdAeyiPoKKlX+3uaFbZDlYRTiwKnHdCSjti5YF
-         ec+qbEv/6D2yRo2eSNtLUwjRPU0o9SB3dz0JY=
+	Mon, 14 Dec 2009 16:46:46 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:47095 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756532AbZLNVqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 16:46:45 -0500
+Message-ID: <4B26B241.5010403@sgi.com>
+Date: Mon, 14 Dec 2009 13:46:41 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <4B26AB7E.9020208@titera.eu>
-References: <4B26AB7E.9020208@titera.eu>
-Date: Mon, 14 Dec 2009 13:45:49 -0800
-X-Google-Sender-Auth: 258c1de462ff3a94
-Message-ID: <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>
-Subject: Re: Wrong atime on recent kernels
-From: john stultz <johnstul@us.ibm.com>
-To: =?ISO-8859-2?Q?Petr_Tit=ECra?= <petr@titera.eu>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86, mce: rework output of MCE banks ownership information
+References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210727.456553000@alcatraz.americas.sgi.com> <20091116212251.GB2221@elte.hu> <4B01C59A.9050507@sgi.com> <4B024C76.9050005@jp.fujitsu.com> <4B02EE1D.6020302@sgi.com>
+In-Reply-To: <4B02EE1D.6020302@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/14 Petr Titìra <petr@titera.eu>:
-> Hello,
->
->      I see some strange file modification times recently. It seems to me
-> that in some situations, kernel allows to set nanoseconds part of  file
-> access, modification or change time  to 100000000 ns. Problem seems to be in
-> some generic part of kernel because I see it on several different
-> filesysytems (ext4 and nilf2). These is I've got during my testing on kernel
->  2.6.32-tip-08309-gad8e75a.
->
->  File: `./Documentation/dvb/contributors.txt'
->  Size: 3035            Blocks: 8          IO Block: 4096   regular file
-> Device: fe04h/65028d    Inode: 818         Links: 1
-> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-> Access: 2009-12-14 10:29:04.1000000000 +0100
-> Modify: 2009-12-14 10:29:04.1000000000 +0100
-> Change: 2009-12-14 10:29:04.1000000000 +0100
->
-> See that all times of that file ends with 1e6 nanoseconds.
+Hi Ingo,
 
-Hrmmm. Does reverting this change solve it?
+When running the latest kernel, I still find these in the output:
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=patch;h=7bc7d637452383d56ba4368d4336b0dde1bb476d
 
-thanks
--john
+[    0.722553] Booting Node   0, Processors  #1
+[    0.811625] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+[    0.812071]  #2
+[    0.907468] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+[    0.907918]  #3
+[    1.003311] CPU 3 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+[    1.003750]  #4
+
+Was there anything else needed for this patch to be accepted? 
+If it's not acceptable, would simply printing the above as DEBUG
+messages be acceptable?  (I'm aware you don't like printing
+summaries during init.)
+
+Thanks,
+Mike
+
+Mike Travis wrote:
+> Author: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> 
+> The output of MCE banks ownership information on boot tend
+> to be long on new processor which has many banks:
+> 
+>  CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 
+> SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+> 
+> This message can fill up the console output when the number
+> of cpus is large.
+> 
+> This patch suppress this info message on boot, and introduce
+> debug message in shorter format instead, like:
+> 
+>  CPU 1 MCE banks map: ssCC PCss ssPP ssss ssss ss
+> 
+>  where: s: shared, C: checked by cmci, P: checked by poll.
+> 
+> This patch still keep the info when ownership is updated.
+> E.g. if a cpu take over the ownership from hot-removed cpu,
+> both message will be shown:
+> 
+>  CPU 1 MCE banks map updated: CMCI:6 CMCI:7 CMCI:10 CMCI:11
+>  CPU 1 MCE banks map: ssCC PCCC ssPP ssCC ssss ss
+> 
+> v2:
+>  - stop changing the level of message on update
+>  - change the number of banks message on boot to debug level
+> 
+> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> 
+>  - Modified to not use pr_cont().
+> 
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
+> arch/x86/kernel/cpu/mcheck/mce.c       |    6 +--
+> arch/x86/kernel/cpu/mcheck/mce_intel.c |   63 
+> +++++++++++++++++++++++++++------
+> 2 files changed, 55 insertions(+), 14 deletions(-)
+> 
+> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce.c
+> +++ linux/arch/x86/kernel/cpu/mcheck/mce.c
+> @@ -1215,11 +1215,11 @@
+> 
+>     b = cap & MCG_BANKCNT_MASK;
+>     if (!banks)
+> -        printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
+> +        pr_debug("mce: CPU supports %d MCE banks\n", b);
+> 
+>     if (b > MAX_NR_BANKS) {
+> -        printk(KERN_WARNING
+> -               "MCE: Using only %u machine check banks out of %u\n",
+> +        pr_warning(
+> +            "MCE: Using only %u machine check banks out of %u\n",
+>             MAX_NR_BANKS, b);
+>         b = MAX_NR_BANKS;
+>     }
+> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
+> +++ linux/arch/x86/kernel/cpu/mcheck/mce_intel.c
+> @@ -64,14 +64,50 @@
+>     mce_notify_irq();
+> }
+> 
+> -static void print_update(char *type, int *hdr, int num)
+> +#define    MCE_MSG_LEN    120
+> +
+> +#ifdef DEBUG_KERNEL
+> +static void print_banks_map(int banks, char *buf)
+> +{
+> +    int i, n;
+> +
+> +    n = snprintf(buf, MCE_MSG_LEN, "CPU %d MCE banks map:",
+> +                            smp_processor_id());
+> +    for (i = 0; i < banks; i++) {
+> +        n += snprintf(&buf[n], MCE_MSG_LEN - n,
+> +            "%s%s", (i % 4) ? "" : " ",
+> +            test_bit(i, __get_cpu_var(mce_banks_owned)) ? "C" :
+> +            test_bit(i, __get_cpu_var(mce_poll_banks)) ? "P" : "s");
+> +    }
+> +
+> +    /* (indicate if message buffer overflowed) */
+> +    pr_debug("%s%s\n", buf, n < MCE_MSG_LEN ? "" : "..." );
+> +}
+> +
+> +static void print_update(char *type, int *hdr, int num, char *buf)
+> +{
+> +    int n = *hdr;
+> +
+> +    if (n == 0)
+> +        n = snprintf(buf, MCE_MSG_LEN,
+> +            "CPU %d MCE banks map updated:", smp_processor_id());
+> +
+> +    n += snprintf(&buf[n], MCE_MSG_LEN - n, " %s:%d", type, num);
+> +    *hdr = n;
+> +}
+> +
+> +#else /* !DEBUG_KERNEL */
+> +
+> +static inline void print_banks_map(int banks, char *buf)
+> +{
+> +}
+> +
+> +static inline void print_update(char *type, int *hdr, int num, char *buf)
+> {
+> -    if (*hdr == 0)
+> -        printk(KERN_INFO "CPU %d MCA banks", smp_processor_id());
+> -    *hdr = 1;
+> -    printk(KERN_CONT " %s:%d", type, num);
+> }
+> 
+> +#endif
+> +
+> /*
+>  * Enable CMCI (Corrected Machine Check Interrupt) for available MCE banks
+>  * on this CPU. Use the algorithm recommended in the SDM to discover shared
+> @@ -83,8 +119,10 @@
+>     unsigned long flags;
+>     int hdr = 0;
+>     int i;
+> +    char buf[MCE_MSG_LEN];
+> 
+>     spin_lock_irqsave(&cmci_discover_lock, flags);
+> +
+>     for (i = 0; i < banks; i++) {
+>         u64 val;
+> 
+> @@ -95,8 +133,8 @@
+> 
+>         /* Already owned by someone else? */
+>         if (val & CMCI_EN) {
+> -            if (test_and_clear_bit(i, owned) || boot)
+> -                print_update("SHD", &hdr, i);
+> +            if (test_and_clear_bit(i, owned) && !boot)
+> +                print_update("SHD", &hdr, i, buf);
+>             __clear_bit(i, __get_cpu_var(mce_poll_banks));
+>             continue;
+>         }
+> @@ -107,16 +145,19 @@
+> 
+>         /* Did the enable bit stick? -- the bank supports CMCI */
+>         if (val & CMCI_EN) {
+> -            if (!test_and_set_bit(i, owned) || boot)
+> -                print_update("CMCI", &hdr, i);
+> +            if (!test_and_set_bit(i, owned) && !boot)
+> +                print_update("CMCI", &hdr, i, buf);
+>             __clear_bit(i, __get_cpu_var(mce_poll_banks));
+>         } else {
+>             WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
+>         }
+>     }
+> -    spin_unlock_irqrestore(&cmci_discover_lock, flags);
+>     if (hdr)
+> -        printk(KERN_CONT "\n");
+> +        pr_debug("%s%s\n", buf, hdr < MCE_MSG_LEN ? "" : "...");
+> +    if (hdr || boot)
+> +        print_banks_map(banks, buf);
+> +
+> +    spin_unlock_irqrestore(&cmci_discover_lock, flags);
+> }
+> 
+> /*
