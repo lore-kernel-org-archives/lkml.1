@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbZLNMkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZLNMkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbZLNMkF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZLNMkB
+	id S1755598AbZLNMkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZLNMkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:40:01 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:63462 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbZLNMkA (ORCPT
+	Mon, 14 Dec 2009 07:40:16 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35504 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755054AbZLNMkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:40:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uLmPBgydjX3q2pVJ0b300SOxZ/SXb7LYNO0aBCtAPeCuOdjr7kgdm5H22OCHipi8t0
-         47a09ABsjJA+vmlQdATOn4BhlV9KEiWSzfSUbo4ByIgqk1TY8dGsmrp5bWXF0sbgA9WX
-         /9/PXWb+ZgnJk9rouChNMkkS6YZjZhWdzUaV4=
-Date: Mon, 14 Dec 2009 13:39:56 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Wenji Huang <wenji.huang@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/7] tracing: Fix bugs in string filters.
-Message-ID: <20091214123955.GK5168@nowhere>
-References: <4B25B797.1040201@cn.fujitsu.com>
+	Mon, 14 Dec 2009 07:40:12 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       lwoodman@redhat.com, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+In-Reply-To: <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
+References: <20091211164651.036f5340@annuminas.surriel.com> <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
+Message-Id: <20091214213932.BBC9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B25B797.1040201@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 14 Dec 2009 21:40:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 11:57:11AM +0800, Li Zefan wrote:
-> This patchset fixes some bugs in string filters.
+> btw, following is mesurement result by hackbench.
+> ================
 > 
-> A new string helper strnstr() is introduced, to be used in
-> middle matching callback.
+> unit: sec
 > 
-> Also I add some comments to mainly explain why we should use
-> length-limited version of strstr() and strcmp().
-> 
-> ---
->  include/linux/string.h             |    5 ++++-
->  kernel/trace/ftrace.c              |    6 +++---
->  kernel/trace/trace_events_filter.c |   29 ++++++++++++++++++++---------
->  lib/string.c                       |   27 ++++++++++++++++++++++++++-
->  4 files changed, 53 insertions(+), 14 deletions(-)
+> parameter			old		new
+> 130 (5200 processes)		5.463		4.442
+> 140 (5600 processes)		479.357		7.792
+> 150 (6000 processes)		729.640		20.529
+
+old mean mmotm1208
+new mean mmotm1208 + Rik patch + my patch
 
 
-Looks pretty good.
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Thanks!
 
