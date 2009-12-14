@@ -1,103 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZLNEfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZLNEgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbZLNEfi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 23:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbZLNEff
+	id S1756308AbZLNEgs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 23:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbZLNEgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 23:35:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53529 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbZLNEff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 23:35:35 -0500
-Date: Mon, 14 Dec 2009 15:35:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>
-Subject: Re: linux-next: rr tree build failure
-Message-Id: <20091214153528.e29f33a6.sfr@canb.auug.org.au>
-In-Reply-To: <20091211122648.8b305b52.sfr@canb.auug.org.au>
-References: <20091211122648.8b305b52.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+	Sun, 13 Dec 2009 23:36:47 -0500
+Received: from www84.your-server.de ([213.133.104.84]:34412 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754065AbZLNEgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 23:36:47 -0500
+Subject: Re: [PATCH] kfifo: fix warn_unused_result
+From: Stefani Seibold <stefani@seibold.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+In-Reply-To: <20091213142907.d0ac63da.akpm@linux-foundation.org>
+References: <1260523108.27010.7.camel@wall-e>
+	 <20091213142907.d0ac63da.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Mon, 14 Dec 2009 05:36:39 +0100
+Message-ID: <1260765399.6620.51.camel@wall-e>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Dec_2009_15_35_28_+1100_qPpvEdBBXPUcQt8."
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Dec_2009_15_35_28_+1100_qPpvEdBBXPUcQt8.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Sonntag, den 13.12.2009, 14:29 -0800 schrieb Andrew Morton:
+> On Fri, 11 Dec 2009 10:18:28 +0100 Stefani Seibold <stefani@seibold.net> wrote:
+> 
+> > As requested by Andrew Morton:
+> > 
+> > This patch fix the "ignoring return value of '...', declared with
+> > attribute warn_unused_result" compiler warning in several users of the
+> > new kfifo API.
+> > 
+> > The patch-set is against current mm tree from 11-Dec-2009
+> > 
+> > ...
+> >
+> > --- mmotm/drivers/char/nozomi.c	2009-12-11 08:31:46.670736197 +0100
+> > +++ linux-2.6.32/drivers/char/nozomi.c	2009-12-11 09:25:46.941436203 +0100
+> > @@ -685,8 +685,9 @@ static int nozomi_read_config_table(stru
+> >  		dump_table(dc);
+> >  
+> >  		for (i = PORT_MDM; i < MAX_PORT; i++) {
+> > -			kfifo_alloc(&dc->port[i].fifo_ul,
+> > -				FIFO_BUFFER_SIZE_UL, GFP_ATOMIC);
+> > +			if (kfifo_alloc(&dc->port[i].fifo_ul,
+> > +				FIFO_BUFFER_SIZE_UL, GFP_ATOMIC))
+> > +					BUG();
+> 
+> No, we can't do this.  GFP_ATOMIC allocations are unreliable and can
+> fail.  The calling code *has* to detect the failure and then take some
+> recovery action.
+> 
+> It would be better to leave the warning in place, rather than to add
+> this runtime landmine.
+> 
 
-Hi Rusty,
+The problem is that the old code did not provide an error check. So i
+don't think it is a land mine, because this drivers tries to allocate a
+some kfifo inside an interrupt. But i think i am able to understand the
+code and fix it.
 
-On Fri, 11 Dec 2009 12:26:48 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
->=20
-> arch/x86/kernel/cpu/cpufreq/powernow-k8.c: In function 'powernowk8_target=
-':
-> arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1139: error: implicit declarati=
-on of function 'tsk_cpumask'
-> arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1139: warning: passing argument=
- 2 of 'cpumask_copy' makes pointer from integer without a cast
-> include/linux/cpumask.h:466: note: expected 'const struct cpumask *' but =
-argument is of type 'int'
->=20
-> Caused by commit 9dd4c5ab546fcac98cfb9ca24ed5cc1bf7f08334
-> ("cpumask:tsk_cpus_allowed-not-tsk_cpumask") from the rr tree interacting
-> with commit b8cbe7e82ec8b55d7bbdde66fc69e788fde00dc6 ("[CPUFREQ] cpumask:
-> don't put a cpumask on the stack in x86...cpufreq/powernow-k8.c") from
-> the cpufreq tree.
+> >  		input_sync(kp.dev);
+> > -		kfifo_in_locked(&sonypi_device.input_fifo,
+> > +		if (kfifo_in_locked(&sonypi_device.input_fifo,
+> >  			(unsigned char *)&kp, sizeof(kp),
+> > -			&sonypi_device.input_fifo_lock);
+> > +			&sonypi_device.input_fifo_lock) != sizeof(kp))
+> > +				BUG();
+> 
+> The rest of the patch seems to be adding BUG()s if kfifo_in() fails. 
+> All over the place.
+> 
+> If that's the appropriate way to handle failure for these callsites
+> then it would be neater to do this in the callee.  ie, add a new
+> 
+> unsigned int kfifo_in_nonpartial(struct kfifo *fifo,
+>                         const unsigned char *from, unsigned int len)
+> {
+> 	unsigned int ret = kfifo_in(fifo, from, len);
+> 
+> 	BUG_ON(ret != len);
+> 	return ret;
+> }
+> 
 
-The cpufreq patch above is now in Linus' tree, so You should add the
-patch below to your tree (or squash it into the affected patch).
+No, i don't like to idea to introduce a new API call, because i must
+also introduce a 
 
-> I have applied this merge fix up patch and can carry it as necessary:
->=20
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 11 Dec 2009 12:21:00 +1100
-> Subject: [PATCH] rr: cpufreq: fix up for api name change
->=20
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/=
-cpu/cpufreq/powernow-k8.c
-> index a9df944..f125e5c 100644
-> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> @@ -1136,7 +1136,7 @@ static int powernowk8_target(struct cpufreq_policy =
-*pol,
->  	if (!alloc_cpumask_var(&oldmask, GFP_KERNEL))
->  		return -ENOMEM;
-> =20
-> -	cpumask_copy(oldmask, tsk_cpumask(current));
-> +	cpumask_copy(oldmask, tsk_cpus_allowed(current));
->  	set_cpus_allowed_ptr(current, cpumask_of(pol->cpu));
-> =20
->  	if (smp_processor_id() !=3D pol->cpu) {
+kfifo_out_nonpartial()
+kfifo_in_nonpartial_locked()
+and
+kfifo_out_nonpartial_locked()
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I don't like this _locked functions, it is a design break and only
+introduced for compatibility reasons.
 
---Signature=_Mon__14_Dec_2009_15_35_28_+1100_qPpvEdBBXPUcQt8.
-Content-Type: application/pgp-signature
+This will also go way if i get the okay for the new kqueue API.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+If it is okay, i will remove the __must_check from kfifo_in and
+kfifo_in_locked. But the kfifo_out and kfifo_out_locked check must be
+performed and if it fails, it is a real BUG.
 
-iEYEARECAAYFAkslwJAACgkQjjKRsyhoI8yZFACeKTNKEoafVk86qcNd+x+5PG8R
-raYAniICmxImp55V7SGrFh8v4JMBMnF1
-=64lP
------END PGP SIGNATURE-----
 
---Signature=_Mon__14_Dec_2009_15_35_28_+1100_qPpvEdBBXPUcQt8.--
