@@ -1,88 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZLNQcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZLNQgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757908AbZLNQcK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 11:32:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbZLNQcH
+	id S1757924AbZLNQgz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 11:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZLNQgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 11:32:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34081 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757886AbZLNQcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 11:32:04 -0500
-Date: Mon, 14 Dec 2009 16:31:35 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091209100706.862897167@linutronix.de>
-References: <20091209100706.862897167@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Use rcu in sched_get_rr_param()
-Message-ID: <tip-1a551ae715825bb2a2107a2dd68de024a1fa4e32@git.kernel.org>
-Git-Commit-ID: 1a551ae715825bb2a2107a2dd68de024a1fa4e32
-X-Mailer: tip-git-log-daemon
+	Mon, 14 Dec 2009 11:36:55 -0500
+Received: from web1102.biz.mail.sk1.yahoo.com ([74.6.114.34]:34457 "HELO
+	web1102.biz.mail.sk1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757890AbZLNQgy convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 11:36:54 -0500
+Message-ID: <323410.15086.qm@web1102.biz.mail.sk1.yahoo.com>
+X-YMail-OSG: 21rpreAVM1kASz7tKSGq_V5HVHZeBkScQ7GiRTBAPooU7EeMkO9kruKHUIEomibRaT46G7N_oJIojjLl2lHae5y6umD7pTR9n78eS7YWcueoVplLDU11QwPHCxinwLtNn4K2pR4p1sA0jot.epV8hV32klHk1zP4uSQKg2mOQjcY3NfwmtF1CiBaS.HfMmDXVBnD_lWr7ln9rqqNKCKsfCzll.Gtq7k8GQlZs8iLz.PvC9SiqaGe3s7KqXl1.STP6pgP2kMK6cqkXjsKaU9_GQPRdZ8SKPljm6fqJck3ZvpqQ3qDn7_9TiCJC_7OMCHEH1_aPy5onIIcZG7Q6ohILx1k1ZPMq57Sxa2yqv2MCzX5UmHyxONZkpEheMCeCmhKE0Yk8JBKIdFUBdY34XYpbrpsLDt1rRoT65AFqItwz68qrgquHUeRFmLPlZe1FVzS11aU8lrzSS47wSVf_kEj.JPUTUc0m_kR7Iv73.2fCUMAv8UAx_xzhtjiaMtjTk8XSi3vSSf7._ekfvjmDQMCwoD0azanPhGa7gQn_BSEiDIHi1TEBpIc5IgFA7OGM2lMV6Hk5piCpBfabG.GSgDn8yAahFmJFOMTbCraTe_K2JytzWHeqxZiayOI1DwjgBLD0qzICuZFTmp8Yg9lZfQiDFaXk6J4LNuS6aBqDPsbVRYUjfVIUvsywAHIjW3OwNwG.sxmdrQ3OL3rgVVVkQpEAw--
+X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
+Date: Mon, 14 Dec 2009 08:36:50 -0800 (PST)
+From: Abou Gamal <abou_gamal02@mrythejee.com>
+Reply-To: abou_gamal@sify.com
+Subject: BUSINESS OFFER
+To: undisclosed recipients:;
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1a551ae715825bb2a2107a2dd68de024a1fa4e32
-Gitweb:     http://git.kernel.org/tip/1a551ae715825bb2a2107a2dd68de024a1fa4e32
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Wed, 9 Dec 2009 10:15:11 +0000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 14 Dec 2009 17:11:35 +0100
-
-sched: Use rcu in sched_get_rr_param()
-
-read_lock(&tasklist_lock) does not protect
-sys_sched_get_rr_param() against a concurrent update of the
-policy or scheduler parameters as do_sched_scheduler() does not
-take the tasklist_lock.
-
-The access to task->sched_class->get_rr_interval is protected by
-task_rq_lock(task).
-
-Use rcu_read_lock() to protect find_task_by_vpid() and prevent
-the task struct from going away.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <20091209100706.862897167@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 7989312..db5c266 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6873,7 +6873,7 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
- 		return -EINVAL;
- 
- 	retval = -ESRCH;
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	p = find_process_by_pid(pid);
- 	if (!p)
- 		goto out_unlock;
-@@ -6886,13 +6886,13 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
- 	time_slice = p->sched_class->get_rr_interval(rq, p);
- 	task_rq_unlock(rq, &flags);
- 
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	jiffies_to_timespec(time_slice, &t);
- 	retval = copy_to_user(interval, &t, sizeof(t)) ? -EFAULT : 0;
- 	return retval;
- 
- out_unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	return retval;
- }
- 
+I am Abou Gamal, Staff of one of the leading Bank in Burkina Faso. I would like you to indicate your interest to receive the transfer of US$15.5 Million. I will like you to stand as the next of kin to my late client whose account is presently dormant for claims Abou Gamal.  
