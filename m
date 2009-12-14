@@ -1,87 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZLNCfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZLNCmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbZLNCfO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 21:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZLNCfM
+	id S1756516AbZLNCmI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 21:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbZLNCmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 21:35:12 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:33160 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbZLNCfJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 21:35:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Sd+tcPaIj3GQLCerKWpS9MI2zZiuPKUiADXUqu2jv1t1wvkq2KfjDK7ahJJxOSdwRN
-         b6KvBdQzzlny8lf2HdwnzsX2m580G55aCrHFGJQWcMVCHM9mWxKYYJg1HV0f0GpNjxPp
-         +n55MRTXVgIb6xP5hx9Tp/6rmfxkUaItNmG9w=
-Message-ID: <4B25A474.4020305@gmail.com>
-Date: Sun, 13 Dec 2009 18:35:32 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Sun, 13 Dec 2009 21:42:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57205 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756204AbZLNCmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 21:42:05 -0500
+Message-ID: <4B25A4F0.60407@cn.fujitsu.com>
+Date: Mon, 14 Dec 2009 10:37:36 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix a typo in drivers/acpi/battery.c
-References: <1260744536-20762-1-git-send-email-justinmattock@gmail.com>	<1260744536-20762-2-git-send-email-justinmattock@gmail.com>	<20091213151545.4ac17532.rdunlap@xenotime.net>	<4B258576.3070508@gmail.com> <20091213172129.02fe156c.rdunlap@xenotime.net>
-In-Reply-To: <20091213172129.02fe156c.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Vivek Goyal <vgoyal@redhat.com>, Corrado Zoccolo <czoccolo@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cfq: Take whether cfq group is changed into account	when
+ choosing service tree
+References: <4B21D252.1060902@cn.fujitsu.com> <20091211150727.GB2756@redhat.com> <4e5e476b0912111001h3c0b9798u2a2b25c9fcc39504@mail.gmail.com> <20091211184630.GA7066@redhat.com>
+In-Reply-To: <20091211184630.GA7066@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/13/09 17:21, Randy Dunlap wrote:
-> On Sun, 13 Dec 2009 16:23:18 -0800 Justin P. Mattock wrote:
->
->> On 12/13/09 15:15, Randy Dunlap wrote:
->>> On Sun, 13 Dec 2009 14:48:56 -0800 Justin P. Mattock wrote:
->>>
->>>> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
->>>> ---
->>>>    drivers/acpi/battery.c |    2 +-
->>>>    1 files changed, 1 insertions(+), 1 deletions(-)
+Vivek Goyal wrote:
+> On Fri, Dec 11, 2009 at 07:01:14PM +0100, Corrado Zoccolo wrote:
+>> Hi guys,
+>> On Fri, Dec 11, 2009 at 4:07 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>>> On Fri, Dec 11, 2009 at 01:02:10PM +0800, Gui Jianfeng wrote:
+>>>> Currently, with IO Controller introduced, CFQ chooses cfq group
+>>>> at the top, and then choose service tree. So we need to take
+>>>> whether cfq group is changed into account to decide whether we
+>>>> should choose service tree start from scratch.
 >>>>
->>>> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
->>>> index 3f4602b..cada73f 100644
->>>> --- a/drivers/acpi/battery.c
->>>> +++ b/drivers/acpi/battery.c
->>>> @@ -831,7 +831,7 @@ static void acpi_battery_notify(struct acpi_device *device, u32 event)
->>>>    					dev_name(&device->dev), event,
->>>>    					acpi_battery_present(battery));
->>>>    #ifdef CONFIG_ACPI_SYSFS_POWER
->>>> -	/* acpi_batter_update could remove power_supply object */
->>>> +	/* acpi_battery_update could remove power_supply object */
->>>>    	if (battery->bat.dev)
->>>>    		kobject_uevent(&battery->bat.dev->kobj, KOBJ_CHANGE);
->>>>    #endif
->>>> --
->>>
->>> Hi,
->>>
->>> You don't need an intro patch email and then the patch email
->>> for such a simple patch.
->>>
->>> Also, please note (from "MAINTAINERS" or from scripts/get_maintainer.pl)
->>> that acpi patches go to linux-acpi@vger.kernel.org .
->>>
->>> ---
->>> ~Randy
->>>
+>>> I am not able to understand the need/purpose of this patch. Once we
+>>> switched the group during scheduling, why should we reset the order
+>>> of workload with-in group.
+>> I understand it, and in fact I was thinking about this.
+>> The idea is the same as with priorities. If we have not serviced a group
+>> for a while, we want to start with the no-idle workload to reduce its latency.
 >>
->> So should I resend this to acpi then, or just
->> take note of this the next time?
->
-> I'd say resend to linux-acpi and cc: the acpi maintainer.
->
-> ---
-> ~Randy
->
+>> Unfortunately, a group may have a too small share, that could cause some
+>> workloads to be starved, as Vivek correctly points out, and we should
+>> avoid this.
+>> It should be easily reproducible testing a "many groups with mixed workloads"
+>> scenario with group_isolation=1.
+>>
+>> Moreover, even if the approach is groups on top, when group isolation
+>> is not set (i.e. the default), in the non-root groups you will only
+>> have the sync-idle
+>> queues, so it is much more similar (logically) to a workload on top
+>> than it appears
+>> from the code.
+>>
+>> I think the net result of this patch is, when group isolation is not
+>> set, to select no-idle
+>> workload first only when entering the root group, thus a slight
+>> penalization of the
+>> async workload.
+> 
+> Also penalization of sync-idle workload in root group.
+> 
+> The higher latencies for sync-noidle workload with-in a group will be
+> observed only if group_isolation=1 and if group has low weight. I think
+> in general this problem should be solved by bumping up the weight of the
+> group, otherwise just live with it to ensure fairness for sync-idle
+> workload in the group.
+> 
+> With group_isolation=0, the problem should be less visible as root group
+> runs with max weight in the system (1000). In general I will assume that
+> one will choose system weights in such a manner so that root group does
+> not starve.
+> 
+> 
+>> Gui, if you observed improvements with this patch, probably you can obtain them
+>> without the starvation drawback by making it conditional to !group_isolation.
+>>
+>> BTW, since you always use cfqg_changed and prio_changed OR-ed together, you
+>> can have just one argument, called e.g. boost_no_idle, and you pass
+>> (!group_isolation && cfqg_changed) || prio_changed.
+>>
+> 
+> Because it will impact the share of sync-idle workload in root group and
+> asyn workload systemwide, I am not too keen on doing this change. I would
+> rather rely on root group being higher weight.
+> 
+> So far this reset of workload order happens only if we decide to higher
+> prio class task. So if there is some RT activity happening in system, we
+> will constantly be resetting the workload order for BE class and keep on
+> servicing sync-noidle workload while starving sync-idle and async
+> workload.
+> 
+> So it is probably still ok for priority class switching, but I am not too keen
+> on doing this at group switching event. This event will be too frequent if
+> there are significant number of groups in the system and we don't want to
+> starve root group sync-idle and system wide async workload. 
+> 
+> If somebody is not happy with latecies of sync-noidle workload, then
+> easier way to solve that issue is readjust weights of groups.
+> 
+> Thanks
+> Vivek
 
-there you have it.
-cc'd len brown
-(not sure who the acpi maintainers are)
+Hi Vivek, Corrado
 
-Justin P. Mattock
+Thanks for Corrado's explanation, i have the same concern.
+
+Consider the following code,
+
+prio_changed = (cfqd->serving_prio != previous_prio);
+st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
+                        cfqd);
+count = st->count;
+/*
+ * If priority didn't change, check workload expiration,
+ * and that we still have other queues ready
+ */
+if (!prio_changed && count &&
+      !time_after(jiffies, cfqd->workload_expires))
+      return;
+
+One more thing i do this change is that currently if serving_prio isn't changed,
+we'll start from where we left. But with io group introduced, cfqd->serving_prio and
+previous_prio might come from different groups. So i don't think "prio_changed" still
+makes sense in the case of group changing. cfqd->workload_expires also might come from
+the workload from another group when deciding whether starting from "cfqd->serving_type".
+
+Thanks,
+Gui
+
