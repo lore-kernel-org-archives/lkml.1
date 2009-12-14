@@ -1,96 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbZLNAA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZLMX7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755285AbZLNAA1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZLMX6r
+	id S1755251AbZLMX7V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 18:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZLMX7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 18:58:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35158 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Dec 2009 18:59:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34753 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755218AbZLMX6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:58:45 -0500
+	id S1755264AbZLMX64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:58:56 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
 Cc: Emese Revfy <re.emese@gmail.com>, gregkh@suse.de,
        stern@rowland.harvard.edu, dbrownell@users.sourceforge.net,
        torvalds@linux-foundation.org
-Subject: [PATCH 0/1] Constify struct usb_mon_operations for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 01:00:34 +0100
-Message-Id: <cover.1260663005.git.re.emese@gmail.com>
+Subject: [PATCH 1/1] Constify struct usb_mon_operations for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 01:00:35 +0100
+Message-Id: <6f4e0550c00629ec465fe27792868717f2375423.1260663005.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
-X-ELTE-SpamScore: -2.0
+In-Reply-To: <cover.1260663005.git.re.emese@gmail.com>
+References: <cover.1260663005.git.re.emese@gmail.com>
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Emese Revfy <re.emese@gmail.com>
 
-Hello everyone!
 
-The following patch series attempts to constify several structures
-that hold function pointers. This is only the initial batch, there
-are about over 150 candidate structures, some of which can be
-constified as well, I plan to submit them in the future.
-
-The list of constified structures in this series (* marks this thread):
-acpi_dock_ops
-address_space_operations
-backlight_ops
-block_device_operations
-dma_map_ops
-extent_io_ops
-file_lock_operations
-file_operations
-hv_ops
-intel_dvo_dev_ops
-item_operations
-iwl_ops
-kgdb_arch
-kgdb_io
-kset_uevent_ops
-lock_manager_operations
-microcode_ops
-mtrr_ops
-neigh_ops
-nlmsvc_binding
-pci_raw_ops
-platform_hibernation_ops
-platform_suspend_ops
-snd_ac97_build_ops
-sysfs_ops
-* usb_mon_operations
-wd_ops
-
-There are certain exceptions where a given instance of the structure
-cannot be const, they are marked with a comment in the patch.
-
-The patches compile fine with an allyesconfig kernel on i386 and x86_64.
-
-Please let me know if any of these structures should not be constified
-and any other issues you see with them.
-
-
-Changelog:
-----------
-v1 -> v2
-	- updated to linus-git-053fe57
-	- extended comments with a reference to code that prevents constification
-	- split up patches by subsystem as suggested by Greg KH, Jiri Slaby
-	- added all Acked-by's received so far
-	- removed patch for super_operations for now
-	- removed patch for ptmx_fops
-
-Thanks,
-   Emese
-
+Signed-off-by: Emese Revfy <re.emese@gmail.com>
+---
  drivers/usb/core/hcd.c     |    4 ++--
  drivers/usb/core/hcd.h     |   10 +++++-----
  drivers/usb/mon/mon_main.c |    2 +-
  3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 6dac3b8..e160b54 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -2246,7 +2246,7 @@ EXPORT_SYMBOL_GPL(usb_hcd_platform_shutdown);
+ 
+ #if defined(CONFIG_USB_MON) || defined(CONFIG_USB_MON_MODULE)
+ 
+-struct usb_mon_operations *mon_ops;
++const struct usb_mon_operations *mon_ops;
+ 
+ /*
+  * The registration is unlocked.
+@@ -2256,7 +2256,7 @@ struct usb_mon_operations *mon_ops;
+  * symbols from usbcore, usbcore gets referenced and cannot be unloaded first.
+  */
+  
+-int usb_mon_register (struct usb_mon_operations *ops)
++int usb_mon_register (const struct usb_mon_operations *ops)
+ {
+ 
+ 	if (mon_ops)
+diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
+index d8b43ae..17521a6 100644
+--- a/drivers/usb/core/hcd.h
++++ b/drivers/usb/core/hcd.h
+@@ -501,13 +501,13 @@ static inline void usbfs_cleanup(void) { }
+ #if defined(CONFIG_USB_MON) || defined(CONFIG_USB_MON_MODULE)
+ 
+ struct usb_mon_operations {
+-	void (*urb_submit)(struct usb_bus *bus, struct urb *urb);
+-	void (*urb_submit_error)(struct usb_bus *bus, struct urb *urb, int err);
+-	void (*urb_complete)(struct usb_bus *bus, struct urb *urb, int status);
++	void (* const urb_submit)(struct usb_bus *bus, struct urb *urb);
++	void (* const urb_submit_error)(struct usb_bus *bus, struct urb *urb, int err);
++	void (* const urb_complete)(struct usb_bus *bus, struct urb *urb, int status);
+ 	/* void (*urb_unlink)(struct usb_bus *bus, struct urb *urb); */
+ };
+ 
+-extern struct usb_mon_operations *mon_ops;
++extern const struct usb_mon_operations *mon_ops;
+ 
+ static inline void usbmon_urb_submit(struct usb_bus *bus, struct urb *urb)
+ {
+@@ -529,7 +529,7 @@ static inline void usbmon_urb_complete(struct usb_bus *bus, struct urb *urb,
+ 		(*mon_ops->urb_complete)(bus, urb, status);
+ }
+ 
+-int usb_mon_register(struct usb_mon_operations *ops);
++int usb_mon_register(const struct usb_mon_operations *ops);
+ void usb_mon_deregister(void);
+ 
+ #else
+diff --git a/drivers/usb/mon/mon_main.c b/drivers/usb/mon/mon_main.c
+index e0c2db3..bd8cb66 100644
+--- a/drivers/usb/mon/mon_main.c
++++ b/drivers/usb/mon/mon_main.c
+@@ -238,7 +238,7 @@ static struct notifier_block mon_nb = {
+ /*
+  * Ops
+  */
+-static struct usb_mon_operations mon_ops_0 = {
++static const struct usb_mon_operations mon_ops_0 = {
+ 	.urb_submit =	mon_submit,
+ 	.urb_submit_error = mon_submit_error,
+ 	.urb_complete =	mon_complete,
+-- 
+1.6.5.3
 
