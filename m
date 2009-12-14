@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbZLNMJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZLNL6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757131AbZLNMJe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbZLNMJc
+	id S1757062AbZLNL6e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 06:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbZLNL6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:09:32 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:50472 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757096AbZLNMJb convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 06:58:33 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57829 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757005AbZLNL6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:09:31 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: andrew hendry <andrew.hendry@gmail.com>
-Subject: Re: [GIT]: Networking
-Date: Mon, 14 Dec 2009 12:53:41 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Henner Eisen <eis@baty.hanse.de>
-References: <20091205.193505.193701079.davem@davemloft.net> <20091213.202037.229738549.davem@davemloft.net> <d45a3acc0912132026w5ab6b3b3x3f211566779257d3@mail.gmail.com>
-In-Reply-To: <d45a3acc0912132026w5ab6b3b3x3f211566779257d3@mail.gmail.com>
+	Mon, 14 Dec 2009 06:58:33 -0500
+Date: Mon, 14 Dec 2009 12:58:26 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>, cbou@mail.ru,
+       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-embedded@vger.kernel.org
+Subject: Re: [POWER] battery calibration parameters from sysfs
+Message-ID: <20091214115826.GA2280@elf.ucw.cz>
+References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
+ <20091204104930.GA28625@sirena.org.uk>
+ <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se>
+ <20091207114825.GA26965@rakim.wolfsonmicro.main>
+ <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
+ <20091213131921.GA1437@ucw.cz>
+ <20091214115023.GA22388@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: Text/Plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <200912141253.42017.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19vbqjxK3/HA1EF/gXerD5x42nIMGGTzdaSmjZ
- aWhS1amCoariS8dpRMWs4N30/LNnjs/x8VxcNsiNdBswCcRQyb
- ULOqq2+mWkSHKrPzLyxFw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214115023.GA22388@rakim.wolfsonmicro.main>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 December 2009, andrew hendry wrote:
-> Thanks, I didn't know X.25 was actively maintained. I get bounces.
-> Is the the maintainers out of date?
-
->From looking at the posts on the x.25 mailing list and the changes
-that went into the kernel during the last three years in that area,
-I think it is safe to say that you are now the maintainer ;-).
-
-The last mail on this topic from Henner Eisen was around 2001.
-
-> AX.25 NETWORK LAYER
-> M:      Ralf Baechle <ralf@linux-mips.org>
+On Mon 2009-12-14 11:50:24, Mark Brown wrote:
+> On Sun, Dec 13, 2009 at 02:19:22PM +0100, Pavel Machek wrote:
 > 
-> X.25 NETWORK LAYER
-> M:      Henner Eisen <eis@baty.hanse.de>
+> > ...but then there are all the systems that rely on /proc/apm
+> > emulation, like openembedded popular on sharp zaurus...
+> 
+> OpenEmbedded is a meta-distribution so doesn't use any particular
+> software here - I suspect you're referring to things like the GPE stack
+> which isn't so actively developed these days.
 
-How about this change?
-
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5839,9 +5839,9 @@ F:	sound/soc/codecs/wm8350.c
- F:	sound/soc/codecs/wm8400.c
- 
- X.25 NETWORK LAYER
--M:	Henner Eisen <eis@baty.hanse.de>
-+M:	Andrew Hendry <andrew.hendry@gmail.com>
- L:	linux-x25@vger.kernel.org
--S:	Maintained
-+S:	Odd Fixes
- F:	Documentation/networking/x25*
- F:	include/net/x25*
- F:	net/x25/
+Both Opie and GPE have the problem IIRC...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
