@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbZLNXLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbZLNXOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758780AbZLNXLh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758754AbZLNXLf
+	id S932897AbZLNXOl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbZLNXOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:11:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35665 "EHLO mx2.mail.elte.hu"
+	Mon, 14 Dec 2009 18:14:38 -0500
+Received: from sh.osrg.net ([192.16.179.4]:38397 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758741AbZLNXLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:11:34 -0500
-Message-ID: <4B26C68D.1080300@gmail.com>
-Date: Tue, 15 Dec 2009 00:13:17 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Pavel Machek <pavel@ucw.cz>, Paul Mundt <lethal@linux-sh.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 0/1] Constify struct address_space_operations for 2.6.32-git-053fe57ac
- v2
-References: <cover.1260662994.git.re.emese@gmail.com>	<20091214003836.GD7812@parisc-linux.org>	<4B2595E7.701@gmail.com>	<20091214021916.GB12196@linux-sh.org>	<4B25E47C.1010803@gmail.com>	<20091214112656.GB1959@elf.ucw.cz> <20091214080049.19930729@infradead.org>
-In-Reply-To: <20091214080049.19930729@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757928AbZLNXOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:14:37 -0500
+Date: Tue, 15 Dec 2009 08:13:53 +0900
+To: Valdis.Kletnieks@vt.edu
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, amwang@redhat.com,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: Remove usedac in
+ feature-removal-schedule.txt
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <17113.1260802675@localhost>
+References: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
+	<tip-06f8bda8324fa8bf39eed81d8b3df08063a37696@git.kernel.org>
+	<17113.1260802675@localhost>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Message-Id: <20091215081341Y.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 15 Dec 2009 08:13:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Now, a 300 patch series to lkml is not the way to do this.
-> First step is to make checkpatch.pl warn about new cases.
+On Mon, 14 Dec 2009 09:57:55 -0500
+Valdis.Kletnieks@vt.edu wrote:
 
-I will add this structures the checkpatch in the next patch series.
+> On Mon, 14 Dec 2009 07:58:01 GMT, tip-bot for FUJITA Tomonori said:
+> > Commit-ID:  06f8bda8324fa8bf39eed81d8b3df08063a37696
+> 
+> > x86: Remove usedac in feature-removal-schedule.txt
+> 
+> > The usedac option enables us to stop via_no_dac() setting
+> > forbid_dac to 1. That is, someone who uses VIA bridges can use
+> > DAC with this option even if some of VIA bridges seem to be
+> > broken about DAC.
+> 
+> Does there exist real hardware where this makes sense?  If the chipset
+> detects as "broken-DAC", is it in fact safe to use?
 
-> Second step should be to convert all definitions, but using the "one
-> patch per maintainer" rule, not "one patch per file" rule. Yes it's
-> somewhat janitorial, but no it's not a big deal as long as it's not 300
-> patches to lkml. And it is much better than whitespace changes; it's
-> a real quality improvement to the kernel (in terms of code generation
-> and API)
+Not safe. Probably, you would see data corruption.
 
-The first series was based on one patch per structure type, the current
-split-up is based on one patch per structure type *and* subsystem as
-suggested by Greg KH. I used get_maintainer --subsystem to find them which
-resulted in 150 patches. If you know a better way or want per-type patches,
-please let me know (and discuss it with Greg ;).
---
-Emese
+arch/x86/kernel/pci-dma.c says:
+
+/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
 
 
+Seems that some of VIA bridges were fine. So this option made sense
+with some hardware. I'm not sure if there are still users of this
+option now.
+
+
+>  Or is it similar to
+> the 'force-enable HPET' code for some older boxes, where the HPET was in
+> fact there but simply not advertised, so going ahead and using it was
+> in fact perfectly safe? Allowing the use of "working but not advertised"
+> is probably a good thing, allowing the use of known-broken probably isn't.
+> 
+> If it's just unadvertised, I wonder if if there's a way to write a quirk
+> for VIA systems that will detect the situation and enable the support?
+
+I guess that we could however it doesn't worth adding tricks for old
+hardware.
