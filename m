@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932523AbZLNTXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZLNTX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932523AbZLNTXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 14:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932496AbZLNTW7
+	id S932546AbZLNTX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 14:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZLNTXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 14:22:59 -0500
-Received: from mail.perches.com ([173.55.12.10]:1178 "EHLO mail.perches.com"
+	Mon, 14 Dec 2009 14:23:53 -0500
+Received: from www.tglx.de ([62.245.132.106]:55783 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932494AbZLNTW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 14:22:58 -0500
-Subject: suspect & tests
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 14 Dec 2009 11:22:57 -0800
-Message-ID: <1260818577.18538.35.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S932506AbZLNTXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 14:23:51 -0500
+Date: Mon, 14 Dec 2009 20:23:23 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Earl Chew <earl_chew@agilent.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       hjk@linutronix.de, gregkh@suse.de, hugh <hugh@veritas.com>,
+       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+Message-ID: <20091214192322.GA3245@bluebox.local>
+References: <1228379942.5092.14.camel@twins> <4B22DD89.2020901@agilent.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B22DD89.2020901@agilent.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A grep for possibly misused & tests
-	grep -rP --include=*.[ch] -n -e "[^\&]\&[\=]*\s*\!" *
-shows some possible cases where && should
-have been used instead:
+On Fri, Dec 11, 2009 at 04:02:17PM -0800, Earl Chew wrote:
+> I'm taking another look at the changes that were submitted in
+> 
+> http://lkml.org/lkml/2008/12/3/453
+> 
+> to see if they can be made more palatable.
+> 
+> 
+> In http://lkml.org/lkml/2008/12/4/64 you wrote:
+> 
+> > Why not create another special device that will give you DMA memory when
+> > you mmap it? That would also allow you to obtain the physical address
+> > without this utter horrid hack of writing it in the mmap'ed memory.
+> > 
+> > /dev/uioN-dma would seem like a fine name for that.
+> 
+> 
+> I understand the main objection was the hack to return the physical
+> address of the allocated DMA buffer within the buffer itself amongst
+> some other things.
 
-arch/powerpc/platforms/pseries/lpar.c:309:	if ((rflags & _PAGE_NO_CACHE) & !(rflags & _PAGE_WRITETHRU))
-arch/arm/mach-mxc91231/clock.c:265:	if (acs & !ads)
-arch/arm/mach-s3c2440/mach-osiris-dvs.c:72:		if (old_dvs & !new_dvs ||
-arch/arm/mach-s3c2440/mach-osiris-dvs.c:73:		    cur_dvs & !new_dvs) {
-arch/arm/mach-davinci/board-da850-evm.c:183:	if (ui_card_detected & !HAS_MMC) {
-drivers/scsi/libiscsi_tcp.c:423:	if (conn->datadgst_en &
-	    !(conn->session->tt->caps & CAP_DIGEST_OFFLOAD))
-drivers/media/video/omap24xxcam-dma.c:509:	if ((sglen < 0) || ((sglen > 0) & !sglist))
-drivers/net/dm9000.c:615:		else if (dm->wake_state & !opts)
-drivers/net/myri10ge/myri10ge.c:2845:					rdma_count += chop & !next_is_first;
-fs/nilfs2/the_nilfs.c:516:	nilfs->ns_prot_seq = le64_to_cpu(sbp[valid[1] & !swp]->s_last_seq);
-sound/soc/codecs/stac9766.c:233:		vra &= !0x04;
+The general thing is this: The UIO core supports only static mappings.
+The possible number of mappings is usually set at compile time or module
+load time and is currently limited to MAX_UIO_MAPS (== 5). This number
+is usually sufficient for devices like PCI cards, which have a limited
+number of mappings, too. All drivers currently in the kernel only need
+one or two.
+
+The current implementation of the UIO core is simply not made for
+dynamic allocation of an unlimited amount of new mappings at runtime. As
+we have seen in this patch, it needs raping of a documented kernel
+interface to userspace. This is not acceptable.
+
+So the easiest correct solution is to create a new device (e.g.
+/dev/uioN-dma, as Peter suggested). It should only be created for a UIO
+driver if it has a certain flag set, something like UIO_NEEDS_DYN_DMA_ALLOC.
+
+> 
+> Your suggestion was to create /dev/uioN-dma for the purpose of
+> allocating DMA memory.
+> 
+> I'm having trouble figuring out how this would help to return the
+> physical (bus) address of the DMA memory in a more elegant manner.
+
+If you create this new device, you can invent any (reasonable) interface you
+like. It should probably be something in sysfs, where you can write to a
+file to allocate a new buffer, and read the address from some other.
+It should also be possible to free a buffer again.
+
+Thanks,
+Hans
 
