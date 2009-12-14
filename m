@@ -1,95 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZLNOVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZLNOaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbZLNOVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZLNOVN
+	id S1757462AbZLNOaX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbZLNOaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:21:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7138 "EHLO mx1.redhat.com"
+	Mon, 14 Dec 2009 09:30:22 -0500
+Received: from thunk.org ([69.25.196.29]:38181 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757359AbZLNOVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:21:11 -0500
-Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
-From: Larry Woodman <lwoodman@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-In-Reply-To: <87pr6hya86.fsf@basil.nowhere.org>
-References: <20091210185626.26f9828a@cuia.bos.redhat.com>
-	 <87pr6hya86.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Mon, 14 Dec 2009 09:23:19 -0500
-Message-Id: <1260800599.6666.4.camel@dhcp-100-19-198.bos.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1757440AbZLNOaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:30:20 -0500
+Date: Mon, 14 Dec 2009 09:30:00 -0500
+From: tytso@mit.edu
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Ext4: Don't ask about supporting ext2/3 in ext4 if
+ ext4 is not configured
+Message-ID: <20091214143000.GA4867@thunk.org>
+Mail-Followup-To: tytso@mit.edu, David Howells <dhowells@redhat.com>,
+	torvalds@osdl.org, akpm@linux-foundation.org,
+	linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20091214135546.10111.4495.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214135546.10111.4495.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-14 at 14:08 +0100, Andi Kleen wrote:
-> Rik van Riel <riel@redhat.com> writes:
+On Mon, Dec 14, 2009 at 01:55:46PM +0000, David Howells wrote:
+> Don't offer to build ext2/3 support into ext4 if ext4 itself is not configured
+> on.
 > 
-> > +max_zone_concurrent_reclaim:
-> > +
-> > +The number of processes that are allowed to simultaneously reclaim
-> > +memory from a particular memory zone.
-> > +
-> > +With certain workloads, hundreds of processes end up in the page
-> > +reclaim code simultaneously.  This can cause large slowdowns due
-> > +to lock contention, freeing of way too much memory and occasionally
-> > +false OOM kills.
-> > +
-> > +To avoid these problems, only allow a smaller number of processes
-> > +to reclaim pages from each memory zone simultaneously.
-> > +
-> > +The default value is 8.
-> 
-> I don't like the hardcoded number. Is the same number good for a 128MB
-> embedded system as for as 1TB server?  Seems doubtful.
-> 
-> This should be perhaps scaled with memory size and number of CPUs?
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Remember this a per-zone number.
+Whoops, nice catch.  Added to the ext4 patch queue, I'll make sure
+this gets pushed to Linus during the merge window.
 
-> 
-> > +/*
-> > + * Maximum number of processes concurrently running the page
-> > + * reclaim code in a memory zone.  Having too many processes
-> > + * just results in them burning CPU time waiting for locks,
-> > + * so we're better off limiting page reclaim to a sane number
-> > + * of processes at a time.  We do this per zone so local node
-> > + * reclaim on one NUMA node will not block other nodes from
-> > + * making progress.
-> > + */
-> > +int max_zone_concurrent_reclaimers = 8;
-> 
-> __read_mostly
-> 
-> > +
-> >  static LIST_HEAD(shrinker_list);
-> >  static DECLARE_RWSEM(shrinker_rwsem);
-> >  
-> > @@ -1600,6 +1612,29 @@ static void shrink_zone(int priority, struct zone *zone,
-> >  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> >  	int noswap = 0;
-> >  
-> > +	if (!current_is_kswapd() && atomic_read(&zone->concurrent_reclaimers) >
-> > +					max_zone_concurrent_reclaimers) {
-> > +		/*
-> > +		 * Do not add to the lock contention if this zone has
-> > +		 * enough processes doing page reclaim already, since
-> > +		 * we would just make things slower.
-> > +		 */
-> > +		sleep_on(&zone->reclaim_wait);
-> 
-> wait_event()? sleep_on is a really deprecated racy interface.
-> 
-> This would still badly thunder the herd if not enough memory is freed
-> , won't it? It would be better to only wake up a single process if memory got freed.
-> 
-> How about for each page freed do a wake up for one thread?
-> 
-> 
-> -Andi
-
+     	  	    	  	     - Ted
