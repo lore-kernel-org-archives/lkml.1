@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZLNAIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZLMX6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbZLNAIp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbZLNAIc
+	id S1755098AbZLMX6X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 18:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbZLMX6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:08:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34999 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Dec 2009 18:58:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35003 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755047AbZLMX6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:58:16 -0500
+	id S1755050AbZLMX6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:58:17 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, penberg@cs.helsinki.fi,
-       rientjes@google.com, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: [PATCH 3/4] Constify struct kset_uevent_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 01:00:03 +0100
-Message-Id: <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com>
+Cc: Emese Revfy <re.emese@gmail.com>, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, torvalds@linux-foundation.org
+Subject: [PATCH 4/4] Constify struct kset_uevent_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 01:00:04 +0100
+Message-Id: <4754166796c51a8d636e68fe08e9f1bb45ec9ed6.1260663000.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260663000.git.re.emese@gmail.com>
 References: <cover.1260663000.git.re.emese@gmail.com>
@@ -35,19 +34,19 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- mm/slub.c |    2 +-
+ kernel/params.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 4996fc7..fb63aca 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -4522,7 +4522,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+diff --git a/kernel/params.c b/kernel/params.c
+index d656c27..e9d197e 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -739,7 +739,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
  	return 0;
  }
  
--static struct kset_uevent_ops slab_uevent_ops = {
-+static const struct kset_uevent_ops slab_uevent_ops = {
+-static struct kset_uevent_ops module_uevent_ops = {
++static const struct kset_uevent_ops module_uevent_ops = {
  	.filter = uevent_filter,
  };
  
