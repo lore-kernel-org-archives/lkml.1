@@ -1,102 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbZLNMVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZLNMWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932206AbZLNMVn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932132AbZLNMVg
+	id S1757218AbZLNMWd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZLNMW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:21:36 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:56089 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757214AbZLNMVc convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 07:22:29 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50426 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757119AbZLNMW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:21:32 -0500
-From: Mithlesh Thukral <mithlesh@linsyssoft.com>
-To: devel@driverdev.osuosl.org
-Subject: Re: [How to upload our driver to "kernel.org"] Would you give me your  advice?
-Date: Mon, 14 Dec 2009 17:51:36 +0530
-User-Agent: KMail/1.12.3 (Linux/2.6.31.5-127.fc12.i686.PAE; KDE/4.3.3; i686; ; )
-Cc: Alejandro Riveira =?utf-8?q?Fern=C3=A1ndez?= <ariveira@gmail.com>,
-       Masa <masa.korg@gmail.com>, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com> <20091214122649.2d914941@varda>
-In-Reply-To: <20091214122649.2d914941@varda>
+	Mon, 14 Dec 2009 07:22:27 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
+Cc: kosaki.motohiro@jp.fujitsu.com, lwoodman@redhat.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+In-Reply-To: <20091211164651.036f5340@annuminas.surriel.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+Message-Id: <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912141751.36699.mithlesh@linsyssoft.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 14 Dec 2009 21:22:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replies are inline.
-
-Regards,
-Mithlesh Thukral
-
-On Monday 14 December 2009 16:56:49 Alejandro Riveira Fernández wrote:
-> El Mon, 14 Dec 2009 19:56:23 +0900
-> Masa <masa.korg@gmail.com> escribió:
+> Under very heavy multi-process workloads, like AIM7, the VM can
+> get into trouble in a variety of ways.  The trouble start when
+> there are hundreds, or even thousands of processes active in the
+> page reclaim code.
 > 
-> Adding I hpe some usefull CC's
-> See also: http://www.linuxdriverproject.org/
+> Not only can the system suffer enormous slowdowns because of
+> lock contention (and conditional reschedules) between thousands
+> of processes in the page reclaim code, but each process will try
+> to free up to SWAP_CLUSTER_MAX pages, even when the system already
+> has lots of memory free.
 > 
-> > Hi,
-> >
-> > Our company is planning to upload our device drivers to "kernel.org".
-> > And I am investigating "How to upload".
-SubmittingDrivers in the Documentation/ can help you with this.
-Online copy can be found at (amongst many more):
-	http://lxr.linux.no/#linux+v2.6.32/Documentation/SubmittingDrivers
+> It should be possible to avoid both of those issues at once, by
+> simply limiting how many processes are active in the page reclaim
+> code simultaneously.
+> 
+> If too many processes are active doing page reclaim in one zone,
+> simply go to sleep in shrink_zone().
+> 
+> On wakeup, check whether enough memory has been freed already
+> before jumping into the page reclaim code ourselves.  We want
+> to use the same threshold here that is used in the page allocator
+> for deciding whether or not to call the page reclaim code in the
+> first place, otherwise some unlucky processes could end up freeing
+> memory for the rest of the system.
+
+This patch seems very similar to my old effort. afaik, there are another
+two benefit.
+
+1. Improve resource gurantee
+   if thousands tasks start to vmscan at the same time, they eat all memory for
+   PF_MEMALLOC. it might cause another dangerous problem. some filesystem
+   and io device don't handle allocation failure properly.
+
+2. Improve OOM contidion behavior
+   Currently, vmscan don't handle SIGKILL at all. then if the system
+   have hevy memory pressure, OOM killer can't kill the target process
+   soon. it might cause OOM killer kill next innocent process.
+   This patch can fix it.
 
 
-> >
-> > Our company is developing some device drivers for new chip-set device.
-> > It is not released yet, but the sample is in the test in the specific
-> > company.
-> >
-> > I contacted kernel.org this month.
-> > The man recommended this mailing-list.
-> >
-> > Would you give me your advice?
-> > I am very glad if you help it.
-> >
-> > We look forward to uploading the drivers to kernel.org!
-> >
-> > [Our drivers]
-> > We are preparing the drivers source code.
-> > And we uploaded them to Sourceforge.net.
-> > Please refer to below.
-> > http://sourceforge.net/projects/generalembedded/
-> > http://generalembedded.sourceforge.net/
-> >
-> > Our developers will turn our drivers into a patch series and to post
-> > them to this mailing list.
-> >
-If you intend to post the drivers as the development effort continues. so that 
-you can have the community feedback (and if required help) during the process 
-then you might in interested in Greg's Staging tree.
-	http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=tree
-You can base your patches to the latest kernel (or git trees of respective 
-maintainers) and post them to the mailing list.
 
-> > [My information]
-> > I participated in the mailing list for the first time in my life.
-> > I am full of fears and hopes.
-> >
-> > This mailing list is very lively and great!
-> > I think so.
-> >
-> > Thank you & Best regards,
-> > Masa <masa.korg@gmail.com>
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> > in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> _______________________________________________
-> devel mailing list
-> devel@linuxdriverproject.org
-> http://driverdev.linuxdriverproject.org/mailman/listinfo/devel
-> 
+> @@ -1600,6 +1612,31 @@ static void shrink_zone(int priority, struct zone *zone,
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int noswap = 0;
+>  
+> +	if (!current_is_kswapd() && atomic_read(&zone->concurrent_reclaimers) >
+> +				max_zone_concurrent_reclaimers &&
+> +				(sc->gfp_mask & (__GFP_IO|__GFP_FS)) ==
+> +				(__GFP_IO|__GFP_FS)) {
+> +		/*
+> +		 * Do not add to the lock contention if this zone has
+> +		 * enough processes doing page reclaim already, since
+> +		 * we would just make things slower.
+> +		 */
+> +		sleep_on(&zone->reclaim_wait);
+
+Oops. this is bug. sleep_on() is not SMP safe.
+
+
+I made few fixing patch today. I'll post it soon.
+
+
+btw, following is mesurement result by hackbench.
+================
+
+unit: sec
+
+parameter			old		new
+130 (5200 processes)		5.463		4.442
+140 (5600 processes)		479.357		7.792
+150 (6000 processes)		729.640		20.529
+
+
+
