@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbZLNW7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZLNXJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbZLNW7Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbZLNW7X
+	id S1758768AbZLNXJH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:09:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZLNXJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:59:23 -0500
-Received: from exprod6ob109.obsmtp.com ([64.18.1.22]:51049 "EHLO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757960AbZLNW7W convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 18:09:01 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:34192 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758749AbZLNXJA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:59:22 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Mon, 14 Dec 2009 18:09:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=r4XdYA5JDXd16IOV6e/rzHy+jlq99ZQyigr7Ped/uxEk6G+PU1ofgaszfHPdP45kBw
+         ukkyNi51+RAN2Kzk5Zg7LK3Bz/fOJHzKxGyJAtmq5/Tec/D1UCtWHohz88+ssIQ+dBjt
+         9cCPXcoXFYV3CF3p6HLY+sulZmFaOXDxvDPQo=
+Date: Tue, 15 Dec 2009 08:03:28 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead
+ prepare_to_wait()
+Message-Id: <20091215080328.b4af59ad.minchan.kim@barrios-desktop>
+In-Reply-To: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+	<20091214210823.BBAE.A69D9226@jp.fujitsu.com>
+	<20091214212936.BBBA.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] at91_udc.c: use resource_size()
-Date: Mon, 14 Dec 2009 17:59:22 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EA9B@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] at91_udc.c: use resource_size()
-Thread-Index: Acp9ERMIWIIpbTr+Q+Oj7TdvaIvEMg==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Cc: "David Brownell" <dbrownell@users.sourceforge.net>
-X-OriginalArrivalTime: 14 Dec 2009 22:59:19.0920 (UTC) FILETIME=[11C01F00:01CA7D11]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size().
+On Mon, 14 Dec 2009 21:30:19 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+> if we don't use exclusive queue, wake_up() function wake _all_ waited
+> task. This is simply cpu wasting.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index e0cb834..3562a2d 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1618,7 +1618,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
+>  	 * we would just make things slower.
+>  	 */
+>  	for (;;) {
+> -		prepare_to_wait(wq, &wait, TASK_UNINTERRUPTIBLE);
+> +		prepare_to_wait_exclusive(wq, &wait, TASK_UNINTERRUPTIBLE);
+>  
+>  		if (atomic_read(&zone->concurrent_reclaimers) <=
+>  		    max_zone_concurrent_reclaimers)
+> @@ -1632,7 +1632,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
+>                  */
+>  		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
+>  					0, 0)) {
+> -			wake_up(wq);
+> +			wake_up_all(wq);
 
----
+I think it's typo. The description in changelog says we want "wake_up". 
+Otherwise, looks good to me.
 
-diff --git a/drivers/usb/gadget/at91_udc.c b/drivers/usb/gadget/at91_udc.c
-index 043e04d..12ac9cd 100644
---- a/drivers/usb/gadget/at91_udc.c
-+++ b/drivers/usb/gadget/at91_udc.c
-@@ -1656,9 +1656,7 @@ static int __init at91udc_probe(struct platform_device *pdev)
- 	if (!res)
- 		return -ENXIO;
- 
--	if (!request_mem_region(res->start,
--			res->end - res->start + 1,
--			driver_name)) {
-+	if (!request_mem_region(res->start, resource_size(res), driver_name)) {
- 		DBG("someone's using UDC memory\n");
- 		return -EBUSY;
- 	}
-@@ -1699,7 +1697,7 @@ static int __init at91udc_probe(struct platform_device *pdev)
- 		udc->ep[3].maxpacket = 64;
- 	}
- 
--	udc->udp_baseaddr = ioremap(res->start, res->end - res->start + 1);
-+	udc->udp_baseaddr = ioremap(res->start, resource_size(res));
- 	if (!udc->udp_baseaddr) {
- 		retval = -ENOMEM;
- 		goto fail0a;
-@@ -1781,7 +1779,7 @@ fail0a:
- 	if (cpu_is_at91rm9200())
- 		gpio_free(udc->board.pullup_pin);
- fail0:
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 	DBG("%s probe failed, %d\n", driver_name, retval);
- 	return retval;
- }
-@@ -1813,7 +1811,7 @@ static int __exit at91udc_remove(struct platform_device *pdev)
- 		gpio_free(udc->board.pullup_pin);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 
- 	clk_put(udc->iclk);
- 	clk_put(udc->fclk); 
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+
+-- 
+Kind regards,
+Minchan Kim
