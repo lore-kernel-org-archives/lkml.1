@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbZLNP10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZLNP1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbZLNP10 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 10:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbZLNP10
+	id S1757548AbZLNP1x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 10:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbZLNP1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 10:27:26 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47636 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757525AbZLNP1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 10:27:25 -0500
-Date: Mon, 14 Dec 2009 07:27:20 -0800
-From: Greg KH <gregkh@suse.de>
-To: Masa <masa.korg@gmail.com>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Alejandro Riveira Fern?ndez <ariveira@gmail.com>,
-       linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: [How to upload our driver to "kernel.org"] Would you give me
-	your advice?
-Message-ID: <20091214152720.GA16597@suse.de>
-References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com> <20091214122649.2d914941@varda> <c7ac85d60912140610o1de69703x4d42108b4519ede@mail.gmail.com> <200912141536.14266.oliver@neukum.org> <c7ac85d60912140715x232f9e3di366d2be1e1cd063b@mail.gmail.com>
+	Mon, 14 Dec 2009 10:27:52 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:47244 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757526AbZLNP1v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 10:27:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Omi1sVBYkbbl/2wlODyK3TcMvow1QLgQX3NAATpvrqj0uqcDzm8Wn7IieB9ZtFk60Y
+         hp1KFp5JVBkniwYm3mZCdL7B2z3MoX6iBiUPZ/bpmymZwee9A1CcZf259z7l2tURPsVB
+         KlA/yWi8I7qfLTM4OT9iIyMSpEjFHq34fhgYU=
+Message-ID: <4B2659DB.8000309@gmail.com>
+Date: Mon, 14 Dec 2009 16:29:31 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c7ac85d60912140715x232f9e3di366d2be1e1cd063b@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Samuel Ortiz <samuel@sortiz.org>, irda-users@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [IRDA]: ensure that index is within bounds in stir421x_patch_device()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 12:15:58AM +0900, Masa wrote:
-> > You don't, technically speaking, upload.
-> > You make a patch against a current kernel tree and mail it
-> > to the relevant list. Then people will tell you what's wrong with your
-> > code and how it should be improved. After you'll have fixed
-> > the issues, the maintainer will take your patch and it'll be
-> > incorporated into the kernel tree at kernel.org.
-> 
-> It is a useful information for me.
-> I understood the procedure.
-> 
-> I think that I may take time to solve all issues.
-> However, I want to give a TRY.
+Test whether the index is within bounds before testing the element.
 
-If you need help with this process, or with cleaning up your code to
-make it acceptable, please let us on the devel@linuxdriverproject.org
-list help you out.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/net/irda/irda-usb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-thanks,
+diff --git a/drivers/net/irda/irda-usb.c b/drivers/net/irda/irda-usb.c
+index e8e33bb..1b0bd32 100644
+--- a/drivers/net/irda/irda-usb.c
++++ b/drivers/net/irda/irda-usb.c
+@@ -1124,8 +1124,9 @@ static int stir421x_patch_device(struct irda_usb_cb *self)
+                  * The actual image starts after the "STMP" keyword
+                  * so forward to the firmware header tag
+                  */
+-                for (i = 0; (fw->data[i] != STIR421X_PATCH_END_OF_HDR_TAG) &&
+-			     (i < fw->size); i++) ;
++		for (i = 0; i < fw->size; i++)
++			if (fw->data[i] == STIR421X_PATCH_END_OF_HDR_TAG)
++				break;
+                 /* here we check for the out of buffer case */
+                 if ((STIR421X_PATCH_END_OF_HDR_TAG == fw->data[i]) &&
+                     (i < STIR421X_PATCH_CODE_OFFSET)) {
 
-greg k-h
