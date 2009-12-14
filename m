@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZLNHsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZLNHx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZLNHsM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 02:48:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZLNHsK
+	id S1755010AbZLNHx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 02:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZLNHxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 02:48:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37970 "EHLO mx1.redhat.com"
+	Mon, 14 Dec 2009 02:53:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33551 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752329AbZLNHsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 02:48:05 -0500
-Message-ID: <4B25EE41.4020809@redhat.com>
-Date: Mon, 14 Dec 2009 15:50:25 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1752064AbZLNHxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 02:53:25 -0500
+Date: Mon, 14 Dec 2009 08:51:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH v2] perf bench: Add "all" pseudo subsystem and "all"
+ pseudo suite
+Message-ID: <20091214075115.GA29677@elte.hu>
+References: <20091212105554.GA9345@elte.hu>
+ <1260691319-4683-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, gcosta@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove usedac in feature-removal-schedule.txt
-References: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260691319-4683-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> The reason of removal, "replaced by allowdac and no dac combination"
-> is incorrect. There is no way to do the same thing with "allowdac" and
-> "nodac" combination.
-> 
-> The usedac option enables us to stop via_no_dac() setting forbid_dac
-> to 1. That is, someone who uses VIA bridges can use DAC with this
-> option even if some of VIA bridges seem to be broken about DAC.
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-Hi,
+> Sorry, you are right, Ingo.
+> This was my careless miss. sched-pipe.c returned twice.
+> I wronged gcc by a false charge, sorry :(
 
-This sounds reasonable for me.
+Dont worry about it too much - GCC is guilty enough times :)
 
-Acked-by: WANG Cong <amwang@redhat.com>
+> This is version 2.
 
-> ---
->  Documentation/feature-removal-schedule.txt |    7 -------
->  1 files changed, 0 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-> index 2a4d779..eb2c138 100644
-> --- a/Documentation/feature-removal-schedule.txt
-> +++ b/Documentation/feature-removal-schedule.txt
-> @@ -291,13 +291,6 @@ Who:	Michael Buesch <mb@bu3sch.de>
->  
->  ---------------------------
->  
-> -What:	usedac i386 kernel parameter
-> -When:	2.6.27
-> -Why:	replaced by allowdac and no dac combination
-> -Who:	Glauber Costa <gcosta@redhat.com>
-> -
-> ----------------------------
-> -
->  What: print_fn_descriptor_symbol()
->  When: October 2009
->  Why:  The %pF vsprintf format provides the same functionality in a
+Great patch, applied, thanks!
 
+	Ingo
