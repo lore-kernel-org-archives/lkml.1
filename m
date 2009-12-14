@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZLNAik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbZLNAnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbZLNAik (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbZLNAij
+	id S1755643AbZLNAnW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbZLNAnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:38:39 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:34656 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754184AbZLNAii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 19:38:38 -0500
-Date: Sun, 13 Dec 2009 17:38:36 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: re.emese@gmail.com
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org
-Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
-	2.6.32-git-053fe57ac v2
-Message-ID: <20091214003836.GD7812@parisc-linux.org>
-References: <cover.1260662994.git.re.emese@gmail.com>
+	Sun, 13 Dec 2009 19:43:21 -0500
+Received: from claw.goop.org ([74.207.240.146]:42874 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754904AbZLNAnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 19:43:20 -0500
+Message-ID: <4B258A27.3050006@goop.org>
+Date: Sun, 13 Dec 2009 16:43:19 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1260662994.git.re.emese@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Simon Horman <horms@verge.net.au>
+CC: liu weni <qingshenlwy@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Subject: Re: [PATCH v2]kernel: remove mess codes
+References: <b3657a100912122255j138bb9e6s785bdc8152a27691@mail.gmail.com> <4B249210.7060103@goop.org> <20091214003320.GA29218@verge.net.au>
+In-Reply-To: <20091214003320.GA29218@verge.net.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 12:59:08AM +0100, re.emese@gmail.com wrote:
-> From: Emese Revfy <re.emese@gmail.com>
-> 
-> Hello everyone!
-> 
-> The following patch series attempts to constify several structures
-> that hold function pointers. This is only the initial batch, there
-> are about over 150 candidate structures, some of which can be
-> constified as well, I plan to submit them in the future.
+On 12/13/09 16:33, Simon Horman wrote:
+> On Sat, Dec 12, 2009 at 11:04:48PM -0800, Jeremy Fitzhardinge wrote:
+>    
+>> On 12/12/09 22:55, liu weni wrote:
+>>      
+>>> I found some mess characters(0x0c) in the kernel source code.
+>>> Then I suggest remove it.
+>>>        
+>> Those are form-feed characters.   Some editors use them to separate
+>> logically distinct blocks of code into separate "pages".
+>>      
+> I can see their value in documentation, but I struggle to imagine
+> their usefulness in code.
+>    
 
-What a complete waste of time.  Until you respond to Al's:
+I think a folding editor can fold them out, so you can just expand the 
+area you're interested in.  Or something.  The point is that it is 
+formatting that was presumably put there by the original author.  Unless 
+they're actually upsetting something, I'd be inclined to leave them.
 
-  This is ugly and has all marks of cargo-cult patches.  NAKed at least
-  until you give exceptionally good reasons for doing that.
+     J
 
-you should stop sending patches.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
