@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750953AbZLNF2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751050AbZLNF2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750953AbZLNF2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 00:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZLNF2i
+	id S1751050AbZLNF2M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 00:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZLNF2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 00:28:38 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:61580 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbZLNF2h convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 00:28:10 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50478 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbZLNF2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 00:28:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FvPLdI9+YjgIx00Oh+79WRT1IVxwFvw81IUMUDz8PqJ06QvP97MFN+ayV8dsC3+/e5
-         bq1cmXn6xP8259wIofeh4OjfE1GW84Bytxn9THnVfjCi5tvNOBfJIUtZenys+T6LBj1u
-         IBUQUHqbsvy6GAvTtwb+tqbi6bg3uQ4OfzFLI=
-MIME-Version: 1.0
-In-Reply-To: <20091214031127.GB29591@ldl.fc.hp.com>
-References: <20091214023051.GA29591@ldl.fc.hp.com>
-	 <1260759123.3391.0.camel@localhost>
-	 <20091214031127.GB29591@ldl.fc.hp.com>
-Date: Mon, 14 Dec 2009 13:28:35 +0800
-Message-ID: <7b6bb4a50912132128r68dbd8b3p9304920e3080b5e1@mail.gmail.com>
-Subject: Re: radeon 4830 corruption after resume
-From: Xiaotian Feng <xtfeng@gmail.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Dave Airlie <airlied@redhat.com>, rjw@sisk.pl,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Dec 2009 00:28:09 -0500
+Date: Sun, 13 Dec 2009 21:30:15 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
+Message-ID: <20091213213015.653307b5@infradead.org>
+In-Reply-To: <20091213191606.GB7297@nowhere>
+References: <20091212101032.GB25286@elte.hu>
+	<20091212023603.93768833.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
+	<alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
+	<20091212214235.31429790@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
+	<alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
+	<alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
+	<20091213065844.GA20244@elte.hu>
+	<20091213095534.58051536@infradead.org>
+	<20091213191606.GB7297@nowhere>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 11:11 AM, Alex Chiang <achiang@hp.com> wrote:
-> * Dave Airlie <airlied@redhat.com>:
->> On Sun, 2009-12-13 at 19:30 -0700, Alex Chiang wrote:
->> > Hi Dave, Rafael,
->> >
->> > I can successfully suspend/resume my HP Envy, but upon resume,
->> > the screen is corrupted.
->> >
->> > I used the gnome screenshot utility to capture this:
->> >
->> >     http://chizang.net/alex/tmp/radeon-4830-corruption.png
->> >
->> > But that screenshot leads you to believe the corruption was
->> > 100%, when in reality, the text in my xterms was at least
->> > readable, but ugly.
->> >
->> > Kernel is latest upstream pulled today. Userspace is Ubuntu Karmic.
->>
->> Has it ever worked? can you suspend/resume without X running at all?
->
-> Hm, define "worked"?
->
-> The machine responds to keyboard, mouse, network input, etc. It's
-> just that the screen is garbled.
->
+On Sun, 13 Dec 2009 20:16:08 +0100
+Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Then how about ssh to your machine, and get dmesg output?
+> On Sun, Dec 13, 2009 at 09:55:34AM -0800, Arjan van de Ven wrote:
+> > On Sun, 13 Dec 2009 07:58:44 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > 
+> > > > We've had quite a bit of BKL work this merge-window. Maybe we'll
+> > > > even get rid of it one of these days. There are "only" about 600
+> > > > instances of "lock_kernel()" in the tree right now ;)
+> > > 
+> > > I tend to use unlock_kernel() as the metric. (as it's more
+> > > precisely greppable and it is also more indicative of the
+> > > underlying complexity of locking, as it gets used more in more
+> > > complex scenarios)
+> > 
+> > another metric is... how many times do we take the BKL for some
+> > workload. (For example booting or compiling a kernel).
+> > A counter like "BKLs-per-second" would be nice to expose
+> > (and then we can track that number going up as a regression etc)
+> 
+> 
+> 
+> We have the bkl tracepoints for that, attaching an example below,
+> blkdev_get/bkldev_put is among the highest consumer for me.
 
-> Unless I'm not understanding what you're asking?
->
->> Its quite possibly a userspace problem but its hard to know, we
->> haven't changed the user modesetting pieces in the kernel at all in
->> quite a while.
->
-> Ok, I'm just looking for where/how to start debugging. Any advice
-> on where to look next would be fine too.
->
-> Thanks,
-> /ac
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+we have a trace, but not a number that anyone can just pull out without
+having to go through great lengths to set stuff up... (esp to capture a
+boot)...
+Adding a counter always to the lock_kernel function should be fine
+instead...
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
