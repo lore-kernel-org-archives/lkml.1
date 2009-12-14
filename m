@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZLNP6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZLNQAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbZLNP6d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 10:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbZLNP6c
+	id S1757592AbZLNQAQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 11:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZLNQAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 10:58:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35320 "EHLO
+	Mon, 14 Dec 2009 11:00:14 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35336 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753700AbZLNP6b (ORCPT
+	with ESMTP id S1757555AbZLNQAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 10:58:31 -0500
-Date: Mon, 14 Dec 2009 08:00:49 -0800
+	Mon, 14 Dec 2009 11:00:12 -0500
+Date: Mon, 14 Dec 2009 08:02:01 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Emese Revfy <re.emese@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
- 2.6.32-git-053fe57ac v2
-Message-ID: <20091214080049.19930729@infradead.org>
-In-Reply-To: <20091214112656.GB1959@elf.ucw.cz>
-References: <cover.1260662994.git.re.emese@gmail.com>
-	<20091214003836.GD7812@parisc-linux.org>
-	<4B2595E7.701@gmail.com>
-	<20091214021916.GB12196@linux-sh.org>
-	<4B25E47C.1010803@gmail.com>
-	<20091214112656.GB1959@elf.ucw.cz>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
+Message-ID: <20091214080201.466a8998@infradead.org>
+In-Reply-To: <200912141139.48115.oliver@neukum.org>
+References: <20091212101032.GB25286@elte.hu>
+	<20091213191606.GB7297@nowhere>
+	<20091213213015.653307b5@infradead.org>
+	<200912141139.48115.oliver@neukum.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -38,49 +37,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 12:26:56 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+On Mon, 14 Dec 2009 11:39:48 +0100
+Oliver Neukum <oliver@neukum.org> wrote:
 
-> > > Until such a consensus is reached one way or the other, please
-> > > refrain from sending hundreds of patches -- one or two are
-> > > sufficient for showing what you want to do until folks are on
-> > > board with it, as is the typical nature of mechanical changes.
+> Am Montag, 14. Dezember 2009 06:30:15 schrieb Arjan van de Ven:
+> > > We have the bkl tracepoints for that, attaching an example below,
+> > > blkdev_get/bkldev_put is among the highest consumer for me.
 > > 
-> > I think there is consensus to constify ops variables as much as
-> > possible (e.g., Alexey's similar patches).
+> > we have a trace, but not a number that anyone can just pull out
+> > without having to go through great lengths to set stuff up... (esp
+> > to capture a boot)...
+> > Adding a counter always to the lock_kernel function should be fine
+> > instead...
 > 
-> No such consensus exists. It is very clear from the patch reactions.
+> But don't we need to know how long it is held? If you just count
+> you'll make code that drops it while it can look bad.
 
-I for one am not opposed to using const where we could be using const.
-It's a fundamental language feature, that helps the compiler and
-developer. Yes there is sparse, and no, almost nobody uses that.
-
-If it's const, it won't be and can't be changed, allowing
-more aggressive optimization. It also means all these structures get
-put in the rodata section, which means by definition they can no longer
-have false sharing with data structures that are written to,.. and that
-section is often even really read only (cpu protection bits), which is
-also a nice, but secundary; _ops are one of those targets for rootkits
-and accidental overwrites.
-
-Rodata is also something that in theory we can replicate between numa
-nodes (we don't do that yet I think, but it's one of those
-chicken-and-egg things.. once rodata contains enough hot/critical
-structures it becomes worth it)
-
-Now, a 300 patch series to lkml is not the way to do this.
-First step is to make checkpatch.pl warn about new cases.
-Second step should be to convert all definitions, but using the "one
-patch per maintainer" rule, not "one patch per file" rule. Yes it's
-somewhat janitorial, but no it's not a big deal as long as it's not 300
-patches to lkml. And it is much better than whitespace changes; it's
-a real quality improvement to the kernel (in terms of code generation
-and API)
-
-Once everything is converted after a kernel release or two, you can
-consider the third step of changing the actual prototypes/definitions,
-which at that point is a small one-liner that isn't a big deal.
-
+I think/hope we're well past that. At this point, just the act of taking
+it at all is bad.
 
 
 -- 
