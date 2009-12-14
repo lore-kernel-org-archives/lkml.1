@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZLND6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZLND7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbZLND6w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 22:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbZLND6s
+	id S1756658AbZLND7I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 22:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbZLND7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 22:58:48 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65402 "EHLO song.cn.fujitsu.com"
+	Sun, 13 Dec 2009 22:59:04 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60491 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756571AbZLND6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 22:58:45 -0500
-Message-ID: <4B25B7E0.5000403@cn.fujitsu.com>
-Date: Mon, 14 Dec 2009 11:58:24 +0800
+	id S1756589AbZLND7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 22:59:01 -0500
+Message-ID: <4B25B7F0.9000008@cn.fujitsu.com>
+Date: Mon, 14 Dec 2009 11:58:40 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -18,7 +18,8 @@ To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
 CC: Frederic Weisbecker <fweisbec@gmail.com>,
        Wenji Huang <wenji.huang@oracle.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/7] tracing/filters: Fix MATCH_MIDDLE_ONLY filter matching
+Subject: [PATCH 6/7] tracing/filters: Fix MATCH_END_ONLY filter matching for
+ PTR_STRING
 References: <4B25B797.1040201@cn.fujitsu.com>
 In-Reply-To: <4B25B797.1040201@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -27,28 +28,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The @str might not be NULL-terminated if it's of type
-DYN_STRING or STATIC_STRING, so we should use strnstr()
-instead of strstr().
+MATCH_FULL matching for PTR_STRING is not working correctly:
+
+  # echo 'func == vt' > events/bkl/lock_kernel/filter
+  # echo 1 > events/bkl/lock_kernel/enable
+  ...
+  # cat trace
+   Xorg-1484  [000]  1973.392586: lock_kernel: ... func=vt_ioctl()
+    gpm-1402  [001]  1974.027740: lock_kernel: ... func=vt_ioctl()
+
+We should pass to regex.match(..., len) the length (including '\0')
+of the source string instead of the length of the pattern string.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace_events_filter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/trace_events_filter.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 49e44dd..f364b08 100644
+index f364b08..60c2a4e 100644
 --- a/kernel/trace/trace_events_filter.c
 +++ b/kernel/trace/trace_events_filter.c
-@@ -268,7 +268,7 @@ static int regex_match_front(char *str, struct regex *r, int len)
- 
- static int regex_match_middle(char *str, struct regex *r, int len)
+@@ -211,8 +211,9 @@ static int filter_pred_pchar(struct filter_pred *pred, void *event,
  {
--	if (strstr(str, r->pattern))
-+	if (strnstr(str, r->pattern, len))
- 		return 1;
- 	return 0;
- }
+ 	char **addr = (char **)(event + pred->offset);
+ 	int cmp, match;
++	int len = strlen(*addr) + 1;	/* including tailing '\0' */
+ 
+-	cmp = pred->regex.match(*addr, &pred->regex, pred->regex.field_len);
++	cmp = pred->regex.match(*addr, &pred->regex, len);
+ 
+ 	match = cmp ^ pred->not;
+ 
+@@ -782,10 +783,8 @@ static int filter_add_pred(struct filter_parse_state *ps,
+ 			pred->regex.field_len = field->size;
+ 		} else if (field->filter_type == FILTER_DYN_STRING)
+ 			fn = filter_pred_strloc;
+-		else {
++		else
+ 			fn = filter_pred_pchar;
+-			pred->regex.field_len = strlen(pred->regex.pattern);
+-		}
+ 	} else {
+ 		if (field->is_signed)
+ 			ret = strict_strtoll(pred->regex.pattern, 0, &val);
 -- 
 1.6.3
 
