@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZLNJ7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZLNKEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZLNJ7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 04:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbZLNJ7o
+	id S1755812AbZLNKEZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 05:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZLNKEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 04:59:44 -0500
-Received: from www84.your-server.de ([213.133.104.84]:57433 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755510AbZLNJ7n (ORCPT
+	Mon, 14 Dec 2009 05:04:24 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:51238 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbZLNKEX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 04:59:43 -0500
-Subject: Re: [PATCH 0/1] RFC: new kqueue API
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Joe Perches <joe@perches.com>, Roger Quadros <quadros.roger@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>
-In-Reply-To: <20091213183741.GB18989@one.firstfloor.org>
-References: <1260700633.17424.18.camel@wall-e>
-	 <20091213183741.GB18989@one.firstfloor.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 14 Dec 2009 10:59:18 +0100
-Message-ID: <1260784758.19963.6.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 14 Dec 2009 05:04:23 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the limits tree with Linus' tree
+Date: Mon, 14 Dec 2009 11:04:04 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>
+References: <20091214143917.f5b90e15.sfr@canb.auug.org.au>
+In-Reply-To: <20091214143917.f5b90e15.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <200912141104.04738.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1++ofyp9LelMiBf8YVVf7+x2ptv/4cpNcHCJeu
+ jkGG5b34an1x+1wQKVbFi96UuxTrz/542wyAsPLONtK8Ap+7oB
+ 7WEETNWkERZec1MFpBk1w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, den 13.12.2009, 19:37 +0100 schrieb Andi Kleen:
-> On Sun, Dec 13, 2009 at 11:37:13AM +0100, Stefani Seibold wrote:
-> > As i figured out during the port the old kfifo API users, most of them
-> > did not need a streamed fifo, because there work only with fixed size
-> > entries. The kfifo is oversized for this kind of users, so i decided to
-> > write a new kqueue API which is optimized for fixed size entries. 
-> > 
-> > There are a some benefits:
-> > 
-> > - Performance (a put or get of an integer does only generate 4 assembly
-> > instructions on a x86) 
-> > - Type save
-> > - Cleaner interface
-> > - Easier to use
-> > - Less error prone
-> > - Smaller footprint
-> > 
-> > The API is similar to the new kfifo API, but there is no need for a
-> > length paramter, because the size of the entry is know by the queue
-> > structure.
-> 
-> I must say I'm a bit sceptical if the advantages are really worth
-> the additional code. That code would be always compiled in in addition
-> to kfifo, so at least the code footprint would be always larger.
-> 
-> Perhaps you could get the advantages for type-safety using
-> inline wrappers to kfifo?
-> 
+On Monday 14 December 2009, Stephen Rothwell wrote:
+> @@@ -622,13 -622,13 +622,17 @@@ __SYSCALL(__NR_move_pages, sys_move_pag
+>   __SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
+>   #define __NR_perf_event_open 241
+>   __SYSCALL(__NR_perf_event_open, sys_perf_event_open)
+>  -#define __NR_getprlimit 242
+>  +#define __NR_accept4 242
+>  +__SYSCALL(__NR_accept4, sys_accept4)
+>  +#define __NR_recvmmsg 243
+>  +__SYSCALL(__NR_recvmmsg, sys_recvmmsg)
+> ++#define __NR_getprlimit 244
+> + __SYSCALL(__NR_getprlimit, sys_getprlimit)
+>  -#define __NR_setprlimit 243
+> ++#define __NR_setprlimit 245
+> + __SYSCALL(__NR_setprlimit, sys_setprlimit)
+>   
+>   #undef __NR_syscalls
+> --#define __NR_syscalls 244
+> ++#define __NR_syscalls 246
 
-Okay, i found a nice solution to mix the new kqueue with my kfifo API. 
+Looks good.
 
-- It its now type safe and the huger functions are now deinlined. 
-- Non dynamic allocated fifo did not need anymore the extra indirection
-to the data buffer.
-- And i moved the record stuff in an extra header and source file named
-kfiforec.[ch].
-
-Stefani
-
-
-
-
-
+	Arnd
