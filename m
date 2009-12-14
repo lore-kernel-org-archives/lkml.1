@@ -1,77 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932889AbZLNXOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbZLNXP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932889AbZLNXOO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbZLNXOM
+	id S932913AbZLNXP1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbZLNXP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:14:12 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:48644 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757876AbZLNXOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:14:06 -0500
-Date: Mon, 14 Dec 2009 18:14:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <tj@kernel.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Warn people about flush_scheduled_work()
-In-Reply-To: <4B26BE67.5060107@kernel.org>
-Message-ID: <Pine.LNX.4.44L0.0912141809390.2690-100000@iolanthe.rowland.org>
+	Mon, 14 Dec 2009 18:15:26 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42803 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932677AbZLNXPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:15:24 -0500
+Date: Mon, 14 Dec 2009 15:15:23 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: mroos@linux.ee, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: RCU detected CPU 0 stall after panic on sparc64
+Message-ID: <20091214231523.GH6679@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <alpine.SOC.1.00.0912121049030.26625@math.ut.ee> <20091212.014002.173528710.davem@davemloft.net> <20091214202556.GC6679@linux.vnet.ibm.com> <20091214.130201.144162604.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214.130201.144162604.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009, Tejun Heo wrote:
-
-> Hello, Alan Stern.
+On Mon, Dec 14, 2009 at 01:02:01PM -0800, David Miller wrote:
+> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Date: Mon, 14 Dec 2009 12:25:56 -0800
 > 
-> On 12/15/2009 06:33 AM, Alan Stern wrote:
-> > You've spent some time working on the workqueue implementation, right?  
-> > I'd like to add comments or kerneldoc warning people about how 
-> > dangerous it can be to use flush_scheduled_work() and related 
-> > functions.  Something like this:
-> > 
-> > 	Think twice before calling this function!  It's very easy
-> > 	to get into trouble if you don't take great care.  Either
-> > 	of the following situations will lead to deadlock:
-> > 
-> > 		Your code is running in the context of a scheduled
-> > 		work routine.
-> >
-> > 		Your code or its caller holds a lock needed by
-> > 		one of the work items currently on the workqueue.
-> >
-> > 	Since you generally don't know who your caller is, what locks
-> > 	it holds, or what locks are needed by the items on the 
-> > 	workqueue, avoiding these situations is quite difficult.
+> > Hmmm...  At first glance, it looks like RCU should put a notifier onto
+> > the panic_notifier_list to disable this check.  Or is there some global
+> > variable that I can check?
 > 
-> I think both problems can be detected by lockdep, right?  So, they
-> aren't that difficult to detect.
+> Probably the notifier works just fine.
 
-Maybe they can, now.  It used to be they couldn't.
+OK, will take that approach.
 
-However, lockdep doesn't help much -- it tells you the cause of the
-deadlock but it doesn't prevent the deadlock from occurring.  The
-programmer has to do this, by avoiding flush_scheduled_work().  I guess 
-that could be added to the comment.
-
-> > 	Consider using cancel_work_sync() or cancel_delayed_work_sync()
-> > 	instead.  In most situations they will accomplish what you 
-> > 	need.
-> > 
-> > Does this sound like a good idea?  Certainly flush_scheduled_work()  
-> > is used in places where it shouldn't be.
-> 
-> Yeah, recommending more work-specific constructs definitely would be
-> better.  It's bad that we can't recommend the use of flush_work() as
-> it doesn't do cross-cpu flushing.  Maybe that needs explanation too.
-
-I'll do my comments, and you can do yours.  :-)
-
-Should these changes go through Andrew Morton?  Or can you take them?
-
-Alan Stern
-
+							Thanx, Paul
