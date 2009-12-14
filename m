@@ -1,110 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbZLNBsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZLNBuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756380AbZLNBsd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 20:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZLNBsc
+	id S1756108AbZLNBuK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 20:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbZLNBuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 20:48:32 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:33995 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbZLNBsb (ORCPT
+	Sun, 13 Dec 2009 20:50:07 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:51485 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbZLNBuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 20:48:31 -0500
-Date: Sun, 13 Dec 2009 18:48:28 -0700
-From: Alex Chiang <achiang@hp.com>
-To: dmitry.torokhov@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: synaptics touchpad doesn't click
-Message-ID: <20091214014828.GA28402@ldl.fc.hp.com>
+	Sun, 13 Dec 2009 20:50:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=JyU0x91kqTBJg0SWy8poamzqNpiw+fPijULoITXyoWks1YUc2hlsfb+G7sHX12+UlE
+         AjML6C6MfN5zoT2fxSGEqP5FsP216nSwhtSMZM7o44ztkTU2uTJMU/FTPNNNgrbE7FFi
+         d8hTARwW0Uu9MgymzCBmrmduDxT8lkSrXakSA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg>
+References: <alpine.DEB.2.00.0912132013050.26173@ayla.of.borg>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 13 Dec 2009 20:49:42 -0500
+Message-ID: <8bd0f97a0912131749j3fc1d539m8b65c960026d3535@mail.gmail.com>
+Subject: Re: [PATCH] Keys: KEYCTL_SESSION_TO_PARENT needs TIF_NOTIFY_RESUME 
+	architecture support
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>,
+       Chris Zankel <chris@zankel.net>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+On Sun, Dec 13, 2009 at 14:21, Geert Uytterhoeven wrote:
+> As of commit ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to
+> install a process's session keyring on its parent [try #6]"), CONFIG_KEYS=y
+> fails to build on architectures that haven't implemented TIF_NOTIFY_RESUME yet:
+>
+> security/keys/keyctl.c: In function 'keyctl_session_to_parent':
+> security/keys/keyctl.c:1312: error: 'TIF_NOTIFY_RESUME' undeclared (first use in this function)
+> security/keys/keyctl.c:1312: error: (Each undeclared identifier is reported only once
+> security/keys/keyctl.c:1312: error: for each function it appears in.)
+>
+> Make KEYCTL_SESSION_TO_PARENT depend on TIF_NOTIFY_RESUME until blackfin,
+> m68k, and xtensa have implemented it.
 
-I just got a shiny new piece of hardware (HP Envy 15) with a
-Synaptics touchpad, and I can't seem to make the touchpad work
-correctly.  In this version of the touchpad, there are actually
-two physical buttons underneath the pad. In essence, this is a
-touchpad that you can click too.
+i'll be pushing a patch for 2.6.32 to add notify support to Blackfin ;)
 
-I can't get the clicking to work. Of course, I can tap to click,
-but lacking access to the physical buttons means that I can't
-right-click.
-
-Currently, I'm not sure if this is a driver issue or perhaps
-something higher up the stack, perhaps in X or maybe pilot error.
-;)
-
-Distro is Ubuntu Karmic, kernel is latest upstream last pulled on
-13 Dec.
-
-Would like some pointers on how to get started debugging.
-
-Thanks,
-/ac
-
-dmesg snip:
- Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
- brd: module loaded
- loop: module loaded
- input: Macintosh mouse button emulation as /devices/virtual/input/input3
- [...]
- Synaptics Touchpad, model: 1, fw: 7.4, id: 0x1e0b1, caps: 0xd04771/0xe40000
- input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio1/input/input10
-
-/proc/bus/input/devices snip:
-I: Bus=0017 Vendor=0001 Product=0001 Version=0100
-N: Name="Macintosh mouse button emulation"
-P: Phys=
-S: Sysfs=/devices/virtual/input/input3
-U: Uniq=
-H: Handlers=mouse0 event3 
-B: EV=7
-B: KEY=70000 0 0 0 0
-B: REL=3
-
-I: Bus=0011 Vendor=0002 Product=0007 Version=01b1
-N: Name="SynPS/2 Synaptics TouchPad"
-P: Phys=isa0060/serio1/input0
-S: Sysfs=/devices/platform/i8042/serio1/input/input10
-U: Uniq=
-H: Handlers=mouse2 event10 
-B: EV=b
-B: KEY=420 30000 0 0 0 0
-B: ABS=11000003
-
-xinput list snip:
-"Macintosh mouse button emulation"	id=9	[XExtensionPointer]
-	Type is MOUSE
-	Num_buttons is 5
-	Num_axes is 2
-	Mode is Relative
-	Motion_buffer is 256
-	Axis 0 :
-		Min_value is -1
-		Max_value is -1
-		Resolution is 1
-	Axis 1 :
-		Min_value is -1
-		Max_value is -1
-		Resolution is 1
-"SynPS/2 Synaptics TouchPad"	id=10	[XExtensionPointer]
-	Type is TOUCHPAD
-	Num_buttons is 12
-	Num_axes is 2
-	Mode is Relative
-	Motion_buffer is 256
-	Axis 0 :
-		Min_value is 1472
-		Max_value is 5472
-		Resolution is 1
-	Axis 1 :
-		Min_value is 1408
-		Max_value is 4448
-		Resolution is 1
-
+but othewise, Acked-by: Mike Frysinger <vapier@gentoo.org>
+-mike
