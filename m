@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZLNLL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZLNKUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbZLNLL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 06:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbZLNLL5
+	id S1756039AbZLNKUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 05:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZLNKUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 06:11:57 -0500
-Received: from ns.netcenter.hu ([195.228.254.57]:55296 "EHLO mail.netcenter.hu"
+	Mon, 14 Dec 2009 05:20:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32965 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756796AbZLNLL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 06:11:56 -0500
-X-Greylist: delayed 2896 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Dec 2009 06:11:56 EST
-Message-ID: <315c01ca7ca7$641ff8c0$0400a8c0@dcccs>
-From: "Janos Haar" <djani22@netcenter.hu>
-To: <linux-kernel@vger.kernel.org>
-Subject: HDD power up in standby
-Date: Mon, 14 Dec 2009 11:22:12 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-2";
-	reply-type=original
+	id S1755984AbZLNKUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 05:20:44 -0500
+Subject: Re: [PATCH 2/4] Constify struct kset_uevent_ops for
+ 2.6.32-git-053fe57ac v2
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: re.emese@gmail.com
+Cc: linux-kernel@vger.kernel.org, bmarzins@redhat.com,
+       torvalds@linux-foundation.org
+In-Reply-To: <6710f02ae2e61ac5f9d711c263fa1a5693fff998.1260663000.git.re.emese@gmail.com>
+References: <cover.1260663000.git.re.emese@gmail.com>
+	 <6710f02ae2e61ac5f9d711c263fa1a5693fff998.1260663000.git.re.emese@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat UK Ltd
+Date: Mon, 14 Dec 2009 10:22:44 +0000
+Message-Id: <1260786164.2389.2.camel@localhost>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3598
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list,
-
-I have posted to the common, because this theme is for more lists (ide,
-sata, scsi), i think....
-
-I know you will not like me guys, but i have one wish.... :-)
-
-I am building cheap but big storages, and after 12 drive / PC i have faced
-with one problem:
-The too much spinup current wich made by the 12-16 drive at the same time.
-In my actual case, in 12V, there is more than 2A / drive for some seconds.
-
-I know, in SCSI, there is a jumper for this, and the card can wake up the
-drives one by one, but i am using 2TB drives, and in SCSI/SAS this have
-horrible price...
-I have done some invesrtigation, and found this:
-The most of the simple sata drives handles the PUIS mode (by set features 
-ata command), but unfortunately
-only the professional and expensive raid cards supports the wakeing up.
-If the cheap cards founds only 0 byte drives, this is not a problem at all,
-because linux usually not use BIOS support fortunately. :-)
-But i have found when i have spent a little time in google, and in the
-documentation, linux doesn't support PUIS.
-
-I think this would be great, and (relatively) simple to implement this
-feature.
-I can imagine in this way:
-Wake up from PUIS is disabled by default, but can be enabled by command line
-parameter, or compile time configuration.
-The drivers should send the wake up command one by one to the drives, waits
-for RDY DSC, and than scan the drives, and register....
-
-What do you think?
-
-(Now i am searching for the solution to send the wakeup command by user
-program, and than do a "hotplug" in software only, but this is not an
-"elegant" solution...)
+On Mon, 2009-12-14 at 01:00 +0100, re.emese@gmail.com wrote:
+> From: Emese Revfy <re.emese@gmail.com>
+> 
+> 
+> Signed-off-by: Emese Revfy <re.emese@gmail.com>
+Acked-by: Steven Whitehouse <swhiteho@redhat.com>
 
 
-Best Regards,
-Janos Haar
+Steve.
+
+> ---
+>  fs/gfs2/sys.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+> index c5dad1e..2d9b7ed 100644
+> --- a/fs/gfs2/sys.c
+> +++ b/fs/gfs2/sys.c
+> @@ -586,7 +586,7 @@ static int gfs2_uevent(struct kset *kset, struct kobject *kobj,
+>  	return 0;
+>  }
+>  
+> -static struct kset_uevent_ops gfs2_uevent_ops = {
+> +static const struct kset_uevent_ops gfs2_uevent_ops = {
+>  	.uevent = gfs2_uevent,
+>  };
+>  
+
 
