@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZLNAFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZLNAEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbZLNAFZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbZLNAEx
+	id S1755190AbZLNAEZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbZLNAES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:04:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35070 "EHLO mx3.mail.elte.hu"
+	Sun, 13 Dec 2009 19:04:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34578 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754979AbZLMX6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 18:58:32 -0500
+	id S1755141AbZLMX6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 18:58:34 -0500
 From: re.emese@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Emese Revfy <re.emese@gmail.com>, akpm@linux-foundation.org,
-       hskinnemoen@atmel.com, nicolas.ferre@atmel.com,
+Cc: Emese Revfy <re.emese@gmail.com>, vapier@gentoo.org, cooloney@kernel.org,
        torvalds@linux-foundation.org
-Subject: [PATCH 03/10] Constify struct platform_suspend_ops for 2.6.32-git-053fe57ac v2
-Date: Mon, 14 Dec 2009 01:00:19 +0100
-Message-Id: <88df8ccb7c751b010be1ef81c80a02cdc2023265.1260663003.git.re.emese@gmail.com>
+Subject: [PATCH 04/10] Constify struct platform_suspend_ops for 2.6.32-git-053fe57ac v2
+Date: Mon, 14 Dec 2009 01:00:20 +0100
+Message-Id: <8b294f2ca92d23c07266f423b35a1cdfc206eeb3.1260663003.git.re.emese@gmail.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <cover.1260663003.git.re.emese@gmail.com>
 References: <cover.1260663003.git.re.emese@gmail.com>
@@ -36,21 +35,21 @@ From: Emese Revfy <re.emese@gmail.com>
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- arch/avr32/mach-at32ap/pm.c |    2 +-
+ arch/blackfin/mach-common/pm.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/avr32/mach-at32ap/pm.c b/arch/avr32/mach-at32ap/pm.c
-index f021edf..32d680e 100644
---- a/arch/avr32/mach-at32ap/pm.c
-+++ b/arch/avr32/mach-at32ap/pm.c
-@@ -176,7 +176,7 @@ out:
+diff --git a/arch/blackfin/mach-common/pm.c b/arch/blackfin/mach-common/pm.c
+index 8837be4..b2fb413 100644
+--- a/arch/blackfin/mach-common/pm.c
++++ b/arch/blackfin/mach-common/pm.c
+@@ -255,7 +255,7 @@ static int bfin_pm_enter(suspend_state_t state)
  	return 0;
  }
  
--static struct platform_suspend_ops avr32_pm_ops = {
-+static const struct platform_suspend_ops avr32_pm_ops = {
- 	.valid	= avr32_pm_valid_state,
- 	.enter	= avr32_pm_enter,
+-struct platform_suspend_ops bfin_pm_ops = {
++const struct platform_suspend_ops bfin_pm_ops = {
+ 	.enter = bfin_pm_enter,
+ 	.valid	= bfin_pm_valid,
  };
 -- 
 1.6.5.3
