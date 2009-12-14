@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZLNH6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZLNH7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbZLNH6o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 02:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZLNH6m
+	id S1755240AbZLNH7i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 02:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZLNH7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 02:58:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58266 "EHLO hera.kernel.org"
+	Mon, 14 Dec 2009 02:59:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58302 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755188AbZLNH6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 02:58:40 -0500
-Date: Mon, 14 Dec 2009 07:58:01 GMT
-From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	id S1755146AbZLNH7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 02:59:36 -0500
+Date: Mon, 14 Dec 2009 07:58:19 GMT
+From: tip-bot for Joe Perches <joe@perches.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu,
-       amwang@redhat.com
+       joe@perches.com, torvalds@linux-foundation.org, peterz@infradead.org,
+       tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, amwang@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
-References: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
+       joe@perches.com, torvalds@linux-foundation.org, peterz@infradead.org,
+       tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
+In-Reply-To: <1260775443.18538.16.camel@Joe-Laptop.home>
+References: <1260775443.18538.16.camel@Joe-Laptop.home>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Remove usedac in feature-removal-schedule.txt
-Message-ID: <tip-06f8bda8324fa8bf39eed81d8b3df08063a37696@git.kernel.org>
-Git-Commit-ID: 06f8bda8324fa8bf39eed81d8b3df08063a37696
+Subject: [tip:x86/urgent] x86: Fix build warning in arch/x86/mm/mmio-mod.c
+Message-ID: <tip-eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e@git.kernel.org>
+Git-Commit-ID: eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,48 +31,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  06f8bda8324fa8bf39eed81d8b3df08063a37696
-Gitweb:     http://git.kernel.org/tip/06f8bda8324fa8bf39eed81d8b3df08063a37696
-Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-AuthorDate: Mon, 14 Dec 2009 11:06:15 +0900
+Commit-ID:  eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e
+Gitweb:     http://git.kernel.org/tip/eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e
+Author:     Joe Perches <joe@perches.com>
+AuthorDate: Sun, 13 Dec 2009 23:24:03 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 14 Dec 2009 08:53:54 +0100
+CommitDate: Mon, 14 Dec 2009 08:55:43 +0100
 
-x86: Remove usedac in feature-removal-schedule.txt
+x86: Fix build warning in arch/x86/mm/mmio-mod.c
 
-The reason of removal, "replaced by allowdac and no dac
-combination" is incorrect. There is no way to do the same thing
-with "allowdac" and "nodac" combination.
+Stephen Rothwell reported these warnings:
 
-The usedac option enables us to stop via_no_dac() setting
-forbid_dac to 1. That is, someone who uses VIA bridges can use
-DAC with this option even if some of VIA bridges seem to be
-broken about DAC.
+ arch/x86/mm/mmio-mod.c: In function 'print_pte':
+ arch/x86/mm/mmio-mod.c:100: warning: too many arguments for format
+ arch/x86/mm/mmio-mod.c:106: warning: too many arguments for format
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Acked-by: WANG Cong <amwang@redhat.com>
-Cc: gcosta@redhat.com
-LKML-Reference: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
+The 'fmt' was left out accidentally.
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Joe Perches <joe@perches.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus <torvalds@linux-foundation.org>
+LKML-Reference: <1260775443.18538.16.camel@Joe-Laptop.home>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/feature-removal-schedule.txt |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+ arch/x86/mm/mmio-mod.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 2a4d779..eb2c138 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -291,13 +291,6 @@ Who:	Michael Buesch <mb@bu3sch.de>
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+index 4c765e9..34a3291 100644
+--- a/arch/x86/mm/mmio-mod.c
++++ b/arch/x86/mm/mmio-mod.c
+@@ -20,7 +20,7 @@
+  * Derived from the read-mod example from relay-examples by Tom Zanussi.
+  */
  
- ---------------------------
+-#define pr_fmt(fmt) "mmiotrace: "
++#define pr_fmt(fmt) "mmiotrace: " fmt
  
--What:	usedac i386 kernel parameter
--When:	2.6.27
--Why:	replaced by allowdac and no dac combination
--Who:	Glauber Costa <gcosta@redhat.com>
--
-----------------------------
--
- What: print_fn_descriptor_symbol()
- When: October 2009
- Why:  The %pF vsprintf format provides the same functionality in a
+ #define DEBUG 1
+ 
