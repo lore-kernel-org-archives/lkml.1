@@ -1,140 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932648AbZLNW4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZLNW6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932648AbZLNW4Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757803AbZLNW4P
+	id S1758669AbZLNW6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:58:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbZLNW6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:56:15 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:49421 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755489AbZLNW4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:56:14 -0500
-Date: Mon, 14 Dec 2009 22:56:07 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: [git pull] vmware drm/kms driver under staging
-Message-ID: <alpine.DEB.2.00.0912142253450.24200@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-365326625-1260831367=:24200"
+	Mon, 14 Dec 2009 17:58:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33369 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757812AbZLNW6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:58:31 -0500
+Subject: Re: [patch 2/2] sched: Scale the nohz_tracker logic by making it
+ per NUMA node
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+In-Reply-To: <1260829958.15729.194.camel@localhost.localdomain>
+References: <20091211012748.267627000@intel.com>
+	 <20091211013056.450920000@intel.com>  <1260829283.8023.124.camel@laptop>
+	 <1260829958.15729.194.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Dec 2009 23:58:16 +0100
+Message-ID: <1260831496.8023.210.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 2009-12-14 at 14:32 -0800, Pallipadi, Venkatesh wrote:
+> On Mon, 2009-12-14 at 14:21 -0800, Peter Zijlstra wrote:
+> > On Thu, 2009-12-10 at 17:27 -0800, venkatesh.pallipadi@intel.com wrote:
+> > > Having one idle CPU doing the rebalancing for all the idle CPUs in
+> > > nohz mode does not scale well with increasing number of cores and
+> > > sockets. Make the nohz_tracker per NUMA node. This results in multiple
+> > > idle load balancing happening at NUMA node level and idle load balancer
+> > > only does the rebalance domain among all the other nohz CPUs in that
+> > > NUMA node.
+> > > 
+> > > This addresses the below problem with the current nohz ilb logic
+> > > * The lone balancer may end up spending a lot of time doing the
+> > > * balancing on
+> > >   behalf of nohz CPUs, especially with increasing number of sockets and
+> > >   cores in the platform.
+> > 
+> > If the purpose is to keep sockets idle, doing things per node doesn't
+> > seem like a fine plan, since we're having nodes <= socket machines these
+> > days.
+> 
+> The idea is to do idle balance only within the nodes.
+> Eg: 4 node (and 4 socket) system with each socket having 4 cores.
+> If there is a single active thread on such a system, say on socket 3.
+> Without this change we have 1 idle load balancer (which may be in socket
+> 0) which has periodic ticks and remaining 14 cores will be tickless.
+> But this one idle load balancer does load balance on behalf of itself +
+> 14 other idle cores.
+> 
+> With the change proposed in this patch, we will have 3 completely idle
+> nodes/sockets. We will not do load balance on these cores at all.
 
---29444707-365326625-1260831367=:24200
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+That seems like a behavioural change, not balancing these 3 nodes at all
+could lead to overload scenarios on the one active node, right?
 
+> Remaining one active socket will have one idle load balancer, which when
+> needed will do idle load balancing on behalf of itself + 2 other idle
+> cores in that socket.
 
-Hi Linus,
+> If there all sockets have atleast one busy core, then we may have more
+> than one idle load balancer, but each will only do idle load balance on
+> behalf of idle processors in its own node, so total idle load balance
+> will be same as now.
 
-Please pull the 'drm-vmware-staging' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-vmware-staging
+How about things like Magny-Cours which will have multiple nodes per
+socket, wouldn't that be best served by having the total socket idle,
+instead of just half of it?
 
-This adds the VMware KMS driver for their virtual GPU, the Kconfig is 
-under staging until they are happy with the ioctl interface to the 3D 
-driver, which may be quite soon.
-
-We now have 4 KMS drivers, hopefully it'll quieten down for a while, while
-we fix them all up.
-
-Dave.
-
- drivers/gpu/drm/Makefile                 |    1 +
- drivers/gpu/drm/vmwgfx/Kconfig           |   13 +
- drivers/gpu/drm/vmwgfx/Makefile          |    9 +
- drivers/gpu/drm/vmwgfx/svga3d_reg.h      | 1793 ++++++++++++++++++++++++++++++
- drivers/gpu/drm/vmwgfx/svga_escape.h     |   89 ++
- drivers/gpu/drm/vmwgfx/svga_overlay.h    |  201 ++++
- drivers/gpu/drm/vmwgfx/svga_reg.h        | 1346 ++++++++++++++++++++++
- drivers/gpu/drm/vmwgfx/svga_types.h      |   45 +
- drivers/gpu/drm/vmwgfx/vmwgfx_buffer.c   |  229 ++++
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c      |  735 ++++++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.h      |  511 +++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c  |  516 +++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_fb.c       |  742 ++++++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c     |  521 +++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_gmr.c      |  213 ++++
- drivers/gpu/drm/vmwgfx/vmwgfx_ioctl.c    |   81 ++
- drivers/gpu/drm/vmwgfx/vmwgfx_irq.c      |  295 +++++
- drivers/gpu/drm/vmwgfx/vmwgfx_kms.c      |  872 +++++++++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_kms.h      |  102 ++
- drivers/gpu/drm/vmwgfx/vmwgfx_ldu.c      |  516 +++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_overlay.c  |  634 +++++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_reg.h      |   57 +
- drivers/gpu/drm/vmwgfx/vmwgfx_resource.c | 1192 ++++++++++++++++++++
- drivers/gpu/drm/vmwgfx/vmwgfx_ttm_glue.c |   99 ++
- drivers/staging/Kconfig                  |    2 +
- include/drm/Kbuild                       |    1 +
- include/drm/ttm/ttm_object.h             |    6 +-
- include/drm/vmwgfx_drm.h                 |  574 ++++++++++
- 28 files changed, 11394 insertions(+), 1 deletions(-)
- create mode 100644 drivers/gpu/drm/vmwgfx/Kconfig
- create mode 100644 drivers/gpu/drm/vmwgfx/Makefile
- create mode 100644 drivers/gpu/drm/vmwgfx/svga3d_reg.h
- create mode 100644 drivers/gpu/drm/vmwgfx/svga_escape.h
- create mode 100644 drivers/gpu/drm/vmwgfx/svga_overlay.h
- create mode 100644 drivers/gpu/drm/vmwgfx/svga_reg.h
- create mode 100644 drivers/gpu/drm/vmwgfx/svga_types.h
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_buffer.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_drv.h
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_gmr.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_ioctl.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_irq.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_kms.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_kms.h
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_ldu.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_overlay.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_reg.h
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_resource.c
- create mode 100644 drivers/gpu/drm/vmwgfx/vmwgfx_ttm_glue.c
- create mode 100644 include/drm/vmwgfx_drm.h
-
-commit fb1d9738ca053ea8afa5e86af6463155f983b01c
-Author: Jakob Bornecrantz <jakob@vmware.com>
-Date:   Thu Dec 10 00:19:58 2009 +0000
-
-    drm/vmwgfx: Add DRM driver for VMware Virtual GPU
-    
-    This commit adds the vmwgfx driver for the VWware Virtual GPU aka SVGA.
-    The driver is under staging the same as Nouveau and Radeon KMS. Hopefully
-    the 2D ioctls are bug free and don't need changing, so that part of the
-    API should be stable. But there there is a pretty big chance that the 3D API
-    will change in the future.
-    
-    Signed-off-by: Thomas Hellström <thellstrom@vmware.com>
-    Signed-off-by: Jakob Bornecrantz <jakob@vmware.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 632f61178d0473861ba77e774bb654b37bc7eccc
-Author: Jakob Bornecrantz <jakob@vmware.com>
-Date:   Thu Dec 10 00:19:10 2009 +0000
-
-    drm/vmwgfx: Add svga headers for vmwgfx driver
-    
-    These headers are shared between multiple place where
-    different coding standards apply. They will be fixed
-    up at a later time.
-    
-    Signed-off-by: Thomas Hellström <thellstrom@vmware.com>
-    Signed-off-by: Jakob Bornecrantz <jakob@vmware.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit be1cb8689c480228ffd2e4bfccc0dab7156cd9ea
-Author: Jakob Bornecrantz <jakob@vmware.com>
-Date:   Mon Dec 14 22:07:45 2009 +0000
-
-    drm/ttm: Add more driver type enums
-    
-    Signed-off-by: Jakob Bornecrantz <jakob@vmware.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
---29444707-365326625-1260831367=:24200--
