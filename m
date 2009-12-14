@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbZLNV0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933088AbZLNV0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbZLNV0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932672AbZLNV0R
+	id S933088AbZLNV0z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:26:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932679AbZLNV0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:26:17 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47395 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932662AbZLNV0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:26:16 -0500
-Message-ID: <4B26AD65.1020004@gmail.com>
-Date: Mon, 14 Dec 2009 22:25:57 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 14 Dec 2009 16:26:52 -0500
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:34460 "EHLO mail.cs.nmsu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932672AbZLNV0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 16:26:50 -0500
+Message-ID: <554bd6a9b7bdf27bbc4bcbd053d6a16f.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+Date: Mon, 14 Dec 2009 14:26:38 -0700
+Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, krzysztof.h1@wp.pl,
+       akpm@linux-foundation.org, linux-usb@vger.kernel.org, oliver@neukum.org,
+       linux-input@vger.kernel.org, jkosina@suse.cz
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: "David S. Miller" <davem@davemloft.net>,
-       Neil Horman <nhorman@tuxdriver.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: packet_sendmsg_spkt sleeping from invalid context
-References: <20091214175211.GA5102@nowhere> <4B2690E7.4030303@gmail.com> <20091214205231.GB5037@nowhere>
-In-Reply-To: <20091214205231.GB5037@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Dec 2009 22:25:59 +0100 (CET)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 14/12/2009 21:52, Frederic Weisbecker a écrit :
-> 
-> I also wonder. Are you using PREEMPT_RCU ?
+Sorry about the repeated messages, but it's been a long time since I've
+used "mail" directly and forgot that it it only took email addresses and
+didn't parse names.
 
-Not at all :)
+My only other choice for an email client (squirrelmail) linewrapped the
+patch previously so I used 'mail' directly.
 
-But yes, this is illegal to do the memcpy_fromiovec() in rcu_read_lock() context.
-
-> That may explain why you haven't seen this issue because
-> might_sleep() doesn't see you are in a rcu read locked
-> section as preemption is not disabled, but it is illegal to
-> voluntarily sleep in such area (although it's fine with
-> preempt rcu) as doing so with non-prempt RCU config would barf.
-> 
-> I'm trying a patch to handle that.
-
-As you want, I also have a patch testing right now :)
