@@ -1,99 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZLNPby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZLNPcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbZLNPby (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 10:31:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZLNPbx
+	id S1755927AbZLNPcl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 10:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZLNPck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 10:31:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:49187 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753288AbZLNPbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 10:31:51 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH 07/12] i2cdev: move compat_ioctl handling into driver
-Date: Mon, 14 Dec 2009 16:31:45 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org
-References: <1258331227-1694-1-git-send-email-arnd@arndb.de> <1258331227-1694-8-git-send-email-arnd@arndb.de> <20091214152307.5ba3ea4d@hyperion.delvare>
-In-Reply-To: <20091214152307.5ba3ea4d@hyperion.delvare>
+	Mon, 14 Dec 2009 10:32:40 -0500
+Received: from thunk.org ([69.25.196.29]:44689 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753499AbZLNPcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 10:32:39 -0500
+Date: Mon, 14 Dec 2009 10:32:33 -0500
+From: tytso@mit.edu
+To: Masa <masa.korg@gmail.com>
+Cc: Mithlesh Thukral <mithlesh@linsyssoft.com>, devel@driverdev.osuosl.org,
+       Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [How to upload our driver to "kernel.org"] Would you give me
+ your advice?
+Message-ID: <20091214153233.GE4867@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Masa <masa.korg@gmail.com>,
+	Mithlesh Thukral <mithlesh@linsyssoft.com>,
+	devel@driverdev.osuosl.org,
+	Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= <ariveira@gmail.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
+ <20091214122649.2d914941@varda>
+ <200912141751.36699.mithlesh@linsyssoft.com>
+ <c7ac85d60912140645n5dbcadedie1200ce5d3a9cb8d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912141631.46300.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18luy3AdxZUoTHDX0dVU8prpkxZFV/WMmNLyCw
- a70xYwt+8ut+8wpo5ZAHYAaOVYuLlqUNJkqvMmlcE7iqTAmqSt
- p543d/CIGp1z+Um1vV5fQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c7ac85d60912140645n5dbcadedie1200ce5d3a9cb8d@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 December 2009, Jean Delvare wrote:
-> This patch no longer applies so I can't test it. I do not have any
-> objection about it though.
+On Mon, Dec 14, 2009 at 11:45:10PM +0900, Masa wrote:
+> Oh! Do I have to base our patches to the latest kernel?
+> May be so.
+> And the community feedback is important.
+> It seems to need big effort and we will make every effort anyway.
 
-The patch is part of a longer series of patches moving code out
-of fs/compat_ioctl.c. If you want to test it, you can just apply the
-half adding it to i2c-dev.c and that version will be used.
+There are resources available to help you with getting your patches
+based on the latest kernel version.  There are many ways in which a
+company can be involved with supporting their hardware with a fully
+supported Linux device driver.
 
-That part has gained a trivial conflict against an #include cleanup.
+One model is one where the hardware company employs an engineer who is
+actively involved with Linux community and is constantly upgrading and
+developing their device driver against the latest kernel, and then
+group such as the Driver Backport Workgroup[1] will backport drivers
+to various enterprise kernels.  Some companies like this model because
+they retain control over the development of the device driver, and
+they can also update it to support hardware not yet released for sale;
+some companies such as Intel and IBM, have been able to use this model
+to assure that the latest mainstream kernel has support for a new
+version of their hardware device at or before the moment it is
+released for sale to the general public.
 
-> I'm also not sure what I am supposed to comment on. As far as I can
-> see, most of this patch is merely moving code from one file to another,
-> so there's little point in reviewing that code. Is there any part in
-> particular which needs my attention?
+Another model is one where the company makes some combination of (1)
+hardware specifications, (2) patches against an older kernel, and (3)
+hardware available to developers (the Linux Foundation can help
+faciliate this), and then a group such as the Linux Driver Project[2]
+can help write a driver or port the driver to the latest kernel.  This
+is done on a volunteer basis, and so how quickly this might happen is
+less under the control of the hardware company involved.
 
-No, nothing particular. I was just running the whole series by the
-maintainers (or the closest approximation of that) in order to
-collect Acked-by and/or have people include the patches in their
-trees, especially the ones that I didn't have a test case for.
-The patches I got an Ack for were merged now, and I'll repost
-the rest after -rc1 to prepare them for the next merge window.
+There are many other models in between these two extremes, depending
+on how closely the company is willing and interested to work with the
+Linux development community.  For example, the upstream maintainer may
+be a volunteer, who gets free hardware samples (and possibly
+occasional contract work) to support the hardware, but the company is
+less involved than the "full engagement" model where their engineer is
+the primary mainstream developer, and but more involved than the
+company dumps some specs, sample code, and some hardware and is
+otherwise not involved.
 
-A good way to avoid conflicts would be if you take the i2c-dev.c
-parts into a tree of yours and let me follow up with removing the
-code from fs/compat_ioctl.c once your tree is merged.
+A general overview of some of the issues involved in why things work
+they way they do can be found here [3].
 
-If everyone does that, I can just remove half of fs/compat_ioctl.c
-at once.
+Best regards,
 
-> If you want to test your patch yourself, it is fairly easy using the
-> i2c-stub driver, which is a software-only i2c bus driver. Install the
-> i2c-tools package on your system, and then:
-> 
-> # modprobe i2c-stub chip_addr=0x6d
-> # modprobe i2c-dev
-> # i2cdetect -l
-> # i2cbus=$(i2cdetect -l | grep stub | cut -f1 | cut -d- -f2)
-> # i2cdetect -F $i2cbus
-> Functionalities implemented by /dev/i2c-x:
-> I2C                              no
-> SMBus Quick Command              yes
-> SMBus Send Byte                  yes
-> SMBus Receive Byte               yes
-> SMBus Write Byte                 yes
-> SMBus Read Byte                  yes
-> SMBus Write Word                 yes
-> SMBus Read Word                  yes
-> SMBus Process Call               no
-> SMBus Block Write                no
-> SMBus Block Read                 no
-> SMBus Block Process Call         no
-> SMBus PEC                        no
-> I2C Block Write                  no
-> I2C Block Read                   no
-> # i2cset -y $i2cbus 0x6d 0x00 0x42 b
-> Value 0x42 written, readback matched
-> # i2cget -y $i2cbus 0x6d 0x00 b
-> 0x42
-> #
-> 
-> The last 3 commands will generate i2c-dev ioctls.
+Theodore Y. Ts'o
+Chief Technical Officer, Linux Foundation
+STSM, IBM Linux Technology Center
+Medford, Massachusetts
+(617) 245-5616, T/L 930-1182
+(781) 391-2699 (fax)
+(781) 526-0121 (cell)
 
-Ok, I'll try that, thanks!
-
-	Arnd <><
+[1] http://www.linuxfoundation.org/collaborate/workgroups/driver-backport
+[2] http://www.linuxdriverproject.org/foswiki/bin/view
+[3] http://www.linuxfoundation.org/collaborate/publications/linux-driver-model
