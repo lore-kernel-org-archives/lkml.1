@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbZLNSYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbZLNSgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932389AbZLNSYN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 13:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932362AbZLNSYM
+	id S1753427AbZLNSgH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 13:36:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZLNSgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 13:24:12 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:35828 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932357AbZLNSYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 13:24:11 -0500
-From: Phil Carmody <ext-phil.2.carmody@nokia.com>
-To: gregkh@suse.de, kay.sievers@vrfy.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] driver core: Prevent reference to freed memory on error path
-Date: Mon, 14 Dec 2009 20:28:12 +0200
-Message-Id: <1260815292-18538-1-git-send-email-ext-phil.2.carmody@nokia.com>
-X-Mailer: git-send-email 1.6.0.4
-X-OriginalArrivalTime: 14 Dec 2009 18:24:00.0892 (UTC) FILETIME=[9BA47BC0:01CA7CEA]
-X-Nokia-AV: Clean
+	Mon, 14 Dec 2009 13:36:06 -0500
+Received: from waste.org ([173.11.57.241]:48391 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750706AbZLNSgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 13:36:05 -0500
+Subject: Re: upstream regression: slob hang
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <4B268366.6090207@cs.helsinki.fi>
+References: <20091210084949.GA18015@elte.hu>
+	 <4B268366.6090207@cs.helsinki.fi>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Dec 2009 12:36:01 -0600
+Message-ID: <1260815761.24459.1434.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-priv is drv->p. So only free drv->p after we've finished using priv.
+On Mon, 2009-12-14 at 20:26 +0200, Pekka Enberg wrote:
+> Hi Ingo,
+> 
+> Ingo Molnar wrote:
+> > FYI, the attached config hangs in the SLOB code, on 32-bit x86 laptop 
+> > (dual core). No log available from that box.
+> 
+> Boots fine on my 32-bit x86 laptop.
 
-Found using a static code analysis tool
+Thanks, Pekka. I've been too busy to experiment with this. Ingo,
+anything interesting about your laptop? How much memory do you have?
 
-Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
----
- drivers/base/bus.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 63c143e..c0c5a43 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -703,9 +703,9 @@ int bus_add_driver(struct device_driver *drv)
- 	return 0;
- 
- out_unregister:
-+	kobject_put(&priv->kobj);
- 	kfree(drv->p);
- 	drv->p = NULL;
--	kobject_put(&priv->kobj);
- out_put_bus:
- 	bus_put(bus);
- 	return error;
 -- 
-1.6.0.4
+http://selenic.com : development and support for Mercurial and Linux
+
 
