@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750784AbZLNWil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbZLNWwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750784AbZLNWil (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZLNWik
+	id S932603AbZLNWwM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbZLNWwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:38:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44804 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbZLNWij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:38:39 -0500
-Message-ID: <4B26BE67.5060107@kernel.org>
-Date: Tue, 15 Dec 2009 07:38:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Warn people about flush_scheduled_work()
-References: <Pine.LNX.4.44L0.0912141619410.2690-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912141619410.2690-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 Dec 2009 17:52:10 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:43968 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932252AbZLNWwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:52:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=OkKMKU+VSMBMu/PZCvNHZVDXGBcfJlUrhVh5OxnnXCMoxtg+qrS/ZqIWtYuo1mwKC2
+         5zX+2BQUldLNWHGCI7hd9oqKkEZcQaheObOlvxe9hyivQz6lO5vPNAtduUGGLBUJR8dV
+         42pnQLvqGcZ4fGb8aLpn9iJF86cMkg+tli+Mw=
+Date: Tue, 15 Dec 2009 07:39:22 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+Subject: Re: [cleanup][PATCH 1/8] vmscan: Make shrink_zone_begin/end helper
+ function
+Message-Id: <20091215073922.494c3e66.minchan.kim@barrios-desktop>
+In-Reply-To: <20091214212308.BBB1.A69D9226@jp.fujitsu.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+	<20091214210823.BBAE.A69D9226@jp.fujitsu.com>
+	<20091214212308.BBB1.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Alan Stern.
+On Mon, 14 Dec 2009 21:23:46 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-On 12/15/2009 06:33 AM, Alan Stern wrote:
-> You've spent some time working on the workqueue implementation, right?  
-> I'd like to add comments or kerneldoc warning people about how 
-> dangerous it can be to use flush_scheduled_work() and related 
-> functions.  Something like this:
+> concurrent_reclaimers limitation related code made mess to shrink_zone.
+> To introduce helper function increase readability.
 > 
-> 	Think twice before calling this function!  It's very easy
-> 	to get into trouble if you don't take great care.  Either
-> 	of the following situations will lead to deadlock:
-> 
-> 		Your code is running in the context of a scheduled
-> 		work routine.
->
-> 		Your code or its caller holds a lock needed by
-> 		one of the work items currently on the workqueue.
->
-> 	Since you generally don't know who your caller is, what locks
-> 	it holds, or what locks are needed by the items on the 
-> 	workqueue, avoiding these situations is quite difficult.
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-I think both problems can be detected by lockdep, right?  So, they
-aren't that difficult to detect.
-
-> 	Consider using cancel_work_sync() or cancel_delayed_work_sync()
-> 	instead.  In most situations they will accomplish what you 
-> 	need.
-> 
-> Does this sound like a good idea?  Certainly flush_scheduled_work()  
-> is used in places where it shouldn't be.
-
-Yeah, recommending more work-specific constructs definitely would be
-better.  It's bad that we can't recommend the use of flush_work() as
-it doesn't do cross-cpu flushing.  Maybe that needs explanation too.
-
-> If comments like this are added, where do you think would be a good 
-> place to put them?
-
-DocBook comment on top of each function, maybe?
-
-Thanks.
+Through looking over patch series, it's nice clean up.
 
 -- 
-tejun
+Kind regards,
+Minchan Kim
