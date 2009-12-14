@@ -1,132 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbZLNW1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933156AbZLNW2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933152AbZLNW1P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932885AbZLNW1M
+	id S933156AbZLNW2Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932615AbZLNW2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:27:12 -0500
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:2102
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932731AbZLNW1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:27:08 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ak4BAMlKJkt8qNxK/2dsb2JhbAAI2ACEKwQ
-X-IronPort-AV: E=Sophos;i="4.47,397,1257091200"; 
-   d="scan'208";a="535697404"
-Subject: Re: [PATCH 3/3] gpiolib: use chip->names for symlinks, always use
- gpioN for device names
-From: Ben Nizette <bn@niasdigital.com>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Cc: David Brownell <david-b@pacbell.net>, Greg KH <gregkh@suse.de>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dsilvers@simtec.co.uk" <dsilvers@simtec.co.uk>,
-       "ben@simtec.co.uk" <ben@simtec.co.uk>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-In-Reply-To: <1260789363.25352.7358.camel@jani-desktop>
-References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com>
-	 <71eff9c88d3fec3daa218341c83c19a106ee1f62.1260364108.git.ext-jani.1.nikula@nokia.com>
-	 <8859db84eb13c0056e20c5edd5dba6837cb60c27.1260364108.git.ext-jani.1.nikula@nokia.com>
-	 <200912101939.30446.david-b@pacbell.net>  <20091211034711.GA2773@suse.de>
-	 <1260508357.12048.217.camel@ben-desktop>
-	 <1260789363.25352.7358.camel@jani-desktop>
-Content-Type: text/plain
-Date: Tue, 15 Dec 2009 09:27:04 +1100
-Message-Id: <1260829624.5729.18.camel@ben-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 17:28:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45536 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932181AbZLNW2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:28:08 -0500
+Date: Mon, 14 Dec 2009 22:27:38 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       mmarek@suse.cz, tglx@linutronix.de, sedat.dilek@gmail.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mmarek@suse.cz, sedat.dilek@gmail.com
+In-Reply-To: <4AF86211.3070103@zytor.com>
+References: <4AF86211.3070103@zytor.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Regex support and known-movable symbols for relocs, fix _end
+Message-ID: <tip-873b5271f878a11729fb4602c6ce967d0ff81119@git.kernel.org>
+Git-Commit-ID: 873b5271f878a11729fb4602c6ce967d0ff81119
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-14 at 13:16 +0200, Jani Nikula wrote:
-> Hi David and Ben -
-> 
-> On Fri, 2009-12-11 at 06:12 +0100, ext Ben Nizette wrote:
-> > On Thu, 2009-12-10 at 19:47 -0800, Greg KH wrote:
-> > > As a sysfs file within the device directory called 'name'?  Then just
-> > > grep through the tree to find the right device, that also handles
-> > > duplicates just fine, right?
-> > 
-> > Well it bunts the handling of duplicates to who ever is grepping but
-> > yea, sounds good.  The user script can sanity-check it's results against
-> > the controlling gpio-chip if need be.  In fact, maybe symlink from
-> > gpioN/chip back to gpio-chipY could be useful?  A bit redundant though,
-> > as you can check using the number ranges..
-> > 
-> > In fact I thought I had a patch to create /sys/class/gpio/gpioN/name at
-> > some stage..  Can't find it though, oh well.
-> 
-> Ben, could you please look harder? ;)
+Commit-ID:  873b5271f878a11729fb4602c6ce967d0ff81119
+Gitweb:     http://git.kernel.org/tip/873b5271f878a11729fb4602c6ce967d0ff81119
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Mon, 14 Dec 2009 13:55:20 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Mon, 14 Dec 2009 13:55:20 -0800
 
-hehe, likely destroyed in the Great Hard-Disk Fire of '08.  Shouldn't be
-hard to recreate, though I don't have the time at the moment.
+x86: Regex support and known-movable symbols for relocs, fix _end
 
-> 
-> If we were to add /sys/class/gpio/gpioN/name attribute, what would be
-> the optimal source for the names?
+This adds a new category of symbols to the relocs program: symbols
+which are known to be relative, even though the linker emits them as
+absolute; this is the case for symbols that live in the linker script,
+which currently applies to _end.
 
-You and I seem to be on the same page here; my $0.02 is for an IDR with
-gpio_{get,set,lookup}_name() functions.  Actually, I can't remember, do
-the new flex arrays efficiently store sparse array data, or are they
-just useful 'coz they can grow?
+Unfortunately the previous workaround of putting _end in its own empty
+section was defeated by newer binutils, which remove empty sections
+completely.
 
-Still open to debate though is whether gpio_set_name should enforce
-uniqueness; is isn't required at a FS-level any more but I can't see
-anything good coming from namespace collisions here.
+This patch also changes the symbol matching to use regular expressions
+instead of hardcoded C for specific patterns.
 
-> 
-> I'd prefer a scheme where a) the name could be set in both board files
-> and drivers, the latter overriding the former as necessary, and b) the
-> name could be set without actually requesting the gpio, so you could set
-> all known names in board files without interfering with the drivers.
-> 
-> AFAICS this would pretty much lead to adding a pair of new functions
-> gpio_set_name() and gpio_get_name(), which would work also for gpios
-> that haven't been requested. (IDR lookup Ben mentioned in another mail
-> sounds good, though there's the problem you can't specify the id - this
-> is why gpio_setup_irq() uses the flags for storing the id.)
+This is a decidedly non-minimal patch: a modified version of the
+relocs program is used as part of the Syslinux build, and this 	is
+basically a backport to Linux of some of those changes; they have
+thus been well tested.
 
-Agreed.
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <4AF86211.3070103@zytor.com>
+Acked-by: Michal Marek <mmarek@suse.cz>
+Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
+---
+ arch/x86/boot/compressed/relocs.c |   87 +++++++++++++++++++++++++------------
+ arch/x86/kernel/vmlinux.lds.S     |    4 +-
+ 2 files changed, 60 insertions(+), 31 deletions(-)
 
-> 
-> Here are some other alternatives I could think of, but none of them
-> sound good to me:
-> 
-> 1) Add new function gpio_export_name() to export with a certain name
-> attribute. Leads to two ways of exporting.
-
-Well 3 including _link().  I don't think that's the problem so much as
-restricting naming to userspace users only.  While I can't think of
-kernel users who /need/ this functionality, it'd clean a few code paths
-and while we're at it, why not?
-
-> 
-> 2) Add 'name' parameter to gpio_export() to export with a certain name
-> attribute. Changes an existing interface.
-
-As above
-
-> 
-> 3) Use 'label' in gpio_request() for name attribute. Stores names also
-> for gpios that are never exported, wastes a pointer per gpio in
-> gpio_desc.
-
-And while debugfs is emphatically /not/ an ABI, it's still a semantic
-change to the exported information
-
-> 
-> 4) Use chip->names. Wastes a pointer per gpio even if one name is used,
-> almost the same as adding char *name to struct gpio_desc. Not convenient
-> to use, at least in OMAP.
-
-Not convenient on any platform I know of, I've never liked chip->names
-and would hope it goes away when (something like) the above interface is
-implemented.
-
-	--Ben.
-
-
+diff --git a/arch/x86/boot/compressed/relocs.c b/arch/x86/boot/compressed/relocs.c
+index bbeb0c3..89bbf4e 100644
+--- a/arch/x86/boot/compressed/relocs.c
++++ b/arch/x86/boot/compressed/relocs.c
+@@ -9,6 +9,9 @@
+ #include <byteswap.h>
+ #define USE_BSD
+ #include <endian.h>
++#include <regex.h>
++
++static void die(char *fmt, ...);
+ 
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+ static Elf32_Ehdr ehdr;
+@@ -30,25 +33,47 @@ static struct section *secs;
+  * the address for which it has been compiled. Don't warn user about
+  * absolute relocations present w.r.t these symbols.
+  */
+-static const char* safe_abs_relocs[] = {
+-		"xen_irq_disable_direct_reloc",
+-		"xen_save_fl_direct_reloc",
+-};
++static const char abs_sym_regex[] =
++	"^(xen_irq_disable_direct_reloc$|"
++	"xen_save_fl_direct_reloc$|"
++	"VDSO|"
++	"__crc_)";
++static regex_t abs_sym_regex_c;
++static int is_abs_reloc(const char *sym_name)
++{
++	return !regexec(&abs_sym_regex_c, sym_name, 0, NULL, 0);
++}
+ 
+-static int is_safe_abs_reloc(const char* sym_name)
++/*
++ * These symbols are known to be relative, even if the linker marks them
++ * as absolute (typically defined outside any section in the linker script.)
++ */
++static const char rel_sym_regex[] =
++	"^_end$";
++static regex_t rel_sym_regex_c;
++static int is_rel_reloc(const char *sym_name)
+ {
+-	int i;
++	return !regexec(&rel_sym_regex_c, sym_name, 0, NULL, 0);
++}
+ 
+-	for (i = 0; i < ARRAY_SIZE(safe_abs_relocs); i++) {
+-		if (!strcmp(sym_name, safe_abs_relocs[i]))
+-			/* Match found */
+-			return 1;
+-	}
+-	if (strncmp(sym_name, "VDSO", 4) == 0)
+-		return 1;
+-	if (strncmp(sym_name, "__crc_", 6) == 0)
+-		return 1;
+-	return 0;
++static void regex_init(void)
++{
++        char errbuf[128];
++        int err;
++	
++        err = regcomp(&abs_sym_regex_c, abs_sym_regex,
++                      REG_EXTENDED|REG_NOSUB);
++        if (err) {
++                regerror(err, &abs_sym_regex_c, errbuf, sizeof errbuf);
++                die("%s", errbuf);
++        }
++
++        err = regcomp(&rel_sym_regex_c, rel_sym_regex,
++                      REG_EXTENDED|REG_NOSUB);
++        if (err) {
++                regerror(err, &rel_sym_regex_c, errbuf, sizeof errbuf);
++                die("%s", errbuf);
++        }
+ }
+ 
+ static void die(char *fmt, ...)
+@@ -131,7 +156,7 @@ static const char *rel_type(unsigned type)
+ #undef REL_TYPE
+ 	};
+ 	const char *name = "unknown type rel type name";
+-	if (type < ARRAY_SIZE(type_name)) {
++	if (type < ARRAY_SIZE(type_name) && type_name[type]) {
+ 		name = type_name[type];
+ 	}
+ 	return name;
+@@ -448,7 +473,7 @@ static void print_absolute_relocs(void)
+ 			 * Before warning check if this absolute symbol
+ 			 * relocation is harmless.
+ 			 */
+-			if (is_safe_abs_reloc(name))
++			if (is_abs_reloc(name) || is_rel_reloc(name))
+ 				continue;
+ 
+ 			if (!printed) {
+@@ -501,21 +526,26 @@ static void walk_relocs(void (*visit)(Elf32_Rel *rel, Elf32_Sym *sym))
+ 			sym = &sh_symtab[ELF32_R_SYM(rel->r_info)];
+ 			r_type = ELF32_R_TYPE(rel->r_info);
+ 			/* Don't visit relocations to absolute symbols */
+-			if (sym->st_shndx == SHN_ABS) {
++			if (sym->st_shndx == SHN_ABS &&
++			    !is_rel_reloc(sym_name(sym_strtab, sym))) {
+ 				continue;
+ 			}
+-			if (r_type == R_386_NONE || r_type == R_386_PC32) {
++			switch (r_type) {
++			case R_386_NONE:
++			case R_386_PC32:
+ 				/*
+ 				 * NONE can be ignored and and PC relative
+ 				 * relocations don't need to be adjusted.
+ 				 */
+-			}
+-			else if (r_type == R_386_32) {
++				break;
++			case R_386_32:
+ 				/* Visit relocations that need to be adjusted */
+ 				visit(rel, sym);
+-			}
+-			else {
+-				die("Unsupported relocation type: %d\n", r_type);
++				break;
++			default:
++				die("Unsupported relocation type: %s (%d)\n",
++				    rel_type(r_type), r_type);
++				break;
+ 			}
+ 		}
+ 	}
+@@ -571,16 +601,15 @@ static void emit_relocs(int as_text)
+ 	}
+ 	else {
+ 		unsigned char buf[4];
+-		buf[0] = buf[1] = buf[2] = buf[3] = 0;
+ 		/* Print a stop */
+-		printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
++		fwrite("\0\0\0\0", 4, 1, stdout);
+ 		/* Now print each relocation */
+ 		for (i = 0; i < reloc_count; i++) {
+ 			buf[0] = (relocs[i] >>  0) & 0xff;
+ 			buf[1] = (relocs[i] >>  8) & 0xff;
+ 			buf[2] = (relocs[i] >> 16) & 0xff;
+ 			buf[3] = (relocs[i] >> 24) & 0xff;
+-			printf("%c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
++			fwrite(buf, 4, 1, stdout);
+ 		}
+ 	}
+ }
+@@ -598,6 +627,8 @@ int main(int argc, char **argv)
+ 	FILE *fp;
+ 	int i;
+ 
++	regex_init();
++
+ 	show_absolute_syms = 0;
+ 	show_absolute_relocs = 0;
+ 	as_text = 0;
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index f3f2104..f92a0da 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -319,9 +319,7 @@ SECTIONS
+ 		__brk_limit = .;
+ 	}
+ 
+-	.end : AT(ADDR(.end) - LOAD_OFFSET) {
+-		_end = .;
+-	}
++	_end = .;
+ 
+         STABS_DEBUG
+         DWARF_DEBUG
