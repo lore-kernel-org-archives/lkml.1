@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZLNMkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbZLNMt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbZLNMkV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZLNMkQ
+	id S1755783AbZLNMt4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:49:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZLNMtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:40:16 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35504 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755054AbZLNMkM (ORCPT
+	Mon, 14 Dec 2009 07:49:55 -0500
+Received: from stinky.trash.net ([213.144.137.162]:61499 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753437AbZLNMty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:40:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       lwoodman@redhat.com, akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-In-Reply-To: <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
-References: <20091211164651.036f5340@annuminas.surriel.com> <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
-Message-Id: <20091214213932.BBC9.A69D9226@jp.fujitsu.com>
+	Mon, 14 Dec 2009 07:49:54 -0500
+Message-ID: <4B263468.3060406@trash.net>
+Date: Mon, 14 Dec 2009 13:49:44 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       "" <davem@davemloft.net>, "Michael S. Tsirkin" <mst@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [RFC 1/2] macvlan: Allow plugging in additional backends
+References: <1259862720-28432-1-git-send-email-arnd@arndb.de> <1259862720-28432-2-git-send-email-arnd@arndb.de>
+In-Reply-To: <1259862720-28432-2-git-send-email-arnd@arndb.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 14 Dec 2009 21:40:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> btw, following is mesurement result by hackbench.
-> ================
+Arnd Bergmann wrote:
+> This patch includes only the basic framework for overriding the
+> receive path. With these hooks, we can add the macvtap driver
+> and potentially other drivers that directly interface with a
+> hypervisor.
 > 
-> unit: sec
-> 
-> parameter			old		new
-> 130 (5200 processes)		5.463		4.442
-> 140 (5600 processes)		479.357		7.792
-> 150 (6000 processes)		729.640		20.529
+> Loosely based on a patch by Patrick Mullaney based on another
+> patch by Arnd Bergmann.
 
-old mean mmotm1208
-new mean mmotm1208 + Rik patch + my patch
-
-
-
+This patch looks fine to me.
