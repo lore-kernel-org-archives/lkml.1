@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbZLOAA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZLNX4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758878AbZLOAA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 19:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758830AbZLOAA2
+	id S1758839AbZLNX4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbZLNX4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 19:00:28 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:33989 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758828AbZLOAA1 (ORCPT
+	Mon, 14 Dec 2009 18:56:09 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:39636 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758766AbZLNX4D convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 19:00:27 -0500
+	Mon, 14 Dec 2009 18:56:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=nDeOkNBclhH7b2w5NPndI15B69g6BFSM7KjlsiexLi3ii0NUDI4hRfN+h2DyuWbzEP
-         DEh3frM/6AhxtLDzeiMnfO3/DOOiUnq/eOY/JISGoS/AgNiCMNNJBzCNr9ackhZpATEf
-         m1LuG8s6wGvcA5EXlR3aLOUSQ3+r2H86aAaSo=
-Date: Tue, 15 Dec 2009 08:54:55 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-Subject: Re: [PATCH 8/8] mm: Give up allocation if the task have fatal
- signal
-Message-Id: <20091215085455.13eb65cc.minchan.kim@barrios-desktop>
-In-Reply-To: <20091214213224.BBC6.A69D9226@jp.fujitsu.com>
-References: <20091211164651.036f5340@annuminas.surriel.com>
-	<20091214210823.BBAE.A69D9226@jp.fujitsu.com>
-	<20091214213224.BBC6.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=HBsY/RjVRl2C5MiTDuq85raWQldJHgt6+GK2Rq4M4AcMp2QndhEHcy36grHpNVXhL6
+         zY7Ias85hBgm3MHFaBBTfUP6KFYTsXhAAHpV9eKg4vWemG8jfqJl/hx8Sk2WRDqvlNHx
+         HDN6Dq+FZ7kH21zIY/ms1P1+dTe+sHpIYt90k=
+MIME-Version: 1.0
+In-Reply-To: <20091210135816.6325.37536.stgit@warthog.procyon.org.uk>
+References: <20091210135755.6325.78149.stgit@warthog.procyon.org.uk> 
+	<20091210135816.6325.37536.stgit@warthog.procyon.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 14 Dec 2009 18:55:43 -0500
+Message-ID: <8bd0f97a0912141555l103e4833k1ffae12f6924a9a4@mail.gmail.com>
+Subject: Re: [PATCH 5/7] NOMMU: Avoiding duplicate icache flushes of shared 
+	maps
+To: David Howells <dhowells@redhat.com>
+Cc: lethal@linux-sh.org, jie.zhang@analog.com, stefani@seibold.net,
+       gerg@snapgear.com, uclinux-dev@uclinux.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 21:32:58 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Thu, Dec 10, 2009 at 08:58, David Howells wrote:
+> From: Mike Frysinger <vapier.adi@gmail.com>
+>
+> When working with FDPIC, there are many shared mappings of read-only code
+> regions between applications (the C library, applet packages like busybox,
+> etc.), but the current do_mmap_pgoff() function will issue an icache flush
+> whenever a VMA is added to an MM instead of only doing it when the map is
+> initially created.
+>
+> The flush can instead be done when a region is first mmapped PROT_EXEC.  Note
+> that we may not rely on the first mapping of a region being executable - it's
+> possible for it to be PROT_READ only, so we have to remember whether we've
+> flushed the region or not, and then flush the entire region when a bit of it is
+> made executable.
+>
+> However, this also affects the brk area.  That will no longer be executable.
+> We can mprotect() it to PROT_EXEC on MPU-mode kernels, but for NOMMU mode
+> kernels, when it increases the brk allocation, making sys_brk() flush the extra
+> from the icache should suffice.  The brk area probably isn't used by NOMMU
+> programs since the brk area can only use up the leavings from the stack
+> allocation, where the stack allocation is larger than requested.
 
-> In OOM case, almost processes may be in vmscan. There isn't any reason
-> the killed process continue allocation. process exiting free lots pages
-> rather than greedy vmscan.
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/page_alloc.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index ca9cae1..8a9cbaa 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1878,6 +1878,14 @@ rebalance:
->  		goto got_pg;
->  
->  	/*
-> +	 * If the allocation is for userland page and we have fatal signal,
-> +	 * there isn't any reason to continue allocation. instead, the task
-> +	 * should exit soon.
-> +	 */
-> +	if (fatal_signal_pending(current) && (gfp_mask & __GFP_HIGHMEM))
-> +		goto nopage;
-
-If we jump nopage, we meets dump_stack and show_mem. 
-Even, we can meet OOM which might kill innocent process.
-
-> +
-> +	/*
->  	 * If we failed to make any progress reclaiming, then we are
->  	 * running out of options and have to consider going OOM
->  	 */
-> -- 
-> 1.6.5.2
-> 
-> 
-> 
-
-
--- 
-Kind regards,
-Minchan Kim
+this works fine for me, thanks.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+-mike
