@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbZLNTKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbZLNTLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932443AbZLNTKa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 14:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbZLNTK3
+	id S932470AbZLNTLI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 14:11:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbZLNTLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 14:10:29 -0500
-Received: from exprod6og107.obsmtp.com ([64.18.1.208]:44551 "EHLO
-	exprod6og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932401AbZLNTK2 convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 14:11:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59617
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932418AbZLNTLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 14:10:28 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] at91_mci.c: use resource_size()
-Date: Mon, 14 Dec 2009 14:10:26 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200E9E8@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] at91_mci.c: use resource_size()
-Thread-Index: Acp88Rf0UvfrgxmlRju7bKbt6WJ7aA==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>, <linux-mmc@vger.kernel.org>
-X-OriginalArrivalTime: 14 Dec 2009 19:10:26.0520 (UTC) FILETIME=[18019580:01CA7CF1]
+	Mon, 14 Dec 2009 14:11:03 -0500
+Date: Mon, 14 Dec 2009 11:11:05 -0800 (PST)
+Message-Id: <20091214.111105.224947761.davem@davemloft.net>
+To: john.dykstra1@gmail.com
+Cc: eric.dumazet@gmail.com, lists@nerdbynature.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1260817033.9141.8.camel@merlyn>
+References: <20091213.234530.82029083.davem@davemloft.net>
+	<4B267708.3010202@gmail.com>
+	<1260817033.9141.8.camel@merlyn>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size().
+From: John Dykstra <john.dykstra1@gmail.com>
+Date: Mon, 14 Dec 2009 18:57:13 +0000
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> That test was changed to match a change in the return values of
+> tcp_ack().  No logic change was intended.
 
----
+As Eric pointed out, changing tcp_ack()'s behavior effects state
+transitions out of SYN_ACK, so this commit is very likely the culprit.
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 63924e0..05a3fb4 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -992,7 +992,7 @@ static int __init at91_mci_probe(struct platform_device *pdev)
- 	if (!res)
- 		return -ENXIO;
- 
--	if (!request_mem_region(res->start, res->end - res->start + 1, DRIVER_NAME))
-+	if (!request_mem_region(res->start, resource_size(res), DRIVER_NAME))
- 		return -EBUSY;
- 
- 	mmc = mmc_alloc_host(sizeof(struct at91mci_host), &pdev->dev);
-@@ -1063,7 +1063,7 @@ static int __init at91_mci_probe(struct platform_device *pdev)
- 	/*
- 	 * Map I/O region
- 	 */
--	host->baseaddr = ioremap(res->start, res->end - res->start + 1);
-+	host->baseaddr = ioremap(res->start, resource_size(res));
- 	if (!host->baseaddr) {
- 		ret = -ENOMEM;
- 		goto fail1;
-@@ -1135,7 +1135,7 @@ fail4:
- fail5:
- 	mmc_free_host(mmc);
- fail6:
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 	dev_err(&pdev->dev, "probe failed, err %d\n", ret);
- 	return ret;
- }
-@@ -1176,7 +1176,7 @@ static int __exit at91_mci_remove(struct platform_device *pdev)
- 
- 	iounmap(host->baseaddr);
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 
- 	mmc_free_host(mmc);
- 	platform_set_drvdata(pdev, NULL); 
+I usually see 2 or 3 three of these bug triggers in the first ten
+minutes after bootup and I haven't seen one yet in 20 minutes
+with the commit reverted.
+
+This change is definitely wrong.
