@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZLNHIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZLNHYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbZLNHIK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 02:08:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZLNHIJ
+	id S1754822AbZLNHYH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 02:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZLNHYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 02:08:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36156 "EHLO mx3.mail.elte.hu"
+	Mon, 14 Dec 2009 02:24:06 -0500
+Received: from mail.perches.com ([173.55.12.10]:1165 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754315AbZLNHII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 02:08:08 -0500
-Message-ID: <4B25E47C.1010803@gmail.com>
-Date: Mon, 14 Dec 2009 08:08:44 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>
-CC: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 0/1] Constify struct address_space_operations for 2.6.32-git-053fe57ac
- v2
-References: <cover.1260662994.git.re.emese@gmail.com> <20091214003836.GD7812@parisc-linux.org> <4B2595E7.701@gmail.com> <20091214021916.GB12196@linux-sh.org>
-In-Reply-To: <20091214021916.GB12196@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754637AbZLNHYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 02:24:05 -0500
+Subject: Re: linux-next: origin tree build warning
+From: Joe Perches <joe@perches.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091214102415.10bdcf24.sfr@canb.auug.org.au>
+References: <20091214102415.10bdcf24.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Dec 2009 23:24:03 -0800
+Message-ID: <1260775443.18538.16.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Mon, Dec 14, 2009 at 02:33:27AM +0100, Emese Revfy wrote:
->> Matthew Wilcox wrote:
->>> On Mon, Dec 14, 2009 at 12:59:08AM +0100, re.emese@gmail.com wrote:
->>>> The following patch series attempts to constify several structures
->>>> that hold function pointers. This is only the initial batch, there
->>>> are about over 150 candidate structures, some of which can be
->>>> constified as well, I plan to submit them in the future.
->>> What a complete waste of time.  Until you respond to Al's:
->> I did: http://lkml.org/lkml/2009/12/5/140
->>
->> For even more discussion see: http://lkml.org/lkml/2009/12/6/111
->>
-> Since you seem to have both the interest and abundance of spare time
-> for working on this, have you considered just doing this in sparse? Al
-> mentioned it here:
+On Mon, 2009-12-14 at 10:24 +1100, Stephen Rothwell wrote:
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
 > 
-> 	http://lkml.org/lkml/2009/12/8/511
-> 
-> which you don't seem to have replied to.
+> arch/x86/mm/mmio-mod.c: In function 'print_pte':
+> Caused by commit 3a0340be06a9356eb61f6804107480acbe62c069 ("x86:
+> mmio-mod.c: Use pr_fmt").  Was this even build tested?  The patch doesn't
+> even match the commit message.
 
-Please see my thoughts on sparse and related topics:
-http://lkml.org/lkml/2009/12/10/283
+Dunno how that happened, it was tested here
+with #define pr_fmt(fmt) "mmiotrace: " fmt
 
-> Until such a consensus is reached one way or the other, please refrain
-> from sending hundreds of patches -- one or two are sufficient for showing
-> what you want to do until folks are on board with it, as is the typical
-> nature of mechanical changes.
+Here's the diff necessary to make it work.
 
-I think there is consensus to constify ops variables as much as
-possible (e.g., Alexey's similar patches).
+Signed-off-by: Joe Perches <joe@perches.com>
 
-The discussions in these threads were about constifying the ops structure
-fields themselves and I already explained why they are useful, see the
-above link and this one: http://lkml.org/lkml/2009/12/8/492
---
-Emese
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+index 4c765e9..34a3291 100644
+--- a/arch/x86/mm/mmio-mod.c
++++ b/arch/x86/mm/mmio-mod.c
+@@ -20,7 +20,7 @@
+  * Derived from the read-mod example from relay-examples by Tom Zanussi.
+  */
+ 
+-#define pr_fmt(fmt) "mmiotrace: "
++#define pr_fmt(fmt) "mmiotrace: " fmt
+ 
+ #define DEBUG 1
+ 
+
+
