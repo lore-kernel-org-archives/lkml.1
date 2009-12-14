@@ -1,108 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbZLNWxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbZLNWxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796AbZLNWxR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbZLNWxP
+	id S932855AbZLNWxp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbZLNWxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:53:15 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:56264 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932327AbZLNWxN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:53:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=osq9MCjLZVlysfCBMkBns06VRY3+mz+3Le8hnMMdBVU9RVOC0wGlEPSmcaWzGHm5uK
-         zepjDMNoUxdROh6HYRTSIppgL4VWDObq1yTqxJ1A2vGn6YI9EpSJ+iED6volKTh71t7y
-         t4LMmx/h92rUM2thBncrBTNhrdP7zZ2FDh/VI=
-Date: Mon, 14 Dec 2009 23:53:09 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 3/3] perf diff: Introduce tool to show performance
-	difference
-Message-ID: <20091214225307.GA6048@nowhere>
-References: <1260828571-3613-1-git-send-email-acme@infradead.org> <1260828571-3613-3-git-send-email-acme@infradead.org>
+	Mon, 14 Dec 2009 17:53:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37184 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932344AbZLNWxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:53:42 -0500
+Message-ID: <4B26C266.80202@gmail.com>
+Date: Mon, 14 Dec 2009 23:55:34 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260828571-3613-3-git-send-email-acme@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Joerg Roedel <joro@8bytes.org>
+CC: linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com
+Subject: Re: [PATCH 0/3] Constify struct block_device_operations for	2.6.32-git-053fe57ac
+ v2
+References: <cover.1260662995.git.re.emese@gmail.com> <20091214101009.GA23742@8bytes.org>
+In-Reply-To: <20091214101009.GA23742@8bytes.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 08:09:31PM -0200, Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Joerg Roedel wrote:
+> On Mon, Dec 14, 2009 at 12:59:19AM +0100, re.emese@gmail.com wrote:
+>> The following patch series attempts to constify several structures
+>> that hold function pointers. This is only the initial batch, there
+>> are about over 150 candidate structures, some of which can be
+>> constified as well, I plan to submit them in the future.
 > 
-> I guess it is enough to show some examples:
+> Beside the fact that you posted two patch series in one thread all your
+> patches lack a commit message. Please fix that.
 > 
-> [root@doppio linux-2.6-tip]# rm -f perf.data*
-> [root@doppio linux-2.6-tip]# ls -la perf.data*
-> ls: cannot access perf.data*: No such file or directory
-> [root@doppio linux-2.6-tip]# perf record -f find / > /dev/null
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.062 MB perf.data (~2699 samples) ]
-> [root@doppio linux-2.6-tip]# ls -la perf.data*
-> -rw------- 1 root root 74440 2009-12-14 20:03 perf.data
-> [root@doppio linux-2.6-tip]# perf record -f find / > /dev/null
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.062 MB perf.data (~2692 samples) ]
-> [root@doppio linux-2.6-tip]# ls -la perf.data*
-> -rw------- 1 root root 74280 2009-12-14 20:03 perf.data
-> -rw------- 1 root root 74440 2009-12-14 20:03 perf.data.old
-> [root@doppio linux-2.6-tip]# perf diff | head -5
->    1        -34994580     /lib64/libc-2.10.1.so   _IO_vfprintf_internal
->    2        -15307806         [kernel.kallsyms]   __kmalloc
->    3    +1   +3665941     /lib64/libc-2.10.1.so   __GI_memmove
->    4    +4  +23508995     /lib64/libc-2.10.1.so   _int_malloc
->    5    +7  +38538813         [kernel.kallsyms]   __d_lookup
-> [root@doppio linux-2.6-tip]# perf diff -p | head -5
->    1        +1.00%     /lib64/libc-2.10.1.so   _IO_vfprintf_internal
->    2                       [kernel.kallsyms]   __kmalloc
->    3    +1             /lib64/libc-2.10.1.so   __GI_memmove
->    4    +4             /lib64/libc-2.10.1.so   _int_malloc
->    5    +7  -1.00%         [kernel.kallsyms]   __d_lookup
-> [root@doppio linux-2.6-tip]# perf diff -v | head -5
->    1        361449551 326454971 -34994580     /lib64/libc-2.10.1.so   _IO_vfprintf_internal
->    2        151009241 135701435 -15307806         [kernel.kallsyms]   __kmalloc
->    3    +1  101805328 105471269  +3665941     /lib64/libc-2.10.1.so   __GI_memmove
->    4    +4   78041440 101550435 +23508995     /lib64/libc-2.10.1.so   _int_malloc
->    5    +7   59536172  98074985 +38538813         [kernel.kallsyms]   __d_lookup
-> [root@doppio linux-2.6-tip]# perf diff -vp | head -5
->    1        9.00% 8.00% +1.00%     /lib64/libc-2.10.1.so   _IO_vfprintf_internal
->    2        3.00% 3.00%                [kernel.kallsyms]   __kmalloc
->    3    +1  2.00% 2.00%            /lib64/libc-2.10.1.so   __GI_memmove
->    4    +4  2.00% 2.00%            /lib64/libc-2.10.1.so   _int_malloc
->    5    +7  1.00% 2.00% -1.00%         [kernel.kallsyms]   __d_lookup
-> [root@doppio linux-2.6-tip]#
+> 	Joerg
 
-
-
-Wow, nice! :)
-
-
-
-> 
-> This should be enough for diffs where the system is non volatile, i.e. when one
-> doesn't updates binaries.
-> 
-> For volatile environments, stay tuned for the next perf tool feature: a buildid
-> cache populated by 'perf record', managed by 'perf buildid-cache' a-la ccache,
-> and used by all the report tools.
-
-
-
-Yeah. My first idea about that was to rebase the comparison against
-symbols only, this is the last atom we have that is not supposed
-to move in a volatile system.
-
-And that would also apply to callchains.
+Sorry about it, git format-patch must have generated two identical
+message IDs or I have a bug in my script, I will fix it and the
+commit messages next time.
+--
+Emese
 
