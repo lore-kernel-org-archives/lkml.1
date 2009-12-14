@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZLNH7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZLNIBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbZLNH7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 02:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZLNH7h
+	id S1755292AbZLNIBg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 03:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZLNIBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 02:59:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58302 "EHLO hera.kernel.org"
+	Mon, 14 Dec 2009 03:01:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58399 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755146AbZLNH7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 02:59:36 -0500
-Date: Mon, 14 Dec 2009 07:58:19 GMT
-From: tip-bot for Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       joe@perches.com, torvalds@linux-foundation.org, peterz@infradead.org,
-       tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       joe@perches.com, torvalds@linux-foundation.org, peterz@infradead.org,
-       tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu
-In-Reply-To: <1260775443.18538.16.camel@Joe-Laptop.home>
-References: <1260775443.18538.16.camel@Joe-Laptop.home>
+	id S1755189AbZLNIBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 03:01:32 -0500
+Date: Mon, 14 Dec 2009 08:00:36 GMT
+From: tip-bot for David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       davem@davemloft.net, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       davem@davemloft.net, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20091213.235622.53363059.davem@davemloft.net>
+References: <20091213.235622.53363059.davem@davemloft.net>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Fix build warning in arch/x86/mm/mmio-mod.c
-Message-ID: <tip-eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e@git.kernel.org>
-Git-Commit-ID: eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e
+Subject: [tip:perf/urgent] perf sched: Fix build failure on sparc
+Message-ID: <tip-2cd9046cc53dd2625e2cf5854d6cbb1ba61de914@git.kernel.org>
+Git-Commit-ID: 2cd9046cc53dd2625e2cf5854d6cbb1ba61de914
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,43 +33,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e
-Gitweb:     http://git.kernel.org/tip/eba11d6da7a983cedb0acf32a38e4d0daa8b5d0e
-Author:     Joe Perches <joe@perches.com>
-AuthorDate: Sun, 13 Dec 2009 23:24:03 -0800
+Commit-ID:  2cd9046cc53dd2625e2cf5854d6cbb1ba61de914
+Gitweb:     http://git.kernel.org/tip/2cd9046cc53dd2625e2cf5854d6cbb1ba61de914
+Author:     David Miller <davem@davemloft.net>
+AuthorDate: Sun, 13 Dec 2009 23:56:22 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 14 Dec 2009 08:55:43 +0100
+CommitDate: Mon, 14 Dec 2009 08:59:12 +0100
 
-x86: Fix build warning in arch/x86/mm/mmio-mod.c
+perf sched: Fix build failure on sparc
 
-Stephen Rothwell reported these warnings:
+Here, tvec->tv_usec is "unsigned int" not "unsigned long".
 
- arch/x86/mm/mmio-mod.c: In function 'print_pte':
- arch/x86/mm/mmio-mod.c:100: warning: too many arguments for format
- arch/x86/mm/mmio-mod.c:106: warning: too many arguments for format
+Since the type is different on every platform, it's probably
+best to just use long printf formats and cast.
 
-The 'fmt' was left out accidentally.
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Joe Perches <joe@perches.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus <torvalds@linux-foundation.org>
-LKML-Reference: <1260775443.18538.16.camel@Joe-Laptop.home>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091213.235622.53363059.davem@davemloft.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/mm/mmio-mod.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ tools/perf/bench/sched-messaging.c |    6 ++++--
+ tools/perf/bench/sched-pipe.c      |    6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
-index 4c765e9..34a3291 100644
---- a/arch/x86/mm/mmio-mod.c
-+++ b/arch/x86/mm/mmio-mod.c
-@@ -20,7 +20,7 @@
-  * Derived from the read-mod example from relay-examples by Tom Zanussi.
-  */
+diff --git a/tools/perf/bench/sched-messaging.c b/tools/perf/bench/sched-messaging.c
+index e249eb2..81cee78 100644
+--- a/tools/perf/bench/sched-messaging.c
++++ b/tools/perf/bench/sched-messaging.c
+@@ -320,10 +320,12 @@ int bench_sched_messaging(int argc, const char **argv,
+ 		       num_groups, num_groups * 2 * num_fds,
+ 		       thread_mode ? "threads" : "processes");
+ 		printf(" %14s: %lu.%03lu [sec]\n", "Total time",
+-		       diff.tv_sec, diff.tv_usec/1000);
++		       diff.tv_sec,
++		       (unsigned long) (diff.tv_usec/1000));
+ 		break;
+ 	case BENCH_FORMAT_SIMPLE:
+-		printf("%lu.%03lu\n", diff.tv_sec, diff.tv_usec/1000);
++		printf("%lu.%03lu\n", diff.tv_sec,
++		       (unsigned long) (diff.tv_usec/1000));
+ 		break;
+ 	default:
+ 		/* reaching here is something disaster */
+diff --git a/tools/perf/bench/sched-pipe.c b/tools/perf/bench/sched-pipe.c
+index 2354f38..4f77c7c 100644
+--- a/tools/perf/bench/sched-pipe.c
++++ b/tools/perf/bench/sched-pipe.c
+@@ -100,7 +100,8 @@ int bench_sched_pipe(int argc, const char **argv,
+ 		result_usec += diff.tv_usec;
  
--#define pr_fmt(fmt) "mmiotrace: "
-+#define pr_fmt(fmt) "mmiotrace: " fmt
+ 		printf(" %14s: %lu.%03lu [sec]\n\n", "Total time",
+-		       diff.tv_sec, diff.tv_usec/1000);
++		       diff.tv_sec,
++		       (unsigned long) (diff.tv_usec/1000));
  
- #define DEBUG 1
+ 		printf(" %14lf usecs/op\n",
+ 		       (double)result_usec / (double)loops);
+@@ -111,7 +112,8 @@ int bench_sched_pipe(int argc, const char **argv,
  
+ 	case BENCH_FORMAT_SIMPLE:
+ 		printf("%lu.%03lu\n",
+-		       diff.tv_sec, diff.tv_usec / 1000);
++		       diff.tv_sec,
++		       (unsigned long) (diff.tv_usec / 1000));
+ 		break;
+ 
+ 	default:
