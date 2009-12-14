@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbZLNAdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZLNAik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbZLNAdY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 19:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZLNAdX
+	id S1755601AbZLNAik (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 19:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbZLNAij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 19:33:23 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:55904 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754734AbZLNAdW (ORCPT
+	Sun, 13 Dec 2009 19:38:39 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:34656 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754184AbZLNAii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 19:33:22 -0500
-Date: Mon, 14 Dec 2009 11:33:20 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: liu weni <qingshenlwy@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-Subject: Re: [PATCH v2]kernel: remove mess codes
-Message-ID: <20091214003320.GA29218@verge.net.au>
-References: <b3657a100912122255j138bb9e6s785bdc8152a27691@mail.gmail.com>
- <4B249210.7060103@goop.org>
+	Sun, 13 Dec 2009 19:38:38 -0500
+Date: Sun, 13 Dec 2009 17:38:36 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: re.emese@gmail.com
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
+	2.6.32-git-053fe57ac v2
+Message-ID: <20091214003836.GD7812@parisc-linux.org>
+References: <cover.1260662994.git.re.emese@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B249210.7060103@goop.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <cover.1260662994.git.re.emese@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2009 at 11:04:48PM -0800, Jeremy Fitzhardinge wrote:
-> On 12/12/09 22:55, liu weni wrote:
-> >I found some mess characters(0x0c) in the kernel source code.
-> >Then I suggest remove it.
+On Mon, Dec 14, 2009 at 12:59:08AM +0100, re.emese@gmail.com wrote:
+> From: Emese Revfy <re.emese@gmail.com>
 > 
-> Those are form-feed characters.   Some editors use them to separate
-> logically distinct blocks of code into separate "pages".
+> Hello everyone!
+> 
+> The following patch series attempts to constify several structures
+> that hold function pointers. This is only the initial batch, there
+> are about over 150 candidate structures, some of which can be
+> constified as well, I plan to submit them in the future.
 
-I can see their value in documentation, but I struggle to imagine
-their usefulness in code.
+What a complete waste of time.  Until you respond to Al's:
 
+  This is ugly and has all marks of cargo-cult patches.  NAKed at least
+  until you give exceptionally good reasons for doing that.
+
+you should stop sending patches.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
