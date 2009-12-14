@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932970AbZLNXWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbZLNXZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932970AbZLNXWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932959AbZLNXWo
+	id S932964AbZLNXZU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZLNXZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:22:44 -0500
-Received: from exprod6og107.obsmtp.com ([64.18.1.208]:58933 "EHLO
-	exprod6og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932962AbZLNXWm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:22:42 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 14 Dec 2009 18:25:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38168 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758237AbZLNXZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:25:18 -0500
+Message-ID: <4B26C95A.8000708@kernel.org>
+Date: Tue, 15 Dec 2009 08:25:14 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] ehci-au1xxx.c: use platform_get_resource() and resource_size()
-Date: Mon, 14 Dec 2009 18:22:42 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EAAA@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ehci-au1xxx.c: use platform_get_resource() and resource_size()
-Thread-Index: Acp9FFWuqLpx23XwQbiwZNmsQbEdCA==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Cc: "David Woodhouse" <dwmw2@infradead.org>
-X-OriginalArrivalTime: 14 Dec 2009 23:22:40.0001 (UTC) FILETIME=[54438710:01CA7D14]
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Warn people about flush_scheduled_work()
+References: <Pine.LNX.4.44L0.0912141809390.2690-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912141809390.2690-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use platform_get_resource() to fetch the memory resource and
-resource_size() for calculate the length.
+Hello,
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+On 12/15/2009 08:14 AM, Alan Stern wrote:
+>> I think both problems can be detected by lockdep, right?  So, they
+>> aren't that difficult to detect.
+> 
+> Maybe they can, now.  It used to be they couldn't.
 
----
+I think they can now.  Workqueue workers acquire pseudo lock known to
+lockdep around execution of a work function and flush_workqueue()
+grabs and releases the pseudo lock too, so both are known to lockdep.
 
-diff --git a/drivers/usb/host/ehci-au1xxx.c b/drivers/usb/host/ehci-au1xxx.c
-index ed77be7..987e1ed 100644
---- a/drivers/usb/host/ehci-au1xxx.c
-+++ b/drivers/usb/host/ehci-au1xxx.c
-@@ -121,6 +121,7 @@ static int ehci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
- {
- 	struct usb_hcd *hcd;
- 	struct ehci_hcd *ehci;
-+	struct resource *res;
- 	int ret;
- 
- 	if (usb_disabled())
-@@ -144,8 +145,9 @@ static int ehci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
- 	if (!hcd)
- 		return -ENOMEM;
- 
--	hcd->rsrc_start = pdev->resource[0].start;
--	hcd->rsrc_len = pdev->resource[0].end - pdev->resource[0].start + 1;
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	hcd->rsrc_start = res->start;
-+	hcd->rsrc_len = resource_size(res);
- 
- 	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
- 		pr_debug("request_mem_region failed"); 
+> However, lockdep doesn't help much -- it tells you the cause of the
+> deadlock but it doesn't prevent the deadlock from occurring.  The
+> programmer has to do this, by avoiding flush_scheduled_work().  I guess 
+> that could be added to the comment.
+
+As lockdep computes deadlocks from all possible combinations, it
+usually detects deadlocks pretty quickly during devel cycle, so it
+doesn't prevent them from happening but still helps a lot.
+
+>> Yeah, recommending more work-specific constructs definitely would be
+>> better.  It's bad that we can't recommend the use of flush_work() as
+>> it doesn't do cross-cpu flushing.  Maybe that needs explanation too.
+> 
+> I'll do my comments, and you can do yours.  :-)
+
+Fair enough.  :-)
+
+> Should these changes go through Andrew Morton?  Or can you take them?
+
+I already have a tree set up for workqueue changes, so I guess I can
+take them.
+
+Thanks.
+
+-- 
+tejun
