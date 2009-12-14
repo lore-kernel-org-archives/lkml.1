@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbZLNR1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbZLNReK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbZLNR1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 12:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932225AbZLNR1f
+	id S932237AbZLNReK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 12:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZLNReJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 12:27:35 -0500
-Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:39083 "EHLO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932202AbZLNR1e convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 12:34:09 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:53932 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752852AbZLNReI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 12:27:34 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 14 Dec 2009 12:34:08 -0500
+Message-ID: <4B267708.3010202@gmail.com>
+Date: Mon, 14 Dec 2009 18:34:00 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
-Date: Mon, 14 Dec 2009 12:27:29 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200E9AD@mi8nycmail19.Mi8.com>
-In-Reply-To: <20091213.205212.212692978.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] au1xxx-ide.c: ioremap() returns a void __iomem *
-Thread-Index: Acp8eTMHPJGGY6wBSTKbOns8bMhuMgAZo4wg
-References: <BD79186B4FD85F4B8E60E381CAEE190901FB10C2@mi8nycmail19.Mi8.com><4B241F10.7050706@ru.mvista.com> <20091213.205212.212692978.davem@davemloft.net>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "David Miller" <davem@davemloft.net>, <sshtylyov@ru.mvista.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>
-X-OriginalArrivalTime: 14 Dec 2009 17:27:30.0707 (UTC) FILETIME=[B6EF4E30:01CA7CE2]
+To: David Miller <davem@davemloft.net>
+CC: lists@nerdbynature.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, John Dykstra <john.dykstra1@gmail.com>
+Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
+References: <20091212.010340.227842186.davem@davemloft.net>	<4B2360BF.5000102@gmail.com>	<4B25D38F.1090702@gmail.com> <20091213.234530.82029083.davem@davemloft.net>
+In-Reply-To: <20091213.234530.82029083.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Dec 2009 18:34:00 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, December 13, 2009 9:52 PM, David Miller wrote:
->
-> From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Date: Sun, 13 Dec 2009 01:54:08 +0300
+Le 14/12/2009 08:45, David Miller a écrit :
+> From: Eric Dumazet <eric.dumazet@gmail.com>
+> Date: Mon, 14 Dec 2009 06:56:31 +0100
 > 
->> H Hartley Sweeten wrote:
->> 
->>> The ioremap return value is an __iomem *, not an integer.  Update the
->>> private structure to reflect this.  While here, remove the typedef
->>> for _auide_hwif and just use struct auide_hwif instead as recommended
->>> by Documentation/CodingStyle.
->>>
->>> auide_setup_ports() still needs to cast the regbase back to an integer
->>> to correctly setup the io_ports_array.
->>>
->>> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
- ...
->>>     a) 'arch/mips/include/asm/mach-au1x00/au1xxx_ide.h'
->>> -     containes : struct _auide_hwif
->>> +     containes : struct auide_hwif
->>>   
->> 
->>   Contains?
->> 
->>   Other than that,
->> 
->> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>> It seems to me tcp_create_openreq_child() doesnt properly initialize
+>> newtp->cookie_values to NULL, but this should not produce warnings like that ?
+> 
+> If oldtp->cookie_values is NULL, the child's should be as well
+> because of sk_clone().
 
-Oops... Did not notice that spelling error.  Will fix and repost the patch.
+Right, maybe then its a tcp_ack() or a syncookie validation change ?
 
-> Also, this patch doesn't apply to the current tree, the
-> au_ide_remove() function has been fixed to use
-> resource_size().
->
-> Please respin your patch, and also incorporate the
-> documentation spelling fix suggested by Sergei (and
-> make sure to keep the alignment of that section of
-> documentation when you do that).
 
-Hmmm.. That patch was also mine.  I waited until it was merged before creating
-this one. It should have accounted for that.  I will recheck the patch to see
-what was missed.
+tcp_v4_rcv()
+        bh_lock_sock_nested(sk);
+        if (!sock_owned_by_user(sk)) {
 
-Regards,
-Hartley
+        -> tcp_v4_do_rcv()
+                -> tcp_v4_hnd_req()
+                        -> cookie_v4_check()
+                                -> get_cookie_sock()
+                                        -> child = syn_recv_sock()
+                                        -> inet_csk_reqsk_queue_add(child) (TCP_SYN_RECV socket queued into parent)
+                -> tcp_child_process() (backlog... not)
+                        -> tcp_rcv_state_process()
+                                -> acceptable = tcp_ack() > 0;
+                                -> if (acceptable) -> sk_state = TCP_ESTABLISHED
+                                        (but if tcp_ack() returned <= 0, state unchanged : TCP_SYN_RECV)
+
+
+And commit 96e0bf4b5193d0d97d139f99e2dd128763d55521
+(tcp: Discard segments that ack data not yet sent)
+
+Did change this area a bit :
+
+@@ -5632,7 +5639,7 @@ int tcp_rcv_state_process(struct sock *sk, struct sk_buff *skb,
+ 
+        /* step 5: check the ACK field */
+        if (th->ack) {
+-               int acceptable = tcp_ack(sk, skb, FLAG_SLOWPATH);
++               int acceptable = tcp_ack(sk, skb, FLAG_SLOWPATH) > 0;
+ 
+                switch (sk->sk_state) {
+                case TCP_SYN_RECV:
+
+
+
