@@ -1,65 +1,361 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZLNF7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZLNF7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbZLNF7N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 00:59:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZLNF7M
+	id S1752882AbZLNF7k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 00:59:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZLNF7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 00:59:12 -0500
-Received: from james.oetiker.ch ([213.144.138.195]:36891 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752198AbZLNF7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 00:59:11 -0500
-Date: Mon, 14 Dec 2009 06:59:08 +0100 (CET)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: still getting allocation failures (was Re: [PATCH] vmscan: Stop
- kswapd waiting on congestion when the min watermark is not being met V2)
-In-Reply-To: <4e5e476b0912031226i5b0e6cf9hdfd5519182ccdefa@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0912140646550.12657@sebohet.brgvxre.pu>
-References: <20091113142608.33B9.A69D9226@jp.fujitsu.com>  <20091113135443.GF29804@csn.ul.ie>  <20091114023138.3DA5.A69D9226@jp.fujitsu.com>  <20091113181557.GM29804@csn.ul.ie>  <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com> 
- <20091113200357.GO29804@csn.ul.ie>  <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>  <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu>  <20091202113241.GC1457@csn.ul.ie>  <alpine.DEB.2.00.0912022210220.30023@sebohet.brgvxre.pu>
- <4e5e476b0912031226i5b0e6cf9hdfd5519182ccdefa@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Dec 2009 00:59:38 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37117 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752437AbZLNF7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 00:59:36 -0500
+Date: Mon, 14 Dec 2009 16:59:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for December 14
+Message-Id: <20091214165927.c08c4784.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Corrado,
+--Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Dec 3 Corrado Zoccolo wrote:
+Hi all,
 
-> Hi Tobias,
-> does the patch in http://lkml.org/lkml/2009/11/30/301 help with your
-> high order allocation problems?
-> It seems that you have lot of memory, but high order pages do not show up.
-> The patch should make them more likely to appear.
-> On my machine (that has much less ram than yours), with the patch, I
-> always have order-10 pages available.
+My usual call for calm: please do not put stuff destined for 2.6.34 into
+linux-next trees until after 2.6.33-rc1.
 
-I have tried it and ... it does not work, the  page allocation
-failure still shows. BUT while testing it on two machines I found that it
-only shows on on machine. The workload on the two machines is
-similar (they both run virtualbox) and also the available memory.
+Changes since 20091211:
 
-Could it be caused by a hardware driver ?
+Since Linus is now merging trees into his, various conflicts move from
+tree to tree.
 
-cheers
-tobi
+The net-current tree lost its conflict.
 
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+The md-current tree gained a conflict against Linus' tree.
+
+The 52xx-and-virtex gained a build failure for which I applied a patch.
+
+The pci tree lost its conflicts.
+
+The kbuild tree lost its merge fix.
+
+The acpi tree gained a build failure so I used the version from
+next-20091211.
+
+The cpufreq tree lost its conflict.
+
+The devicetree tree gained a build failure for which I reverted several
+commits.
+
+The limits tree gained 3 conflicts against Linus' tree.
+
+The omap_dss2 tree lost its conflict.
+
+The percpu tree gained a conflict against the tip tree.
+
+The tty tree lost its conflict.
+
+The usb tree lost its conflict and build failure.
+
+The staging tree lost its conflicts.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+CONFLICT (content): Merge conflict in fs/compat_ioctl.c
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
+pu.h
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+CONFLICT (content): Merge conflict in arch/m68k/include/asm/ptrace.h
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/Kconfig
+CONFLICT (content): Merge conflict in arch/mips/Makefile
+CONFLICT (content): Merge conflict in arch/mips/include/asm/ftrace.h
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/ftrace.c
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/mcount.S
+CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in include/acpi/processor.h
+$ git reset --hard HEAD^
+Merging refs/next/20091211/acpi
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in include/acpi/processor.h
+Merging ieee1394/for-next
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-13=
+94.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-av=
+c.c
+CONFLICT (add/add): Merge conflict in drivers/media/dvb/firewire/firedtv-fw=
+.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv.h
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/devices/m25p80.c
+CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
+CONFLICT (delete/modify): drivers/mtd/nand/excite_nandflash.c deleted in HE=
+AD and modified in mtd/master. Version mtd/master of drivers/mtd/nand/excit=
+e_nandflash.c left in tree.
+CONFLICT (content): Merge conflict in drivers/mtd/nand/pxa3xx_nand.c
+CONFLICT (content): Merge conflict in kernel/printk.c
+$ git rm -f drivers/mtd/nand/excite_nandflash.c
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Applying: modpost: autoconf.h has moved to include/generated
+Applying: rr: cpufreq: fix up for api name change
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+CONFLICT (content): Merge conflict in drivers/platform/x86/thinkpad_acpi.c
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_fb_helper.c
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in fs/afs/write.c
+CONFLICT (content): Merge conflict in fs/cifs/dir.c
+CONFLICT (content): Merge conflict in fs/ubifs/file.c
+CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
+CONFLICT (content): Merge conflict in include/net/compat.h
+CONFLICT (content): Merge conflict in net/compat.c
+CONFLICT (content): Merge conflict in net/socket.c
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/ia64/kernel/sys_ia64.c
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in include/asm-generic/unistd.h
+CONFLICT (content): Merge conflict in mm/mremap.c
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in kernel/sysctl.c
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/intel_cacheinfo.c
+CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
+CONFLICT (content): Merge conflict in mm/slab.c
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+Applying: powerpc: fix up for mmu_mapin_ram api change
+[master aeff606] Revert "of: unify phandle name in struct device_node"
+[master 238ae94] Revert "microblaze: gut implementation of early_init_dt_sc=
+an_cpus()"
+[master 2000b13] Revert "of: merge of_attach_node() & of_detach_node()"
+[master ae6cf43] Revert "of: Merge of_node_get() and of_node_put()"
+[master 4cb51b3] Revert "of: merge machine_is_compatible()"
+[master 5407df6] Revert "of/flattree: merge early_init_devtree() and early_=
+init_move_devtree()"
+
+--Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksl1D8ACgkQjjKRsyhoI8zm5wCdHr+6aVVn4v1Nj6peg4KBDJHM
+ZpMAoLKhOGaT3sH8fsHA6nMJTW/V4PT7
+=ZMgr
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx--
