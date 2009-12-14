@@ -1,68 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZLNOSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZLNORj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbZLNOSN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbZLNOSM
+	id S1757378AbZLNORj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbZLNORi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:18:12 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:50296 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757355AbZLNOSK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:18:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=JJsMvpsLrsjHsYFwAoBEI+b6EC3FmZEDbQySenhe8XW+VIIMxXjD+HB373/JoSiSdB
-         3Apfv3a1/8FHGDKyeCY7nSev+/UHGPZwY4drBH7dP7RLLaCPiu8Gaz077ALAtladwewj
-         eDhm6R8ABOJPkZBA7eY4NY+8ddm9AHzayiIsE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
-Date: Mon, 14 Dec 2009 15:16:54 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Con Kolivas <kernel@kolivas.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <200912111124.18118.kernel@kolivas.org> <200912121710.44216.kernel@kolivas.org> <20091212061447.GB2856@1wt.eu>
-In-Reply-To: <20091212061447.GB2856@1wt.eu>
+	Mon, 14 Dec 2009 09:17:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57309 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757352AbZLNORh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:17:37 -0500
+Message-ID: <4B2648E6.4050603@redhat.com>
+Date: Mon, 14 Dec 2009 09:17:10 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Message-Id: <200912141516.54725.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jonathan Nieder <jrnieder@gmail.com>
+CC: linux-kernel@vger.kernel.org, Jim Keniston <jkenisto@us.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org
+Subject: Re: [PATCH] x86: Fix kprobes build with non-gawk awk
+References: <20091213220437.GA27718@progeny.tock>
+In-Reply-To: <20091213220437.GA27718@progeny.tock>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 December 2009 07:14:47 am Willy Tarreau wrote:
-> On Sat, Dec 12, 2009 at 05:10:44PM +1100, Con Kolivas wrote:
-> > > Also, I like to have the same kernel sources used on my desktop,
-> > > notebook, eeepc, and my bootable USB key. It is a lot easier to
-> > > upgrade and a lot easier to spot bugs before they strike in sensible
-> > > environments.
-> > 
-> > Thanks Willy. 
-> > 
-> > That's the first meaningful reason I've heard for it. I may have to consider 
-> > it now. It still would be compile time limited so probably not quite what 
-> > you're hoping for. I don't have the time and energy to do and maintain the 
-> > whole plugsched crap for boottime selection all over again, and that adds 
-> > overhead which goes against one of my prime objectives.
+Hi Jonathan,
+
+Jonathan Nieder wrote:
+> The instruction attribute table generator fails when run by mawk
+> or original-awk:
 > 
-> No problem, as I said, I want to use the same *sources*, not to be able
-> to hot-swap the scheduler. But basically I have a directory named "configs"
-> in which all of my machines configs are stored. I run "build-kernel-list"
-> over those configs from the kernel dir and I get all of my new kernels.
-> You can now easily understand why I don't want to patch in the middle of
-> the process :-)
+>  $ mawk -f arch/x86/tools/gen-insn-attr-x86.awk \
+> 	arch/x86/lib/x86-opcode-map.txt > /dev/null
+>  Semantic error at 240: Second IMM error
+>  $ echo $?
+>  1
+> 
+> Line 240 contains "c8: ENTER Iw,Ib", which indicates that this
+> instruction has two immediate operands, the second of which is
+> one byte.  The script loops through the immediate operands using
+> a for loop.
+> 
+> Unfortunately, there is no guarantee in awk that a for (variable
+> in array) loop will return the indices in increasing order.
+> Internally, both original-awk and mawk iterate over a hash table
+> for this purpose, and both implementations happen to produce the
+> index 2 before 1.  The supposed second immediate operand is more
+> than one byte wide, producing the error.
 
-Similar setup here and similar rationale behind my request. :)
+Oh, I see.
 
-I would like to give BFS a spin on some smaller boxes but then I would need
-to remember to pull BFS out of my local patch queue whenever I want to test
-something on my main box (I like to keep things rather conservative there)..
+> 
+> So loop over the indices in increasing order instead.  As a
+> side-effect, with mawk this means the silly two-entry hash table
+> never has to be built.
 
---
-Bartlomiej Zolnierkiewicz
+Thank you for fixing it!
+
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+> 
+> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: x86@kernel.org
+> Signed-off-by: Jonathan Nieder <jrnieder@gmail.com>
+> ---
+>  arch/x86/tools/gen-insn-attr-x86.awk |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
+> index e34e92a..7a68506 100644
+> --- a/arch/x86/tools/gen-insn-attr-x86.awk
+> +++ b/arch/x86/tools/gen-insn-attr-x86.awk
+> @@ -226,12 +226,12 @@ function add_flags(old,new) {
+>  }
+>  
+>  # convert operands to flags.
+> -function convert_operands(opnd,       i,imm,mod)
+> +function convert_operands(count,opnd,       i,j,imm,mod)
+>  {
+>  	imm = null
+>  	mod = null
+> -	for (i in opnd) {
+> -		i  = opnd[i]
+> +	for (j = 1; j <= count; j++) {
+> +		i = opnd[j]
+>  		if (match(i, imm_expr) == 1) {
+>  			if (!imm_flag[i])
+>  				semantic_error("Unknown imm opnd: " i)
+> @@ -282,8 +282,8 @@ function convert_operands(opnd,       i,imm,mod)
+>  		# parse one opcode
+>  		if (match($i, opnd_expr)) {
+>  			opnd = $i
+> -			split($(i++), opnds, ",")
+> -			flags = convert_operands(opnds)
+> +			count = split($(i++), opnds, ",")
+> +			flags = convert_operands(count, opnds)
+>  		}
+>  		if (match($i, ext_expr))
+>  			ext = $(i++)
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
