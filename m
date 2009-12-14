@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZLNDL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZLND0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932174AbZLNDL3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 22:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932154AbZLNDL2
+	id S1753895AbZLND0N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 22:26:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZLND0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 22:11:28 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:3912 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932128AbZLNDL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 22:11:28 -0500
-Date: Sun, 13 Dec 2009 20:11:27 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Dave Airlie <airlied@redhat.com>
-Cc: rjw@sisk.pl, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: radeon 4830 corruption after resume
-Message-ID: <20091214031127.GB29591@ldl.fc.hp.com>
-References: <20091214023051.GA29591@ldl.fc.hp.com> <1260759123.3391.0.camel@localhost>
+	Sun, 13 Dec 2009 22:26:10 -0500
+Received: from ozlabs.org ([203.10.76.45]:52568 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbZLND0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 22:26:09 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Shirley Ma <mashirle@us.ibm.com>
+Subject: Re: [PATCH v2 1/4] Defer skb allocation -- add destroy buffers function for virtio
+Date: Mon, 14 Dec 2009 13:55:59 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+References: <1258697359.7416.14.camel@localhost.localdomain> <1260534506.30371.6.camel@localhost.localdomain> <1260534805.30371.10.camel@localhost.localdomain>
+In-Reply-To: <1260534805.30371.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260759123.3391.0.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912141355.59678.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Airlie <airlied@redhat.com>:
-> On Sun, 2009-12-13 at 19:30 -0700, Alex Chiang wrote:
-> > Hi Dave, Rafael,
-> > 
-> > I can successfully suspend/resume my HP Envy, but upon resume,
-> > the screen is corrupted.
-> > 
-> > I used the gnome screenshot utility to capture this:
-> > 
-> > 	http://chizang.net/alex/tmp/radeon-4830-corruption.png
-> > 
-> > But that screenshot leads you to believe the corruption was
-> > 100%, when in reality, the text in my xterms was at least
-> > readable, but ugly.
-> > 
-> > Kernel is latest upstream pulled today. Userspace is Ubuntu Karmic.
+On Fri, 11 Dec 2009 11:03:25 pm Shirley Ma wrote:
+> Signed-off-by: <xma@us.ibm.com>
+
+Hi Shirley,
+
+   These patches look quite close.  More review to follow :)
+
+   This title needs revision.  It should start with virtio: (all the virtio
+patches do, for easy identification after merge), eg:
+
+	Subject: virtio: Add destroy callback for unused buffers
+
+It also needs a commit message which explains the problem and the solution.
+Something like this:
+
+	There's currently no way for a virtio driver to ask for unused
+	buffers, so it has to keep a list itself to reclaim them at shutdown.
+	This is redundant, since virtio_ring stores that information.  So
+	add a new hook to do this: virtio_net will be the first user.
+
+> -------------
 > 
-> Has it ever worked? can you suspend/resume without X running at all?
+> diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+> index c708ecc..bb5eb7b 100644
+> --- a/drivers/net/virtio_net.c
+> +++ b/drivers/net/virtio_net.c
+> @@ -107,6 +107,16 @@ static struct page *get_a_page(struct virtnet_info *vi, gfp_t gfp_mask)
+>  	return p;
+>  }
+>  
+> +static void virtio_net_free_pages(void *buf)
+> +{
+> +	struct page *page, *next;
+> +
+> +	for (page = buf; page; page = next) {
+> +		next = (struct page *)page->private;
+> +		__free_pages(page, 0);
+> +	}
+> +}
+> +
+>  static void skb_xmit_done(struct virtqueue *svq)
+>  {
+>  	struct virtnet_info *vi = svq->vdev->priv;
 
-Hm, define "worked"?
+This belongs in one of the future patches: it will cause an unused warning
+and is logically not part of this patch anyway.
 
-The machine responds to keyboard, mouse, network input, etc. It's
-just that the screen is garbled.
+> +static int vring_destroy_bufs(struct virtqueue *_vq, void (*destroy)(void *))
+> +{
+> +	struct vring_virtqueue *vq = to_vvq(_vq);
+> +	void *buf;
+> +	unsigned int i;
+> +	int freed = 0;
 
-Unless I'm not understanding what you're asking?
+unsigned int for return and freed counter?  Means changing prototype, but
+negative return isn't useful here.
 
-> Its quite possibly a userspace problem but its hard to know, we
-> haven't changed the user modesetting pieces in the kernel at all in
-> quite a while.
+> +
+> +	START_USE(vq);
+> +
+> +	for (i = 0; i < vq->vring.num; i++) {
+> +		if (vq->data[i]) {
+> +			/* detach_buf clears data, so grab it now. */
+> +			buf = vq->data[i];
+> +			detach_buf(vq, i);
+> +			destroy(buf);
+> +			freed++;
 
-Ok, I'm just looking for where/how to start debugging. Any advice
-on where to look next would be fine too.
+You could simplify this a bit, since the queue must be inactive:
 
-Thanks,
-/ac
+	destroy(vq->data[i]);
+	detach_buf(vq, i);
+	freed++;
 
+> +		}
+> +	}
+> +
+> +	END_USE(vq);
+> +	return freed;
+
+Perhaps add a:
+	/* That should have freed everything. */
+	BUG_ON(vq->num_free != vq->vring.num)
+
+>  	void (*disable_cb)(struct virtqueue *vq);
+>  	bool (*enable_cb)(struct virtqueue *vq);
+> +	int (*destroy_bufs)(struct virtqueue *vq, void (*destory)(void *));
+
+destory typo :)
+
+Cheers,
+Rusty.
