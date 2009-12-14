@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbZLNWGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbZLNWHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbZLNWGw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758661AbZLNWGk
+	id S1758695AbZLNWHr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758656AbZLNWHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:06:40 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:53684 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758593AbZLNWGh (ORCPT
+	Mon, 14 Dec 2009 17:07:33 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:45810 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758593AbZLNWHZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:06:37 -0500
+	Mon, 14 Dec 2009 17:07:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HXXs4Iy6owiSq8XUvpZbcJpQAkX3/AdRL2wJ2gzx9IgjwWwFjab5Oo4JcIowIj9McG
-         NjLHd2rqB0QHKj72xhk8yDaTMUHFO7sveZO90mcfyklrRvOBAefdVHn/JKg/VToMZbQW
-         h1FynKdbr9LFHb2gDXBMUBw93dPjyEtYb091A=
-Message-ID: <4B26B6EA.8050403@garzik.org>
-Date: Mon, 14 Dec 2009 17:06:34 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ia45aR9rcrwCRMf4rCrxx0QvXGt1VV8rSZnwO8aG3nEyXq01FFPlwwHZZQ1A8t+cQl
+         IElc0oyLnJ0X1CiSS3tagG1hONZ3pOhI09GLovrZOEErHWFIMhfZHCReuMPK4XpufCIR
+         zYpkISPb4n8JBiOckcLs/nIoys9WmhkN2IRd4=
 MIME-Version: 1.0
-To: Ryan Mallon <ryan@bluewatersys.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
-       Joao Ramos <joao.ramos@inov.pt>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's EP93xx
- CPUs
-References: <200911261651.40928.bzolnier@gmail.com> <4B15BAA1.2010408@bluewatersys.com> <200912020206.59659.bzolnier@gmail.com> <4B26B0D6.4080809@bluewatersys.com>
-In-Reply-To: <4B26B0D6.4080809@bluewatersys.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200912141253.42017.arnd@arndb.de>
+References: <20091205.193505.193701079.davem@davemloft.net>
+	 <20091213.202037.229738549.davem@davemloft.net>
+	 <d45a3acc0912132026w5ab6b3b3x3f211566779257d3@mail.gmail.com>
+	 <200912141253.42017.arnd@arndb.de>
+Date: Tue, 15 Dec 2009 09:07:23 +1100
+Message-ID: <d45a3acc0912141407s23cdbc1cw8d5dfdbc0e1b556a@mail.gmail.com>
+Subject: Re: [GIT]: Networking
+From: andrew hendry <andrew.hendry@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Henner Eisen <eis@baty.hanse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/14/2009 04:40 PM, Ryan Mallon wrote:
-> I have added some of my own debugging. The problem appears to be that
-> __pata_ep93xx_write gets called from probe (via ata_host_activate), but
-> ap->private_data (ata_timing) is still null. The timing private_data is
-> set by pata_ep93xx_set_piomode, but that needs adev->pio_mode set, but I
-> don't know where this happens. I assume the ATA core handles this. Do I
-> need to call pata_ep93xx_set_piomode from pata_ep93xx_probe before
-> ata_host_activate, or should the private_data timing be set to some
-> default in the probe?
+That works for me. I have access to some X.25 networks for testing and
+keep an eye on the mailing lists.
 
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
 
-ap->private_data is traditionally initialized in the ->port_start() hook.
-
-Likely, you should follow other drivers and allocate a useful data 
-structure containing useful default values, which can then be adjusted 
-in other hooks such as ->set_dmamode() or ->set_piomode()
-
-	Jeff
-
-
-
+On Mon, Dec 14, 2009 at 10:53 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Monday 14 December 2009, andrew hendry wrote:
+>> Thanks, I didn't know X.25 was actively maintained. I get bounces.
+>> Is the the maintainers out of date?
+>
+> From looking at the posts on the x.25 mailing list and the changes
+> that went into the kernel during the last three years in that area,
+> I think it is safe to say that you are now the maintainer ;-).
+>
+> The last mail on this topic from Henner Eisen was around 2001.
+>
+>> AX.25 NETWORK LAYER
+>> M:      Ralf Baechle <ralf@linux-mips.org>
+>>
+>> X.25 NETWORK LAYER
+>> M:      Henner Eisen <eis@baty.hanse.de>
+>
+> How about this change?
+>
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -5839,9 +5839,9 @@ F:        sound/soc/codecs/wm8350.c
+>  F:     sound/soc/codecs/wm8400.c
+>
+>  X.25 NETWORK LAYER
+> -M:     Henner Eisen <eis@baty.hanse.de>
+> +M:     Andrew Hendry <andrew.hendry@gmail.com>
+>  L:     linux-x25@vger.kernel.org
+> -S:     Maintained
+> +S:     Odd Fixes
+>  F:     Documentation/networking/x25*
+>  F:     include/net/x25*
+>  F:     net/x25/
+>
