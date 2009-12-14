@@ -1,113 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751140AbZLNMbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZLNMcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751140AbZLNMbn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZLNMbk
+	id S1752697AbZLNMcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZLNMcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:31:40 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44874 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbZLNMbj convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 07:32:23 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35340 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbZLNMcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:31:39 -0500
+	Mon, 14 Dec 2009 07:32:22 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: Rik van Riel <riel@redhat.com>
-Subject: [PATCH 6/8] Stop reclaim quickly when the task reclaimed enough lots pages
+Subject: [PATCH 7/8] Use TASK_KILLABLE instead TASK_UNINTERRUPTIBLE
 Cc: kosaki.motohiro@jp.fujitsu.com, lwoodman@redhat.com,
        akpm@linux-foundation.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org, minchan.kim@gmail.com
 In-Reply-To: <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
 References: <20091211164651.036f5340@annuminas.surriel.com> <20091214210823.BBAE.A69D9226@jp.fujitsu.com>
-Message-Id: <20091214213103.BBC0.A69D9226@jp.fujitsu.com>
+Message-Id: <20091214213145.BBC3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 14 Dec 2009 21:31:36 +0900 (JST)
+Date: Mon, 14 Dec 2009 21:32:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When fork bomb invoke OOM Killer, almost task might start to reclaim and
+sleep on shrink_zone_begin(). if we use TASK_UNINTERRUPTIBLE, OOM killer
+can't kill such task. it mean we never recover from fork bomb.
 
->From latency view, There isn't any reason shrink_zones() continue to
-reclaim another zone's page if the task reclaimed enough lots pages.
+This patch fixes it.
 
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- mm/vmscan.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ mm/vmscan.c |   20 +++++++++++++-------
+ 1 files changed, 13 insertions(+), 7 deletions(-)
 
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 0880668..bf229d3 100644
+index bf229d3..e537361 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -1654,7 +1654,7 @@ static void shrink_zone_end(struct zone *zone, struct scan_control *sc)
- /*
-  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
-  */
--static void shrink_zone(int priority, struct zone *zone,
-+static int shrink_zone(int priority, struct zone *zone,
- 			struct scan_control *sc)
- {
- 	unsigned long nr[NR_LRU_LISTS];
-@@ -1669,7 +1669,7 @@ static void shrink_zone(int priority, struct zone *zone,
- 
- 	ret = shrink_zone_begin(zone, sc);
- 	if (ret)
--		return;
-+		return ret;
- 
- 	/* If we have no swap space, do not bother scanning anon pages. */
- 	if (!sc->may_swap || (nr_swap_pages <= 0)) {
-@@ -1692,6 +1692,7 @@ static void shrink_zone(int priority, struct zone *zone,
- 					  &reclaim_stat->nr_saved_scan[l]);
- 	}
- 
-+	ret = 0;
- 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
- 					nr[LRU_INACTIVE_FILE]) {
- 		for_each_evictable_lru(l) {
-@@ -1712,8 +1713,10 @@ static void shrink_zone(int priority, struct zone *zone,
- 		 * with multiple processes reclaiming pages, the total
- 		 * freeing target can get unreasonably large.
- 		 */
--		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY)
-+		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY) {
-+			ret = -ERESTARTSYS;
- 			break;
-+		}
- 	}
- 
- 	sc->nr_reclaimed = nr_reclaimed;
-@@ -1727,6 +1730,8 @@ static void shrink_zone(int priority, struct zone *zone,
- 
- 	throttle_vm_writeout(sc->gfp_mask);
- 	shrink_zone_end(zone, sc);
+@@ -1618,7 +1618,10 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
+ 	 * we would just make things slower.
+ 	 */
+ 	for (;;) {
+-		prepare_to_wait_exclusive(wq, &wait, TASK_UNINTERRUPTIBLE);
++		prepare_to_wait_exclusive(wq, &wait, TASK_KILLABLE);
 +
-+	return ret;
- }
++		if (fatal_signal_pending(current))
++			goto stop_reclaim;
  
- /*
-@@ -1751,6 +1756,7 @@ static void shrink_zones(int priority, struct zonelist *zonelist,
- 	enum zone_type high_zoneidx = gfp_zone(sc->gfp_mask);
- 	struct zoneref *z;
- 	struct zone *zone;
-+	int ret;
- 
- 	sc->all_unreclaimable = 1;
- 	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
-@@ -1780,7 +1786,9 @@ static void shrink_zones(int priority, struct zonelist *zonelist,
- 							priority);
- 		}
- 
--		shrink_zone(priority, zone, sc);
-+		ret = shrink_zone(priority, zone, sc);
-+		if (ret)
-+			return;
+ 		if (atomic_read(&zone->concurrent_reclaimers) <=
+ 		    max_zone_concurrent_reclaimers)
+@@ -1631,18 +1634,21 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
+                 * break out of the loop and go back to the allocator.
+                 */
+ 		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
+-					0, 0)) {
+-			wake_up_all(wq);
+-			finish_wait(wq, &wait);
+-			sc->nr_reclaimed += sc->nr_to_reclaim;
+-			return -ERESTARTSYS;
+-		}
++					0, 0))
++			goto found_lots_memory;
  	}
+ 	finish_wait(wq, &wait);
+ 
+  out:
+ 	atomic_inc(&zone->concurrent_reclaimers);
+ 	return 0;
++
++ found_lots_memory:
++	wake_up_all(wq);
++ stop_reclaim:
++	finish_wait(wq, &wait);
++	sc->nr_reclaimed += sc->nr_to_reclaim;
++	return -ERESTARTSYS;
  }
  
+ static void shrink_zone_end(struct zone *zone, struct scan_control *sc)
 -- 
 1.6.5.2
 
