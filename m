@@ -1,105 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZLNIBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZLNIBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbZLNIBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 03:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZLNIBd
+	id S1755364AbZLNIBs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 03:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZLNIBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 03:01:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58399 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755189AbZLNIBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 03:01:32 -0500
-Date: Mon, 14 Dec 2009 08:00:36 GMT
-From: tip-bot for David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       davem@davemloft.net, fweisbec@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       davem@davemloft.net, fweisbec@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091213.235622.53363059.davem@davemloft.net>
-References: <20091213.235622.53363059.davem@davemloft.net>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf sched: Fix build failure on sparc
-Message-ID: <tip-2cd9046cc53dd2625e2cf5854d6cbb1ba61de914@git.kernel.org>
-Git-Commit-ID: 2cd9046cc53dd2625e2cf5854d6cbb1ba61de914
-X-Mailer: tip-git-log-daemon
+	Mon, 14 Dec 2009 03:01:44 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:41391 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755311AbZLNIBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 03:01:41 -0500
+Message-ID: <4B25F0BD.3090108@monstr.eu>
+Date: Mon, 14 Dec 2009 09:01:01 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: torvalds@linux-foundation.org
+CC: LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>
+Subject: [GIT PULL] arch/microblaze patches 2.6.33
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2cd9046cc53dd2625e2cf5854d6cbb1ba61de914
-Gitweb:     http://git.kernel.org/tip/2cd9046cc53dd2625e2cf5854d6cbb1ba61de914
-Author:     David Miller <davem@davemloft.net>
-AuthorDate: Sun, 13 Dec 2009 23:56:22 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 14 Dec 2009 08:59:12 +0100
+Hi Linus,
 
-perf sched: Fix build failure on sparc
+please pull the following changes to your tree. There could be small 
+overlapping additions conflicts in scripts/recordmcount.pl with MIPS
+if come first. My patches are against current your head.
 
-Here, tvec->tv_usec is "unsigned int" not "unsigned long".
+Thanks,
+Michal
 
-Since the type is different on every platform, it's probably
-best to just use long printf formats and cast.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20091213.235622.53363059.davem@davemloft.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/bench/sched-messaging.c |    6 ++++--
- tools/perf/bench/sched-pipe.c      |    6 ++++--
- 2 files changed, 8 insertions(+), 4 deletions(-)
+The following changes since commit f40542532e96dda5506eb76badea322f2ae4731c:
+   Linus Torvalds (1):
+         Merge branch 'ixp4xx' of git://git.kernel.org/.../chris/linux-2.6
 
-diff --git a/tools/perf/bench/sched-messaging.c b/tools/perf/bench/sched-messaging.c
-index e249eb2..81cee78 100644
---- a/tools/perf/bench/sched-messaging.c
-+++ b/tools/perf/bench/sched-messaging.c
-@@ -320,10 +320,12 @@ int bench_sched_messaging(int argc, const char **argv,
- 		       num_groups, num_groups * 2 * num_fds,
- 		       thread_mode ? "threads" : "processes");
- 		printf(" %14s: %lu.%03lu [sec]\n", "Total time",
--		       diff.tv_sec, diff.tv_usec/1000);
-+		       diff.tv_sec,
-+		       (unsigned long) (diff.tv_usec/1000));
- 		break;
- 	case BENCH_FORMAT_SIMPLE:
--		printf("%lu.%03lu\n", diff.tv_sec, diff.tv_usec/1000);
-+		printf("%lu.%03lu\n", diff.tv_sec,
-+		       (unsigned long) (diff.tv_usec/1000));
- 		break;
- 	default:
- 		/* reaching here is something disaster */
-diff --git a/tools/perf/bench/sched-pipe.c b/tools/perf/bench/sched-pipe.c
-index 2354f38..4f77c7c 100644
---- a/tools/perf/bench/sched-pipe.c
-+++ b/tools/perf/bench/sched-pipe.c
-@@ -100,7 +100,8 @@ int bench_sched_pipe(int argc, const char **argv,
- 		result_usec += diff.tv_usec;
- 
- 		printf(" %14s: %lu.%03lu [sec]\n\n", "Total time",
--		       diff.tv_sec, diff.tv_usec/1000);
-+		       diff.tv_sec,
-+		       (unsigned long) (diff.tv_usec/1000));
- 
- 		printf(" %14lf usecs/op\n",
- 		       (double)result_usec / (double)loops);
-@@ -111,7 +112,8 @@ int bench_sched_pipe(int argc, const char **argv,
- 
- 	case BENCH_FORMAT_SIMPLE:
- 		printf("%lu.%03lu\n",
--		       diff.tv_sec, diff.tv_usec / 1000);
-+		       diff.tv_sec,
-+		       (unsigned long) (diff.tv_usec / 1000));
- 		break;
- 
- 	default:
+are available in the git repository at:
+
+   git://git.monstr.eu/linux-2.6-microblaze.git for-linus
+
+John Linn (1):
+       microblaze: Fix the heartbeat gpio to be more robust
+
+John Williams (4):
+       microblaze: Remove the buggy ALLOW_EDIT_AUTO config option
+       microblaze: Use lowest-common-denominator default CPU settings
+       microblaze: Simple __copy_tofrom_user for noMMU
+       microblaze: Core oprofile configs and hooks
+
+Michal Simek (38):
+       microblaze: GPIO reset support
+       microblaze: __init_begin symbol must be aligned
+       microblaze: Add IRQENTRY_TEXT to lds
+       microblaze: Stack trace support
+       microblaze: Register timecounter/cyclecounter
+       microblaze: Lockdep support
+       microblaze: preliminary enabling for LATENCYTOP support in Kconfig
+       microblaze: Add TRACE_IRQFLAGS_SUPPORT
+       microblaze: ftrace: add static function tracer
+       microblaze: ftrace: enable HAVE_FUNCTION_TRACE_MCOUNT_TEST
+       microblaze: ftrace: Add dynamic trace support
+       microblaze: ftrace: add function graph support
+       microblaze: ftrace: Add dynamic function graph tracer
+       microblaze: Remove saving and restoring before calling signal code
+       microblaze: Fix announce message for reset gpio
+       microblaze: Support both levels for reset
+       microblaze: Detect new 7.20.d version
+       microblaze: Fix cache_line_lenght
+       microblaze: Extend cpuinfo for support write-back caches
+       microblaze: Ptrace notifying from signal code
+       microblaze: support U-BOOT image format
+       microblaze: Move cache macro from cache.h to cacheflush.h
+       microblaze: Enable asm optimization only for HW with barrel-shifter
+       microblaze: Update default generic DTS
+       microblaze: Export memory_start for modules
+       microblaze: Adding dev_arch_data functions
+       microblaze: Futex support
+       microblaze: Remove duplicity from pgalloc.h
+       microblaze: Checking DTS against PVR for write-back cache
+       microblaze: Enable futimesat syscall
+       microblaze: Enable DTC compilation
+       microblaze: Do not count system calls in default
+       microblaze: Remove panic_timeout init value
+       microblaze: Remove ancient and fake microblaze version from 
+cpu_ver table
+       microblaze: Add PVR for Microblaze v7.30.a
+       microblaze: Support for WB cache
+       microblaze: Remove show_tmem function
+       microblaze: Remove rt_sigsuspend wrapper
+
+steve@digidescorp.com (3):
+       microblaze: Fix pfn_valid() for noMMU
+       microblaze: Fix level interrupt ACKing
+       microblaze: nommu: Don't clobber R11 on syscalls
+
+  arch/microblaze/Kconfig                        |   19 +
+  arch/microblaze/Kconfig.debug                  |    3 +
+  arch/microblaze/Makefile                       |    2 +
+  arch/microblaze/boot/Makefile                  |   15 +-
+  arch/microblaze/include/asm/cache.h            |   16 -
+  arch/microblaze/include/asm/cacheflush.h       |  123 +++---
+  arch/microblaze/include/asm/cpuinfo.h          |    5 +-
+  arch/microblaze/include/asm/device.h           |   12 +
+  arch/microblaze/include/asm/ftrace.h           |   25 +
+  arch/microblaze/include/asm/futex.h            |  127 +++++-
+  arch/microblaze/include/asm/irqflags.h         |  112 ++---
+  arch/microblaze/include/asm/page.h             |    3 +-
+  arch/microblaze/include/asm/pgalloc.h          |    9 +-
+  arch/microblaze/include/asm/pvr.h              |   30 +-
+  arch/microblaze/include/asm/setup.h            |    2 +
+  arch/microblaze/include/asm/system.h           |    2 +
+  arch/microblaze/include/asm/uaccess.h          |   12 +-
+  arch/microblaze/kernel/Makefile                |   14 +-
+  arch/microblaze/kernel/cpu/Makefile            |    4 +
+  arch/microblaze/kernel/cpu/cache.c             |  663 
++++++++++++++++++-------
+  arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c  |   15 +-
+  arch/microblaze/kernel/cpu/cpuinfo-static.c    |   17 +-
+  arch/microblaze/kernel/cpu/cpuinfo.c           |    7 +-
+  arch/microblaze/kernel/cpu/mb.c                |    8 +-
+  arch/microblaze/kernel/cpu/pvr.c               |    2 +-
+  arch/microblaze/kernel/entry-nommu.S           |    2 -
+  arch/microblaze/kernel/entry.S                 |   19 +-
+  arch/microblaze/kernel/ftrace.c                |  237 +++++++++
+  arch/microblaze/kernel/heartbeat.c             |   15 +-
+  arch/microblaze/kernel/intc.c                  |   10 +-
+  arch/microblaze/kernel/mcount.S                |  170 ++++++
+  arch/microblaze/kernel/microblaze_ksyms.c      |    5 +
+  arch/microblaze/kernel/process.c               |    1 +
+  arch/microblaze/kernel/reset.c                 |  140 +++++
+  arch/microblaze/kernel/setup.c                 |   40 +--
+  arch/microblaze/kernel/signal.c                |   35 ++-
+  arch/microblaze/kernel/stacktrace.c            |   65 +++
+  arch/microblaze/kernel/syscall_table.S         |    4 +-
+  arch/microblaze/kernel/timer.c                 |   28 +
+  arch/microblaze/kernel/vmlinux.lds.S           |    6 +-
+  arch/microblaze/lib/uaccess.c                  |    7 +
+  arch/microblaze/mm/init.c                      |    1 +
+  arch/microblaze/mm/pgtable.c                   |   10 -
+  arch/microblaze/oprofile/Makefile              |   13 +
+  arch/microblaze/oprofile/microblaze_oprofile.c |   22 +
+  arch/microblaze/platform/Kconfig.platform      |   21 +-
+  arch/microblaze/platform/generic/Kconfig.auto  |   29 +-
+  arch/microblaze/platform/generic/system.dts    |   38 ++-
+  arch/microblaze/platform/platform.c            |    2 +
+  scripts/recordmcount.pl                        |    3 +
+  50 files changed, 1686 insertions(+), 484 deletions(-)
+  create mode 100644 arch/microblaze/kernel/ftrace.c
+  create mode 100644 arch/microblaze/kernel/mcount.S
+  create mode 100644 arch/microblaze/kernel/reset.c
+  create mode 100644 arch/microblaze/kernel/stacktrace.c
+  create mode 100644 arch/microblaze/oprofile/Makefile
+  create mode 100644 arch/microblaze/oprofile/microblaze_oprofile.c
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
