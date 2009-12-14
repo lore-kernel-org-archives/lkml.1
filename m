@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZLNWDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZLNWCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbZLNWDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbZLNWDN
+	id S1758538AbZLNWCz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758495AbZLNWCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:03:13 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:36540 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758537AbZLNWDJ (ORCPT
+	Mon, 14 Dec 2009 17:02:53 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:46291 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758467AbZLNWCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:03:09 -0500
-Date: Tue, 15 Dec 2009 00:02:20 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: "ext Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "krzysztof.h1@wp.pl" <krzysztof.h1@wp.pl>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "oliver@neukum.org" <oliver@neukum.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "jkosina@suse.cz" <jkosina@suse.cz>
-Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
-Message-ID: <20091214220220.GB2052@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+	Mon, 14 Dec 2009 17:02:52 -0500
+Date: Mon, 14 Dec 2009 17:02:51 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Tejun Heo <tj@kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Warn people about flush_scheduled_work()
+In-Reply-To: <200912142242.06633.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0912141701040.2690-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 14 Dec 2009 22:02:45.0617 (UTC) FILETIME=[2A969610:01CA7D09]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 14 Dec 2009, Oliver Neukum wrote:
 
-On Mon, Dec 14, 2009 at 10:22:32PM +0100, ext Rick L. Vinyard Jr. wrote:
->
->Signed-off-by: Rick L. Vinyard, Jr <rvinyard@cs.nmsu.edu>
+> Am Montag, 14. Dezember 2009 22:33:38 schrieb Alan Stern:
+> >         Consider using cancel_work_sync() or cancel_delayed_work_sync()
+> >         instead.  In most situations they will accomplish what you 
+> >         need.
+> 
+> In which respect is cancel_work_sync() fundamentally safer?
+> If the work is already running and takes a lock you are holding,
+> then what?
 
-there are plenty of style mistakes in this patch. the body message 
-description which you put below should be above the signed-off-by line,
-multi-lined comments are of the form:
+With cancel_work_sync() you _know_ what locks the work item is going to
+take, since it's your work item.  With flush_scheduled_work() you have
+no idea what locks will be needed by the items on the queue.  They 
+could come from anywhere.
 
-/*
-  * multi lined comment
-  * goes here
-  */
+Alan Stern
 
-remove the commented code like /* hid_debug = 0 */
-
-and some others.. please run your patch through scripts/checkpatch.pl 
---strict and fix the errors and warnings reported.
-
-please take a look at Documentation/SubmittingPatches and 
-Documentation/CodingStyle for further reference.
-
-When sending the patch, you could also use git send-email to avoid the 
-problem you had with 'mail'.
-
->+static int __init g13_init(void)
->+{
->+       pr_debug("g13 HID driver loaded");
-
-don't pr_debug() here.
-
->+       return hid_register_driver(&g13_driver);
->+}
->+
->+static void __exit g13_exit(void)
->+{
->+       pr_debug("g13 HID driver unloaded");
-
-nor here.
-
->+       hid_unregister_driver(&g13_driver);
->+}
-
--- 
-balbi
