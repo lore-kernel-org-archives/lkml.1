@@ -1,77 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbZLNWHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZLNWJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbZLNWHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758656AbZLNWHd
+	id S932645AbZLNWJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758591AbZLNWJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:07:33 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:45810 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758593AbZLNWHZ convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 17:09:15 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:34114 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758468AbZLNWJM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:07:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ia45aR9rcrwCRMf4rCrxx0QvXGt1VV8rSZnwO8aG3nEyXq01FFPlwwHZZQ1A8t+cQl
-         IElc0oyLnJ0X1CiSS3tagG1hONZ3pOhI09GLovrZOEErHWFIMhfZHCReuMPK4XpufCIR
-         zYpkISPb4n8JBiOckcLs/nIoys9WmhkN2IRd4=
-MIME-Version: 1.0
-In-Reply-To: <200912141253.42017.arnd@arndb.de>
-References: <20091205.193505.193701079.davem@davemloft.net>
-	 <20091213.202037.229738549.davem@davemloft.net>
-	 <d45a3acc0912132026w5ab6b3b3x3f211566779257d3@mail.gmail.com>
-	 <200912141253.42017.arnd@arndb.de>
-Date: Tue, 15 Dec 2009 09:07:23 +1100
-Message-ID: <d45a3acc0912141407s23cdbc1cw8d5dfdbc0e1b556a@mail.gmail.com>
-Subject: Re: [GIT]: Networking
-From: andrew hendry <andrew.hendry@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Henner Eisen <eis@baty.hanse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Dec 2009 17:09:12 -0500
+Subject: Re: PATCH v2 3/4] Defer skb allocation -- new recvbuf alloc &
+ receive calls
+From: Shirley Ma <mashirle@us.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <20091213114320.GC7074@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain>
+	 <200911231123.18898.rusty@rustcorp.com.au>
+	 <20091208122134.GA17286@redhat.com>
+	 <1260534506.30371.6.camel@localhost.localdomain>
+	 <1260535613.30371.24.camel@localhost.localdomain>
+	 <20091213114320.GC7074@redhat.com>
+Content-Type: text/plain
+Date: Mon, 14 Dec 2009 14:08:38 -0800
+Message-Id: <1260828518.8716.105.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That works for me. I have access to some X.25 networks for testing and
-keep an eye on the mailing lists.
+On Sun, 2009-12-13 at 13:43 +0200, Michael S. Tsirkin wrote:
+> Interesting. I think skb_goodcopy will sometimes
+> set *page to NULL. Will the above crash then?
 
-Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+Nope, when *page is NULL, *len is 0.
 
-On Mon, Dec 14, 2009 at 10:53 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Monday 14 December 2009, andrew hendry wrote:
->> Thanks, I didn't know X.25 was actively maintained. I get bounces.
->> Is the the maintainers out of date?
->
-> From looking at the posts on the x.25 mailing list and the changes
-> that went into the kernel during the last three years in that area,
-> I think it is safe to say that you are now the maintainer ;-).
->
-> The last mail on this topic from Henner Eisen was around 2001.
->
->> AX.25 NETWORK LAYER
->> M:      Ralf Baechle <ralf@linux-mips.org>
->>
->> X.25 NETWORK LAYER
->> M:      Henner Eisen <eis@baty.hanse.de>
->
-> How about this change?
->
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -5839,9 +5839,9 @@ F:        sound/soc/codecs/wm8350.c
->  F:     sound/soc/codecs/wm8400.c
->
->  X.25 NETWORK LAYER
-> -M:     Henner Eisen <eis@baty.hanse.de>
-> +M:     Andrew Hendry <andrew.hendry@gmail.com>
->  L:     linux-x25@vger.kernel.org
-> -S:     Maintained
-> +S:     Odd Fixes
->  F:     Documentation/networking/x25*
->  F:     include/net/x25*
->  F:     net/x25/
->
+> don't put empty line here. if below is part of same logical block as
+> skb_goodcopy.
+Ok.
+
+> Local variable shadows a parameter.
+> It seems gcc will let you get away with a warning,
+> but this is not legal C.
+Ok.
+
+> > +
+> > +             i = skb_shinfo(skb)->nr_frags;
+> > +             if (i >= MAX_SKB_FRAGS) {
+> > +                     pr_debug("%s: packet too long %d\n",
+> skb->dev->name,
+> > +                              len);
+> 
+> If this happens, we have corrupted memory already.
+> We do need this check, but please put is before you increment
+> nr_frags.
+
+It is before increase for mergeable buffer case. Only one page(one frag)
+per get_buf.
+
+> > +                     skb->dev->stats.rx_length_errors++;
+> > +                     return skb;
+> 
+> This will propagate the error up the stack and corrupt
+> more memory.
+
+I just copied the code from original code. There might not be a problem
+for mergeable buffer. I will double check.
+
+> sizeof hdr->hdr
+Ok.
+
+> > +
+> > +     skb_to_sgvec(skb, sg+1, 0, skb->len);
+> 
+> space around +
+Ok.
+
+> > +
+> > +     err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, 2, skb);
+> > +     if (err < 0)
+> > +             kfree_skb(skb);
+> > +     else
+> > +             skb_queue_head(&vi->recv, skb);
+> 
+> So why are we queueing this still?
+This is for small packet. I didn't change that code since it will
+involve extra copy by using page.
+
+> > +
+> > +     return err;
+> > +}
+> > +
+> > +static int add_recvbuf_big(struct virtnet_info *vi, gfp_t gfp, bool
+> *oom)
+> > +{
+> > +     struct scatterlist sg[2 + MAX_SKB_FRAGS];
+> 
+> MAX_SKB_FRAGS + 2 will be more readable.
+> Also, create a macro for this constant and document
+> why does +2 make sense?
+
+One is for big packet virtio_net_hdr, one is for goodcopy skb.
+
+> Again, pls explain *why* do we want 16 byte alignment.
+> Also this code seems duplicated?
+> Please put structs at top of file where they
+> can be found.
+Ok.
+
+> > +     };
+> > +
+> > +     offset = sizeof(struct padded_vnet_hdr);
+> > +
+> > +     for (i = total - 1; i > 0; i--) {
+> 
+> I prefer --i.
+Ok.
+
+> Also, total is just a constant.
+> So simply MAX_SKB_FRAGS + 1 will be clearer.
+Ok.
+
+> Why do we scan last to first?
+> If there's reason, please add a comment.
+We use page private to maintain next page, here there is no scan last to
+first, just add the new page in list head instead of list tail, which
+will require scan the list.
+
+> space around - .
+Ok.
+
+> All the if (i == 1) handling on exit is really hard to grok.
+> How about moving common code out of this loop
+> into a function, and then you can
+>         for (i = total - 1; i > 1; i--) {
+>                 handle(i);
+>         }
+>         handle(1);
+>         handle(0);
+>         add_buf
+That works.
+
+> do we really need *oom here and below?
+> We can just set err to ENOMEM, no?
+We could.
+
+> Please do not return 0 on failure.
+
+Ok.
+
