@@ -1,221 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZLNVqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbZLNVso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758347AbZLNVqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbZLNVqq
+	id S1758463AbZLNVso (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbZLNVsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:46:46 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:47095 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756532AbZLNVqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:46:45 -0500
-Message-ID: <4B26B241.5010403@sgi.com>
-Date: Mon, 14 Dec 2009 13:46:41 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 14 Dec 2009 16:48:36 -0500
+Received: from exprod6og108.obsmtp.com ([64.18.1.21]:48485 "EHLO
+	exprod6og108.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758392AbZLNVse convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 16:48:34 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86, mce: rework output of MCE banks ownership information
-References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210727.456553000@alcatraz.americas.sgi.com> <20091116212251.GB2221@elte.hu> <4B01C59A.9050507@sgi.com> <4B024C76.9050005@jp.fujitsu.com> <4B02EE1D.6020302@sgi.com>
-In-Reply-To: <4B02EE1D.6020302@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] orion_nand.c: add error handling and use resource_size()
+Date: Mon, 14 Dec 2009 16:48:34 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EA65@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] orion_nand.c: add error handling and use resource_size()
+Thread-Index: Acp9By9Eyu2wnvO7TfqSSEdOKv9sUQ==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>,
+       <linux-mtd@lists.infradead.org>
+Cc: "David Woodhouse" <dwmw2@infradead.org>
+X-OriginalArrivalTime: 14 Dec 2009 21:48:32.0767 (UTC) FILETIME=[2E4000F0:01CA7D07]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Use platform_get_resource() to fetch the memory resource and
+add error handling for when it is missing. Use resource_size()
+for the ioremap().
 
-When running the latest kernel, I still find these in the output:
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 
+---
 
-[    0.722553] Booting Node   0, Processors  #1
-[    0.811625] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-[    0.812071]  #2
-[    0.907468] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-[    0.907918]  #3
-[    1.003311] CPU 3 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-[    1.003750]  #4
-
-Was there anything else needed for this patch to be accepted? 
-If it's not acceptable, would simply printing the above as DEBUG
-messages be acceptable?  (I'm aware you don't like printing
-summaries during init.)
-
-Thanks,
-Mike
-
-Mike Travis wrote:
-> Author: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> 
-> The output of MCE banks ownership information on boot tend
-> to be long on new processor which has many banks:
-> 
->  CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 
-> SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> 
-> This message can fill up the console output when the number
-> of cpus is large.
-> 
-> This patch suppress this info message on boot, and introduce
-> debug message in shorter format instead, like:
-> 
->  CPU 1 MCE banks map: ssCC PCss ssPP ssss ssss ss
-> 
->  where: s: shared, C: checked by cmci, P: checked by poll.
-> 
-> This patch still keep the info when ownership is updated.
-> E.g. if a cpu take over the ownership from hot-removed cpu,
-> both message will be shown:
-> 
->  CPU 1 MCE banks map updated: CMCI:6 CMCI:7 CMCI:10 CMCI:11
->  CPU 1 MCE banks map: ssCC PCCC ssPP ssCC ssss ss
-> 
-> v2:
->  - stop changing the level of message on update
->  - change the number of banks message on boot to debug level
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> 
->  - Modified to not use pr_cont().
-> 
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> ---
-> arch/x86/kernel/cpu/mcheck/mce.c       |    6 +--
-> arch/x86/kernel/cpu/mcheck/mce_intel.c |   63 
-> +++++++++++++++++++++++++++------
-> 2 files changed, 55 insertions(+), 14 deletions(-)
-> 
-> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce.c
-> +++ linux/arch/x86/kernel/cpu/mcheck/mce.c
-> @@ -1215,11 +1215,11 @@
-> 
->     b = cap & MCG_BANKCNT_MASK;
->     if (!banks)
-> -        printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
-> +        pr_debug("mce: CPU supports %d MCE banks\n", b);
-> 
->     if (b > MAX_NR_BANKS) {
-> -        printk(KERN_WARNING
-> -               "MCE: Using only %u machine check banks out of %u\n",
-> +        pr_warning(
-> +            "MCE: Using only %u machine check banks out of %u\n",
->             MAX_NR_BANKS, b);
->         b = MAX_NR_BANKS;
->     }
-> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
-> +++ linux/arch/x86/kernel/cpu/mcheck/mce_intel.c
-> @@ -64,14 +64,50 @@
->     mce_notify_irq();
-> }
-> 
-> -static void print_update(char *type, int *hdr, int num)
-> +#define    MCE_MSG_LEN    120
-> +
-> +#ifdef DEBUG_KERNEL
-> +static void print_banks_map(int banks, char *buf)
-> +{
-> +    int i, n;
-> +
-> +    n = snprintf(buf, MCE_MSG_LEN, "CPU %d MCE banks map:",
-> +                            smp_processor_id());
-> +    for (i = 0; i < banks; i++) {
-> +        n += snprintf(&buf[n], MCE_MSG_LEN - n,
-> +            "%s%s", (i % 4) ? "" : " ",
-> +            test_bit(i, __get_cpu_var(mce_banks_owned)) ? "C" :
-> +            test_bit(i, __get_cpu_var(mce_poll_banks)) ? "P" : "s");
-> +    }
-> +
-> +    /* (indicate if message buffer overflowed) */
-> +    pr_debug("%s%s\n", buf, n < MCE_MSG_LEN ? "" : "..." );
-> +}
-> +
-> +static void print_update(char *type, int *hdr, int num, char *buf)
-> +{
-> +    int n = *hdr;
-> +
-> +    if (n == 0)
-> +        n = snprintf(buf, MCE_MSG_LEN,
-> +            "CPU %d MCE banks map updated:", smp_processor_id());
-> +
-> +    n += snprintf(&buf[n], MCE_MSG_LEN - n, " %s:%d", type, num);
-> +    *hdr = n;
-> +}
-> +
-> +#else /* !DEBUG_KERNEL */
-> +
-> +static inline void print_banks_map(int banks, char *buf)
-> +{
-> +}
-> +
-> +static inline void print_update(char *type, int *hdr, int num, char *buf)
-> {
-> -    if (*hdr == 0)
-> -        printk(KERN_INFO "CPU %d MCA banks", smp_processor_id());
-> -    *hdr = 1;
-> -    printk(KERN_CONT " %s:%d", type, num);
-> }
-> 
-> +#endif
-> +
-> /*
->  * Enable CMCI (Corrected Machine Check Interrupt) for available MCE banks
->  * on this CPU. Use the algorithm recommended in the SDM to discover shared
-> @@ -83,8 +119,10 @@
->     unsigned long flags;
->     int hdr = 0;
->     int i;
-> +    char buf[MCE_MSG_LEN];
-> 
->     spin_lock_irqsave(&cmci_discover_lock, flags);
-> +
->     for (i = 0; i < banks; i++) {
->         u64 val;
-> 
-> @@ -95,8 +133,8 @@
-> 
->         /* Already owned by someone else? */
->         if (val & CMCI_EN) {
-> -            if (test_and_clear_bit(i, owned) || boot)
-> -                print_update("SHD", &hdr, i);
-> +            if (test_and_clear_bit(i, owned) && !boot)
-> +                print_update("SHD", &hdr, i, buf);
->             __clear_bit(i, __get_cpu_var(mce_poll_banks));
->             continue;
->         }
-> @@ -107,16 +145,19 @@
-> 
->         /* Did the enable bit stick? -- the bank supports CMCI */
->         if (val & CMCI_EN) {
-> -            if (!test_and_set_bit(i, owned) || boot)
-> -                print_update("CMCI", &hdr, i);
-> +            if (!test_and_set_bit(i, owned) && !boot)
-> +                print_update("CMCI", &hdr, i, buf);
->             __clear_bit(i, __get_cpu_var(mce_poll_banks));
->         } else {
->             WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
->         }
->     }
-> -    spin_unlock_irqrestore(&cmci_discover_lock, flags);
->     if (hdr)
-> -        printk(KERN_CONT "\n");
-> +        pr_debug("%s%s\n", buf, hdr < MCE_MSG_LEN ? "" : "...");
-> +    if (hdr || boot)
-> +        print_banks_map(banks, buf);
-> +
-> +    spin_unlock_irqrestore(&cmci_discover_lock, flags);
-> }
-> 
-> /*
+diff --git a/drivers/mtd/nand/orion_nand.c b/drivers/mtd/nand/orion_nand.c
+index f59c074..9903460 100644
+--- a/drivers/mtd/nand/orion_nand.c
++++ b/drivers/mtd/nand/orion_nand.c
+@@ -74,6 +74,7 @@ static int __init orion_nand_probe(struct platform_device *pdev)
+ 	struct mtd_info *mtd;
+ 	struct nand_chip *nc;
+ 	struct orion_nand_data *board;
++	struct resource *res;
+ 	void __iomem *io_base;
+ 	int ret = 0;
+ #ifdef CONFIG_MTD_PARTITIONS
+@@ -89,8 +90,13 @@ static int __init orion_nand_probe(struct platform_device *pdev)
+ 	}
+ 	mtd = (struct mtd_info *)(nc + 1);
+ 
+-	io_base = ioremap(pdev->resource[0].start,
+-			pdev->resource[0].end - pdev->resource[0].start + 1);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		err = -ENODEV;
++		goto no_res;
++	}
++
++	io_base = ioremap(res->start, resource_size(res));
+ 	if (!io_base) {
+ 		printk(KERN_ERR "orion_nand: ioremap failed\n");
+ 		ret = -EIO; 
