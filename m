@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZLNOUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZLNOXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbZLNOUK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbZLNOUI
+	id S1757413AbZLNOXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbZLNOXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:20:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31087 "EHLO mx1.redhat.com"
+	Mon, 14 Dec 2009 09:23:13 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:57657 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757361AbZLNOUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:20:07 -0500
-Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
-From: Larry Woodman <lwoodman@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, aarcange@redhat.com
-In-Reply-To: <20091214131444.GA8990@infradead.org>
-References: <20091210185626.26f9828a@cuia.bos.redhat.com>
-	 <20091214131444.GA8990@infradead.org>
-Content-Type: text/plain
-Date: Mon, 14 Dec 2009 09:22:16 -0500
-Message-Id: <1260800536.6666.2.camel@dhcp-100-19-198.bos.redhat.com>
+	id S1757384AbZLNOXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:23:12 -0500
+Date: Mon, 14 Dec 2009 15:23:07 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org
+Subject: Re: [PATCH 07/12] i2cdev: move compat_ioctl handling into driver
+Message-ID: <20091214152307.5ba3ea4d@hyperion.delvare>
+In-Reply-To: <1258331227-1694-8-git-send-email-arnd@arndb.de>
+References: <1258331227-1694-1-git-send-email-arnd@arndb.de>
+	<1258331227-1694-8-git-send-email-arnd@arndb.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-14 at 08:14 -0500, Christoph Hellwig wrote:
-> On Thu, Dec 10, 2009 at 06:56:26PM -0500, Rik van Riel wrote:
-> > Under very heavy multi-process workloads, like AIM7, the VM can
-> > get into trouble in a variety of ways.  The trouble start when
-> > there are hundreds, or even thousands of processes active in the
-> > page reclaim code.
-> > 
-> > Not only can the system suffer enormous slowdowns because of
-> > lock contention (and conditional reschedules) between thousands
-> > of processes in the page reclaim code, but each process will try
-> > to free up to SWAP_CLUSTER_MAX pages, even when the system already
-> > has lots of memory free.  In Larry's case, this resulted in over
-> > 6000 processes fighting over locks in the page reclaim code, even
-> > though the system already had 1.5GB of free memory.
-> >
-> > It should be possible to avoid both of those issues at once, by
-> > simply limiting how many processes are active in the page reclaim
-> > code simultaneously.
-> > 
-> 
-> This sounds like a very good argument against using direct reclaim at
-> all.  It reminds a bit of the issue we had in XFS with lots of processes
-> pushing the AIL and causing massive slowdowns due to lock contention
-> and cacheline bonucing.  Moving all the AIL pushing into a dedicated
-> thread solved that nicely.  In the VM we already have that dedicated
-> per-node kswapd thread, so moving off as much as possible work to
-> should be equivalent.
+Hi Arnd,
 
-Some of the new systems have 16 CPUs per-node.
-
+On Mon, 16 Nov 2009 00:27:02 +0000, Arnd Bergmann wrote:
+> Doing all the compat_ioctl handling in the i2c driver itself
+> removes special cases from fs/compat_ioctl.c and makes it possible
+> to optimize this case better.
 > 
-> Of course any of this kind of tuning really requires a lot of testing
-> and benchrmarking to verify those assumptions.
-> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>
+> Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
+> Cc: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: linux-i2c@vger.kernel.org
+> ---
+>  drivers/i2c/i2c-dev.c |  117 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  fs/compat_ioctl.c     |  119 -------------------------------------------------
+>  2 files changed, 117 insertions(+), 119 deletions(-)
 
+This patch no longer applies so I can't test it. I do not have any
+objection about it though.
+
+I'm also not sure what I am supposed to comment on. As far as I can
+see, most of this patch is merely moving code from one file to another,
+so there's little point in reviewing that code. Is there any part in
+particular which needs my attention?
+
+If you want to test your patch yourself, it is fairly easy using the
+i2c-stub driver, which is a software-only i2c bus driver. Install the
+i2c-tools package on your system, and then:
+
+# modprobe i2c-stub chip_addr=0x6d
+# modprobe i2c-dev
+# i2cdetect -l
+# i2cbus=$(i2cdetect -l | grep stub | cut -f1 | cut -d- -f2)
+# i2cdetect -F $i2cbus
+Functionalities implemented by /dev/i2c-x:
+I2C                              no
+SMBus Quick Command              yes
+SMBus Send Byte                  yes
+SMBus Receive Byte               yes
+SMBus Write Byte                 yes
+SMBus Read Byte                  yes
+SMBus Write Word                 yes
+SMBus Read Word                  yes
+SMBus Process Call               no
+SMBus Block Write                no
+SMBus Block Read                 no
+SMBus Block Process Call         no
+SMBus PEC                        no
+I2C Block Write                  no
+I2C Block Read                   no
+# i2cset -y $i2cbus 0x6d 0x00 0x42 b
+Value 0x42 written, readback matched
+# i2cget -y $i2cbus 0x6d 0x00 b
+0x42
+#
+
+The last 3 commands will generate i2c-dev ioctls.
+
+-- 
+Jean Delvare
