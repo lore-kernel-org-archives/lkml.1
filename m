@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbZLNTwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZLNT5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758142AbZLNTwZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 14:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbZLNTwX
+	id S1758136AbZLNT5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 14:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbZLNT5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 14:52:23 -0500
-Received: from mail.klingt.org ([86.59.21.178]:36775 "EHLO klingt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758101AbZLNTwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 14:52:20 -0500
-Message-ID: <4B269765.1070703@klingt.org>
-Date: Mon, 14 Dec 2009 20:52:05 +0100
-From: Tim Blechmann <tim@klingt.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7pre) Gecko/20091214 Shredder/3.0.1pre
+	Mon, 14 Dec 2009 14:57:47 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:36293 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757416AbZLNT5q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 14:57:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ao2i5S7Eja90THU68z/BkNXI3pcDYOfBjpDmCX4Z+SUB5erk94Qt8M8Tw9XJTrKmjQ
+         EqTKawQlxLRBTfjnTqgo5y1MoEF/v/aX7S5otcE+fBFy8s4+/8jS1qjR4ds1dDQzYpmN
+         Pz1yXPPTI8DubLd+Spsaxk5jGlmUYEhgIqSsY=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: stern@rowland.harvard.edu
-Subject: 2.6.32 regression: unable to handle kernel paging request
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD5B21E4F19898B3A816225CB"
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [86.59.21.178]); Mon, 14 Dec 2009 20:52:10 +0100 (CET)
+In-Reply-To: <20091214.110905.207084342.davem@davemloft.net>
+References: <20091213.182502.215092085.davem@davemloft.net> 
+	<1260781359.4165.42.camel@twins> <20091214.110905.207084342.davem@davemloft.net>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 14 Dec 2009 14:57:25 -0500
+Message-ID: <8bd0f97a0912141157w42d02da9y6aaaf64f8bcae454@mail.gmail.com>
+Subject: Re: cpu_clock() in NMIs
+To: David Miller <davem@davemloft.net>
+Cc: peterz@infradead.org, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD5B21E4F19898B3A816225CB
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, Dec 14, 2009 at 14:09, David Miller wrote:
+> 12) Blackfin, TS version is same as sparc64
+>
+>    non-TS version is unnecessary duplication of generic weak
+>    function version in kernel/sched_clock.c and could be deleted
 
-hi all,
-
-i cannot boot any 2.6.32 kernel (i tested back until -rc5) on my nehalem
-machine (x86_64, 12gb ram).
-
-there are bug messages in various (mostly module loader) functions,
-stating "unable to handle kernel paging request". 2.6.31 on the same
-machine works like charm. i haven't been able to save a boot log, but it
-didn't look too different from this:
-
-http://lkml.org/lkml/2009/12/8/207
-
-thnx, tim
-
---=20
-tim@klingt.org
-http://tim.klingt.org
-
-I must say I find television very educational. The minute somebody
-turns it on, I go to the library and read a good book.
-  Groucho Marx
-
-
---------------enigD5B21E4F19898B3A816225CB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksml2UACgkQdL+4qsZfVsuvJQCfWxKXwnPADyh56sc9at6MLyap
-cbAAn0MeJcxqeNbXiocrdcu0RZD/STxP
-=7qLf
------END PGP SIGNATURE-----
-
---------------enigD5B21E4F19898B3A816225CB--
+thanks, i'll take care of this
+-mike
