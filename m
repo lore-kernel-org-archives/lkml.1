@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZLNOKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZLNOOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZLNOKp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbZLNOKo
+	id S1757363AbZLNOOe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757352AbZLNOOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:10:44 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:32988 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754767AbZLNOKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:10:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=OaK7XJmiSnqRPvqF2fwCMUvqaIt0F4ig/Nb06bdgokitrsGRQawqp5bhX29F2fbRIB
-         c0tRoqW7SfPvV8+F26vHfyrW/upJ0kYWhda4f2Kq48JDXnTCk5yhQvN0Gn495czR0jSc
-         wk6JnRrt60UE9TgbL4eesS/KZvaUTn0EEUgi0=
+	Mon, 14 Dec 2009 09:14:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61380 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757349AbZLNOOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:14:32 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] PCI: Global variable decls must match the defs in section
+	attributes
+To: torvalds@osdl.org, jbarnes@virtuousgeek.org, tj@kernel.org,
+       akpm@linux-foundation.org
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Date: Mon, 14 Dec 2009 14:13:44 +0000
+Message-ID: <20091214141344.12091.43853.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <20091214122649.2d914941@varda>
-References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
-	 <20091214122649.2d914941@varda>
-Date: Mon, 14 Dec 2009 23:10:42 +0900
-Message-ID: <c7ac85d60912140610o1de69703x4d42108b4519ede@mail.gmail.com>
-Subject: Re: [How to upload our driver to "kernel.org"] Would you give me your 
-	advice?
-From: Masa <masa.korg@gmail.com>
-To: =?ISO-8859-1?Q?Alejandro_Riveira_Fern=E1ndez?= <ariveira@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       devel@driverdev.osuosl.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks,
+Global variable declarations must match the definitions in section attributes
+as the compiler is at liberty to vary the method it uses to access a variable,
+depending on the section it is in.
 
-> Adding I hpe some usefull CC's
-> See also: http://www.linuxdriverproject.org/
-Last week, I saw it.
-But, I could not find the information for "How to upload".
+When building the FRV arch, I now see:
 
-Should I make a new topic?
+drivers/built-in.o: In function `pci_apply_final_quirks':
+drivers/pci/quirks.c:2606: relocation truncated to fit: R_FRV_GPREL12 against symbol `pci_dfl_cache_line_size' defined in .devinit.data section in drivers/built-in.o
+drivers/pci/quirks.c:2623: relocation truncated to fit: R_FRV_GPREL12 against symbol `pci_dfl_cache_line_size' defined in .devinit.data section in drivers/built-in.o
+drivers/pci/quirks.c:2630: relocation truncated to fit: R_FRV_GPREL12 against symbol `pci_dfl_cache_line_size' defined in .devinit.data section in drivers/built-in.o
 
-I did not know Foswiki.
->From now, I started to study it.
+because the declaration of pci_dfl_cache_line_size in linux/pci.h does not
+match the definition in drivers/pci/pci.c.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/pci.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 04771b9..bf1e670 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1255,7 +1255,7 @@ extern int pci_pci_problems;
+ 
+ extern unsigned long pci_cardbus_io_size;
+ extern unsigned long pci_cardbus_mem_size;
+-extern u8 pci_dfl_cache_line_size;
++extern u8 __devinitdata pci_dfl_cache_line_size;
+ extern u8 pci_cache_line_size;
+ 
+ extern unsigned long pci_hotplug_io_size;
+
