@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZLNL05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZLNL1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbZLNL05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 06:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZLNL04
+	id S1756925AbZLNL1P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 06:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZLNL1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 06:26:56 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:34284 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756878AbZLNL0z convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 06:27:10 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41008 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756912AbZLNL1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 06:26:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=M7p0xBfVzVvZmz4IKaeS6jgX8WJqWau6/miYMiMHMZveWKwm6ogfhANBla+VzHp7GV
-         LcJ5trguvao1fZiQ4wF9QWe9h/sX89mX7oxx8dUeN9u9iAIefcytFJrDCvpacPwOXRJ2
-         oY11+sKdv4clH5psPsqTWtd5CVFu8v76HPehc=
-Date: Mon, 14 Dec 2009 12:26:49 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Masa <masa.korg@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       devel@driverdev.osuosl.org
-Subject: Re: [How to upload our driver to "kernel.org"] Would you give me
- your  advice?
-Message-ID: <20091214122649.2d914941@varda>
-In-Reply-To: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
-References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Dec 2009 06:27:07 -0500
+Date: Mon, 14 Dec 2009 12:26:56 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
+ 2.6.32-git-053fe57ac v2
+Message-ID: <20091214112656.GB1959@elf.ucw.cz>
+References: <cover.1260662994.git.re.emese@gmail.com>
+ <20091214003836.GD7812@parisc-linux.org>
+ <4B2595E7.701@gmail.com>
+ <20091214021916.GB12196@linux-sh.org>
+ <4B25E47C.1010803@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B25E47C.1010803@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, 14 Dec 2009 19:56:23 +0900
-Masa <masa.korg@gmail.com> escribió:
+> > Until such a consensus is reached one way or the other, please refrain
+> > from sending hundreds of patches -- one or two are sufficient for showing
+> > what you want to do until folks are on board with it, as is the typical
+> > nature of mechanical changes.
+> 
+> I think there is consensus to constify ops variables as much as
+> possible (e.g., Alexey's similar patches).
 
-Adding I hpe some usefull CC's
-See also: http://www.linuxdriverproject.org/
+No such consensus exists. It is very clear from the patch reactions.
 
-> Hi,
-> 
-> Our company is planning to upload our device drivers to "kernel.org".
-> And I am investigating "How to upload".
-> 
-> Our company is developing some device drivers for new chip-set device.
-> It is not released yet, but the sample is in the test in the specific company.
-> 
-> I contacted kernel.org this month.
-> The man recommended this mailing-list.
-> 
-> Would you give me your advice?
-> I am very glad if you help it.
-> 
-> We look forward to uploading the drivers to kernel.org!
-> 
-> [Our drivers]
-> We are preparing the drivers source code.
-> And we uploaded them to Sourceforge.net.
-> Please refer to below.
-> http://sourceforge.net/projects/generalembedded/
-> http://generalembedded.sourceforge.net/
-> 
-> Our developers will turn our drivers into a patch series and to post
-> them to this mailing list.
-> 
-> [My information]
-> I participated in the mailing list for the first time in my life.
-> I am full of fears and hopes.
-> 
-> This mailing list is very lively and great!
-> I think so.
-> 
-> Thank you & Best regards,
-> Masa <masa.korg@gmail.com>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
