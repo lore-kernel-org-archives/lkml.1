@@ -1,529 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbZLNGqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZLNGy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751982AbZLNGqA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 01:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZLNGp7
+	id S1753729AbZLNGy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 01:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZLNGy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 01:45:59 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49934 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbZLNGp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 01:45:58 -0500
-Date: Mon, 14 Dec 2009 07:45:45 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Ryan Mallon <ryan@bluewatersys.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Arve Hj?nnev?g <arve@android.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: GPIO support for HTC Dream
-Message-ID: <20091214064545.GK5114@elf.ucw.cz>
-References: <20091208102842.GH12264@elf.ucw.cz>
- <4B1EB57D.6070408@bluewatersys.com>
- <20091208214658.GC4164@elf.ucw.cz>
- <4B1ECEEE.3000209@bluewatersys.com>
- <4B203575.6050407@bluewatersys.com>
- <20091210172458.GJ19454@elf.ucw.cz>
- <4B2150B7.3040207@bluewatersys.com>
- <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
- <20091211221015.GB24456@elf.ucw.cz>
- <BD79186B4FD85F4B8E60E381CAEE190901FB10EA@mi8nycmail19.Mi8.com>
+	Mon, 14 Dec 2009 01:54:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:55074 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751651AbZLNGyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 01:54:55 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Shirley Ma <mashirle@us.ibm.com>
+Subject: Re: [PATCH v2 2/4] Defer skb allocation -- new skb_set calls & chain pages in virtio_net
+Date: Mon, 14 Dec 2009 17:24:48 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+References: <1258697359.7416.14.camel@localhost.localdomain> <1260534506.30371.6.camel@localhost.localdomain> <1260535382.30371.20.camel@localhost.localdomain>
+In-Reply-To: <1260535382.30371.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB10EA@mi8nycmail19.Mi8.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912141724.49034.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 11 Dec 2009 11:13:02 pm Shirley Ma wrote:
+> Signed-off-by: Shirley Ma <xma@us.ibm.com>
 
-> This looks MUCH better!
+I don't think there's a good way of splitting this change across multiple
+patches.  And I don't think this patch will compile; I don't think we can
+get rid of trim_pages yet.
 
-Thanks :-).
+We *could* first split the receive paths into multiple parts as you have
+(eg. add_recvbuf_big etc), then actually rewrite them, but that's too much
+work to refactor the code twice.  
 
-> > arch/arm/Kconfig                     |    1
-> > arch/arm/mach-msm/board-dream-gpio.c |  327 +++++++++--------------------------
-...
-> Please update (or remove) this diffstat.  It no longer matches the patch.
+So just roll all the driver changes into one patch; so you will have two
+patches: one which creates the destroy_bufs API for virtio, and one which
+uses it in the virtio_net driver.
 
-I was just showing differences to _previous_ version, not what I was sending.
+> +static struct sk_buff *skb_goodcopy(struct virtnet_info *vi, struct page **page,
+> +				    unsigned int *len)
 
-> Ok.  The hardware still seems a bit strange. Is there any datasheet
-> available?
+This actually allocates an skb, and transfers the first page to it (via copy
+and possibly the first fragment).  skb_from_page() perhaps?
 
-I don't think there is one. Daniel, can you help here?
+> +		hdr_len = sizeof(hdr->hdr);
+> +		offset = sizeof(struct padded_vnet_hdr);
+> +	}
+> +
+> +	memcpy(hdr, p, hdr_len);
+> +
+> +	*len -= hdr_len;
 
-> Please remove all the unnecessary headers.  I think you only need:
-> 
-> #include <linux/kernel.h>
-...
-> #include "board-dream.h"
+Perhaps you should return NULL here as an error if *len was < hdr_len?
 
-Yep, right, thanks.
-
-> > +static void msm_gpiolib_set(struct gpio_chip *chip, unsigned offset, int val);
-...
-> > +static int msm_gpiolib_direction_input(struct gpio_chip *chip,
-> > +					unsigned offset);
-> 
-> Please reorganize the code so that the function prototypes are not
-> needed.
-
-Done.
-
-> > +int gpio_to_irq(unsigned gpio)
-> > +{
-> > +	BUG();
-> > +}
-> 
-> return -EINVAL;
-
-Ok.
-
-> > +int __init dream_init_gpio(void)
-> > +{
-> > +        int i;
-> > +
-> > +        for (i = 0; i < ARRAY_SIZE(msm_gpio_banks); i++)
-> > +                gpiochip_add(&msm_gpio_banks[i].chip);
-> > +
-> > +	return 0;
-> > +}
-> 
-> Your original patch was initially writing the shadow values to the registers.
-> Do you still need to do that?
-
-It seems to boot this way :-). If writing the shadow values is not
-needed, lets try getting away without it...
-
-> > +#define DREAM_INT_TO_BANK(n) ((n - DREAM_INT_START) / DREAM_INT_BANK0_COUNT)
-> > +#define DREAM_INT_TO_MASK(n) (1U << ((n - DREAM_INT_START) & 7))
-> > +#define DREAM_BANK_TO_MASK_REG(bank) \
-> > +	(bank ? DREAM_GPIO_INT_MASK1_REG : DREAM_GPIO_INT_MASK0_REG)
-> > +#define DREAM_BANK_TO_STAT_REG(bank) \
-> > +	(bank ? DREAM_GPIO_INT_STAT1_REG : DREAM_GPIO_INT_STAT0_REG)
-> 
-> I think all the DREAM_GPIO_* stuff needs to be moved into
-> arch/arm/mach-msm/include/mach/gpio.h so that board drivers can pick up
-> the defines with #include <linux/gpio.h>.
-
-Ok, done. Plus I removed IRQ defines -- they are not needed now and
-patch using them should probably add them.
-
-> > +#include <linux/interrupt.h>
-> 
-> Unneeded include.
-
-Deleted.
-
-> > +int gpio_request(unsigned gpio, const char *label);
-...
-> > +int gpio_to_irq(unsigned gpio);
-> 
-> The prototypes are not needed.  They will get picked up by the
-> following include.
-
-gpio_to_irq seems needed, I killed the others.
-
-> > +#include <asm-generic/gpio.h>
-> > +
-> > +extern int gpio_configure(unsigned int gpio, unsigned long flags);
-> > +extern int gpio_read_detect_status(unsigned int gpio);
-> > +extern int gpio_clear_detect_status(unsigned int gpio);
-> 
-> These are not needed since they are not defined in the patch.
-> 
-> I think you will need to add the following also so that gpiolib will
-> use the default functions.
-> 
-> #define gpio_get_value	__gpio_get_value
-> #define gpio_set_value	__gpio_set_value
-> #define gpio_cansleep	__gpio_cansleep
-
-Yep, thanks!
-
-It now looks like this. I still need to test it and clean up
-warnings. (and move those selects)
-									Pavel
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 1c4119c..8bb8546 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -565,6 +565,8 @@ config ARCH_MSM
- 	select CPU_V6
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select GENERIC_GPIO
-+	select ARCH_REQUIRE_GPIOLIB
- 	help
- 	  Support for Qualcomm MSM7K based systems.  This runs on the ARM11
- 	  apps processor of the MSM7K and depends on a shared memory
-diff --git a/arch/arm/mach-msm/Makefile b/arch/arm/mach-msm/Makefile
-index 91e6f5c..4c2567e 100644
---- a/arch/arm/mach-msm/Makefile
-+++ b/arch/arm/mach-msm/Makefile
-@@ -6,4 +6,4 @@ obj-y += clock.o clock-7x01a.o
- 
- obj-$(CONFIG_MACH_HALIBUT) += board-halibut.o
- 
--obj-$(CONFIG_MACH_TROUT) += board-dream.o
-+obj-$(CONFIG_MACH_TROUT) += board-dream.o board-dream-gpio.o generic_gpio.o 
-diff --git a/arch/arm/mach-msm/board-dream-gpio.c b/arch/arm/mach-msm/board-dream-gpio.c
-new file mode 100644
-index 0000000..4cf6ec0
---- /dev/null
-+++ b/arch/arm/mach-msm/board-dream-gpio.c
-@@ -0,0 +1,116 @@
-+/*
-+ * linux/arch/arm/mach-msm/gpio.c
-+ *
-+ * Copyright (C) 2005 HP Labs
-+ * Copyright (C) 2008 Google, Inc.
-+ * Copyright (C) 2009 Pavel Machek <pavel@ucw.cz>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/io.h>
-+#include <linux/gpio.h>
-+
-+#include "board-dream.h"
-+
-+struct msm_gpio_chip {
-+	struct gpio_chip	chip;
-+	void __iomem		*reg;	/* Base of register bank */
-+	u8			shadow;
-+};
-+
-+#define to_msm_gpio_chip(c) container_of(c, struct msm_gpio_chip, chip)
-+
-+static int msm_gpiolib_get(struct gpio_chip *chip, unsigned offset)
-+{
-+	struct msm_gpio_chip *msm_gpio = to_msm_gpio_chip(chip);
-+	unsigned mask = 1 << offset;
-+
-+	return !! (readb(msm_gpio->reg) & mask);
-+}
-+
-+static void msm_gpiolib_set(struct gpio_chip *chip, unsigned offset, int val)
-+{
-+	struct msm_gpio_chip *msm_gpio = to_msm_gpio_chip(chip);
-+	unsigned mask = 1 << offset;
-+
-+	if (val)
-+		msm_gpio->shadow |= mask;
-+	else
-+		msm_gpio->shadow &= ~mask;
-+
-+	writeb(msm_gpio->shadow, msm_gpio->reg);
-+}
-+
-+static int msm_gpiolib_direction_input(struct gpio_chip *chip,
-+					unsigned offset)
-+{
-+	msm_gpiolib_set(chip, offset, 0);
-+	return 0;
-+}
-+
-+static int msm_gpiolib_direction_output(struct gpio_chip *chip,
-+					 unsigned offset, int val)
-+{
-+	msm_gpiolib_set(chip, offset, val);
-+	return 0;
-+}
-+
-+int gpio_to_irq(unsigned gpio)
-+{
-+	return -EINVAL;
-+}
-+
-+#define DREAM_GPIO_BANK(name, reg_num, base_gpio, shadow_val)		\
-+	{								\
-+		.chip = {						\
-+			.label		  = name,			\
-+			.direction_input  = msm_gpiolib_direction_input, \
-+			.direction_output = msm_gpiolib_direction_output, \
-+			.get		  = msm_gpiolib_get,		\
-+			.set		  = msm_gpiolib_set,		\
-+			.base		  = base_gpio,			\
-+			.ngpio		  = 8,				\
-+		},							\
-+		.reg = reg_num + DREAM_CPLD_BASE,			\
-+		.shadow = shadow_val,					\
-+	}
-+
-+static struct msm_gpio_chip msm_gpio_banks[] = {
-+#if defined(CONFIG_MSM_DEBUG_UART1)
-+        /* H2W pins <-> UART1 */
-+        DREAM_GPIO_BANK("MISC2", 0x00,   DREAM_GPIO_MISC2_BASE, 0x40),
-+#else
-+	/* H2W pins <-> UART3, Bluetooth <-> UART1 */
-+        DREAM_GPIO_BANK("MISC2", 0x00,   DREAM_GPIO_MISC2_BASE, 0x80),
-+#endif
-+	/* I2C pull */
-+        DREAM_GPIO_BANK("MISC3", 0x02,   DREAM_GPIO_MISC3_BASE, 0x04),
-+        DREAM_GPIO_BANK("MISC4", 0x04,   DREAM_GPIO_MISC4_BASE, 0),
-+	/* mmdi 32k en */
-+        DREAM_GPIO_BANK("MISC5", 0x06,   DREAM_GPIO_MISC5_BASE, 0x04),
-+        DREAM_GPIO_BANK("INT2", 0x08,    DREAM_GPIO_INT2_BASE,  0),
-+        DREAM_GPIO_BANK("MISC1", 0x0a,   DREAM_GPIO_MISC1_BASE, 0),
-+        DREAM_GPIO_BANK("VIRTUAL", 0x12, DREAM_GPIO_VIRTUAL_BASE, 0),
-+};
-+
-+/*
-+ * Called from the processor-specific init to enable GPIO pin support.
-+ */
-+int __init dream_init_gpio(void)
-+{
-+        int i;
-+
-+        for (i = 0; i < ARRAY_SIZE(msm_gpio_banks); i++)
-+                gpiochip_add(&msm_gpio_banks[i].chip);
-+
-+	return 0;
-+}
-+
-+postcore_initcall(dream_init_gpio);
-+
-diff --git a/arch/arm/mach-msm/board-dream.h b/arch/arm/mach-msm/board-dream.h
-index 4f345a5..dbd78b9 100644
---- a/arch/arm/mach-msm/board-dream.h
-+++ b/arch/arm/mach-msm/board-dream.h
-@@ -1,5 +1,58 @@
- 
--#define TROUT_CPLD_BASE   0xE8100000
--#define TROUT_CPLD_START  0x98000000
--#define TROUT_CPLD_SIZE   SZ_4K
-+#define MSM_SMI_BASE		0x00000000
-+#define MSM_SMI_SIZE		0x00800000
-+
-+#define MSM_EBI_BASE		0x10000000
-+#define MSM_EBI_SIZE		0x06e00000
-+
-+#define MSM_PMEM_GPU0_BASE	0x00000000
-+#define MSM_PMEM_GPU0_SIZE	0x00700000
-+
-+#define MSM_PMEM_MDP_BASE	0x02000000
-+#define MSM_PMEM_MDP_SIZE	0x00800000
-+
-+#define MSM_PMEM_ADSP_BASE      0x02800000
-+#define MSM_PMEM_ADSP_SIZE	0x00800000
-+
-+#define MSM_PMEM_CAMERA_BASE	0x03000000
-+#define MSM_PMEM_CAMERA_SIZE	0x00800000
-+
-+#define MSM_FB_BASE		0x03800000
-+#define MSM_FB_SIZE		0x00100000
-+
-+#define MSM_LINUX_BASE		MSM_EBI_BASE
-+#define MSM_LINUX_SIZE		0x06500000
-+
-+#define MSM_PMEM_GPU1_SIZE	0x800000
-+#define MSM_PMEM_GPU1_BASE	(MSM_RAM_CONSOLE_BASE - MSM_PMEM_GPU1_SIZE)
-+
-+#define MSM_RAM_CONSOLE_BASE	(MSM_EBI_BASE + 0x6d00000)
-+#define MSM_RAM_CONSOLE_SIZE	(128 * SZ_1K)
-+
-+#if (MSM_FB_BASE + MSM_FB_SIZE) >= (MSM_PMEM_GPU1_BASE)
-+#error invalid memory map
-+#endif
-+
-+#define DECLARE_MSM_IOMAP
-+#include <mach/msm_iomap.h>
-+
-+#define DREAM_4_BALL_UP_0     1
-+#define DREAM_4_BALL_LEFT_0   18
-+#define DREAM_4_BALL_DOWN_0   57
-+#define DREAM_4_BALL_RIGHT_0  91
-+
-+#define DREAM_5_BALL_UP_0     94
-+#define DREAM_5_BALL_LEFT_0   18
-+#define DREAM_5_BALL_DOWN_0   90
-+#define DREAM_5_BALL_RIGHT_0  19
-+
-+#define DREAM_POWER_KEY     20
-+
-+#define DREAM_4_TP_LS_EN    19
-+#define DREAM_5_TP_LS_EN    1
-+
-+#define DREAM_CPLD_BASE   0xE8100000
-+#define DREAM_CPLD_START  0x98000000
-+#define DREAM_CPLD_SIZE   SZ_4K
-+
- 
-diff --git a/arch/arm/mach-msm/generic_gpio.c b/arch/arm/mach-msm/generic_gpio.c
-new file mode 100644
-index 0000000..357e63e
---- /dev/null
-+++ b/arch/arm/mach-msm/generic_gpio.c
-@@ -0,0 +1,15 @@
-+/* arch/arm/mach-msm/generic_gpio.c
-+ *
-+ * Copyright (C) 2007 Google, Inc.
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-diff --git a/arch/arm/mach-msm/gpio_chip.h b/arch/arm/mach-msm/gpio_chip.h
-new file mode 100644
-index 0000000..ffc4d54
---- /dev/null
-+++ b/arch/arm/mach-msm/gpio_chip.h
-@@ -0,0 +1,20 @@
-+/* arch/arm/mach-msm/gpio_chip.h
-+ *
-+ * Copyright (C) 2007 Google, Inc.
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#ifndef _LINUX_GPIO_CHIP_H
-+#define _LINUX_GPIO_CHIP_H
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/gpio.h b/arch/arm/mach-msm/include/mach/gpio.h
-new file mode 100644
-index 0000000..e92bc31
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/gpio.h
-@@ -0,0 +1,105 @@
-+/*
-+ * Copyright (C) 2007 Google, Inc.
-+ * Author: Mike Lockwood <lockwood@android.com>
-+ * Copyright (C) 2009 Pavel Machek <pavel@ucw.cz>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#ifndef __ASM_ARCH_MSM_GPIO_H
-+#define __ASM_ARCH_MSM_GPIO_H
-+
-+extern int gpio_to_irq(unsigned gpio);
-+
-+#include <asm-generic/gpio.h>
-+
-+#define gpio_get_value __gpio_get_value
-+#define gpio_set_value __gpio_set_value
-+#define gpio_cansleep __gpio_cansleep
-+
-+#define DREAM_GPIO_CABLE_IN1		(83)
-+#define DREAM_GPIO_CABLE_IN2		(49)
-+
-+#define DREAM_GPIO_START (128)
-+
-+#define DREAM_GPIO_INT_MASK0_REG            (0x0c)
-+#define DREAM_GPIO_INT_STAT0_REG            (0x0e)
-+#define DREAM_GPIO_INT_MASK1_REG            (0x14)
-+#define DREAM_GPIO_INT_STAT1_REG            (0x10)
-+
-+#define DREAM_GPIO_HAPTIC_PWM               (28)
-+#define DREAM_GPIO_PS_HOLD                  (25)
-+
-+#define DREAM_GPIO_MISC2_BASE               (DREAM_GPIO_START + 0x00)
-+#define DREAM_GPIO_MISC3_BASE               (DREAM_GPIO_START + 0x08)
-+#define DREAM_GPIO_MISC4_BASE               (DREAM_GPIO_START + 0x10)
-+#define DREAM_GPIO_MISC5_BASE               (DREAM_GPIO_START + 0x18)
-+#define DREAM_GPIO_INT2_BASE                (DREAM_GPIO_START + 0x20)
-+#define DREAM_GPIO_MISC1_BASE               (DREAM_GPIO_START + 0x28)
-+#define DREAM_GPIO_VIRTUAL_BASE             (DREAM_GPIO_START + 0x30)
-+#define DREAM_GPIO_INT5_BASE                (DREAM_GPIO_START + 0x48)
-+
-+#define DREAM_GPIO_CHARGER_EN               (DREAM_GPIO_MISC2_BASE + 0)
-+#define DREAM_GPIO_ISET                     (DREAM_GPIO_MISC2_BASE + 1)
-+#define DREAM_GPIO_H2W_DAT_DIR              (DREAM_GPIO_MISC2_BASE + 2)
-+#define DREAM_GPIO_H2W_CLK_DIR              (DREAM_GPIO_MISC2_BASE + 3)
-+#define DREAM_GPIO_H2W_DAT_GPO              (DREAM_GPIO_MISC2_BASE + 4)
-+#define DREAM_GPIO_H2W_CLK_GPO              (DREAM_GPIO_MISC2_BASE + 5)
-+#define DREAM_GPIO_H2W_SEL0                 (DREAM_GPIO_MISC2_BASE + 6)
-+#define DREAM_GPIO_H2W_SEL1                 (DREAM_GPIO_MISC2_BASE + 7)
-+
-+#define DREAM_GPIO_SPOTLIGHT_EN             (DREAM_GPIO_MISC3_BASE + 0)
-+#define DREAM_GPIO_FLASH_EN                 (DREAM_GPIO_MISC3_BASE + 1)
-+#define DREAM_GPIO_I2C_PULL                 (DREAM_GPIO_MISC3_BASE + 2)
-+#define DREAM_GPIO_TP_I2C_PULL              (DREAM_GPIO_MISC3_BASE + 3)
-+#define DREAM_GPIO_TP_EN                    (DREAM_GPIO_MISC3_BASE + 4)
-+#define DREAM_GPIO_JOG_EN                   (DREAM_GPIO_MISC3_BASE + 5)
-+#define DREAM_GPIO_UI_LED_EN                (DREAM_GPIO_MISC3_BASE + 6)
-+#define DREAM_GPIO_QTKEY_LED_EN             (DREAM_GPIO_MISC3_BASE + 7)
-+
-+#define DREAM_GPIO_VCM_PWDN                 (DREAM_GPIO_MISC4_BASE + 0)
-+#define DREAM_GPIO_USB_H2W_SW               (DREAM_GPIO_MISC4_BASE + 1)
-+#define DREAM_GPIO_COMPASS_RST_N            (DREAM_GPIO_MISC4_BASE + 2)
-+#define DREAM_GPIO_HAPTIC_EN_UP             (DREAM_GPIO_MISC4_BASE + 3)
-+#define DREAM_GPIO_HAPTIC_EN_MAIN           (DREAM_GPIO_MISC4_BASE + 4)
-+#define DREAM_GPIO_USB_PHY_RST_N            (DREAM_GPIO_MISC4_BASE + 5)
-+#define DREAM_GPIO_WIFI_PA_RESETX           (DREAM_GPIO_MISC4_BASE + 6)
-+#define DREAM_GPIO_WIFI_EN                  (DREAM_GPIO_MISC4_BASE + 7)
-+
-+#define DREAM_GPIO_BT_32K_EN                (DREAM_GPIO_MISC5_BASE + 0)
-+#define DREAM_GPIO_MAC_32K_EN               (DREAM_GPIO_MISC5_BASE + 1)
-+#define DREAM_GPIO_MDDI_32K_EN              (DREAM_GPIO_MISC5_BASE + 2)
-+#define DREAM_GPIO_COMPASS_32K_EN           (DREAM_GPIO_MISC5_BASE + 3)
-+
-+#define DREAM_GPIO_NAVI_ACT_N               (DREAM_GPIO_INT2_BASE + 0)
-+#define DREAM_GPIO_COMPASS_IRQ              (DREAM_GPIO_INT2_BASE + 1)
-+#define DREAM_GPIO_SLIDING_DET              (DREAM_GPIO_INT2_BASE + 2)
-+#define DREAM_GPIO_AUD_HSMIC_DET_N          (DREAM_GPIO_INT2_BASE + 3)
-+#define DREAM_GPIO_SD_DOOR_N                (DREAM_GPIO_INT2_BASE + 4)
-+#define DREAM_GPIO_CAM_BTN_STEP1_N          (DREAM_GPIO_INT2_BASE + 5)
-+#define DREAM_GPIO_CAM_BTN_STEP2_N          (DREAM_GPIO_INT2_BASE + 6)
-+#define DREAM_GPIO_TP_ATT_N                 (DREAM_GPIO_INT2_BASE + 7)
-+#define DREAM_GPIO_BANK0_FIRST_INT_SOURCE   (DREAM_GPIO_NAVI_ACT_N)
-+#define DREAM_GPIO_BANK0_LAST_INT_SOURCE    (DREAM_GPIO_TP_ATT_N)
-+
-+#define DREAM_GPIO_H2W_DAT_GPI              (DREAM_GPIO_MISC1_BASE + 0)
-+#define DREAM_GPIO_H2W_CLK_GPI              (DREAM_GPIO_MISC1_BASE + 1)
-+#define DREAM_GPIO_CPLD128_VER_0            (DREAM_GPIO_MISC1_BASE + 4)
-+#define DREAM_GPIO_CPLD128_VER_1            (DREAM_GPIO_MISC1_BASE + 5)
-+#define DREAM_GPIO_CPLD128_VER_2            (DREAM_GPIO_MISC1_BASE + 6)
-+#define DREAM_GPIO_CPLD128_VER_3            (DREAM_GPIO_MISC1_BASE + 7)
-+
-+#define DREAM_GPIO_SDMC_CD_N                (DREAM_GPIO_VIRTUAL_BASE + 0)
-+#define DREAM_GPIO_END                      (DREAM_GPIO_SDMC_CD_N)
-+#define DREAM_GPIO_BANK1_FIRST_INT_SOURCE   (DREAM_GPIO_SDMC_CD_N)
-+#define DREAM_GPIO_BANK1_LAST_INT_SOURCE    (DREAM_GPIO_SDMC_CD_N)
-+
-+#endif
- 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rusty.
