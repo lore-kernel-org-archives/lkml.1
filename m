@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbZLNOQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZLNOSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757372AbZLNOQK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:16:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757352AbZLNOQJ
+	id S1757391AbZLNOSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbZLNOSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:16:09 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:40259 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757351AbZLNOQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:16:07 -0500
-Date: Mon, 14 Dec 2009 06:16:07 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Al Viro <viro@zeniv.linux.org.uk>,
-       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 0/9] Fix various __task_cred related invalid RCU
-	assumptions
-Message-ID: <20091214141607.GD7710@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091210001308.247025548@linutronix.de> <20091210022825.GG6938@linux.vnet.ibm.com> <alpine.LFD.2.00.0912091914540.3560@localhost.localdomain> <1260422031.4165.1.camel@twins> <20091210053457.GB6720@linux.vnet.ibm.com> <1260730577.4165.7.camel@twins> <20091214015347.GB7710@linux.vnet.ibm.com> <1260785859.4165.136.camel@twins>
+	Mon, 14 Dec 2009 09:18:12 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:50296 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757355AbZLNOSK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:18:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=JJsMvpsLrsjHsYFwAoBEI+b6EC3FmZEDbQySenhe8XW+VIIMxXjD+HB373/JoSiSdB
+         3Apfv3a1/8FHGDKyeCY7nSev+/UHGPZwY4drBH7dP7RLLaCPiu8Gaz077ALAtladwewj
+         eDhm6R8ABOJPkZBA7eY4NY+8ddm9AHzayiIsE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
+Date: Mon, 14 Dec 2009 15:16:54 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Con Kolivas <kernel@kolivas.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200912111124.18118.kernel@kolivas.org> <200912121710.44216.kernel@kolivas.org> <20091212061447.GB2856@1wt.eu>
+In-Reply-To: <20091212061447.GB2856@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260785859.4165.136.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200912141516.54725.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 11:17:39AM +0100, Peter Zijlstra wrote:
-> On Sun, 2009-12-13 at 17:53 -0800, Paul E. McKenney wrote:
-> > On Sun, Dec 13, 2009 at 07:56:17PM +0100, Peter Zijlstra wrote:
-> > > On Wed, 2009-12-09 at 21:34 -0800, Paul E. McKenney wrote:
-> > > 
-> > > > Ah -- I have a related lockdep question.  Is there a primitive that says
-> > > > whether or not the current task holds at least one lock of any type?
-> > > > If so, I would like to make rcu_dereference() do at least a little crude
-> > > > checking for this problem.
-> > > 
-> > > Hmm, no, but that's not hard to do, however I actually implemented
-> > > something like that for RCU a long while ago and that gives a metric TON
-> > > of false positives due to things like the radix tree which are RCU-safe
-> > > but are not required to be used with RCU.
+On Saturday 12 December 2009 07:14:47 am Willy Tarreau wrote:
+> On Sat, Dec 12, 2009 at 05:10:44PM +1100, Con Kolivas wrote:
+> > > Also, I like to have the same kernel sources used on my desktop,
+> > > notebook, eeepc, and my bootable USB key. It is a lot easier to
+> > > upgrade and a lot easier to spot bugs before they strike in sensible
+> > > environments.
 > > 
-> > Understood -- my current guess is that there needs to be a way to tag
-> > a variant of the rcu_dereference() API with the conditions that must be
-> > met, for example, either in an rcu-sched read-side critical section or
-> > holding a specific type of lock.
+> > Thanks Willy. 
 > > 
-> > This does make it a little harder to retroactively add checking to
-> > existing calls to rcu_dereference(), but should allow a good balance
-> > between false positives and false negatives going forward.
-> > 
-> > Seem reasonable, or am I still missing something?
+> > That's the first meaningful reason I've heard for it. I may have to consider 
+> > it now. It still would be compile time limited so probably not quite what 
+> > you're hoping for. I don't have the time and energy to do and maintain the 
+> > whole plugsched crap for boottime selection all over again, and that adds 
+> > overhead which goes against one of my prime objectives.
 > 
-> The only concern is drowning in rcu_dereference() annotations. But I
-> guess that is unavoidable.
+> No problem, as I said, I want to use the same *sources*, not to be able
+> to hot-swap the scheduler. But basically I have a directory named "configs"
+> in which all of my machines configs are stored. I run "build-kernel-list"
+> over those configs from the kernel dir and I get all of my new kernels.
+> You can now easily understand why I don't want to patch in the middle of
+> the process :-)
 
-So far, I haven't been able to think of anything better.  :-/
+Similar setup here and similar rationale behind my request. :)
 
-> I think you can use lock_is_held(&rcu_lock_map), except you need to deal
-> with the !debug_locks case, because lockdep stops once debug_locks
-> becomes false, which means lock_is_held() will return rubbish.
+I would like to give BFS a spin on some smaller boxes but then I would need
+to remember to pull BFS out of my local patch queue whenever I want to test
+something on my main box (I like to keep things rather conservative there)..
 
-OK, so I need to do something like the following, then?
-
-	debug_locks ? lock_is_held(&rcu_lock_map) : 1
-
-							Thanx, Paul
+--
+Bartlomiej Zolnierkiewicz
