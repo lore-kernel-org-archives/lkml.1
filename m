@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbZLNVW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933061AbZLNVXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbZLNVW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758215AbZLNVWy
+	id S933061AbZLNVXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933037AbZLNVXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:22:54 -0500
-Received: from exprod6og105.obsmtp.com ([64.18.1.189]:47875 "EHLO
-	exprod6og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758269AbZLNVWw convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 16:23:11 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43762 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933048AbZLNVXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:22:52 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 14 Dec 2009 16:23:05 -0500
+Date: Mon, 14 Dec 2009 22:22:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>, cbou@mail.ru,
+       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-embedded@vger.kernel.org, Brian Swetland <swetland@google.com>,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
+Subject: Re: [POWER] battery calibration parameters from sysfs
+Message-ID: <20091214212257.GA9213@elf.ucw.cz>
+References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
+ <20091204104930.GA28625@sirena.org.uk>
+ <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se>
+ <20091207114825.GA26965@rakim.wolfsonmicro.main>
+ <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
+ <20091207165628.GA24981@rakim.wolfsonmicro.main>
+ <20091213132413.GB1437@ucw.cz>
+ <20091214121247.GB22388@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] fls_upm.c: use resource_size()
-Date: Mon, 14 Dec 2009 16:22:49 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EA4E@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fls_upm.c: use resource_size()
-Thread-Index: Acp9A5aOL9pnDcpKSZyOjyaShBtbPQ==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>,
-       <linux-mtd@lists.infradead.org>
-Cc: "David Woodhouse" <dwmw2@infradead.org>
-X-OriginalArrivalTime: 14 Dec 2009 21:22:48.0607 (UTC) FILETIME=[95DBE2F0:01CA7D03]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214121247.GB22388@rakim.wolfsonmicro.main>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size().
+Hi!
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
+> > > I'm not sure how familiar you are with the issues surrounding trying to
+> > > do a voltage to charge mapping for a battery but it's much more complex
+> > > than a simple table if you want to get it accurate.  There's a lot
+> > > of
+> 
+> > Well... current zaurus kernels use _huge_ table that maps voltage to
+> > battery %... and that table is linear function :-(.
+> 
+> > Do you have some papers on that?
+> 
+> Something like "Measure Battery Capacity Precisely in Medical Design"
+> by Bernd Krafthoefer in Power Electronics Technology Jan 2005 might be
+> useful here.
 
----
+Well, that would really require extensive hardware modifications: it
+needs _way_ more accurate ADCs on battery for a start, and a way to
+generate huge load.
 
-diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
-index d120cd8..0b9eaec 100644
---- a/drivers/mtd/nand/fsl_upm.c
-+++ b/drivers/mtd/nand/fsl_upm.c
-@@ -302,7 +302,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
- 				  FSL_UPM_WAIT_WRITE_BYTE;
- 
- 	fun->io_base = devm_ioremap_nocache(&ofdev->dev, io_res.start,
--					    io_res.end - io_res.start + 1);
-+					    resource_size(&io_res));
- 	if (!fun->io_base) {
- 		ret = -ENOMEM;
- 		goto err2; 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
