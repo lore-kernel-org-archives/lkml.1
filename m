@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbZLNPk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZLNPoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756868AbZLNPk5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 10:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbZLNPk4
+	id S1757541AbZLNPoG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 10:44:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbZLNPoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 10:40:56 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:60054 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753700AbZLNPkz (ORCPT
+	Mon, 14 Dec 2009 10:44:01 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:36307 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbZLNPoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 10:40:55 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: [RFC] macvlan: add tap device backend
-Date: Mon, 14 Dec 2009 16:40:13 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       "" <davem@davemloft.net>, "Michael S. Tsirkin" <mst@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Edge Virtual Bridging <evb@yahoogroups.com>
-References: <1259862720-28432-1-git-send-email-arnd@arndb.de> <1259862720-28432-3-git-send-email-arnd@arndb.de> <4B26353A.9020005@trash.net>
-In-Reply-To: <4B26353A.9020005@trash.net>
+	Mon, 14 Dec 2009 10:44:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=glSppBrWdR15vmdUC+Ukkcf91hAh7QcX2altIebJ8Ldhwc/BSlK4BmYoSdnva4I4Wk
+         yRKGH9gOCExrfZ51KCZ5Y8YJJzc557eZu4dVyNuTObQJ6vixLzHLqgTq7V7D+oMVFwbd
+         5yGRn7lM5K1pr/UiZrQJ1JSr9ah9fQ/f0K+MQ=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912141640.13562.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+g9CkeM6nUcpkFQAwWIdpmp4p39Pdl+0duemX
- CTzxMkjhywEoGXo8cgLRtRLWtEbcM7gpBOph37ds9Pmv6GhEEu
- 1aPwbFVL2msMmPlyHTaBA==
+In-Reply-To: <20091214152720.GA16597@suse.de>
+References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
+	 <20091214122649.2d914941@varda>
+	 <c7ac85d60912140610o1de69703x4d42108b4519ede@mail.gmail.com>
+	 <200912141536.14266.oliver@neukum.org>
+	 <c7ac85d60912140715x232f9e3di366d2be1e1cd063b@mail.gmail.com>
+	 <20091214152720.GA16597@suse.de>
+Date: Tue, 15 Dec 2009 00:43:59 +0900
+Message-ID: <c7ac85d60912140743g564979e6t860b2bdea822b70@mail.gmail.com>
+Subject: Re: [How to upload our driver to "kernel.org"] Would you give me your 
+	advice?
+From: Masa <masa.korg@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       "Alejandro Riveira Fern?ndez" <ariveira@gmail.com>,
+       linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 December 2009, Patrick McHardy wrote:
-> > +     classdev = device_create(macvtap_class, &dev->dev, devt,
-> > +                              dev, "tap%d", dev->ifindex);
-> > +     if (IS_ERR(classdev)) {
-> > +             err = PTR_ERR(classdev);
-> > +             macvtap_del_queues(dev);
-> > +             macvlan_dellink(dev, NULL);
-> 
-> I think this may cause a double free since macvlan_dellink() will
-> free the device and rtnl_newlink() will free it again on error.
+Thanks,
 
-Ah, right. I've changed this part a few times now, but I think introduced
-the same bug again in the current version. I'll send out what I have now
-if you want to take another look.
-
-	Arnd
+> If you need help with this process, or with cleaning up your code to
+> make it acceptable, please let us on the devel@linuxdriverproject.org
+> list help you out.
+I will contact to it.
+If preparations were completed.
