@@ -1,115 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZLNEgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbZLNEhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756308AbZLNEgs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 23:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbZLNEgr
+	id S1756417AbZLNEhk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 23:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbZLNEhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 23:36:47 -0500
-Received: from www84.your-server.de ([213.133.104.84]:34412 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754065AbZLNEgr (ORCPT
+	Sun, 13 Dec 2009 23:37:38 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:45663 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756037AbZLNEhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 23:36:47 -0500
-Subject: Re: [PATCH] kfifo: fix warn_unused_result
-From: Stefani Seibold <stefani@seibold.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
-       Roger Quadros <quadros.roger@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-In-Reply-To: <20091213142907.d0ac63da.akpm@linux-foundation.org>
-References: <1260523108.27010.7.camel@wall-e>
-	 <20091213142907.d0ac63da.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 14 Dec 2009 05:36:39 +0100
-Message-ID: <1260765399.6620.51.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sun, 13 Dec 2009 23:37:37 -0500
+Message-ID: <4B25C10B.9040001@in.ibm.com>
+Date: Mon, 14 Dec 2009 10:07:31 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-next@vger.kernel.org
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+References: <4B2224C7.1020908@in.ibm.com> <1260758933.2217.7.camel@pasglop>
+In-Reply-To: <1260758933.2217.7.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag, den 13.12.2009, 14:29 -0800 schrieb Andrew Morton:
-> On Fri, 11 Dec 2009 10:18:28 +0100 Stefani Seibold <stefani@seibold.net> wrote:
-> 
-> > As requested by Andrew Morton:
-> > 
-> > This patch fix the "ignoring return value of '...', declared with
-> > attribute warn_unused_result" compiler warning in several users of the
-> > new kfifo API.
-> > 
-> > The patch-set is against current mm tree from 11-Dec-2009
-> > 
-> > ...
-> >
-> > --- mmotm/drivers/char/nozomi.c	2009-12-11 08:31:46.670736197 +0100
-> > +++ linux-2.6.32/drivers/char/nozomi.c	2009-12-11 09:25:46.941436203 +0100
-> > @@ -685,8 +685,9 @@ static int nozomi_read_config_table(stru
-> >  		dump_table(dc);
-> >  
-> >  		for (i = PORT_MDM; i < MAX_PORT; i++) {
-> > -			kfifo_alloc(&dc->port[i].fifo_ul,
-> > -				FIFO_BUFFER_SIZE_UL, GFP_ATOMIC);
-> > +			if (kfifo_alloc(&dc->port[i].fifo_ul,
-> > +				FIFO_BUFFER_SIZE_UL, GFP_ATOMIC))
-> > +					BUG();
-> 
-> No, we can't do this.  GFP_ATOMIC allocations are unreliable and can
-> fail.  The calling code *has* to detect the failure and then take some
-> recovery action.
-> 
-> It would be better to leave the warning in place, rather than to add
-> this runtime landmine.
-> 
+Benjamin Herrenschmidt wrote:
+> On Fri, 2009-12-11 at 16:23 +0530, Sachin Sant wrote:
+>   
+>> While executing cpu_hotplug(from autotest) tests against latest
+>> next on a power6 box, the machine locks up. A soft reset shows
+>> the following trace
+>>     
+>
+> Have you heard anything about that one yet or it's still to be
+> debugged ? It probably hit upstream by now.
+>   
+Haven't received any response yet.
 
-The problem is that the old code did not provide an error check. So i
-don't think it is a land mine, because this drivers tries to allocate a
-some kfifo inside an interrupt. But i think i am able to understand the
-code and fix it.
+As you mentioned that patch went upstream and so did the problem.
 
-> >  		input_sync(kp.dev);
-> > -		kfifo_in_locked(&sonypi_device.input_fifo,
-> > +		if (kfifo_in_locked(&sonypi_device.input_fifo,
-> >  			(unsigned char *)&kp, sizeof(kp),
-> > -			&sonypi_device.input_fifo_lock);
-> > +			&sonypi_device.input_fifo_lock) != sizeof(kp))
-> > +				BUG();
-> 
-> The rest of the patch seems to be adding BUG()s if kfifo_in() fails. 
-> All over the place.
-> 
-> If that's the appropriate way to handle failure for these callsites
-> then it would be neater to do this in the callee.  ie, add a new
-> 
-> unsigned int kfifo_in_nonpartial(struct kfifo *fifo,
->                         const unsigned char *from, unsigned int len)
-> {
-> 	unsigned int ret = kfifo_in(fifo, from, len);
-> 
-> 	BUG_ON(ret != len);
-> 	return ret;
-> }
-> 
+thanks
+-Sachin
 
-No, i don't like to idea to introduce a new API call, because i must
-also introduce a 
+> Cheers,
+> Ben.
+>
+>   
+>> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+>>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+>>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+>>     sp: c00000000c933650
+>>    msr: 8000000000089032
+>>   current = 0xc00000000c173840
+>>   paca    = 0xc000000000bc2600
+>>     pid   = 2602, comm = hotplug06.top.s
+>> enter ? for help
+>> [link register   ] c000000000342f10 .cpumask_next_and+0x4c/0x94
+>> [c00000000c933650] c0000000000e9f34 .cpuset_cpus_allowed_locked+0x38/0x74 (unreliable)
+>> [c00000000c9336e0] c000000000090074 .move_task_off_dead_cpu+0xc4/0x1ac
+>> [c00000000c9337a0] c0000000005e4e5c .migration_call+0x304/0x830
+>> [c00000000c933880] c0000000005e0880 .notifier_call_chain+0x68/0xe0
+>> [c00000000c933920] c00000000012a92c ._cpu_down+0x210/0x34c
+>> [c00000000c933a90] c00000000012aad8 .cpu_down+0x70/0xa8
+>> [c00000000c933b20] c000000000525940 .store_online+0x54/0x894
+>> [c00000000c933bb0] c000000000463430 .sysdev_store+0x3c/0x50
+>> [c00000000c933c20] c0000000001f8320 .sysfs_write_file+0x124/0x18c
+>> [c00000000c933ce0] c00000000017edac .vfs_write+0xd4/0x1fc
+>> [c00000000c933d80] c00000000017efdc .SyS_write+0x58/0xa0
+>> [c00000000c933e30] c0000000000085b4 syscall_exit+0x0/0x40
+>> --- Exception: c01 (System Call) at 00000fff9fa8a8f8
+>> SP (fffe7aef200) is in userspace
+>> 0:mon> e
+>> cpu 0x0: Vector: 100 (System Reset) at [c00000000c9333d0]
+>>     pc: c0000000003433d8: .find_next_bit+0x54/0xc4
+>>     lr: c000000000342f10: .cpumask_next_and+0x4c/0x94
+>>     sp: c00000000c933650
+>>    msr: 8000000000089032
+>>   current = 0xc00000000c173840
+>>   paca    = 0xc000000000bc2600
+>>     pid   = 2602, comm = hotplug06.top.s
+>>
+>> Last few messages from the dmesg log shows
+>>
+>> 0:mon> 
+>> <4>IRQ 17 affinity broken off cpu 0
+>> <4>IRQ 18 affinity broken off cpu 0
+>> <4>IRQ 19 affinity broken off cpu 0
+>> <4>IRQ 264 affinity broken off cpu 0
+>> <4>cpu 0 (hwid 0) Ready to die...
+>> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
+>> <4>Processor 0 found.
+>> <4>IRQ 17 affinity broken off cpu 1
+>> <4>IRQ 18 affinity broken off cpu 1
+>> <4>IRQ 19 affinity broken off cpu 1
+>> <4>IRQ 264 affinity broken off cpu 1
+>> <4>cpu 1 (hwid 1) Ready to die...
+>> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+>> <4>Processor 1 found.
+>> <4>cpu 1 (hwid 1) Ready to die...
+>> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+>> <4>Processor 1 found.
+>> <4>cpu 1 (hwid 1) Ready to die...
+>> <6>process 2423 (bash) no longer affine to cpu1
+>> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+>> <4>Processor 1 found.
+>> <4>cpu 1 (hwid 1) Ready to die...
+>> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+>> <4>Processor 1 found.
+>> <4>cpu 1 (hwid 1) Ready to die...
+>> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[1]
+>> <4>Processor 1 found.
+>> <4>cpu 1 (hwid 1) Ready to die...
+>> <3>INFO: RCU detected CPU 0 stall (t=1000 jiffies)
+>> <3>INFO: RCU detected CPU 0 stall (t=4000 jiffies)
+>> 0:mon>
+>>
+>> After some debugging a possible suspect seems to be commit
+>> 6ad4c18.. : sched: Fix balance vs hotplug race
+>>
+>> If i revert this patch i am able to execute the tests on this
+>> power6 without any issues. 
+>>
+>> But at the same time the above patch is required to solve the
+>> cpu hotplug related race on x86_64(as a side note this same
+>> x86_64 issue can be recreated against latest Linus git as well)
+>> that i reported here :
+>>
+>> http://marc.info/?l=linux-kernel&m=125802682922299&w=2
+>>
+>> I will try few more iterations with and without the above
+>> patch just to make sure i have the correct results.
+>>
+>> If someone has a suggestion let me know.
+>>
+>> Thanks
+>> -Sachin
+>>
+>>
+>>     
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-next" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>   
 
-kfifo_out_nonpartial()
-kfifo_in_nonpartial_locked()
-and
-kfifo_out_nonpartial_locked()
 
-I don't like this _locked functions, it is a design break and only
-introduced for compatibility reasons.
+-- 
 
-This will also go way if i get the okay for the new kqueue API.
-
-If it is okay, i will remove the __must_check from kfifo_in and
-kfifo_in_locked. But the kfifo_out and kfifo_out_locked check must be
-performed and if it fails, it is a real BUG.
-
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
