@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbZLNWAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932606AbZLNWCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbZLNWAd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758519AbZLNWAa
+	id S932606AbZLNWCO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbZLNWCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:00:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54900 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758510AbZLNWA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:00:29 -0500
-Message-ID: <4B26B587.3030608@redhat.com>
-Date: Mon, 14 Dec 2009 17:00:39 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 14 Dec 2009 17:02:13 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:44224 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758467AbZLNWCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:02:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=J2305g4OL8ZJCD7MQk9lvP25WkFygH4C90sQQXYFxw3FESwcdZ0jk1cC+uqYpGdFlP
+         tUrz2gy72xOint0EnMiZL1VU4B0psRJwzaUX2OrTgrkyyb9NwfDARkd/3UW2WA/ysq7g
+         /9dVvHEOGynLWLaD4l3UJAFBZLizkjN8gD1Eo=
 MIME-Version: 1.0
-To: Luca Tettamanti <kronos.it@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Document awk requirements
-References: <20091214213413.GA9816@nb-core2.darkstar.lan>
-In-Reply-To: <20091214213413.GA9816@nb-core2.darkstar.lan>
+Date: Tue, 15 Dec 2009 09:02:11 +1100
+Message-ID: <d45a3acc0912141402v69ea4ccet143f8ef7bc04e585@mail.gmail.com>
+Subject: [RESEND PATCH 1/3] X25: Move SYSCTL ifdefs into header
+From: andrew hendry <andrew.hendry@gmail.com>
+To: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luca Tettamanti wrote:
-> Hello,
-> current -git kernel fails to build with this error message:
-> 
->   GEN     arch/x86/lib/inat-tables.c
->   Error: Your awk doesn't support charactor-class.
-> 
-> mawk is installed; it appears that gawk is required, so:
-> ---
-> Gnu awk is required for generating arch/x86/lib/inat-tables.c
-> 
-> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
-> ---
+Moves the CONFIG_SYSCTL ifdefs in x25_init into header.
 
-Thank you for adding that :-)
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+diff -uprN -X a/Documentation/dontdiff a/include/net/x25.h b/include/net/x25.h
+--- a/include/net/x25.h	2009-11-10 11:32:31.000000000 +1100
++++ b/include/net/x25.h	2009-11-25 09:05:21.000000000 +1100
+@@ -287,8 +287,14 @@ extern unsigned long x25_display_timer(s
+ extern void x25_check_rbuf(struct sock *);
 
+ /* sysctl_net_x25.c */
++#ifdef CONFIG_SYSCTL
+ extern void x25_register_sysctl(void);
+ extern void x25_unregister_sysctl(void);
++#else
++static inline void x25_register_sysctl(void) {};
++static inline void x25_unregister_sysctl(void) {};
++#endif /* CONFIG_SYSCTL */
++
+ struct x25_skb_cb {
+ 	unsigned flags;
+ };
+diff -uprN -X a/Documentation/dontdiff a/net/x25/af_x25.c b/net/x25/af_x25.c
+--- a/net/x25/af_x25.c	2009-11-17 10:30:18.000000000 +1100
++++ b/net/x25/af_x25.c	2009-11-25 09:04:25.000000000 +1100
+@@ -1667,9 +1667,7 @@ static int __init x25_init(void)
 
-> 
->  Documentation/Changes |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/Changes b/Documentation/Changes
-> index 6d0f1ef..53fd218 100644
-> --- a/Documentation/Changes
-> +++ b/Documentation/Changes
-> @@ -49,6 +49,7 @@ o  oprofile               0.9                     # oprofiled --version
->  o  udev                   081                     # udevinfo -V
->  o  grub                   0.93                    # grub --version
->  o  mcelog		  0.6
-> +o  Gnu awk                3.1.5                   # awk --version   
->  
->  Kernel compilation
->  ==================
+ 	printk(KERN_INFO "X.25 for Linux Version 0.2\n");
 
--- 
-Masami Hiramatsu
+-#ifdef CONFIG_SYSCTL
+ 	x25_register_sysctl();
+-#endif
+ 	x25_proc_init();
+ out:
+ 	return rc;
+@@ -1682,9 +1680,7 @@ static void __exit x25_exit(void)
+ 	x25_link_free();
+ 	x25_route_free();
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+-#ifdef CONFIG_SYSCTL
+ 	x25_unregister_sysctl();
+-#endif
 
-e-mail: mhiramat@redhat.com
-
+ 	unregister_netdevice_notifier(&x25_dev_notifier);
