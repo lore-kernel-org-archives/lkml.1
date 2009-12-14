@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZLNDs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZLND5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbZLNDs2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Dec 2009 22:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbZLNDs1
+	id S1756598AbZLND5m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Dec 2009 22:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756560AbZLND5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Dec 2009 22:48:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50721
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754443AbZLNDs0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Dec 2009 22:48:26 -0500
-Date: Sun, 13 Dec 2009 19:48:28 -0800 (PST)
-Message-Id: <20091213.194828.260101393.davem@davemloft.net>
-To: roel.kluin@gmail.com
-Cc: netdev@vger.kernel.org, yevgenyp@mellanox.co.il, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mlx4_core: return a negative error value
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B23EA51.30504@gmail.com>
-References: <4B23EA51.30504@gmail.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 13 Dec 2009 22:57:39 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53652 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756569AbZLND5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Dec 2009 22:57:36 -0500
+Message-ID: <4B25B797.1040201@cn.fujitsu.com>
+Date: Mon, 14 Dec 2009 11:57:11 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Wenji Huang <wenji.huang@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/7] tracing: Fix bugs in string filters.
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Sat, 12 Dec 2009 20:09:05 +0100
+This patchset fixes some bugs in string filters.
 
-> The return value should be negative.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+A new string helper strnstr() is introduced, to be used in
+middle matching callback.
 
-Applied.
+Also I add some comments to mainly explain why we should use
+length-limited version of strstr() and strcmp().
+
+---
+ include/linux/string.h             |    5 ++++-
+ kernel/trace/ftrace.c              |    6 +++---
+ kernel/trace/trace_events_filter.c |   29 ++++++++++++++++++++---------
+ lib/string.c                       |   27 ++++++++++++++++++++++++++-
+ 4 files changed, 53 insertions(+), 14 deletions(-)
