@@ -1,90 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZLNOXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZLNOVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZLNOXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 09:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbZLNOXN
+	id S1757402AbZLNOVO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 09:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZLNOVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 09:23:13 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:57657 "EHLO bamako.nerim.net"
+	Mon, 14 Dec 2009 09:21:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7138 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757384AbZLNOXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 09:23:12 -0500
-Date: Mon, 14 Dec 2009 15:23:07 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH 07/12] i2cdev: move compat_ioctl handling into driver
-Message-ID: <20091214152307.5ba3ea4d@hyperion.delvare>
-In-Reply-To: <1258331227-1694-8-git-send-email-arnd@arndb.de>
-References: <1258331227-1694-1-git-send-email-arnd@arndb.de>
-	<1258331227-1694-8-git-send-email-arnd@arndb.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S1757359AbZLNOVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 09:21:11 -0500
+Subject: Re: [PATCH] vmscan: limit concurrent reclaimers in shrink_zone
+From: Larry Woodman <lwoodman@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Rik van Riel <riel@redhat.com>, kosaki.motohiro@jp.fujitsu.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, aarcange@redhat.com
+In-Reply-To: <87pr6hya86.fsf@basil.nowhere.org>
+References: <20091210185626.26f9828a@cuia.bos.redhat.com>
+	 <87pr6hya86.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Mon, 14 Dec 2009 09:23:19 -0500
+Message-Id: <1260800599.6666.4.camel@dhcp-100-19-198.bos.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
-
-On Mon, 16 Nov 2009 00:27:02 +0000, Arnd Bergmann wrote:
-> Doing all the compat_ioctl handling in the i2c driver itself
-> removes special cases from fs/compat_ioctl.c and makes it possible
-> to optimize this case better.
+On Mon, 2009-12-14 at 14:08 +0100, Andi Kleen wrote:
+> Rik van Riel <riel@redhat.com> writes:
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Cc: "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>
-> Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
-> Cc: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: linux-i2c@vger.kernel.org
-> ---
->  drivers/i2c/i2c-dev.c |  117 ++++++++++++++++++++++++++++++++++++++++++++++++
->  fs/compat_ioctl.c     |  119 -------------------------------------------------
->  2 files changed, 117 insertions(+), 119 deletions(-)
+> > +max_zone_concurrent_reclaim:
+> > +
+> > +The number of processes that are allowed to simultaneously reclaim
+> > +memory from a particular memory zone.
+> > +
+> > +With certain workloads, hundreds of processes end up in the page
+> > +reclaim code simultaneously.  This can cause large slowdowns due
+> > +to lock contention, freeing of way too much memory and occasionally
+> > +false OOM kills.
+> > +
+> > +To avoid these problems, only allow a smaller number of processes
+> > +to reclaim pages from each memory zone simultaneously.
+> > +
+> > +The default value is 8.
+> 
+> I don't like the hardcoded number. Is the same number good for a 128MB
+> embedded system as for as 1TB server?  Seems doubtful.
+> 
+> This should be perhaps scaled with memory size and number of CPUs?
 
-This patch no longer applies so I can't test it. I do not have any
-objection about it though.
+Remember this a per-zone number.
 
-I'm also not sure what I am supposed to comment on. As far as I can
-see, most of this patch is merely moving code from one file to another,
-so there's little point in reviewing that code. Is there any part in
-particular which needs my attention?
+> 
+> > +/*
+> > + * Maximum number of processes concurrently running the page
+> > + * reclaim code in a memory zone.  Having too many processes
+> > + * just results in them burning CPU time waiting for locks,
+> > + * so we're better off limiting page reclaim to a sane number
+> > + * of processes at a time.  We do this per zone so local node
+> > + * reclaim on one NUMA node will not block other nodes from
+> > + * making progress.
+> > + */
+> > +int max_zone_concurrent_reclaimers = 8;
+> 
+> __read_mostly
+> 
+> > +
+> >  static LIST_HEAD(shrinker_list);
+> >  static DECLARE_RWSEM(shrinker_rwsem);
+> >  
+> > @@ -1600,6 +1612,29 @@ static void shrink_zone(int priority, struct zone *zone,
+> >  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> >  	int noswap = 0;
+> >  
+> > +	if (!current_is_kswapd() && atomic_read(&zone->concurrent_reclaimers) >
+> > +					max_zone_concurrent_reclaimers) {
+> > +		/*
+> > +		 * Do not add to the lock contention if this zone has
+> > +		 * enough processes doing page reclaim already, since
+> > +		 * we would just make things slower.
+> > +		 */
+> > +		sleep_on(&zone->reclaim_wait);
+> 
+> wait_event()? sleep_on is a really deprecated racy interface.
+> 
+> This would still badly thunder the herd if not enough memory is freed
+> , won't it? It would be better to only wake up a single process if memory got freed.
+> 
+> How about for each page freed do a wake up for one thread?
+> 
+> 
+> -Andi
 
-If you want to test your patch yourself, it is fairly easy using the
-i2c-stub driver, which is a software-only i2c bus driver. Install the
-i2c-tools package on your system, and then:
-
-# modprobe i2c-stub chip_addr=0x6d
-# modprobe i2c-dev
-# i2cdetect -l
-# i2cbus=$(i2cdetect -l | grep stub | cut -f1 | cut -d- -f2)
-# i2cdetect -F $i2cbus
-Functionalities implemented by /dev/i2c-x:
-I2C                              no
-SMBus Quick Command              yes
-SMBus Send Byte                  yes
-SMBus Receive Byte               yes
-SMBus Write Byte                 yes
-SMBus Read Byte                  yes
-SMBus Write Word                 yes
-SMBus Read Word                  yes
-SMBus Process Call               no
-SMBus Block Write                no
-SMBus Block Read                 no
-SMBus Block Process Call         no
-SMBus PEC                        no
-I2C Block Write                  no
-I2C Block Read                   no
-# i2cset -y $i2cbus 0x6d 0x00 0x42 b
-Value 0x42 written, readback matched
-# i2cget -y $i2cbus 0x6d 0x00 b
-0x42
-#
-
-The last 3 commands will generate i2c-dev ioctls.
-
--- 
-Jean Delvare
