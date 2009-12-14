@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZLNQa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbZLNQc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbZLNQa0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 11:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbZLNQaY
+	id S1757824AbZLNQc4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 11:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZLNQcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 11:30:24 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:42458 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbZLNQaW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 11:30:22 -0500
-Date: Mon, 14 Dec 2009 09:30:19 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Emese Revfy <re.emese@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
-	2.6.32-git-053fe57ac v2
-Message-ID: <20091214163019.GG7812@parisc-linux.org>
-References: <cover.1260662994.git.re.emese@gmail.com> <20091214003836.GD7812@parisc-linux.org> <4B2595E7.701@gmail.com> <20091214021916.GB12196@linux-sh.org> <4B25E47C.1010803@gmail.com> <20091214112656.GB1959@elf.ucw.cz> <20091214080049.19930729@infradead.org>
+	Mon, 14 Dec 2009 11:32:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34104 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755103AbZLNQcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 11:32:53 -0500
+Date: Mon, 14 Dec 2009 16:31:03 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091209100706.753790977@linutronix.de>
+References: <20091209100706.753790977@linutronix.de>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Use rcu in sys_sched_getscheduler/sys_sched_getparam()
+Message-ID: <tip-5fe85be081edf0ac92d83f9c39e0ab5c1371eb82@git.kernel.org>
+Git-Commit-ID: 5fe85be081edf0ac92d83f9c39e0ab5c1371eb82
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091214080049.19930729@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 08:00:49AM -0800, Arjan van de Ven wrote:
-> I for one am not opposed to using const where we could be using const.
-> It's a fundamental language feature, that helps the compiler and
-> developer. Yes there is sparse, and no, almost nobody uses that.
-> 
-> If it's const, it won't be and can't be changed, allowing
-> more aggressive optimization. It also means all these structures get
-> put in the rodata section, which means by definition they can no longer
-> have false sharing with data structures that are written to,.. and that
-> section is often even really read only (cpu protection bits), which is
-> also a nice, but secundary; _ops are one of those targets for rootkits
-> and accidental overwrites.
+Commit-ID:  5fe85be081edf0ac92d83f9c39e0ab5c1371eb82
+Gitweb:     http://git.kernel.org/tip/5fe85be081edf0ac92d83f9c39e0ab5c1371eb82
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Wed, 9 Dec 2009 10:14:58 +0000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 14 Dec 2009 17:11:34 +0100
 
-Yes, but that's accomplished by tagging each of the arrays of function
-pointers in question as const.  Not by tagging the individual members
-within the structure definition as const, which is what this patch
-series does.
+sched: Use rcu in sys_sched_getscheduler/sys_sched_getparam()
 
-I don't think anyone objects to what you're trying to accomplish, but
-this series of patches, as Al says, feel like pure cargo-culting.
+read_lock(&tasklist_lock) does not protect
+sys_sched_getscheduler and sys_sched_getparam() against a
+concurrent update of the policy or scheduler parameters as
+do_sched_setscheduler() does not take the tasklist_lock. The
+accessed integers can be retrieved w/o locking and are snapshots
+anyway.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Using rcu_read_lock() to protect find_task_by_vpid() and prevent
+the task struct from going away is not changing the above
+situation.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <20091209100706.753790977@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 258c73c..1782bee 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6458,7 +6458,7 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
+ 		return -EINVAL;
+ 
+ 	retval = -ESRCH;
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	p = find_process_by_pid(pid);
+ 	if (p) {
+ 		retval = security_task_getscheduler(p);
+@@ -6466,7 +6466,7 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
+ 			retval = p->policy
+ 				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
+ 	}
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 	return retval;
+ }
+ 
+@@ -6484,7 +6484,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
+ 	if (!param || pid < 0)
+ 		return -EINVAL;
+ 
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	p = find_process_by_pid(pid);
+ 	retval = -ESRCH;
+ 	if (!p)
+@@ -6495,7 +6495,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
+ 		goto out_unlock;
+ 
+ 	lp.sched_priority = p->rt_priority;
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 
+ 	/*
+ 	 * This one might sleep, we cannot do it with a spinlock held ...
+@@ -6505,7 +6505,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
+ 	return retval;
+ 
+ out_unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 	return retval;
+ }
+ 
