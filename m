@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbZLNRe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbZLNR5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbZLNRe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 12:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZLNRe4
+	id S932359AbZLNR5Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 12:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349AbZLNR5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 12:34:56 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:45942 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753368AbZLNRez (ORCPT
+	Mon, 14 Dec 2009 12:57:15 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:34965 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932345AbZLNR5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 12:34:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vH+Mo814l9EswaP0HvEhrhO0kloIVGOPi+45nl2bX2bYduYjYGQsUJFCZk6fyz63nN
-         ZgqVz7QTpD5VvqiYbuJ1hBqqTd/yUodH+G/WebBj0T+YJXMJQuSMNCAlRLHPvBboAOJO
-         E9Eksx1SrdUafO/+lxbpf0KOSFZcx4P4l/I5U=
-Date: Mon, 14 Dec 2009 09:34:50 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: synaptics touchpad doesn't click
-Message-ID: <20091214173450.GB2373@core.coreip.homeip.net>
-References: <20091214014828.GA28402@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091214014828.GA28402@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 14 Dec 2009 12:57:14 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5832"; a="29880180"
+Subject: Re: GPIO support for HTC Dream
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Iliyan Malchev <malchev@google.com>
+In-Reply-To: <20091213212918.GE5114@elf.ucw.cz>
+References: <20091208102842.GH12264@elf.ucw.cz>
+	 <20091208224550.GA26915@n2100.arm.linux.org.uk>
+	 <d6200be20912081639mdd853bg4080f415116d018c@mail.gmail.com>
+	 <20091209113739.GC22752@elf.ucw.cz> <1260375495.23633.175.camel@desktop>
+	 <20091213212918.GE5114@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Dec 2009 09:40:55 -0800
+Message-ID: <1260812455.13078.3.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+On Sun, 2009-12-13 at 22:29 +0100, Pavel Machek wrote:
 
-On Sun, Dec 13, 2009 at 06:48:28PM -0700, Alex Chiang wrote:
-> Hi Dmitry,
+> > I'm going to end up pulling a lot of these git commit into my git tree.
+> > It would be pretty easy for me to just pull this GPIO change directly ..
+> > I assume you haven't found a way to work with git that suites you? It
+> > would be best if you used git, but I could try to do some sort of quilt
+> > export if that works better for you.
 > 
-> I just got a shiny new piece of hardware (HP Envy 15) with a
-> Synaptics touchpad, and I can't seem to make the touchpad work
-> correctly.  In this version of the touchpad, there are actually
-> two physical buttons underneath the pad. In essence, this is a
-> touchpad that you can click too.
+> I can easily "pull" git trees. I do my own work in git, but usually
+> not in a way that would be useful for pushing upstream (see my trees
+> at git.kernel.org). 
 > 
-> I can't get the clicking to work. Of course, I can tap to click,
-> but lacking access to the physical buttons means that I can't
-> right-click.
-> 
-> Currently, I'm not sure if this is a driver issue or perhaps
-> something higher up the stack, perhaps in X or maybe pilot error.
-> ;)
-> 
-> Distro is Ubuntu Karmic, kernel is latest upstream last pulled on
-> 13 Dec.
-> 
-> Would like some pointers on how to get started debugging.
-> 
-> Thanks,
-> /ac
-> 
-> dmesg snip:
->  Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
->  brd: module loaded
->  loop: module loaded
->  input: Macintosh mouse button emulation as /devices/virtual/input/input3
->  [...]
->  Synaptics Touchpad, model: 1, fw: 7.4, id: 0x1e0b1, caps: 0xd04771/0xe40000
->  input: SynPS/2 Synaptics TouchPad as /devices/platform/i8042/serio1/input/input10
-> 
+> I *could* add my dream trees to those that are mirrored at kernel.org,
+> when things settle a bit. (Should I?)
 
-Hmm, that's the new Synaptics "clickpad"... Takashi Iwai just posted a
-coupleof patches for it on the input mailing list.
+I'm not sure I know what you mean .. What benefit would that have?
 
--- 
-Dmitry
+> But I'd really prefer to push my stuff using plain old patches in
+> emails.
+
+What I was meaning is you need to keep track of my tree via git, just so
+you know what's going into it and can work off it. If your already doing
+that, then no problem ..
+
+Daniel
+
