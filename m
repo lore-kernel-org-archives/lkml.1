@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932606AbZLNWCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZLNWDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932606AbZLNWCO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbZLNWCN
+	id S1758580AbZLNWDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbZLNWDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:02:13 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:44224 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758467AbZLNWCM (ORCPT
+	Mon, 14 Dec 2009 17:03:13 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:36540 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758537AbZLNWDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:02:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=J2305g4OL8ZJCD7MQk9lvP25WkFygH4C90sQQXYFxw3FESwcdZ0jk1cC+uqYpGdFlP
-         tUrz2gy72xOint0EnMiZL1VU4B0psRJwzaUX2OrTgrkyyb9NwfDARkd/3UW2WA/ysq7g
-         /9dVvHEOGynLWLaD4l3UJAFBZLizkjN8gD1Eo=
+	Mon, 14 Dec 2009 17:03:09 -0500
+Date: Tue, 15 Dec 2009 00:02:20 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: "ext Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "krzysztof.h1@wp.pl" <krzysztof.h1@wp.pl>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "oliver@neukum.org" <oliver@neukum.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "jkosina@suse.cz" <jkosina@suse.cz>
+Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
+Message-ID: <20091214220220.GB2052@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
 MIME-Version: 1.0
-Date: Tue, 15 Dec 2009 09:02:11 +1100
-Message-ID: <d45a3acc0912141402v69ea4ccet143f8ef7bc04e585@mail.gmail.com>
-Subject: [RESEND PATCH 1/3] X25: Move SYSCTL ifdefs into header
-From: andrew hendry <andrew.hendry@gmail.com>
-To: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 14 Dec 2009 22:02:45.0617 (UTC) FILETIME=[2A969610:01CA7D09]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moves the CONFIG_SYSCTL ifdefs in x25_init into header.
+Hi,
 
-Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+On Mon, Dec 14, 2009 at 10:22:32PM +0100, ext Rick L. Vinyard Jr. wrote:
+>
+>Signed-off-by: Rick L. Vinyard, Jr <rvinyard@cs.nmsu.edu>
 
-diff -uprN -X a/Documentation/dontdiff a/include/net/x25.h b/include/net/x25.h
---- a/include/net/x25.h	2009-11-10 11:32:31.000000000 +1100
-+++ b/include/net/x25.h	2009-11-25 09:05:21.000000000 +1100
-@@ -287,8 +287,14 @@ extern unsigned long x25_display_timer(s
- extern void x25_check_rbuf(struct sock *);
+there are plenty of style mistakes in this patch. the body message 
+description which you put below should be above the signed-off-by line,
+multi-lined comments are of the form:
 
- /* sysctl_net_x25.c */
-+#ifdef CONFIG_SYSCTL
- extern void x25_register_sysctl(void);
- extern void x25_unregister_sysctl(void);
-+#else
-+static inline void x25_register_sysctl(void) {};
-+static inline void x25_unregister_sysctl(void) {};
-+#endif /* CONFIG_SYSCTL */
-+
- struct x25_skb_cb {
- 	unsigned flags;
- };
-diff -uprN -X a/Documentation/dontdiff a/net/x25/af_x25.c b/net/x25/af_x25.c
---- a/net/x25/af_x25.c	2009-11-17 10:30:18.000000000 +1100
-+++ b/net/x25/af_x25.c	2009-11-25 09:04:25.000000000 +1100
-@@ -1667,9 +1667,7 @@ static int __init x25_init(void)
+/*
+  * multi lined comment
+  * goes here
+  */
 
- 	printk(KERN_INFO "X.25 for Linux Version 0.2\n");
+remove the commented code like /* hid_debug = 0 */
 
--#ifdef CONFIG_SYSCTL
- 	x25_register_sysctl();
--#endif
- 	x25_proc_init();
- out:
- 	return rc;
-@@ -1682,9 +1680,7 @@ static void __exit x25_exit(void)
- 	x25_link_free();
- 	x25_route_free();
+and some others.. please run your patch through scripts/checkpatch.pl 
+--strict and fix the errors and warnings reported.
 
--#ifdef CONFIG_SYSCTL
- 	x25_unregister_sysctl();
--#endif
+please take a look at Documentation/SubmittingPatches and 
+Documentation/CodingStyle for further reference.
 
- 	unregister_netdevice_notifier(&x25_dev_notifier);
+When sending the patch, you could also use git send-email to avoid the 
+problem you had with 'mail'.
+
+>+static int __init g13_init(void)
+>+{
+>+       pr_debug("g13 HID driver loaded");
+
+don't pr_debug() here.
+
+>+       return hid_register_driver(&g13_driver);
+>+}
+>+
+>+static void __exit g13_exit(void)
+>+{
+>+       pr_debug("g13 HID driver unloaded");
+
+nor here.
+
+>+       hid_unregister_driver(&g13_driver);
+>+}
+
+-- 
+balbi
