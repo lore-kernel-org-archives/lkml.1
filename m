@@ -1,105 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbZLNKij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbZLNKjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbZLNKij (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 05:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbZLNKid
+	id S1756740AbZLNKjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 05:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZLNKji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 05:38:33 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37095 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756723AbZLNKib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 05:38:31 -0500
-Date: Mon, 14 Dec 2009 21:38:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-Cc: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-Subject: Re: [tip:perf/urgent] hw-breakpoints: Let
- modify_user_hw_breakpoint() return an int
-Message-Id: <20091214213817.dea4fe86.sfr@canb.auug.org.au>
-In-Reply-To: <tip-4983ee49cf0393fd786891dd53af41146cf9f98b@git.kernel.org>
-References: <20091214092412.GA5242@osiris.boeblingen.de.ibm.com>
-	<tip-4983ee49cf0393fd786891dd53af41146cf9f98b@git.kernel.org>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Dec_2009_21_38_17_+1100_k+tH1LH=Sgzit=ql"
+	Mon, 14 Dec 2009 05:39:38 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:48177 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756625AbZLNKji (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 05:39:38 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
+Date: Mon, 14 Dec 2009 11:39:48 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+References: <20091212101032.GB25286@elte.hu> <20091213191606.GB7297@nowhere> <20091213213015.653307b5@infradead.org>
+In-Reply-To: <20091213213015.653307b5@infradead.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912141139.48115.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Dec_2009_21_38_17_+1100_k+tH1LH=Sgzit=ql
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Montag, 14. Dezember 2009 06:30:15 schrieb Arjan van de Ven:
+> > We have the bkl tracepoints for that, attaching an example below,
+> > blkdev_get/bkldev_put is among the highest consumer for me.
+> 
+> we have a trace, but not a number that anyone can just pull out without
+> having to go through great lengths to set stuff up... (esp to capture a
+> boot)...
+> Adding a counter always to the lock_kernel function should be fine
+> instead...
 
-Hi Ingo,
+But don't we need to know how long it is held? If you just count
+you'll make code that drops it while it can look bad.
 
-On Mon, 14 Dec 2009 09:49:44 GMT tip-bot for Heiko Carstens <heiko.carstens=
-@de.ibm.com> wrote:
->
-> Commit-ID:  4983ee49cf0393fd786891dd53af41146cf9f98b
-> Gitweb:     http://git.kernel.org/tip/4983ee49cf0393fd786891dd53af41146cf=
-9f98b
-> Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
-> AuthorDate: Mon, 14 Dec 2009 10:24:12 +0100
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Mon, 14 Dec 2009 10:42:57 +0100
->=20
-> hw-breakpoints: Let modify_user_hw_breakpoint() return an int
->=20
-> Let modify_user_hw_breakpoint return an int to avoid hundreds of
-> compile warnings like this one:
->=20
->  include/linux/hw_breakpoint.h: In function 'modify_user_hw_breakpoint':
->  include/linux/hw_breakpoint.h:96:
->   warning: return makes integer from pointer without a cast
->=20
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> LKML-Reference: <20091214092412.GA5242@osiris.boeblingen.de.ibm.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/linux/hw_breakpoint.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-> index 41235c9..3f3ac2f 100644
-> --- a/include/linux/hw_breakpoint.h
-> +++ b/include/linux/hw_breakpoint.h
-> @@ -90,7 +90,7 @@ static inline struct arch_hw_breakpoint *counter_arch_b=
-p(struct perf_event *bp)
->  static inline struct perf_event *
->  register_user_hw_breakpoint(struct perf_event_attr *attr,
->  			    perf_overflow_handler_t triggered,
-> -			    struct task_struct *tsk)	{ return NULL; }
-> +			    struct task_struct *tsk)	{ return 0; }
->  static inline int
->  modify_user_hw_breakpoint(struct perf_event *bp,
->  			  struct perf_event_attr *attr)	{ return -ENOSYS; }
-
-This applied incorrectly ... it was a fix for modify_user_hw_breakpoint(),
-but that fix has already bee applied to perf/urgent ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__14_Dec_2009_21_38_17_+1100_k+tH1LH=Sgzit=ql
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksmFZkACgkQjjKRsyhoI8yWcACeNfu+n/AQAs++mJ4IuTMBC176
-UxkAn0LAQWnBj9Smkh0rxSSBH3a3R56k
-=fzBf
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Dec_2009_21_38_17_+1100_k+tH1LH=Sgzit=ql--
+	Regards
+		Oliver
