@@ -1,75 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932941AbZLNWLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbZLNWLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932941AbZLNWLh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbZLNWLJ
+	id S932695AbZLNWLy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932692AbZLNWLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:11:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48951 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932676AbZLNWLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:11:05 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Mon, 14 Dec 2009 23:11:31 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912122334.08367.rjw@sisk.pl> <alpine.LFD.2.00.0912141015240.26135@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912141015240.26135@localhost.localdomain>
+	Mon, 14 Dec 2009 17:11:47 -0500
+Received: from exprod6og115.obsmtp.com ([64.18.1.35]:45094 "EHLO
+	exprod6og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932715AbZLNWLp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 17:11:45 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912142311.31658.rjw@sisk.pl>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] tmio_nand.c: use dev_get_platdata() and resource_size()
+Date: Mon, 14 Dec 2009 17:11:44 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EA6E@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] tmio_nand.c: use dev_get_platdata() and resource_size()
+Thread-Index: Acp9CmuovGHMhO8NTCqlSFdXrMMVSQ==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>,
+       <linux-mtd@lists.infradead.org>
+Cc: "David Woodhouse" <dwmw2@infradead.org>
+X-OriginalArrivalTime: 14 Dec 2009 22:11:42.0281 (UTC) FILETIME=[6A770390:01CA7D0A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 December 2009, Linus Torvalds wrote:
-> 
-> On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > One solution that we have discussed on linux-pm is to start a bunch of async
-> > threads searching for async devices that can be suspended and suspending
-> > them (assuming suspend is considered) out of order with respect to dpm_list.
-> 
-> Ok, guys, stop the crazy.
-> 
-> That's another of those "ok, that's just ttoally stupid and clearly too 
-> complex" ideas that I would never pull.
-> 
-> I should seriously suggest that people just stop discussing architectural 
-> details on the pm list if they all end up being this level of crazy.
-> 
-> The sane thing to do is to just totally ignore the async layer on PCI 
-> bridges and other things that only have a late-suspend/early-resume thing. 
-> No need for the above kind of obviously idiotic crap.
-> 
-> However, my point was really that we wouldn't even have _needed_ that kind 
-> of special case if we had just decided to let the subsystems do it. But 
-> whatever. At worst, the PCI layer can even just mark such devices with 
-> just late/early suspend/resume as being asynchronous, even though that 
-> ends up resulting in some totally pointless async work that doesn't do 
-> anything.
-> 
-> But please guys - reign in the crazy ideas on the pm list. It's not like 
-> our suspend/resume has gotten so stable as to be boring, and we want it to 
-> become unreliable again.
+Remove unnecessary casts and use dev_get_platdata() to retrieve the
+struct mfd_cell data from the platform.
 
-Indeed.
+Use resource_size() for the ioremap()'s.
 
-OK, what about a two-pass approach in which the first pass only inits the
-completions and starts async threads for leaf "async" devices?  I think leaf
-devices are most likely to take much time to suspend, so this will give us
-a chance to save quite some time.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 
-A more aggressive version of this might start the async threads for all async
-devices in the first pass and then only handle the sychronous ones in the
-second pass - as long as there are only a few async devices that should be
-quite efficient.
+---
 
-Rafael
+diff --git a/drivers/mtd/nand/tmio_nand.c b/drivers/mtd/nand/tmio_nand.c
+index 92c7334..65fa469 100644
+--- a/drivers/mtd/nand/tmio_nand.c
++++ b/drivers/mtd/nand/tmio_nand.c
+@@ -318,7 +318,7 @@ static int tmio_nand_correct_data(struct mtd_info *mtd, unsigned char *buf,
+ 
+ static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
+ {
+-	struct mfd_cell *cell = (struct mfd_cell *)dev->dev.platform_data;
++	struct mfd_cell *cell = dev_get_platdata(&dev->dev);
+ 	int ret;
+ 
+ 	if (cell->enable) {
+@@ -362,7 +362,7 @@ static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
+ 
+ static void tmio_hw_stop(struct platform_device *dev, struct tmio_nand *tmio)
+ {
+-	struct mfd_cell *cell = (struct mfd_cell *)dev->dev.platform_data;
++	struct mfd_cell *cell = dev_get_platdata(&dev->dev);
+ 
+ 	tmio_iowrite8(FCR_MODE_POWER_OFF, tmio->fcr + FCR_MODE);
+ 	if (cell->disable)
+@@ -371,7 +371,7 @@ static void tmio_hw_stop(struct platform_device *dev, struct tmio_nand *tmio)
+ 
+ static int tmio_probe(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = (struct mfd_cell *)dev->dev.platform_data;
++	struct mfd_cell *cell = dev_get_platdata(&dev->dev);
+ 	struct tmio_nand_data *data = cell->driver_data;
+ 	struct resource *fcr = platform_get_resource(dev,
+ 			IORESOURCE_MEM, 0);
+@@ -404,14 +404,14 @@ static int tmio_probe(struct platform_device *dev)
+ 	mtd->priv = nand_chip;
+ 	mtd->name = "tmio-nand";
+ 
+-	tmio->ccr = ioremap(ccr->start, ccr->end - ccr->start + 1);
++	tmio->ccr = ioremap(ccr->start, resource_size(ccr));
+ 	if (!tmio->ccr) {
+ 		retval = -EIO;
+ 		goto err_iomap_ccr;
+ 	}
+ 
+ 	tmio->fcr_base = fcr->start & 0xfffff;
+-	tmio->fcr = ioremap(fcr->start, fcr->end - fcr->start + 1);
++	tmio->fcr = ioremap(fcr->start, resource_size(fcr));
+ 	if (!tmio->fcr) {
+ 		retval = -EIO;
+ 		goto err_iomap_fcr;
+@@ -515,7 +515,7 @@ static int tmio_remove(struct platform_device *dev)
+ #ifdef CONFIG_PM
+ static int tmio_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-	struct mfd_cell *cell = (struct mfd_cell *)dev->dev.platform_data;
++	struct mfd_cell *cell = dev_get_platdata(&dev->dev);
+ 
+ 	if (cell->suspend)
+ 		cell->suspend(dev);
+@@ -526,7 +526,7 @@ static int tmio_suspend(struct platform_device *dev, pm_message_t state)
+ 
+ static int tmio_resume(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = (struct mfd_cell *)dev->dev.platform_data;
++	struct mfd_cell *cell = dev_get_platdata(&dev->dev);
+ 
+ 	/* FIXME - is this required or merely another attack of the broken
+ 	 * SHARP platform? Looks suspicious. 
