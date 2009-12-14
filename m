@@ -1,361 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZLNF7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZLNGEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752882AbZLNF7k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 00:59:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZLNF7i
+	id S1753050AbZLNGEI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 01:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZLNGEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 00:59:38 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37117 "EHLO smtps.tip.net.au"
+	Mon, 14 Dec 2009 01:04:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46261 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752437AbZLNF7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 00:59:36 -0500
-Date: Mon, 14 Dec 2009 16:59:27 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for December 14
-Message-Id: <20091214165927.c08c4784.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx"
+	id S1751973AbZLNGED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 01:04:03 -0500
+Message-ID: <4B25D5A2.7030806@kernel.org>
+Date: Mon, 14 Dec 2009 15:05:22 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: [GIT PULL RESEND] percpu changes for 2.6.33-rc1
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello, Linus.
 
-Hi all,
+I'm resending this PULL request as it hasn't been pulled yet and the
+original one had a couple of problems including missing cc to LKML.
+There now are two merge conflicts.  Both are from variable renames to
+avoid global / local symbol aliases and can be easily resolved.
 
-My usual call for calm: please do not put stuff destined for 2.6.34 into
-linux-next trees until after 2.6.33-rc1.
+Please pull from the following percpu branch.
 
-Changes since 20091211:
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
 
-Since Linus is now merging trees into his, various conflicts move from
-tree to tree.
+The branch contains the following changes.
 
-The net-current tree lost its conflict.
+* Convert the last remaining architecture, ia64, to the new allocator
+  and drop the old one.
 
-The md-current tree gained a conflict against Linus' tree.
+* Christoph's patches to introduce and use this_cpu_*() operations
+  which optimize accesses to local percpu variable.
 
-The 52xx-and-virtex gained a build failure for which I applied a patch.
+* Prepare the tree for dropping per_cpu__ prefix from static percpu
+  variables and add __percpu sparse annotations (rename variables in
+  cases where percpu and local variable use the same name).
 
-The pci tree lost its conflicts.
+  Ingo isn't too happy about losing the namespace separation via
+  per_cpu__ prefix but I and Rusty who wrote the original sparse
+  annotation patch think that this is the right way to unify static
+  and dynamic percpu accessors (as they have no difference in the new
+  allocator) and better misuse detection coverage can be achieved by
+  using sparse annoation similar to that used for iomem and user
+  pointers.
 
-The kbuild tree lost its merge fix.
+  The patches to actually drop per_cpu__ prefix and implement sparse
+  annotations aren't included in this batch as sparse annotations
+  haven't been added to percpu users yet.
 
-The acpi tree gained a build failure so I used the version from
-next-20091211.
+* Several fix patches.  One of them is needed to make kdump behave
+  properly with page first chunk allocator (not the default) and will
+  soon be pushed out to -stable.
 
-The cpufreq tree lost its conflict.
+* Two merge commits from for-linus to for-next.  Both were used to
+  pull fix commits into for-next.
 
-The devicetree tree gained a build failure for which I reverted several
-commits.
+Merging into f40542532e96dda5506eb76badea322f2ae4731c results in a
+conflict in arch/x86/kvm/svm.c and mm/slab.c.  I'm attaching
+resolution below.
 
-The limits tree gained 3 conflicts against Linus' tree.
+Thanks.
 
-The omap_dss2 tree lost its conflict.
+===================
+Conflict resolution
+===================
+--- arch/x86/kvm/svm.c.conflict	2009-12-14 13:15:44.288712779 +0900
++++ arch/x86/kvm/svm.c	2009-12-14 13:16:21.019712652 +0900
+@@ -333,13 +333,8 @@
+ 	}
+ 	sd = per_cpu(svm_data, me);
+ 
+-<<<<<<< HEAD
+-	if (!svm_data) {
+-		printk(KERN_ERR "svm_hardware_enable: svm_data is NULL on %d\n",
+-=======
+ 	if (!sd) {
+-		printk(KERN_ERR "svm_cpu_init: svm_data is NULL on %d\n",
+->>>>>>> 51e99be00ce2713cbb841cedc997cafa6e26c7f4
++		printk(KERN_ERR "svm_hardware_enable: svm_data is NULL on %d\n",
+ 		       me);
+ 		return -EINVAL;
+ 	}
+@@ -355,13 +350,9 @@
+ 	wrmsrl(MSR_EFER, efer | EFER_SVME);
+ 
+ 	wrmsrl(MSR_VM_HSAVE_PA,
+-<<<<<<< HEAD
+-	       page_to_pfn(svm_data->save_area) << PAGE_SHIFT);
++	       page_to_pfn(sd->save_area) << PAGE_SHIFT);
+ 
+ 	return 0;
+-=======
+-	       page_to_pfn(sd->save_area) << PAGE_SHIFT);
+->>>>>>> 51e99be00ce2713cbb841cedc997cafa6e26c7f4
+ }
+ 
+ static void svm_cpu_uninit(int cpu)
+--- mm/slab.c.conflict	2009-12-14 13:15:56.847713001 +0900
++++ mm/slab.c	2009-12-14 13:16:56.431713262 +0900
+@@ -697,31 +697,7 @@
+ static DEFINE_MUTEX(cache_chain_mutex);
+ static struct list_head cache_chain;
+ 
+-<<<<<<< HEAD
+-static DEFINE_PER_CPU(struct delayed_work, reap_work);
+-=======
+-/*
+- * chicken and egg problem: delay the per-cpu array allocation
+- * until the general caches are up.
+- */
+-static enum {
+-	NONE,
+-	PARTIAL_AC,
+-	PARTIAL_L3,
+-	EARLY,
+-	FULL
+-} g_cpucache_up;
+-
+-/*
+- * used by boot code to determine if it can use slab based allocator
+- */
+-int slab_is_available(void)
+-{
+-	return g_cpucache_up >= EARLY;
+-}
+-
+ static DEFINE_PER_CPU(struct delayed_work, slab_reap_work);
+->>>>>>> 51e99be00ce2713cbb841cedc997cafa6e26c7f4
+ 
+ static inline struct array_cache *cpu_cache_get(struct kmem_cache *cachep)
+ {
 
-The percpu tree gained a conflict against the tip tree.
 
-The tty tree lost its conflict.
+==================
+Summary of changes
+==================
 
-The usb tree lost its conflict and build failure.
+Christoph Lameter (13):
+      this_cpu: Introduce this_cpu_ptr() and generic this_cpu_* operations
+      this_cpu: Implement X86 optimized this_cpu operations
+      this_cpu: Use this_cpu operations for SNMP statistics
+      this_cpu: Use this_cpu operations for NFS statistics
+      this_cpu: Use this_cpu ops for network statistics
+      this_cpu: Straight transformations
+      this_cpu: Eliminate get/put_cpu
+      this_cpu: xfs_icsb_modify_counters does not need "cpu" variable
+      this_cpu: Use this_cpu_ptr in crypto subsystem
+      this_cpu: Use this_cpu ops for VM statistics
+      this_cpu: Use this_cpu operations in RCU
+      this_cpu: Use this_cpu_xx in nmi handling
+      this_cpu: Use this_cpu_xx for ftrace
 
-The staging tree lost its conflicts.
+Tejun Heo (22):
+      ia64: don't alias VMALLOC_END to vmalloc_end
+      ia64: initialize cpu maps early
+      ia64: allocate percpu area for cpu0 like percpu areas for other cpus
+      ia64: convert to dynamic percpu allocator
+      percpu: kill legacy percpu allocator
+      Merge branch 'for-linus' into for-next
+      this_cpu: Use this_cpu_xx in trace_functions_graph.c
+      vmalloc: fix use of non-existent percpu variable in put_cpu_var()
+      percpu: make alloc_percpu() handle array types
+      percpu: remove some sparse warnings
+      percpu: make percpu symbols under kernel/ and mm/ unique
+      percpu: make percpu symbols in tracer unique
+      percpu: make percpu symbols in oprofile unique
+      percpu: make percpu symbols in cpufreq unique
+      percpu: make percpu symbols in xen unique
+      percpu: make percpu symbols in x86 unique
+      percpu: make percpu symbols in powerpc unique
+      percpu: make percpu symbols in ia64 unique
+      percpu: make misc percpu symbols unique
+      percpu: add missing per_cpu_ptr_to_phys() definition for UP
+      Merge branch 'for-linus' into for-next
+      m68k: rename global variable vmalloc_end to m68k_vmalloc_end
 
-----------------------------------------------------------------------------
+Vivek Goyal (1):
+      percpu: Fix kdump failure if booted with percpu_alloc=page
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+ arch/ia64/Kconfig                          |    3 -
+ arch/ia64/include/asm/meminit.h            |    2 +-
+ arch/ia64/include/asm/pgtable.h            |    3 +-
+ arch/ia64/include/asm/processor.h          |    6 +-
+ arch/ia64/kernel/acpi.c                    |   33 +--
+ arch/ia64/kernel/head.S                    |    4 +-
+ arch/ia64/kernel/ia64_ksyms.c              |    2 +-
+ arch/ia64/kernel/mca_asm.S                 |    2 +-
+ arch/ia64/kernel/relocate_kernel.S         |    2 +-
+ arch/ia64/kernel/setup.c                   |   27 +--
+ arch/ia64/kernel/vmlinux.lds.S             |   11 +-
+ arch/ia64/mm/contig.c                      |   99 +++++--
+ arch/ia64/mm/discontig.c                   |  129 ++++++++-
+ arch/ia64/mm/init.c                        |    4 +-
+ arch/ia64/sn/kernel/sn2/sn2_smp.c          |    8 +-
+ arch/ia64/xen/irq_xen.c                    |  131 +++++----
+ arch/ia64/xen/time.c                       |   22 +-
+ arch/m68k/include/asm/pgtable_mm.h         |    4 +-
+ arch/m68k/sun3/mmu_emu.c                   |    8 +-
+ arch/mn10300/kernel/kprobes.c              |   61 ++--
+ arch/powerpc/include/asm/smp.h             |    2 +-
+ arch/powerpc/kernel/perf_callchain.c       |    4 +-
+ arch/powerpc/kernel/setup-common.c         |    4 +-
+ arch/powerpc/kernel/smp.c                  |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c    |   14 +-
+ arch/powerpc/platforms/pseries/dtl.c       |    4 +-
+ arch/sparc/kernel/nmi.c                    |    8 +-
+ arch/x86/include/asm/percpu.h              |  104 ++++++-
+ arch/x86/kernel/apic/nmi.c                 |    8 +-
+ arch/x86/kernel/cpu/common.c               |    8 +-
+ arch/x86/kernel/cpu/cpu_debug.c            |   30 +-
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   28 +-
+ arch/x86/kernel/cpu/intel_cacheinfo.c      |   54 ++--
+ arch/x86/kernel/ds.c                       |    4 +-
+ arch/x86/kvm/svm.c                         |   63 ++--
+ arch/x86/xen/smp.c                         |   41 ++--
+ arch/x86/xen/time.c                        |   24 +-
+ crypto/cryptd.c                            |    2 +-
+ drivers/base/cpu.c                         |    2 +-
+ drivers/cpufreq/cpufreq.c                  |   16 +-
+ drivers/cpufreq/freq_table.c               |   12 +-
+ drivers/crypto/padlock-aes.c               |   12 +-
+ drivers/dma/dmaengine.c                    |   36 +--
+ drivers/infiniband/hw/ehca/ehca_irq.c      |    3 +-
+ drivers/lguest/x86/core.c                  |    6 +-
+ drivers/net/chelsio/sge.c                  |    5 +-
+ drivers/net/loopback.c                     |    2 +-
+ drivers/net/veth.c                         |    7 +-
+ drivers/oprofile/cpu_buffer.c              |   19 +-
+ drivers/oprofile/cpu_buffer.h              |    4 +-
+ drivers/oprofile/oprofile_stats.c          |    4 +-
+ drivers/s390/net/netiucv.c                 |    8 +-
+ fs/ext4/mballoc.c                          |    2 +-
+ fs/nfs/iostat.h                            |   24 +--
+ fs/xfs/xfs_mount.c                         |   12 +-
+ include/asm-generic/percpu.h               |    5 +
+ include/linux/percpu-defs.h                |    1 +
+ include/linux/percpu.h                     |  434 ++++++++++++++++++++++++++--
+ include/linux/vmstat.h                     |   10 +-
+ include/net/neighbour.h                    |    7 +-
+ include/net/netfilter/nf_conntrack.h       |    4 +-
+ include/net/snmp.h                         |   50 ++--
+ kernel/lockdep.c                           |   11 +-
+ kernel/module.c                            |  150 ----------
+ kernel/rcutorture.c                        |    8 +-
+ kernel/sched.c                             |    8 +-
+ kernel/softirq.c                           |    4 +-
+ kernel/softlockup.c                        |   54 ++--
+ kernel/time/timer_stats.c                  |   11 +-
+ kernel/trace/trace.c                       |   12 +-
+ kernel/trace/trace.h                       |    2 +-
+ kernel/trace/trace_functions_graph.c       |    4 +-
+ kernel/trace/trace_hw_branches.c           |   51 ++--
+ mm/Makefile                                |    4 -
+ mm/allocpercpu.c                           |  177 -----------
+ mm/percpu.c                                |   24 ++-
+ mm/slab.c                                  |   18 +-
+ mm/vmalloc.c                               |    4 +-
+ mm/vmstat.c                                |    7 +-
+ 79 files changed, 1222 insertions(+), 977 deletions(-)
+ delete mode 100644 mm/allocpercpu.c
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 155 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-CONFLICT (content): Merge conflict in fs/compat_ioctl.c
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
-pu.h
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-CONFLICT (content): Merge conflict in arch/m68k/include/asm/ptrace.h
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/Kconfig
-CONFLICT (content): Merge conflict in arch/mips/Makefile
-CONFLICT (content): Merge conflict in arch/mips/include/asm/ftrace.h
-CONFLICT (add/add): Merge conflict in arch/mips/kernel/ftrace.c
-CONFLICT (add/add): Merge conflict in arch/mips/kernel/mcount.S
-CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
-CONFLICT (content): Merge conflict in scripts/recordmcount.pl
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-CONFLICT (content): Merge conflict in include/acpi/processor.h
-$ git reset --hard HEAD^
-Merging refs/next/20091211/acpi
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-CONFLICT (content): Merge conflict in include/acpi/processor.h
-Merging ieee1394/for-next
-CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-13=
-94.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-av=
-c.c
-CONFLICT (add/add): Merge conflict in drivers/media/dvb/firewire/firedtv-fw=
-.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv.h
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-CONFLICT (content): Merge conflict in drivers/mtd/devices/m25p80.c
-CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
-CONFLICT (delete/modify): drivers/mtd/nand/excite_nandflash.c deleted in HE=
-AD and modified in mtd/master. Version mtd/master of drivers/mtd/nand/excit=
-e_nandflash.c left in tree.
-CONFLICT (content): Merge conflict in drivers/mtd/nand/pxa3xx_nand.c
-CONFLICT (content): Merge conflict in kernel/printk.c
-$ git rm -f drivers/mtd/nand/excite_nandflash.c
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Applying: modpost: autoconf.h has moved to include/generated
-Applying: rr: cpufreq: fix up for api name change
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-CONFLICT (content): Merge conflict in drivers/platform/x86/thinkpad_acpi.c
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_fb_helper.c
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-CONFLICT (content): Merge conflict in fs/afs/write.c
-CONFLICT (content): Merge conflict in fs/cifs/dir.c
-CONFLICT (content): Merge conflict in fs/ubifs/file.c
-CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
-CONFLICT (content): Merge conflict in include/net/compat.h
-CONFLICT (content): Merge conflict in net/compat.c
-CONFLICT (content): Merge conflict in net/socket.c
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/ia64/kernel/sys_ia64.c
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-CONFLICT (content): Merge conflict in include/asm-generic/unistd.h
-CONFLICT (content): Merge conflict in mm/mremap.c
-Merging omap_dss2/for-next
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in kernel/sysctl.c
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/intel_cacheinfo.c
-CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
-CONFLICT (content): Merge conflict in mm/slab.c
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-CONFLICT (content): Merge conflict in MAINTAINERS
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-Applying: powerpc: fix up for mmu_mapin_ram api change
-[master aeff606] Revert "of: unify phandle name in struct device_node"
-[master 238ae94] Revert "microblaze: gut implementation of early_init_dt_sc=
-an_cpus()"
-[master 2000b13] Revert "of: merge of_attach_node() & of_detach_node()"
-[master ae6cf43] Revert "of: Merge of_node_get() and of_node_put()"
-[master 4cb51b3] Revert "of: merge machine_is_compatible()"
-[master 5407df6] Revert "of/flattree: merge early_init_devtree() and early_=
-init_move_devtree()"
-
---Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksl1D8ACgkQjjKRsyhoI8zm5wCdHr+6aVVn4v1Nj6peg4KBDJHM
-ZpMAoLKhOGaT3sH8fsHA6nMJTW/V4PT7
-=ZMgr
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Dec_2009_16_59_27_+1100_nWl=KsYQ.tl8C4Fx--
+--
+tejun
