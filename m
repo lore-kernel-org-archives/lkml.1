@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbZLNTMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbZLNTQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbZLNTMF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 14:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932420AbZLNTMB
+	id S932487AbZLNTQi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 14:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932458AbZLNTQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 14:12:01 -0500
-Received: from exprod6og105.obsmtp.com ([64.18.1.189]:50208 "EHLO
-	exprod6og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932419AbZLNTMA convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 14:16:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59006
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932431AbZLNTQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 14:12:00 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] atmel-mci.c: use resource size()
-Date: Mon, 14 Dec 2009 14:11:56 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200E9EA@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] atmel-mci.c: use resource size()
-Thread-Index: Acp88U3dXV1qIRtZS3O2QgyLxV/tkQ==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>, <linux-mmc@vger.kernel.org>
-Cc: <haavard.skinnemoen@atmel.com>
-X-OriginalArrivalTime: 14 Dec 2009 19:11:57.0047 (UTC) FILETIME=[4DF6E870:01CA7CF1]
+	Mon, 14 Dec 2009 14:16:36 -0500
+Date: Mon, 14 Dec 2009 11:16:38 -0800 (PST)
+Message-Id: <20091214.111638.165984790.davem@davemloft.net>
+To: john.dykstra1@gmail.com
+Cc: eric.dumazet@gmail.com, lists@nerdbynature.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Badness at net/ipv4/inet_connection_sock.c:293
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091214.111105.224947761.davem@davemloft.net>
+References: <4B267708.3010202@gmail.com>
+	<1260817033.9141.8.camel@merlyn>
+	<20091214.111105.224947761.davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size().
+From: David Miller <davem@davemloft.net>
+Date: Mon, 14 Dec 2009 11:11:05 -0800 (PST)
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+> I usually see 2 or 3 three of these bug triggers in the first ten
+> minutes after bootup and I haven't seen one yet in 20 minutes
+> with the commit reverted.
 
----
-
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index fc25586..150242f 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -1628,7 +1628,7 @@ static int __init atmci_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = -ENOMEM;
--	host->regs = ioremap(regs->start, regs->end - regs->start + 1);
-+	host->regs = ioremap(regs->start, resource_size(regs));
- 	if (!host->regs)
- 		goto err_ioremap;
-  
+Nevermind, I take that back, I just got two triggers :-/
