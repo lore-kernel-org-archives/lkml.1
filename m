@@ -1,156 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZLNWJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbZLNWJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbZLNWJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 17:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758591AbZLNWJP
+	id S932704AbZLNWJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 17:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932531AbZLNWJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 17:09:15 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:34114 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758468AbZLNWJM (ORCPT
+	Mon, 14 Dec 2009 17:09:47 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60837 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932600AbZLNWJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 17:09:12 -0500
-Subject: Re: PATCH v2 3/4] Defer skb allocation -- new recvbuf alloc &
- receive calls
-From: Shirley Ma <mashirle@us.ibm.com>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-In-Reply-To: <20091213114320.GC7074@redhat.com>
-References: <1258697359.7416.14.camel@localhost.localdomain>
-	 <200911231123.18898.rusty@rustcorp.com.au>
-	 <20091208122134.GA17286@redhat.com>
-	 <1260534506.30371.6.camel@localhost.localdomain>
-	 <1260535613.30371.24.camel@localhost.localdomain>
-	 <20091213114320.GC7074@redhat.com>
-Content-Type: text/plain
-Date: Mon, 14 Dec 2009 14:08:38 -0800
-Message-Id: <1260828518.8716.105.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 17:09:44 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/3] perf util: Remove setup_sorting dups
+Date: Mon, 14 Dec 2009 20:09:29 -0200
+Message-Id: <1260828571-3613-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-13 at 13:43 +0200, Michael S. Tsirkin wrote:
-> Interesting. I think skb_goodcopy will sometimes
-> set *page to NULL. Will the above crash then?
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Nope, when *page is NULL, *len is 0.
+And it is also needed by 'perf diff'.
 
-> don't put empty line here. if below is part of same logical block as
-> skb_goodcopy.
-Ok.
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-annotate.c |   17 +----------------
+ tools/perf/builtin-report.c   |   17 +----------------
+ tools/perf/util/sort.c        |   15 +++++++++++++++
+ tools/perf/util/sort.h        |    2 ++
+ 4 files changed, 19 insertions(+), 32 deletions(-)
 
-> Local variable shadows a parameter.
-> It seems gcc will let you get away with a warning,
-> but this is not legal C.
-Ok.
-
-> > +
-> > +             i = skb_shinfo(skb)->nr_frags;
-> > +             if (i >= MAX_SKB_FRAGS) {
-> > +                     pr_debug("%s: packet too long %d\n",
-> skb->dev->name,
-> > +                              len);
-> 
-> If this happens, we have corrupted memory already.
-> We do need this check, but please put is before you increment
-> nr_frags.
-
-It is before increase for mergeable buffer case. Only one page(one frag)
-per get_buf.
-
-> > +                     skb->dev->stats.rx_length_errors++;
-> > +                     return skb;
-> 
-> This will propagate the error up the stack and corrupt
-> more memory.
-
-I just copied the code from original code. There might not be a problem
-for mergeable buffer. I will double check.
-
-> sizeof hdr->hdr
-Ok.
-
-> > +
-> > +     skb_to_sgvec(skb, sg+1, 0, skb->len);
-> 
-> space around +
-Ok.
-
-> > +
-> > +     err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, 2, skb);
-> > +     if (err < 0)
-> > +             kfree_skb(skb);
-> > +     else
-> > +             skb_queue_head(&vi->recv, skb);
-> 
-> So why are we queueing this still?
-This is for small packet. I didn't change that code since it will
-involve extra copy by using page.
-
-> > +
-> > +     return err;
-> > +}
-> > +
-> > +static int add_recvbuf_big(struct virtnet_info *vi, gfp_t gfp, bool
-> *oom)
-> > +{
-> > +     struct scatterlist sg[2 + MAX_SKB_FRAGS];
-> 
-> MAX_SKB_FRAGS + 2 will be more readable.
-> Also, create a macro for this constant and document
-> why does +2 make sense?
-
-One is for big packet virtio_net_hdr, one is for goodcopy skb.
-
-> Again, pls explain *why* do we want 16 byte alignment.
-> Also this code seems duplicated?
-> Please put structs at top of file where they
-> can be found.
-Ok.
-
-> > +     };
-> > +
-> > +     offset = sizeof(struct padded_vnet_hdr);
-> > +
-> > +     for (i = total - 1; i > 0; i--) {
-> 
-> I prefer --i.
-Ok.
-
-> Also, total is just a constant.
-> So simply MAX_SKB_FRAGS + 1 will be clearer.
-Ok.
-
-> Why do we scan last to first?
-> If there's reason, please add a comment.
-We use page private to maintain next page, here there is no scan last to
-first, just add the new page in list head instead of list tail, which
-will require scan the list.
-
-> space around - .
-Ok.
-
-> All the if (i == 1) handling on exit is really hard to grok.
-> How about moving common code out of this loop
-> into a function, and then you can
->         for (i = total - 1; i > 1; i--) {
->                 handle(i);
->         }
->         handle(1);
->         handle(0);
->         add_buf
-That works.
-
-> do we really need *oom here and below?
-> We can just set err to ENOMEM, no?
-We could.
-
-> Please do not return 0 on failure.
-
-Ok.
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index fa833f5..2e2855a 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -521,21 +521,6 @@ static const struct option options[] = {
+ 	OPT_END()
+ };
+ 
+-static void setup_sorting(void)
+-{
+-	char *tmp, *tok, *str = strdup(sort_order);
+-
+-	for (tok = strtok_r(str, ", ", &tmp);
+-			tok; tok = strtok_r(NULL, ", ", &tmp)) {
+-		if (sort_dimension__add(tok) < 0) {
+-			error("Unknown --sort key: `%s'", tok);
+-			usage_with_options(annotate_usage, options);
+-		}
+-	}
+-
+-	free(str);
+-}
+-
+ int cmd_annotate(int argc, const char **argv, const char *prefix __used)
+ {
+ 	if (symbol__init(&symbol_conf) < 0)
+@@ -543,7 +528,7 @@ int cmd_annotate(int argc, const char **argv, const char *prefix __used)
+ 
+ 	argc = parse_options(argc, argv, options, annotate_usage, 0);
+ 
+-	setup_sorting();
++	setup_sorting(annotate_usage, options);
+ 
+ 	if (argc) {
+ 		/*
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index d12ea4a..beff7c0 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -843,21 +843,6 @@ static const struct option options[] = {
+ 	OPT_END()
+ };
+ 
+-static void setup_sorting(void)
+-{
+-	char *tmp, *tok, *str = strdup(sort_order);
+-
+-	for (tok = strtok_r(str, ", ", &tmp);
+-			tok; tok = strtok_r(NULL, ", ", &tmp)) {
+-		if (sort_dimension__add(tok) < 0) {
+-			error("Unknown --sort key: `%s'", tok);
+-			usage_with_options(report_usage, options);
+-		}
+-	}
+-
+-	free(str);
+-}
+-
+ static void setup_list(struct strlist **list, const char *list_str,
+ 		       struct sort_entry *se, const char *list_name,
+ 		       FILE *fp)
+@@ -884,7 +869,7 @@ int cmd_report(int argc, const char **argv, const char *prefix __used)
+ 
+ 	argc = parse_options(argc, argv, options, report_usage, 0);
+ 
+-	setup_sorting();
++	setup_sorting(report_usage, options);
+ 
+ 	if (parent_pattern != default_parent_pattern) {
+ 		sort_dimension__add("parent");
+diff --git a/tools/perf/util/sort.c b/tools/perf/util/sort.c
+index b490354..cff1c31 100644
+--- a/tools/perf/util/sort.c
++++ b/tools/perf/util/sort.c
+@@ -288,3 +288,18 @@ int sort_dimension__add(const char *tok)
+ 
+ 	return -ESRCH;
+ }
++
++void setup_sorting(const char * const usagestr[], const struct option *opts)
++{
++	char *tmp, *tok, *str = strdup(sort_order);
++
++	for (tok = strtok_r(str, ", ", &tmp);
++			tok; tok = strtok_r(NULL, ", ", &tmp)) {
++		if (sort_dimension__add(tok) < 0) {
++			error("Unknown --sort key: `%s'", tok);
++			usage_with_options(usagestr, opts);
++		}
++	}
++
++	free(str);
++}
+diff --git a/tools/perf/util/sort.h b/tools/perf/util/sort.h
+index 333e664..cb6151c 100644
+--- a/tools/perf/util/sort.h
++++ b/tools/perf/util/sort.h
+@@ -81,6 +81,8 @@ struct sort_entry {
+ extern struct sort_entry sort_thread;
+ extern struct list_head hist_entry__sort_list;
+ 
++void setup_sorting(const char * const usagestr[], const struct option *opts);
++
+ extern int repsep_fprintf(FILE *fp, const char *fmt, ...);
+ extern size_t sort__thread_print(FILE *, struct hist_entry *, unsigned int);
+ extern size_t sort__comm_print(FILE *, struct hist_entry *, unsigned int);
+-- 
+1.6.2.5
 
