@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbZLNXOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932889AbZLNXOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932897AbZLNXOl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 18:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbZLNXOi
+	id S932889AbZLNXOO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 18:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbZLNXOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 18:14:38 -0500
-Received: from sh.osrg.net ([192.16.179.4]:38397 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757928AbZLNXOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 18:14:37 -0500
-Date: Tue, 15 Dec 2009 08:13:53 +0900
-To: Valdis.Kletnieks@vt.edu
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, amwang@redhat.com,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Remove usedac in
- feature-removal-schedule.txt
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <17113.1260802675@localhost>
-References: <20091214104423X.fujita.tomonori@lab.ntt.co.jp>
-	<tip-06f8bda8324fa8bf39eed81d8b3df08063a37696@git.kernel.org>
-	<17113.1260802675@localhost>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091215081341Y.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 15 Dec 2009 08:13:53 +0900 (JST)
+	Mon, 14 Dec 2009 18:14:12 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:48644 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757876AbZLNXOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 18:14:06 -0500
+Date: Mon, 14 Dec 2009 18:14:04 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <tj@kernel.org>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Warn people about flush_scheduled_work()
+In-Reply-To: <4B26BE67.5060107@kernel.org>
+Message-ID: <Pine.LNX.4.44L0.0912141809390.2690-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 09:57:55 -0500
-Valdis.Kletnieks@vt.edu wrote:
+On Tue, 15 Dec 2009, Tejun Heo wrote:
 
-> On Mon, 14 Dec 2009 07:58:01 GMT, tip-bot for FUJITA Tomonori said:
-> > Commit-ID:  06f8bda8324fa8bf39eed81d8b3df08063a37696
+> Hello, Alan Stern.
 > 
-> > x86: Remove usedac in feature-removal-schedule.txt
+> On 12/15/2009 06:33 AM, Alan Stern wrote:
+> > You've spent some time working on the workqueue implementation, right?  
+> > I'd like to add comments or kerneldoc warning people about how 
+> > dangerous it can be to use flush_scheduled_work() and related 
+> > functions.  Something like this:
+> > 
+> > 	Think twice before calling this function!  It's very easy
+> > 	to get into trouble if you don't take great care.  Either
+> > 	of the following situations will lead to deadlock:
+> > 
+> > 		Your code is running in the context of a scheduled
+> > 		work routine.
+> >
+> > 		Your code or its caller holds a lock needed by
+> > 		one of the work items currently on the workqueue.
+> >
+> > 	Since you generally don't know who your caller is, what locks
+> > 	it holds, or what locks are needed by the items on the 
+> > 	workqueue, avoiding these situations is quite difficult.
 > 
-> > The usedac option enables us to stop via_no_dac() setting
-> > forbid_dac to 1. That is, someone who uses VIA bridges can use
-> > DAC with this option even if some of VIA bridges seem to be
-> > broken about DAC.
+> I think both problems can be detected by lockdep, right?  So, they
+> aren't that difficult to detect.
+
+Maybe they can, now.  It used to be they couldn't.
+
+However, lockdep doesn't help much -- it tells you the cause of the
+deadlock but it doesn't prevent the deadlock from occurring.  The
+programmer has to do this, by avoiding flush_scheduled_work().  I guess 
+that could be added to the comment.
+
+> > 	Consider using cancel_work_sync() or cancel_delayed_work_sync()
+> > 	instead.  In most situations they will accomplish what you 
+> > 	need.
+> > 
+> > Does this sound like a good idea?  Certainly flush_scheduled_work()  
+> > is used in places where it shouldn't be.
 > 
-> Does there exist real hardware where this makes sense?  If the chipset
-> detects as "broken-DAC", is it in fact safe to use?
+> Yeah, recommending more work-specific constructs definitely would be
+> better.  It's bad that we can't recommend the use of flush_work() as
+> it doesn't do cross-cpu flushing.  Maybe that needs explanation too.
 
-Not safe. Probably, you would see data corruption.
+I'll do my comments, and you can do yours.  :-)
 
-arch/x86/kernel/pci-dma.c says:
+Should these changes go through Andrew Morton?  Or can you take them?
 
-/* Many VIA bridges seem to corrupt data for DAC. Disable it here */
+Alan Stern
 
-
-Seems that some of VIA bridges were fine. So this option made sense
-with some hardware. I'm not sure if there are still users of this
-option now.
-
-
->  Or is it similar to
-> the 'force-enable HPET' code for some older boxes, where the HPET was in
-> fact there but simply not advertised, so going ahead and using it was
-> in fact perfectly safe? Allowing the use of "working but not advertised"
-> is probably a good thing, allowing the use of known-broken probably isn't.
-> 
-> If it's just unadvertised, I wonder if if there's a way to write a quirk
-> for VIA systems that will detect the situation and enable the support?
-
-I guess that we could however it doesn't worth adding tricks for old
-hardware.
