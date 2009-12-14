@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbZLNVdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbZLNVeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758329AbZLNVdp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 16:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758317AbZLNVdm
+	id S1758283AbZLNVeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 16:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZLNVeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 16:33:42 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:34648 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758313AbZLNVdk (ORCPT
+	Mon, 14 Dec 2009 16:34:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:59702 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754440AbZLNVeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 16:33:40 -0500
-Date: Mon, 14 Dec 2009 16:33:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <tj@kernel.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Warn people about flush_scheduled_work()
-Message-ID: <Pine.LNX.4.44L0.0912141619410.2690-100000@iolanthe.rowland.org>
+	Mon, 14 Dec 2009 16:34:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=fca8WIWcLMJH71AaqqN7UgOSlt6Ybg9hODvZJ4doVEcrXaDQnV+ECTErdxhQrU69W4
+         mXKjlgfmx5lRY4N2wBQTpKayVXWNE11qbSfQvuTlyAYYDiTNUsa/pfbh2XHLej0yBmuJ
+         h6fjqq/hM2OKEFBCPG18C91r/NdpBdMVAeTuI=
+Date: Mon, 14 Dec 2009 22:34:13 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH] Document awk requirements
+Message-ID: <20091214213413.GA9816@nb-core2.darkstar.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun:
+Hello,
+current -git kernel fails to build with this error message:
 
-You've spent some time working on the workqueue implementation, right?  
-I'd like to add comments or kerneldoc warning people about how 
-dangerous it can be to use flush_scheduled_work() and related 
-functions.  Something like this:
+  GEN     arch/x86/lib/inat-tables.c
+  Error: Your awk doesn't support charactor-class.
 
-	Think twice before calling this function!  It's very easy
-	to get into trouble if you don't take great care.  Either
-	of the following situations will lead to deadlock:
+mawk is installed; it appears that gawk is required, so:
+---
+Gnu awk is required for generating arch/x86/lib/inat-tables.c
 
-		Your code is running in the context of a scheduled
-		work routine.
+Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+---
 
-		Your code or its caller holds a lock needed by
-		one of the work items currently on the workqueue.
+ Documentation/Changes |    1 +
+ 1 file changed, 1 insertion(+)
 
-	Since you generally don't know who your caller is, what locks
-	it holds, or what locks are needed by the items on the 
-	workqueue, avoiding these situations is quite difficult.
-
-	Consider using cancel_work_sync() or cancel_delayed_work_sync()
-	instead.  In most situations they will accomplish what you 
-	need.
-
-Does this sound like a good idea?  Certainly flush_scheduled_work()  
-is used in places where it shouldn't be.
-
-If comments like this are added, where do you think would be a good 
-place to put them?
-
-Alan Stern
-
+diff --git a/Documentation/Changes b/Documentation/Changes
+index 6d0f1ef..53fd218 100644
+--- a/Documentation/Changes
++++ b/Documentation/Changes
+@@ -49,6 +49,7 @@ o  oprofile               0.9                     # oprofiled --version
+ o  udev                   081                     # udevinfo -V
+ o  grub                   0.93                    # grub --version
+ o  mcelog		  0.6
++o  Gnu awk                3.1.5                   # awk --version   
+ 
+ Kernel compilation
+ ==================
