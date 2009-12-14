@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZLNMxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbZLNMxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbZLNMxU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 07:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbZLNMxT
+	id S1757228AbZLNMxh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 07:53:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZLNMxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 07:53:19 -0500
-Received: from stinky.trash.net ([213.144.137.162]:61572 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755357AbZLNMxS (ORCPT
+	Mon, 14 Dec 2009 07:53:35 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37542 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756788AbZLNMxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 07:53:18 -0500
-Message-ID: <4B26353A.9020005@trash.net>
-Date: Mon, 14 Dec 2009 13:53:14 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Mon, 14 Dec 2009 07:53:34 -0500
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "Li, Haicheng" <haicheng.li@intel.com>
+Subject: Re: [PATCH] [23/31] HWPOISON: add memory cgroup filter
+From: Andi Kleen <andi@firstfloor.org>
+References: <200912081016.198135742@firstfloor.org>
+	<20091208211639.8499FB151F@basil.firstfloor.org>
+	<6599ad830912091247v1270a86er45ea8ceeff28e727@mail.gmail.com>
+	<20091210014212.GI18989@one.firstfloor.org>
+	<20091210022113.GJ3722@balbir.in.ibm.com>
+	<20091211021405.GA10693@localhost>
+Date: Mon, 14 Dec 2009 13:53:30 +0100
+In-Reply-To: <20091211021405.GA10693@localhost> (Wu Fengguang's message of "Fri, 11 Dec 2009 10:14:05 +0800")
+Message-ID: <87tyvtyawl.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       "" <davem@davemloft.net>, "Michael S. Tsirkin" <mst@redhat.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Or Gerlitz <ogerlitz@voltaire.com>,
-       "Fischer, Anna" <anna.fischer@hp.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Edge Virtual Bridging <evb@yahoogroups.com>
-Subject: Re: [RFC] macvlan: add tap device backend
-References: <1259862720-28432-1-git-send-email-arnd@arndb.de> <1259862720-28432-3-git-send-email-arnd@arndb.de>
-In-Reply-To: <1259862720-28432-3-git-send-email-arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> +static int macvtap_newlink(struct net *src_net,
-> +			   struct net_device *dev,
-> +			   struct nlattr *tb[],
-> +			   struct nlattr *data[])
-> +{
-> +	struct device *classdev;
-> +	dev_t devt;
-> +	int err;
-> +
-> +	err = macvlan_common_newlink(src_net, dev, tb, data,
-> +				     macvtap_receive, macvtap_forward);
-> +	if (err)
-> +		goto out;
-> +
-> +	devt = MKDEV(MAJOR(macvtap_major), dev->ifindex);
-> +
-> +	classdev = device_create(macvtap_class, &dev->dev, devt,
-> +				 dev, "tap%d", dev->ifindex);
-> +	if (IS_ERR(classdev)) {
-> +		err = PTR_ERR(classdev);
-> +		macvtap_del_queues(dev);
-> +		macvlan_dellink(dev, NULL);
+Wu Fengguang <fengguang.wu@intel.com> writes:
+>
+> We could keep an fd open on the desired cgroup, in user space: 
+>
+>         #!/bin/bash
+>
+>         mkdir /cgroup/hwpoison && \
+>         exec 9<>/cgroup/hwpoison/tasks || exit 1
+>
+> A bit simpler than an in-kernel fget_light() or CSS refcount :)
 
-I think this may cause a double free since macvlan_dellink() will
-free the device and rtnl_newlink() will free it again on error.
+FYI, I decided to not do any of this in .33, but just keep the 
+ugly-but-working inode hack. We can look at fixing that for .34.
+These interfaces are debugfs, so can be changed.
 
-> +	}
-> +
-> +out:
-> +	return err;
-> +}
-> +
-> +static void macvtap_dellink(struct net_device *dev,
-> +			    struct list_head *head)
-> +{
-> +	device_destroy(macvtap_class,
-> +		       MKDEV(MAJOR(macvtap_major), dev->ifindex));
-> +
-> +	macvtap_del_queues(dev);
-> +	macvlan_dellink(dev, head);
-> +}
-> +
-> +static struct rtnl_link_ops macvtap_link_ops __read_mostly = {
-> +	.kind		= "macvtap",
-> +	.newlink	= macvtap_newlink,
-> +	.dellink	= macvtap_dellink,
-> +};
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
