@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbZLNL11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZLNL05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbZLNL11 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 06:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756938AbZLNL1Y
+	id S1756908AbZLNL05 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 06:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZLNL04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 06:27:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58929 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756879AbZLNL1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 06:27:12 -0500
-Message-ID: <4B2620C6.9050901@kernel.org>
-Date: Mon, 14 Dec 2009 03:25:58 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-CC: Tvrtko Ursulin <tvrtko@ursulin.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Are these MTRR settings correct?
-References: <200912130807.44905.tvrtko@ursulin.net> <200912131719.01388.tvrtko@ursulin.net> <4B257117.40009@kernel.org> <200912141119.55068.tvrtko.ursulin@sophos.com>
-In-Reply-To: <200912141119.55068.tvrtko.ursulin@sophos.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 06:26:56 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:34284 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756878AbZLNL0z convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 06:26:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=M7p0xBfVzVvZmz4IKaeS6jgX8WJqWau6/miYMiMHMZveWKwm6ogfhANBla+VzHp7GV
+         LcJ5trguvao1fZiQ4wF9QWe9h/sX89mX7oxx8dUeN9u9iAIefcytFJrDCvpacPwOXRJ2
+         oY11+sKdv4clH5psPsqTWtd5CVFu8v76HPehc=
+Date: Mon, 14 Dec 2009 12:26:49 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Masa <masa.korg@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       devel@driverdev.osuosl.org
+Subject: Re: [How to upload our driver to "kernel.org"] Would you give me
+ your  advice?
+Message-ID: <20091214122649.2d914941@varda>
+In-Reply-To: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
+References: <c7ac85d60912140256j4e1aa0edn9abba53ab1855ed5@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tvrtko Ursulin wrote:
-> On Sunday 13 December 2009 22:56:23 Yinghai Lu wrote:
->> Tvrtko Ursulin wrote:
->>> On Sunday 13 Dec 2009 09:25:33 Yinghai Lu wrote:
->>>> On Sun, Dec 13, 2009 at 12:26 AM, Tvrtko Ursulin <tvrtko@ursulin.net> 
-> wrote:
->>>>> reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
->>>>> reg01: base=0x080000000 ( 2048MB), size= 1024MB, count=1: write-back
->>>>> reg02: base=0x0c0000000 ( 3072MB), size=  256MB, count=1: write-back
->>>>> reg03: base=0x0f0000000 ( 3840MB), size=  128MB, count=1:
->>>>> write-combining
->>>>>
->>>>> Still looks like from 3328MB to 3840MB is of status unknown?
->>>>>
->>>>> dmesg in that case:
->>> [    0.250038] node 0 link 0: io port [1000, ffffff]
->>> [    0.250040] TOM: 00000000e0000000 aka 3584M
->>> [    0.250041] Fam 10h mmconf [e0000000, efffffff]
->>> [    0.250043] node 0 link 0: mmio [a0000, bffff]
->>> [    0.250045] node 0 link 0: mmio [e0000000, efffffff] ==> none
->>> [    0.250047] node 0 link 0: mmio [f0000000, fe7fffff]
->>> [    0.250048] node 0 link 0: mmio [fe800000, fe9fffff]
->>> [    0.250050] node 0 link 0: mmio [fea00000, ffefffff]
->>> [    0.250051] TOM2: 0000000120000000 aka 4608M
->>> [    0.250053] bus: [00,07] on node 0 link 0
->>> [    0.250054] bus: 00 index 0 io port: [0, ffff]
->>> [    0.250055] bus: 00 index 1 mmio: [a0000, bffff]
->>> [    0.250057] bus: 00 index 2 mmio: [f0000000, ffffffff]
->>> [    0.250058] bus: 00 index 3 mmio: [120000000, fcffffffff]
->>> [    0.250065] ACPI: bus type pci registered
->>> [    0.250088] PCI: Found AMD Family 10h NB with MMCONFIG support.
->>> [    0.250091] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0
->>> - 255 [    0.250092] PCI: Not using MMCONFIG.
->>> [    0.250094] PCI: Using configuration type 1 for base access
->>> [    0.250095] PCI: Using configuration type 1 for extended access
->> something wrong, we should not check that with e820 or acpi resource in
->> that case. please check
->>
->> {PATCH] x86/pci: don't check mmconf again if it is from MSR with amd faml0h
->>
->> for AMD Fam10h, it we read mmconf from MSR early, we should just trust it
->> because we check it and correct it already.
->>
->> so skip the reject check there.
-> 
-> [path snipped]
-> 
-> Do you want me to test with this patch and that pci=.. option active and post 
-> dmesg? Or without the pci=... option?
-> 
-with this patch and pci=... and post dmesg...
+El Mon, 14 Dec 2009 19:56:23 +0900
+Masa <masa.korg@gmail.com> escribió:
 
-Thanks
+Adding I hpe some usefull CC's
+See also: http://www.linuxdriverproject.org/
 
-Yinghai
+> Hi,
+> 
+> Our company is planning to upload our device drivers to "kernel.org".
+> And I am investigating "How to upload".
+> 
+> Our company is developing some device drivers for new chip-set device.
+> It is not released yet, but the sample is in the test in the specific company.
+> 
+> I contacted kernel.org this month.
+> The man recommended this mailing-list.
+> 
+> Would you give me your advice?
+> I am very glad if you help it.
+> 
+> We look forward to uploading the drivers to kernel.org!
+> 
+> [Our drivers]
+> We are preparing the drivers source code.
+> And we uploaded them to Sourceforge.net.
+> Please refer to below.
+> http://sourceforge.net/projects/generalembedded/
+> http://generalembedded.sourceforge.net/
+> 
+> Our developers will turn our drivers into a patch series and to post
+> them to this mailing list.
+> 
+> [My information]
+> I participated in the mailing list for the first time in my life.
+> I am full of fears and hopes.
+> 
+> This mailing list is very lively and great!
+> I think so.
+> 
+> Thank you & Best regards,
+> Masa <masa.korg@gmail.com>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
