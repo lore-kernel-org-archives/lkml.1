@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751050AbZLNF2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751237AbZLNFdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751050AbZLNF2M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 00:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZLNF2K
+	id S1751237AbZLNFdr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 00:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZLNFdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 00:28:10 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50478 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750705AbZLNF2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 00:28:09 -0500
-Date: Sun, 13 Dec 2009 21:30:15 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] TTY patches for 2.6.33-git
-Message-ID: <20091213213015.653307b5@infradead.org>
-In-Reply-To: <20091213191606.GB7297@nowhere>
-References: <20091212101032.GB25286@elte.hu>
-	<20091212023603.93768833.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0912120915390.3526@localhost.localdomain>
-	<alpine.LFD.2.00.0912120920190.3526@localhost.localdomain>
-	<20091212214235.31429790@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.0912121418490.3526@localhost.localdomain>
-	<alpine.LFD.2.00.0912122331200.3089@localhost.localdomain>
-	<alpine.LFD.2.00.0912121513190.3535@localhost.localdomain>
-	<20091213065844.GA20244@elte.hu>
-	<20091213095534.58051536@infradead.org>
-	<20091213191606.GB7297@nowhere>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Mon, 14 Dec 2009 00:33:46 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56577 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbZLNFdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 00:33:45 -0500
+Date: Mon, 14 Dec 2009 16:33:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: sparc tree build warning
+Message-Id: <20091214163338.f811722f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Dec_2009_16_33_38_+1100_UlpviB1zkGjSqJ3R"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Dec 2009 20:16:08 +0100
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
+--Signature=_Mon__14_Dec_2009_16_33_38_+1100_UlpviB1zkGjSqJ3R
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, Dec 13, 2009 at 09:55:34AM -0800, Arjan van de Ven wrote:
-> > On Sun, 13 Dec 2009 07:58:44 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > 
-> > > > We've had quite a bit of BKL work this merge-window. Maybe we'll
-> > > > even get rid of it one of these days. There are "only" about 600
-> > > > instances of "lock_kernel()" in the tree right now ;)
-> > > 
-> > > I tend to use unlock_kernel() as the metric. (as it's more
-> > > precisely greppable and it is also more indicative of the
-> > > underlying complexity of locking, as it gets used more in more
-> > > complex scenarios)
-> > 
-> > another metric is... how many times do we take the BKL for some
-> > workload. (For example booting or compiling a kernel).
-> > A counter like "BKLs-per-second" would be nice to expose
-> > (and then we can track that number going up as a regression etc)
-> 
-> 
-> 
-> We have the bkl tracepoints for that, attaching an example below,
-> blkdev_get/bkldev_put is among the highest consumer for me.
+Hi Dave,
 
-we have a trace, but not a number that anyone can just pull out without
-having to go through great lengths to set stuff up... (esp to capture a
-boot)...
-Adding a counter always to the lock_kernel function should be fine
-instead...
+Today's linux-next build (sparc defconfig) produced this warning:
 
+In file included from arch/sparc/include/asm/uaccess.h:7,
+                 from include/net/checksum.h:26,
+                 from include/linux/skbuff.h:29,
+                 from net/core/pktgen.c:141:
+In function 'copy_from_user',
+    inlined from 'pktgen_if_write' at net/core/pktgen.c:867:
+arch/sparc/include/asm/uaccess_32.h:276: warning: call to 'copy_from_user_o=
+verflow' declared with attribute warning: copy_from_user() buffer size is n=
+ot provably correct
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+and many more.
+
+The sparc64 defconfig build produced many similar warnings:
+
+In file included from arch/sparc/include/asm/uaccess.h:5,
+                 from include/linux/uaccess.h:6,
+                 from include/linux/highmem.h:7,
+                 from include/linux/pagemap.h:11,
+                 from include/linux/mempolicy.h:63,
+                 from mm/mempolicy.c:69:
+arch/sparc/include/asm/uaccess_64.h: In function 'compat_sys_get_mempolicy':
+arch/sparc/include/asm/uaccess_64.h:232: warning: call to 'copy_from_user_o=
+verflow' declared with attribute warning: copy_from_user() buffer size is n=
+ot provably correct
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__14_Dec_2009_16_33_38_+1100_UlpviB1zkGjSqJ3R
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkslzjIACgkQjjKRsyhoI8x1HQCgs5vx9FJYC+eGE0ieqNGRsC8M
+yGwAoIUS/fmg3DWM6E3BVAgg4F1qijAj
+=liC6
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_Dec_2009_16_33_38_+1100_UlpviB1zkGjSqJ3R--
