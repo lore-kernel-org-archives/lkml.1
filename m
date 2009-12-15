@@ -1,126 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933508AbZLOUPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933185AbZLOUQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933508AbZLOUPi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933456AbZLOUPg
+	id S933185AbZLOUQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbZLOUQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:15:36 -0500
-Received: from 216-239-44-51.google.com ([216.239.44.51]:24661 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933136AbZLOUPe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:15:34 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=nyu7mbmrxMWM13gJ5+UX1IJPG2LzD4k6PEcep9GE5SQS/D1exawLao+i3qiUwaH6C
-	EDLQ1tcR+gpHriuRuNKCA==
+	Tue, 15 Dec 2009 15:16:24 -0500
+Received: from claw.goop.org ([74.207.240.146]:39380 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933119AbZLOUQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 15:16:21 -0500
+Message-ID: <4B27EE90.5090609@goop.org>
+Date: Tue, 15 Dec 2009 12:16:16 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <20091214170616.59fc163f@infradead.org>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	 <20091214161922.6f252492@infradead.org>
-	 <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
-	 <20091214170616.59fc163f@infradead.org>
-Date: Tue, 15 Dec 2009 12:15:30 -0800
-Message-ID: <4352991a0912151215o33524766p830e7fcbf9f1fc87@mail.gmail.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the 
-	Linux Kernel
-From: Salman Qazi <sqazi@google.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+CC: Bruce Allan <bruce.w.allan@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: 2.6.31.6 (e1000e): Intel 82574L devices spontaneously dropping
+ off PCIe?
+References: <4B2550A6.8030705@goop.org>
+In-Reply-To: <4B2550A6.8030705@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 5:06 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Mon, 14 Dec 2009 16:36:20 -0800
-> Salman Qazi <sqazi@google.com> wrote:
->
->> On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven
->> <arjan@infradead.org> wrote:
->> > On Mon, 14 Dec 2009 15:11:47 -0800
->> > Salman Qazi <sqazi@google.com> wrote:
->> >
->> >
->> > I like the general idea, I have one request (that I didn't see
->> > quite in your explanation): Please make sure that all cpus in the
->> > system do their idle injection at the same time, so that memory can
->> > go into power saving mode as well during this time etc etc...
->> >
->>
->> With the current interface, the forced idle percentages on the CPUs
->> are controlled independently.  There's a trade-off here.  If we inject
->
-> I'm fine with that... just want to ask that even if we inject different
-> percentages, that we inject them for maximum overlap
-> (having the memory power in a machine suddenly be half or less is a
-> huge step in power, for something, the alignment itself, that does not
-> cost much if any extra performance over randomly distributed idle
-> insertions)
+On 12/13/2009 12:37 PM, Jeremy Fitzhardinge wrote:
+> I have a Supermicro X8SIL-F system, which has a couple of on-board 
+> 82574L gigabit interfaces.  I'm running the stock F12 kernel on it 
+> (2.6.31.6-166.fc12.x86_64).   This is a new machine, so I'm trying to 
+> work out if this is a hardware problem I should RMA the board for, if 
+> this is some kind of driver bug.
 
-I think there is a difference in goals here.  Our goal is to free up
-power from one machine, so that it can be used elsewhere.  This means
-that any power that we save has to be predictably saved.  We have
-models that map between CPU time and power usage, that have to account
-for the worst case.  So, if we can save some extra power by
-opportunistic means, unfortunately we have no way of using that power
-elsewhere.
+I tried the e1000e v1.1.2 driver from the Intel website.  It initially 
+appeared to work better but it ultimately failed the same way.
 
-Having said that, energy savings is a worthy goal by itself.  But, we
-have to make sure to balance it with performance.
+Thanks,
+     J
 
 >
->> idle cycles on all the CPU at the same time, our machine
->> responsiveness also degrades: essentially every CPU becomes equally
->> bad for an interactive task to run on.  Our aim at the moment is to
->> try to concentrate the idle cycles on a small set of CPUs, to strive
->> to leave some CPUs where interactive tasks can run unhindered.  But,
->> given a different workload and goals the correct policy may be
->> different.
+> The interfaces come up and apparently work fine - for a while.  But 
+> after a bit of load (say, a ~9GB of incoming TCP traffic from another 
+> machine on the same switch) the hardware appears to disappear from 
+> PCIe.  ifconfig starts showing junk:
 >
-> as long as the tentative portion of the idle time gets injected at the
-> same time.. I suspect there can be a decent balance here where most of
-> the time we get the full CPU *and* memory savings, while we degrade
-> gracefully for the case where we get increasingly more interactive
-> activity.
+> eth1      Link encap:Ethernet  HWaddr 00:30:48:DD:EB:67
+>           inet6 addr: fe80::230:48ff:fedd:eb67/64 Scope:Link
+>           UP BROADCAST MULTICAST  MTU:1500  Metric:1
+>           RX packets:7910754 errors:532687613729670 
+> dropped:88781268954945 overruns:0 frame:355125075819780
+>           TX packets:4104172 errors:177562537909890 dropped:0 
+> overruns:0 carrier:177562537909890
+>           collisions:88781268954945 txqueuelen:1000
+>           RX bytes:9589212936 (8.9 GiB)  TX bytes:271851778 (259.2 MiB)
+>           Memory:fafe0000-fb000000
+>
+>
+> and lspci shows that the config space is all 0xff:
+>
+> [root@lilith ~]# lspci -s 04:00.0 -x
+> 04:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network 
+> Connection (rev ff)
+> 00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> 10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> 20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> 30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+>
+> [root@lilith ~]# lspci -s 05:00.0 -x
+> 05:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network 
+> Connection (rev ff)
+> 00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> 10: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> 20: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> 30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+>
+>
+> This seems to happen quietly without the kernel noticing; the only 
+> side-effect is the dev watchdog triggering:
+>
+> ------------[ cut here ]------------
+> WARNING: at net/sched/sch_generic.c:246 dev_watchdog+0xf3/0x164() (Not 
+> tainted)
+> Hardware name: X8SIL
+> NETDEV WATCHDOG: eth1 (e1000e): transmit queue 0 timed out
+> Modules linked in: ip6table_filter ip6_tables bridge stp llc sunrpc 
+> xt_physdev ip6t_REJECT nf_conntrack_ipv6 ipv6 cpufreq_ondemand 
+> acpi_cpufreq freq_table dm_multipath kvm_intel kvm uinput 
+> snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event 
+> snd_seq_midi_emul snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus 
+> snd_seq snd_pcm snd_seq_device snd_timer snd_page_alloc snd_util_mem 
+> snd_hwdep snd e1000e i2c_i801 soundcore emu10k1_gp gameport i2c_core 
+> joydev cryptd aes_x86_64 aes_generic xts gf128mul dm_crypt raid10 
+> [last unloaded: ip6_tables]
+> Pid: 0, comm: swapper Not tainted 2.6.31.6-166.fc12.x86_64 #1
+> Call Trace:
+> <IRQ>   [<ffffffff810516f4>] warn_slowpath_common+0x84/0x9c
+>  [<ffffffff81051763>] warn_slowpath_fmt+0x41/0x43
+>  [<ffffffff8138e831>] ? netif_tx_lock+0x44/0x6d
+>  [<ffffffff8138e99b>] dev_watchdog+0xf3/0x164
+>  [<ffffffff8105bc52>] ? internal_add_timer+0xcf/0xd1
+>  [<ffffffff8105bd0b>] ? cascade+0x6a/0x84
+>  [<ffffffff8105bec4>] run_timer_softirq+0x19f/0x21c
+>  [<ffffffff8106ae47>] ? hrtimer_interrupt+0x13c/0x153
+>  [<ffffffff81057614>] __do_softirq+0xdd/0x1ad
+>  [<ffffffff81026936>] ? apic_write+0x16/0x18
+>  [<ffffffff81012eac>] call_softirq+0x1c/0x30
+>  [<ffffffff810143fb>] do_softirq+0x47/0x8d
+>  [<ffffffff81057326>] irq_exit+0x44/0x86
+>  [<ffffffff8141ecf5>] do_IRQ+0xa5/0xbc
+>  [<ffffffff810126d3>] ret_from_intr+0x0/0x11
+> <EOI>   [<ffffffff812679dd>] ? acpi_idle_enter_bm+0x281/0x2b5
+>  [<ffffffff812679d6>] ? acpi_idle_enter_bm+0x27a/0x2b5
+>  [<ffffffff81353b7f>] ? cpuidle_idle_call+0x99/0xce
+>  [<ffffffff81010c60>] ? cpu_idle+0xa6/0xe9
+>  [<ffffffff81405db7>] ? rest_init+0x6b/0x6d
+>  [<ffffffff81714dc9>] ? start_kernel+0x3ef/0x3fa
+>  [<ffffffff817142a1>] ? x86_64_start_reservations+0xac/0xb0
+>  [<ffffffff8171439d>] ? x86_64_start_kernel+0xf8/0x107
+> ---[ end trace f271bce88fe9d682 ]---
+> 0000:05:00.0: eth1: Error reading PHY register
+> e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+>
+>
+> A reboot seems to recover the devices:
+>
+> [root@lilith ~]# lspci -s 04:00.0 -x
+> 04:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network 
+> Connection
+> 00: 86 80 d3 10 07 04 10 00 00 00 00 02 10 00 00 00
+> 10: 00 00 ee fa 00 00 00 00 01 cc 00 00 00 c0 ed fa
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 05 06
+> 30: 00 00 00 00 c8 00 00 00 00 00 00 00 0a 01 00 00
+>
+> [root@lilith ~]# lspci -s 05:00.0 -x
+> 05:00.0 Ethernet controller: Intel Corporation 82574L Gigabit Network 
+> Connection
+> 00: 86 80 d3 10 07 04 10 00 00 00 00 02 10 00 00 00
+> 10: 00 00 fe fa 00 00 00 00 01 dc 00 00 00 c0 fd fa
+> 20: 00 00 00 00 00 00 00 00 00 00 00 00 d9 15 05 06
+> 30: 00 00 00 00 c8 00 00 00 00 00 00 00 0b 01 00 00
+>
+>
+>
+>
+> Any clues?
+>
+> Thanks,
+>     J
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Let me rephrase what you just said to verify that I understand you
-correctly:  we should align the enforcement intervals across CPUs and
-thereby eagerly inject over the same time period across multiple CPUs.
- If there is no interactive workload then we would get maximal CPU and
-memory savings.  If there are interactive tasks, then we just let them
-run like we would in the eager injection in original design.
-
-If I understand correctly, then I like your idea.
-
->
->
->> Simultaneously idling multiple "cores" becomes necessary in the SMT
->> case: as there is no point in idling a single thread, while the other
->> thread is running full tilt.
->
-> I can argue the same for package level btw ;)
->
->
->> I think the best approach may be to provide a way to specify the
->> policy from the user space.  Basically let the user decide at what
->> level of CPU hierarchy the forced idle percentages are specified.
->> Then, in the levels below, we simply inject at the same time.
->
-> it's not so much about the specification part; per logical cpu is a nice
-> place to specify things... as long as we, in the execution part, align
-> things up smart.
->
->
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
