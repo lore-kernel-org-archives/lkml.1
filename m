@@ -1,106 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbZLOMJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbZLOMNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760093AbZLOMJY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 07:09:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbZLOMJW
+	id S1760101AbZLOMNR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 07:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760074AbZLOMNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 07:09:22 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42222 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760080AbZLOMJV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 07:09:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=EG/PuBe2nMjdys2aLrVR8LA4qrMFhwWKDceuOJIjyem91BVO4sznW61VIy9CKW4G3/
-         j9/8CDY/eOri6tN8I+GMpCxIg6OFYdFMWrbh2Sj4yxyYCYAKa9vcrmCA+7d/3vvkXS+X
-         zG0jv+12Ijfl+67bg8OM/oij/UWxESGX0YzFg=
-Date: Tue, 15 Dec 2009 13:09:15 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, shemminger@vyatta.com,
-       paulmck@linux.vnet.ibm.com, tglx@linutronix.de
-Subject: Re: [tip:perf/diff] perf diff: Introduce tool to show performance
-	difference
-Message-ID: <20091215120913.GA5070@nowhere>
-References: <1260828571-3613-3-git-send-email-acme@infradead.org> <tip-86a9eee047ba09a714c3b8e27c9df2bbf715393a@git.kernel.org> <20091215095214.GA749@elte.hu>
+	Tue, 15 Dec 2009 07:13:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51252 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760069AbZLOMNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 07:13:13 -0500
+Date: Tue, 15 Dec 2009 12:12:32 GMT
+From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, rdreier@cisco.com, fujita.tomonori@lab.ntt.co.jp,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, rdreier@cisco.com, fujita.tomonori@lab.ntt.co.jp,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091215204729A.fujita.tomonori@lab.ntt.co.jp>
+References: <20091215204729A.fujita.tomonori@lab.ntt.co.jp>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Split swiotlb initialization into two stages
+Message-ID: <tip-186a25026c44d1bfa97671110ff14dcd0c99678e@git.kernel.org>
+Git-Commit-ID: 186a25026c44d1bfa97671110ff14dcd0c99678e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091215095214.GA749@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 10:52:14AM +0100, Ingo Molnar wrote:
-> 
-> 'perf diff' looks to be very useful!
-> 
-> I think we want to improve the default output some more:
-> 
-> For example there should be column names like for perf report:
-> 
-> # Overhead    Command                 Shared Object  Symbol
-> # ........  .........  ............................  ......
-> #
->     13.87%  hackbench  [kernel]                      [k] _raw_spin_lock
->      5.60%  hackbench  [kernel]                      [k] copy_user_generic_string
->      5.23%  hackbench  [kernel]                      [k] __cache_free
-> 
-> Secondly, here's the current output of two successive 'hackbench 10' run:
-> 
->    1 +2381        +58         [kernel.kallsyms]   avc_has_perm_noaudit
->    2              -26         [kernel.kallsyms]   clear_page_c
->    3  +107        +29         [kernel.kallsyms]   _raw_spin_lock
->    4  +106        +23         [kernel.kallsyms]   _raw_spin_lock
->    5  +105        +22         [kernel.kallsyms]   _raw_spin_lock
->    6  +104        +21         [kernel.kallsyms]   _raw_spin_lock
->    7  +103        +20         [kernel.kallsyms]   _raw_spin_lock
->    8  +102        +20         [kernel.kallsyms]   _raw_spin_lock
->    9  +101        +19         [kernel.kallsyms]   _raw_spin_lock
->   10    -6        -28         [kernel.kallsyms]   selinux_task_wait
->   11   +99        +18         [kernel.kallsyms]   _raw_spin_lock
->   12   +98        +18         [kernel.kallsyms]   _raw_spin_lock
->   13   +97        +18         [kernel.kallsyms]   _raw_spin_lock
->   14   +96        +18         [kernel.kallsyms]   _raw_spin_lock
->   15  +220        +20         [kernel.kallsyms]   _raw_spin_lock_irqsave
->   16   +94        +17         [kernel.kallsyms]   _raw_spin_lock
->   17   +93        +17         [kernel.kallsyms]   _raw_spin_lock
->   18   +92        +16         [kernel.kallsyms]   _raw_spin_lock
->   19 +9648        +30         [kernel.kallsyms]   copy_page_c
->   20   +90        +15         [kernel.kallsyms]   _raw_spin_lock
->   21   +89        +15         [kernel.kallsyms]   _raw_spin_lock
-> 
-> beyond the missing column names, there's some other things visible too:
-> 
->  - the symbol names are per pid, so they repeat all over again. I think we 
-> want the default output to be like perf report's, i.e. PIDs get summarized 
-> over commands.
-> 
-> Furthermore, i think -p should be enabled by default. Especially with a lot of 
-> functions the +/- notation isnt very obvious at first sight.
+Commit-ID:  186a25026c44d1bfa97671110ff14dcd0c99678e
+Gitweb:     http://git.kernel.org/tip/186a25026c44d1bfa97671110ff14dcd0c99678e
+Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+AuthorDate: Tue, 15 Dec 2009 20:47:56 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 15 Dec 2009 13:01:57 +0100
 
+x86: Split swiotlb initialization into two stages
 
-Agreed, I think -p gives a better first glance about the global
-state.
+The commit f4780ca005404166cc40af77ef0e86132ab98a81 moves
+swiotlb initialization before dma32_free_bootmem(). It's
+supposed to fix a bug that the commit
+75f1cdf1dda92cae037ec848ae63690d91913eac introduced, we
+initialize SWIOTLB right after dma32_free_bootmem so we wrongly
+steal memory area allocated for GART with broken BIOS earlier.
 
-Also it would be nice to sort by default on deltas, probably
-by abs(delta) even because the first purpose is to see what
-has changed most.
+However, the above commit introduced another problem, which
+likely breaks machines with huge amount of memory. Such a box
+use the majority of DMA32_ZONE so there is no memory for
+swiotlb.
 
-And those who want better granularity could sort by asc or desc.
+With this patch, the x86 IOMMU initialization sequence are:
 
-Oh, and I see the first column is useful to depict the
-number of profiled sites that have varied, but dedicating
-a whole column for that seems a bit too much. May be
-that can be a default-off option? Or the number could
-be output as a summary in the beggining?
+1. We set swiotlb to 1 in the case of (max_pfn > MAX_DMA32_PFN
+   && !no_iommu). If swiotlb usage is forced by the boot option,
+   we go to the step 3 and finish (we don't try to detect IOMMUs).
 
-Thanks.
+2. We call the detection functions of all the IOMMUs. The
+   detection function sets x86_init.iommu.iommu_init to the IOMMU
+   initialization function (so we can avoid calling the
+   initialization functions of all the IOMMUs needlessly).
 
+3. We initialize swiotlb (and set dma_ops to swiotlb_dma_ops) if
+   swiotlb is set to 1.
+
+4. If the IOMMU initialization function doesn't need swiotlb
+   (e.g. the initialization is sucessful) then sets swiotlb to zero.
+
+5. If we find that swiotlb is set to zero, we free swiotlb
+   resource.
+
+Reported-by: Yinghai Lu <yinghai@kernel.org>
+Reported-by: Roland Dreier <rdreier@cisco.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+LKML-Reference: <20091215204729A.fujita.tomonori@lab.ntt.co.jp>
+Tested-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/swiotlb.h |    8 ++++++--
+ arch/x86/kernel/pci-dma.c      |    9 ++++-----
+ arch/x86/kernel/pci-swiotlb.c  |   11 +++++++----
+ 3 files changed, 17 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+index 87ffcb1..8085277 100644
+--- a/arch/x86/include/asm/swiotlb.h
++++ b/arch/x86/include/asm/swiotlb.h
+@@ -5,13 +5,17 @@
+ 
+ #ifdef CONFIG_SWIOTLB
+ extern int swiotlb;
+-extern int pci_swiotlb_init(void);
++extern int __init pci_swiotlb_detect(void);
++extern void __init pci_swiotlb_init(void);
+ #else
+ #define swiotlb 0
+-static inline int pci_swiotlb_init(void)
++static inline int pci_swiotlb_detect(void)
+ {
+ 	return 0;
+ }
++static inline void pci_swiotlb_init(void)
++{
++}
+ #endif
+ 
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index fcc2f2b..75e14e2 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -120,15 +120,12 @@ static void __init dma32_free_bootmem(void)
+ 
+ void __init pci_iommu_alloc(void)
+ {
+-	int use_swiotlb;
+-
+-	use_swiotlb = pci_swiotlb_init();
+ #ifdef CONFIG_X86_64
+ 	/* free the range so iommu could get some range less than 4G */
+ 	dma32_free_bootmem();
+ #endif
+-	if (use_swiotlb)
+-		return;
++	if (pci_swiotlb_detect())
++		goto out;
+ 
+ 	gart_iommu_hole_init();
+ 
+@@ -138,6 +135,8 @@ void __init pci_iommu_alloc(void)
+ 
+ 	/* needs to be called after gart_iommu_hole_init */
+ 	amd_iommu_detect();
++out:
++	pci_swiotlb_init();
+ }
+ 
+ void *dma_generic_alloc_coherent(struct device *dev, size_t size,
+diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+index e3c0a66..7d2829d 100644
+--- a/arch/x86/kernel/pci-swiotlb.c
++++ b/arch/x86/kernel/pci-swiotlb.c
+@@ -43,12 +43,12 @@ static struct dma_map_ops swiotlb_dma_ops = {
+ };
+ 
+ /*
+- * pci_swiotlb_init - initialize swiotlb if necessary
++ * pci_swiotlb_detect - set swiotlb to 1 if necessary
+  *
+  * This returns non-zero if we are forced to use swiotlb (by the boot
+  * option).
+  */
+-int __init pci_swiotlb_init(void)
++int __init pci_swiotlb_detect(void)
+ {
+ 	int use_swiotlb = swiotlb | swiotlb_force;
+ 
+@@ -60,10 +60,13 @@ int __init pci_swiotlb_init(void)
+ 	if (swiotlb_force)
+ 		swiotlb = 1;
+ 
++	return use_swiotlb;
++}
++
++void __init pci_swiotlb_init(void)
++{
+ 	if (swiotlb) {
+ 		swiotlb_init(0);
+ 		dma_ops = &swiotlb_dma_ops;
+ 	}
+-
+-	return use_swiotlb;
+ }
