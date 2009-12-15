@@ -1,52 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbZLOPAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbZLOPBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760486AbZLOPAt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760404AbZLOPAt
+	id S1760511AbZLOPBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbZLOPBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:00:49 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:60997 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759432AbZLOPAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:00:48 -0500
-Message-ID: <4B27A458.4090005@gmail.com>
-Date: Tue, 15 Dec 2009 15:59:36 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 15 Dec 2009 10:01:17 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:57716 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760404AbZLOPBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:01:16 -0500
+From: Alex Elder <aelder@sgi.com>
+Message-Id: <200912151501.nBFF12hv014517@stout.americas.sgi.com>
+Date: Tue, 15 Dec 2009 09:01:01 -0600
+To: torvalds@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.33-rc1
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V7 6/8] Make slub statistics use this_cpu_inc
-References: <20091214220320.665065925@quilx.com> <20091214220341.901590053@quilx.com> <4B272BAC.3080502@gmail.com> <alpine.DEB.2.00.0912150836190.16754@router.home>
-In-Reply-To: <alpine.DEB.2.00.0912150836190.16754@router.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 15 Dec 2009 15:59:38 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 15/12/2009 15:46, Christoph Lameter a écrit :
-> On Tue, 15 Dec 2009, Eric Dumazet wrote:
-> 
->> Le 14/12/2009 23:03, Christoph Lameter a écrit :
->>> this_cpu_inc() translates into a single instruction on x86 and does not
->>> need any register. So use it in stat(). We also want to avoid the
->>> calculation of the per cpu kmem_cache_cpu structure pointer. So pass
->>> a kmem_cache pointer instead of a kmem_cache_cpu pointer.
->>>
->>
->> Hmm, last time I checked, [__]this_cpu_inc were not using "inc" on x86,
->> but the default [__]this_cpu_add((pcp), 1)
-> 
-> Well the add 1 is still a single instruction so its okay. We can easily
-> add support for inc on x86 if makes a difference?
-> 
+This is a rather pervasive change to XFS code that switches it from
+using its own internal tracing mechanism to instead use the tracepoint
+support provided elsewhere in the kernel.
 
-Probably not, only one byte of text per use can be saved.
+Please pull this in for 2.6.33.
 
-Sorry, rereading your changelog I dont know why I thought about "inc" instruction.
+I have a few other much smaller XFS changes for 2.6.33 but wanted to
+get past this hump first.
 
+					-Alex
+
+
+The following changes since commit 3ea6b3d0e6d0ffd91c0f8cadeb69b7133c038b32:
+  Linus Torvalds (1):
+        Merge branch 'for_linus' of git://git.kernel.org/.../jack/linux-udf-2.6
+
+are available in the git repository at:
+
+  git://oss.sgi.com/xfs/xfs for-linus
+
+Christoph Hellwig (3):
+      xfs: cleanup bmap extent state macros
+      xfs: change the xfs_iext_insert / xfs_iext_remove
+      xfs: event tracing support
+
+ fs/xfs/Makefile                |    8 +-
+ fs/xfs/linux-2.6/xfs_acl.c     |    1 +
+ fs/xfs/linux-2.6/xfs_aops.c    |   52 +--
+ fs/xfs/linux-2.6/xfs_aops.h    |    2 +
+ fs/xfs/linux-2.6/xfs_buf.c     |  117 ++---
+ fs/xfs/linux-2.6/xfs_buf.h     |   33 +-
+ fs/xfs/linux-2.6/xfs_fs_subr.c |    3 +
+ fs/xfs/linux-2.6/xfs_ioctl.c   |    1 +
+ fs/xfs/linux-2.6/xfs_ioctl32.c |    1 +
+ fs/xfs/linux-2.6/xfs_iops.c    |    1 +
+ fs/xfs/linux-2.6/xfs_linux.h   |    1 -
+ fs/xfs/linux-2.6/xfs_lrw.c     |   87 +---
+ fs/xfs/linux-2.6/xfs_lrw.h     |   45 --
+ fs/xfs/linux-2.6/xfs_super.c   |  104 +---
+ fs/xfs/linux-2.6/xfs_super.h   |    7 -
+ fs/xfs/linux-2.6/xfs_sync.c    |    1 +
+ fs/xfs/linux-2.6/xfs_trace.c   |   75 +++
+ fs/xfs/linux-2.6/xfs_trace.h   | 1369 ++++++++++++++++++++++++++++++++++++++++
+ fs/xfs/linux-2.6/xfs_vnode.h   |    4 +
+ fs/xfs/quota/xfs_dquot.c       |  110 +---
+ fs/xfs/quota/xfs_dquot.h       |   21 -
+ fs/xfs/quota/xfs_qm.c          |   40 +-
+ fs/xfs/quota/xfs_qm_syscalls.c |    4 +-
+ fs/xfs/support/ktrace.c        |  323 ----------
+ fs/xfs/support/ktrace.h        |   85 ---
+ fs/xfs/xfs.h                   |   16 -
+ fs/xfs/xfs_ag.h                |   14 +
+ fs/xfs/xfs_alloc.c             |  230 ++------
+ fs/xfs/xfs_alloc.h             |   27 +-
+ fs/xfs/xfs_alloc_btree.c       |    1 +
+ fs/xfs/xfs_attr.c              |  107 +---
+ fs/xfs/xfs_attr.h              |   10 +
+ fs/xfs/xfs_attr_leaf.c         |   14 +-
+ fs/xfs/xfs_attr_sf.h           |   40 --
+ fs/xfs/xfs_bmap.c              |  942 +++++++++-------------------
+ fs/xfs/xfs_bmap.h              |   58 ++-
+ fs/xfs/xfs_bmap_btree.c        |    6 -
+ fs/xfs/xfs_btree.c             |    5 +-
+ fs/xfs/xfs_btree_trace.h       |   17 -
+ fs/xfs/xfs_buf_item.c          |   87 +--
+ fs/xfs/xfs_buf_item.h          |   20 +-
+ fs/xfs/xfs_da_btree.c          |    3 +-
+ fs/xfs/xfs_da_btree.h          |    7 +
+ fs/xfs/xfs_dfrag.c             |    2 +-
+ fs/xfs/xfs_dir2.c              |    8 +-
+ fs/xfs/xfs_dir2_block.c        |   20 +-
+ fs/xfs/xfs_dir2_leaf.c         |   21 +-
+ fs/xfs/xfs_dir2_node.c         |   27 +-
+ fs/xfs/xfs_dir2_sf.c           |   26 +-
+ fs/xfs/xfs_dir2_trace.c        |  216 -------
+ fs/xfs/xfs_dir2_trace.h        |   72 ---
+ fs/xfs/xfs_filestream.c        |    8 +-
+ fs/xfs/xfs_fsops.c             |    2 +
+ fs/xfs/xfs_iget.c              |  111 +---
+ fs/xfs/xfs_inode.c             |   79 +--
+ fs/xfs/xfs_inode.h             |   82 +--
+ fs/xfs/xfs_inode_item.c        |    5 +-
+ fs/xfs/xfs_iomap.c             |   85 +---
+ fs/xfs/xfs_iomap.h             |    8 +
+ fs/xfs/xfs_log.c               |  181 ++----
+ fs/xfs/xfs_log_priv.h          |   20 +-
+ fs/xfs/xfs_log_recover.c       |    1 +
+ fs/xfs/xfs_mount.c             |    2 +
+ fs/xfs/xfs_quota.h             |    8 +
+ fs/xfs/xfs_rename.c            |    1 +
+ fs/xfs/xfs_rtalloc.c           |    1 +
+ fs/xfs/xfs_rw.c                |    3 +-
+ fs/xfs/xfs_trans.h             |   47 ++
+ fs/xfs/xfs_trans_buf.c         |   62 +-
+ fs/xfs/xfs_vnodeops.c          |    8 +-
+ 70 files changed, 2369 insertions(+), 2836 deletions(-)
+ create mode 100644 fs/xfs/linux-2.6/xfs_trace.c
+ create mode 100644 fs/xfs/linux-2.6/xfs_trace.h
+ delete mode 100644 fs/xfs/support/ktrace.c
+ delete mode 100644 fs/xfs/support/ktrace.h
+ delete mode 100644 fs/xfs/xfs_dir2_trace.c
+ delete mode 100644 fs/xfs/xfs_dir2_trace.h
