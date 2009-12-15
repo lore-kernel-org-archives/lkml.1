@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbZLOTnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbZLOTnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760106AbZLOTnj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:43:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758425AbZLOTnd
+	id S1759961AbZLOTnW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZLOTnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:43:33 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:38719 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758258AbZLOTnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:43:20 -0500
-Date: Tue, 15 Dec 2009 20:43:19 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-Message-ID: <20091215194319.GT28252@kernel.dk>
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B27D7E9.4030105@kernel.org>
+	Tue, 15 Dec 2009 14:43:19 -0500
+Received: from xenotime.net ([72.52.64.118]:42317 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759707AbZLOTnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:43:17 -0500
+Date: Tue, 15 Dec 2009 11:43:26 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Gene Heskett <gene.heskett@verizon.net>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.32 build problem on Mint 8 (kubuntu-9.10 i86-x64)
+Message-Id: <20091215114326.90f66f16.rdunlap@xenotime.net>
+In-Reply-To: <200912151426.26285.gene.heskett@verizon.net>
+References: <200912151426.26285.gene.heskett@verizon.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15 2009, Yinghai Lu wrote:
-> [PATCH] x86/pci: intel ioh bus num reg accessing fix
+On Tue, 15 Dec 2009 14:26:26 -0500 Gene Heskett wrote:
+
+> Greetings;
 > 
-> it is above 0x100, so if mmconf is not enable, need to skip it
+> I just tried to build 2.6.32 for for that Mint 8 install by using mc to copy 
+> the src's over, then did a "chown -R gene:gene linux-*", cd'd into the tree 
+> and typed 'make xconfig'  but it errors out, can't find the qt-mt stuff 
+> installed on the *buntu's.
+> 
+> The  I tried a 'make menuconfig' which also quits quickly because it can't 
+> find the ncurses stuff either.
+> 
+> At this point, maybe I should have tried as root rather than as a common 
+> user, me, but I'm told its better not to build this stuff as root.
+> 
+> I took some pix, where should I post them?
 
-This works, it kexecs kernels fine. But since 2.6.32 doesn't have the
-mmconf problem to begin with, are we now just working around the issue?
-SRAT still reports issues, numa doesn't work.
+Sounds like you should either install the needed packages or
+take this up with Ubuntu.
 
--- 
-Jens Axboe
-
+---
+~Randy
