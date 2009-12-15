@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbZLOIy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759336AbZLOIyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759357AbZLOIy7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 03:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759347AbZLOIyt
+	id S1759336AbZLOIyL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 03:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZLOIyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 03:54:49 -0500
-Received: from mail-gx0-f211.google.com ([209.85.217.211]:33842 "EHLO
-	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758908AbZLOIxu (ORCPT
+	Tue, 15 Dec 2009 03:54:00 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:46968 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759039AbZLOIxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Dec 2009 03:53:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=wuj68s/q1UFyT64Z6ljzoINnb5K8CIQPHi26oQQu52IsMKfOkbnsgeJLf0rswfthKe
-         nYqS78QOFtZ0dHs5P9IhbiZ8cn7ZRd64DuRqHf1BA3xP9gdBslSspHisoOeE3DCcgLII
-         2VM5zym/9OgnM+orutKdp21nGj1Aj0yHDlsfM=
+        b=mEjylwv/TSDZ1TrAs9AZ9TrOGK/0hT11mk/M82mDWM1FPvq0XGls6lm//4I1IHbG2U
+         Dy6i/y4Hd1PBhanoFQPp+X3fzMQfPVycOyuOQDmgpS3CEAjIKzfPZ8Iqiu692R652pUv
+         EzhcYM2KOGULfHhTvdFlZmxchiq7zirs7+fzo=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org
-Subject: [PATCH 4/6] perf trace/scripting: list available scripts
-Date: Tue, 15 Dec 2009 02:53:38 -0600
-Message-Id: <1260867220-15699-5-git-send-email-tzanussi@gmail.com>
+Subject: [PATCH 5/6] perf trace/scripting: add 'record' and 'report' options
+Date: Tue, 15 Dec 2009 02:53:39 -0600
+Message-Id: <1260867220-15699-6-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1260867220-15699-1-git-send-email-tzanussi@gmail.com>
 References: <1260867220-15699-1-git-send-email-tzanussi@gmail.com>
@@ -29,7 +29,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lists the available perf trace scripts, one per line e.g.:
+Allow scripts to be recorded/executed by simply specifying the script
+root name (the script name minus extension) along with 'record' or
+'report' to 'perf trace'.
+
+The script names shown by 'perf trace -l' can be directly used to run
+the command-line contained within the corresponding '-record' and
+'-report' versions of scripts in the scripts/*/bin directories.
+
+For example, to record the trace data needed to run the
+wakeup-latency.pl script, the user can easily find the name of the
+corresponding script from the script list and invoke it using 'perf
+trace record', without having to remember the details of how to do the
+same thing using the lower-level perf trace command-line options:
 
 root@tropicana:~# perf trace -l
 List of available trace scripts:
@@ -39,207 +51,76 @@ List of available trace scripts:
   check-perf-trace                     useless but exhaustive test script
   rw-by-pid                            system-wide r/w activity
 
-To be consistent with the other listing options in perf, the current
-latency trace option was changed to '-L', and '-l' is now used to
-access the script listing as:
+root@tropicana:~# perf trace record wakeup-latency
+^C[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.296 MB perf.data (~12931 samples) ]
 
-To create the list, it searches each scripts/*/bin directory for files
-ending with "-report" and reads information found in certain comment
-lines contained in those shell scripts:
+To run the wakeup-latency.pl script using the captured data, change
+'record' to 'report' in the command-line:
 
-  - if the comment line starts with "description:", the rest of the
-    line is used as a 'half-line' description.  To keep each line in
-    the list to a single line, the description should be limited to 40
-    characters (the rest of the line contains the script name and
-    args)
+root@tropicana:~# perf trace report wakeup-latency
 
-  - if the comment line starts with "args:", the rest of the line
-    names the args the script supports.  Required args should be
-    surrounded by <> brackets, optional args by [] brackets.
+wakeup_latency stats:
 
-The current scripts in scripts/perl/bin have also been updated with
-description: and args: comments.
+total_wakeups: 65
+avg_wakeup_latency (ns): 22417
+min_wakeup_latency (ns): 3470
+max_wakeup_latency (ns): 223311
+
+perf trace Perl script stopped
+
+If the script takes options, thay can be simply added to the end of
+the 'report' invocation:
+
+root@tropicana:~# perf trace record rw-by-file
+^C[ perf record: Woken up 2 times to write data ]
+[ perf record: Captured and wrote 0.782 MB perf.data (~34171 samples) ]
+
+root@tropicana:~# perf trace report rw-by-file perf
+
+file read counts for perf:
+
+    fd     # reads  bytes_requested
+------  ----------  -----------
+   122        1934     1980416
+   120           1          32
+
+file write counts for perf:
+
+    fd    # writes  bytes_written
+------  ----------  -----------
+     3        4006      280568
+
+perf trace Perl script stopped
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- tools/perf/builtin-trace.c                         |  199 +++++++++++++++++++-
- .../perf/scripts/perl/bin/check-perf-trace-report  |    1 +
- tools/perf/scripts/perl/bin/rw-by-file-report      |    2 +
- tools/perf/scripts/perl/bin/rw-by-pid-report       |    1 +
- tools/perf/scripts/perl/bin/wakeup-latency-report  |    1 +
- tools/perf/scripts/perl/bin/workqueue-stats-report |    1 +
- 6 files changed, 204 insertions(+), 1 deletions(-)
+ tools/perf/builtin-trace.c |   84 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 83 insertions(+), 1 deletions(-)
 
 diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
-index e60e35e..f5fb3bf 100644
+index f5fb3bf..0543409 100644
 --- a/tools/perf/builtin-trace.c
 +++ b/tools/perf/builtin-trace.c
-@@ -274,6 +274,201 @@ static int parse_scriptname(const struct option *opt __used,
- 	return 0;
+@@ -469,6 +469,49 @@ static int list_available_scripts(const struct option *opt __used,
+ 	exit(0);
  }
  
-+#define for_each_lang(scripts_dir, lang_dirent, lang_next)		\
-+	while (!readdir_r(scripts_dir, &lang_dirent, &lang_next) &&	\
-+	       lang_next)						\
-+		if (lang_dirent.d_type == DT_DIR &&			\
-+		    (strcmp(lang_dirent.d_name, ".")) &&		\
-+		    (strcmp(lang_dirent.d_name, "..")))
-+
-+#define for_each_script(lang_dir, script_dirent, script_next)		\
-+	while (!readdir_r(lang_dir, &script_dirent, &script_next) &&	\
-+	       script_next)						\
-+		if (script_dirent.d_type != DT_DIR)
-+
-+
-+#define RECORD_SUFFIX			"-record"
-+#define REPORT_SUFFIX			"-report"
-+
-+struct script_desc {
-+	struct list_head	node;
-+	char			*name;
-+	char			*half_liner;
-+	char			*args;
-+};
-+
-+LIST_HEAD(script_descs);
-+
-+static struct script_desc *script_desc__new(const char *name)
-+{
-+	struct script_desc *s = zalloc(sizeof(*s));
-+
-+	if (s != NULL)
-+		s->name = strdup(name);
-+
-+	return s;
-+}
-+
-+static void script_desc__delete(struct script_desc *s)
-+{
-+	free(s->name);
-+	free(s);
-+}
-+
-+static void script_desc__add(struct script_desc *s)
-+{
-+	list_add_tail(&s->node, &script_descs);
-+}
-+
-+static struct script_desc *script_desc__find(const char *name)
-+{
-+	struct script_desc *s;
-+
-+	list_for_each_entry(s, &script_descs, node)
-+		if (strcasecmp(s->name, name) == 0)
-+			return s;
-+	return NULL;
-+}
-+
-+static struct script_desc *script_desc__findnew(const char *name)
-+{
-+	struct script_desc *s = script_desc__find(name);
-+
-+	if (s)
-+		return s;
-+
-+	s = script_desc__new(name);
-+	if (!s)
-+		goto out_delete_desc;
-+
-+	script_desc__add(s);
-+
-+	return s;
-+
-+out_delete_desc:
-+	script_desc__delete(s);
-+
-+	return NULL;
-+}
-+
-+static char *ends_with(char *str, const char *suffix)
-+{
-+	size_t suffix_len = strlen(suffix);
-+	char *p = str;
-+
-+	if (strlen(str) > suffix_len) {
-+		p = str + strlen(str) - suffix_len;
-+		if (!strncmp(p, suffix, suffix_len))
-+			return p;
-+	}
-+
-+	return NULL;
-+}
-+
-+static char *ltrim(char *str)
-+{
-+	int len = strlen(str);
-+
-+	while (len && isspace(*str)) {
-+		len--;
-+		str++;
-+	}
-+
-+	return str;
-+}
-+
-+static int read_script_info(struct script_desc *desc, const char *filename)
-+{
-+	char line[BUFSIZ], *p;
-+	FILE *fp;
-+
-+	fp = fopen(filename, "r");
-+	if (!fp)
-+		return -1;
-+
-+	while (fgets(line, sizeof(line), fp)) {
-+		p = ltrim(line);
-+		if (strlen(p) == 0)
-+			continue;
-+		if (*p != '#')
-+			continue;
-+		p++;
-+		if (strlen(p) && *p == '!')
-+			continue;
-+
-+		p = ltrim(p);
-+		if (strlen(p) && p[strlen(p) - 1] == '\n')
-+			p[strlen(p) - 1] = '\0';
-+
-+		if (!strncmp(p, "description:", strlen("description:"))) {
-+			p += strlen("description:");
-+			desc->half_liner = strdup(ltrim(p));
-+			continue;
-+		}
-+
-+		if (!strncmp(p, "args:", strlen("args:"))) {
-+			p += strlen("args:");
-+			desc->args = strdup(ltrim(p));
-+			continue;
-+		}
-+	}
-+
-+	fclose(fp);
-+
-+	return 0;
-+}
-+
-+static int list_available_scripts(const struct option *opt __used,
-+				  const char *s __used, int unset __used)
++static char *get_script_path(const char *script_root, const char *suffix)
 +{
 +	struct dirent *script_next, *lang_next, script_dirent, lang_dirent;
 +	char scripts_path[MAXPATHLEN];
-+	DIR *scripts_dir, *lang_dir;
 +	char script_path[MAXPATHLEN];
++	DIR *scripts_dir, *lang_dir;
 +	char lang_path[MAXPATHLEN];
-+	struct script_desc *desc;
-+	char first_half[BUFSIZ];
-+	char *script_root;
-+	char *str;
++	char *str, *__script_root;
++	char *path = NULL;
 +
 +	snprintf(scripts_path, MAXPATHLEN, "%s/scripts", perf_exec_path());
 +
 +	scripts_dir = opendir(scripts_path);
 +	if (!scripts_dir)
-+		return -1;
++		return NULL;
 +
 +	for_each_lang(scripts_dir, lang_dirent, lang_next) {
 +		snprintf(lang_path, MAXPATHLEN, "%s/%s/bin", scripts_path,
@@ -249,95 +130,76 @@ index e60e35e..f5fb3bf 100644
 +			continue;
 +
 +		for_each_script(lang_dir, script_dirent, script_next) {
-+			script_root = strdup(script_dirent.d_name);
-+			str = ends_with(script_root, REPORT_SUFFIX);
++			__script_root = strdup(script_dirent.d_name);
++			str = ends_with(__script_root, suffix);
 +			if (str) {
 +				*str = '\0';
-+				desc = script_desc__findnew(script_root);
++				if (strcmp(__script_root, script_root))
++					continue;
 +				snprintf(script_path, MAXPATHLEN, "%s/%s",
 +					 lang_path, script_dirent.d_name);
-+				read_script_info(desc, script_path);
++				path = strdup(script_path);
++				free(__script_root);
++				break;
 +			}
-+			free(script_root);
++			free(__script_root);
 +		}
 +	}
 +
-+	fprintf(stdout, "List of available trace scripts:\n");
-+	list_for_each_entry(desc, &script_descs, node) {
-+		sprintf(first_half, "%s %s", desc->name,
-+			desc->args ? desc->args : "");
-+		fprintf(stdout, "  %-36s %s\n", first_half,
-+			desc->half_liner ? desc->half_liner : "");
-+	}
-+
-+	exit(0);
++	return path;
 +}
 +
  static const char * const annotate_usage[] = {
  	"perf trace [<options>] <command>",
  	NULL
-@@ -284,8 +479,10 @@ static const struct option options[] = {
- 		    "dump raw trace in ASCII"),
- 	OPT_BOOLEAN('v', "verbose", &verbose,
- 		    "be more verbose (show symbol address, etc)"),
--	OPT_BOOLEAN('l', "latency", &latency_format,
-+	OPT_BOOLEAN('L', "Latency", &latency_format,
- 		    "show latency attributes (irqs/preemption disabled, etc)"),
-+	OPT_CALLBACK_NOOPT('l', "list", NULL, NULL, "list available scripts",
-+			   list_available_scripts),
- 	OPT_CALLBACK('s', "script", NULL, "name",
- 		     "script file name (lang:script name, script name, or *)",
- 		     parse_scriptname),
-diff --git a/tools/perf/scripts/perl/bin/check-perf-trace-report b/tools/perf/scripts/perl/bin/check-perf-trace-report
-index 89948b0..7fc4a03 100644
---- a/tools/perf/scripts/perl/bin/check-perf-trace-report
-+++ b/tools/perf/scripts/perl/bin/check-perf-trace-report
-@@ -1,4 +1,5 @@
- #!/bin/bash
-+# description: useless but exhaustive test script
- perf trace -s ~/libexec/perf-core/scripts/perl/check-perf-trace.pl
+@@ -494,8 +537,47 @@ static const struct option options[] = {
  
+ int cmd_trace(int argc, const char **argv, const char *prefix __used)
+ {
+-	int err;
+ 	struct perf_session *session;
++	const char *suffix = NULL;
++	const char **__argv;
++	char *script_path;
++	int i, err;
++
++	if (argc >= 2 && strncmp(argv[1], "rec", strlen("rec")) == 0) {
++		if (argc < 3) {
++			fprintf(stderr,
++				"Please specify a record script\n");
++			return -1;
++		}
++		suffix = RECORD_SUFFIX;
++	}
++
++	if (argc >= 2 && strncmp(argv[1], "rep", strlen("rep")) == 0) {
++		if (argc < 3) {
++			fprintf(stderr,
++				"Please specify a report script\n");
++			return -1;
++		}
++		suffix = REPORT_SUFFIX;
++	}
++
++	if (suffix) {
++		script_path = get_script_path(argv[2], suffix);
++		if (!script_path) {
++			fprintf(stderr, "script not found\n");
++			return -1;
++		}
++
++		__argv = malloc((argc + 1) * sizeof(const char *));
++		__argv[0] = "/bin/sh";
++		__argv[1] = script_path;
++		for (i = 3; i < argc; i++)
++			__argv[i - 1] = argv[i];
++		__argv[argc - 1] = NULL;
++
++		execvp("/bin/sh", (char **)__argv);
++		exit(-1);
++	}
  
-diff --git a/tools/perf/scripts/perl/bin/rw-by-file-report b/tools/perf/scripts/perl/bin/rw-by-file-report
-index 1c05675..eddb9cc 100644
---- a/tools/perf/scripts/perl/bin/rw-by-file-report
-+++ b/tools/perf/scripts/perl/bin/rw-by-file-report
-@@ -1,4 +1,6 @@
- #!/bin/bash
-+# description: r/w activity for a program, by file
-+# args: <comm>
- perf trace -s ~/libexec/perf-core/scripts/perl/rw-by-file.pl $1
- 
- 
-diff --git a/tools/perf/scripts/perl/bin/rw-by-pid-report b/tools/perf/scripts/perl/bin/rw-by-pid-report
-index cea16f7..7f44c25 100644
---- a/tools/perf/scripts/perl/bin/rw-by-pid-report
-+++ b/tools/perf/scripts/perl/bin/rw-by-pid-report
-@@ -1,4 +1,5 @@
- #!/bin/bash
-+# description: system-wide r/w activity
- perf trace -s ~/libexec/perf-core/scripts/perl/rw-by-pid.pl
- 
- 
-diff --git a/tools/perf/scripts/perl/bin/wakeup-latency-report b/tools/perf/scripts/perl/bin/wakeup-latency-report
-index 85769dc..fce3adc 100644
---- a/tools/perf/scripts/perl/bin/wakeup-latency-report
-+++ b/tools/perf/scripts/perl/bin/wakeup-latency-report
-@@ -1,4 +1,5 @@
- #!/bin/bash
-+# description: system-wide min/max/avg wakeup latency
- perf trace -s ~/libexec/perf-core/scripts/perl/wakeup-latency.pl
- 
- 
-diff --git a/tools/perf/scripts/perl/bin/workqueue-stats-report b/tools/perf/scripts/perl/bin/workqueue-stats-report
-index aa68435..71cfbd1 100644
---- a/tools/perf/scripts/perl/bin/workqueue-stats-report
-+++ b/tools/perf/scripts/perl/bin/workqueue-stats-report
-@@ -1,4 +1,5 @@
- #!/bin/bash
-+# description: workqueue stats (ins/exe/create/destroy)
- perf trace -s ~/libexec/perf-core/scripts/perl/workqueue-stats.pl
- 
+ 	symbol__init(0);
  
 -- 
 1.6.4.GIT
