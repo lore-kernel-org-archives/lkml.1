@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbZLOJsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbZLOJwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbZLOJsn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbZLOJsm
+	id S1757620AbZLOJwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbZLOJwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:48:42 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33305 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759444AbZLOJsl (ORCPT
+	Tue, 15 Dec 2009 04:52:16 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:62926 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754999AbZLOJwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:48:41 -0500
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       greg@kroah.com
-In-reply-to: <ac3eb2510912120207r528229f6uf8bd0535a6ce76a@mail.gmail.com>
-	(message from Kay Sievers on Sat, 12 Dec 2009 11:07:54 +0100)
-Subject: Re: get_sb_single() - do not pass options twice
-References: <1257460103.2126.0.camel@yio.site> <ac3eb2510912120207r528229f6uf8bd0535a6ce76a@mail.gmail.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1NKU1C-0005jr-P8@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 15 Dec 2009 10:48:34 +0100
+	Tue, 15 Dec 2009 04:52:15 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes when ..."
+Date: Tue, 15 Dec 2009 10:51:43 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
+       Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
+       Daniel Vetter <daniel.vetter@ffwll.ch>
+References: <200912071830.14697.arnd@arndb.de> <200912142038.09254.arnd@arndb.de> <20091214125024.77601d7e@jbarnes-piketon>
+In-Reply-To: <20091214125024.77601d7e@jbarnes-piketon>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912151051.44131.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19gaHb4KeDUbCmxg95Ugmho4MBWAPPw05bAISY
+ X09f9b+laEZuaP87qo67Etpp4EjiLXPY9tfV485W+CQi8v7l82
+ sp1xH8jwYAbDeOME7kMfw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Dec 2009, Kay Sievers wrote:
-> Ping! Can someone please have a look and comment on that?
-> Something like this will now be needed for 2.6.33 to silent a warning.
+On Monday 14 December 2009, Jesse Barnes wrote:
+> This patch removes the suspect portion of the dynamic clock control
+> code.  Hopefully it'll be as stable as powersave=0 in your config
+> (assuming powersave=0 works :).
+
+Ok, great! The machine is still running  fine with powersave=0 so 
+far. I'll try your patch after some more uptime.
+
+	Arnd
+
+> Jesse Barnes, Intel Open Source Technology Center
 > 
-> Thanks,
-> Kay
-> 
-> > Cc: Greg KH <greg@kroah.com>
-> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > ---
-> >  fs/super.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > --- a/fs/super.c
-> > +++ b/fs/super.c
-> > @@ -900,6 +900,8 @@ int get_sb_single(struct file_system_typ
-> >                        deactivate_locked_super(s);
-> >                        return error;
-> >                }
-> > +               /* options usually get mangled and can only be parsed once */
-> > +               data = NULL;
-> >                s->s_flags |= MS_ACTIVE;
-> >        }
-> >        do_remount_sb(s, flags, data, 0);
+> diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_d
+> index 279dc96..b8730de 100644
+> --- a/drivers/gpu/drm/i915/intel_display.c
+> +++ b/drivers/gpu/drm/i915/intel_display.c
+> @@ -3825,8 +3825,6 @@ void intel_decrease_renderclock(struct drm_device *dev)
+>                 /* Down to minimum... */
+>                 gcfgc &= ~GM45_GC_RENDER_CLOCK_MASK;
+>                 gcfgc |= GM45_GC_RENDER_CLOCK_266_MHZ;
+> -
+> -               pci_write_config_word(dev->pdev, GCFGC, gcfgc);
+>         } else if (IS_I965G(dev)) {
+>                 u16 gcfgc;
 
-I think the do_remount_sb() is a NOP in that case.  So shouldn't it
-rather be
-
-	} else {
-		do_remount_sb(s, flags, data, 0);
-	}
-
-?
-
-Thanks,
-Miklos
