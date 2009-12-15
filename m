@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbZLOLvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbZLOLwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760051AbZLOLvI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 06:51:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760028AbZLOLu4
+	id S1760044AbZLOLwK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 06:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbZLOLwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 06:50:56 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:41015 "EHLO kernel.dk"
+	Tue, 15 Dec 2009 06:52:08 -0500
+Received: from sh.osrg.net ([192.16.179.4]:42069 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757676AbZLOLuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 06:50:54 -0500
-Date: Tue, 15 Dec 2009 12:50:53 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: mingo@elte.hu, yinghai@kernel.org, rdreier@cisco.com
-Subject: kexec boot regression
-Message-ID: <20091215115052.GA28252@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	id S1753519AbZLOLwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 06:52:03 -0500
+Date: Tue, 15 Dec 2009 20:50:53 +0900
+To: yinghai@kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, cl@linux-foundation.org
+Subject: Re: bisected crash due to "x86: Move swiotlb initialization before
+ dma32_free_bootmem"
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B277235.4010308@kernel.org>
+References: <20091215105650.GA13214@elte.hu>
+	<20091215201039V.fujita.tomonori@lab.ntt.co.jp>
+	<4B277235.4010308@kernel.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091215205034Y.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 15 Dec 2009 20:50:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 15 Dec 2009 03:25:41 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-I have this big box that takes forever to boot, so I use kexec to boot
-into new kernels. Works fine, but some time past 2.6.32 it stopped
-working. Instead of wasting brain cycles on finding out why, I handed
-the problem to my trusty regression friend - git bisect.
+> FUJITA Tomonori wrote:
+> > On Tue, 15 Dec 2009 11:56:50 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> >> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> >>
+> >>> There are a few people who hit this. How many people use a box with over 
+> >>> 256GB memory?
+> >>>
+> >>> And you can work around this with "dma32_size" kernel boot option.
+> >> Well, since the kernel has not crashed before this change there's really just 
+> >> two options as per upstream kernel regression policy: either we fix it or we 
+> >> revert it.
+> > 
+> > As I wrote, here is a patch that can be applied to cleanly to the git
+> > head:
+> > 
+> > http://www.kernel.org/pub/linux/kernel/people/tomo/misc/0001-x86-two-stage-swiotlb-initialization.patch
+> > 
+> > It fixes the problem. Yinghai, can you test it? It should work but
+> > it's good to confirm it.
+> 
+> i tested already, it works.
 
-This is what it found (sorry Yinghai it's you again, you owe me a beer
-for hours of 2.6.32-git bisecting ;-)
+Great, thanks a lot!
+
+I've just sent the patch.
 
 
-99935a7a59eaca0292c1a5880e10bae03f4a5e3d is the first bad commit
-commit 99935a7a59eaca0292c1a5880e10bae03f4a5e3d
-Author: Yinghai Lu <yinghai@kernel.org>
-Date:   Sun Oct 4 21:54:24 2009 -0700
+> > I simply wanted to say that it's not a bug that breaks lots of boxes
+> > or leads to something serious like data corruption (no need to say
+> > something like "revert it now!"). It's also worth investigating why it
+> > breaks, I think.
+> 
+> will look at it later
 
-    x86/PCI: read root resources from IOH on Intel
-    
-    For intel systems with multi IOH, we should read peer root resources
-    directly from PCI config space, and don't trust _CRS.
-
-
-I could not revert this single commit, as a further commit made other
-changes. So I reverted 67f241f4 first and then 99935a7a. I confirmed
-that this kernel then works fine.
-
-With current -git, I get tons and tons of:
-
-[   16.841724] pci 0000:00:01.0: BAR 7: no parent found for bridge [io
-0x6000-0x6fff]
-[   16.850368] pci 0000:00:01.0: BAR 7: can't allocate [io
-0x6000-0x6fff]
-[   16.857821] pci 0000:00:01.0: BAR 8: no parent found for bridge [mem
-0x9bc00000-0x9bcfffff]
-[   16.867238] pci 0000:00:01.0: BAR 8: can't allocate [mem
-0x9bc00000-0x9bcfffff]
-[   16.875492] pci 0000:00:02.0: BAR 7: no parent found for bridge [io
-0x5000-0x5fff]
-[   16.884137] pci 0000:00:02.0: BAR 7: can't allocate [io
-0x5000-0x5fff]
-[   16.891591] pci 0000:00:02.0: BAR 8: no parent found for bridge [mem
-0x9bb00000-0x9bbfffff]
-[   16.901010] pci 0000:00:02.0: BAR 8: can't allocate [mem
-0x9bb00000-0x9bbfffff]
-[   16.909264] pci 0000:00:03.0: BAR 7: no parent found for bridge [io
-0x4000-0x4fff]
-[   16.917908] pci 0000:00:03.0: BAR 7: can't allocate [io
-0x4000-0x4fff]
-[...]
-
-I can provide a full log if needed.
-
--- 
-Jens Axboe
-
+Thanks. If it's due to huge memory, I try to work on it.
