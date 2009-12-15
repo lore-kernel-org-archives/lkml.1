@@ -1,65 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZLOVAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbZLOVAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760307AbZLOVAS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 16:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbZLOVAQ
+	id S1760397AbZLOVAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 16:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933639AbZLOVAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 16:00:16 -0500
-Received: from georges.telenet-ops.be ([195.130.137.68]:55330 "EHLO
-	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755150AbZLOVAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 16:00:15 -0500
-Date: Tue, 15 Dec 2009 22:00:02 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Samuel Ortiz <sameo@linux.intel.com>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
-Message-ID: <alpine.DEB.2.00.0912152157330.27772@ayla.of.borg>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 15 Dec 2009 16:00:42 -0500
+Received: from www.tglx.de ([62.245.132.106]:51624 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760418AbZLOVAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 16:00:40 -0500
+Date: Tue, 15 Dec 2009 22:00:03 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Earl Chew <earl_chew@agilent.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, hugh <hugh@veritas.com>,
+       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+Message-ID: <20091215210002.GA2432@local>
+References: <1228379942.5092.14.camel@twins>
+ <4B22DD89.2020901@agilent.com>
+ <20091214192322.GA3245@bluebox.local>
+ <4B27905B.4080006@agilent.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B27905B.4080006@agilent.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e2def3261a58e9c0e56b710b2020858df010a2c1 Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 15 Dec 2009 21:49:57 +0100
-Subject: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
+On Tue, Dec 15, 2009 at 05:34:19AM -0800, Earl Chew wrote:
+> Hans,
 
-commit 5fb4d38b19d95a5f980f0a10adba798f5b92128c ("mfd: Move WM831x to generic
-IRQ") didn't take into account that genirq support depends on GENERIC_HARDIRQS.
+Hi Earl,
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/mfd/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> Thanks for the considered reply.
+> 
+> 
+> Hans J. Koch wrote:
+> > The general thing is this: The UIO core supports only static mappings.
+> > The possible number of mappings is usually set at compile time or module
+> > load time and is currently limited to MAX_UIO_MAPS (== 5). This number
+> > is usually sufficient for devices like PCI cards, which have a limited
+> > number of mappings, too. All drivers currently in the kernel only need
+> > one or two.
+> 
+> 
+> I'd like to proceed by changing struct uio_mem [MAX_UIO_MAPS] to a
+> linked list.
+> 
+> The driver code in uio_find_mem_index(), uio_dev_add_attributes(), etc,
+> iterate through the (small) array anyway, and the list space and
+> performance overhead is not significant for the cases mentioned.
+> 
+> Such a change would make it easier to track dynamically allocated
+> regions as well as pre-allocated mapping regions in the same data
+> structure.
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 8782978..5863d14 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -197,7 +197,7 @@ config MFD_WM8400
- config MFD_WM831X
- 	bool "Support Wolfson Microelectronics WM831x/2x PMICs"
- 	select MFD_CORE
--	depends on I2C=y
-+	depends on I2C=y && GENERIC_HARDIRQS
- 	help
- 	  Support for the Wolfson Microelecronics WM831x and WM832x PMICs.
- 	  This driver provides common support for accessing the device,
--- 
-1.6.0.4
+Sorry, I think I wasn't clear enough: The current interface for static
+mappings shouldn't be changed. Dynamically added mappings need a new
+interface.
 
-Gr{oetje,eeting}s,
+> 
+> It also plays more nicely into the next part ...
+> 
+> > The current implementation of the UIO core is simply not made for
+> > dynamic allocation of an unlimited amount of new mappings at runtime. As
+> > we have seen in this patch, it needs raping of a documented kernel
+> > interface to userspace. This is not acceptable.
+> > 
+> > So the easiest correct solution is to create a new device (e.g.
+> > /dev/uioN-dma, as Peter suggested). It should only be created for a UIO
+> > driver if it has a certain flag set, something like UIO_NEEDS_DYN_DMA_ALLOC.
+> 
+> An approach which would play better with our existing codebase would
+> be to introduce a two-step ioctl-mmap.
+> 
+> a. Use an ioctl() to allocate the DMA buffer. The ioctl returns two
+>    things:
 
-						Geert
+No. We don't want any new ioctls in the kernel.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> 	1.  A mapping (page) number
+> 	2.  A physical (bus) address
+> 
+> 
+> b. Use the existing mmap() interface to gain access to the
+>    DMA buffer allocated in (a). Clients would invoke mmap()
+>    and use the mapping (page) number returned in (a) to
+>    obtain userspace access to the DMA buffer.
+> 
+> 
+> I think that the second step (b) would play nicely with the existing
+> mmap() interface exposed by the UIO driver.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+The existing interface is for static mappings only.
+
+> 
+> 
+> Using an ioctl() provides a cleaner way to return the physical
+> (bus) address of the DMA buffer.
+
+ioctl() is out of fashion today. We have sysfs. Note that ioctls are neither
+typesafe nor much faster than sysfs.
+
+> 
+> 
+> Existing client code that is not interested in DMA buffers do
+> not incur a penalty because it will not invoke the new ioctl().
+
+What about userspace tools that rely on the fact that the number of mappings
+for a UIO device cannot change? This is a documented property of UIO.
+
+Dynamically allocated mappings really call for a new device as Peter suggested.
+In fact, that would make life much easier for you. Since your the one who
+implements that stuff, your free to define a new interface. Surely that new
+interface will be discussed and rejected two or three times, but in the end
+we'll have a nice interface that allows UIO to use DMA, even with dyynamically
+allocated buffers.
+
+Use that freedom and create a new device with a new interface. There's no
+point in trying to change existing and well documented interfaces to userspace.
+
+Thanks,
+Hans
+
