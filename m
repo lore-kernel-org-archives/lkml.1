@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbZLOPcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZLOP2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759288AbZLOPcY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757567AbZLOPcU
+	id S1757822AbZLOP2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932335AbZLOP15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:32:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59817 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754292AbZLOPcS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:32:18 -0500
-Date: Tue, 15 Dec 2009 07:31:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912151214.10980.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912150726510.14385@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain> <alpine.LFD.2.00.0912141610460.14385@localhost.localdomain> <200912151214.10980.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 15 Dec 2009 10:27:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48715 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932272AbZLOP1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:27:53 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 05/14] perf probe: Fix --del to show info instead of
+	warning
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Tue, 15 Dec 2009 10:31:42 -0500
+Message-ID: <20091215153142.17436.7793.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix --del option to show info message instead of warning
+if failing to find specified event.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Frank Ch. Eigler <fche@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+
+ tools/perf/util/probe-event.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index 1653a62..d733bfa 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -544,7 +544,8 @@ static void del_trace_kprobe_event(int fd, const char *group,
+ 	if (e_snprintf(buf, 128, "%s:%s", group, event) < 0)
+ 		die("Failed to copy event.");
+ 	if (!strlist__has_entry(namelist, buf)) {
+-		pr_warning("Warning: event \"%s\" is not found.\n", buf);
++		pr_info("Info: event \"%s\" does not exist."
++			" Could not remove it.\n", buf);
+ 		return;
+ 	}
+ 	/* Convert from perf-probe event to trace-kprobe event */
 
 
-On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> What fact?  The only thing that matters is USB?  For resume, it is.  For
-> suspend, it clearly isn't.
+-- 
+Masami Hiramatsu
 
-For suspend, the only other case we've seen has been the keyboard and 
-mouse controller, which has exactly the same "we can special case it with 
-a single 'let's do _this_ device asynchronously'". Again, it may not be 
-pretty, but it sure is simple.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-Much simpler than talking about some generic infrastructure changes and 
-about doing "let's do leaves of the tree separately" schemes.
-
-And that's why I'm _soo_ unhappy with you, and am insulting you. Because 
-you keep on making the same mistake over and over - overdesigning.
-
-Overdesigning is a SIN. It's the archetypal example of what I call "bad 
-taste". I get really upset when a subsystem maintainer starts 
-overdesigning things.
-
-			Linus
+e-mail: mhiramat@redhat.com
