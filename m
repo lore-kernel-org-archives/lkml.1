@@ -1,226 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbZLOJfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZLOJip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbZLOJfs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbZLOJfm
+	id S1752828AbZLOJip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbZLOJio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:35:42 -0500
-Received: from ozlabs.org ([203.10.76.45]:56157 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750729AbZLOJfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:35:39 -0500
-Date: Tue, 15 Dec 2009 20:34:37 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Michael Neuling <mikey@neuling.org>
-Subject: [PATCH 2/2] perf tools: Cope with sparsely-numbered CPUs
-Message-ID: <20091215093437.GB18661@brick.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 15 Dec 2009 04:38:44 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49620 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbZLOJim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 04:38:42 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 15 Dec 2009 18:35:33 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       containers@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH RFC v2 1/4] cgroup: implement eventfd-based generic API
+  for notifications
+Message-Id: <20091215183533.1a1e87d9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <cc557aab0912150111k41517b41t8999568db3bd8daa@mail.gmail.com>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	<cc557aab0912150111k41517b41t8999568db3bd8daa@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For system-wide monitoring, the perf tools currently ask how many CPUs
-are online, and then instantiate perf_events for CPUs 0 ... N-1.  This
-doesn't work correctly when CPUs are numbered sparsely.  For example,
-a four-core POWER6 in single-thread mode will have CPUs 0, 2, 4 and 6.
-The perf tools will try to open counters on CPUs 0, 1, 2 and 3, and
-either fail with an error message or silently ignore CPUs 4 and 6.
+On Tue, 15 Dec 2009 11:11:16 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 
-This fixes the problem by making perf stat, perf record and perf top
-create counters for increasing CPU numbers until they have a counter
-for each online CPU.  If the attempt to create a counter on a given
-CPU fails, we get an ENODEV error and we just move on to the next CPU.
-To avoid an infinite loop in case the number of online CPUs gets
-reduced while we are creating counters, we re-read the number of
-online CPUs when we fail to create a counter on some CPU.
+> Could anybody review the patch?
+> 
+> Thank you.
 
-Reported-by: Michael Neuling <mikey@neuling.org>
-Tested-by: Michael Neuling <mikey@neuling.org>
-Cc: stable@kernel.org
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- tools/perf/builtin-record.c |   36 ++++++++++++++++++++++++++++--------
- tools/perf/builtin-stat.c   |   15 +++++++++++++--
- tools/perf/builtin-top.c    |   27 +++++++++++++++++++--------
- 3 files changed, 60 insertions(+), 18 deletions(-)
+some nitpicks.
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 0e519c6..9a47b86 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -230,7 +230,7 @@ static struct perf_header_attr *get_header_attr(struct perf_event_attr *a, int n
- 	return h_attr;
- }
- 
--static void create_counter(int counter, int cpu, pid_t pid)
-+static int create_counter(int counter, int cpu, pid_t pid)
- {
- 	char *filter = filters[counter];
- 	struct perf_event_attr *attr = attrs + counter;
-@@ -287,8 +287,11 @@ try_again:
- 
- 		if (err == EPERM || err == EACCES)
- 			die("Permission error - are you root?\n");
--		else if (err ==  ENODEV && profile_cpu != -1)
--			die("No such device - did you specify an out-of-range profile CPU?\n");
-+		else if (err == ENODEV && system_wide) {
-+			if (profile_cpu != -1)
-+				die("No such device - did you specify an out-of-range profile CPU?\n");
-+			return -1;
-+		}
- 
- 		/*
- 		 * If it's cycles then fall back to hrtimer
-@@ -380,17 +383,28 @@ try_again:
- 	}
- 
- 	ioctl(fd[nr_cpu][counter], PERF_EVENT_IOC_ENABLE);
-+	return 0;
- }
- 
--static void open_counters(int cpu, pid_t pid)
-+static int open_counters(int cpu, pid_t pid)
- {
- 	int counter;
- 
- 	group_fd = -1;
--	for (counter = 0; counter < nr_counters; counter++)
--		create_counter(counter, cpu, pid);
-+	for (counter = 0; counter < nr_counters; counter++) {
-+		if (create_counter(counter, cpu, pid)) {
-+			/*
-+			 * If cpu #cpu doesn't exist but we have already
-+			 * created some events for it, close them.
-+			 */
-+			while (--counter >= 0)
-+				close(fd[nr_cpu][counter]);
-+			return -1;
-+		}
-+	}
- 
- 	nr_cpu++;
-+	return 0;
- }
- 
- static void atexit_header(void)
-@@ -475,8 +489,14 @@ static int __cmd_record(int argc, const char **argv)
- 		if (profile_cpu != -1) {
- 			open_counters(profile_cpu, target_pid);
- 		} else {
--			for (i = 0; i < nr_cpus; i++)
--				open_counters(i, target_pid);
-+			for (i = 0; nr_cpu < nr_cpus; i++) {
-+				/*
-+				 * If cpu i doesn't exist, re-check
-+				 * # online cpus in case it has changed.
-+				 */
-+				if (open_counters(i, target_pid))
-+					nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
-+			}
- 		}
- 	}
- 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index c70d720..5a1a7c0 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -145,13 +145,24 @@ static void create_perf_stat_counter(int counter, int pid)
- 				    PERF_FORMAT_TOTAL_TIME_RUNNING;
- 
- 	if (system_wide) {
--		unsigned int cpu;
-+		unsigned int cpu, cpu_id;
- 
--		for (cpu = 0; cpu < nr_cpus; cpu++) {
-+		cpu_id = 0;
-+		for (cpu = 0; cpu < nr_cpus; cpu_id++) {
- 			fd[cpu][counter] = sys_perf_event_open(attr, -1, cpu, -1, 0);
-+			if (fd[cpu][counter] < 0 && errno == ENODEV) {
-+				/*
-+				 * This CPU number doesn't exist, re-read
-+				 * nr_cpus (in case it's changed)
-+				 * and try the next number.
-+				 */
-+				nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
-+				continue;
-+			}
- 			if (fd[cpu][counter] < 0 && verbose)
- 				fprintf(stderr, ERR_PERF_OPEN, counter,
- 					fd[cpu][counter], strerror(errno));
-+			++cpu;
- 		}
- 	} else {
- 		attr->inherit	     = inherit;
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index e0a374d..30fa53d 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -1077,14 +1077,9 @@ static void mmap_read(void)
- int nr_poll;
- int group_fd;
- 
--static void start_counter(int i, int counter)
-+static int start_counter(int i, int cpu, int counter)
- {
- 	struct perf_event_attr *attr;
--	int cpu;
--
--	cpu = profile_cpu;
--	if (target_pid == -1 && profile_cpu == -1)
--		cpu = i;
- 
- 	attr = attrs + counter;
- 
-@@ -1107,6 +1102,8 @@ try_again:
- 
- 		if (err == EPERM || err == EACCES)
- 			die("No permission - are you root?\n");
-+		if (err == ENODEV && cpu != profile_cpu)
-+			return -1;
- 		/*
- 		 * If it's cycles then fall back to hrtimer
- 		 * based cpu-clock-tick sw counter, which
-@@ -1148,12 +1145,14 @@ try_again:
- 			PROT_READ, MAP_SHARED, fd[i][counter], 0);
- 	if (mmap_array[i][counter].base == MAP_FAILED)
- 		die("failed to mmap with %d (%s)\n", errno, strerror(errno));
-+	return 0;
- }
- 
- static int __cmd_top(void)
- {
- 	pthread_t thread;
- 	int i, counter;
-+	int cpu;
- 	int ret;
- 
- 	if (target_pid != -1)
-@@ -1161,10 +1160,22 @@ static int __cmd_top(void)
- 	else
- 		event__synthesize_threads(event__process);
- 
--	for (i = 0; i < nr_cpus; i++) {
-+	if (target_pid == -1 && profile_cpu == -1) {
-+		cpu = 0;
-+		for (i = 0; i < nr_cpus; ++i, ++cpu) {
-+			group_fd = -1;
-+			for (counter = 0; counter < nr_counters; counter++)
-+				if (start_counter(i, i, counter)) {
-+					--i;
-+					nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
-+					break;
-+				}
-+		}
-+
-+	} else {
- 		group_fd = -1;
- 		for (counter = 0; counter < nr_counters; counter++)
--			start_counter(i, counter);
-+			start_counter(0, profile_cpu, counter);
- 	}
- 
- 	/* Wait for a minimal set of events before starting the snapshot */
+> 
+> On Sat, Dec 12, 2009 at 12:59 AM, Kirill A. Shutemov
+> <kirill@shutemov.name> wrote:
+
+> > +       /*
+> > +        * Unregister events and notify userspace.
+> > +        * FIXME: How to avoid race with cgroup_event_remove_work()
+> > +        *        which runs from workqueue?
+> > +        */
+> > +       mutex_lock(&cgrp->event_list_mutex);
+> > +       list_for_each_entry_safe(event, tmp, &cgrp->event_list, list) {
+> > +               cgroup_event_remove(event);
+> > +               eventfd_signal(event->eventfd, 1);
+> > +       }
+> > +       mutex_unlock(&cgrp->event_list_mutex);
+> > +
+> > +out:
+> >        return ret;
+> >  }
+
+How ciritical is this FIXME ?
+But Hmm..can't we use RCU ?
+
+> >
+> > @@ -1136,6 +1187,8 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+> >        INIT_LIST_HEAD(&cgrp->release_list);
+> >        INIT_LIST_HEAD(&cgrp->pidlists);
+> >        mutex_init(&cgrp->pidlist_mutex);
+> > +       INIT_LIST_HEAD(&cgrp->event_list);
+> > +       mutex_init(&cgrp->event_list_mutex);
+> >  }
+> >
+> >  static void init_cgroup_root(struct cgroupfs_root *root)
+> > @@ -1935,6 +1988,16 @@ static const struct inode_operations cgroup_dir_inode_operations = {
+> >        .rename = cgroup_rename,
+> >  };
+> >
+> > +/*
+> > + * Check if a file is a control file
+> > + */
+> > +static inline struct cftype *__file_cft(struct file *file)
+> > +{
+> > +       if (file->f_dentry->d_inode->i_fop != &cgroup_file_operations)
+> > +               return ERR_PTR(-EINVAL);
+> > +       return __d_cft(file->f_dentry);
+> > +}
+> > +
+> >  static int cgroup_create_file(struct dentry *dentry, mode_t mode,
+> >                                struct super_block *sb)
+> >  {
+> > @@ -2789,6 +2852,151 @@ static int cgroup_write_notify_on_release(struct cgroup *cgrp,
+> >        return 0;
+> >  }
+> >
+> > +static inline void cgroup_event_remove(struct cgroup_event *event)
+> > +{
+> > +       struct cgroup *cgrp = event->cgrp;
+> > +
+> > +       BUG_ON(event->cft->unregister_event(cgrp, event->cft, event->eventfd));
+
+Hmm ? BUG ? If bug, please add document or comment.            
+
+> > +       eventfd_ctx_put(event->eventfd);
+> > +       remove_wait_queue(event->wqh, &event->wait);
+> > +       list_del(&event->list);
+
+please add comment as /* event_list_mutex must be held */
+
+> > +       kfree(event);
+> > +}
+> > +
+> > +static void cgroup_event_remove_work(struct work_struct *work)
+> > +{
+> > +       struct cgroup_event *event = container_of(work, struct cgroup_event,
+> > +                       remove);
+> > +       struct cgroup *cgrp = event->cgrp;
+> > +
+> > +       mutex_lock(&cgrp->event_list_mutex);
+> > +       cgroup_event_remove(event);
+> > +       mutex_unlock(&cgrp->event_list_mutex);
+> > +}
+> > +
+> > +static int cgroup_event_wake(wait_queue_t *wait, unsigned mode,
+> > +               int sync, void *key)
+> > +{
+> > +       struct cgroup_event *event = container_of(wait,
+> > +                       struct cgroup_event, wait);
+> > +       unsigned long flags = (unsigned long)key;
+> > +
+> > +       if (flags & POLLHUP)
+> > +               /*
+> > +                * This function called with spinlock taken, but
+> > +                * cgroup_event_remove() may sleep, so we have
+> > +                * to run it in a workqueue.
+> > +                */
+> > +               schedule_work(&event->remove);
+> > +
+> > +       return 0;
+> > +}
+
+> > +
+> > +static void cgroup_event_ptable_queue_proc(struct file *file,
+> > +               wait_queue_head_t *wqh, poll_table *pt)
+> > +{
+> > +       struct cgroup_event *event = container_of(pt,
+> > +                       struct cgroup_event, pt);
+> > +
+> > +       event->wqh = wqh;
+> > +       add_wait_queue(wqh, &event->wait);
+> > +}
+> > +
+> > +static int cgroup_write_event_control(struct cgroup *cont, struct cftype *cft,
+> > +                                     const char *buffer)
+> > +{
+> > +       struct cgroup_event *event = NULL;
+> > +       unsigned int efd, cfd;
+> > +       struct file *efile = NULL;
+> > +       struct file *cfile = NULL;
+> > +       char *endp;
+> > +       int ret;
+> > +
+> > +       efd = simple_strtoul(buffer, &endp, 10);
+> > +       if (*endp != ' ')
+> > +               return -EINVAL;
+> > +       buffer = endp + 1;
+> > +
+> > +       cfd = simple_strtoul(buffer, &endp, 10);
+> > +       if ((*endp != ' ') && (*endp != '\0'))
+> > +               return -EINVAL;
+> > +       buffer = endp + 1;
+> > +
+> > +       event = kzalloc(sizeof(*event), GFP_KERNEL);
+> > +       if (!event)
+> > +               return -ENOMEM;
+> > +       event->cgrp = cont;
+> > +       INIT_LIST_HEAD(&event->list);
+> > +       init_poll_funcptr(&event->pt, cgroup_event_ptable_queue_proc);
+> > +       init_waitqueue_func_entry(&event->wait, cgroup_event_wake);
+> > +       INIT_WORK(&event->remove, cgroup_event_remove_work);
+> > +
+> > +       efile = eventfd_fget(efd);
+> > +       if (IS_ERR(efile)) {
+> > +               ret = PTR_ERR(efile);
+> > +               goto fail;
+> > +       }
+> > +
+> > +       event->eventfd = eventfd_ctx_fileget(efile);
+> > +       if (IS_ERR(event->eventfd)) {
+> > +               ret = PTR_ERR(event->eventfd);
+> > +               goto fail;
+> > +       }
+> > +
+> > +       cfile = fget(cfd);
+> > +       if (!cfile) {
+> > +               ret = -EBADF;
+> > +               goto fail;
+> > +       }
+> > +
+> > +       /* the process need read permission on control file */
+> > +       ret = file_permission(cfile, MAY_READ);
+> > +       if (ret < 0)
+> > +               goto fail;
+> > +
+> > +       event->cft = __file_cft(cfile);
+> > +       if (IS_ERR(event->cft)) {
+> > +               ret = PTR_ERR(event->cft);
+> > +               goto fail;
+> > +       }
+> > +
+> > +       if (!event->cft->register_event || !event->cft->unregister_event) {
+> > +               ret = -EINVAL;
+> > +               goto fail;
+> > +       }
+> > +
+> > +       ret = event->cft->register_event(cont, event->cft,
+> > +                       event->eventfd, buffer);
+> > +       if (ret)
+> > +               goto fail;
+> > +
+> > +       efile->f_op->poll(efile, &event->pt);
+
+Not necessary to check return value ?
+
+Thanks,
+-Kame
+> > +
+> > +       mutex_lock(&cont->event_list_mutex);
+> > +       list_add(&event->list, &cont->event_list);
+> > +       mutex_unlock(&cont->event_list_mutex);
+> > +
+> > +       fput(cfile);
+> > +       fput(efile);
+> > +
+> > +       return 0;
+> > +
+> > +fail:
+> > +       if (!IS_ERR(cfile))
+> > +               fput(cfile);
+> > +
+> > +       if (event && event->eventfd && !IS_ERR(event->eventfd))
+> > +               eventfd_ctx_put(event->eventfd);
+> > +
+> > +       if (!IS_ERR(efile))
+> > +               fput(efile);
+> > +
+> > +       if (event)
+> > +               kfree(event);
+> > +
+> > +       return ret;
+> > +}
+> > +
+> >  /*
+> >  * for the common functions, 'private' gives the type of file
+> >  */
+> > @@ -2814,6 +3022,11 @@ static struct cftype files[] = {
+> >                .read_u64 = cgroup_read_notify_on_release,
+> >                .write_u64 = cgroup_write_notify_on_release,
+> >        },
+> > +       {
+> > +               .name = CGROUP_FILE_GENERIC_PREFIX "event_control",
+> > +               .write_string = cgroup_write_event_control,
+> > +               .mode = S_IWUGO,
+> > +       },
+> >  };
+> >
+> >  static struct cftype cft_release_agent = {
+> > --
+> > 1.6.5.3
+> >
+> >
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
