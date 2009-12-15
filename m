@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbZLOPaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbZLOP3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066AbZLOPaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbZLOPaJ
+	id S1757089AbZLOP3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbZLOP2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:30:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19915 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 10:28:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10086 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757804AbZLOP20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:28:26 -0500
+	id S1758650AbZLOP2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:28:50 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 09/14] perf probe: Add glob matching support on --del
+Subject: [PATCH -tip 10/14] perf probe: Support event name for --add option
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -25,8 +25,8 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 15 Dec 2009 10:32:10 -0500
-Message-ID: <20091215153210.17436.12327.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Tue, 15 Dec 2009 10:32:18 -0500
+Message-ID: <20091215153218.17436.84675.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -37,17 +37,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add glob-expression matching support on --del option.
-You can use wildcards for specifying deleting events.
+Support event name syntax for --add option. This allows
+users to specify event name for each new event.
+The --add syntax is:
+ perf probe --add '[EVENT=]SRC:LINE ARGS'
+or
+ perf probe --add '[EVENT=]FUNC[+OFFS|%return|:RLN][@SRC] ARGS'
+
 e.g.
 
- Clear all probe events:
+ ./perf probe --add myprobe1=schedule
 
- # perf probe --del '*'
-
- Clear probes on schedule():
-
- # perf probe --del 'schedule*'
+Note: currently group name is not supported yet, because it
+can cause name-space confliction with other tracepoint/
+hw-breakpoint events.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -65,151 +68,265 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
 
- tools/perf/util/probe-event.c |   52 +++++++++++++++++++++++++++++++----------
- tools/perf/util/string.c      |   25 ++++++++++++++++++++
- tools/perf/util/string.h      |    2 ++
- 3 files changed, 66 insertions(+), 13 deletions(-)
+ tools/perf/Documentation/perf-probe.txt |    3 +
+ tools/perf/builtin-probe.c              |    8 ++-
+ tools/perf/util/probe-event.c           |   74 +++++++++++++++++++------------
+ tools/perf/util/probe-event.h           |    3 -
+ tools/perf/util/probe-finder.h          |    3 +
+ 5 files changed, 55 insertions(+), 36 deletions(-)
 
+diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
+index 8fa6bf9..250e391 100644
+--- a/tools/perf/Documentation/perf-probe.txt
++++ b/tools/perf/Documentation/perf-probe.txt
+@@ -49,8 +49,9 @@ PROBE SYNTAX
+ ------------
+ Probe points are defined by following syntax.
+ 
+- "FUNC[+OFFS|:RLN|%return][@SRC]|SRC:ALN [ARG ...]"
++ "[EVENT=]FUNC[+OFFS|:RLN|%return][@SRC]|SRC:ALN [ARG ...]"
+ 
++'EVENT' specifies the name of new event, if omitted, it will be set the name of the probed function. Currently, event group name is set as 'probe'.
+ 'FUNC' specifies a probed function name, and it may have one of the following options; '+OFFS' is the offset from function entry address in bytes, 'RLN' is the relative-line number from function entry line, and '%return' means that it probes function return. In addition, 'SRC' specifies a source file which has that function.
+ It is also possible to specify a probe point by the source line number by using 'SRC:ALN' syntax, where 'SRC' is the source file path and 'ALN' is the line number.
+ 'ARG' specifies the arguments of this probe point. You can use the name of local variable, or kprobe-tracer argument format (e.g. $retval, %ax, etc).
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index 7f35709..4f768f3 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -172,13 +172,13 @@ static const struct option options[] = {
+ 		opt_del_probe_event),
+ 	OPT_CALLBACK('a', "add", NULL,
+ #ifdef NO_LIBDWARF
+-		"FUNC[+OFFS|%return] [ARG ...]",
++		"[EVENT=]FUNC[+OFFS|%return] [ARG ...]",
+ #else
+-		"FUNC[+OFFS|%return|:RLN][@SRC]|SRC:ALN [ARG ...]",
++		"[EVENT=]FUNC[+OFFS|%return|:RLN][@SRC]|SRC:ALN [ARG ...]",
+ #endif
+ 		"probe point definition, where\n"
+-		"\t\tGRP:\tGroup name (optional)\n"
+-		"\t\tNAME:\tEvent name\n"
++		"\t\tGROUP:\tGroup name (optional)\n"
++		"\t\tEVENT:\tEvent name\n"
+ 		"\t\tFUNC:\tFunction name\n"
+ 		"\t\tOFFS:\tOffset from function entry (in byte)\n"
+ 		"\t\t%return:\tPut the probe at function return\n"
 diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index fa7e8e5..af7cc76 100644
+index af7cc76..0b769bc 100644
 --- a/tools/perf/util/probe-event.c
 +++ b/tools/perf/util/probe-event.c
-@@ -532,27 +532,51 @@ void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
- 	close(fd);
+@@ -69,10 +69,23 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 	char c, nc = 0;
+ 	/*
+ 	 * <Syntax>
+-	 * perf probe SRC:LN
+-	 * perf probe FUNC[+OFFS|%return][@SRC]
++	 * perf probe [EVENT=]SRC:LN
++	 * perf probe [EVENT=]FUNC[+OFFS|%return][@SRC]
++	 *
++	 * TODO:Group name support
+ 	 */
+ 
++	ptr = strchr(arg, '=');
++	if (ptr) {	/* Event name */
++		*ptr = '\0';
++		tmp = ptr + 1;
++		ptr = strchr(arg, ':');
++		if (ptr)	/* Group name is not supported yet. */
++			semantic_error("Group name is not supported yet.");
++		pp->event = strdup(arg);
++		arg = tmp;
++	}
++
+ 	ptr = strpbrk(arg, ":+@%");
+ 	if (ptr) {
+ 		nc = *ptr;
+@@ -188,8 +201,7 @@ void parse_perf_probe_event(const char *str, struct probe_point *pp,
  }
  
-+static void __del_trace_kprobe_event(int fd, struct str_node *ent)
-+{
-+	char *p;
-+	char buf[128];
-+
-+	/* Convert from perf-probe event to trace-kprobe event */
-+	if (e_snprintf(buf, 128, "-:%s", ent->s) < 0)
-+		die("Failed to copy event.");
-+	p = strchr(buf + 2, ':');
-+	if (!p)
-+		die("Internal error: %s should have ':' but not.", ent->s);
-+	*p = '/';
-+
-+	write_trace_kprobe_event(fd, buf);
-+	printf("Remove event: %s\n", ent->s);
-+}
-+
- static void del_trace_kprobe_event(int fd, const char *group,
- 				   const char *event, struct strlist *namelist)
+ /* Parse kprobe_events event into struct probe_point */
+-void parse_trace_kprobe_event(const char *str, char **group, char **event,
+-			      struct probe_point *pp)
++void parse_trace_kprobe_event(const char *str, struct probe_point *pp)
  {
- 	char buf[128];
--	struct str_node *ent;
-+	struct str_node *ent, *n;
-+	int found = 0;
+ 	char pr;
+ 	char *p;
+@@ -205,18 +217,17 @@ void parse_trace_kprobe_event(const char *str, char **group, char **event,
  
- 	if (e_snprintf(buf, 128, "%s:%s", group, event) < 0)
- 		die("Failed to copy event.");
--	ent = strlist__find(namelist, buf);
--	if (!ent) {
-+
-+	if (strpbrk(buf, "*?")) { /* Glob-exp */
-+		strlist__for_each_safe(ent, n, namelist)
-+			if (strglobmatch(ent->s, buf)) {
-+				found++;
-+				__del_trace_kprobe_event(fd, ent);
-+				strlist__remove(namelist, ent);
-+			}
-+	} else {
-+		ent = strlist__find(namelist, buf);
-+		if (ent) {
-+			found++;
-+			__del_trace_kprobe_event(fd, ent);
-+			strlist__remove(namelist, ent);
-+		}
-+	}
-+	if (found == 0)
- 		pr_info("Info: event \"%s\" does not exist."
- 			" Could not remove it.\n", buf);
--		return;
--	}
--	/* Convert from perf-probe event to trace-kprobe event */
--	if (e_snprintf(buf, 128, "-:%s/%s", group, event) < 0)
--		die("Failed to copy event.");
+ 	/* Scan event and group name. */
+ 	ret = sscanf(argv[0], "%c:%a[^/ \t]/%a[^ \t]",
+-		     &pr, (float *)(void *)group, (float *)(void *)event);
++		     &pr, (float *)(void *)&pp->group,
++		     (float *)(void *)&pp->event);
+ 	if (ret != 3)
+ 		semantic_error("Failed to parse event name: %s", argv[0]);
+-	pr_debug("Group:%s Event:%s probe:%c\n", *group, *event, pr);
 -
--	write_trace_kprobe_event(fd, buf);
--	printf("Remove event: %s:%s\n", group, event);
--	strlist__remove(namelist, ent);
- }
+-	if (!pp)
+-		goto end;
++	pr_debug("Group:%s Event:%s probe:%c\n", pp->group, pp->event, pr);
  
- void del_trace_kprobe_events(struct strlist *dellist)
-@@ -571,15 +595,17 @@ void del_trace_kprobe_events(struct strlist *dellist)
- 		str = strdup(ent->s);
- 		if (!str)
- 			die("Failed to copy event.");
-+		pr_debug("Parsing: %s\n", str);
- 		p = strchr(str, ':');
- 		if (p) {
- 			group = str;
- 			*p = '\0';
- 			event = p + 1;
- 		} else {
--			group = PERFPROBE_GROUP;
-+			group = "*";
- 			event = str;
- 		}
-+		pr_debug("Group: %s, Event: %s\n", group, event);
- 		del_trace_kprobe_event(fd, group, event, namelist);
- 		free(str);
+ 	pp->retprobe = (pr == 'r');
+ 
+ 	/* Scan function name and offset */
+-	ret = sscanf(argv[1], "%a[^+]+%d", (float *)(void *)&pp->function, &pp->offset);
++	ret = sscanf(argv[1], "%a[^+]+%d", (float *)(void *)&pp->function,
++		     &pp->offset);
+ 	if (ret == 1)
+ 		pp->offset = 0;
+ 
+@@ -235,7 +246,6 @@ void parse_trace_kprobe_event(const char *str, char **group, char **event,
+ 			die("Failed to copy argument.");
  	}
-diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
-index f24a8cc..5352d7d 100644
---- a/tools/perf/util/string.c
-+++ b/tools/perf/util/string.c
-@@ -226,3 +226,28 @@ fail:
+ 
+-end:
  	argv_free(argv);
- 	return NULL;
  }
+ 
+@@ -368,6 +378,10 @@ static void clear_probe_point(struct probe_point *pp)
+ {
+ 	int i;
+ 
++	if (pp->event)
++		free(pp->event);
++	if (pp->group)
++		free(pp->group);
+ 	if (pp->function)
+ 		free(pp->function);
+ 	if (pp->file)
+@@ -382,13 +396,13 @@ static void clear_probe_point(struct probe_point *pp)
+ }
+ 
+ /* Show an event */
+-static void show_perf_probe_event(const char *group, const char *event,
+-				  const char *place, struct probe_point *pp)
++static void show_perf_probe_event(const char *event, const char *place,
++				  struct probe_point *pp)
+ {
+ 	int i, ret;
+ 	char buf[128];
+ 
+-	ret = e_snprintf(buf, 128, "%s:%s", group, event);
++	ret = e_snprintf(buf, 128, "%s:%s", pp->group, event);
+ 	if (ret < 0)
+ 		die("Failed to copy event: %s", strerror(-ret));
+ 	printf("  %-40s (on %s", buf, place);
+@@ -405,7 +419,6 @@ static void show_perf_probe_event(const char *group, const char *event,
+ void show_perf_probe_events(void)
+ {
+ 	int fd, nr;
+-	char *group, *event;
+ 	struct probe_point pp;
+ 	struct strlist *rawlist;
+ 	struct str_node *ent;
+@@ -415,16 +428,14 @@ void show_perf_probe_events(void)
+ 	close(fd);
+ 
+ 	strlist__for_each(ent, rawlist) {
+-		parse_trace_kprobe_event(ent->s, &group, &event, &pp);
++		parse_trace_kprobe_event(ent->s, &pp);
+ 		/* Synthesize only event probe point */
+ 		nr = pp.nr_args;
+ 		pp.nr_args = 0;
+ 		synthesize_perf_probe_event(&pp);
+ 		pp.nr_args = nr;
+ 		/* Show an event */
+-		show_perf_probe_event(group, event, pp.probes[0], &pp);
+-		free(group);
+-		free(event);
++		show_perf_probe_event(pp.event, pp.probes[0], &pp);
+ 		clear_probe_point(&pp);
+ 	}
+ 
+@@ -434,24 +445,25 @@ void show_perf_probe_events(void)
+ /* Get current perf-probe event names */
+ static struct strlist *get_perf_event_names(int fd, bool include_group)
+ {
+-	char *group, *event;
+ 	char buf[128];
+ 	struct strlist *sl, *rawlist;
+ 	struct str_node *ent;
++	struct probe_point pp;
+ 
++	memset(&pp, 0, sizeof(pp));
+ 	rawlist = get_trace_kprobe_event_rawlist(fd);
+ 
+ 	sl = strlist__new(true, NULL);
+ 	strlist__for_each(ent, rawlist) {
+-		parse_trace_kprobe_event(ent->s, &group, &event, NULL);
++		parse_trace_kprobe_event(ent->s, &pp);
+ 		if (include_group) {
+-			if (e_snprintf(buf, 128, "%s:%s", group, event) < 0)
++			if (e_snprintf(buf, 128, "%s:%s", pp.group,
++				       pp.event) < 0)
+ 				die("Failed to copy group:event name.");
+ 			strlist__add(sl, buf);
+ 		} else
+-			strlist__add(sl, event);
+-		free(group);
+-		free(event);
++			strlist__add(sl, pp.event);
++		clear_probe_point(&pp);
+ 	}
+ 
+ 	strlist__delete(rawlist);
+@@ -507,19 +519,23 @@ void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
+ 
+ 	for (j = 0; j < nr_probes; j++) {
+ 		pp = probes + j;
++		if (!pp->event)
++			pp->event = strdup(pp->function);
++		if (!pp->group)
++			pp->group = strdup(PERFPROBE_GROUP);
++		DIE_IF(!pp->event || !pp->group);
+ 		for (i = 0; i < pp->found; i++) {
+ 			/* Get an unused new event name */
+-			get_new_event_name(event, 64, pp->function, namelist);
++			get_new_event_name(event, 64, pp->event, namelist);
+ 			snprintf(buf, MAX_CMDLEN, "%c:%s/%s %s\n",
+ 				 pp->retprobe ? 'r' : 'p',
+-				 PERFPROBE_GROUP, event,
++				 pp->group, event,
+ 				 pp->probes[i]);
+ 			write_trace_kprobe_event(fd, buf);
+ 			printf("Added new event:\n");
+ 			/* Get the first parameter (probe-point) */
+ 			sscanf(pp->probes[i], "%s", buf);
+-			show_perf_probe_event(PERFPROBE_GROUP, event,
+-					      buf, pp);
++			show_perf_probe_event(event, buf, pp);
+ 			/* Add added event name to namelist */
+ 			strlist__add(namelist, event);
+ 		}
+diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
+index 028575b..8bb22f5 100644
+--- a/tools/perf/util/probe-event.h
++++ b/tools/perf/util/probe-event.h
+@@ -8,8 +8,7 @@
+ extern void parse_perf_probe_event(const char *str, struct probe_point *pp,
+ 				   bool *need_dwarf);
+ extern int synthesize_perf_probe_event(struct probe_point *pp);
+-extern void parse_trace_kprobe_event(const char *str, char **group,
+-				     char **event, struct probe_point *pp);
++extern void parse_trace_kprobe_event(const char *str, struct probe_point *pp);
+ extern int synthesize_trace_kprobe_event(struct probe_point *pp);
+ extern void add_trace_kprobe_events(struct probe_point *probes, int nr_probes);
+ extern void del_trace_kprobe_events(struct strlist *dellist);
+diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
+index bdebca6..5e4050c 100644
+--- a/tools/perf/util/probe-finder.h
++++ b/tools/perf/util/probe-finder.h
+@@ -12,6 +12,9 @@ static inline int is_c_varname(const char *name)
+ }
+ 
+ struct probe_point {
++	char	*event;		/* Event name */
++	char	*group;		/* Event group */
 +
-+/* Glob expression pattern matching */
-+bool strglobmatch(const char *str, const char *pat)
-+{
-+	while (*str && *pat && *pat != '*') {
-+		if (*pat == '?') {
-+			str++;
-+			pat++;
-+		} else
-+			if (*str++ != *pat++)
-+				return false;
-+	}
-+	/* Check wild card */
-+	if (*pat == '*') {
-+		while (*pat == '*')
-+			pat++;
-+		if (!*pat)	/* Tail wild card matches all */
-+			return true;
-+		while (*str)
-+			if (strglobmatch(str++, pat))
-+				return true;
-+	}
-+	return !*str && !*pat;
-+}
-+
-diff --git a/tools/perf/util/string.h b/tools/perf/util/string.h
-index bfecec2..02ede58 100644
---- a/tools/perf/util/string.h
-+++ b/tools/perf/util/string.h
-@@ -1,6 +1,7 @@
- #ifndef __PERF_STRING_H_
- #define __PERF_STRING_H_
- 
-+#include <stdbool.h>
- #include "types.h"
- 
- int hex2u64(const char *ptr, u64 *val);
-@@ -8,6 +9,7 @@ char *strxfrchar(char *s, char from, char to);
- s64 perf_atoll(const char *str);
- char **argv_split(const char *str, int *argcp);
- void argv_free(char **argv);
-+bool strglobmatch(const char *str, const char *pat);
- 
- #define _STR(x) #x
- #define STR(x) _STR(x)
+ 	/* Inputs */
+ 	char	*file;		/* File name */
+ 	int	line;		/* Line number */
 
 
 -- 
