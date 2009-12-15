@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbZLOWqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbZLOWq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932641AbZLOWqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760177AbZLOWp7
+	id S933862AbZLOWq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:46:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZLOWqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:45:59 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46376 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755780AbZLOWp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:45:57 -0500
-Date: Wed, 16 Dec 2009 09:45:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org
-Subject: Re: linux-next: origin tree build failure
-Message-Id: <20091216094541.e59d36fa.sfr@canb.auug.org.au>
-In-Reply-To: <20091215172717.GF4575@atomide.com>
-References: <20091215164108.45c9d766.sfr@canb.auug.org.au>
-	<20091215145344.GA30710@sirena.org.uk>
-	<20091215172717.GF4575@atomide.com>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Tue, 15 Dec 2009 17:46:24 -0500
+Received: from smtp12.ono.com ([62.42.230.20]:22487 "EHLO resmaa12.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932735AbZLOWqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:46:22 -0500
+Date: Tue, 15 Dec 2009 23:46:19 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Useless thermal acpi driver ?
+Message-ID: <20091215234619.62d0ebc1@werewolf.home>
+In-Reply-To: <alpine.LFD.2.00.0912142159540.9446@localhost.localdomain>
+References: <20091209232608.25aed4ca@werewolf.home>
+	<4B20483C.6090309@gmail.com>
+	<alpine.LFD.2.00.0912110122570.24891@localhost.localdomain>
+	<20091211094515.4b4872ef@werewolf.home>
+	<alpine.LFD.2.00.0912142159540.9446@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.3cvs35 (GTK+ 2.19.1; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__16_Dec_2009_09_45_41_+1100_hHAWWm4gzG0f6=tT"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__16_Dec_2009_09_45_41_+1100_hHAWWm4gzG0f6=tT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 14 Dec 2009 22:00:25 -0500 (EST), Len Brown <lenb@kernel.org> wrote:
 
-Hi Tony,
+> this DSDT returns a constant temperature, always:
+> 
+>             Method (_TMP, 0, NotSerialized)
+>             {
+>                 Return (0x0BB8)
+>             }
+> 
+> 
+> so in this case, Linux is just reporting the (lack of) news:-)
+> 
 
-On Tue, 15 Dec 2009 09:27:17 -0800 Tony Lindgren <tony@atomide.com> wrote:
->
-> * Mark Brown <broonie@opensource.wolfsonmicro.com> [091215 06:52]:
-> > On Tue, Dec 15, 2009 at 04:41:08PM +1100, Stephen Rothwell wrote:
-> >=20
-> > > I have applied this patch for today (please check):
-> >=20
-> > Looks good to me too, fwiw:
-> >=20
-> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
->=20
-> Good thing we have for-next to catch things like this.
+So, lets see...:
 
-Except if the renaming patch had gone through linux-next (even for one
-day) we would have found the problem *before* it was in Linus' tree ...
+- Someone decided ACPI is the only-real-good-way
+- Only a few devices are ported to ACPI
+- The old way is unusable
+- We can not return to the old way
 
-(/me is a little grumpy :-))
+So, any solution ? Thermal ACPI info in this boards (and I suspect in many
+others) is useless. We can not disable that part of ACPI, we can not enable
+sensors. So no thermal monitoring.
+Nice.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ayways, as in this case the ACPI part does not any real work, is still
+present the problem of two drivers poking the same hardware or could I use
+that 'lax' trick ?
 
---Signature=_Wed__16_Dec_2009_09_45_41_+1100_hHAWWm4gzG0f6=tT
-Content-Type: application/pgp-signature
+And second, can the traditional sensor drivers be ported to offer an ACPI
+device replacing the default one, or is that a stupid question ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+TIA
 
-iEYEARECAAYFAksoEZUACgkQjjKRsyhoI8x0BwCfVyM1p3B351+TSzFuRO5C+Tb+
-lKsAoIlsaqokRC6k3K2wu5pVo8yyXb0H
-=BxQL
------END PGP SIGNATURE-----
-
---Signature=_Wed__16_Dec_2009_09_45_41_+1100_hHAWWm4gzG0f6=tT--
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2010.0 (Cooker) for x86_64
+Linux 2.6.29.3-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed May
