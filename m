@@ -1,73 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZLOP1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbZLOPay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbZLOP1t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbZLOP1o
+	id S1759185AbZLOPay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbZLOPap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:27:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58798 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757128AbZLOP1k (ORCPT
+	Tue, 15 Dec 2009 10:30:45 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:26742 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759244AbZLOPam convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:27:40 -0500
-Date: Tue, 15 Dec 2009 07:26:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912151203.22916.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912150722310.14385@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912150018.11837.rjw@sisk.pl> <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain> <200912151203.22916.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 15 Dec 2009 10:30:42 -0500
+X-SpamScore: -25
+X-BigFish: VPS-25(z21eWzab9bh98dN936eMzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KUP9QF-01-AZJ-02
+X-M-MSG: 
+Date: Tue, 15 Dec 2009 16:30:26 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+CC: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org,
+       osrc-patches <osrc-patches@elbe.amd.com>
+Subject: Re: K8 ECC error with linux-2.6.32
+Message-ID: <20091215153026.GD20880@aftab>
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
+ <200912141426.46361.johannes.hirte@fem.tu-ilmenau.de>
+ <20091214222331.GB32614@liondog.tnic>
+ <200912150808.04814.johannes.hirte@fem.tu-ilmenau.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <200912150808.04814.johannes.hirte@fem.tu-ilmenau.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 15 Dec 2009 15:30:15.0940 (UTC) FILETIME=[804CCC40:01CA7D9B]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 15, 2009 at 08:08:04AM +0100, Johannes Hirte wrote:
+>  Northbridge Error, node 0, core: -1
+> amd_decode_nb_mce: NBSL: 0x0005001b, NBSL: 0xa4000000
+> K8 ECC error.
 
+Yep, this is a benign GART TLB error which is not being reported but
+you're using the amd64_edac module and it trips since the error is still
+being logged and the module sees it. There are two fixes:
 
-On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > Give a real example that matters.
-> 
-> I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
-> like this:
+1. If you have a BIOS option with a wording like:
 
-No. 
+"Gart Table Walk Error MC reporting: Disabled/Enabled."
 
-I mean something real - something like
+which should disable it.
 
- - if you run on a non-PC with two USB buses behind non-PCI controllers.
+2. If no BIOS option, the patch below should fix it. Can you please
+test (against v2.6.32).
 
- - device xyz.
+Thanks.
 
-> If this applies to _resume_ only, then I agree, but the Arjan's data clearly
-> show that serio devices take much more time to suspend than USB.
+---
+diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
+index 713ed7d..026f0cb 100644
+--- a/drivers/edac/edac_mce_amd.c
++++ b/drivers/edac/edac_mce_amd.c
+@@ -300,6 +300,12 @@ void amd_decode_nb_mce(int node_id, struct err_regs *regs, int handle_errors)
+ 	if (!handle_errors)
+ 		return;
+ 
++	/*
++	 * GART TLB error reporting is disabled by default. Bail out early.
++	 */
++	if (TLB_ERROR(ec) && !report_gart_errors)
++		return;
++
+ 	pr_emerg(" Northbridge Error, node %d", node_id);
+ 
+ 	/*
+@@ -311,10 +317,9 @@ void amd_decode_nb_mce(int node_id, struct err_regs *regs, int handle_errors)
+ 		if (regs->nbsh & K8_NBSH_ERR_CPU_VAL)
+ 			pr_cont(", core: %u\n", (u8)(regs->nbsh & 0xf));
+ 	} else {
+-		pr_cont(", core: %d\n", ilog2((regs->nbsh & 0xf)));
++		pr_cont(", core: %d\n", fls((regs->nbsh & 0xf) - 1));
+ 	}
+ 
+-
+ 	pr_emerg("%s.\n", EXT_ERR_MSG(xec));
+ 
+ 	if (BUS_ERROR(ec) && nb_bus_decoder)
+@@ -334,21 +339,6 @@ static void amd_decode_fr_mce(u64 mc5_status)
+ static inline void amd_decode_err_code(unsigned int ec)
+ {
+ 	if (TLB_ERROR(ec)) {
+-		/*
+-		 * GART errors are intended to help graphics driver developers
+-		 * to detect bad GART PTEs. It is recommended by AMD to disable
+-		 * GART table walk error reporting by default[1] (currently
+-		 * being disabled in mce_cpu_quirks()) and according to the
+-		 * comment in mce_cpu_quirks(), such GART errors can be
+-		 * incorrectly triggered. We may see these errors anyway and
+-		 * unless requested by the user, they won't be reported.
+-		 *
+-		 * [1] section 13.10.1 on BIOS and Kernel Developers Guide for
+-		 *     AMD NPT family 0Fh processors
+-		 */
+-		if (!report_gart_errors)
+-			return;
+-
+ 		pr_emerg(" Transaction: %s, Cache Level %s\n",
+ 			 TT_MSG(ec), LL_MSG(ec));
+ 	} else if (MEM_ERROR(ec)) {
 
-I mean in general - something where you actually have hard data that some 
-device really needs anythign more than my one-liner, and really _needs_ 
-some complex infrastructure.
+-- 
+Regards/Gruss,
+Boris.
 
-Not "let's imagine a case like xyz".
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-> But if we only talk about resume, the PCI bridges don't really matter,
-> because they are resumed before all devices that depend on them, so they don't
-> really need to wait for anyone anyway.
-
-But that's my _point_. That's the whole point of the one-liner patch. Read 
-the comment above that one-liner.
-
-My whole point was that by doing the whole "wait for children" in generic 
-code, you also made devices - such as PCI bridges - have to wait for 
-children, even though they don't need to, and don't want to.
-
-So I suggested an admittedly ugly hack to take care of it - rather than 
-some complex infrastructure.
-
-		Linus
