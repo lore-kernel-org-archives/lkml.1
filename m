@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZLOGUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbZLOGZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbZLOGUb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 01:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZLOGUa
+	id S1754241AbZLOGZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 01:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZLOGZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 01:20:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57360 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753669AbZLOGUa (ORCPT
+	Tue, 15 Dec 2009 01:25:58 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:58114 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbZLOGZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 01:20:30 -0500
-Date: Mon, 14 Dec 2009 22:20:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Russ Dill <russ.dill@gmail.com>
-cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: [GIT PATCH] USB patches for 2.6.33-git
-In-Reply-To: <4B2728AC.8050001@gmail.com>
-Message-ID: <alpine.LFD.2.00.0912142220040.14385@localhost.localdomain>
-References: <g383sjib9r8nlmw354UYAxe124vaj_firegpg@mail.gmail.com>  <1260849652.28808.1.camel@russ-laptop>  <alpine.LFD.2.00.0912142031170.14385@localhost.localdomain> <1260852335.1886.0.camel@russ-laptop> <alpine.LFD.2.00.0912142158260.14385@localhost.localdomain>
- <4B2728AC.8050001@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 15 Dec 2009 01:25:57 -0500
+Message-ID: <4B272BAC.3080502@gmail.com>
+Date: Tue, 15 Dec 2009 07:24:44 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V7 6/8] Make slub statistics use this_cpu_inc
+References: <20091214220320.665065925@quilx.com> <20091214220341.901590053@quilx.com>
+In-Reply-To: <20091214220341.901590053@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 15 Dec 2009 07:24:45 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 14 Dec 2009, Russ Dill wrote:
+Le 14/12/2009 23:03, Christoph Lameter a écrit :
+> this_cpu_inc() translates into a single instruction on x86 and does not
+> need any register. So use it in stat(). We also want to avoid the
+> calculation of the per cpu kmem_cache_cpu structure pointer. So pass
+> a kmem_cache pointer instead of a kmem_cache_cpu pointer.
 > 
-> I'll test tomorrow be sure, but It seems fine. really_probe in
-> drivers/base/dd.c is setting dev->driver before calling drv->probe.
-> driver_bound is called after drv->prove which adds the device to the
-> driver klist_devices.
 
-Ok, sounds good. Just checking.
+Hmm, last time I checked, [__]this_cpu_inc were not using "inc" on x86,
+but the default [__]this_cpu_add((pcp), 1)
 
-		Linus
