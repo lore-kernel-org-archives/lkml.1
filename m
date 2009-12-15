@@ -1,91 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbZLOJM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbZLOJLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759406AbZLOJM2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZLOJMX
+	id S1759371AbZLOJLX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZLOJLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:12:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33425 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759377AbZLOJMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:12:17 -0500
-Message-ID: <4B2752A9.10903@kernel.org>
-Date: Tue, 15 Dec 2009 01:11:05 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 15 Dec 2009 04:11:22 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:55867 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbZLOJLT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 04:11:19 -0500
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: rdreier@cisco.com, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: bisected crash due to "x86: Move swiotlb initialization before
- dma32_free_bootmem"
-References: <ada8wd4brwk.fsf@roland-alpha.cisco.com> <20091215175439V.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091215175439V.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+Date: Tue, 15 Dec 2009 11:11:16 +0200
+Message-ID: <cc557aab0912150111k41517b41t8999568db3bd8daa@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 1/4] cgroup: implement eventfd-based generic API 
+	for notifications
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       containers@lists.linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org,
+       "Kirill A. Shutemov" <kirill@shutemov.name>, linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Mon, 14 Dec 2009 23:47:07 -0800
-> Roland Dreier <rdreier@cisco.com> wrote:
-> 
->> I have a big box (64 threads, 256GB memory) that is crashing early in
->> boot as below.  I bisected it down to f4780ca0 ("x86: Move swiotlb
->> initialization before dma32_free_bootmem"); reverting just this commit
->> from the latest git (3ea6b3d0 is what I tested) fixes things.
-> 
-> Ah, really sorry about that.
-> 
-> 
->> I haven't tried to debug this yet, but I guess on such a huge box there
->> is not enough memory below 4GB for swiotlb if we don't free the 
-> 
-> Yeah, Yinghai also hit this (his box has more memory than yours).
-> 
-> 
->> stuff allocated earlier?  I don't know why that would be, since the
->> bootmem is grabbing 512MB and I have pretty close to 4GB below 4GB.
->> Anyway, I'm going to go to bed soon, but if you need more information or
->> have anything you want me to try, I will do it tomorrow morning.
-> 
-> http://www.kernel.org/pub/linux/kernel/people/tomo/misc/0001-x86-two-stage-swiotlb-initialization.patch
-> 
-> It makes the swiotlb initialization into two stages. I don't like it
-> much since I like to avoid complicating the initialization.
-> 
-> dma32_reserve_bootmem() allocates 128MB for broken GART IOMMU but I
-> think 64MB should be enough since broken GART IOMMU allocates
-> 64MB. The following simple patch might work too because swiotlb uses
-> 64MB.
-> 
-> With coming huge memory boxes, we might need to work on ZONE_DMA32
-> shortage issue anyway (sparse-vmemmap, anything else)?
+Could anybody review the patch?
 
-maybe just revert f4780ca0... for now
+Thank you.
 
-actually dma32_free_bootmem will also make sure it will give some buffer to pci_swiotlb_init...
-
-YH
-
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index fcc2f2b..afcc58b 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -120,14 +120,11 @@ static void __init dma32_free_bootmem(void)
- 
- void __init pci_iommu_alloc(void)
- {
--	int use_swiotlb;
--
--	use_swiotlb = pci_swiotlb_init();
- #ifdef CONFIG_X86_64
- 	/* free the range so iommu could get some range less than 4G */
- 	dma32_free_bootmem();
- #endif
--	if (use_swiotlb)
-+	if (pci_swiotlb_init())
- 		return;
- 
- 	gart_iommu_hole_init();
-
+On Sat, Dec 12, 2009 at 12:59 AM, Kirill A. Shutemov
+<kirill@shutemov.name> wrote:
+> This patch introduces write-only file "cgroup.event_control" in every
+> cgroup.
+>
+> To register new notification handler you need:
+> - create an eventfd;
+> - open a control file to be monitored. Callbacks register_event() and
+>  unregister_event() must be defined for the control file;
+> - write "<event_fd> <control_fd> <args>" to cgroup.event_control.
+>  Interpretation of args is defined by control file implementation;
+>
+> eventfd will be woken up by control file implementation or when the
+> cgroup is removed.
+>
+> To unregister notification handler just close eventfd.
+>
+> If you need notification functionality for a control file you have to
+> implement callbacks register_event() and unregister_event() in the
+> struct cftype.
+>
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> ---
+>  include/linux/cgroup.h |   20 +++++
+>  kernel/cgroup.c        |  215 +++++++++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 234 insertions(+), 1 deletions(-)
+>
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index 0008dee..7ad3078 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -220,6 +220,10 @@ struct cgroup {
+>
+>        /* For RCU-protected deletion */
+>        struct rcu_head rcu_head;
+> +
+> +       /* List of events which userspace want to recieve */
+> +       struct list_head event_list;
+> +       struct mutex event_list_mutex;
+>  };
+>
+>  /*
+> @@ -362,6 +366,22 @@ struct cftype {
+>        int (*trigger)(struct cgroup *cgrp, unsigned int event);
+>
+>        int (*release)(struct inode *inode, struct file *file);
+> +
+> +       /*
+> +        * register_event() callback will be used to add new userspace
+> +        * waiter for changes related to the cftype. Implement it if
+> +        * you want to provide this functionality. Use eventfd_signal()
+> +        * on eventfd to send notification to userspace.
+> +        */
+> +       int (*register_event)(struct cgroup *cgrp, struct cftype *cft,
+> +                       struct eventfd_ctx *eventfd, const char *args);
+> +       /*
+> +        * unregister_event() callback will be called when userspace
+> +        * close the eventfd. This callback must be implemented, if you
+> +        * provide register_event().
+> +        */
+> +       int (*unregister_event)(struct cgroup *cgrp, struct cftype *cft,
+> +                       struct eventfd_ctx *eventfd);
+>  };
+>
+>  struct cgroup_scanner {
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 0249f4b..f7ec3ca 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -4,6 +4,10 @@
+>  *  Based originally on the cpuset system, extracted by Paul Menage
+>  *  Copyright (C) 2006 Google, Inc
+>  *
+> + *  Notifiactions support
+> + *  Copyright (C) 2009 Nokia Corporation
+> + *  Author: Kirill A. Shutemov
+> + *
+>  *  Copyright notices from the original cpuset code:
+>  *  --------------------------------------------------
+>  *  Copyright (C) 2003 BULL SA.
+> @@ -51,6 +55,8 @@
+>  #include <linux/pid_namespace.h>
+>  #include <linux/idr.h>
+>  #include <linux/vmalloc.h> /* TODO: replace with more sophisticated array */
+> +#include <linux/eventfd.h>
+> +#include <linux/poll.h>
+>
+>  #include <asm/atomic.h>
+>
+> @@ -146,6 +152,36 @@ struct css_id {
+>        unsigned short stack[0]; /* Array of Length (depth+1) */
+>  };
+>
+> +/*
+> + * cgroup_event represents event which userspace want to recieve.
+> + */
+> +struct cgroup_event {
+> +       /*
+> +        * Cgroup which the event belongs to.
+> +        */
+> +       struct cgroup *cgrp;
+> +       /*
+> +        * Control file which the event associated.
+> +        */
+> +       struct cftype *cft;
+> +       /*
+> +        * eventfd to signal userspace about the event.
+> +        */
+> +       struct eventfd_ctx *eventfd;
+> +       /*
+> +        * Each of these stored in a list by the cgroup.
+> +        */
+> +       struct list_head list;
+> +       /*
+> +        * All fields below needed to unregister event when
+> +        * userspace closes eventfd.
+> +        */
+> +       poll_table pt;
+> +       wait_queue_head_t *wqh;
+> +       wait_queue_t wait;
+> +       struct work_struct remove;
+> +};
+> +static void cgroup_event_remove(struct cgroup_event *event);
+>
+>  /* The list of hierarchy roots */
+>
+> @@ -734,14 +770,29 @@ static struct inode *cgroup_new_inode(mode_t mode, struct super_block *sb)
+>  static int cgroup_call_pre_destroy(struct cgroup *cgrp)
+>  {
+>        struct cgroup_subsys *ss;
+> +       struct cgroup_event *event, *tmp;
+>        int ret = 0;
+>
+>        for_each_subsys(cgrp->root, ss)
+>                if (ss->pre_destroy) {
+>                        ret = ss->pre_destroy(ss, cgrp);
+>                        if (ret)
+> -                               break;
+> +                               goto out;
+>                }
+> +
+> +       /*
+> +        * Unregister events and notify userspace.
+> +        * FIXME: How to avoid race with cgroup_event_remove_work()
+> +        *        which runs from workqueue?
+> +        */
+> +       mutex_lock(&cgrp->event_list_mutex);
+> +       list_for_each_entry_safe(event, tmp, &cgrp->event_list, list) {
+> +               cgroup_event_remove(event);
+> +               eventfd_signal(event->eventfd, 1);
+> +       }
+> +       mutex_unlock(&cgrp->event_list_mutex);
+> +
+> +out:
+>        return ret;
+>  }
+>
+> @@ -1136,6 +1187,8 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+>        INIT_LIST_HEAD(&cgrp->release_list);
+>        INIT_LIST_HEAD(&cgrp->pidlists);
+>        mutex_init(&cgrp->pidlist_mutex);
+> +       INIT_LIST_HEAD(&cgrp->event_list);
+> +       mutex_init(&cgrp->event_list_mutex);
+>  }
+>
+>  static void init_cgroup_root(struct cgroupfs_root *root)
+> @@ -1935,6 +1988,16 @@ static const struct inode_operations cgroup_dir_inode_operations = {
+>        .rename = cgroup_rename,
+>  };
+>
+> +/*
+> + * Check if a file is a control file
+> + */
+> +static inline struct cftype *__file_cft(struct file *file)
+> +{
+> +       if (file->f_dentry->d_inode->i_fop != &cgroup_file_operations)
+> +               return ERR_PTR(-EINVAL);
+> +       return __d_cft(file->f_dentry);
+> +}
+> +
+>  static int cgroup_create_file(struct dentry *dentry, mode_t mode,
+>                                struct super_block *sb)
+>  {
+> @@ -2789,6 +2852,151 @@ static int cgroup_write_notify_on_release(struct cgroup *cgrp,
+>        return 0;
+>  }
+>
+> +static inline void cgroup_event_remove(struct cgroup_event *event)
+> +{
+> +       struct cgroup *cgrp = event->cgrp;
+> +
+> +       BUG_ON(event->cft->unregister_event(cgrp, event->cft, event->eventfd));
+> +       eventfd_ctx_put(event->eventfd);
+> +       remove_wait_queue(event->wqh, &event->wait);
+> +       list_del(&event->list);
+> +       kfree(event);
+> +}
+> +
+> +static void cgroup_event_remove_work(struct work_struct *work)
+> +{
+> +       struct cgroup_event *event = container_of(work, struct cgroup_event,
+> +                       remove);
+> +       struct cgroup *cgrp = event->cgrp;
+> +
+> +       mutex_lock(&cgrp->event_list_mutex);
+> +       cgroup_event_remove(event);
+> +       mutex_unlock(&cgrp->event_list_mutex);
+> +}
+> +
+> +static int cgroup_event_wake(wait_queue_t *wait, unsigned mode,
+> +               int sync, void *key)
+> +{
+> +       struct cgroup_event *event = container_of(wait,
+> +                       struct cgroup_event, wait);
+> +       unsigned long flags = (unsigned long)key;
+> +
+> +       if (flags & POLLHUP)
+> +               /*
+> +                * This function called with spinlock taken, but
+> +                * cgroup_event_remove() may sleep, so we have
+> +                * to run it in a workqueue.
+> +                */
+> +               schedule_work(&event->remove);
+> +
+> +       return 0;
+> +}
+> +
+> +static void cgroup_event_ptable_queue_proc(struct file *file,
+> +               wait_queue_head_t *wqh, poll_table *pt)
+> +{
+> +       struct cgroup_event *event = container_of(pt,
+> +                       struct cgroup_event, pt);
+> +
+> +       event->wqh = wqh;
+> +       add_wait_queue(wqh, &event->wait);
+> +}
+> +
+> +static int cgroup_write_event_control(struct cgroup *cont, struct cftype *cft,
+> +                                     const char *buffer)
+> +{
+> +       struct cgroup_event *event = NULL;
+> +       unsigned int efd, cfd;
+> +       struct file *efile = NULL;
+> +       struct file *cfile = NULL;
+> +       char *endp;
+> +       int ret;
+> +
+> +       efd = simple_strtoul(buffer, &endp, 10);
+> +       if (*endp != ' ')
+> +               return -EINVAL;
+> +       buffer = endp + 1;
+> +
+> +       cfd = simple_strtoul(buffer, &endp, 10);
+> +       if ((*endp != ' ') && (*endp != '\0'))
+> +               return -EINVAL;
+> +       buffer = endp + 1;
+> +
+> +       event = kzalloc(sizeof(*event), GFP_KERNEL);
+> +       if (!event)
+> +               return -ENOMEM;
+> +       event->cgrp = cont;
+> +       INIT_LIST_HEAD(&event->list);
+> +       init_poll_funcptr(&event->pt, cgroup_event_ptable_queue_proc);
+> +       init_waitqueue_func_entry(&event->wait, cgroup_event_wake);
+> +       INIT_WORK(&event->remove, cgroup_event_remove_work);
+> +
+> +       efile = eventfd_fget(efd);
+> +       if (IS_ERR(efile)) {
+> +               ret = PTR_ERR(efile);
+> +               goto fail;
+> +       }
+> +
+> +       event->eventfd = eventfd_ctx_fileget(efile);
+> +       if (IS_ERR(event->eventfd)) {
+> +               ret = PTR_ERR(event->eventfd);
+> +               goto fail;
+> +       }
+> +
+> +       cfile = fget(cfd);
+> +       if (!cfile) {
+> +               ret = -EBADF;
+> +               goto fail;
+> +       }
+> +
+> +       /* the process need read permission on control file */
+> +       ret = file_permission(cfile, MAY_READ);
+> +       if (ret < 0)
+> +               goto fail;
+> +
+> +       event->cft = __file_cft(cfile);
+> +       if (IS_ERR(event->cft)) {
+> +               ret = PTR_ERR(event->cft);
+> +               goto fail;
+> +       }
+> +
+> +       if (!event->cft->register_event || !event->cft->unregister_event) {
+> +               ret = -EINVAL;
+> +               goto fail;
+> +       }
+> +
+> +       ret = event->cft->register_event(cont, event->cft,
+> +                       event->eventfd, buffer);
+> +       if (ret)
+> +               goto fail;
+> +
+> +       efile->f_op->poll(efile, &event->pt);
+> +
+> +       mutex_lock(&cont->event_list_mutex);
+> +       list_add(&event->list, &cont->event_list);
+> +       mutex_unlock(&cont->event_list_mutex);
+> +
+> +       fput(cfile);
+> +       fput(efile);
+> +
+> +       return 0;
+> +
+> +fail:
+> +       if (!IS_ERR(cfile))
+> +               fput(cfile);
+> +
+> +       if (event && event->eventfd && !IS_ERR(event->eventfd))
+> +               eventfd_ctx_put(event->eventfd);
+> +
+> +       if (!IS_ERR(efile))
+> +               fput(efile);
+> +
+> +       if (event)
+> +               kfree(event);
+> +
+> +       return ret;
+> +}
+> +
+>  /*
+>  * for the common functions, 'private' gives the type of file
+>  */
+> @@ -2814,6 +3022,11 @@ static struct cftype files[] = {
+>                .read_u64 = cgroup_read_notify_on_release,
+>                .write_u64 = cgroup_write_notify_on_release,
+>        },
+> +       {
+> +               .name = CGROUP_FILE_GENERIC_PREFIX "event_control",
+> +               .write_string = cgroup_write_event_control,
+> +               .mode = S_IWUGO,
+> +       },
+>  };
+>
+>  static struct cftype cft_release_agent = {
+> --
+> 1.6.5.3
+>
+>
