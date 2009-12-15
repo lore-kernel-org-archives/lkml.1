@@ -1,107 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933362AbZLOTLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933356AbZLOTMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933362AbZLOTLn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933336AbZLOTLc
+	id S933356AbZLOTMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933335AbZLOTMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:11:32 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:48388 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933328AbZLOTLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:11:30 -0500
-Date: Tue, 15 Dec 2009 20:11:29 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-Message-ID: <20091215191129.GQ28252@kernel.dk>
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk> <4B27DDD7.5040301@kernel.org>
+	Tue, 15 Dec 2009 14:12:30 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38205 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933075AbZLOTM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:12:29 -0500
+Date: Tue, 15 Dec 2009 19:12:20 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Emese Revfy <re.emese@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 0/1] Constify struct address_space_operations for
+	2.6.32-git-053fe57ac v2
+Message-ID: <20091215191220.GW14381@ZenIV.linux.org.uk>
+References: <cover.1260662994.git.re.emese@gmail.com> <20091214003836.GD7812@parisc-linux.org> <4B2595E7.701@gmail.com> <20091214021916.GB12196@linux-sh.org> <4B25E47C.1010803@gmail.com> <20091214112656.GB1959@elf.ucw.cz> <20091214080049.19930729@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B27DDD7.5040301@kernel.org>
+In-Reply-To: <20091214080049.19930729@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15 2009, Yinghai Lu wrote:
-> Jens Axboe wrote:
-> > On Tue, Dec 15 2009, Yinghai Lu wrote:
-> >> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
-> >>
-> >> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
-> > 
-> > On a "normal" non-kexec boot, I get:
-> > 
-> > [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
-> > [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
-> > [   12.216874] PCI: Using configuration type 1 for base access
-> > 
-> 
-> can you run following scripts in first kernel?
-> 
-> cd /sys/firmware/memmap
-> for dir in * ; do
->   start=$(cat $dir/start)
->   end=$(cat $dir/end)
->   type=$(cat $dir/type)
->   printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
-> done
-> 
-> and send out /tmp/memmap.txt
+On Mon, Dec 14, 2009 at 08:00:49AM -0800, Arjan van de Ven wrote:
+> On Mon, 14 Dec 2009 12:26:56 +0100
 
-Below.
+> I for one am not opposed to using const where we could be using const.
+> It's a fundamental language feature, that helps the compiler and
+> developer. Yes there is sparse, and no, almost nobody uses that.
+ 
+And as just about any language feature it can be used to make the thing
+less readable.
 
-> what is your kexec tools version? could be too old?
-
-It says:
-
-kexec-tools-testing 20080324 released 24th March 2008
-
-
-0000000000000000-0000000000098800 (System RAM)
-0000000000098800-00000000000a0000 (reserved)
-0000000079301000-0000000079303000 (reserved)
-0000000079303000-0000000079305000 (ACPI Tables)
-0000000079305000-0000000079310000 (reserved)
-0000000079310000-0000000079314000 (ACPI Tables)
-0000000079314000-0000000079319000 (reserved)
-0000000079319000-0000000079336000 (ACPI Tables)
-0000000079336000-0000000079358000 (reserved)
-0000000079358000-0000000079388000 (ACPI Tables)
-0000000079388000-00000000793c9000 (reserved)
-00000000793c9000-000000007968f000 (ACPI Tables)
-00000000000e0000-0000000000100000 (reserved)
-000000007968f000-00000000796bb000 (reserved)
-00000000796bb000-00000000799d8000 (ACPI Tables)
-00000000799d8000-0000000079bd8000 (ACPI Non-volatile Storage)
-0000000079bd8000-0000000079d8b000 (ACPI Tables)
-0000000079d8b000-0000000079d8c000 (reserved)
-0000000079d8c000-0000000079dc8000 (ACPI Tables)
-0000000079dc8000-0000000079dcb000 (reserved)
-0000000079dcb000-0000000079e1c000 (ACPI Tables)
-0000000079e1c000-0000000079e87000 (reserved)
-0000000079e87000-000000007bd5f000 (ACPI Tables)
-0000000000100000-0000000078c59000 (System RAM)
-000000007bd5f000-000000007be4f000 (reserved)
-000000007be4f000-000000007bf87000 (ACPI Tables)
-000000007bf87000-000000007bfcf000 (ACPI Non-volatile Storage)
-000000007bfcf000-000000007bfff000 (ACPI Tables)
-000000007bfff000-0000000090000000 (reserved)
-00000000fc000000-00000000fd000000 (reserved)
-00000000fed1c000-00000000fed20000 (reserved)
-00000000ff000000-0000000100000000 (reserved)
-0000000100000000-0000001080000000 (System RAM)
-0000000078c59000-0000000078e6d000 (ACPI Non-volatile Storage)
-0000000078e6d000-000000007924e000 (ACPI Tables)
-000000007924e000-00000000792c2000 (reserved)
-00000000792c2000-00000000792d2000 (ACPI Tables)
-00000000792d2000-00000000792e7000 (reserved)
-00000000792e7000-0000000079301000 (ACPI Tables)
-
--- 
-Jens Axboe
-
+Note that marking a pointer to method table as pointer to const is just fine;
+nobody AFAICS has any problems with that.  It's "let's make pointers to
+methods themselves const" that gets flamed.
