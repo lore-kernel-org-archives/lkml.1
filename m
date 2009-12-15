@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbZLOUOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbZLOUQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933220AbZLOUOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761033AbZLOUOH
+	id S933211AbZLOUQL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933119AbZLOUQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:14:07 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:47720 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761022AbZLOUOE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:14:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tCxaIdgqLvUdFQ4n58BnxxFZUWSeXgL/XggUQuKivL7MPEgUw4fpXOHrvtrAYgM+ew
-         b1a3/E9muwaKzIFt+UWX6wdFq+tL2AsMbrQVVe2jl8Cg/ivXRJnnBVp9xLfV8DhlU3dJ
-         XXP8RgLYh2n9wcF2rBHrho8fcBsYpyizOsFF8=
+	Tue, 15 Dec 2009 15:16:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44472 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932764AbZLOUQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 15:16:06 -0500
+Message-ID: <4B27EE38.1050103@kernel.org>
+Date: Tue, 15 Dec 2009 12:14:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091215195859.GI24406@elf.ucw.cz>
-References: <1260070593.3236.6.camel@pc07.localdom.local>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-	 <20091207184153.GD998@core.coreip.homeip.net>
-	 <4B24DABA.9040007@redhat.com> <20091215115011.GB1385@ucw.cz>
-	 <4B279017.3080303@redhat.com> <20091215195859.GI24406@elf.ucw.cz>
-Date: Tue, 15 Dec 2009 15:14:02 -0500
-Message-ID: <9e4733910912151214n68161fc7tca0ffbf34c2c4e4@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215194319.GT28252@kernel.dk> <4B27E817.6030705@kernel.org> <20091215195111.GV28252@kernel.dk>
+In-Reply-To: <20091215195111.GV28252@kernel.dk>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 2:58 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->>       (11) if none is against renaming IR as RC, I'll do it on a next patch;
->
-> Call it irc -- infrared remote control. Bluetooth remote controls will
-> have very different characteristics.
+Jens Axboe wrote:
+> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>> Jens Axboe wrote:
+>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>>>> [PATCH] x86/pci: intel ioh bus num reg accessing fix
+>>>>
+>>>> it is above 0x100, so if mmconf is not enable, need to skip it
+>>> This works, it kexecs kernels fine. But since 2.6.32 doesn't have the
+>>> mmconf problem to begin with, are we now just working around the issue?
+>>> SRAT still reports issues, numa doesn't work.
+>> that patch will be bullet proof... we need it.
+>>
+>> also still need to figure out why memmap range is not passed properly.
+>>
+>> do you mean 2.6.32 kexec 2.6.32 it have worked mmconf and numa in
+>> second kernel?
+> 
+> Yes, 2.6.32 booted and 2.6.32 kexec'ed works just fine, no SRAT
+> complaints and NUMA works fine.
 
-How are they different after the scancode is extracted from the
-network packet? The scancode still needs to be passed to the input
-system, go through a keymap, and end up on an evdev device.
+do you need 
+memmap=62G@4G
+in this case?
 
-I would expect the code for extracting the scancode to live in the
-networking stack, but after it is recovered the networking code would
-use the same API as IR to submit it to input.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+YH
