@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbZLOXIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbZLOXJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932879AbZLOXIf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbZLOXIa
+	id S932934AbZLOXJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbZLOXJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:08:30 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:48526 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761693AbZLOXI1 (ORCPT
+	Tue, 15 Dec 2009 18:09:10 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:51502 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932828AbZLOXJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:08:27 -0500
+	Tue, 15 Dec 2009 18:09:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=TFvpZanf9svYyGgTpeQvnM6DVaA+lz36imIulKTq3zHB6MpH9rSdYOzzz2ju3YLiHm
-         75Sw2TTfGvrekzROly6BlfH0WnPtx5e1ozPsPeqYTZBwLXBNvru34Ap2Dp2Y99464aos
-         RvMcEuu0fum2/fxtNDUkBSGfUnmp8I86Gp/FQ=
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wdW9zv4AOdMdx2PgerXMpM9x+wNzB8B6ce3luLW7+15/Xdcr1+VePzBXhDBqAWHvs+
+         i53lAvZ8b1CF9mJxzXFSZ/M3GItt8noj+AEezrrlsOuYNDjkJeSqvntmU1PyevTTiQMZ
+         kAYHI4YFo86y9MR0XIReBTqFht+zHvTdQrMag=
+Message-ID: <4B28170F.9010808@pobox.com>
+Date: Tue, 15 Dec 2009 18:09:03 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <586c2acd0912151502o303f6b14g7277289ff5dc69b3@mail.gmail.com>
-References: <dd18b0c30912151454l1aa7fb97g951483993ab42502@mail.gmail.com> 
-	<586c2acd0912151502o303f6b14g7277289ff5dc69b3@mail.gmail.com>
-From: Younes Manton <younes.m@gmail.com>
-Date: Tue, 15 Dec 2009 18:08:06 -0500
-Message-ID: <586c2acd0912151508q5361d6a5o12016648935b4eec@mail.gmail.com>
-Subject: Re: [drm] nouveau iMac crashes and burns
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: xorg@freedesktop.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: SATA_SIL: Add a work-around for IXP4xx CPU.
+References: <m3fx8m0vwh.fsf@intrepid.localdomain> <4B274694.6020701@kernel.org> <m3hbrrc013.fsf@intrepid.localdomain>
+In-Reply-To: <m3hbrrc013.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 6:02 PM, Younes Manton <younes.m@gmail.com> wrote:
-> On Tue, Dec 15, 2009 at 5:54 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->> I had figured this would happen,
->> but was curious to see if this
->> new bad boy would work.
->> (probably why fedora 12 doesnt boot as well).
->>
->> basically the system freezes during boot once
->> drn nouveau is loaded. here's dmesg captured
->> with firescope:(a bit long)
+On 12/15/2009 06:03 PM, Krzysztof Halasa wrote:
+> Tejun Heo<tj@kernel.org>  writes:
 >
->  <..snip..>
->> <3>[    6.891531] [drm] nouveau 0000:02:00.0: No ctxprog for NV94
->  <..snip..>
+>> Hmmm... Given that there are some platforms which have problem with
+>> mmio and sil3112/4 can do everything via io accesses, it would be nice
+>> to generalize this so that there's CONFIG_SATA_SIL_NO_MMIO which is
+>> selected by affected platforms.  Are you interested in doing it?
 >
->>
->> machine is an iMac with the gt130 card
->> I loaded mesa,dri, but didn't find any
->> firmware(if any) for /lib/firmware
+> Unfortunately I no longer have access to that SIL3512 miniPCI card so
+> I wouln't be able to test on IXP425. Perhaps it's not a problem, testing
+> on i386 (probably with disabled MMIO BAR) should be enough.
 >
-> You need the firmware, it's not carried in the upstream tree.[1]
-> There's also a PPC-specific patch currently in the Nouveau tree and on
-> various lists that you need to apply.[2]
+> OTOH IIRC SIL3x12 needs to use the MMIO write to start BM DMA, otherwise
+> the AT-style 64 KB limits apply. I think IXP4xx would benefit from only
+> ioread8() going through normal IO.
 >
-> [1] http://people.freedesktop.org/~pq/
-> [2] http://cgit.freedesktop.org/nouveau/linux-2.6/commit/?id=a51b847bebf85e8539db6afe1627a3a17a05dfcc
->
+> Do you know what platforms have the MMIO problems? What kind of problems
+> are there, inability to use MMIO at all? (IXP4xx can't do 8/16-bit MMIO
+> reads).
 
-(You only need to apply [2] if yours is a PPC Mac in case it wasn't
-obvious, I just assumed PPC for some reason...)
+The inability to do 8/16-bit MMIO reads are a repeated sticking point 
+with embedded scenarios.  That's it.
+
+I keep meaning to give the docs a hard look, and see if we can combine 
+multiple taskfile register reads/writes into a single 32-bit one.  That 
+would solve all these problems, without having to resort to the use of 
+standard BARs.
+
+	Jeff
+
+
+
