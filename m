@@ -1,102 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751149AbZLOFTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751176AbZLOFWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751149AbZLOFTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 00:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZLOFTx
+	id S1751176AbZLOFWL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 00:22:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZLOFWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 00:19:53 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41775 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbZLOFTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 00:19:53 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask v4.2
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0912142046070.436@chino.kir.corp.google.com>
-References: <20091215133546.6872fc4f.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0912142046070.436@chino.kir.corp.google.com>
-Message-Id: <20091215135902.CDD6.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 15 Dec 2009 14:19:49 +0900 (JST)
+	Tue, 15 Dec 2009 00:22:09 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33320 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750932AbZLOFWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 00:22:07 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX18FJXJdoTwFqVxh+czTogYb1PPAxWlnIhM/Ms2hox
+	0clwEDbaH6qzhI
+From: Peter Huewe <peterhuewe@gmx.de>
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: devel@driverdev.osuosl.org, Willy Tarreau <w@1wt.eu>,
+       Sudhakar Rajashekhara <sudhakar.raj@ti.com>,
+       Costantino Leandro <lcostantino@gmail.com>,
+       linux-kernel@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>
+Subject: [PATCH] Fix compilation error of drivers/staging/panel/panel.c w/ custom lcd charset
+Date: Tue, 15 Dec 2009 06:21:45 +0100
+Message-Id: <1260854505-17786-1-git-send-email-peterhuewe@gmx.de>
+X-Mailer: git-send-email 1.6.4.4
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 15 Dec 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> > > I would agree only if the oom killer used total_vm as a the default, it is 
-> > > long-standing and allows for the aforementioned capability that you lose 
-> > > with rss.  I have no problem with the added sysctl to use rss as the 
-> > > baseline when enabled.
-> > > 
-> > I'll prepare a patch for adds
-> > 
-> >   sysctl_oom_kill_based_on_rss (default=0)
-> > 
-> > ok ?
-> > 
-> 
-> I have no strong feelings either for or against that, I guess users who 
-> want to always kill the biggest memory hogger even when single page 
-> __GFP_WAIT allocations fail could use it.  I'm not sure it would get much 
-> use, though.
-> 
-> I think we should methodically work out an oom killer badness rewrite that 
-> won't compound the problem by adding more and more userspace knobs.  In 
-> other words, we should slow down, construct a list of goals that we want 
-> to achieve, and then see what type of solution we can create.
-> 
-> A few requirements that I have:
+When compiling panel.c with a DEFAULT_LCD_CHARSET it fails to compile
+with the following error message:
+drivers/staging/panel/panel.c: In function >>lcd_init<<:
+drivers/staging/panel/panel.c:1396: error: expected expression before
+>>;<< token
+drivers/staging/panel/panel.c:1475: error: expected expression before
+>>;<< token
+make[3]: *** [drivers/staging/panel/panel.o] error 1
+make[2]: *** [drivers/staging/panel] error 2
+make[1]: *** [drivers/staging] error 2
 
-Um, good analysis! really.
+The config used was:
+CONFIG_PANEL=m
+CONFIG_PANEL_PARPORT=0
+CONFIG_PANEL_PROFILE=0
+CONFIG_PANEL_KEYPAD=0
+CONFIG_PANEL_LCD=1
+CONFIG_PANEL_LCD_HEIGHT=2
+CONFIG_PANEL_LCD_WIDTH=20
+CONFIG_PANEL_LCD_BWIDTH=40
+CONFIG_PANEL_LCD_HWIDTH=64
+CONFIG_PANEL_LCD_CHARSET=0
+CONFIG_PANEL_LCD_PROTO=0
+CONFIG_PANEL_LCD_PIN_E=14
+CONFIG_PANEL_LCD_PIN_RS=17
+CONFIG_PANEL_LCD_PIN_RW=16
+CONFIG_PANEL_LCD_PIN_BL=0
 
->
->  - we must be able to define when a task is a memory hogger; this is
->    currently done by /proc/pid/oom_adj relying on the overall total_vm
->    size of the task as a baseline.  Most users should have a good sense
->    of when their task is using more memory than expected and killing a
->    memory leaker should always be the optimal oom killer result.  A better 
->    set of units other than a shift on total_vm would be helpful, though.
+This patch fixes both errors, as it fixes the define
+Patch against current linux-next tree at Tue Dec 15 06:07:01 2009 +0100
 
-nit: What's mean "Most users"? desktop user(one of most majority users)
-don't have any expection of memory usage.
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ drivers/staging/panel/panel.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-but, if admin have memory expection, they should be able to tune
-optimal oom result.
-
-I think you pointed right thing.
-
-
->  - we must prefer tasks that run on a cpuset or mempolicy's nodes if the 
->    oom condition is constrained by that cpuset or mempolicy and its not a
->    system-wide issue.
-
-agreed. (who disagree it?)
-
-
->  - we must be able to polarize the badness heuristic to always select a
->    particular task is if its very low priority or disable oom killing for
->    a task if its must-run.
-
-Probably I haven't catch your point. What's mean "polarize"? Can you
-please describe more?
-
-
-> The proposal may be to remove /proc/pid/oom_adj completely since I know 
-> both you and KOSAKI-san dislike it, but we'd need an alternative which 
-> keeps the above functionality intact.
-
-Yes, To provide alternative way is must.
-
-
+diff --git a/drivers/staging/panel/panel.c b/drivers/staging/panel/panel.c
+index f98a524..95c93e8 100644
+--- a/drivers/staging/panel/panel.c
++++ b/drivers/staging/panel/panel.c
+@@ -378,7 +378,7 @@ static unsigned char lcd_bits[LCD_PORTS][LCD_BITS][BIT_STATES];
+ 
+ #ifdef CONFIG_PANEL_LCD_CHARSET
+ #undef DEFAULT_LCD_CHARSET
+-#define DEFAULT_LCD_CHARSET
++#define DEFAULT_LCD_CHARSET CONFIG_PANEL_LCD_CHARSET
+ #endif
+ 
+ #endif /* DEFAULT_PROFILE == 0 */
+-- 
+1.6.4.4
 
