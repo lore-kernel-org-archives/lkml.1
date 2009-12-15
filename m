@@ -1,105 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZLOCMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbZLOBWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbZLOCMF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 21:12:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbZLOCL6
+	id S1758972AbZLOBWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758186AbZLOBWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 21:11:58 -0500
-Received: from ns.netcenter.hu ([195.228.254.57]:53143 "EHLO mail.netcenter.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755853AbZLOCL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 21:11:57 -0500
-X-Greylist: delayed 2944 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Dec 2009 21:11:57 EST
-Message-ID: <369401ca7d25$0045b230$0400a8c0@dcccs>
-From: "Janos Haar" <janos.haar@netcenter.hu>
-To: "Robert Hancock" <hancockrwd@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <315c01ca7ca7$641ff8c0$0400a8c0@dcccs> <4B26E03E.5050309@gmail.com>
-Subject: Re: HDD power up in standby
-Date: Tue, 15 Dec 2009 02:21:58 +0100
+	Mon, 14 Dec 2009 20:22:19 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:59608 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758162AbZLOBWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 20:22:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vsgx8ZAXDFH4aURh3etUrALh/alJYt81mGewnu+nDH1S9H1QY6axoaFlxB8pmhyWyv
+         WC8zCLi2KytfwTlzOKXI9qsuwTYCP6j8TjpItZqNBOyjyINX/PLLMtNo5/wFlJmFkXXg
+         OXKesZtNmx4SNXtgKB2r9IJz7PkVwgxBmwbhc=
+Message-ID: <4B26E4C7.8040100@gmail.com>
+Date: Mon, 14 Dec 2009 19:22:15 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-2";
-	reply-type=response
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Tvrtko Ursulin <tvrtko@ursulin.net>,
+       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Are these MTRR settings correct?
+References: <200912130807.44905.tvrtko@ursulin.net> <200912141934.10628.tvrtko@ursulin.net> <4B26965C.6020203@kernel.org> <200912142016.53160.tvrtko@ursulin.net> <4B269F92.1050909@kernel.org>
+In-Reply-To: <4B269F92.1050909@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3598
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
------ Original Message ----- 
-From: "Robert Hancock" <hancockrwd@gmail.com>
-To: "Janos Haar" <djani22@netcenter.hu>
-Cc: <linux-kernel@vger.kernel.org>
-Sent: Tuesday, December 15, 2009 2:02 AM
-Subject: Re: HDD power up in standby
-
-
-> On 12/14/2009 04:22 AM, Janos Haar wrote:
->> Hello list,
+On 12/14/2009 02:26 PM, Yinghai Lu wrote:
+> Tvrtko Ursulin wrote:
+>> On Monday 14 Dec 2009 19:47:40 Yinghai Lu wrote:
+>>> Tvrtko Ursulin wrote:
+>>>> On Monday 14 Dec 2009 11:25:58 Yinghai Lu wrote:
+>>>>>>> something wrong, we should not check that with e820 or acpi resource
+>>>>>>> in that case. please check
+>>>>>>>
+>>>>>>> {PATCH] x86/pci: don't check mmconf again if it is from MSR with amd
+>>>>>>> faml0h
+>>>>>>>
+>>>>>>> for AMD Fam10h, it we read mmconf from MSR early, we should just trust
+>>>>>>> it because we check it and correct it already.
+>>>>>>>
+>>>>>>> so skip the reject check there.
+>>>>>> [path snipped]
+>>>>>>
+>>>>>> Do you want me to test with this patch and that pci=.. option active
+>>>>>> and post dmesg? Or without the pci=... option?
+>>>>> with this patch and pci=... and post dmesg...
+>>>> Here you go:
+>>> ...
+>>>
+>>>> [    0.250041] node 0 link 0: io port [1000, ffffff]
+>>>> [    0.250043] TOM: 00000000e0000000 aka 3584M
+>>>> [    0.250044] Fam 10h mmconf [e0000000, efffffff]
+>>>> [    0.250046] node 0 link 0: mmio [a0000, bffff]
+>>>> [    0.250048] node 0 link 0: mmio [e0000000, efffffff] ==>  none
+>>>> [    0.250050] node 0 link 0: mmio [f0000000, fe7fffff]
+>>>> [    0.250051] node 0 link 0: mmio [fe800000, fe9fffff]
+>>>> [    0.250053] node 0 link 0: mmio [fea00000, ffefffff]
+>>>> [    0.250054] TOM2: 0000000120000000 aka 4608M
+>>>> [    0.250056] bus: [00,07] on node 0 link 0
+>>>> [    0.250057] bus: 00 index 0 io port: [0, ffff]
+>>>> [    0.250058] bus: 00 index 1 mmio: [a0000, bffff]
+>>>> [    0.250060] bus: 00 index 2 mmio: [f0000000, ffffffff]
+>>>> [    0.250061] bus: 00 index 3 mmio: [120000000, fcffffffff]
+>>>> [    0.250068] ACPI: bus type pci registered
+>>>> [    0.250091] PCI: Found AMD Family 10h NB with MMCONFIG support.
+>>>> [    0.254793] PCI: Using MMCONFIG at e0000000 - efffffff
+>>>> [    0.254795] PCI: Using configuration type 1 for base access
+>>> ...
+>>>
+>>> thanks, mmconf works on your system.
 >>
->> I have posted to the common, because this theme is for more lists (ide,
->> sata, scsi), i think....
+>> So I should keep using both your patch and pci=check_enable_amd_mmconf option?
 >>
->> I know you will not like me guys, but i have one wish.... :-)
->>
->> I am building cheap but big storages, and after 12 drive / PC i have 
->> faced
->> with one problem:
->> The too much spinup current wich made by the 12-16 drive at the same 
->> time.
->> In my actual case, in 12V, there is more than 2A / drive for some 
->> seconds.
->>
->> I know, in SCSI, there is a jumper for this, and the card can wake up the
->> drives one by one, but i am using 2TB drives, and in SCSI/SAS this have
->> horrible price...
->> I have done some invesrtigation, and found this:
->> The most of the simple sata drives handles the PUIS mode (by set
->> features ata command), but unfortunately
->> only the professional and expensive raid cards supports the wakeing up.
->> If the cheap cards founds only 0 byte drives, this is not a problem at 
->> all,
->> because linux usually not use BIOS support fortunately. :-)
->> But i have found when i have spent a little time in google, and in the
->> documentation, linux doesn't support PUIS.
->>
->> I think this would be great, and (relatively) simple to implement this
->> feature.
->> I can imagine in this way:
->> Wake up from PUIS is disabled by default, but can be enabled by command
->> line
->> parameter, or compile time configuration.
->> The drivers should send the wake up command one by one to the drives, 
->> waits
->> for RDY DSC, and than scan the drives, and register....
->>
->> What do you think?
 >
-> As far as I can see, if the drive reports it's in power-up in standby mode 
-> from the identify response, the kernel will send the command to spin up 
-> the drive. It might depend on whether parallel scan is enabled for the 
-> controller as far as whether they actually spin up one at a time, however.
-
-I am working with 2TB Hitachi drive wich is set to PUIS, and reports itself 
-as 0 byte, but existing device (pcb factory alias), but with my promise 
-card, the kernel see only bad geometry and disable the port only. :-(
-I have missed something?
-
+> I will push the driver to Jesse.
 >
->>
->> (Now i am searching for the solution to send the wakeup command by user
->> program, and than do a "hotplug" in software only, but this is not an
->> "elegant" solution...)
->>
->>
->> Best Regards,
->> Janos Haar
->> 
+> but you need to have pci=check_enable_amd_mmconf, unless we add one DMI entry for your kind of system.
+
+Something else isn't quite right. It looks like MMCONFIG area should be 
+reserved:
+
+[    0.308434] system 00:0c: iomem range 0xe0000000-0xefffffff has been 
+reserved
+
+but the code didn't seem to detect that. In fact there doesn't seem to 
+be any output about whether it was or wasn't reserved, which from the 
+code it seems there should be.
+
+Maybe because of that ACPI method execution error?
+
 
