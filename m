@@ -1,54 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760993AbZLOTru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbZLOTsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760993AbZLOTru (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760938AbZLOTrs
+	id S1761005AbZLOTsX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbZLOTsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:47:48 -0500
-Received: from kroah.org ([198.145.64.141]:43516 "EHLO coco.kroah.org"
+	Tue, 15 Dec 2009 14:48:20 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:55617 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760901AbZLOTrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:47:46 -0500
-Date: Tue, 15 Dec 2009 11:47:32 -0800
-From: Greg KH <gregkh@suse.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] firmware for RealTek RTL8192E wireless device.
-Message-ID: <20091215194732.GA13176@kroah.com>
+	id S1758411AbZLOTsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:48:19 -0500
+Date: Tue, 15 Dec 2009 20:48:18 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+Message-ID: <20091215194818.GU28252@kernel.dk>
+References: <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk> <4B27DDD7.5040301@kernel.org> <20091215191129.GQ28252@kernel.dk> <4B27E71E.6020709@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B27E71E.6020709@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver has been in the staging tree for a while now, and people
-keep asking me for a copy of the firmware.  SuSE has been shipping it
-for a while in their copy of the linux-firmware package, so I figured it
-was time to add it to the main linux-firmware repo now, sorry
-for the delay.
+On Tue, Dec 15 2009, Yinghai Lu wrote:
+> Jens Axboe wrote:
+> > On Tue, Dec 15 2009, Yinghai Lu wrote:
+> >> Jens Axboe wrote:
+> >>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> >>>> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+> >>>>
+> >>>> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
+> >>> On a "normal" non-kexec boot, I get:
+> >>>
+> >>> [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+> >>> [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
+> >>> [   12.216874] PCI: Using configuration type 1 for base access
+> >>>
+> >> can you run following scripts in first kernel?
+> >>
+> >> cd /sys/firmware/memmap
+> >> for dir in * ; do
+> >>   start=$(cat $dir/start)
+> >>   end=$(cat $dir/end)
+> >>   type=$(cat $dir/type)
+> >>   printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
+> >> done
+> >>
+> >> and send out /tmp/memmap.txt
+> > 
+> > Below.
+> > 
+> >> what is your kexec tools version? could be too old?
+> > 
+> > It says:
+> > 
+> > kexec-tools-testing 20080324 released 24th March 2008
+> > 
+> > 
+> > 0000000000000000-0000000000098800 (System RAM)
+> > 0000000000098800-00000000000a0000 (reserved)
+> > 0000000079301000-0000000079303000 (reserved)
+> > 0000000079303000-0000000079305000 (ACPI Tables)
+> > 0000000079305000-0000000079310000 (reserved)
+> > 0000000079310000-0000000079314000 (ACPI Tables)
+> > 0000000079314000-0000000079319000 (reserved)
+> > 0000000079319000-0000000079336000 (ACPI Tables)
+> > 0000000079336000-0000000079358000 (reserved)
+> > 0000000079358000-0000000079388000 (ACPI Tables)
+> > 0000000079388000-00000000793c9000 (reserved)
+> > 00000000793c9000-000000007968f000 (ACPI Tables)
+> > 00000000000e0000-0000000000100000 (reserved)
+> > 000000007968f000-00000000796bb000 (reserved)
+> > 00000000796bb000-00000000799d8000 (ACPI Tables)
+> > 00000000799d8000-0000000079bd8000 (ACPI Non-volatile Storage)
+> > 0000000079bd8000-0000000079d8b000 (ACPI Tables)
+> > 0000000079d8b000-0000000079d8c000 (reserved)
+> > 0000000079d8c000-0000000079dc8000 (ACPI Tables)
+> > 0000000079dc8000-0000000079dcb000 (reserved)
+> > 0000000079dcb000-0000000079e1c000 (ACPI Tables)
+> > 0000000079e1c000-0000000079e87000 (reserved)
+> > 0000000079e87000-000000007bd5f000 (ACPI Tables)
+> > 0000000000100000-0000000078c59000 (System RAM)
+> > 000000007bd5f000-000000007be4f000 (reserved)
+> > 000000007be4f000-000000007bf87000 (ACPI Tables)
+> 
+> so following ranges are not passed to second kernel by kexec?
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/firmware.git/
+I have the following addition to my kexec kernel command line:
 
-thanks,
+memmap=62G@4G
 
-greg k-h
+since that last big 62G RAM entry doesn't show up without it, that's why
+you see a user defined e820 map as well in the boot logs. So a kexec'ed
+kernel is missing at least that entry.
 
-------------
+I just tried with the latest and greatest kexec-tools (2.0.1) and
+there's no difference.
 
- RTL8192E/boot.img |  Bin 0 -> 344 bytes
- RTL8192E/data.img |  Bin 0 -> 848 bytes
- RTL8192E/main.img |  Bin 0 -> 42944 bytes
- WHENCE            |   10 ++++++++++
- 4 files changed, 10 insertions(+), 0 deletions(-)
- create mode 100644 RTL8192E/boot.img
- create mode 100644 RTL8192E/data.img
- create mode 100644 RTL8192E/main.img
-
----------------
-
-Greg Kroah-Hartman (1):
-      Add RealTek RTL8192E firmware
+-- 
+Jens Axboe
 
