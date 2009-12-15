@@ -1,78 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934053AbZLOW2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbZLOWfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934053AbZLOW2o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761387AbZLOW2f
+	id S934078AbZLOWfe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZLOWfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:28:35 -0500
-Received: from www.tglx.de ([62.245.132.106]:51648 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934064AbZLOW2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:28:33 -0500
-Date: Tue, 15 Dec 2009 23:28:11 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Earl Chew <earl_chew@agilent.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de,
-       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-Message-ID: <20091215222811.GC2432@local>
-References: <1228379942.5092.14.camel@twins>
- <4B22DD89.2020901@agilent.com>
- <20091214192322.GA3245@bluebox.local>
- <4B27905B.4080006@agilent.com>
- <20091215210002.GA2432@local>
- <4B2803D8.10704@agilent.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B2803D8.10704@agilent.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 15 Dec 2009 17:35:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60936 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933763AbZLOWfb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:35:31 -0500
+Date: Tue, 15 Dec 2009 14:34:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       linux-kernel@vger.kernel.org, rubini@gnudd.com, gregkh@suse.de
+Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
+ allocation
+Message-Id: <20091215143446.8b6a7e57.akpm@linux-foundation.org>
+In-Reply-To: <20091111153632.944a255c.akpm@linux-foundation.org>
+References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
+	<1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
+	<1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
+	<4AF8B4FF.9050405@zytor.com>
+	<20091111153632.944a255c.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 01:47:04PM -0800, Earl Chew wrote:
-> Hans J. Koch wrote:
-> > Sorry, I think I wasn't clear enough: The current interface for static
-> > mappings shouldn't be changed. Dynamically added mappings need a new
-> > interface.
+On Wed, 11 Nov 2009 15:36:32 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Mon, 09 Nov 2009 16:34:07 -0800
+> "H. Peter Anvin" <hpa@zytor.com> wrote:
 > 
-> Thanks for the quick reply.
+> > On 11/09/2009 04:30 PM, Thadeu Lima de Souza Cascardo wrote:
+> > > The current dynamic allocation of minor number for misc devices has some
+> > > drawbacks.
+> > > 
+> > > First of all, the range for dynamic numbers include some statically
+> > > allocated numbers. It goes from 63 to 0, and we have numbers in the
+> > > range from 1 to 15 already allocated. Although, it gives priority to the
+> > > higher and not allocated numbers, we may end up in a situation where we
+> > > must reject registering a driver which got a static number because a
+> > > driver got its number with dynamic allocation. Considering fs/dlm/user.c
+> > > allocates as many misc devices as lockspaces are created, and that we
+> > > have more than 50 users around, it's not unreasonable to reach that
+> > > situation.
+> > > 
+> > > The proposed solution uses the not yet reserved range from 64 to 127. If
+> > > more devices are needed, we may push 64 to 16.
+> > > 
+> > 
+> > Again, why not push these up above 256?
+> > 
 > 
-> Are you ok with changes to the (internal) struct uio_device ?
+> I merged this patch, but made a note-to-self that there are remaining
+> open issues..
 
-Hey, we live in a free world :)
-Anything can be changed as long as it's a technically sensible solution and
-doesn't break existing interfaces to userspace.
+And nothing else happened.  Can we revisit this please?
 
-The DMA-for-UIO thing is something that shouldn't be taken lightly. If we
-define an interface for that, it should cover all possible applications.
-There are not only devices that need to allocate new DMA buffers at runtime,
-but also devices which could very well live with one or two statically
-allocated DMA buffers. We need to cover all these cases.
 
-One example: An A/D converter has an on-chip 32k buffer. It causes an
-interrupt as soon as the buffer is filled up to a certain high-water mark.
-Such cases would easily fit into the current UIO system. The UIO core could
-simply DMA the data to one of the mappings. A new flag for that mapping and
-a few other changes are all it takes. After the DMA transfer is complete, the
-interrupt is passed on to userspace, which would find the buffer already
-filled with the desired data. Just a thought, unfortunately I haven't got
-such hardware to try it.
 
-When it comes to dynamically allocated DMA buffers, it might well be possible
-to add a new directory in sysfs besides the "mem" directory, e.g. something
-like /sys/class/uio/uioN/dma-mem/. This would save us the trouble of creating
-a new device. Maybe the example above would better fit in here, too. Who knows.
 
-These are only some thoughts, I haven't got any DMA capable hardware to deal
-with ATM.
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-You certainly notice that there are important design decisions to make.
-Remember that once a kernel interface to userspace exists, it is etched in
-stone forever.
+The current dynamic allocation of minor number for misc devices has some
+drawbacks.
 
-Thanks,
-Hans
+First of all, the range for dynamic numbers include some statically
+allocated numbers.  It goes from 63 to 0, and we have numbers in the range
+from 1 to 15 already allocated.  Although, it gives priority to the higher
+and not allocated numbers, we may end up in a situation where we must
+reject registering a driver which got a static number because a driver got
+its number with dynamic allocation.  Considering fs/dlm/user.c allocates
+as many misc devices as lockspaces are created, and that we have more than
+50 users around, it's not unreasonable to reach that situation.
+
+The proposed solution uses the not yet reserved range from 64 to 127.  If
+more devices are needed, we may push 64 to 16.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/misc.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff -puN drivers/char/misc.c~drivers-char-miscc-use-a-proper-range-for-minor-number-dynamic-allocation drivers/char/misc.c
+--- a/drivers/char/misc.c~drivers-char-miscc-use-a-proper-range-for-minor-number-dynamic-allocation
++++ a/drivers/char/misc.c
+@@ -59,6 +59,7 @@ static DEFINE_MUTEX(misc_mtx);
+ /*
+  * Assigned numbers, used for dynamic minors
+  */
++#define DYNAMIC_MINOR_BASE 64
+ #define DYNAMIC_MINORS 64 /* like dynamic majors */
+ static DECLARE_BITMAP(misc_minors, DYNAMIC_MINORS);
+ 
+@@ -201,7 +202,7 @@ int misc_register(struct miscdevice * mi
+ 			mutex_unlock(&misc_mtx);
+ 			return -EBUSY;
+ 		}
+-		misc->minor = DYNAMIC_MINORS - i - 1;
++		misc->minor = DYNAMIC_MINOR_BASE + i;
+ 		set_bit(i, misc_minors);
+ 	}
+ 
+@@ -210,7 +211,7 @@ int misc_register(struct miscdevice * mi
+ 	misc->this_device = device_create(misc_class, misc->parent, dev,
+ 					  misc, "%s", misc->name);
+ 	if (IS_ERR(misc->this_device)) {
+-		int i = DYNAMIC_MINORS - misc->minor - 1;
++		int i = misc->minor - DYNAMIC_MINOR_BASE;
+ 		if (i < DYNAMIC_MINORS && i >= 0)
+ 			clear_bit(i, misc_minors);
+ 		err = PTR_ERR(misc->this_device);
+@@ -239,7 +240,7 @@ int misc_register(struct miscdevice * mi
+ 
+ int misc_deregister(struct miscdevice *misc)
+ {
+-	int i = DYNAMIC_MINORS - misc->minor - 1;
++	int i = misc->minor - DYNAMIC_MINOR_BASE;
+ 
+ 	if (list_empty(&misc->list))
+ 		return -EINVAL;
+_
 
