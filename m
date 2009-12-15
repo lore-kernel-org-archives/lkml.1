@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbZLOKbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbZLOKbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759737AbZLOKbx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:31:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759689AbZLOKbw
+	id S1759649AbZLOKbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZLOKbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:31:52 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:37252 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759678AbZLOKbt (ORCPT
+	Tue, 15 Dec 2009 05:31:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40668 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbZLOKbd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:31:49 -0500
-Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
- for 32byte SSIDs
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       dcbw@redhat.com, m.hirsch@raumfeld.com, netdev@vger.kernel.org,
-       libertas-dev@lists.infradead.org, stable@kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20091215102035.GJ28375@buzzloop.caiaq.de>
-References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
-	 <20091215.014308.77044043.davem@davemloft.net>
-	 <1260871411.3692.4.camel@johannes.local>
-	 <1260871634.3692.6.camel@johannes.local>
-	 <20091215102035.GJ28375@buzzloop.caiaq.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MTUIoK4uGX41ZSlBruir"
-Date: Tue, 15 Dec 2009 11:31:23 +0100
-Message-ID: <1260873083.3692.8.camel@johannes.local>
+	Tue, 15 Dec 2009 05:31:33 -0500
+Subject: Re: [PATCH 1/2] perf_event: Fix incorrect range check on cpu number
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20091215084032.GA18661@brick.ozlabs.ibm.com>
+References: <20091215084032.GA18661@brick.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Tue, 15 Dec 2009 11:31:32 +0100
+Message-ID: <1260873092.4165.354.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-12-15 at 19:40 +1100, Paul Mackerras wrote:
+> It is quite legitimate for CPUs to be numbered sparsely, meaning that
+> it possible for an online CPU to have a number which is greater than
+> the total count of possible CPUs.
+> 
+> Currently find_get_context() has a sanity check on the cpu number
+> where it checks it against num_possible_cpus().  This test can fail
+> for a legitimate cpu number if the cpu_possible_mask is sparsely
+> populated.
+> 
+> This fixes the problem by checking the CPU number against
+> nr_cpumask_bits instead, since that is the appropriate check to ensure
+> that the cpu number is same to pass to cpu_isset() subsequently.
 
---=-MTUIoK4uGX41ZSlBruir
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Cute, do you actually have hardware that does this?
 
-On Tue, 2009-12-15 at 18:20 +0800, Daniel Mack wrote:
-
-> > > Since you indicate the kernel crashed, it is likely that libertas is
-> > > treating the buffer as a string, instead of an SSID.
->=20
-> Ok, I dodn't know that - thanks for pointing it out. In my setup here,
-> SSIDs are always valid alphanumeric strings, and I was mislead by the
-> comment that mentions the NULL-termination.
-
-Yeah ... that's an unfortunate historic mistake in wireless extensions
-that we try to fix up there. It cannot always be successfully fixed up,
-but the NUL-termination is nothing that anything but this code should be
-worried about or rely on.
-
-> > drivers/net/wireless/libertas$ grep lbs_deb_ * | grep ssid|grep '%s'
-> > assoc.c:	lbs_deb_join("current SSID '%s', ssid length %u\n",
-> > assoc.c:	lbs_deb_join("requested ssid '%s', ssid length %u\n",
-> > assoc.c:	lbs_deb_join("ADHOC_START: SSID '%s', ssid length %u\n",
-> > scan.c:		lbs_deb_wext("set_scan, essid '%s'\n",
->=20
-> Those macros are stubbed out as nops in my setup, so they can
-> unfortunately not be the reason. I'll dig deeper :)
-
-Well, the stack trace ought to help.
-
-johannes
-
---=-MTUIoK4uGX41ZSlBruir
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLJ2V3AAoJEODzc/N7+Qmad3gQAJ1FPGr7txGCvsafXohdRLlh
-7h7VnJQ21rmpB/g8KuKumBdUwh5ALEHmYNq5LMIbAGEzX7e7qOB5Dmhbh9BHWEzI
-Rs+rxA4kDom3fKx96P+O/6Nd4LCcVLql+tGcVZZMdEhDWJUFUcFfcEY793hDwcub
-LylfhXxRfcbIT5Kd2I9R6gqh3w7RT7ak6QP42lzab8L4s6vpAzudr7YImqAJMnOA
-Y3XjAFeqyxovu2EwiUIcyFDJGO805cbD16QsZiN3HwjNMya/VCZPe+TIDSPU3uOX
-IgsYdkyqgwsrOEsXj4drfiNBB68IGHLMej8dPoENLDHv1eoYafPgNEMHh3dQppE0
-WMfgGz6EB8pQMWgLMHlLP2TFS7q0cBZJU2GPjdMNxi5bIY54NrU+TyxCjs09iolB
-TptMCsdzq/M89+x9H2mqlo8jti63UxuU5uLahywngWWMCOvdlVpSVFmnOmxf6EJu
-4zrd3p2UpjI+xXqPAKVMVHJHdcl08Lz6xVZT3MVMkzJITUCyO/PWk06GzTMQA8+5
-D0U7KkXJBOGdqrGWh4Fxi9EjXB6TPt5CjUu5vGBXfODtODjEPhC7otwEV2pzxePI
-uYZwg78VNnx3F6Dw0YLRHC/QxUkUBFj/btV1belk2LSGAQ9J5DwUibG0ffvWZdJM
-sinj7IxKO+iEcbH7H2KD
-=rYi1
------END PGP SIGNATURE-----
-
---=-MTUIoK4uGX41ZSlBruir--
+> Reported-by: Michael Neuling <mikey@neuling.org>
+> Tested-by: Michael Neuling <mikey@neuling.org>
+> Cc: stable@kernel.org
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+>  kernel/perf_event.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> index 6b7ddba..78551b3 100644
+> --- a/kernel/perf_event.c
+> +++ b/kernel/perf_event.c
+> @@ -1604,7 +1604,7 @@ static struct perf_event_context *find_get_context(pid_t pid, int cpu)
+>  		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
+>  			return ERR_PTR(-EACCES);
+>  
+> -		if (cpu < 0 || cpu > num_possible_cpus())
+> +		if (cpu < 0 || cpu >= nr_cpumask_bits)
+>  			return ERR_PTR(-EINVAL);
+>  
+>  		/*
 
