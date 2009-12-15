@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933270AbZLOSRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbZLOSQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933270AbZLOSRf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759970AbZLOSRd
+	id S933262AbZLOSQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:16:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760690AbZLOSQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:17:33 -0500
-Received: from mail.gmx.net ([213.165.64.20]:55618 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760690AbZLOSRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:17:31 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/He8wOjcrH67lv2XraRy8iKVZA6qj8hqkKkoromj
-	rVIdNf78LGOJk5
-Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead
- prepare_to_wait()
-From: Mike Galbraith <efault@gmx.de>
-To: Rik van Riel <riel@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-In-Reply-To: <4B27A417.3040206@redhat.com>
-References: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>
-	 <4B264CCA.5010609@redhat.com> <20091215085631.CDAD.A69D9226@jp.fujitsu.com>
-	 <1260855146.6126.30.camel@marge.simson.net>  <4B27A417.3040206@redhat.com>
-Content-Type: text/plain
-Date: Tue, 15 Dec 2009 19:17:22 +0100
-Message-Id: <1260901042.5913.12.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Tue, 15 Dec 2009 13:16:56 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:57205 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754753AbZLOSQz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:16:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=QxtY9HhpxwC3g7M3E/JwHvjfpAd2XFE4QOoGL/V0UsMDWkW0eSssiZkuaJVrJs2VTG
+         NKAKzAsFLmXanMqvs6+K4y0fSvX1Q78QUG3c30pGbZ9siiFox/RGD7M834F+y95+tvra
+         dMmMEXHDzpz6Yi9E3nLk43LjdNnHQ+1pAHrL4=
+Message-ID: <4B27D302.5060905@gmail.com>
+Date: Tue, 15 Dec 2009 19:18:42 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] e1000: Fix tests of unsigned in e1000_tx_map()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 09:58 -0500, Rik van Riel wrote:
-> On 12/15/2009 12:32 AM, Mike Galbraith wrote:
-> > On Tue, 2009-12-15 at 09:45 +0900, KOSAKI Motohiro wrote:
-> >>> On 12/14/2009 07:30 AM, KOSAKI Motohiro wrote:
-> >>>> if we don't use exclusive queue, wake_up() function wake _all_ waited
-> >>>> task. This is simply cpu wasting.
-> >>>>
-> >>>> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> >>>
-> >>>>    		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
-> >>>>    					0, 0)) {
-> >>>> -			wake_up(wq);
-> >>>> +			wake_up_all(wq);
-> >>>>    			finish_wait(wq,&wait);
-> >>>>    			sc->nr_reclaimed += sc->nr_to_reclaim;
-> >>>>    			return -ERESTARTSYS;
-> >>>
-> >>> I believe we want to wake the processes up one at a time
-> >>> here.
-> 
-> >> Actually, wake_up() and wake_up_all() aren't different so much.
-> >> Although we use wake_up(), the task wake up next task before
-> >> try to alloate memory. then, it's similar to wake_up_all().
-> 
-> That is a good point.  Maybe processes need to wait a little
-> in this if() condition, before the wake_up().  That would give
-> the previous process a chance to allocate memory and we can
-> avoid waking up too many processes.
-> 
-> > What happens to waiters should running tasks not allocate for a while?
-> 
-> When a waiter is woken up, it will either:
-> 1) see that there is enough free memory and wake up the next guy, or
-> 2) run shrink_zone and wake up the next guy
-> 
-> Either way, the processes that just got woken up will ensure that
-> the sleepers behind them in the queue will get woken up.
+The variables count and i are unsigned so the (<|>=) 0 tests do not work.
 
-OK, that more or less covers my worry.  From the scheduler standpoint
-though, you're better off turning them all loose and letting them race,
-_with_ the caveat than thundering herds do indeed make thunder (reason
-for patch).  Turning them loose piecemeal spreads things out over time,
-which prolongs surge operations, possibly much longer than necessary.
-We had the same long ago with everyone waiting for kswapd to do all the
-work.  Sticky problem, this roll-down to inevitable wait.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Found using coccinelle: http://coccinelle.lip6.fr/
 
-	-Mike
+I wasn't able to test this, so please review.
 
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index 7e855f9..8d9da69 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -2802,13 +2802,13 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ dma_error:
+ 	dev_err(&pdev->dev, "TX DMA map failed\n");
+ 	buffer_info->dma = 0;
+-	count--;
+-
+-	while (count >= 0) {
++	if (count)
+ 		count--;
+-		i--;
+-		if (i < 0)
++
++	while (count--) {
++		if (i == 0)
+ 			i += tx_ring->count;
++		i--;
+ 		buffer_info = &tx_ring->buffer_info[i];
+ 		e1000_unmap_and_free_tx_resource(adapter, buffer_info);
+ 	}
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 762b697..9be8d5d 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -3962,13 +3962,13 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
+ dma_error:
+ 	dev_err(&pdev->dev, "TX DMA map failed\n");
+ 	buffer_info->dma = 0;
+-	count--;
+-
+-	while (count >= 0) {
++	if (count)
+ 		count--;
+-		i--;
+-		if (i < 0)
++
++	while (count--) {
++		if (i == 0)
+ 			i += tx_ring->count;
++		i--;
+ 		buffer_info = &tx_ring->buffer_info[i];
+ 		e1000_put_txbuf(adapter, buffer_info);;
+ 	}
