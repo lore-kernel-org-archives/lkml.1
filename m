@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbZLOPDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbZLOPDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760517AbZLOPDe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760470AbZLOPDd
+	id S1760548AbZLOPDp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760536AbZLOPDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:03:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34268 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbZLOPDc convert rfc822-to-8bit (ORCPT
+	Tue, 15 Dec 2009 10:03:43 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:42661 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760533AbZLOPDl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:03:32 -0500
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org
-In-Reply-To: <4B279370.5050800@in.ibm.com>
-References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
-	 <4B261D7A.9040802@in.ibm.com>  <1260793182.4165.223.camel@twins>
-	 <1260825420.2217.40.camel@pasglop>  <4B275A6B.9030200@in.ibm.com>
-	 <1260873827.4165.362.camel@twins>  <4B279370.5050800@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 15 Dec 2009 10:03:41 -0500
+MIME-Version: 1.0
+In-Reply-To: <20091215183533.1a1e87d9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	 <cc557aab0912150111k41517b41t8999568db3bd8daa@mail.gmail.com>
+	 <20091215183533.1a1e87d9.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 15 Dec 2009 17:03:37 +0200
+Message-ID: <cc557aab0912150703qcfe6458paa7da71cb032cb93@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 1/4] cgroup: implement eventfd-based generic API 
+	for notifications
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       containers@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-Date: Tue, 15 Dec 2009 16:03:22 +0100
-Message-ID: <1260889402.4165.434.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 15, 2009 at 11:35 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 15 Dec 2009 11:11:16 +0200
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+>
+>> Could anybody review the patch?
+>>
+>> Thank you.
+>
+> some nitpicks.
+>
+>>
+>> On Sat, Dec 12, 2009 at 12:59 AM, Kirill A. Shutemov
+>> <kirill@shutemov.name> wrote:
+>
+>> > +       /*
+>> > +        * Unregister events and notify userspace.
+>> > +        * FIXME: How to avoid race with cgroup_event_remove_work()
+>> > +        *        which runs from workqueue?
+>> > +        */
+>> > +       mutex_lock(&cgrp->event_list_mutex);
+>> > +       list_for_each_entry_safe(event, tmp, &cgrp->event_list, list) {
+>> > +               cgroup_event_remove(event);
+>> > +               eventfd_signal(event->eventfd, 1);
+>> > +       }
+>> > +       mutex_unlock(&cgrp->event_list_mutex);
+>> > +
+>> > +out:
+>> >        return ret;
+>> >  }
+>
+> How ciritical is this FIXME ?
+> But Hmm..can't we use RCU ?
 
-Could you try the below?
-
----
- init/main.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
-
-diff --git a/init/main.c b/init/main.c
-index 4051d75..4be7de2 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -369,12 +369,6 @@ static void __init smp_init(void)
- {
- 	unsigned int cpu;
- 
--	/*
--	 * Set up the current CPU as possible to migrate to.
--	 * The other ones will be done by cpu_up/cpu_down()
--	 */
--	set_cpu_active(smp_processor_id(), true);
--
- 	/* FIXME: This should be done in userspace --RR */
- 	for_each_present_cpu(cpu) {
- 		if (num_online_cpus() >= setup_max_cpus)
-@@ -486,6 +480,7 @@ static void __init boot_cpu_init(void)
- 	int cpu = smp_processor_id();
- 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
- 	set_cpu_online(cpu, true);
-+	set_cpu_active(cpu, true);
- 	set_cpu_present(cpu, true);
- 	set_cpu_possible(cpu, true);
- }
-
+It's not reasonable to have RCU here, since event_list isn't mostly-read.
