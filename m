@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbZLOSDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933105AbZLOSDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933234AbZLOSDV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933135AbZLOSDK
+	id S933105AbZLOSDw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933169AbZLOSDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:03:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50853 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933119AbZLOSDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:03:08 -0500
-Message-ID: <4B27CEF8.9010303@kernel.org>
-Date: Tue, 15 Dec 2009 10:01:28 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Robert Hancock <hancockrwd@gmail.com>, Tvrtko Ursulin <tvrtko@ursulin.net>,
-       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Are these MTRR settings correct?
-References: <200912130807.44905.tvrtko@ursulin.net> <4B26E4C7.8040100@gmail.com> <4B26E973.6080305@kernel.org> <200912150955.03974.bjorn.helgaas@hp.com>
-In-Reply-To: <200912150955.03974.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Dec 2009 13:03:48 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:49700
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933213AbZLOSDQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:03:16 -0500
+Date: Tue, 15 Dec 2009 10:03:00 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Josua Dietze <digidietze@draisberghof.de>,
+       Stefan Seyfried <stefan.seyfried@googlemail.com>,
+       linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+       Stefan Seyfried <seife@sphairon.com>
+Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
+Message-ID: <20091215180300.GF16426@one-eyed-alien.net>
+Mail-Followup-To: Oliver Neukum <oliver@neukum.org>,
+	Josua Dietze <digidietze@draisberghof.de>,
+	Stefan Seyfried <stefan.seyfried@googlemail.com>,
+	linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+	linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+	Stefan Seyfried <seife@sphairon.com>
+References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <4B278191.1010009@draisberghof.de> <200912151611.08576.oliver@neukum.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="0H629O+sVkh21xTi"
+Content-Disposition: inline
+In-Reply-To: <200912151611.08576.oliver@neukum.org>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2009 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 15 Dec 2009 10:03:00 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Monday 14 December 2009 06:42:11 pm Yinghai Lu wrote:
->> Robert Hancock wrote:
->>> Something else isn't quite right. It looks like MMCONFIG area should be
->>> reserved:
->>>
->>> [    0.308434] system 00:0c: iomem range 0xe0000000-0xefffffff has been
->>> reserved
->>>
->>> but the code didn't seem to detect that. In fact there doesn't seem to
->>> be any output about whether it was or wasn't reserved, which from the
->>> code it seems there should be.
->>>
->>> Maybe because of that ACPI method execution error?
->> could be sth pnpacpi brokenness?
-> 
-> Robert, I assume you're referring to this from Tvrtko's post
-> (http://lkml.org/lkml/2009/12/13/90):
-> 
-> [    0.000000]  BIOS-e820: 00000000dffd0000 - 00000000e0000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000ff700000 - 0000000100000000 (reserved)
-> ...
-> [    0.250088] PCI: Found AMD Family 10h NB with MMCONFIG support.
-> [    0.250091] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
-> [    0.250092] PCI: Not using MMCONFIG.
-> ...
-> [    0.253491] ACPI Error (psargs-0359): [ECEN] Namespace lookup failure, AE_NOT_FOUND
-> [    0.253495] ACPI Error (psparse-0537): Method parse/execution failed [\] (Node ffffffff81656ab0), AE_NOT_FOUND
-> ...
-> [    0.308434] system 00:0c: iomem range 0xe0000000-0xefffffff has been reserved
-> 
-> I think we're rejecting MMCONFIG in the early call to
-> pci_mmcfg_reject_broken(), when we check only E820 resources, not
-> ACPI resources.  And indeed, the 0xe0000000-0xefffffff range is
-> not mentioned in E820.  Which output did you expect to see?
-> 
-> I am uncomfortable with this early/late checking and looking at both
-> E820 and ACPI.  It just feels hacky and error-prone.  I'm not happy about
-> adding Yinghai's special-case "if we found AMD Fam10h, don't check for
-> reservations" patch either.
 
-only check ACPI or remove all hostbridge detect related?
+--0H629O+sVkh21xTi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Dec 15, 2009 at 04:11:08PM +0100, Oliver Neukum wrote:
+> Am Dienstag, 15. Dezember 2009 13:31:13 schrieb Josua Dietze:
+> > Stefan Seyfried schrieb:
+> >=20
+> > > The USB ID claimed by zd1211rw for the fake storage device is
+> > > also in use by other, non-zd1211rw devices (Sphairon Homelink
+> > > 1202). Move the eject of these devices to where it belongs and
+> > > where all the needed infrastructure already exists: usb-storage.
+> >=20
+> >=20
+> > We can do the eject (as other mode switches) in userspace. Previous=20
+> > discussions pointed into that direction.
+> >=20
+> > And there is always the question of being able to access the "fake=20
+> > CD-ROM" without hacking the kernel.
+> >=20
+> > I'd like to see these devices removed from unusual_devs.h.
+>=20
+> This would break existing systems and thus introduce a regression.
+> We'd need to go through a feature removal process. For the time being
+> I see no alternative to Seife's patch, as we cannot introduce ejection
+> code to another wireless driver and need to support these devices.
 
-YH
+The right answer here is neither to move the eject code nor to introduce
+more of it.  New devices should be supported via userspace.
+
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+A:  The most ironic oxymoron wins ...
+DP: "Microsoft Works"
+A:  Uh, okay, you win.
+					-- A.J. & Dust Puppy
+User Friendly, 1/18/1998
+
+--0H629O+sVkh21xTi
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFLJ89UHL9iwnUZqnkRAq2bAJ4iWbg2zp+JMXfran8P1HyHPCOKoACfZpFi
+OCcWRKIkW33enNpjN3qh7b0=
+=UIM0
+-----END PGP SIGNATURE-----
+
+--0H629O+sVkh21xTi--
