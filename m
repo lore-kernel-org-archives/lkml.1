@@ -1,36 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbZLOKCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbZLOKEC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759608AbZLOKCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbZLOKCl
+	id S1759612AbZLOKEC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:04:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759523AbZLOKD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:02:41 -0500
-Received: from web82006.mail.mud.yahoo.com ([66.163.178.250]:27579 "HELO
-	web82006.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759423AbZLOKCk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:02:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=H1jFJ69aleoibgPV1lhH14psk2qwnrd2vKduxWKfbTmUui8ECJ7joZtTwpvMAhQgWht4F1I63ibgzz0erWSYJS5IBrBcLh2qpj+Kx0Yol5gyKngcBEFStumz2D1D6iB5W8idksZ60XO5/KhtN4QPFhR9E/DU0tEjowRm5YsrjpY=;
-Message-ID: <152876.92029.qm@web82006.mail.mud.yahoo.com>
-X-YMail-OSG: pqb_fvwVM1lpLHAkn9Gn3lH_cJGvcDlsa8aUBWmWW.PW9lIR_Za55bRg_p5jGylP8kHU9_mPA7UevjZ.48Bu9KBV93dmWkQP6T6jMU0jDkupCzca6x4aE8k2.jIKJiF1HX2H9wsHG8ERk4Y4U0pB9JkZEeIldMbIHGHzC4okRHADXxaiONcSZYQQ7ZhJNwYf2c8sBKuuI1luPXrB.Yi8vRvVqItljX3xObOcKEK2g5ANq8W152qqdSq_AbcpKnSA.Y8yO96iQCA-
-X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.7.361.4
-Date: Tue, 15 Dec 2009 02:02:39 -0800 (PST)
-From: Toyota Xmas Splash <charlott-carter@sbcglobal.net>
-Reply-To: toyota5@hawamail.com
-Subject: =?iso-8859-1?Q?your_email_has_been_awarded_=A3750=2C000_send_your_datas?=
- =?iso-8859-1?Q?=3A?=
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 15 Dec 2009 05:03:58 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:55960 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbZLOKD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 05:03:56 -0500
+Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
+ for 32byte SSIDs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: David Miller <davem@davemloft.net>
+Cc: daniel@caiaq.de, linux-kernel@vger.kernel.org, dcbw@redhat.com,
+       m.hirsch@raumfeld.com, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, stable@kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091215.014308.77044043.davem@davemloft.net>
+References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+	 <20091215.014308.77044043.davem@davemloft.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Q0rfAH3PVOalrltMCQSk"
+Date: Tue, 15 Dec 2009 11:03:31 +0100
+Message-ID: <1260871411.3692.4.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Names........... 
-Country......... 
-Address.........
+--=-Q0rfAH3PVOalrltMCQSk
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2009-12-15 at 01:43 -0800, David Miller wrote:
+
+> > The effect is that after a number of mode transistions (sometimes as fe=
+w
+> > as two sufficed), the kernel will oops at very strange locations, mostl=
+y
+> > in something like __kmem_alloc().
+> >=20
+> > While the root cause turned out to be an issue with the wpa-supplicant
+> > which feeds the kernel driver with garbage, this occasion pointed out a
+> > bug in the wireless wext core when SSIDs with 32 byte lengths are passe=
+d
+> > from userspace. In this case, the string is not properly NULL-terminate=
+d
+> > which causes some other part to corrupt memory.
+> >=20
+> > (In the particular case I observed, an SIOCSIWESSID was issued with
+> >  bogus data in iwp->pointer but iwp->length=3D32).
+> >=20
+> > I admitedly couldn't find where the actual corruption itself happens,
+> > but with this trivial fix, I can't reproduce the bug anymore.
+
+Well you should try harder :)
+
+> > -	/* kzalloc() ensures NULL-termination for essid_compat. */
+> > -	extra =3D kzalloc(extra_size, GFP_KERNEL);
+> > +	/* kzalloc() +1 ensures NULL-termination for essid_compat. */
+> > +	extra =3D kzalloc(extra_size + 1, GFP_KERNEL);
+
+That doesn't seem correct.
+
+If this is used in a SET, then it is purely an in-kernel thing and
+everything in the kernel is passed the length + data, and the kernel
+MUST NEVER treat the SSID as a NUL-terminated string.
+
+If this is used in a GET, then it will be filled up to 32 bytes by the
+get handler, and the trailing \0 your patch reserves will never be
+copied into userspace.
+
+Since you indicate the kernel crashed, it is likely that libertas is
+treating the buffer as a string, instead of an SSID.
+
+That doesn't, however, make your fix and more valid. Whatever code uses
+it as a string is clearly at fault, since this is a valid four-byte
+SSID: "\x00\x01\x02\x03"
+
+johannes
+
+--=-Q0rfAH3PVOalrltMCQSk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLJ17uAAoJEODzc/N7+QmakpQQAIIrYHyJcdJDdRtRLMroqt1c
+zT+e+NIdWHxFT5XRxnzLVyDuJOrmE4/xNgWmHo/gZ60PZtQhaGQO+ekJTQTNSFYK
+Il3pb5TKHR7WBGsJWj1ME14S6hswruCFCjDVgDMozXlFLYc1+QWoWkqHdanh2XaK
+mdwxi1c13cHHWPTgZT5pYtaPELjDktqHJO79NQ7JUQ8JZCPCcxvPNg97l7yZ5kKl
+AyBXbbvTuoG2KY94Lk0qgo1Mwf7Dm4fQNmIrwwFAaIpRZBidDQROTAtMaZcivSoL
+tuvIiJTtpJzxHITx5+iZuHm8HZQHQgDj/lsPeBoodPy2aGNrp/VcPwulyYzY5FU/
+JkeFTMMQEXNpFaa482EM1gyY8MKkyxUQojxU7/KDgpRrBxK1T9D1jp2ALDQfGxyA
+SKE5uVsXrfag+7kM59Q/Dw1LJjcRVSZ0rc0D47Tn/lR98E/gJjxTknUBspyYUA6R
+F0NIcZpgfoi4PdBC+b1/F2FcWN6Riy1aQ9paQcxkRSdpOVi4Mad+e+G4RrXJw6bT
+5aC4BP9337aRAMmLjjl2yZXTSqZ4mbzLS6gVkxX5v39zMeKMgIMPnz/TqlMUZpFo
+PcNjGuM7teS7s96rV4FzHgE2VuR1UKJBK8xxSWQUlD/inreh7xLYlH5CRHXf8Hwp
+V8tFvhpOwnTxU4MIy+4O
+=UhFJ
+-----END PGP SIGNATURE-----
+
+--=-Q0rfAH3PVOalrltMCQSk--
+
