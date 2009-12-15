@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932616AbZLOXZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933872AbZLOXVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932616AbZLOXZG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759937AbZLOXY4
+	id S933872AbZLOXVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932974AbZLOXVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:24:56 -0500
-Received: from na3sys009aog112.obsmtp.com ([74.125.149.207]:41909 "HELO
-	na3sys009aog112.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752058AbZLOW6R convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:58:17 -0500
+	Tue, 15 Dec 2009 18:21:51 -0500
+Received: from smtp107.biz.mail.mud.yahoo.com ([68.142.200.255]:45570 "HELO
+	smtp107.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761720AbZLOXBL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:01:11 -0500
+X-Yahoo-SMTP: qGLgp.mswBDSnFfWmYVMF5Rmg6NJ
+X-YMail-OSG: mMrfqvgVM1lYAYKrYkKer2C5JsY3p8vgn6.4oVoGR_oPekKKzk5vPf4e_bMuSjPS0yMYcgn8VGzWFW6irYhUfL743632DzA6ao16tqrV6enoOAJOPFL_701xynSYHfkfFz5Oa6d.f6fQFpVL02u60vg.IvHu0Qv7Lvjdi9bxMn3CTKUuJTR7ithE4TIeROIdNo4g6yiZufXsv6H.RN_N065hFCtSLr9a3O7zN1WLgj.sGOmNjrt0Nyqa8vUllqpsnEqOSge43pbnG8.rMXipHvdJJ2MwokWDpscEEEJhd0Ww6XksvLVOuh8HkdG5PHhN0VA5Kj3bsNfAlPSpYIm0MgLGuyS9UF3Lpg9MDEsNEC8Bl0GVPg1kdsTGY9vq3nLe5A--
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: [current HEAD] commit 5ad6468801d28c4d4ac9f48ec19297817c915f6a breaks the build on m68knommu
+Date: Tue, 15 Dec 2009 15:01:04 -0800
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <4B26FC52.6060307@billgatliff.com>
-References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
-	 <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se>
-	 <20091207114825.GA26965@rakim.wolfsonmicro.main>
-	 <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
-	 <20091207165628.GA24981@rakim.wolfsonmicro.main>
-	 <20091213132413.GB1437@ucw.cz>
-	 <20091214121247.GB22388@rakim.wolfsonmicro.main>
-	 <20091214212257.GA9213@elf.ucw.cz>
-	 <ed62800912141543v2ab7ef63v4b6b2c33018b3296@mail.gmail.com>
-	 <4B26FC52.6060307@billgatliff.com>
-Date: Wed, 16 Dec 2009 09:58:16 +1100
-Message-ID: <ed62800912151458p6bc1e551g54960af40c54facd@mail.gmail.com>
-Subject: Re: [POWER] battery calibration parameters from sysfs
-From: Aras Vaichas <arasv@magellan-technology.com>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Linus Walleij <linus.walleij@stericsson.com>, cbou@mail.ru,
-       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-embedded@vger.kernel.org, Brian Swetland <swetland@google.com>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912151501.05552.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/15 Bill Gatliff <bgat@billgatliff.com>:
-> Aras Vaichas wrote:
->> Unfortunately the simple coulomb counting chips have the disadvantage
->> that the CPU has to be running to accumulate the pulses. Of course,
->> the pulses could wake the CPU from a suspend mode, but I'd rather not
->> do that just to add "one" to a counter ...
->>
->
-> Could you have the coulomb-counting chip connected to a tiny
-> microcontroller, or even a dedicated hardware counter?  Then the main
-> CPU wouldn't need to wake as often, it could just ask the
-> microcontroller over I2C, or read/reset the hardware counter.
->
-> b.g.
+and I suspect on any nommu:
 
-Yes, but in that case you might as well just purchase a coulomb
-counter with a built-in accumulator and an I2C/SPI/microwire interface
-save yourself some PCB space and cost (maybe)
+In file included from kernel/fork.c:52:
+include/linux/ksm.h:129: warning: 'enum ttu_flags' declared inside parameter 
+list
+include/linux/ksm.h:129: warning: its scope is only this definition or 
+declaration, which is probably not what you want
+include/linux/ksm.h:129: error: parameter 2 ('flags') has incomplete type
+make[1]: *** [kernel/fork.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
 
-Google for, say,  "coulomb counter i2c" and you'll get something like
-this: http://eu.st.com/stonline/products/literature/ds/15269.pdf as an
-example
-
-The only time we used a pulse-and-polarity-output coulomb counter was
-with an ATmega128. The CPU had to run all the time in order to
-maintain its RTC so we could use it to accumulate pulses as well. It
-wasn't a Linux project though.
-
-Aras
+-- 
+Steven King -- sfking at fdwdc dot com
