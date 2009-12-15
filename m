@@ -1,198 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbZLOP3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZLOPrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759011AbZLOP3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbZLOP3b
+	id S1755510AbZLOPrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZLOPrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:29:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8088 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758749AbZLOP27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:28:59 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 14/14] perf probe: Fix to show which probe point is not
-	found
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 15 Dec 2009 10:32:47 -0500
-Message-ID: <20091215153247.17436.49068.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
+	Tue, 15 Dec 2009 10:47:24 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:56628 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbZLOPrX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:47:23 -0500
+Message-ID: <4B27AF77.7010809@gmail.com>
+Date: Tue, 15 Dec 2009 16:47:03 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+CC: Neil Horman <nhorman@tuxdriver.com>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: packet_sendmsg_spkt sleeping from invalid context
+References: <20091214175211.GA5102@nowhere> <4B2690E7.4030303@gmail.com> <20091214205231.GB5037@nowhere> <4B26AD65.1020004@gmail.com> <20091214213002.GA5203@nowhere> <4B26B09A.7050607@gmail.com> <20091215151302.GD5833@nowhere>
+In-Reply-To: <20091215151302.GD5833@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 15 Dec 2009 16:47:12 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix perf probe to show which probe point is not found.
-With out this patch, it shows just "No probe point found."
-This doesn't help users if they specify several probes.
-e.g.
+Le 15/12/2009 16:13, Frederic Weisbecker a écrit :
 
-# perf probe -f --add schedule --add test
-  Fatal: No probe point found.
+> Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+> 
 
-This patch makes error message more helpful as below.
+Thanks for testing Frederic, here is the official patch submission then :)
 
-# perf probe --add schedule --add test
-  Fatal: Probe point 'test' not found. - probe not added.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+[PATCH] packet: dont call sleeping functions while holding rcu_read_lock()
+
+commit 654d1f8a019dfa06d (packet: less dev_put() calls)
+introduced a problem, calling potentially sleeping functions from a
+rcu_read_lock() protected section.
+
+Fix this by releasing lock before the sock_wmalloc()/memcpy_fromiovec() calls.
+
+After skb allocation and copy from user space, we redo device
+lookup and appropriate tests.
+
+Reported-and-tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 ---
+ net/packet/af_packet.c |   71 +++++++++++++++++----------------------
+ 1 file changed, 31 insertions(+), 40 deletions(-)
 
- tools/perf/builtin-probe.c    |    7 +++++--
- tools/perf/util/probe-event.c |   34 ++++++++++++++++++++++++----------
- tools/perf/util/probe-event.h |    1 +
- 3 files changed, 30 insertions(+), 12 deletions(-)
-
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index f019536..beb49e3 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -265,8 +265,11 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 		ret = find_probepoint(fd, pp);
- 		if (ret > 0)
- 			continue;
--		if (ret == 0)	/* No error but failed to find probe point. */
--			die("No probe point found.");
-+		if (ret == 0) {	/* No error but failed to find probe point. */
-+			synthesize_perf_probe_point(pp);
-+			die("Probe point '%s' not found. - probe not added.",
-+			    pp->probes[0]);
+diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+index 0205621..bc17351 100644
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -415,7 +415,7 @@ static int packet_sendmsg_spkt(struct kiocb *iocb, struct socket *sock,
+ {
+ 	struct sock *sk = sock->sk;
+ 	struct sockaddr_pkt *saddr = (struct sockaddr_pkt *)msg->msg_name;
+-	struct sk_buff *skb;
++	struct sk_buff *skb = NULL;
+ 	struct net_device *dev;
+ 	__be16 proto = 0;
+ 	int err;
+@@ -437,6 +437,7 @@ static int packet_sendmsg_spkt(struct kiocb *iocb, struct socket *sock,
+ 	 */
+ 
+ 	saddr->spkt_device[13] = 0;
++retry:
+ 	rcu_read_lock();
+ 	dev = dev_get_by_name_rcu(sock_net(sk), saddr->spkt_device);
+ 	err = -ENODEV;
+@@ -456,58 +457,48 @@ static int packet_sendmsg_spkt(struct kiocb *iocb, struct socket *sock,
+ 	if (len > dev->mtu + dev->hard_header_len)
+ 		goto out_unlock;
+ 
+-	err = -ENOBUFS;
+-	skb = sock_wmalloc(sk, len + LL_RESERVED_SPACE(dev), 0, GFP_KERNEL);
+-
+-	/*
+-	 * If the write buffer is full, then tough. At this level the user
+-	 * gets to deal with the problem - do your own algorithmic backoffs.
+-	 * That's far more flexible.
+-	 */
+-
+-	if (skb == NULL)
+-		goto out_unlock;
+-
+-	/*
+-	 *	Fill it in
+-	 */
+-
+-	/* FIXME: Save some space for broken drivers that write a
+-	 * hard header at transmission time by themselves. PPP is the
+-	 * notable one here. This should really be fixed at the driver level.
+-	 */
+-	skb_reserve(skb, LL_RESERVED_SPACE(dev));
+-	skb_reset_network_header(skb);
+-
+-	/* Try to align data part correctly */
+-	if (dev->header_ops) {
+-		skb->data -= dev->hard_header_len;
+-		skb->tail -= dev->hard_header_len;
+-		if (len < dev->hard_header_len)
+-			skb_reset_network_header(skb);
++	if (!skb) {
++		size_t reserved = LL_RESERVED_SPACE(dev);
++		unsigned int hhlen = dev->header_ops ? dev->hard_header_len : 0;
++
++		rcu_read_unlock();
++		skb = sock_wmalloc(sk, len + reserved, 0, GFP_KERNEL);
++		if (skb == NULL)
++			return -ENOBUFS;
++		/* FIXME: Save some space for broken drivers that write a hard
++		 * header at transmission time by themselves. PPP is the notable
++		 * one here. This should really be fixed at the driver level.
++		 */
++		skb_reserve(skb, reserved);
++		skb_reset_network_header(skb);
++
++		/* Try to align data part correctly */
++		if (hhlen) {
++			skb->data -= hhlen;
++			skb->tail -= hhlen;
++			if (len < hhlen)
++				skb_reset_network_header(skb);
 +		}
- 		/* Error path */
- 		if (session.need_dwarf) {
- 			if (ret == -ENOENT)
-diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index e74ecfc..3c2e743 100644
---- a/tools/perf/util/probe-event.c
-+++ b/tools/perf/util/probe-event.c
-@@ -249,11 +249,12 @@ void parse_trace_kprobe_event(const char *str, struct probe_point *pp)
- 	argv_free(argv);
- }
++		err = memcpy_fromiovec(skb_put(skb, len), msg->msg_iov, len);
++		if (err)
++			goto out_free;
++		goto retry;
+ 	}
  
--int synthesize_perf_probe_event(struct probe_point *pp)
-+/* Synthesize only probe point (not argument) */
-+int synthesize_perf_probe_point(struct probe_point *pp)
- {
- 	char *buf;
- 	char offs[64] = "", line[64] = "";
--	int i, len, ret;
-+	int ret;
- 
- 	pp->probes[0] = buf = zalloc(MAX_CMDLEN);
- 	if (!buf)
-@@ -274,10 +275,24 @@ int synthesize_perf_probe_event(struct probe_point *pp)
- 				 offs, pp->retprobe ? "%return" : "", line);
- 	else
- 		ret = e_snprintf(buf, MAX_CMDLEN, "%s%s", pp->file, line);
--	if (ret <= 0)
--		goto error;
--	len = ret;
-+	if (ret <= 0) {
-+error:
-+		free(pp->probes[0]);
-+		pp->probes[0] = NULL;
-+	}
-+	return ret;
-+}
+-	/* Returns -EFAULT on error */
+-	err = memcpy_fromiovec(skb_put(skb, len), msg->msg_iov, len);
 +
-+int synthesize_perf_probe_event(struct probe_point *pp)
-+{
-+	char *buf;
-+	int i, len, ret;
+ 	skb->protocol = proto;
+ 	skb->dev = dev;
+ 	skb->priority = sk->sk_priority;
+ 	skb->mark = sk->sk_mark;
+-	if (err)
+-		goto out_free;
+-
+-	/*
+-	 *	Now send it
+-	 */
  
-+	len = synthesize_perf_probe_point(pp);
-+	if (len < 0)
-+		return 0;
-+
-+	buf = pp->probes[0];
- 	for (i = 0; i < pp->nr_args; i++) {
- 		ret = e_snprintf(&buf[len], MAX_CMDLEN - len, " %s",
- 				 pp->args[i]);
-@@ -290,6 +305,7 @@ int synthesize_perf_probe_event(struct probe_point *pp)
- 	return pp->found;
- error:
- 	free(pp->probes[0]);
-+	pp->probes[0] = NULL;
+ 	dev_queue_xmit(skb);
+ 	rcu_read_unlock();
+ 	return len;
  
- 	return ret;
+-out_free:
+-	kfree_skb(skb);
+ out_unlock:
+ 	rcu_read_unlock();
++out_free:
++	kfree_skb(skb);
+ 	return err;
  }
-@@ -319,6 +335,7 @@ int synthesize_trace_kprobe_event(struct probe_point *pp)
- 	return pp->found;
- error:
- 	free(pp->probes[0]);
-+	pp->probes[0] = NULL;
  
- 	return ret;
- }
-@@ -418,7 +435,7 @@ static void show_perf_probe_event(const char *event, const char *place,
- /* List up current perf-probe events */
- void show_perf_probe_events(void)
- {
--	int fd, nr;
-+	int fd;
- 	struct probe_point pp;
- 	struct strlist *rawlist;
- 	struct str_node *ent;
-@@ -430,10 +447,7 @@ void show_perf_probe_events(void)
- 	strlist__for_each(ent, rawlist) {
- 		parse_trace_kprobe_event(ent->s, &pp);
- 		/* Synthesize only event probe point */
--		nr = pp.nr_args;
--		pp.nr_args = 0;
--		synthesize_perf_probe_event(&pp);
--		pp.nr_args = nr;
-+		synthesize_perf_probe_point(&pp);
- 		/* Show an event */
- 		show_perf_probe_event(pp.event, pp.probes[0], &pp);
- 		clear_probe_point(&pp);
-diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-index 8fd3052..7f1d499 100644
---- a/tools/perf/util/probe-event.h
-+++ b/tools/perf/util/probe-event.h
-@@ -7,6 +7,7 @@
- 
- extern void parse_perf_probe_event(const char *str, struct probe_point *pp,
- 				   bool *need_dwarf);
-+extern int synthesize_perf_probe_point(struct probe_point *pp);
- extern int synthesize_perf_probe_event(struct probe_point *pp);
- extern void parse_trace_kprobe_event(const char *str, struct probe_point *pp);
- extern int synthesize_trace_kprobe_event(struct probe_point *pp);
 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
