@@ -1,57 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbZLOB7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbZLOCHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758351AbZLOB7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbZLOB7c
+	id S1758523AbZLOCHq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 21:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758342AbZLOCHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:59:32 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46254 "EHLO smtps.tip.net.au"
+	Mon, 14 Dec 2009 21:07:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48048 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758180AbZLOB7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:59:31 -0500
-Date: Tue, 15 Dec 2009 12:59:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: linux-next: manual merge of the voltage tree with Linus' tree
-Message-Id: <20091215125929.51e236a2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1758245AbZLOCHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 21:07:44 -0500
+Message-ID: <4B26EF1B.5090706@kernel.org>
+Date: Mon, 14 Dec 2009 18:06:19 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] x86: call early_res_to_bootmem one time
+References: <4B22D4DA.2000104@kernel.org> <4B22D754.2020706@kernel.org>
+In-Reply-To: <4B22D754.2020706@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Liam,
 
-Today's linux-next merge of the voltage tree got a conflict in
-drivers/regulator/Makefile between commit
-b07682b6056eb6701f8cb86aa5800e6f2ea7919b ("mfd: Rename twl4030* driver
-files to enable re-use") from Linus' tree and commit
-9c4d460f13b7d81abb26449a3920638889a3e5ed ("regulator: add driver for
-MAX8660/8661") from the voltage tree.
+simplify setup_node_mem, do use bootmem from other node.
+instead just find_e820_area in early_node_mem.
 
-Just context changes.  I fixed it up (see below) and can carry the fix
-for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+so we can keep the boundary between early_res and boot mem more clear.
+and only call civertion one time instead of for all nodes.
 
-diff --cc drivers/regulator/Makefile
-index 9ae3cc4,2cf98a7..0000000
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@@ -11,7 -11,8 +11,8 @@@ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUM
-  obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
-  obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
-  obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
-+ obj-$(CONFIG_REGULATOR_MAX8660) += max8660.o
- -obj-$(CONFIG_REGULATOR_TWL4030) += twl4030-regulator.o
- +obj-$(CONFIG_REGULATOR_TWL4030) += twl-regulator.o
-  obj-$(CONFIG_REGULATOR_WM831X) += wm831x-dcdc.o
-  obj-$(CONFIG_REGULATOR_WM831X) += wm831x-isink.o
-  obj-$(CONFIG_REGULATOR_WM831X) += wm831x-ldo.o
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/setup.c |    1 
+ arch/x86/mm/init_32.c   |    1 
+ arch/x86/mm/init_64.c   |    3 --
+ arch/x86/mm/numa_64.c   |   62 +++++++++++++++---------------------------------
+ 4 files changed, 22 insertions(+), 45 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -942,6 +942,7 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ 
+ 	initmem_init(0, max_pfn, acpi, k8);
++	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
+ 
+ #ifdef CONFIG_X86_64
+ 	/*
+Index: linux-2.6/arch/x86/mm/init_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_32.c
++++ linux-2.6/arch/x86/mm/init_32.c
+@@ -764,7 +764,6 @@ static unsigned long __init setup_node_b
+ 	printk(KERN_INFO "  node %d bootmap %08lx - %08lx\n",
+ 		 nodeid, bootmap, bootmap + bootmap_size);
+ 	free_bootmem_with_active_regions(nodeid, end_pfn);
+-	early_res_to_bootmem(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT);
+ 
+ 	return bootmap + bootmap_size;
+ }
+Index: linux-2.6/arch/x86/mm/init_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_64.c
++++ linux-2.6/arch/x86/mm/init_64.c
+@@ -578,13 +578,12 @@ void __init initmem_init(unsigned long s
+ 				 PAGE_SIZE);
+ 	if (bootmap == -1L)
+ 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
++	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
+ 	/* don't touch min_low_pfn */
+ 	bootmap_size = init_bootmem_node(NODE_DATA(0), bootmap >> PAGE_SHIFT,
+ 					 0, end_pfn);
+ 	e820_register_active_regions(0, start_pfn, end_pfn);
+ 	free_bootmem_with_active_regions(0, end_pfn);
+-	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
+-	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
+ }
+ #endif
+ 
+Index: linux-2.6/arch/x86/mm/numa_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/numa_64.c
++++ linux-2.6/arch/x86/mm/numa_64.c
+@@ -164,18 +164,21 @@ static void * __init early_node_mem(int
+ 				    unsigned long align)
+ {
+ 	unsigned long mem = find_e820_area(start, end, size, align);
+-	void *ptr;
+ 
+ 	if (mem != -1L)
+ 		return __va(mem);
+ 
+-	ptr = __alloc_bootmem_nopanic(size, align, __pa(MAX_DMA_ADDRESS));
+-	if (ptr == NULL) {
+-		printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
++
++	start = __pa(MAX_DMA_ADDRESS);
++	end = max_low_pfn_mapped << PAGE_SHIFT;
++	mem = find_e820_area(start, end, size, align);
++	if (mem != -1L)
++		return __va(mem);
++
++	printk(KERN_ERR "Cannot find %lu bytes in node %d\n",
+ 		       size, nodeid);
+-		return NULL;
+-	}
+-	return ptr;
++
++	return NULL;
+ }
+ 
+ /* Initialize bootmem allocator for a node */
+@@ -211,8 +214,12 @@ setup_node_bootmem(int nodeid, unsigned
+ 	if (node_data[nodeid] == NULL)
+ 		return;
+ 	nodedata_phys = __pa(node_data[nodeid]);
++	reserve_early(nodedata_phys, nodedata_phys + pgdat_size, "NODE_DATA");
+ 	printk(KERN_INFO "  NODE_DATA [%016lx - %016lx]\n", nodedata_phys,
+ 		nodedata_phys + pgdat_size - 1);
++	nid = phys_to_nid(nodedata_phys);
++	if (nid != nodeid)
++		printk(KERN_INFO "    NODE_DATA(%d) on node %d\n", nodeid, nid);
+ 
+ 	memset(NODE_DATA(nodeid), 0, sizeof(pg_data_t));
+ 	NODE_DATA(nodeid)->bdata = &bootmem_node_data[nodeid];
+@@ -227,11 +234,7 @@ setup_node_bootmem(int nodeid, unsigned
+ 	 * of alloc_bootmem, that could clash with reserved range
+ 	 */
+ 	bootmap_pages = bootmem_bootmap_pages(last_pfn - start_pfn);
+-	nid = phys_to_nid(nodedata_phys);
+-	if (nid == nodeid)
+-		bootmap_start = roundup(nodedata_phys + pgdat_size, PAGE_SIZE);
+-	else
+-		bootmap_start = roundup(start, PAGE_SIZE);
++	bootmap_start = roundup(nodedata_phys + pgdat_size, PAGE_SIZE);
+ 	/*
+ 	 * SMP_CACHE_BYTES could be enough, but init_bootmem_node like
+ 	 * to use that to align to PAGE_SIZE
+@@ -239,18 +242,13 @@ setup_node_bootmem(int nodeid, unsigned
+ 	bootmap = early_node_mem(nodeid, bootmap_start, end,
+ 				 bootmap_pages<<PAGE_SHIFT, PAGE_SIZE);
+ 	if (bootmap == NULL)  {
+-		if (nodedata_phys < start || nodedata_phys >= end) {
+-			/*
+-			 * only need to free it if it is from other node
+-			 * bootmem
+-			 */
+-			if (nid != nodeid)
+-				free_bootmem(nodedata_phys, pgdat_size);
+-		}
++		free_early(nodedata_phys, nodedata_phys + pgdat_size);
+ 		node_data[nodeid] = NULL;
+ 		return;
+ 	}
+ 	bootmap_start = __pa(bootmap);
++	reserve_early(bootmap_start, bootmap_start+(bootmap_pages<<PAGE_SHIFT),
++			"BOOTMAP");
+ 
+ 	bootmap_size = init_bootmem_node(NODE_DATA(nodeid),
+ 					 bootmap_start >> PAGE_SHIFT,
+@@ -259,31 +257,11 @@ setup_node_bootmem(int nodeid, unsigned
+ 	printk(KERN_INFO "  bootmap [%016lx -  %016lx] pages %lx\n",
+ 		 bootmap_start, bootmap_start + bootmap_size - 1,
+ 		 bootmap_pages);
+-
+-	free_bootmem_with_active_regions(nodeid, end);
+-
+-	/*
+-	 * convert early reserve to bootmem reserve earlier
+-	 * otherwise early_node_mem could use early reserved mem
+-	 * on previous node
+-	 */
+-	early_res_to_bootmem(start, end);
+-
+-	/*
+-	 * in some case early_node_mem could use alloc_bootmem
+-	 * to get range on other node, don't reserve that again
+-	 */
+-	if (nid != nodeid)
+-		printk(KERN_INFO "    NODE_DATA(%d) on node %d\n", nodeid, nid);
+-	else
+-		reserve_bootmem_node(NODE_DATA(nodeid), nodedata_phys,
+-					pgdat_size, BOOTMEM_DEFAULT);
+ 	nid = phys_to_nid(bootmap_start);
+ 	if (nid != nodeid)
+ 		printk(KERN_INFO "    bootmap(%d) on node %d\n", nodeid, nid);
+-	else
+-		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
+-				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
++
++	free_bootmem_with_active_regions(nodeid, end);
+ 
+ 	node_set_online(nodeid);
+ }
