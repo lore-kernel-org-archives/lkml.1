@@ -1,33 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZLOXlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934139AbZLOXzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZLOXlh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZLOXlf
+	id S934139AbZLOXzJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934011AbZLOXy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:41:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53939 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750951AbZLOXle (ORCPT
+	Tue, 15 Dec 2009 18:54:56 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52512 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934122AbZLOXyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:41:34 -0500
-Date: Tue, 15 Dec 2009 15:41:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       linux-kernel@vger.kernel.org, rubini@gnudd.com, gregkh@suse.de
-Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
- allocation
-Message-Id: <20091215154114.e45e61d0.akpm@linux-foundation.org>
-In-Reply-To: <20091215233738.26188500@lxorguk.ukuu.org.uk>
-References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
-	<1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
-	<1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
-	<4AF8B4FF.9050405@zytor.com>
-	<20091111153632.944a255c.akpm@linux-foundation.org>
-	<20091215143446.8b6a7e57.akpm@linux-foundation.org>
-	<20091215233738.26188500@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 15 Dec 2009 18:54:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Ik7aiIpujPABMbuz4tkesLTWAyNbDGFPmKAUEGkCOsQJadq/sjcFeqzojbd+F1LHYS
+         JCTS1i4eeInot1n4KnvNU1Mv+gP1bvK4MD69swQVP9u8NUkwb2xrFVI5HsEIdkbHA6mD
+         UHQfzUDwPjNJhVANYDNf3SMDJWmG65roIxXJ0=
+Date: Wed, 16 Dec 2009 08:48:59 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com, Lee.Schermerhorn@hp.com
+Subject: Re: [mmotm][PATCH 2/5] mm : avoid  false sharing on mm_counter
+Message-Id: <20091216084859.a93c9727.minchan.kim@barrios-desktop>
+In-Reply-To: <alpine.DEB.2.00.0912150920160.16754@router.home>
+References: <20091215180904.c307629f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091215181337.1c4f638d.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0912150920160.16754@router.home>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,34 +39,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009 23:37:38 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Hi, Christoph. 
 
-> > > I merged this patch, but made a note-to-self that there are remaining
-> > > open issues..
-> > 
-> > And nothing else happened.  Can we revisit this please?
-> 
-> The last I saw was a request for an explanation of the users
-> configuration and how he was getting so many misc devices. Its a bug in
-> dlm if the dlm is doing that but I didn't see any follow up to the DLM
-> folks on the subject from the reporter, so it stays NACKed and conflicts
-> with the device registry.
-> 
-> We need to know from the DLM folks/Thaddeu what is actually going on with
-> that system, especially as it seems to be producing multiple
-> registrations of the same misc device name which is completely broken and
-> should probably be made to error anyway.
-> 
-> Whatever is going on this is the wrong "fix". If DLM should only register
-> it once (as seems the intent) then DLM needs fixing or the users config
-> or both. If it can register many then DLM needs fixing to not eat misc
-> devices.
-> 
-> <eviltwin>Possibly we need to make it BUG_ON() adding the same name twice, then
-> perhaps we'd get more feedback</eviltwin>
-> 
+On Tue, 15 Dec 2009 09:25:01 -0600 (CST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-OK, thanks, I dropped it.  We can always reappyly it (or a variant)
-once this is all sorted out.
+> On Tue, 15 Dec 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> >  #if USE_SPLIT_PTLOCKS
+> > +#define SPLIT_RSS_COUNTING
+> >  struct mm_rss_stat {
+> >  	atomic_long_t count[NR_MM_COUNTERS];
+> >  };
+> > +/* per-thread cached information, */
+> > +struct task_rss_stat {
+> > +	int events;	/* for synchronization threshold */
+> 
+> Why count events? Just always increment the task counters and fold them
+> at appropriate points into mm_struct. Or get rid of the mm_struct counters
+> and only sum them up on the fly if needed?
 
+We are now suffering from finding appropriate points you mentioned.
+That's because we want to remove read-side overhead with no regression.
+So I think Kame removed schedule update hook.
+
+Although the hooks is almost no overhead, I don't want to make mm counters
+stale because it depends on schedule point.
+If any process makes many faults in its time slice and it's not preempted
+(ex, RT) as extreme case, we could show stale counters. 
+
+But now it makes consistency to merge counters.
+Worst case is 64. 
+
+In this aspect, I like this idea. 
+
+-- 
+Kind regards,
+Minchan Kim
