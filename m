@@ -1,95 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbZLOBAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbZLOBA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758335AbZLOBAT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbZLOBAS
+	id S1758655AbZLOBA1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758365AbZLOBAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:00:18 -0500
-Received: from mga14.intel.com ([143.182.124.37]:60621 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757443AbZLOBAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:00:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="222838753"
-Subject: Re: [patch 2/2] sched: Scale the nohz_tracker logic by making it
- per NUMA node
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-In-Reply-To: <1260831496.8023.210.camel@laptop>
-References: <20091211012748.267627000@intel.com>
-	 <20091211013056.450920000@intel.com>  <1260829283.8023.124.camel@laptop>
-	 <1260829958.15729.194.camel@localhost.localdomain>
-	 <1260831496.8023.210.camel@laptop>
-Content-Type: text/plain
-Date: Mon, 14 Dec 2009 17:00:15 -0800
-Message-Id: <1260838815.15729.214.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 20:00:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41946 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758360AbZLOBAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 20:00:22 -0500
+Date: Mon, 14 Dec 2009 17:00:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [GIT PATCH] USB patches for 2.6.33-git
+In-Reply-To: <20091215005216.GA9309@kroah.com>
+Message-ID: <alpine.LFD.2.00.0912141658290.14385@localhost.localdomain>
+References: <20091211212646.GB6624@kroah.com> <alpine.LFD.2.00.0912141635000.14385@localhost.localdomain> <20091215005216.GA9309@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-14 at 14:58 -0800, Peter Zijlstra wrote:
-> On Mon, 2009-12-14 at 14:32 -0800, Pallipadi, Venkatesh wrote:
-> > 
-> > The idea is to do idle balance only within the nodes.
-> > Eg: 4 node (and 4 socket) system with each socket having 4 cores.
-> > If there is a single active thread on such a system, say on socket 3.
-> > Without this change we have 1 idle load balancer (which may be in socket
-> > 0) which has periodic ticks and remaining 14 cores will be tickless.
-> > But this one idle load balancer does load balance on behalf of itself +
-> > 14 other idle cores.
-> > 
-> > With the change proposed in this patch, we will have 3 completely idle
-> > nodes/sockets. We will not do load balance on these cores at all.
+
+
+On Mon, 14 Dec 2009, Greg KH wrote:
 > 
-> That seems like a behavioural change, not balancing these 3 nodes at all
-> could lead to overload scenarios on the one active node, right?
-> 
+> Any kind of kernel log messages?  This would be a USB 2.0 device, right?
 
-Yes. You are right. This can result in some node level imbalance. The
-main problem that we were trying to solve is over-aggressive attempt to
-load balance idle CPUs. We have seen on a system with 64 logical CPUs,
-if there is only active thread, we have seen one other CPU (the idle
-load balancer) spending 3-5% time being non-idle just trying to do load
-balance on behalf of 63 idle CPUs on a continuous basis. Trying idle
-rebalance every jiffy across all nodes when balance across nodes has
-interval of 8 or 16 jiffies. There are other forms of rebalancing like
-fork and exec that will still balance across nodes. But, if there are no
-forks/execs, we will have the overload scenario you pointed out.
+There's no odd messages. I see the regular connect and disconnect 
+messages, so I know the USB layer _saw_ the printer. But apart from that, 
+nothing actually happens. And no printout.
 
-I guess we need to look at other alternatives to make this cross node
-idle load balancing more intelligent. However, first patch in this
-series  has its share of advantages in avoiding unneeded idle balancing.
-And with first patch, cross node issues will be no worse than current
-state. So, that is worth as a stand alone change as well. 
+> Hm, I just tried to print from mine on your latest tree, and I have a
+> stream of:
 
-> > Remaining one active socket will have one idle load balancer, which when
-> > needed will do idle load balancing on behalf of itself + 2 other idle
-> > cores in that socket.
-> 
-> > If there all sockets have atleast one busy core, then we may have more
-> > than one idle load balancer, but each will only do idle load balance on
-> > behalf of idle processors in its own node, so total idle load balance
-> > will be same as now.
-> 
-> How about things like Magny-Cours which will have multiple nodes per
-> socket, wouldn't that be best served by having the total socket idle,
-> instead of just half of it?
-> 
+Ahha. So I'm not the only one. 
 
-Yes. But, that will be same with general load balancing behavior and not
-just idle load balancing. That would probably need another level in
-scheduler domain?
+Will continue to bisect.
 
-Thanks,
-Venki
-
+		Linus
