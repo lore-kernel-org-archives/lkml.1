@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761035AbZLOT7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbZLOUDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761035AbZLOT7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760997AbZLOT7r
+	id S1761045AbZLOUDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZLOUDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:59:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16561 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759861AbZLOT7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:59:46 -0500
-Date: Tue, 15 Dec 2009 13:59:36 -0600
-From: Clark Williams <williams@redhat.com>
-To: RT <linux-rt-users@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <ce@ceag.ch>,
-       John Kacur <jkacur@redhat.com>
-Subject: v0.57 of rt-tests available
-Message-ID: <20091215135936.5a7f2d56@torg>
-Organization: Red Hat, Inc
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/Ha20NZVN/JW.5=lOkGh/Z/d"; protocol="application/pgp-signature"
+	Tue, 15 Dec 2009 15:03:49 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52177 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760989AbZLOUDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 15:03:48 -0500
+Subject: Re: [PATCH resend] x86, amd: Get multi-node CPU info from NodeId MSR instead of PCI config space
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Tue, 15 Dec 2009 12:00:36 -0800
+To: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>
+CC: Andreas Herrmann <herrmann.der.user@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Message-ID: <mkk2iqhh6vhhmxaxruuvafvb.1260907236343@email.android.com>
+Content-Type: multipart/mixed; boundary="----LLVGJF2YJEGSVVBH1SKKSPA3M42TQY"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Ha20NZVN/JW.5=lOkGh/Z/d
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+------LLVGJF2YJEGSVVBH1SKKSPA3M42TQY
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: base64
 
-Version 0.57 of the rt-tests package is now available both as a tarball
-on kernel.org and in my git repository:
+VGhhdCdzIG5pY2UuICBJdCBzaG91bGQgYmUgaW4gdGhlIGNvZGUsIG5vdCBpbiB0aGUgY29tbWl0
+IG1lc3NhZ2UuCgoiQm9yaXNsYXYgUGV0a292IiA8Ym9yaXNsYXYucGV0a292QGFtZC5jb20+IHdy
+b3RlOgoKPk9uIFR1ZSwgRGVjIDE1LCAyMDA5IGF0IDA4OjMxOjUwUE0gKzAxMDAsIEluZ28gTW9s
+bmFyIHdyb3RlOg0KPj4gDQo+PiAqIEFuZHJlYXMgSGVycm1hbm4gPGhlcnJtYW5uLmRlci51c2Vy
+QGdvb2dsZW1haWwuY29tPiB3cm90ZToNCj4+IA0KPj4gPiArCXJkbXNybCgweGMwMDExMDBjLCB2
+YWx1ZSk7DQo+PiANCj4+IERvbnQgd2Ugd2FudCBzb21lIG5pY2UsIG1lYW5pbmdmdWxseSBuYW1l
+ZCBzeW1ib2xpYyBjb25zdGFudCBoZXJlLCBpbnN0ZWFkIG9mIA0KPj4gMHhjMDAxMTAwYz8NCj4N
+Cj5UaGUgTVNSIG5hbWUgaXMgYWN0dWFsbHkgaW4gdGhlIGNvbW1pdCBtc2csIG1heWJlIHNvbWV0
+aGluZyBsaWtlDQo+TVNSX0YxMEhfTk9ERV9JRC4NCj4NCj4tLSANCj5SZWdhcmRzL0dydXNzLA0K
+PkJvcmlzLg0KPg0KPk9wZXJhdGluZyB8IEFkdmFuY2VkIE1pY3JvIERldmljZXMgR21iSA0KPiAg
+U3lzdGVtICB8IEthcmwtSGFtbWVyc2NobWlkdC1TdHIuIDM0LCA4NTYwOSBEb3JuYWNoIGIuIE3D
+vG5jaGVuLCBHZXJtYW55DQo+IFJlc2VhcmNoIHwgR2VzY2jDpGZ0c2bDvGhyZXI6IEFuZHJldyBC
+b3dkLCBUaG9tYXMgTS4gTWNDb3ksIEdpdWxpYW5vIE1lcm9uaQ0KPiAgQ2VudGVyICB8IFNpdHo6
+IERvcm5hY2gsIEdlbWVpbmRlIEFzY2hoZWltLCBMYW5ka3JlaXMgTcO8bmNoZW4NCj4gIChPU1JD
+KSAgfCBSZWdpc3RlcmdlcmljaHQgTcO8bmNoZW4sIEhSQiBOci4gNDM2MzINCj4NCgotLQpTZW50
+IGZyb20gbXkgbW9iaWxlIHBob25lLiBQbGVhc2UgZXhjdXNlIGFueSBsYWNrIG9mIGZvcm1hdHRp
+bmcu
 
-tarball:
+------LLVGJF2YJEGSVVBH1SKKSPA3M42TQY--
 
-http://www.kernel.org/pub/linux//kernel/people/clrkwllms/rt-tests/rt-tests-=
-0.57.tar.bz2
-
-git:
-	git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git
-
-This version adds tests from Carsten Emde:
-
-- backfire/sendme - measure signal propagation time from driver to
-  userspace
-- ptsematest - measure latency of posix mutex
-- sigwaittest - measure interthread signal latency
-- svsematest - measure interthread SystemV semaphore latency
-
-Many thanks to John Kacur <jkacur@redhat.com> for doing the integration
-work in adding these tests.=20
-
-Clark
-
---Sig_/Ha20NZVN/JW.5=lOkGh/Z/d
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEARECAAYFAksn6q4ACgkQHyuj/+TTEp2kRgCgs2YZlbGA+sWCUdRL/JSLJnH8
-LZwAoLJX7VfE3XxS0n1OxswOSyy8E/zj
-=S3gB
------END PGP SIGNATURE-----
-
---Sig_/Ha20NZVN/JW.5=lOkGh/Z/d--
