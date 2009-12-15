@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbZLOAvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZLOAha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757758AbZLOAvS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 19:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZLOAvO
+	id S1755390AbZLOAha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 19:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZLOAh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 19:51:14 -0500
-Received: from 216-239-44-51.google.com ([216.239.44.51]:42749 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755616AbZLOAvN convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 19:37:29 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51865 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbZLOAh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 19:51:13 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ZKYhC4OQylDxJrxRXD7k+lUtcAJLHr5C4VSjMCzeYV0pVgLZANFmCTcg8D/f+VcTZ
-	YyL7v+vOT9s7qfW8nFD6A==
-MIME-Version: 1.0
-In-Reply-To: <20091214161922.6f252492@infradead.org>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	 <20091214161922.6f252492@infradead.org>
-Date: Mon, 14 Dec 2009 16:36:20 -0800
-Message-ID: <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the 
-	Linux Kernel
-From: Salman Qazi <sqazi@google.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Mon, 14 Dec 2009 19:37:27 -0500
+Subject: Re: PATCH v2 3/4] Defer skb allocation -- new recvbuf alloc &
+ receive calls
+From: Shirley Ma <mashirle@us.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <1260828518.8716.105.camel@localhost.localdomain>
+References: <1258697359.7416.14.camel@localhost.localdomain>
+	 <200911231123.18898.rusty@rustcorp.com.au>
+	 <20091208122134.GA17286@redhat.com>
+	 <1260534506.30371.6.camel@localhost.localdomain>
+	 <1260535613.30371.24.camel@localhost.localdomain>
+	 <20091213114320.GC7074@redhat.com>
+	 <1260828518.8716.105.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 14 Dec 2009 16:37:15 -0800
+Message-Id: <1260837435.4387.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Mon, 14 Dec 2009 15:11:47 -0800
-> Salman Qazi <sqazi@google.com> wrote:
->
->
-> I like the general idea, I have one request (that I didn't see quite in
-> your explanation): Please make sure that all cpus in the system do
-> their idle injection at the same time, so that memory can go into power
-> saving mode as well during this time etc etc...
->
+Hello Michael,
 
-With the current interface, the forced idle percentages on the CPUs
-are controlled independently.  There's a trade-off here.  If we inject
-idle cycles on all the CPU at the same time, our machine
-responsiveness also degrades: essentially every CPU becomes equally
-bad for an interactive task to run on.  Our aim at the moment is to
-try to concentrate the idle cycles on a small set of CPUs, to strive
-to leave some CPUs where interactive tasks can run unhindered.  But,
-given a different workload and goals the correct policy may be
-different.
+On Mon, 2009-12-14 at 14:08 -0800, Shirley Ma wrote:
+> > > +
+> > > +     err = vi->rvq->vq_ops->add_buf(vi->rvq, sg, 0, 2, skb);
+> > > +     if (err < 0)
+> > > +             kfree_skb(skb);
+> > > +     else
+> > > +             skb_queue_head(&vi->recv, skb);
+> > 
+> > So why are we queueing this still?
+> This is for small packet. I didn't change that code since it will
+> involve extra copy by using page.
 
-Simultaneously idling multiple "cores" becomes necessary in the SMT
-case: as there is no point in idling a single thread, while the other
-thread is running full tilt.  So, in such a case it is necessary to
-idle all the threads making up the physical core.  This feature has
-not been implemented yet.
+I think I can remove skb link for small packet as well by adding
+kfree_skb() in virtio_net_free_bufs for small packet.
 
-I think the best approach may be to provide a way to specify the
-policy from the user space.  Basically let the user decide at what
-level of CPU hierarchy the forced idle percentages are specified.
-Then, in the levels below, we simply inject at the same time.
+Thanks
+Shirley
 
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
