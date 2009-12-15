@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbZLOCWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbZLOCbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932346AbZLOCWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 21:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbZLOCWR
+	id S1758864AbZLOCbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 21:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbZLOCbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 21:22:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17440 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758433AbZLOCWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 21:22:16 -0500
-Date: Tue, 15 Dec 2009 00:20:20 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/urgent] perf symbols: Allow lookups by symbol name
-	too
-Message-ID: <20091215022020.GD21796@ghostprotocols.net>
-References: <1260564622-12392-1-git-send-email-acme@infradead.org> <tip-79406cd789f745ac6aa9d597895f904a98a14007@git.kernel.org> <20091215021201.GB6048@nowhere>
+	Mon, 14 Dec 2009 21:31:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45813 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754871AbZLOCbu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 21:31:50 -0500
+Date: Mon, 14 Dec 2009 18:29:23 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>, Russ Dill <Russ.Dill@gmail.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: [GIT PATCH] USB patches for 2.6.33-git
+In-Reply-To: <alpine.LFD.2.00.0912141744360.14385@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0912141827200.14385@localhost.localdomain>
+References: <20091211212646.GB6624@kroah.com> <alpine.LFD.2.00.0912141635000.14385@localhost.localdomain> <20091215005216.GA9309@kroah.com> <alpine.LFD.2.00.0912141658290.14385@localhost.localdomain>
+ <alpine.LFD.2.00.0912141744360.14385@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091215021201.GB6048@nowhere>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, Dec 15, 2009 at 03:12:03AM +0100, Frederic Weisbecker escreveu:
-> On Sat, Dec 12, 2009 at 07:22:03AM +0000, tip-bot for Arnaldo Carvalho de Melo wrote:
-> > Looking over the vmlinux/kallsyms is common enough that I'll add a
-> > variable to the upcoming struct perf_session to avoid the need to
-> > use map_groups__find_by_name to get the main vmlinux/kallsyms map.
-> > 
-> > The above example looks on the 'variable' symtab, but it is just
-> > like that for the functions one.
-> > 
-> > Also the sort operation is done when we first use
-> > map__find_symbol_by_name, in a lazy way.
+
+
+On Mon, 14 Dec 2009, Linus Torvalds wrote:
 > 
-> It would be nice to also have a kernel symbol resolution
-> helper independant of any session.
-> 
-> The problem is that I need to resolve a kernel variable symbol
-> very early, when we parse record options. We don't have any
-> session at this time so I can't retrieve the kmaps.
+> Not surprising, and there's 85 commits in between those points, so I'll 
+> have to do 7 more bisection points.
 
-Humm, I don't think that is a problem, we just have to create the
-session before processing the args, after all at record time we can use
-kallsyms already.
+It bisected down to this:
 
-> I'm not sure what's the proper way to handle that.
+commit a2582bd478c13c574d4c16ef1209d333f2a25935
+Author: Russ Dill <russ.dill@gmail.com>
+Date:   Wed Nov 18 11:02:13 2009 -0700
 
-What is the problem? I'm not following :-)
+    USB: Close usb_find_interface race
+    
+    USB drivers that create character devices call usb_register_dev in their
+    probe function. This associates the usb_interface device with that minor
+    number and creates the character device and announces it to the world.
+    However, the driver's probe function is called before the new
+    usb_interface is added to the driver's klist_devices.
+    ...
 
-- Arnaldo
+and what's even scarier is that that commit is marked for stable too. Did 
+it already make it?
+
+I'll double-check by reverting it from current -tip, but if you don't hear 
+anything different from me, you can assume that that double-check 
+succeeded and confirms that that commit really is the cause of my printer 
+no longer working.
+
+			Linus
