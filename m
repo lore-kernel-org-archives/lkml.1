@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZLOKlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbZLOKbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbZLOKlH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:41:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbZLOKlG
+	id S1759737AbZLOKbx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759689AbZLOKbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:41:06 -0500
-Received: from emita2.mittwald.de ([85.199.129.253]:50046 "EHLO
-	emita2.mittwald.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757930AbZLOKlF (ORCPT
+	Tue, 15 Dec 2009 05:31:52 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:37252 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759678AbZLOKbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:41:05 -0500
-X-Greylist: delayed 507 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Dec 2009 05:41:05 EST
-From: Holger Schurig <holgerschurig@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination for 32byte SSIDs
-Date: Tue, 15 Dec 2009 11:30:58 +0100
-User-Agent: KMail/1.9.7
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Miller <davem@davemloft.net>, daniel@caiaq.de,
-       linux-kernel@vger.kernel.org, dcbw@redhat.com, m.hirsch@raumfeld.com,
-       netdev@vger.kernel.org, libertas-dev@lists.infradead.org,
-       stable@kernel.org
-References: <1260650850-16163-1-git-send-email-daniel@caiaq.de> <1260871411.3692.4.camel@johannes.local> <1260871634.3692.6.camel@johannes.local>
-In-Reply-To: <1260871634.3692.6.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912151130.59103.holgerschurig@gmail.com>
+	Tue, 15 Dec 2009 05:31:49 -0500
+Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
+ for 32byte SSIDs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       dcbw@redhat.com, m.hirsch@raumfeld.com, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, stable@kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091215102035.GJ28375@buzzloop.caiaq.de>
+References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+	 <20091215.014308.77044043.davem@davemloft.net>
+	 <1260871411.3692.4.camel@johannes.local>
+	 <1260871634.3692.6.camel@johannes.local>
+	 <20091215102035.GJ28375@buzzloop.caiaq.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MTUIoK4uGX41ZSlBruir"
+Date: Tue, 15 Dec 2009 11:31:23 +0100
+Message-ID: <1260873083.3692.8.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> drivers/net/wireless/libertas$ grep lbs_deb_ * | grep ssid
-> |grep '%s' 
-> assoc.c:	lbs_deb_join("current SSID '%s', ssid length %u\n",
-> assoc.c:	lbs_deb_join("requested ssid '%s', ssid length %u\n",
-> assoc.c:	lbs_deb_join("ADHOC_START: SSID '%s', ssid
->               length %u\n", 
-> scan.c:		lbs_deb_wext("set_scan, essid '%s'\n",
 
-All those lines are gone once my cfg80211 lands.
+--=-MTUIoK4uGX41ZSlBruir
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Do you know any way to make sparse moan about them?
+On Tue, 2009-12-15 at 18:20 +0800, Daniel Mack wrote:
 
+> > > Since you indicate the kernel crashed, it is likely that libertas is
+> > > treating the buffer as a string, instead of an SSID.
+>=20
+> Ok, I dodn't know that - thanks for pointing it out. In my setup here,
+> SSIDs are always valid alphanumeric strings, and I was mislead by the
+> comment that mentions the NULL-termination.
 
-BTW: the libertas firmware sometimes treat an SSID as a 
-zero-terminated string. There are some firmware commands that 
-accept just an u8[32] bytes for the SSID, but not an ssid_len, 
-e.g. in the CMD_802_11_AD_HOC_START command.
+Yeah ... that's an unfortunate historic mistake in wireless extensions
+that we try to fix up there. It cannot always be successfully fixed up,
+but the NUL-termination is nothing that anything but this code should be
+worried about or rely on.
 
-You therefore can't connect to the otherwise legitimate SSID of 
-TEST\0\0\0.
+> > drivers/net/wireless/libertas$ grep lbs_deb_ * | grep ssid|grep '%s'
+> > assoc.c:	lbs_deb_join("current SSID '%s', ssid length %u\n",
+> > assoc.c:	lbs_deb_join("requested ssid '%s', ssid length %u\n",
+> > assoc.c:	lbs_deb_join("ADHOC_START: SSID '%s', ssid length %u\n",
+> > scan.c:		lbs_deb_wext("set_scan, essid '%s'\n",
+>=20
+> Those macros are stubbed out as nops in my setup, so they can
+> unfortunately not be the reason. I'll dig deeper :)
 
--- 
-http://www.holgerschurig.de
+Well, the stack trace ought to help.
+
+johannes
+
+--=-MTUIoK4uGX41ZSlBruir
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLJ2V3AAoJEODzc/N7+Qmad3gQAJ1FPGr7txGCvsafXohdRLlh
+7h7VnJQ21rmpB/g8KuKumBdUwh5ALEHmYNq5LMIbAGEzX7e7qOB5Dmhbh9BHWEzI
+Rs+rxA4kDom3fKx96P+O/6Nd4LCcVLql+tGcVZZMdEhDWJUFUcFfcEY793hDwcub
+LylfhXxRfcbIT5Kd2I9R6gqh3w7RT7ak6QP42lzab8L4s6vpAzudr7YImqAJMnOA
+Y3XjAFeqyxovu2EwiUIcyFDJGO805cbD16QsZiN3HwjNMya/VCZPe+TIDSPU3uOX
+IgsYdkyqgwsrOEsXj4drfiNBB68IGHLMej8dPoENLDHv1eoYafPgNEMHh3dQppE0
+WMfgGz6EB8pQMWgLMHlLP2TFS7q0cBZJU2GPjdMNxi5bIY54NrU+TyxCjs09iolB
+TptMCsdzq/M89+x9H2mqlo8jti63UxuU5uLahywngWWMCOvdlVpSVFmnOmxf6EJu
+4zrd3p2UpjI+xXqPAKVMVHJHdcl08Lz6xVZT3MVMkzJITUCyO/PWk06GzTMQA8+5
+D0U7KkXJBOGdqrGWh4Fxi9EjXB6TPt5CjUu5vGBXfODtODjEPhC7otwEV2pzxePI
+uYZwg78VNnx3F6Dw0YLRHC/QxUkUBFj/btV1belk2LSGAQ9J5DwUibG0ffvWZdJM
+sinj7IxKO+iEcbH7H2KD
+=rYi1
+-----END PGP SIGNATURE-----
+
+--=-MTUIoK4uGX41ZSlBruir--
+
