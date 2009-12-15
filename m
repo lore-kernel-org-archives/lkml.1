@@ -1,56 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbZLOSzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbZLOSyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbZLOSzO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbZLOSzK
+	id S1760893AbZLOSyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760855AbZLOSyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:55:10 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:35643 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760855AbZLOSzH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:55:07 -0500
-Message-ID: <4B27DB70.50304@linux.vnet.ibm.com>
-Date: Tue, 15 Dec 2009 10:54:40 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 15 Dec 2009 13:54:47 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:41976 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760857AbZLOSyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:54:46 -0500
+Date: Tue, 15 Dec 2009 19:54:44 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+Message-ID: <20091215185444.GN28252@kernel.dk>
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] perf_event: Fix incorrect range check on cpu number
-References: <20091215084032.GA18661@brick.ozlabs.ibm.com> <1260873092.4165.354.camel@twins> <20091215110055.GC18661@brick.ozlabs.ibm.com>
-In-Reply-To: <20091215110055.GC18661@brick.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B27D7E9.4030105@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Paul Mackerras wrote:
-> On Tue, Dec 15, 2009 at 11:31:32AM +0100, Peter Zijlstra wrote:
+On Tue, Dec 15 2009, Yinghai Lu wrote:
+> Jens Axboe wrote:
+> > On Tue, Dec 15 2009, Yinghai Lu wrote:
+> >>>>>>>
+> >>>>>> let see how BIOS mess it up again!
+> >>>>> Heh, I had a feeling this was coming :-)
 > 
->> On Tue, 2009-12-15 at 19:40 +1100, Paul Mackerras wrote:
->>> It is quite legitimate for CPUs to be numbered sparsely, meaning that
->>> it possible for an online CPU to have a number which is greater than
->>> the total count of possible CPUs.
->>>
->>> Currently find_get_context() has a sanity check on the cpu number
->>> where it checks it against num_possible_cpus().  This test can fail
->>> for a legitimate cpu number if the cpu_possible_mask is sparsely
->>> populated.
->>>
->>> This fixes the problem by checking the CPU number against
->>> nr_cpumask_bits instead, since that is the appropriate check to ensure
->>> that the cpu number is same to pass to cpu_isset() subsequently.
->> Cute, do you actually have hardware that does this?
+> [    0.000000] user-defined physical RAM map:
 > 
-> Yeah, Mikey ran across this on a POWER7 box here.
+> [    0.000000]  user: 0000000000000100 - 0000000000098800 (usable)
+> 
+> [    0.000000]  user: 0000000000098800 - 00000000000a0000 (reserved)
+> 
+> [    0.000000]  user: 00000000000e0000 - 0000000000100000 (reserved)
+> 
+> [    0.000000]  user: 0000000000100000 - 0000000078c63000 (usable)
+> 
+> [    0.000000]  user: 0000000078c63000 - 0000000078e77000 (ACPI NVS)
+> 
+> [    0.000000]  user: 0000000078e77000 - 000000007924e000 (ACPI data)
+> 
+> [    0.000000]  user: 000000007924e000 - 00000000792c2000 (reserved)
+> 
+> [    0.000000]  user: 00000000792c2000 - 00000000792d2000 (ACPI data)
+> 
+> [    0.000000]  user: 00000000792d2000 - 00000000792e7000 (reserved)
+> 
+> [    0.000000]  user: 00000000792e7000 - 0000000079301000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079301000 - 0000000079303000 (reserved)
+> 
+> [    0.000000]  user: 0000000079303000 - 0000000079305000 (ACPI data)
+> 
+> 
+> [    0.000000]  user: 0000000079305000 - 0000000079310000 (reserved)
+> 
+> [    0.000000]  user: 0000000079310000 - 0000000079314000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079314000 - 0000000079319000 (reserved)
+> 
+> [    0.000000]  user: 0000000079319000 - 0000000079336000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079336000 - 0000000079358000 (reserved)
+> 
+> [    0.000000]  user: 0000000079358000 - 0000000079388000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079388000 - 00000000793c9000 (reserved)
+> 
+> [    0.000000]  user: 00000000793c9000 - 000000007968f000 (ACPI data)
+> 
+> [    0.000000]  user: 000000007968f000 - 00000000796bb000 (reserved)
+> 
+> [    0.000000]  user: 00000000796bb000 - 00000000799d8000 (ACPI data)
+> 
+> [    0.000000]  user: 00000000799d8000 - 0000000079bd8000 (ACPI NVS)
+> 
+> [    0.000000]  user: 0000000079bd8000 - 0000000079d87000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079d87000 - 0000000079d8a000 (reserved)
+> 
+> [    0.000000]  user: 0000000079d8a000 - 0000000079dca000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079dca000 - 0000000079dcb000 (reserved)
+> 
+> [    0.000000]  user: 0000000079dcb000 - 0000000079e1c000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000079e1c000 - 0000000079e87000 (reserved)
+> 
+> [    0.000000]  user: 0000000079e87000 - 000000007bd5f000 (ACPI data)
+> 
+> [    0.000000]  user: 000000007bd5f000 - 000000007be4f000 (reserved)
+> 
+> [    0.000000]  user: 000000007be4f000 - 000000007bf87000 (ACPI data)
+> 
+> [    0.000000]  user: 0000000100000000 - 0000001080000000 (usable)
+> ...
+> [    0.000000] SRAT: Node 0 PXM 0 0-80000000
+> 
+> [    0.000000] SRAT: Node 0 PXM 0 100000000-480000000
+> 
+> [    0.000000] SRAT: Node 2 PXM 1 480000000-880000000
+> 
+> [    0.000000] SRAT: Node 1 PXM 2 880000000-c80000000
+> 
+> [    0.000000] SRAT: Node 3 PXM 3 c80000000-1080000000
+> 
+> [    0.000000] ACPI: [SRAT:0x01] ignored 16 entries of 32 found
+> 
+> [    0.000000] NUMA: Using 31 for the hash shift.
+> 
+> [    0.000000] SRAT: PXMs only cover 49035MB of your 65419MB e820 RAM. Not used.
+> 
+> [    0.000000] SRAT: SRAT not used.
+> 
+> [    0.000000] No NUMA configuration found
+> 
+> so SRAT is broken?
+> 
+>         if (max_entries && count > max_entries) {
+>                 printk(KERN_WARNING PREFIX "[%4.4s:0x%02x] ignored %i entries of "
+>                        "%i found\n", id, entry_id, count - max_entries, count);
+>         }
+> ...
+> 
+> or what is your CONFIG_NODES_SHIFT? 3? can you try to set it to 6?
 
-Does the perf tool need to be fixed too?  The "perf stat" tool, at least, has a 
-"-a" switch that tells the tool to count the event on all cpus, and it does this 
-by iterating over the number of cpus, 0..n, assuming they are all contiguous.
+Hmm funky, perhaps the BIOS changed that too. NUMA has otherwise been
+working fine, didn't check whether it still did after a BIOS upgrade.
+I'll try 6, it is set to 3 iirc.
 
-- Corey
+> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+> 
+> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
+> 
+> [   13.112475] PCI: not using MMCONFIG
+> 
+> [   13.206650] ACPI: No dock devices found.
+> 
+> so mmconf is not used...<ask BIOS fix it please!>
+
+Reported, thanks.
+
+> then we get 
+> 
+> [   13.990335] IOH bus: [00, 00]
+> 
+> [   13.993707] IOH bus: 00 index 0 io port: [0, fff]
+> 
+> [   13.999023] IOH bus: 00 index 1 mmio: [0, ffffff]
+> 
+> [   14.004335] IOH bus: 00 index 2 mmio: [0, 3ffffff]
+> 
+> please check
+> 
+> [PATCH] x86/pci: intel ioh bus num reg accessing fix
+> 
+> it is above 0x100, so if mmconf is not enable, need to skip it
+
+Will check that now.
+
+-- 
+Jens Axboe
 
