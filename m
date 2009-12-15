@@ -1,99 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbZLOW2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934053AbZLOW2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933986AbZLOW2M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761385AbZLOW2L
+	id S934053AbZLOW2o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761387AbZLOW2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:28:11 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43281 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760335AbZLOW2F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:28:05 -0500
-Date: Tue, 15 Dec 2009 17:27:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <alpine.LFD.2.00.0912151337350.14385@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0912151719300.4055-100000@iolanthe.rowland.org>
+	Tue, 15 Dec 2009 17:28:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:51648 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934064AbZLOW2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:28:33 -0500
+Date: Tue, 15 Dec 2009 23:28:11 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Earl Chew <earl_chew@agilent.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+Message-ID: <20091215222811.GC2432@local>
+References: <1228379942.5092.14.camel@twins>
+ <4B22DD89.2020901@agilent.com>
+ <20091214192322.GA3245@bluebox.local>
+ <4B27905B.4080006@agilent.com>
+ <20091215210002.GA2432@local>
+ <4B2803D8.10704@agilent.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2803D8.10704@agilent.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009, Linus Torvalds wrote:
-
-> On Tue, 15 Dec 2009, Alan Stern wrote:
-> > 
-> > Okay.  This obviously implies that if/when cardbus bridges are
-> > converted to async suspend/resume, the driver should make sure that the
-> > lower-numbered devices wait for their sibling higher-numbered devices
-> > to suspend (and vice versa for resume).  Awkward though it may be.
+On Tue, Dec 15, 2009 at 01:47:04PM -0800, Earl Chew wrote:
+> Hans J. Koch wrote:
+> > Sorry, I think I wasn't clear enough: The current interface for static
+> > mappings shouldn't be changed. Dynamically added mappings need a new
+> > interface.
 > 
-> Yes. However, this is an excellent case where the whole "the device layer 
-> does things asynchronously" is really rather awkward.
+> Thanks for the quick reply.
 > 
-> For cardbus, the nicest model really would be for the _driver_ to decide 
-> to do some things asynchronously, after having done some other things 
-> synchronously (to make sure of ordering).
+> Are you ok with changes to the (internal) struct uio_device ?
 
-Have you considered the possibility of augmenting the design to allow 
-this?  Perhaps reserve a particular return code from the suspend 
-routine to mean that asynchronous operations are still underway, so the 
-PM core shouldn't automatically do the complete_all().
+Hey, we live in a free world :)
+Anything can be changed as long as it's a technically sensible solution and
+doesn't break existing interfaces to userspace.
 
-> So I suspect that we _can_ just do cardbus bridges asynchronously too, but 
-> it really needs some care. I suspect to a first approximation we would 
-> want to do the easy cases first, and ignore cardbus as being "known to 
-> possibly have issues".
+The DMA-for-UIO thing is something that shouldn't be taken lightly. If we
+define an interface for that, it should cover all possible applications.
+There are not only devices that need to allocate new DMA buffers at runtime,
+but also devices which could very well live with one or two statically
+allocated DMA buffers. We need to cover all these cases.
 
-Certainly.  Start with the easy things and leave harder devices like 
-cardbus bridges for later.
+One example: An A/D converter has an on-chip 32k buffer. It causes an
+interrupt as soon as the buffer is filled up to a certain high-water mark.
+Such cases would easily fit into the current UIO system. The UIO core could
+simply DMA the data to one of the mappings. A new flag for that mapping and
+a few other changes are all it takes. After the DMA transfer is complete, the
+interrupt is passed on to userspace, which would find the buffer already
+filled with the desired data. Just a thought, unfortunately I haven't got
+such hardware to try it.
 
-> > > Subtle? Hell yes.
-> > 
-> > I don't disagree.  However the subtlety lies mainly in the matter of
-> > non-obvious dependencies.
-> 
-> Yes. But we don't necessarily even _know_ those dependencies.
+When it comes to dynamically allocated DMA buffers, it might well be possible
+to add a new directory in sysfs besides the "mem" directory, e.g. something
+like /sys/class/uio/uioN/dma-mem/. This would save us the trouble of creating
+a new device. Maybe the example above would better fit in here, too. Who knows.
 
-Yep.  Both non-obvious and non-known.
+These are only some thoughts, I haven't got any DMA capable hardware to deal
+with ATM.
 
-> The Cardbus ones I know about, but really only because I wrote much of 
-> that code initially when converting cardbus to look like the PCI bridge it 
-> largely is. But how many other cases like that do we have that we have 
-> perhaps never even hit, because we've never done anything out of order.
-> 
-> > The ACPI relations are definitely something to worry about.  It would
-> > be a good idea, at an early stage, to add those dependencies
-> > explicitly.  I don't know enough about them to say more; perhaps Rafael 
-> > does.
-> 
-> Quite frankly, I would really not want to do ACPI first at all.
+You certainly notice that there are important design decisions to make.
+Remember that once a kernel interface to userspace exists, it is etched in
+stone forever.
 
-Dear me, no!  I wasn't saying ACPI should be made async; I was saying
-that ACPI "shadow" devices should be made to wait for their async PCI
-counterparts.
-
-> > Indeed.  Perhaps you were too hasty in suggesting that PCI bridges 
-> > should be async.
-> 
-> Oh, yes. I would suggest that first we do _nothing_ async except for 
-> within just a single USB tree, and perhaps some individual drivers like 
-> the PS/2 keyboard controller (and do even that perhaps only for the PC 
-> version, which we know is on the southbridge and not anywhere else).
-> 
-> If that ends up meaning that we block due to PCI bridges, so be it. I 
-> really would prefer baby steps over anything more complete.
-
-Agreed.  I'm not in any hurry.
-
-Alan Stern
+Thanks,
+Hans
 
