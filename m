@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZLOX0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbZLOX2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZLOX0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:26:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZLOX0V
+	id S1760041AbZLOX2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZLOX2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:26:21 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:59696 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbZLOX0U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:26:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=VUqpT+2YqUoV68ZwUUiukpxPEZMojg0OgbB1OXxZ8zVLRTphRxpauO2yR4nWRwoJWn
-         hFRvI7Y7YRliRg4SPV6VU66ewRm3NrosqZlvXLGrTXjCryW4UhctditPOrOmPXgY8biP
-         XmUjIqrh7/J4s8/6JCSK27aY9Fe2HtlhJH59w=
-MIME-Version: 1.0
-In-Reply-To: <20091214.214923.241454954.davem@davemloft.net>
-References: <d45a3acc0912141402v69ea4ccet143f8ef7bc04e585@mail.gmail.com>
-	 <20091214.214923.241454954.davem@davemloft.net>
-Date: Wed, 16 Dec 2009 10:26:19 +1100
-Message-ID: <d45a3acc0912151526n2de0a64bh3dc0221fc2720d3e@mail.gmail.com>
-Subject: Re: [RESEND PATCH 1/3] X25: Move SYSCTL ifdefs into header
-From: andrew hendry <andrew.hendry@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Dec 2009 18:28:14 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36015 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752442AbZLOX2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:28:09 -0500
+Date: Wed, 16 Dec 2009 10:28:03 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: acpi tree build failure
+Message-Id: <20091216102803.65202607.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0912151736290.6885@localhost.localdomain>
+References: <20091214122013.a869739e.sfr@canb.auug.org.au>
+	<1260853054.21292.10.camel@dc7800.home>
+	<alpine.LFD.2.00.0912151736290.6885@localhost.localdomain>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__16_Dec_2009_10_28_03_+1100_jeDcS/qGl+8x1IyX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, ignore these resends, all 3 are were in net-2.6 and made it to linux-next
-2f5517aefcfbdd7fdf0f03b13d292a10d445887f
-1fd975a0520cdb27681855d5a18526e328d36b5c
-429d33ace5ce6122817f8abe9d170eaa55dc3af9
-I'll watch git in the future, not the mailing list pull requests to track.
+--Signature=_Wed__16_Dec_2009_10_28_03_+1100_jeDcS/qGl+8x1IyX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Dec 15, 2009 at 4:49 PM, David Miller <davem@davemloft.net> wrote:
+Hi Len, Bjorn,
+
+On Tue, 15 Dec 2009 17:37:21 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
 >
-> These patches do not apply to the current sources.
->
-> Please respin them against net-2.6
->
-> In fact it looks like at least your first patch is already in the
-> tree.
->
+> i merged bjorn's fix into the original offending patch in acpi-test
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__16_Dec_2009_10_28_03_+1100_jeDcS/qGl+8x1IyX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksoG4MACgkQjjKRsyhoI8xRzQCbBYqxD4kGfBVJ1fJDCdQKbwGa
+058An2zS7WYN6Ud/EkDnLl0fgPFmw9vS
+=6yJY
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__16_Dec_2009_10_28_03_+1100_jeDcS/qGl+8x1IyX--
