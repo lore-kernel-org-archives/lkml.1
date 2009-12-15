@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZLOLNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbZLOLSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbZLOLNf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 06:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759887AbZLOLNd
+	id S1759887AbZLOLSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 06:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbZLOLSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 06:13:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51689 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759837AbZLOLNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 06:13:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 12:14:10 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain> <alpine.LFD.2.00.0912141610460.14385@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912141610460.14385@localhost.localdomain>
+	Tue, 15 Dec 2009 06:18:52 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49280 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753309AbZLOLSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 06:18:51 -0500
+Message-ID: <4B27702F.1080507@cn.fujitsu.com>
+Date: Tue, 15 Dec 2009 19:17:03 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/4] perf_event: introduce 'perf timer' to analyze timer's
+ behavior
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912151214.10980.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 December 2009, Linus Torvalds wrote:
-> 
-> On Mon, 14 Dec 2009, Linus Torvalds wrote:
-> > 
-> > I get really tired of this whole stupid async discussion, because you're 
-> > overdesigning it.
-> 
-> Btw, this is important. I'm not going to pull even your _current_ async 
-> stuff if you can't show that you fundamentally UNDERSTAND this fact.
+Hi,
 
-What fact?  The only thing that matters is USB?  For resume, it is.  For
-suspend, it clearly isn't.
+We introduce 'perf timer' in this patchset, it can analyze timer
+latency and timer function handle time, the usage and result is
+like below:
 
-> Stop making up idiotic complex interfaces. Look at my one-liner patch, and 
-> realize that it gets you 99% there - the 99% that matters.
+# perf timer record
+# perf timer lat --print-lat --print-handle
+-------------------------------------------------------------------------------------------------------
+|   Timer            |   TYPE   |   Avg-latency  | Max-latency  |  Max-latency-at-TS |Max-lat-at-Task |
+|0xf7ad1f5c          |hrtimer   |996068.500    ns|1607650     ns|10270128658526      |init            |
+|0xf7903f04          |timer     |0.625         HZ|2           HZ|10270344082394      |swapper         |
+|0xf787a05c          |hrtimer   |200239.500    ns|359929      ns|10269316024808      |main            |
+|main      :[   PROF]|itimer    |0.000         HZ|0           HZ|10237021270557      |main            |
+|main      :[VIRTUAL]|itimer    |0.000         HZ|0           HZ|10257314773501      |main            |
 
-I said I was going to use it, but I don't think that's going to be sufficient.
+......
 
-[BTW, I'm not sure what you want to achieve by insulting me.  Either you may
-want to scare me, but I'm not scared, or you may want to try to make me so
-disgusted that I'll just give up and back off, but this is not going to happen
-either.]
+-------------------------------------------------------------------------------------------------------
+|   Timer            |   TYPE   | Avg-handle (ms)|Max-handle(ms)| Max-handle-at-TS(s)|Max-lat-at-func |
+|0xf7ad1f5c          |hrtimer   |0.025           |0.025         |10270.129           |0xc016b5b0      |
+|0xf7903f04          |timer     |0.009           |0.011         |10260.342           |0xc0159240      |
+|0xf787a05c          |hrtimer   |0.031           |0.062         |10267.018           |0xc014cc40      |
 
-Insults aside, I'm going to make some measurements to see how much time we can
-save.
-
-Rafael
+And, in current code, it'll complain with below message when we use
+'perf timer lat':
+ 
+  # ./perf timer lat
+  Warning: unknown op '{'
+  Warning: Error: expected type 5 but read 1
+  Warning: failed to read event print fmt for hrtimer_start
+  Warning: unknown op '{'
+  Warning: Error: expected type 5 but read 1
+  Warning: failed to read event print fmt for hrtimer_expire_entry
+ 
+ It's because perf parse "hrtimer_start" and "hrtimer_expire_entry" fail,
+ but it not hurt using.
+ 
+ See: http://lkml.org/lkml/2009/10/12/726
+ 
+ include/trace/events/timer.h            |    8 
+ tools/perf/Documentation/perf-timer.txt |   40 +
+ tools/perf/Makefile                     |    1 
+ tools/perf/builtin-sched.c              |    3 
+ tools/perf/builtin-timer.c              |  954 ++++++++++++++++++++++++++++++++
+ tools/perf/builtin.h                    |    1 
+ tools/perf/command-list.txt             |    1 
+ tools/perf/perf.c                       |    1 
+ tools/perf/util/trace-event-parse.c     |   25 
+ tools/perf/util/trace-event.h           |    4 
+ 10 files changed, 1030 insertions(+), 8 deletions(-)
