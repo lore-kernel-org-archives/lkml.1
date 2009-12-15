@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933394AbZLOTPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933422AbZLOTSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933394AbZLOTPz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933347AbZLOTPy
+	id S933422AbZLOTSs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933405AbZLOTSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:15:54 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:58914 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933340AbZLOTPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:15:53 -0500
-Message-ID: <4B27E04F.6060301@linux.vnet.ibm.com>
-Date: Tue, 15 Dec 2009 11:15:27 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 15 Dec 2009 14:18:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40104 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933352AbZLOTSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:18:43 -0500
+Message-ID: <4B27E0C7.9060909@kernel.org>
+Date: Tue, 15 Dec 2009 11:17:27 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] perf_event: Fix incorrect range check on cpu number
-References: <20091215084032.GA18661@brick.ozlabs.ibm.com> <1260873092.4165.354.camel@twins> <20091215110055.GC18661@brick.ozlabs.ibm.com> <4B27DB70.50304@linux.vnet.ibm.com> <20091215190858.GA15443@elte.hu>
-In-Reply-To: <20091215190858.GA15443@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk> <4B27DDD7.5040301@kernel.org> <20091215191129.GQ28252@kernel.dk>
+In-Reply-To: <20091215191129.GQ28252@kernel.dk>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
-> 
->> Paul Mackerras wrote:
->>> On Tue, Dec 15, 2009 at 11:31:32AM +0100, Peter Zijlstra wrote:
+Jens Axboe wrote:
+> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>> Jens Axboe wrote:
+>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>>>> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+>>>>
+>>>> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
+>>> On a "normal" non-kexec boot, I get:
 >>>
->>>> On Tue, 2009-12-15 at 19:40 +1100, Paul Mackerras wrote:
->>>>> It is quite legitimate for CPUs to be numbered sparsely, meaning that
->>>>> it possible for an online CPU to have a number which is greater than
->>>>> the total count of possible CPUs.
->>>>>
->>>>> Currently find_get_context() has a sanity check on the cpu number
->>>>> where it checks it against num_possible_cpus().  This test can fail
->>>>> for a legitimate cpu number if the cpu_possible_mask is sparsely
->>>>> populated.
->>>>>
->>>>> This fixes the problem by checking the CPU number against
->>>>> nr_cpumask_bits instead, since that is the appropriate check to ensure
->>>>> that the cpu number is same to pass to cpu_isset() subsequently.
->>>> Cute, do you actually have hardware that does this?
->>> Yeah, Mikey ran across this on a POWER7 box here.
->> Does the perf tool need to be fixed too?  The "perf stat" tool, at
->> least, has a "-a" switch that tells the tool to count the event on
->> all cpus, and it does this by iterating over the number of cpus,
->> 0..n, assuming they are all contiguous.
+>>> [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+>>> [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
+>>> [   12.216874] PCI: Using configuration type 1 for base access
+>>>
+>> can you run following scripts in first kernel?
+>>
+>> cd /sys/firmware/memmap
+>> for dir in * ; do
+>>   start=$(cat $dir/start)
+>>   end=$(cat $dir/end)
+>>   type=$(cat $dir/type)
+>>   printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
+>> done
+>>
+>> and send out /tmp/memmap.txt
 > 
-> Yes, see patch 2/2 of this series.
+> Below.
 > 
-> 	Ingo
+>> what is your kexec tools version? could be too old?
+> 
+> It says:
+> 
+> kexec-tools-testing 20080324 released 24th March 2008
+> 
+> 
+> 0000000000000000-0000000000098800 (System RAM)
+> 0000000000098800-00000000000a0000 (reserved)
+> 0000000079301000-0000000079303000 (reserved)
+> 0000000079303000-0000000079305000 (ACPI Tables)
+> 0000000079305000-0000000079310000 (reserved)
+> 0000000079310000-0000000079314000 (ACPI Tables)
+> 0000000079314000-0000000079319000 (reserved)
+> 0000000079319000-0000000079336000 (ACPI Tables)
+> 0000000079336000-0000000079358000 (reserved)
+> 0000000079358000-0000000079388000 (ACPI Tables)
+> 0000000079388000-00000000793c9000 (reserved)
+> 00000000793c9000-000000007968f000 (ACPI Tables)
+> 00000000000e0000-0000000000100000 (reserved)
+> 000000007968f000-00000000796bb000 (reserved)
+> 00000000796bb000-00000000799d8000 (ACPI Tables)
+> 00000000799d8000-0000000079bd8000 (ACPI Non-volatile Storage)
+> 0000000079bd8000-0000000079d8b000 (ACPI Tables)
+> 0000000079d8b000-0000000079d8c000 (reserved)
+> 0000000079d8c000-0000000079dc8000 (ACPI Tables)
+> 0000000079dc8000-0000000079dcb000 (reserved)
+> 0000000079dcb000-0000000079e1c000 (ACPI Tables)
+> 0000000079e1c000-0000000079e87000 (reserved)
+> 0000000079e87000-000000007bd5f000 (ACPI Tables)
+> 0000000000100000-0000000078c59000 (System RAM)
+> 000000007bd5f000-000000007be4f000 (reserved)
+> 000000007be4f000-000000007bf87000 (ACPI Tables)
+> 000000007bf87000-000000007bfcf000 (ACPI Non-volatile Storage)
+> 000000007bfcf000-000000007bfff000 (ACPI Tables)
+> 000000007bfff000-0000000090000000 (reserved)
+> 00000000fc000000-00000000fd000000 (reserved)
+> 00000000fed1c000-00000000fed20000 (reserved)
+> 00000000ff000000-0000000100000000 (reserved)
+> 0000000100000000-0000001080000000 (System RAM)
+> 0000000078c59000-0000000078e6d000 (ACPI Non-volatile Storage)
+> 0000000078e6d000-000000007924e000 (ACPI Tables)
+> 000000007924e000-00000000792c2000 (reserved)
+> 00000000792c2000-00000000792d2000 (ACPI Tables)
+> 00000000792d2000-00000000792e7000 (reserved)
+> 00000000792e7000-0000000079301000 (ACPI Tables)
+> 
 
-Oops! missed that.  Thanks!
+boot log of first kernel?
 
-- Corey
-
-
+YH
