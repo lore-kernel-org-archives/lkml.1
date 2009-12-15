@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbZLOXQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbZLOXH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932396AbZLOXQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761952AbZLOXQI
+	id S1761238AbZLOXH4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761586AbZLOXHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:16:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:28724 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933625AbZLOXCp (ORCPT
+	Tue, 15 Dec 2009 18:07:53 -0500
+Received: from smtp-out-139.synserver.de ([212.40.180.139]:1025 "HELO
+	smtp-out-135.synserver.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1762399AbZLOXDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:02:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=b8P6e3sveDSaWU8c50NN/EojJLtMzYz4jYgBQtD8whdzfc+UtNdRZRXJ625PqwGxzD
-         e5KiQ8ie+RUoShnck9p6twNPARG5yhxCohoYDVrd/5N6AY1cg6dH9lO0lLAELTpHOHF6
-         6HMysTqORt30yPGwI8GaDg9fOO++l3g1x2AQc=
+	Tue, 15 Dec 2009 18:03:09 -0500
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 22078
+Date: Wed, 16 Dec 2009 00:02:55 +0100
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+Subject: Re: kexec boot regression radeon/kms (bisected)
+Message-ID: <20091215230255.GA1689@arch.tripp.de>
+References: <4B277AB2.8030107@kernel.org>
+ <20091215121436.GB28252@kernel.dk>
+ <4B2781AC.8020301@kernel.org>
+ <20091215123951.GD28252@kernel.dk>
+ <4B278734.2040704@kernel.org>
+ <20091215141105.GK28252@kernel.dk>
+ <4B27D7E9.4030105@kernel.org>
+ <20091215185941.GO28252@kernel.dk>
+ <4B27DDD7.5040301@kernel.org>
+ <20091215213021.GA1735@arch.tripp.de>
 MIME-Version: 1.0
-In-Reply-To: <dd18b0c30912151454l1aa7fb97g951483993ab42502@mail.gmail.com>
-References: <dd18b0c30912151454l1aa7fb97g951483993ab42502@mail.gmail.com>
-From: Younes Manton <younes.m@gmail.com>
-Date: Tue, 15 Dec 2009 18:02:24 -0500
-Message-ID: <586c2acd0912151502o303f6b14g7277289ff5dc69b3@mail.gmail.com>
-Subject: Re: [drm] nouveau iMac crashes and burns
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: xorg@freedesktop.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091215213021.GA1735@arch.tripp.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 5:54 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> I had figured this would happen,
-> but was curious to see if this
-> new bad boy would work.
-> (probably why fedora 12 doesnt boot as well).
->
-> basically the system freezes during boot once
-> drn nouveau is loaded. here's dmesg captured
-> with firescope:(a bit long)
+On Tue, Dec 15, 2009 at 10:30:21PM +0100, Markus Trippelsdorf wrote:
 
- <..snip..>
-> <3>[    6.891531] [drm] nouveau 0000:02:00.0: No ctxprog for NV94
- <..snip..>
+> I have the same symptoms on my machine, but the underlying cause must be
+> different. I once reverted all Radeon related changes since 2.6.32 and 
+> kexec started working again.
+> 
+OK, I bisected this down to:
 
->
-> machine is an iMac with the gt130 card
-> I loaded mesa,dri, but didn't find any
-> firmware(if any) for /lib/firmware
+d8f60cfc93452d0554f6a701aa8e3236cbee4636 is the first bad commit
+commit d8f60cfc93452d0554f6a701aa8e3236cbee4636
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Tue Dec 1 13:43:46 2009 -0500
 
-You need the firmware, it's not carried in the upstream tree.[1]
-There's also a PPC-specific patch currently in the Nouveau tree and on
-various lists that you need to apply.[2]
-
-[1] http://people.freedesktop.org/~pq/
-[2] http://cgit.freedesktop.org/nouveau/linux-2.6/commit/?id=a51b847bebf85e8539db6afe1627a3a17a05dfcc
+    drm/radeon/kms: Add support for interrupts on r6xx/r7xx chips (v3)
+-- 
+Markus
