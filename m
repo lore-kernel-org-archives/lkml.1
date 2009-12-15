@@ -1,90 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbZLOViT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZLOVkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbZLOViT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 16:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932818AbZLOViR
+	id S932330AbZLOVkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 16:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZLOVkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 16:38:17 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:56808 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785AbZLOViP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 16:38:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vsTltukxzFa58RvHPgG1S7m9qU7wzTyrqs77mTqTd59qzlO360tGPEYzvHcW4wlj+O
-         XrTXY+CGynptDHkp8rTjRUwjGudwBGew1sZLoOFgyuCketj9MjWBcl7wBc9T/dj3s1ru
-         UALoLHdkKXajQ2Uly2gpkJNjc6gEYY0n4v0LQ=
+	Tue, 15 Dec 2009 16:40:14 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:41943 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751141AbZLOVkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 16:40:11 -0500
+Date: Tue, 15 Dec 2009 22:40:09 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>
+Subject: Re: kexec boot regression
+Message-ID: <20091215214009.GD28252@kernel.dk>
+References: <4B27E817.6030705@kernel.org> <20091215195111.GV28252@kernel.dk> <4B27EE38.1050103@kernel.org> <20091215201909.GY28252@kernel.dk> <4B27EFC2.1000505@kernel.org> <20091215204221.GZ28252@kernel.dk> <20091215205512.GA28252@kernel.dk> <20091215210126.GB28252@kernel.dk> <4B27FEFB.30902@kernel.org> <20091215213032.GC28252@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <9e4733910912151245ne442a5dlcfee92609e364f70@mail.gmail.com>
-References: <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <4B24DABA.9040007@redhat.com> <20091215115011.GB1385@ucw.cz>
-	 <4B279017.3080303@redhat.com> <20091215195859.GI24406@elf.ucw.cz>
-	 <9e4733910912151214n68161fc7tca0ffbf34c2c4e4@mail.gmail.com>
-	 <20091215201933.GK24406@elf.ucw.cz>
-	 <9e4733910912151229o371ee017tf3640d8f85728011@mail.gmail.com>
-	 <20091215203300.GL24406@elf.ucw.cz>
-	 <9e4733910912151245ne442a5dlcfee92609e364f70@mail.gmail.com>
-Date: Tue, 15 Dec 2009 16:38:14 -0500
-Message-ID: <9e4733910912151338n62b30af5i35f8d0963e6591c@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091215213032.GC28252@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 3:45 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On Tue, Dec 15, 2009 at 3:33 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> Untrue. Like ethernets and wifis, bluetooth devices have unique
->> addresses. Communication is bidirectional.
+On Tue, Dec 15 2009, Jens Axboe wrote:
+> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> > Jens Axboe wrote:
+> > > On Tue, Dec 15 2009, Jens Axboe wrote:
+> > >> On Tue, Dec 15 2009, Jens Axboe wrote:
+> > >>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> > >>>> Jens Axboe wrote:
+> > >>>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> > >>>>>> Jens Axboe wrote:
+> > >>>>>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> > >>>>>>>> Jens Axboe wrote:
+> > >>>>>>>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> > >>>>>>>>>> [PATCH] x86/pci: intel ioh bus num reg accessing fix
+> > >>>>>>>>>>
+> > >>>>>>>>>> it is above 0x100, so if mmconf is not enable, need to skip it
+> > >>>>>>>>> This works, it kexecs kernels fine. But since 2.6.32 doesn't have the
+> > >>>>>>>>> mmconf problem to begin with, are we now just working around the issue?
+> > >>>>>>>>> SRAT still reports issues, numa doesn't work.
+> > >>>>>>>> that patch will be bullet proof... we need it.
+> > >>>>>>>>
+> > >>>>>>>> also still need to figure out why memmap range is not passed properly.
+> > >>>>>>>>
+> > >>>>>>>> do you mean 2.6.32 kexec 2.6.32 it have worked mmconf and numa in
+> > >>>>>>>> second kernel?
+> > >>>>>>> Yes, 2.6.32 booted and 2.6.32 kexec'ed works just fine, no SRAT
+> > >>>>>>> complaints and NUMA works fine.
+> > >>>>>> do you need 
+> > >>>>>> memmap=62G@4G
+> > >>>>>> in this case?
+> > >>>>> Yes, I've needed that always.
+> > >>>> good,
+> > >>>>
+> > >>>> can you enable debug option in kexec to see why kexec can not pass
+> > >>>> whole 38? range to second kernel?
+> > >>> Not getting any output so far, -d doesn't do much. Poking around in the
+> > >>> source...
+> > >> OK, cold boot and kexec 2.0.1 gets all 39 ranges passed properly to
+> > >> kexec'ed kernels. Since the older kexec stopped at range 30 (31 ranges
+> > >> total), that smells like just a kexec bug. Retesting -git...
+> > > 
+> > > Current -git works fine when all the ranges are passed correctly. So, I
+> > > think, the only existing regression is the SRAT issue.
+> > 
+> > did you change node_shift?
+> 
+> Yes:
+> 
+> CONFIG_NODES_SHIFT=6
+> 
+> What I don't get is that 2.6.32 and -git print the same PXM map, and in
+> both cases it's totalling exactly 64G. Yet it says:
+> 
+> SRAT: PXMs only cover 49035MB of your 65419MB e820 RAM. Not used.
 
-I read a little about how Bluetooth remotes work. Correct me if I get
-things wrong....
+Clue:
 
-They create pairings between the remote and the device. Each of these
-pairings is assigned a device type. Multiple devices in the same room
-are handled by the remote remembering the pairings and sending
-directed packets instead of broadcast. That lets you have two TVs in
-the same room.
+[    0.000000] SRAT: Node 0 PXM 0 0-80000000
+[    0.000000] SRAT: Node 0 PXM 0 100000000-480000000
+[    0.000000] SRAT: Node 2 PXM 1 480000000-880000000
+[    0.000000] SRAT: Node 1 PXM 2 880000000-c80000000
+[    0.000000] SRAT: Node 3 PXM 3 c80000000-1080000000
+[    0.000000] NUMA: Using 31 for the hash shift.
+[    0.000000] pxm0: 0-480000 (4718592), absent 553990
+[    0.000000] pxm1: 880000-c80000 (4194304), absent 0
+[    0.000000] pxm2: 480000-880000 (4194304), absent 4194304
+[    0.000000] pxm3: c80000-1080000 (4194304), absent 0
+[    0.000000] SRAT: PXMs only cover 49035MB of your 65419MB e820 RAM.  Not used.
+[    0.000000] SRAT: SRAT not used.
 
-Bluetooth devices need to advertise what profiles they support. So on
-the Linux box you'd run a command to load the Bluetooth profile for
-TV. This command would create an evdev subdevice, load the Bluetooth
-keymap for TV, and tell the networking stack to advertise TV support.
-Next you initiate the pairing from the Bluetooth remote and pick the
-Linux box. This causes a pairing established exchange which tells the
-Linux box to make the pairing persistent.
-
-I believe the Bluetooth remote profile is handled in user space by the
-BlueZ stack. BlueZ should be aware of the remote pairings. When it
-decodes a button press it would need to inject the scancode into the
-correct evdev subdevice. Evdev would translate it in the keymap and
-create the keyevent. This is the same mechanism LIRC is using.
-
-
-At a more general level we're missing a way for something like Myth to
-declare that it is a DVR device. Myth should load, say I'm a DVR, and
-then the remote control subsystem should automatically create a
-Bluetooth DVR profile, load an IR profile for Motorola DVR on a
-universal remote if the box has Bluetooth, IR or 802.15.4.
-
-The whole concept of a remote control subsystem seems like it needs
-more design work done. We keep coming up with big areas that no one
-has thought about.
+It's essentially disregarding pxm2, claiming all pages are absent.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Jens Axboe
+
