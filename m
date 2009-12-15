@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbZLOT7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761035AbZLOT7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025AbZLOT7O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbZLOT7N
+	id S1761035AbZLOT7t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:59:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760997AbZLOT7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:59:13 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49668 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932554AbZLOT7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:59:10 -0500
-Date: Tue, 15 Dec 2009 20:58:59 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Jon Smirl <jonsmirl@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-Message-ID: <20091215195859.GI24406@elf.ucw.cz>
-References: <1260070593.3236.6.camel@pc07.localdom.local>
- <20091206065512.GA14651@core.coreip.homeip.net>
- <4B1B99A5.2080903@redhat.com>
- <m3638k6lju.fsf@intrepid.localdomain>
- <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
- <m3skbn6dv1.fsf@intrepid.localdomain>
- <20091207184153.GD998@core.coreip.homeip.net>
- <4B24DABA.9040007@redhat.com>
- <20091215115011.GB1385@ucw.cz>
- <4B279017.3080303@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B279017.3080303@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 15 Dec 2009 14:59:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16561 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759861AbZLOT7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:59:46 -0500
+Date: Tue, 15 Dec 2009 13:59:36 -0600
+From: Clark Williams <williams@redhat.com>
+To: RT <linux-rt-users@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <ce@ceag.ch>,
+       John Kacur <jkacur@redhat.com>
+Subject: v0.57 of rt-tests available
+Message-ID: <20091215135936.5a7f2d56@torg>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/Ha20NZVN/JW.5=lOkGh/Z/d"; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--Sig_/Ha20NZVN/JW.5=lOkGh/Z/d
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> 	(11) if none is against renaming IR as RC, I'll do it on a next patch;
+Version 0.57 of the rt-tests package is now available both as a tarball
+on kernel.org and in my git repository:
 
-Call it irc -- infrared remote control. Bluetooth remote controls will
-have very different characteristics.
+tarball:
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://www.kernel.org/pub/linux//kernel/people/clrkwllms/rt-tests/rt-tests-=
+0.57.tar.bz2
+
+git:
+	git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-tests.git
+
+This version adds tests from Carsten Emde:
+
+- backfire/sendme - measure signal propagation time from driver to
+  userspace
+- ptsematest - measure latency of posix mutex
+- sigwaittest - measure interthread signal latency
+- svsematest - measure interthread SystemV semaphore latency
+
+Many thanks to John Kacur <jkacur@redhat.com> for doing the integration
+work in adding these tests.=20
+
+Clark
+
+--Sig_/Ha20NZVN/JW.5=lOkGh/Z/d
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAksn6q4ACgkQHyuj/+TTEp2kRgCgs2YZlbGA+sWCUdRL/JSLJnH8
+LZwAoLJX7VfE3XxS0n1OxswOSyy8E/zj
+=S3gB
+-----END PGP SIGNATURE-----
+
+--Sig_/Ha20NZVN/JW.5=lOkGh/Z/d--
