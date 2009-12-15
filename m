@@ -1,12 +1,12 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933171AbZLOXKB (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 15 Dec 2009 18:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLOXJx
+	id S933192AbZLOXKP (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 15 Dec 2009 18:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761123AbZLOXJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:09:53 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:36493 "EHLO e9.ny.us.ibm.com"
+	Tue, 15 Dec 2009 18:09:54 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43896 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762348AbZLOXCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762347AbZLOXCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Dec 2009 18:02:50 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC tip/core/rcu 17/18] rcu: Provide different lockdep classes for each flavor of RCU
-Date: Tue, 15 Dec 2009 15:02:40 -0800
-Message-Id: <12609181611183-git-send-email->
+Subject: [PATCH RFC tip/core/rcu 08/18] rcu: remove leg of force_quiescent_state() switch statement
+Date: Tue, 15 Dec 2009 15:02:31 -0800
+Message-Id: <1260918161349-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20091215230213.GA9093@linux.vnet.ibm.com>
 References: <20091215230213.GA9093@linux.vnet.ibm.com>
@@ -30,118 +30,102 @@ From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 Proposed for 2.6.34, not for inclusion.
 
-In the past, all three flavors of RCU shared a common lockdep class.
-This patch gives each of rcu_read_lock(), rcu_read_lock_bh(), and
-rcu_read_lock_sched() their own lockdep classes to permit more precise
-checking for read-holding the proper flavor of RCU.
+The comparisons of rsp->gpnum nad rsp->completed in rcu_process_dyntick()
+and force_quiescent_state() can be replaced by the much more clear
+rcu_gp_in_progress() predicate function.  After doing this, it becomes
+clear that the RCU_SAVE_COMPLETED leg of the force_quiescent_state()
+function's switch statement is almost completely a no-op.  A small change
+to the RCU_SAVE_DYNTICK leg renders it a complete no-op, after which it
+can be removed.  Doing so also eliminates the forcenow local variable
+from force_quiescent_state().
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/rcupdate.h |   39 +++++++++++++++++++++++++++++----------
- kernel/rcupdate.c        |   10 ++++++++++
- 2 files changed, 39 insertions(+), 10 deletions(-)
+ kernel/rcutree.c |   22 +++++-----------------
+ kernel/rcutree.h |    5 ++---
+ 2 files changed, 7 insertions(+), 20 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 24440f4..723c564 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -78,14 +78,33 @@ extern void rcu_init(void);
- } while (0)
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
-+
- extern struct lockdep_map rcu_lock_map;
--# define rcu_read_acquire()	\
--			lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-+# define rcu_read_acquire() \
-+		lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
- # define rcu_read_release()	lock_release(&rcu_lock_map, 1, _THIS_IP_)
--#else
--# define rcu_read_acquire()	do { } while (0)
--# define rcu_read_release()	do { } while (0)
--#endif
-+
-+extern struct lockdep_map rcu_bh_lock_map;
-+# define rcu_read_acquire_bh() \
-+		lock_acquire(&rcu_bh_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-+# define rcu_read_release_bh()	lock_release(&rcu_bh_lock_map, 1, _THIS_IP_)
-+
-+extern struct lockdep_map rcu_sched_lock_map;
-+# define rcu_read_acquire_sched() \
-+		lock_acquire(&rcu_sched_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-+# define rcu_read_release_sched() \
-+		lock_release(&rcu_sched_lock_map, 1, _THIS_IP_)
-+
-+#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-+
-+# define rcu_read_acquire()		do { } while (0)
-+# define rcu_read_release()		do { } while (0)
-+# define rcu_read_acquire_bh()		do { } while (0)
-+# define rcu_read_release_bh()		do { } while (0)
-+# define rcu_read_acquire_sched()	do { } while (0)
-+# define rcu_read_release_sched()	do { } while (0)
-+
-+#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
- 
- /**
-  * rcu_read_lock - mark the beginning of an RCU read-side critical section.
-@@ -160,7 +179,7 @@ static inline void rcu_read_lock_bh(void)
- {
- 	__rcu_read_lock_bh();
- 	__acquire(RCU_BH);
--	rcu_read_acquire();
-+	rcu_read_acquire_bh();
- }
- 
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index e497119..6268f37 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1144,6 +1144,7 @@ void rcu_check_callbacks(int cpu, int user)
  /*
-@@ -170,7 +189,7 @@ static inline void rcu_read_lock_bh(void)
+  * Scan the leaf rcu_node structures, processing dyntick state for any that
+  * have not yet encountered a quiescent state, using the function specified.
++ * The caller must have suppressed start of new grace periods.
   */
- static inline void rcu_read_unlock_bh(void)
- {
--	rcu_read_release();
-+	rcu_read_release_bh();
- 	__release(RCU_BH);
- 	__rcu_read_unlock_bh();
- }
-@@ -188,7 +207,7 @@ static inline void rcu_read_lock_sched(void)
- {
- 	preempt_disable();
- 	__acquire(RCU_SCHED);
--	rcu_read_acquire();
-+	rcu_read_acquire_sched();
- }
+ static void rcu_process_dyntick(struct rcu_state *rsp,
+ 				int (*f)(struct rcu_data *))
+@@ -1157,7 +1158,7 @@ static void rcu_process_dyntick(struct rcu_state *rsp,
+ 	rcu_for_each_leaf_node(rsp, rnp) {
+ 		mask = 0;
+ 		spin_lock_irqsave(&rnp->lock, flags);
+-		if (rnp->completed != rsp->gpnum - 1) {
++		if (!rcu_gp_in_progress(rsp)) {
+ 			spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return;
+ 		}
+@@ -1171,7 +1172,7 @@ static void rcu_process_dyntick(struct rcu_state *rsp,
+ 			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
+ 				mask |= bit;
+ 		}
+-		if (mask != 0 && rnp->completed == rsp->gpnum - 1) {
++		if (mask != 0 && rcu_gp_in_progress(rsp)) {
  
- /* Used by lockdep and tracing: cannot be traced, cannot call lockdep. */
-@@ -205,7 +224,7 @@ static inline notrace void rcu_read_lock_sched_notrace(void)
-  */
- static inline void rcu_read_unlock_sched(void)
+ 			/* rcu_report_qs_rnp() releases rnp->lock. */
+ 			rcu_report_qs_rnp(mask, rsp, rnp, flags);
+@@ -1189,7 +1190,6 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
  {
--	rcu_read_release();
-+	rcu_read_release_sched();
- 	__release(RCU_SCHED);
- 	preempt_enable();
- }
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 9b7fd47..033cb55 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -50,6 +50,16 @@ static struct lock_class_key rcu_lock_key;
- struct lockdep_map rcu_lock_map =
- 	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock", &rcu_lock_key);
- EXPORT_SYMBOL_GPL(rcu_lock_map);
-+
-+static struct lock_class_key rcu_bh_lock_key;
-+struct lockdep_map rcu_bh_lock_map =
-+	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_bh", &rcu_bh_lock_key);
-+EXPORT_SYMBOL_GPL(rcu_bh_lock_map);
-+
-+static struct lock_class_key rcu_sched_lock_key;
-+struct lockdep_map rcu_sched_lock_map =
-+	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_sched", &rcu_sched_lock_key);
-+EXPORT_SYMBOL_GPL(rcu_sched_lock_map);
- #endif
+ 	unsigned long flags;
+ 	struct rcu_node *rnp = rcu_get_root(rsp);
+-	u8 forcenow;
  
- /*
+ 	if (!rcu_gp_in_progress(rsp))
+ 		return;  /* No grace period in progress, nothing to force. */
+@@ -1224,21 +1224,9 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 		/* Record dyntick-idle state. */
+ 		rcu_process_dyntick(rsp, dyntick_save_progress_counter);
+ 		spin_lock(&rnp->lock);  /* irqs already disabled */
+-		if (!rcu_gp_in_progress(rsp))
+-			break;
+-		/* fall into next case. */
+-
+-	case RCU_SAVE_COMPLETED:
+-
+-		/* Update state, record completion counter. */
+-		forcenow = 0;
+-		if (rsp->gpnum - 1 == rsp->completed) {
+-			forcenow = rsp->signaled == RCU_SAVE_COMPLETED;
++		if (rcu_gp_in_progress(rsp))
+ 			rsp->signaled = RCU_FORCE_QS;
+-		}
+-		if (!forcenow)
+-			break;
+-		/* fall into next case. */
++		break;
+ 
+ 	case RCU_FORCE_QS:
+ 
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index 5348561..edb6fae 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -237,12 +237,11 @@ struct rcu_data {
+ #define RCU_GP_IDLE		0	/* No grace period in progress. */
+ #define RCU_GP_INIT		1	/* Grace period being initialized. */
+ #define RCU_SAVE_DYNTICK	2	/* Need to scan dyntick state. */
+-#define RCU_SAVE_COMPLETED	3	/* Need to save rsp->completed. */
+-#define RCU_FORCE_QS		4	/* Need to force quiescent state. */
++#define RCU_FORCE_QS		3	/* Need to force quiescent state. */
+ #ifdef CONFIG_NO_HZ
+ #define RCU_SIGNAL_INIT		RCU_SAVE_DYNTICK
+ #else /* #ifdef CONFIG_NO_HZ */
+-#define RCU_SIGNAL_INIT		RCU_SAVE_COMPLETED
++#define RCU_SIGNAL_INIT		RCU_FORCE_QS
+ #endif /* #else #ifdef CONFIG_NO_HZ */
+ 
+ #define RCU_JIFFIES_TILL_FORCE_QS	 3	/* for rsp->jiffies_force_qs */
 -- 
 1.5.2.5
 
