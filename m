@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbZLOJ53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759583AbZLOJ6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbZLOJ53 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759443AbZLOJ52
+	id S1759583AbZLOJ6k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759572AbZLOJ6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:57:28 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:63845 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbZLOJ51 (ORCPT
+	Tue, 15 Dec 2009 04:58:39 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37707 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757665AbZLOJ6h convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:57:27 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Neil Brown <neilb@suse.de>
-Subject: Re: linux-next: manual merge of the md-current tree with Linus' tree
-Date: Tue, 15 Dec 2009 10:57:20 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091214102428.f50557a0.sfr@canb.auug.org.au> <200912141127.27019.arnd@arndb.de> <20091215140502.5edd6678@notabene.brown>
-In-Reply-To: <20091215140502.5edd6678@notabene.brown>
+	Tue, 15 Dec 2009 04:58:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=POGuFS+CddGC/6bPOJGEk/stVTXtI5TzmW/qXOC3TeFbMLjhfUknujLADuNhSRQWXp
+         fqrnBspexdgBI6YRtVDWi0K2YSkL9jaFxo12VGNtSyyzdAfUjBfzRgV0drC1REDVD3Ox
+         vvrY18cr6tkcrNE2Mjur2T/nEmI/b3p/Nukis=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912151057.20807.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/nKGq6rDPMfpEgK31sRE7p1VRlnoUnTynxfjW
- w7C9M6/3c8TXH0pxJur4oE2KrFoDiYpbNpjLxE8PUzlIxZd+iD
- qLEnkw3iowHpD7RjM62TQ==
+In-Reply-To: <20091215105925.59a66556.sfr@canb.auug.org.au>
+References: <20091215105925.59a66556.sfr@canb.auug.org.au>
+Date: Tue, 15 Dec 2009 12:58:36 +0300
+Message-ID: <c18d6aa20912150158m1b77c17ey2dcfacb3aa86d67a@mail.gmail.com>
+Subject: Re: linux-next: ext3 tree build warning
+From: Dmitry Monakhov <rjevskiy@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jan Kara <jack@suse.cz>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 December 2009, Neil Brown wrote:
-> I had already rebased that patch on the lasted from Linus and asked him to
-> pull again.
-> He how seems to have done that, so md should be up-to-date in -linus,
-> including the compat_ioctl stuff.
-> If you would like to double check that it matches what you expect, that would
-> be great.
-
-The old ULONG_IOCTL numbers (HOT_{ADD,REMOVE}_DISK, SET_DISK_FAULTY
-and SET_BITMAP_FILE) that Stephen missed are still left in fs/compat_ioctl.c,
-but that is completely harmless. I'll remove them in my next batch of cleanups,
-which can probably wait until 2.6.34.
-
-Thanks for your help,
-
-	Arnd
+2009/12/15 Stephen Rothwell <sfr@canb.auug.org.au>:
+> Hi Jan,
+>
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+>
+> fs/quota/dquot.c: In function 'dquot_alloc_inode':
+> fs/quota/dquot.c:1521: warning: passing argument 1 of 'mark_all_dquot_dirty' discards qualifiers from pointer target type
+> fs/quota/dquot.c:327: note: expected 'struct dquot **' but argument is of type 'struct dquot * const*'
+> fs/quota/dquot.c: In function 'dquot_free_inode':
+> fs/quota/dquot.c:1649: warning: passing argument 1 of 'mark_all_dquot_dirty' discards qualifiers from pointer target type
+> fs/quota/dquot.c:327: note: expected 'struct dquot **' but argument is of type 'struct dquot * const*'
+What's why my original patch contained type casts.
+In fact i dont understand why {alloc,free}_inode accept pointer to
+const struct inode, it's contradicts to normal logic
+Even if inode is not in a good state, quta code may and must(what's
+how it designed for now) change it internals.
+>
+> Introduced by commit e91077e3d523c2ac2090b3447bf6244567cf7128 ("quota:
+> Move duplicated code to separate functions").
+>
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+>
