@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbZLOEHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZLOEHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932585AbZLOEHi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 23:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbZLOEHa
+	id S1755457AbZLOEHm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 23:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755719AbZLOEHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 23:07:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12878 "EHLO mx1.redhat.com"
+	Mon, 14 Dec 2009 23:07:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:20296 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932451AbZLOEHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 23:07:25 -0500
+	id S932493AbZLOEH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 23:07:27 -0500
 From: Zachary Amsden <zamsden@redhat.com>
 To: kvm@vger.kernel.org
 Cc: Zachary Amsden <zamsden@redhat.com>, Avi Kivity <avi@redhat.com>,
        Marcelo Tosatti <mtosatti@redhat.com>,
        Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
        Dor Laor <dlaor@redhat.com>
-Subject: [PATCH RFC: kvm tsc virtualization 14/20] Move TSC cpu vars to a struct
-Date: Mon, 14 Dec 2009 18:08:41 -1000
-Message-Id: <1260850127-9766-15-git-send-email-zamsden@redhat.com>
-In-Reply-To: <1260850127-9766-14-git-send-email-zamsden@redhat.com>
+Subject: [PATCH RFC: kvm tsc virtualization 15/20] Fix longstanding races
+Date: Mon, 14 Dec 2009 18:08:42 -1000
+Message-Id: <1260850127-9766-16-git-send-email-zamsden@redhat.com>
+In-Reply-To: <1260850127-9766-15-git-send-email-zamsden@redhat.com>
 References: <1260850127-9766-1-git-send-email-zamsden@redhat.com>
  <1260850127-9766-2-git-send-email-zamsden@redhat.com>
  <1260850127-9766-3-git-send-email-zamsden@redhat.com>
@@ -33,267 +33,307 @@ References: <1260850127-9766-1-git-send-email-zamsden@redhat.com>
  <1260850127-9766-12-git-send-email-zamsden@redhat.com>
  <1260850127-9766-13-git-send-email-zamsden@redhat.com>
  <1260850127-9766-14-git-send-email-zamsden@redhat.com>
+ <1260850127-9766-15-git-send-email-zamsden@redhat.com>
 Organization: Frobozz Magic Timekeeping Company
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's enough of these floating around randomly to justify using a
-structure for keeping them in one place.
+First, we could get multiple CPU frequency updates in rapid succession.
+If the base CPU changes, we must resynchronize all CPUs, but the work
+scheduling was poorly serialized, which could result in some CPUs
+missing the resynchronize action.
+
+Second, the work function doesn't protect against CPU hotplug, and
+further, it isn't actually possible; we would have to hold-off CPU
+hotplug through the IPIs.
+
+Third, we could potentially interrupt a call to get the reference
+clock on the base CPU with a resync IPI, resulting in a skewed return
+value in the original call.
+
+The problem stems from the fact that any random CPU may come along and
+change the tsc_khz variable of another; at the same time, we are doing
+resynchronize through an IPI which requires us to abstain from using
+higher level mutex primitives.  Combined with the fact that without
+locking, we can't guarantee the tsc_base_cpu is stable, this makes most
+locking schemes untenable.
+
+So, I fix the flaw by creating these rules:
+	1) per_cpu tsc_khz variable is updated only on the local CPU
+	2) tsc_base_cpu is changed only in CPU take down
+
+Now, we can avoid CPU takedown by simply entering a preemption disabled
+state; CPU take down is done as a stop_machine action, and thus can't
+run concurrently with any preemption disabled region.  So, we can now
+guarantee tsc_base_cpu is stable with just get_cpu().
+
+Further, since all tsc_khz updates are local, we can avoid tsc_khz
+changes by blocking interrupts.  This isn't used for the general
+kvm_get_ref_tsc(), which doesn't need to use such a heavy primitive,
+but it is useful when resynchronizing to the master; the evict()
+callout used to find how far advanced slave CPUs have advanced since
+the master frequency change requires not to be interrupted with
+another frequency change (this frequency change is likely as the
+callouts to notifier chains for the CPU frequency change can happen
+in the order {PRE|BASE},{PRE|NON-BASE}; the first callout will try
+to schedule resync_all as work to be done).  Using the fact that the
+tsc_khz update only happens from an interrupt also allows us to
+simplify the generation update; no intermediate generations can ever
+be observed, thus we can simplify the generation count again.
+
+Damn, this is complicated crap.  The analagous task in real life would
+be keeping a band of howler monkeys, each in their own tree, singing in
+unison while the lead vocalist jumps from tree to tree, and meanwhile,
+an unseen conductor keeps changing the tempo the piece is played at.
+Thankfully, there are no key changes, however, occasionally new trees
+sprout up at random and live ones fall over.
 
 Signed-off-by: Zachary Amsden <zamsden@redhat.com>
 ---
- arch/x86/kvm/x86.c |  110 ++++++++++++++++++++++++++++++----------------------
- 1 files changed, 64 insertions(+), 46 deletions(-)
+ arch/x86/kvm/x86.c |  139 ++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 85 insertions(+), 54 deletions(-)
 
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8bd362b..7bc20ac 100644
+index 7bc20ac..7e2ba3e 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -738,19 +738,24 @@ static void kvm_set_time_scale(uint32_t tsc_khz, struct pvclock_vcpu_time_info *
+@@ -747,6 +747,7 @@ struct cpu_tsc_vars
+ 	s64			tsc_offset;
+ 	u64			tsc_measure_base;
+ 	atomic_t		tsc_synchronized;
++	u64			last_ref;
+ };
+ static DEFINE_PER_CPU(struct cpu_tsc_vars, cpu_tsc_vars);
+ 
+@@ -3570,42 +3571,83 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, int in,
  }
+ EXPORT_SYMBOL_GPL(kvm_emulate_pio_string);
  
- DEFINE_SPINLOCK(kvm_tsc_lock);
--static DEFINE_PER_CPU(unsigned long, cpu_tsc_khz);
--static DEFINE_PER_CPU(unsigned long, cpu_tsc_multiplier);
--static DEFINE_PER_CPU(int, cpu_tsc_shift);
--static DEFINE_PER_CPU(s64, cpu_tsc_offset);
--static DEFINE_PER_CPU(u64, cpu_tsc_measure_base);
--static DEFINE_PER_CPU(atomic_t, cpu_tsc_synchronized);
--static DEFINE_PER_CPU(int, cpu_tsc_generation);
-+struct cpu_tsc_vars
-+{
-+	unsigned long		tsc_khz;
-+	unsigned long		tsc_multiplier;
-+	unsigned int		tsc_shift;
-+	int			tsc_generation;
-+	s64			tsc_offset;
-+	u64			tsc_measure_base;
-+	atomic_t		tsc_synchronized;
-+};
-+static DEFINE_PER_CPU(struct cpu_tsc_vars, cpu_tsc_vars);
-+
- static int tsc_base_cpu = -1;
- static unsigned long ref_tsc_khz;
- 
- static inline int cpu_is_tsc_synchronized(int cpu)
+-static void evict(void *info)
++/*
++ * evict(struct cpufreq_freqs *data)
++ *
++ * This function is meant to be called from an IPI and runs with
++ * interrupts disabled.  It records the last good value of the
++ * reference TSC before optionally updating the CPU frequency and
++ * marking the CPU unsynchronized.  Since it is entered from an
++ * interrupt handler, it can be used to bring CPUs out of hardware
++ * virtualization and have them wait until their clock has been
++ * resynchronized.
++ */
++static void evict(void *data)
  {
--	return (atomic_read(&per_cpu(cpu_tsc_synchronized, cpu)) != 0);
-+	return (atomic_read(&per_cpu(cpu_tsc_vars, cpu).tsc_synchronized) != 0);
- }
- 
- static inline unsigned long div_precise(unsigned long hi, unsigned long lo,
-@@ -808,12 +813,12 @@ static inline unsigned long mult_precise(unsigned long val, unsigned long mult,
- 	return bot;
- }
- 
--static inline u64 compute_ref_tsc(int cpu)
-+static inline u64 compute_ref_tsc(void)
- {
--	u64 tsc = native_read_tsc() - per_cpu(cpu_tsc_measure_base, cpu);
--	tsc = mult_precise(tsc, per_cpu(cpu_tsc_multiplier, cpu),
--				per_cpu(cpu_tsc_shift, cpu));
--	return tsc + per_cpu(cpu_tsc_offset, cpu);
+-	/* nothing */
 +	struct cpu_tsc_vars *cv = &__get_cpu_var(cpu_tsc_vars);
-+	u64 tsc = native_read_tsc() - cv->tsc_measure_base;
-+	tsc = mult_precise(tsc, cv->tsc_multiplier, cv->tsc_shift);
-+	return tsc + cv->tsc_offset;
++	WARN_ON(!irqs_disabled());
++	cv->last_ref = compute_ref_tsc();
++	if (data) {
++		struct cpufreq_freqs *freq = data;
++		cv->tsc_khz = freq->new;
++	}
++	atomic_set(&cv->tsc_synchronized, 0);
  }
  
- /*
-@@ -824,15 +829,17 @@ static inline u64 compute_ref_tsc(int cpu)
- u64 kvm_get_ref_tsc(void)
+-static struct execute_work resync_work;
+-static int work_scheduled;
+-
+-static void resync_user(struct work_struct *work)
++static long resync(void *unused)
  {
- 	int cpu, gen;
-+	struct cpu_tsc_vars *cv;
- 	u64 tsc;
++	struct cpu_tsc_vars *cv = &__get_cpu_var(cpu_tsc_vars);
++	u64 tsc = 0;
+ 	int cpu;
  
- 	cpu = get_cpu();
-+	cv = &per_cpu(cpu_tsc_vars, cpu);
- again:
--	gen = per_cpu(cpu_tsc_generation, cpu);
-+	gen = cv->tsc_generation;
- 	smp_rmb();
--	tsc = compute_ref_tsc(cpu);
-+	tsc = compute_ref_tsc();
- 	smp_rmb();
--	if (unlikely(gen != per_cpu(cpu_tsc_generation, cpu)))
-+	if (unlikely(gen != cv->tsc_generation))
- 		goto again;
- 	put_cpu();
- 	return tsc;
-@@ -889,7 +896,7 @@ static void sync_tsc_helper(int measure_cpu, s64 *delta, atomic_t *ready)
- 				/* wait */;
- 		}
- 		native_cpuid(&junk, &junk, &junk, &junk);
--		tsc = compute_ref_tsc(cpu);
-+		tsc = compute_ref_tsc();
- 		rdtsc_barrier();
- 		if (cpu == measure_cpu) {
- 			while (!atomic_read(ready))
-@@ -972,17 +979,18 @@ static void kvm_sync_tsc(void *cpup)
- 	unsigned long flags;
- 	s64 *delta1, *delta2;
- 	static atomic_t ready ____cacheline_aligned = ATOMIC_INIT(1);
-+	struct cpu_tsc_vars *cv = &per_cpu(cpu_tsc_vars, new_cpu);
- 
- 	BUG_ON(tsc_base_cpu == -1);
--	pr_debug("%s: IN, cpu = %d, freq = %ldkHz, tsc_base_cpu = %d\n", __func__, raw_smp_processor_id(), per_cpu(cpu_tsc_khz, raw_smp_processor_id()) , tsc_base_cpu);
- 	local_irq_save(flags);
- 	if (raw_smp_processor_id() == new_cpu) {
--		per_cpu(cpu_tsc_measure_base, new_cpu) = native_read_tsc();
--		per_cpu(cpu_tsc_offset, new_cpu) = 0;
--		compute_best_multiplier(ref_tsc_khz,
--			per_cpu(cpu_tsc_khz, new_cpu),
--			&per_cpu(cpu_tsc_multiplier, new_cpu),
--			&per_cpu(cpu_tsc_shift, new_cpu));
-+		cv->tsc_measure_base = native_read_tsc();
-+		cv->tsc_offset = 0;
-+		compute_best_multiplier(ref_tsc_khz, cv->tsc_khz,
-+			&cv->tsc_multiplier, &cv->tsc_shift);
-+		pr_debug("%s: IN, cpu = %d, freq = %ldkHz, measure_base = %lld,"
-+			 " tsc_base_cpu = %d\n", __func__, new_cpu, cv->tsc_khz,
-+			 cv->tsc_measure_base, tsc_base_cpu);
- 	}
- 	delta1 = per_cpu(delta_array, tsc_base_cpu).delta;
- 	delta2 = per_cpu(delta_array, new_cpu).delta;
-@@ -1004,22 +1012,32 @@ static void kvm_sync_tsc(void *cpup)
- 		accumulator -= average_samples(&delta2[2], SYNC_TRIES-3);
- 		accumulator /= 2;
- 
--		per_cpu(cpu_tsc_offset, new_cpu) = accumulator;
--		++per_cpu(cpu_tsc_generation, new_cpu);
--		atomic_set(&per_cpu(cpu_tsc_synchronized, new_cpu), 1);
--		pr_debug("%s: OUT, cpu = %d, cpu_tsc_offset = %lld, cpu_tsc_multiplier=%ld, cpu_tsc_shift=%d\n", __func__, raw_smp_processor_id(), per_cpu(cpu_tsc_offset, new_cpu), per_cpu(cpu_tsc_multiplier, new_cpu), per_cpu(cpu_tsc_shift, new_cpu));
-+		cv->tsc_offset = accumulator;
-+		smp_wmb();
-+		++cv->tsc_generation;
-+		atomic_set(&cv->tsc_synchronized, 1);
-+		++kvm_stats.tsc_resync;
-+		pr_debug("%s: OUT, cpu = %d, delta = %lld, cpu_tsc_offset = "
-+			 "%lld, cpu_tsc_multiplier=%ld, cpu_tsc_shift=%d\n",
-+			 __func__, new_cpu, accumulator, cv->tsc_offset,
-+			 cv->tsc_multiplier, cv->tsc_shift);
- 	}
- 	local_irq_restore(flags);
- }
- 
- static void kvm_do_sync_tsc(int cpu)
- {
-+	BUG_ON(tsc_base_cpu == -1);
- 	spin_lock(&kvm_tsc_lock);
- 
- 	/* tsc_base_cpu can change without tsc_lock, so recheck */
- 	if (unlikely(cpu == tsc_base_cpu))
- 		goto out_unlock;
- 
+-	work_scheduled = 0;
+-	for_each_online_cpu(cpu)
+-		if (cpu != tsc_base_cpu)
+-			kvm_do_sync_tsc(cpu);
+-}
 +	/*
-+	 * We're calling a co-routine; if we're one of the called CPUs, we
-+	 * must call ourselves last.
++	 * First, make sure we are on the right CPU; between when the work got
++	 * scheduled and when this runs, the tsc_base could have changed.  We
++	 * lock out changes to tsc_base_cpu with cpu_get().  The cpu takedown
++	 * code can't run until all non-preempt sections are finished, so being
++	 * in a non-preempt section protects the base from changing.  Tricky.
 +	 */
- 	if (raw_smp_processor_id() != tsc_base_cpu) {
- 		smp_call_function_single(tsc_base_cpu, kvm_sync_tsc,
- 					 (void *)&cpu, 0);
-@@ -1046,12 +1064,12 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 	if ((!vcpu->time_page))
- 		return;
++	cpu = get_cpu();
++	if (cpu != tsc_base_cpu)
++		return -1;
  
--	this_tsc_khz = get_cpu_var(cpu_tsc_khz);
-+	this_tsc_khz = get_cpu_var(cpu_tsc_vars).tsc_khz;
- 	if (unlikely(vcpu->hv_clock_tsc_khz != this_tsc_khz)) {
- 		kvm_set_time_scale(this_tsc_khz, &vcpu->hv_clock);
- 		vcpu->hv_clock_tsc_khz = this_tsc_khz;
- 	}
--	put_cpu_var(cpu_tsc_khz);
-+	put_cpu_var(cpu_tsc_vars);
- 
- 	/* Keep irq disabled to prevent changes to the clock */
- 	local_irq_save(flags);
-@@ -3572,18 +3590,16 @@ static void resync_user(struct work_struct *work)
- 
- static void resync(void *info)
- {
--	int cpu;
-+	struct cpu_tsc_vars *cv = &__get_cpu_var(cpu_tsc_vars);
- 	u64 tsc;
+-static void resync(void *info)
+-{
+-	struct cpu_tsc_vars *cv = &__get_cpu_var(cpu_tsc_vars);
+-	u64 tsc;
++	/*
++	 * When the base CPU frequency changes independenetly of other
++	 * cores, the reference TSC can fall behind.  Rather than
++	 * introduce a complicated and fragile locking scheme for this
++	 * rare case, simply evict all CPUs from VM execution and take
++	 * the highest global reference clock.  This also allows us to
++	 * recover from skew events which slightly advance other clocks
++	 * relative to the base.
++	 */
++	on_each_cpu(evict, NULL, 1);
++	for_each_online_cpu(cpu)
++		if (per_cpu(cpu_tsc_vars, cpu).last_ref > tsc)
++			tsc = per_cpu(cpu_tsc_vars, cpu).last_ref;
  
  	/* Fixup our own values to stay in sync with the reference */
--	cpu = raw_smp_processor_id();
--	tsc = compute_ref_tsc(cpu);
--	per_cpu(cpu_tsc_measure_base, cpu) = native_read_tsc();
--	per_cpu(cpu_tsc_offset, cpu) = tsc;
--	compute_best_multiplier(ref_tsc_khz, per_cpu(cpu_tsc_khz, cpu),
--			&per_cpu(cpu_tsc_multiplier, cpu),
--			&per_cpu(cpu_tsc_shift, cpu));
--	atomic_set(&per_cpu(cpu_tsc_synchronized, cpu), 1);
-+	tsc = compute_ref_tsc();
-+	cv->tsc_measure_base = native_read_tsc();
-+	cv->tsc_offset = tsc;
-+	compute_best_multiplier(ref_tsc_khz, cv->tsc_khz, &cv->tsc_multiplier,
-+				&cv->tsc_shift);
-+	atomic_set(&cv->tsc_synchronized, 1);
+-	tsc = compute_ref_tsc();
+ 	cv->tsc_measure_base = native_read_tsc();
+ 	cv->tsc_offset = tsc;
++	cv->tsc_generation++; // XXX needed? */
+ 	compute_best_multiplier(ref_tsc_khz, cv->tsc_khz, &cv->tsc_multiplier,
+ 				&cv->tsc_shift);
+ 	atomic_set(&cv->tsc_synchronized, 1);
  
- 	/* Then, get everybody else on board */
- 	if (!work_scheduled) {
-@@ -3599,6 +3615,7 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+-	/* Then, get everybody else on board */
+-	if (!work_scheduled) {
+-		work_scheduled = 1;
+-		execute_in_process_context(resync_user, &resync_work);
+-	}
++	for_each_online_cpu(cpu)
++		kvm_do_sync_tsc(cpu);
++
++	put_cpu();
++	return 0;
++}
++
++static DEFINE_MUTEX(resync_lock);
++
++static void resync_all(void)
++{
++	mutex_lock(&resync_lock);
++	while (work_on_cpu(tsc_base_cpu, resync, NULL) != 0);
++		/* do nothing */
++	mutex_unlock(&resync_lock);
+ }
+ 
+ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+@@ -3614,8 +3656,7 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+ 	struct cpufreq_freqs *freq = data;
  	struct kvm *kvm;
  	struct kvm_vcpu *vcpu;
- 	int i, send_ipi = 0;
-+	struct cpu_tsc_vars *cv = &per_cpu(cpu_tsc_vars, freq->cpu);
+-	int i, send_ipi = 0;
+-	struct cpu_tsc_vars *cv = &per_cpu(cpu_tsc_vars, freq->cpu);
++	int i;
  
  	/*
  	 * There is no way to precisely know the TSC value at which time the
-@@ -3612,7 +3629,7 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+@@ -3625,43 +3666,34 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+ 	 * any CPUs which may be running in hardware virtualization.
+ 	 *
+ 	 * We do this by setting cpu_tsc_synchronized to zero and polling for
+-	 * this value to change when entering hardware virtualization.
++	 * this value to change when entering hardware virtualization; this
++	 * will happen in the call to evict(), which also stores the new freq
  	 */
  	if (val == CPUFREQ_PRECHANGE) {
- 		get_online_cpus();
--		atomic_set(&per_cpu(cpu_tsc_synchronized, freq->cpu), 0);
-+		atomic_set(&cv->tsc_synchronized, 0);
+-		get_online_cpus();
+-		atomic_set(&cv->tsc_synchronized, 0);
  		spin_lock(&kvm_lock);
  		list_for_each_entry(kvm, &vm_list, vm_list) {
  			kvm_for_each_vcpu(i, vcpu, kvm) {
-@@ -3642,7 +3659,7 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
- 		 * Just use the vm_tsc_lock for a mutex.
+ 				if (vcpu->cpu != freq->cpu)
+ 					continue;
+-				if (vcpu->cpu != smp_processor_id())
+-					send_ipi++;
+ 				kvm_request_guest_time_update(vcpu);
+ 			}
+ 		}
+ 		spin_unlock(&kvm_lock);
+-		if (send_ipi) {
+-			/*
+-			 * In case we update the frequency for another cpu
+-			 * (which might be in guest context) send an interrupt
+-			 * to kick the cpu out of guest context.  Next time
+-			 * guest context is entered kvmclock will be updated,
+-			 * so the guest will not see stale values.
+-			 */
+-			smp_call_function_single(freq->cpu, evict, NULL, 1);
+-		}
+ 
+ 		/*
+-		 * The update of the frequency can't happen while a VM
+-		 * is running, nor can it happen during init when we can
+-		 * race against the init code setting the first known freq.
+-		 * Just use the vm_tsc_lock for a mutex.
++		 * In case we update the frequency for another cpu (which might
++		 * be in guest context) we must send an interrupt to kick the
++		 * cpu out of guest context.  Next time guest context is
++		 * entered kvmclock will be updated, so the guest will not see
++		 * stale values.
++		 *
++		 * The update of the frequency can't happen while a VM is
++		 * running, nor can it happen while we might be possibly
++		 * running a resync.  To avoid locking problems which arise
++		 * otherwise, always update the tsc_khz value on the affected
++		 * processor; this is done by passing the freq data to evict
  		 */
- 		spin_lock(&kvm_tsc_lock);
--		per_cpu(cpu_tsc_khz, freq->cpu) = freq->new;
-+		cv->tsc_khz = freq->new;
- 		spin_unlock(&kvm_tsc_lock);
- 
+-		spin_lock(&kvm_tsc_lock);
+-		cv->tsc_khz = freq->new;
+-		spin_unlock(&kvm_tsc_lock);
+-
++		smp_call_function_single(freq->cpu, evict, data, 1);
  		return 0;
-@@ -3691,12 +3708,13 @@ static int kvm_x86_cpu_hotplug(struct notifier_block *notifier,
- 
- 	case CPU_DYING:
- 	case CPU_UP_CANCELED:
--		atomic_set(&per_cpu(cpu_tsc_synchronized, cpu), 0);
-+		atomic_set(&per_cpu(cpu_tsc_vars, cpu).tsc_synchronized, 0);
- 		break;
- 
- 	case CPU_ONLINE:
- 		if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
--			per_cpu(cpu_tsc_khz, cpu) = cpufreq_quick_get(cpu);
-+			per_cpu(cpu_tsc_vars, cpu).tsc_khz =
-+				cpufreq_quick_get(cpu);
- 		kvm_do_sync_tsc(cpu);
- 		break;
  	}
-@@ -3767,13 +3785,13 @@ static void kvm_timer_init(void)
+ 
+@@ -3673,8 +3705,9 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+ 	 * order in which this notifier is called; this is harmless.
+ 	 */
+ 	if (val == CPUFREQ_POSTCHANGE) {
++		get_online_cpus();
+ 		if (freq->cpu == tsc_base_cpu)
+-			smp_call_function_single(freq->cpu, resync, NULL, 1);
++			resync_all();
+ 		else if (cpu_is_tsc_synchronized(tsc_base_cpu))
+ 			/* Can't do this if base is not yet updated */
+ 			kvm_do_sync_tsc(freq->cpu);
+@@ -3694,19 +3727,17 @@ static int kvm_x86_cpu_hotplug(struct notifier_block *notifier,
+ 
+ 	val &= ~CPU_TASKS_FROZEN;
+ 	switch (val) {
+-	case CPU_DOWN_PREPARE:
++	case CPU_DYING:
+ 		if (cpu == tsc_base_cpu) {
+ 			int new_cpu;
+-			spin_lock(&kvm_tsc_lock);
+ 			for_each_online_cpu(new_cpu)
+ 				if (new_cpu != tsc_base_cpu)
+ 					break;
+ 			tsc_base_cpu = new_cpu;
+-			spin_unlock(&kvm_tsc_lock);
+ 		}
+ 		break;
+ 
+-	case CPU_DYING:
++	case CPU_DOWN_PREPARE:
+ 	case CPU_UP_CANCELED:
+ 		atomic_set(&per_cpu(cpu_tsc_vars, cpu).tsc_synchronized, 0);
+ 		break;
+@@ -3784,18 +3815,18 @@ static void kvm_timer_init(void)
+ 			unsigned long khz = cpufreq_get(cpu);
  			if (!khz)
  				khz = tsc_khz;
- 			spin_lock(&kvm_tsc_lock);
--			if (!per_cpu(cpu_tsc_khz, cpu))
--				per_cpu(cpu_tsc_khz, cpu) = khz;
-+			if (!per_cpu(cpu_tsc_vars, cpu).tsc_khz)
-+				per_cpu(cpu_tsc_vars, cpu).tsc_khz = khz;
- 			spin_unlock(&kvm_tsc_lock);
+-			spin_lock(&kvm_tsc_lock);
++			local_irq_disable();
+ 			if (!per_cpu(cpu_tsc_vars, cpu).tsc_khz)
+ 				per_cpu(cpu_tsc_vars, cpu).tsc_khz = khz;
+-			spin_unlock(&kvm_tsc_lock);
++			local_irq_enable();
  		}
  	} else {
  		for_each_possible_cpu(cpu)
--			per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
-+			per_cpu(cpu_tsc_vars, cpu).tsc_khz = tsc_khz;
+ 			per_cpu(cpu_tsc_vars, cpu).tsc_khz = tsc_khz;
  	}
  	tsc_base_cpu = get_cpu();
- 	resync(NULL);
+-	resync(NULL);
+ 	put_cpu();
++	resync_all();
+ }
+ 
+ int kvm_arch_init(void *opaque)
 -- 
 1.6.5.2
 
