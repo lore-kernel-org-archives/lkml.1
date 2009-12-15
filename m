@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZLODwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbZLODxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758592AbZLODwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 22:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZLODwe
+	id S1758724AbZLODxo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 22:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758154AbZLODxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 22:52:34 -0500
-Received: from ozlabs.org ([203.10.76.45]:41705 "EHLO ozlabs.org"
+	Mon, 14 Dec 2009 22:53:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36205 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758022AbZLODwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 22:52:33 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: rr tree build failure
-Date: Tue, 15 Dec 2009 14:22:29 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>
-References: <20091211122648.8b305b52.sfr@canb.auug.org.au> <20091214153528.e29f33a6.sfr@canb.auug.org.au>
-In-Reply-To: <20091214153528.e29f33a6.sfr@canb.auug.org.au>
+	id S1758233AbZLODxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 22:53:42 -0500
+Message-ID: <4B270841.2000203@kernel.org>
+Date: Tue, 15 Dec 2009 12:53:37 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V7 1/8] this_cpu_ops: page allocator conversion
+References: <20091214220320.665065925@quilx.com> <20091214220339.160361197@quilx.com>
+In-Reply-To: <20091214220339.160361197@quilx.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912151422.29906.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Dec 2009 03:05:28 pm Stephen Rothwell wrote:
-> Hi Rusty,
-> 
-> On Fri, 11 Dec 2009 12:26:48 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > 
-> > arch/x86/kernel/cpu/cpufreq/powernow-k8.c: In function 'powernowk8_target':
-> > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1139: error: implicit declaration of function 'tsk_cpumask'
-> > arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1139: warning: passing argument 2 of 'cpumask_copy' makes pointer from integer without a cast
-> > include/linux/cpumask.h:466: note: expected 'const struct cpumask *' but argument is of type 'int'
-> > 
-> > Caused by commit 9dd4c5ab546fcac98cfb9ca24ed5cc1bf7f08334
-> > ("cpumask:tsk_cpus_allowed-not-tsk_cpumask") from the rr tree interacting
-> > with commit b8cbe7e82ec8b55d7bbdde66fc69e788fde00dc6 ("[CPUFREQ] cpumask:
-> > don't put a cpumask on the stack in x86...cpufreq/powernow-k8.c") from
-> > the cpufreq tree.
-> 
-> The cpufreq patch above is now in Linus' tree, so You should add the
-> patch below to your tree (or squash it into the affected patch).
+Hello,
 
-Thanks, done and rebased.
+On 12/15/2009 07:03 AM, Christoph Lameter wrote:
+>  static __meminit void zone_pcp_init(struct zone *zone)
+>  {
+> -	int cpu;
+> -	unsigned long batch = zone_batchsize(zone);
+> +	/* Use boot pagesets until we have the per cpu allocator up */
+> +	zone->pageset = &per_cpu_var(boot_pageset);
 
-Cheers,
-Rusty.
+Ummm... this scares me a little bit.  Before it was a pointer to
+statically allocated area which can be used from basically anywhere.
+Now, it's being initialized to a percpu pointer which won't be
+available before setup_per_cpu_areas() is complete and the above
+initialization takes place from setup_arch() which is before percpu
+initialization.  I don't think there's anything which would access
+page allocator between the two places, but it still seems a bit risky.
+Maybe it's better to keep the boot_pageset a static array?  Or am I
+misunderstanding something?
+
+Thanks.
+
+-- 
+tejun
