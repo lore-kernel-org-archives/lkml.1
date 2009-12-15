@@ -1,141 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZLOGcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751444AbZLOGev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZLOGcN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 01:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZLOGcM
+	id S1751444AbZLOGev (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 01:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZLOGeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 01:32:12 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:44358 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbZLOGcK (ORCPT
+	Tue, 15 Dec 2009 01:34:50 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:44168 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZLOGet convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 01:32:10 -0500
-Date: Tue, 15 Dec 2009 17:32:01 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Wensong Zhang <wensong@linux-vs.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Julian Anastasov <ja@ssi.bg>
-Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
-Message-ID: <20091215063201.GA24634@verge.net.au>
-References: <20090930131109.2b3f71b8@infradead.org>
- <20091214221704.24c2665f@infradead.org>
+	Tue, 15 Dec 2009 01:34:49 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091214221704.24c2665f@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091213212504.GD5114@elf.ucw.cz>
+References: <20091205221100.GA32522@elf.ucw.cz>
+	 <1260054737.23633.35.camel@desktop>
+	 <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+	 <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+	 <1260627482.20913.7.camel@desktop>
+	 <d6200be20912121434x1a247837w75c518ba20fe684f@mail.gmail.com>
+	 <20091213212504.GD5114@elf.ucw.cz>
+Date: Mon, 14 Dec 2009 22:34:48 -0800
+Message-ID: <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
+Subject: Re: tree with htc dream support
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Daniel Walker <dwalker@codeaurora.org>,
+       Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 10:17:04PM -0800, Arjan van de Ven wrote:
-> On Wed, 30 Sep 2009 13:11:09 +0200
-> Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> ping on the patch below.... the warning is now triggered in mainline
+On Sun, Dec 13, 2009 at 1:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> >> > Arve's about to take our common and msm trees and rebase them over the .32,
+>> >> > which may be useful for reference -- at least as a snapshot of a fully
+>> >> > functional set of patches that android donut and eclair run on, on
+>> >> > production hardware.  We'll make that available as soon as we have something
+>> >> > that's bootable.
+>> >> >
+>> >> > Brian
+>> >> >
+>> >> >
+>> >>
+>> >> A first pass of this is available in the android-msm-2.6.32-test1
+>> >> branch at git://android.git.kernel.org/kernel/experimental.git.
+>> >>
+>> >> http://android.git.kernel.org/?p=kernel/experimental.git;a=shortlog;h=refs/heads/android-msm-2.6.32-test1
+>> >
+>> > Does this have the the newest wakelock code in it? From the all the
+>> > re-writes that you've done.
+>>
+>> No.
+>
+> One more wish list item: many drivers are now available in
+> drivers/staging/dream, and are being slowly cleaned up. Would it be
+> possible to start using those for android-msm-2.6.32 tree?
+>
+> You'll need to reapply some stuff I had to remove (like wakelocks),
+> but it should be still better/less work long term to patch those back
+> in than maintaining separate copy. Diff should get much smaller...
+>                                                                        Pavel
 
-Hi Arjan,
+I do plan to look at these, but I don't know when I'll get to it.
 
-could you address the comments Julian made about this?
-http://lkml.indiana.edu/hypermail/linux/kernel/0910.0/00852.html
-
-	OK, you can add my signed-off line after changing
-	'cmd > ...MAX + 1' to 'cmd > ...MAX' at both
-	places, nf_sockopt_ops ranges are [optmin ... optmax)
-
-	May be comments should be changed because:
-
-	- i'm not the author but after ispection we do not see any holes,
-	we do not want users to upgrade just for this change
-	- the cmd checks are just to help code checking tools
-	- the len checks should help programmers (may be BUG_ON is
-	better, user does not deserve EINVAL for wrong set_arglen/get_arglen).
-	Checks for *len and len are not needed.
-
-	For example, for len checks this should be enough, before
-	copy_from_user():
-
-	in do_ip_vs_get_ctl check can be
-	BUG_ON(get_arglen[GET_CMDID(cmd)] > sizeof(arg));
-
-	in do_ip_vs_set_ctl check can be
-	BUG_ON(set_arglen[SET_CMDID(cmd)] > sizeof(arg));
-
-	Acked-by: Julian Anastasov <ja@ssi.bg>
-
-> > >From 761a182f96b3707e1fee44e1079ba227e48745d1 Mon Sep 17 00:00:00
-> > >2001
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Wed, 30 Sep 2009 13:05:51 +0200
-> > Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
-> > 
-> > The ipvs code has a nifty system for doing the size of ioctl command
-> > copies; it defines an array with values into which it indexes the cmd
-> > to find the right length.
-> > 
-> > Unfortunately, the ipvs code forgot to check if the cmd was in the
-> > range that the array provides, allowing for an index outside of the
-> > array, which then gives a "garbage" result into the length, which
-> > then gets used for copying into a stack buffer.
-> > 
-> > Fix this by adding sanity checks on these as well as the copy size.
-> > 
-> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> > ---
-> >  net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
-> >  1 files changed, 13 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/net/netfilter/ipvs/ip_vs_ctl.c
-> > b/net/netfilter/ipvs/ip_vs_ctl.c index ac624e5..3c52796 100644
-> > --- a/net/netfilter/ipvs/ip_vs_ctl.c
-> > +++ b/net/netfilter/ipvs/ip_vs_ctl.c
-> > @@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd,
-> > void __user *user, unsigned int len) if (!capable(CAP_NET_ADMIN))
-> >  		return -EPERM;
-> >  
-> > +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
-> > +		return -EINVAL;
-> > +	if (len < 0 || len >  MAX_ARG_LEN)
-> > +		return -EINVAL;
-> >  	if (len != set_arglen[SET_CMDID(cmd)]) {
-> >  		pr_err("set_ctl: len %u != %u\n",
-> >  		       len, set_arglen[SET_CMDID(cmd)]);
-> > @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd,
-> > void __user *user, int *len) {
-> >  	unsigned char arg[128];
-> >  	int ret = 0;
-> > +	unsigned int copylen;
-> >  
-> >  	if (!capable(CAP_NET_ADMIN))
-> >  		return -EPERM;
-> >  
-> > +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
-> > +		return -EINVAL;
-> > +
-> >  	if (*len < get_arglen[GET_CMDID(cmd)]) {
-> >  		pr_err("get_ctl: len %u < %u\n",
-> >  		       *len, get_arglen[GET_CMDID(cmd)]);
-> >  		return -EINVAL;
-> >  	}
-> >  
-> > -	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) !=
-> > 0)
-> > +	copylen = get_arglen[GET_CMDID(cmd)];
-> > +	if (copylen > 128)
-> > +		return -EINVAL;
-> > +
-> > +	if (copy_from_user(arg, user, copylen) != 0)
-> >  		return -EFAULT;
-> >  
-> >  	if (mutex_lock_interruptible(&__ip_vs_mutex))
-> 
-> 
-> -- 
-> Arjan van de Ven 	Intel Open Source Technology Centre
-> For development, discussion and tips for power savings, 
-> visit http://www.lesswatts.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Arve Hjønnevåg
