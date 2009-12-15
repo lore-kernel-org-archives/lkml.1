@@ -1,121 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbZLOQeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbZLOQ3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480AbZLOQeg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 11:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759461AbZLOQee
+	id S1760567AbZLOQ3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 11:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760553AbZLOQ3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 11:34:34 -0500
-Received: from anguilla.debian.or.at ([86.59.21.37]:44716 "EHLO
-	anguilla.debian.or.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759699AbZLOQec (ORCPT
+	Tue, 15 Dec 2009 11:29:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45710 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754496AbZLOQ3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 11:34:32 -0500
-X-Greylist: delayed 413 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Dec 2009 11:34:32 EST
-Date: Tue, 15 Dec 2009 17:27:37 +0100
-From: Peter Palfrader <weasel@debian.org>
-To: linux-kernel@vger.kernel.org
-Cc: DSA <debian-admin@lists.debian.org>
-Subject: 2.6.32.1: BUG and panic: unable to handle kernel NULL pointer dereference at 000000000000001f
-Message-ID: <20091215162736.GS13850@anguilla.noreply.org>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	DSA <debian-admin@lists.debian.org>
+	Tue, 15 Dec 2009 11:29:15 -0500
+Date: Tue, 15 Dec 2009 08:28:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <Pine.LNX.4.44L0.0912151047410.3566-100000@iolanthe.rowland.org>
+Message-ID: <alpine.LFD.2.00.0912150803250.14385@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912151047410.3566-100000@iolanthe.rowland.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-X-PGP: 1024D/94C09C7F 5B00 C96D 5D54 AEE1 206B  AF84 DE7A AF6E 94C0 9C7F
-X-Request-PGP: http://www.palfrader.org/keys/94C09C7F.asc
-X-Accept-Language: de, en
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-we tried to upgrade a couple of our proliant servers from 2.6.31.6 to
-2.6.32.1.
-
-On two of our DL385g1 servers we had problems booting 2.6.32.1, as they
-paniced.
-
-One of them eventually booted correctly when it was decided to log its
-serial console output; that strategy proved unsuccessful with the second
-box.
 
 
-[    5.304749] BUG: unable to handle kernel NULL pointer dereference at 000000000000001f
-..
-[    5.308739] Call Trace:
-[    5.308739]  [<ffffffff810c3840>] kstrdup+0x40/0x70
-[    5.308739]  [<ffffffff81150d77>] sysfs_new_dirent+0xf7/0x110
-[    5.308739]  [<ffffffff8115121d>] create_dir+0x3d/0xc0
-[    5.308739]  [<ffffffff81090af1>] ? autoremove_wake_function+0x11/0x40
-[    5.308739]  [<ffffffff811512d4>] sysfs_create_dir+0x34/0x50
-[    5.308739]  [<ffffffff8138e7ea>] ? kobject_get+0x1a/0x30
-[    5.308739]  [<ffffffff8138e961>] kobject_add_internal+0xe1/0x1e0
-[    5.308739]  [<ffffffff8138eb78>] kobject_add_varg+0x38/0x60
-[    5.308739]  [<ffffffff8138ec15>] kobject_init_and_add+0x75/0x90
-[    5.308739]  [<ffffffff81150560>] ? sysfs_ilookup_test+0x0/0x20
-[    5.308739]  [<ffffffff8115082d>] ? sysfs_find_dirent+0x2d/0x40
-[    5.308739]  [<ffffffff81150ec1>] ? sysfs_addrm_finish+0x21/0x250
-[    5.308739]  [<ffffffff8138e7ea>] ? kobject_get+0x1a/0x30
-[    5.308739]  [<ffffffff810e6fe4>] ? kmem_cache_alloc+0x84/0xc0
-[    5.308739]  [<ffffffff814238d4>] bus_add_driver+0x94/0x260
-[    5.308739]  [<ffffffff81424ed9>] driver_register+0x79/0x160
-[    5.308739]  [<ffffffff815a28a3>] __hid_register_driver+0x43/0x80
-[    5.308739]  [<ffffffff81a3d7ff>] ? gyration_init+0x0/0x1b
-[    5.308739]  [<ffffffff81a3d818>] gyration_init+0x19/0x1b
-[    5.308739]  [<ffffffff81009048>] do_one_initcall+0x38/0x1a0
-[    5.308739]  [<ffffffff81a0e6b5>] kernel_init+0x172/0x1ca
-[    5.308739]  [<ffffffff81036a0a>] child_rip+0xa/0x20
-[    5.308739]  [<ffffffff81a0e543>] ? kernel_init+0x0/0x1ca
-[    5.308739]  [<ffffffff81036a00>] ? child_rip+0x0/0x20
+On Tue, 15 Dec 2009, Alan Stern wrote:
+> 
+> It doesn't feel like an ugly hack to me.  It seems like exactly the 
+> Right Thing To Do: Make as many devices as possible use async 
+> suspend/resume.
 
-is from the machine that reliably fails to boot.
-http://asteria.noreply.org/~weasel/volatile/2009-12-15-1VAB84BxJzE/ravel
-hosts the complete serial console output.
+The reason it's a ugly hack is that it's actually not a simple decision to 
+make. The devil is in the details:
 
+> The only reason we don't make every device async is because we don't
+> know whether it's safe.  In the case of PCI bridges we _do_ know --
+> because they don't have any work to do outside of
+> late_suspend/early_resume -- and so they _should_ be async.
 
+That's the theory, yes. And it was worth the comment to spell out that 
+theory. But..
 
+It's a very subtle theory, and it's not necessarily always 100% true. For 
+example, a cardbus bridge is strictly speaking very much a PCI bridge, but 
+for cardbus bridges we _do_ have a suspend/resume function.
 
-What I caught on the second box, that eventually decided to boot is
-similar, but not identical:
-[   19.028333] Call Trace:
-[   19.028333]  [<ffffffff81150560>] ? sysfs_ilookup_test+0x0/0x20
-[   19.028333]  [<ffffffff810c3840>] kstrdup+0x40/0x70
-[   19.028333]  [<ffffffff81150d77>] sysfs_new_dirent+0xf7/0x110
-[   19.028333]  [<ffffffff81150b17>] ? sysfs_add_one+0x27/0xd0
-[   19.028333]  [<ffffffff81151bf7>] sysfs_do_create_link+0x87/0x160
-[   19.028333]  [<ffffffff81151cee>] sysfs_create_link+0xe/0x10
-[   19.028333]  [<ffffffff81422072>] device_add+0x272/0x730
-[   19.028333]  [<ffffffff8139779e>] ? kvasprintf+0x6e/0x90
-[   19.028333]  [<ffffffff81422549>] device_register+0x19/0x20
-[   19.028333]  [<ffffffff8142262c>] device_create_vargs+0xdc/0xf0
-[   19.028333]  [<ffffffff8142268b>] device_create+0x4b/0x50
-[   19.028333]  [<ffffffff813e9702>] ? extract_entropy+0xe2/0x140
-[   19.028333]  [<ffffffff813f573f>] misc_register+0xbf/0x180
-[   19.028333]  [<ffffffff8107a4e0>] ? init_oops_id+0x0/0x40
-[   19.028333]  [<ffffffff81a2626b>] ? pm_qos_power_init+0x0/0xe1
-[   19.028333]  [<ffffffff81a262a3>] pm_qos_power_init+0x38/0xe1
-[   19.028333]  [<ffffffff81009048>] do_one_initcall+0x38/0x1a0
-[   19.028333]  [<ffffffff81a0e6b5>] kernel_init+0x172/0x1ca
-[   19.028333]  [<ffffffff81036a0a>] child_rip+0xa/0x20
-[   19.028333]  [<ffffffff81a0e543>] ? kernel_init+0x0/0x1ca
-[   19.028333]  [<ffffffff81036a00>] ? child_rip+0x0/0x20
+And perhaps worse than that, cardbus bridges are one of the canonical 
+examples where two different PCI devices actually share registers. It's 
+quite common that some of the control registers are shared across the two 
+subfunctions of a two-slot cardbus controller (and we generally don't even 
+have full docs for them!)
 
-http://asteria.noreply.org/~weasel/volatile/2009-12-15-1VAB84BxJzE/klecker-bad
+> The same goes for devices that don't have suspend or resume methods.
 
-http://asteria.noreply.org/~weasel/volatile/2009-12-15-1VAB84BxJzE/klecker-good
-for the output during a successful boot.
+Yes and no. 
 
-The config file can be found at
-http://asteria.noreply.org/~weasel/volatile/2009-12-15-1VAB84BxJzE/config-2.6.32.1-dsa-amd64
+Again, the "async_suspend" flag is done at the generic device layer, but 
+99% of all suspend/resume methods are _not_ done at that level: they are 
+bus-specific functions, where the bus has a generic suspend-resume 
+function that it exposes to the generic device layer, and that knows about 
+the bus-specific rules.
 
+So if you are a PCI device (to take just that example - but it's true of 
+just about all other buses too), and you don't have any suspend or resume 
+methods, it's actually impossible to see that fact from the generic device 
+layer.
 
-Cheers,
-Peter
--- 
-                           |  .''`.  ** Debian GNU/Linux **
-      Peter Palfrader      | : :' :      The  universal
- http://www.palfrader.org/ | `. `'      Operating System
-                           |   `-    http://www.debian.org/
+And even when you know it's PCI, our rules are actually not simple at all. 
+Our rules for PCI devices (and this strictly speaking is true for bridges 
+too) are rather complex:
+
+ - do we have _any_ legacy PM support (ie the "direct" driver 
+   suspend/resume functions in the driver ops, rather than having a 
+   "struct dev_pm_ops" pointer)? If so, call "->suspend()"
+
+ - If not - do we have that "dev_pm_ops" thing? If so, call it.
+
+ - If not - just disable the device entirely _UNLESS_ you're a PCI bridge.
+
+Notice? The way things are set up, if you have no suspend routine, you'll 
+not get suspended, but you will get disabled. 
+
+So it's _not_ actually safe to asynchronously suspend a PCI device if that 
+device has no driver or no suspend routines - because even in the absense 
+of a driver and suspend routines, we'll still least disable it. And if 
+there is some subtle dependency on that device that isn't obvious (say, it 
+might be used indirectly for some ACPI thing), then that async suspend is 
+the wrong thing to do.
+
+Subtle? Hell yes.
+
+So the whole thing about "we can do PCI bridges asynchronously because 
+they are obviously no-op" is kind of true - except for the "obviously" 
+part. It's not obvious at all. It's rather subtle.
+
+As an example of this kind of subtlety - iirc PCIE bridges used to have 
+suspend and resume bugs when we initially switched over to the "new world" 
+suspend/resume exactly because they actually did things at "suspend" time 
+(rather than suspend_late), and that broke devices behind them (this was 
+not related to async, of course, but the point is that even when you look 
+like a PCI bridge, you might be doing odd things).
+
+So just saying "let's do it asynchronously" is _not_ always guaranteed to 
+be the right thing at all. It's _probably_ safe for at least regular PCI 
+bridges. Cardbus bridges? Probably not, but since most modern laptop have 
+just a single slot - and people who have multiple slots seldom use them 
+all - most people will probably never see the problems that it _could_ 
+introduce.
+
+And PCIE bridges? Should be safe these days, but it wasn't quite as 
+obvious, because a PCIE bridge actually has a driver unlike a regular 
+plain PCI-PCI bridge.
+
+Subtle, subtle.
+
+> There remains a separate question: Should async devices also be forced
+> to wait for their children?  I don't see why not.  For PCI bridges it
+> won't make any significant difference.  As long as the async code
+> doesn't have to do anything, who cares when it runs?
+
+That's why I just set the "async_resume = 1" thing.
+
+But there might actually be reasons why we care. Like the fact that we 
+actually throttle the amount of parallel work we do in async_schedule(). 
+So doing even a "no-op" asynchronously isn't actually a no-op: while it is 
+pending (and those things can be pending for a long time, since they have 
+to wait for those slow devices underneath them), it can cause _other_ 
+async work - that isn't necessarily a no-op at all - to be then done 
+synchronously.
+
+Now, admittedly our async throttling limits are high enough that the above 
+kind of detail will probably never ever realy matter (default 256 worker 
+threads etc). But it's an example of how practice is different from theory 
+- in _theory_ it doesn't make any difference if you wait for something 
+asynchronously, but in practice it could make a difference under some 
+circumstances.
+
+			Linus
