@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZLOXnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZLOXlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758799AbZLOXnN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZLOXnN
+	id S1754660AbZLOXlh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZLOXlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:43:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59915 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbZLOXnL (ORCPT
+	Tue, 15 Dec 2009 18:41:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53939 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750951AbZLOXle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:43:11 -0500
-Message-ID: <4B281E83.5050900@zytor.com>
-Date: Tue, 15 Dec 2009 15:40:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org
-Subject: Re: [PATCH] x86, mce: rework output of MCE banks ownership information
-References: <4B26EBB0.3090507@jp.fujitsu.com> <4B281C05.7050404@sgi.com>
-In-Reply-To: <4B281C05.7050404@sgi.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Tue, 15 Dec 2009 18:41:34 -0500
+Date: Tue, 15 Dec 2009 15:41:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       linux-kernel@vger.kernel.org, rubini@gnudd.com, gregkh@suse.de
+Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
+ allocation
+Message-Id: <20091215154114.e45e61d0.akpm@linux-foundation.org>
+In-Reply-To: <20091215233738.26188500@lxorguk.ukuu.org.uk>
+References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
+	<1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
+	<1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
+	<4AF8B4FF.9050405@zytor.com>
+	<20091111153632.944a255c.akpm@linux-foundation.org>
+	<20091215143446.8b6a7e57.akpm@linux-foundation.org>
+	<20091215233738.26188500@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks good to me, Hidetoshi, ACK?
+On Tue, 15 Dec 2009 23:37:38 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-	-hpa
+> > > I merged this patch, but made a note-to-self that there are remaining
+> > > open issues..
+> > 
+> > And nothing else happened.  Can we revisit this please?
+> 
+> The last I saw was a request for an explanation of the users
+> configuration and how he was getting so many misc devices. Its a bug in
+> dlm if the dlm is doing that but I didn't see any follow up to the DLM
+> folks on the subject from the reporter, so it stays NACKed and conflicts
+> with the device registry.
+> 
+> We need to know from the DLM folks/Thaddeu what is actually going on with
+> that system, especially as it seems to be producing multiple
+> registrations of the same misc device name which is completely broken and
+> should probably be made to error anyway.
+> 
+> Whatever is going on this is the wrong "fix". If DLM should only register
+> it once (as seems the intent) then DLM needs fixing or the users config
+> or both. If it can register many then DLM needs fixing to not eat misc
+> devices.
+> 
+> <eviltwin>Possibly we need to make it BUG_ON() adding the same name twice, then
+> perhaps we'd get more feedback</eviltwin>
+> 
 
-On 12/15/2009 03:30 PM, Mike Travis wrote:
-> Subject: [PATCH] x86, mce: rework output of MCE banks ownership information
-> From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: x86@kernel.org
-> 
-> The output of MCE banks ownership information on boot tend
-> to be long on new processor which has many banks:
-> 
->   CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> 
-> This message can fill up the console output when the number
-> of cpus is large.
-> 
-> This patch suppress this info message on boot, and introduce
-> debug message in shorter format instead, like:
-> 
->   CPU 1 MCE banks map: ssCC PCss ssPP ssss ssss ss
-> 
->   where: s: shared, C: checked by cmci, P: checked by poll.
-> 
-> This patch still keep the info when ownership is updated.
-> E.g. when a cpu take over the ownership from hot-removed cpu,
-> both message will be shown:
-> 
->   CPU 1 MCE banks map updated: CMCI:6 CMCI:7 CMCI:10 CMCI:11
->   CPU 1 MCE banks map: ssCC PCCC ssPP ssCC ssss ss
-> 
-> v2:
->   - stop changing the level of message on update
->   - change the number of banks message on boot to debug level
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> 
-> v3: (again)
->   - avoid use of pr_cont with pr_debug in print_banks_map()
-> 
-> Signed-off-by: Mike Travis <travis@sgi.com>
+OK, thanks, I dropped it.  We can always reappyly it (or a variant)
+once this is all sorted out.
 
