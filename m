@@ -1,162 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750967AbZLOFEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZLOEyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750967AbZLOFEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 00:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbZLOFE3
+	id S1756728AbZLOEyr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 23:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZLOEyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 00:04:29 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:42665 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbZLOFE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 00:04:28 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: uclinux-dev@uclinux.org
-Subject: Re: [uClinux-dev] [PATCH 5/7] NOMMU: Avoiding duplicate icache flushes of shared maps
-Date: Mon, 14 Dec 2009 23:52:48 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.31.4; KDE/4.3.4; x86_64; ; )
-Cc: Jamie Lokier <jamie@shareable.org>, stefani@seibold.net,
-       linux-kernel@vger.kernel.org, jie.zhang@analog.com
-References: <20091210135755.6325.78149.stgit@warthog.procyon.org.uk> <20091210135816.6325.37536.stgit@warthog.procyon.org.uk> <20091215004143.GA15785@shareable.org>
-In-Reply-To: <20091215004143.GA15785@shareable.org>
+	Mon, 14 Dec 2009 23:54:46 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:23939 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZLOEyp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 23:54:45 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=kYFSjaEIWrtyPRF2m+rxOp16hdqWmDgseau43ea9oIWatKkBAErisxCLC52AXx6x1
+	jwtaAq1yPRn1tSIjUdlGw==
+Date: Mon, 14 Dec 2009 20:54:37 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v4.2
+In-Reply-To: <20091215133546.6872fc4f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0912142046070.436@chino.kir.corp.google.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com> <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com> <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com> <20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com>
+ <20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com> <20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
+ <20091214171632.0b34d833.akpm@linux-foundation.org> <20091215103202.eacfd64e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0912142025090.29243@chino.kir.corp.google.com> <20091215133546.6872fc4f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6865042.250As3gu3d";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912142352.50331.vapier@gentoo.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6865042.250As3gu3d
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Tue, 15 Dec 2009, KAMEZAWA Hiroyuki wrote:
 
-On Monday 14 December 2009 19:41:43 Jamie Lokier wrote:
-> David Howells wrote:
-> > From: Mike Frysinger <vapier.adi@gmail.com>
-> >
-> > When working with FDPIC, there are many shared mappings of read-only co=
-de
-> > regions between applications (the C library, applet packages like
-> > busybox, etc.), but the current do_mmap_pgoff() function will issue an
-> > icache flush whenever a VMA is added to an MM instead of only doing it
-> > when the map is initially created.
-> >
-> > @@ -1354,10 +1355,14 @@ unsigned long do_mmap_pgoff(struct file *file,
-> >  share:
-> >  	add_vma_to_mm(current->mm, vma);
-> >
-> > -	up_write(&nommu_region_sem);
-> > +	/* we flush the region from the icache only when the first executable
-> > +	 * mapping of it is made  */
-> > +	if (vma->vm_flags & VM_EXEC && !region->vm_icache_flushed) {
-> > +		flush_icache_range(region->vm_start, region->vm_end);
-> > +		region->vm_icache_flushed =3D true;
-> > +	}
-> >
-> > -	if (prot & PROT_EXEC)
-> > -		flush_icache_range(result, result + len);
-> > +	up_write(&nommu_region_sem);
-> >
-> >  	kleave(" =3D %lx", result);
-> >  	return result;
->=20
-> This looks like it won't work in the following sequence:
->=20
->     process A maps MAP_SHARED, PROT_READ|PROT_EXEC (flushes icache)
->     process B maps MAP_SHARED, PROT_READ|PROT_WRITE
->         and proceeds to modify the data
->     process C maps MAP_SHARED, PROT_READ|PROT_EXEC (no icache flush)
->=20
-> On a possibly related note:
->=20
-> What about icache flushes in these cases:
+> > I would agree only if the oom killer used total_vm as a the default, it is 
+> > long-standing and allows for the aforementioned capability that you lose 
+> > with rss.  I have no problem with the added sysctl to use rss as the 
+> > baseline when enabled.
+> > 
+> I'll prepare a patch for adds
+> 
+>   sysctl_oom_kill_based_on_rss (default=0)
+> 
+> ok ?
+> 
 
-David will have to respond here, but a test on my side shows that a mmap()=
-=20
-request on an existing r-xs mapping does not grant write access.  you get b=
-ack=20
-a r-xs mapping.
+I have no strong feelings either for or against that, I guess users who 
+want to always kill the biggest memory hogger even when single page 
+__GFP_WAIT allocations fail could use it.  I'm not sure it would get much 
+use, though.
 
-> When using mprotect() PROT_READ|PROT_WRITE -> PROT_READ|PROT_EXEC,
-> e.g. as an FDPIC implementation may do when updating PLT entries.
+I think we should methodically work out an oom killer badness rewrite that 
+won't compound the problem by adding more and more userspace knobs.  In 
+other words, we should slow down, construct a list of goals that we want 
+to achieve, and then see what type of solution we can create.
 
-when would that happen ?  PLT entries arent updated inline in the .text=20
-section (if they were, you'd have TEXTRELs and the .text wouldnt be shared)=
-=2E =20
-by definition, the function descriptor is stored in the GOT and that is wha=
-t=20
-gets updated by the resolver during lazy relocation.
+A few requirements that I have:
 
-> And when calling msync(), like this:
->=20
->     process A maps MAP_SHARED, PROT_READ|PROT_EXEC (flushes icache)
->     process B maps MAP_SHARED, PROT_READ|PROT_WRITE
->         and proceeds to modify the data
->     process A calls msync()
->         and proceeds to execute the modified contents
->=20
-> Do you think the mprotect() and msync() calls should flush icache in
-> those cases?
+ - we must be able to define when a task is a memory hogger; this is
+   currently done by /proc/pid/oom_adj relying on the overall total_vm
+   size of the task as a baseline.  Most users should have a good sense
+   of when their task is using more memory than expected and killing a
+   memory leaker should always be the optimal oom killer result.  A better 
+   set of units other than a shift on total_vm would be helpful, though.
 
-from what i can tell, sys_mprotect() and sys_msync() do not currently exist=
- in=20
-the nommu kernel port, and no one has complained so far ;).
+ - we must prefer tasks that run on a cpuset or mempolicy's nodes if the 
+   oom condition is constrained by that cpuset or mempolicy and its not a
+   system-wide issue.
 
-uClibc has simply stubbed out these functions into inlines that always retu=
-rn=20
-success.  msync() is defined as pushing changes written to a file-backed=20
-mapping back to disk, and i dont think this gets used under nommu.
+ - we must be able to polarize the badness heuristic to always select a
+   particular task is if its very low priority or disable oom killing for
+   a task if its must-run.
 
-> If seen arguments for it, and arguments that the executing process can
-> be expected to explicitly flush icache itself in those cases because
-> it knows what it is doing.  (Personally I lean towards the kernel
-> should be doing it.  IRIX interestingly offers both alternatives, with
-> a PROT_EXEC_NOFLUSH).
->=20
-> But in the first example above, I don't see how process C could be
-> expected to know it must flush icache, and process B could just be an
-> "optimised with writable mmap" file copy, so it shouldn't have
-> responsibility for icache either.
-
-isnt this what the MS_INVALIDATE flag to msync() is for ?
-
-> Or is icache fully flushed on every context switch on all nommu
-> architectures anyway, and defined to do so?
-
-ugh, no, this def does not occur, nor should it.  the overhead here would b=
-e=20
-crazy.  on a normal FDPIC boot, the only icache flush called are the initia=
-l=20
-creation of the shared .text maps in the C library and the applications.  a=
-nd=20
-with a large busybox, you rarely see another one since the .text is shared.
-=2Dmike
-
---nextPart6865042.250As3gu3d
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iQIcBAABAgAGBQJLJxYiAAoJEEFjO5/oN/WBVnsP/3PzA82OHLUgqvQziM4TsTOe
-pXybukS0H/127y8GMFJZ7xhlISZ2g0wBExJa4gt3ophR7kizLiK3ey6bGdF5njdB
-acrs9GFUhOlnysuyQuEQB1dmLi9EnFgrC59VgNG7uwwJ/2kJ//JUQknaR+7fhaXZ
-GtB64/r82YpTgvknUBRwkX5RvurD+p9kK4IGuVFwpH8AorOgqZ00U+XqllB/eFbt
-Zx8dC0gpKWNjMfDawlBqrwQbU24FNzlz5JOXlDwXVO6mvrAPQsJ6VybmksSp/lK1
-3QlgAaaVRC0ICqPWGs/Z526hy7mAKVX2LcCEJb5oe98YuijLqy98Dp1+PaqLnHKB
-DqK+kYBjurmIZb5sfZPXwtgT6vZz6iP08iY+4N14Pu/tfiMMUHVwPCvFvnL7PLgM
-M1ldVrxkfqN9wnDAMrPQzMHzORSMB46uUY7/mCwwgkH6llNU/EbSf/cjwjKcAbf1
-AvvGgfjJR9yKRcxpGe8+MNBiyELBrnsuotlWQ6cl9V5vLq0f6d+cT3vm2cNcPsR3
-EfPTjxAM8CFRf7ImDxHjx7kM6KzfEKmryW2xlsqFX7boI8s6HOUZVB35iSe4Ke7d
-9I6M48qXz1SuCivQxcPC350za9ROckXbJsviXo1TkwfSqCKMddoUVhKM1n2r40fn
-BZf+conqm9hJYm+mm/Jg
-=DZEl
------END PGP SIGNATURE-----
-
---nextPart6865042.250As3gu3d--
+The proposal may be to remove /proc/pid/oom_adj completely since I know 
+both you and KOSAKI-san dislike it, but we'd need an alternative which 
+keeps the above functionality intact.
