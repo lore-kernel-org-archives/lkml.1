@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbZLOSsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbZLOSzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758439AbZLOSsG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:48:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZLOSsA
+	id S1760909AbZLOSzO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbZLOSzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:48:00 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:33538 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756753AbZLOSr7 (ORCPT
+	Tue, 15 Dec 2009 13:55:10 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:35643 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760855AbZLOSzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:47:59 -0500
-Date: Tue, 15 Dec 2009 11:47:58 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-Message-ID: <20091215184758.GP7812@parisc-linux.org>
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org>
+	Tue, 15 Dec 2009 13:55:07 -0500
+Message-ID: <4B27DB70.50304@linux.vnet.ibm.com>
+Date: Tue, 15 Dec 2009 10:54:40 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B27D7E9.4030105@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Paul Mackerras <paulus@samba.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 1/2] perf_event: Fix incorrect range check on cpu number
+References: <20091215084032.GA18661@brick.ozlabs.ibm.com> <1260873092.4165.354.camel@twins> <20091215110055.GC18661@brick.ozlabs.ibm.com>
+In-Reply-To: <20091215110055.GC18661@brick.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 10:39:37AM -0800, Yinghai Lu wrote:
-> +	/* some sys doesn't get mmconf enabled */
-> +	if (dev->cfg_size < 0x200)
-> +		return;
 
-What is the meaning of this mystic 0x200?
+Paul Mackerras wrote:
+> On Tue, Dec 15, 2009 at 11:31:32AM +0100, Peter Zijlstra wrote:
+> 
+>> On Tue, 2009-12-15 at 19:40 +1100, Paul Mackerras wrote:
+>>> It is quite legitimate for CPUs to be numbered sparsely, meaning that
+>>> it possible for an online CPU to have a number which is greater than
+>>> the total count of possible CPUs.
+>>>
+>>> Currently find_get_context() has a sanity check on the cpu number
+>>> where it checks it against num_possible_cpus().  This test can fail
+>>> for a legitimate cpu number if the cpu_possible_mask is sparsely
+>>> populated.
+>>>
+>>> This fixes the problem by checking the CPU number against
+>>> nr_cpumask_bits instead, since that is the appropriate check to ensure
+>>> that the cpu number is same to pass to cpu_isset() subsequently.
+>> Cute, do you actually have hardware that does this?
+> 
+> Yeah, Mikey ran across this on a POWER7 box here.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Does the perf tool need to be fixed too?  The "perf stat" tool, at least, has a 
+"-a" switch that tells the tool to count the event on all cpus, and it does this 
+by iterating over the number of cpus, 0..n, assuming they are all contiguous.
+
+- Corey
+
