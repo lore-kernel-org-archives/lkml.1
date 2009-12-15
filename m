@@ -1,155 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZLORrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZLORsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZLORrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 12:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZLORrR
+	id S1758026AbZLORsN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 12:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZLORsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 12:47:17 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:16144 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751642AbZLORrQ (ORCPT
+	Tue, 15 Dec 2009 12:48:11 -0500
+Received: from aglcosbs01.cos.agilent.com ([192.25.218.35]:33154 "EHLO
+	aglcosbs01.cos.agilent.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753448AbZLORsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 12:47:16 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Huang Ying <ying.huang@intel.com>
-Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
-Date: Tue, 15 Dec 2009 10:47:13 -0700
-User-Agent: KMail/1.9.10
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com> <200912111036.15063.bjorn.helgaas@hp.com> <1260839053.12561.1098.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1260839053.12561.1098.camel@yhuang-dev.sh.intel.com>
+	Tue, 15 Dec 2009 12:48:09 -0500
+Message-ID: <4B27CBB6.2030906@agilent.com>
+Date: Tue, 15 Dec 2009 09:47:34 -0800
+From: Earl Chew <earl_chew@agilent.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: "Hans J. Koch" <hjk@linutronix.de>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, hugh <hugh@veritas.com>, linux-mm <linux-mm@kvack.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+References: <1228379942.5092.14.camel@twins> <4B22DD89.2020901@agilent.com> <20091214192322.GA3245@bluebox.local> <4B27905B.4080006@agilent.com>
+In-Reply-To: <4B27905B.4080006@agilent.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912151047.14196.bjorn.helgaas@hp.com>
+X-OriginalArrivalTime: 15 Dec 2009 17:47:39.0312 (UTC) FILETIME=[B1BB8B00:01CA7DAE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 December 2009 06:04:13 pm Huang Ying wrote:
-> On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
-> > The ACPI CA has functions called acpi_hw_read() and acpi_hw_write()
-> > that have similar prototypes and functionality (but of course, they
-> > don't work in atomic context).  It'd be nice if your new functions
-> > had similar names, e.g., acpi_hw_map(), acpi_hw_unmap(),
-> > acpi_hw_read_atomic(), acpi_hw_write_atomic().
-> 
-> acpi_hw_read/write is the 32-bit optimized version of acpi_read/write.
-> So I think it is better to follow the naming convention of
-> acpi_read/write.
+Earl Chew wrote:
+> I'd like to proceed by changing struct uio_mem [MAX_UIO_MAPS] to a
+> linked list.
 
-You're right; I didn't notice that.  I agree that it's better to
-follow the convention of acpi_read().
+Here's my first go at changing to a linked list. I mistakenly
+said that I would proceed by modifying struct uio_mem [MAX_UIO_MAPS].
 
-> > I think your code would be simpler if acpi_pre_map_gar() returned a
-> > struct acpi_iomap pointer (from the caller's point of view, this would
-> > be an opaque cookie).  Then you could just supply that cookie to
-> > acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
-> > you could even get rid of the list and all the fancy RCU & kref stuff
-> > then, too.
-> 
-> The interface chosen is based on usage model, which is:
-> 
-> 1. In init function, all GARs needed are pre-mapped
-> 2. In atomic context, pre-mapped GARs are accessed
-> 3. In exit function, all GARs are post-unmapped
-> 
-> In 3), if struct acpi_iomap* is used as parameter for post-unmap
-> function, we need to record that pointer in another list. In 2), we need
-> find mapped address from GAR.
+In fact, I think that mem[MAX_UIO_MAPS] in struct uio_info can remain
+intact -- thus preserving the client facing API.
 
-I understand that my proposal would require a slight change in your
-usage model.  I am suggesting that you make it follow the same pattern
-as pci_iomap(), e.g.:
+The linked list change occurs in struct uio_device which is private
+to uio.c ... thus hiding the change from client facing code.
 
-	void *pci_iomap(struct pci_dev *, int bar, unsigned long len);
-	unsigned int ioread32(void *);
-	void pci_iounmap(struct pci_dev *, void *);
 
-	void *acpi_map_generic_address(struct acpi_generic_address *);
-	u64 acpi_read_atomic(void *);
-	void acpi_unmap_generic_address(void *);
+Tying the regions into a linked list held by struct uio_device
+simplifies the search-modify code in the rest of uio.c.
 
-acpi_map_generic_address() would validate the GAR and do the ioremap().
-If the validation or ioremap() failed, it would return a NULL pointer.
 
-This would require the caller of acpi_map_generic_address() to hang onto
-the pointer returned (just as callers of pci_iomap() must hang onto the
-pointer it returns).
+Earl
 
-The pointer would be supplied to acpi_read_atomic(), so it would not
-need to do acpi_check_gar() because we know it was done successfully
-in acpi_map_generic_address().  It wouldn't need to look up the GAR
-in the list because the list entry was passed in.  Since all the
-possible failure conditions were checked in acpi_map_generic_address(),
-acpi_read_atomic() doesn't need to return status and could simply
-return the u64 directly.
 
-> > > +/* In NMI handler, should set silent = 1 */
-> > > +static int acpi_check_gar(struct acpi_generic_address *reg,
-> > > +			  u64 *paddr, int silent)
-> > > +{
-> > > +	u32 width;
-> > > +
-> > > +	/* Handle possible alignment issues */
-> > > +	memcpy(paddr, &reg->address, sizeof(*paddr));
-> > > +	if (!*paddr) {
-> > > +		if (!silent)
-> > > +			pr_info(
-> > > +			"Invalid physical address in GAR, firmware bug?\n");
-> > > +		return -EINVAL;
-> > > +	}
-> > > +
-> > > +	width = reg->bit_width;
-> > > +	if ((width != 8) && (width != 16) && (width != 32) && (width != 64)) {
-> > > +		if (!silent)
-> > > +			pr_info(
-> > > +			"Invalid bit width in GAR, firmware bug?\n");
-> > > +		return -EINVAL;
-> > > +	}
-> > > +
-> > > +	if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
-> > > +	    reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO) {
-> > > +		if (!silent)
-> > > +			pr_info(
-> > > +			"Invalid address space type in GAR, firmware bug?\n");
-> > 
-> > Error messages with constant text are nearly useless because they
-> > don't give much of a clue about where to look for a problem.
-> > Personally, for something this, I would just return failure and
-> > never print anything.  If a map fails, the caller should notice
-> > and you then have a good idea of where to look.
-> 
-> The checking here is for bug in firmware not software. I think it is
-> necessary for the user to know where the bugs may come from, and it is
-> hard to express the bug in return code.
+diff -uNpw uio_driver.h.old uio_driver.h
+--- c:/tmp/makereview.AGgMh	2009-12-15 09:41:23.146608800 -0800
++++ c:/tmp/makereview.oXYWW	2009-12-15 09:41:23.255983800 -0800
+@@ -20,6 +20,8 @@
+ 
+ /**
+  * struct uio_mem - description of a UIO memory region
++ * @list_node:		list node for struct uio_device list
++ * @mapid:		mapping number for this region
+  * @kobj:		kobject for this mapping
+  * @addr:		address of the device's memory
+  * @size:		size of IO
+@@ -27,6 +29,8 @@
+  * @internal_addr:	ioremap-ped version of addr, for driver internal use
+  */
+ struct uio_mem {
++        struct list_head        list_node;
++        unsigned                map_id;
+ 	struct kobject		kobj;
+ 	unsigned long		addr;
+ 	unsigned long		size;
 
-Yes, I understand that this is checking for firmware bugs.  My point
-is that when a user sees this in his dmesg log:
+diff -uNpw uio.c.old uio.c
+--- c:/tmp/makereview.O27Xv	2009-12-15 09:41:26.740358800 -0800
++++ c:/tmp/makereview.DAhCY	2009-12-15 09:41:26.834108800 -0800
+@@ -35,6 +35,7 @@ struct uio_device {
+ 	int			vma_count;
+ 	struct uio_info		*info;
+ 	struct kset 		map_attr_kset;
++	struct list_head	mem_list;
+ };
+ 
+ static int uio_major;
+@@ -153,7 +154,7 @@ static int uio_dev_add_attributes(struct
+ 	if (ret)
+ 		goto err_group;
+ 
+-	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++	for (mi = 0; mi < ARRAY_SIZE(idev->info->mem); mi++) {
+ 		mem = &idev->info->mem[mi];
+ 		if (mem->size == 0)
+ 			break;
+@@ -166,6 +167,12 @@ static int uio_dev_add_attributes(struct
+ 			if (ret)
+ 				goto err_remove_group;
+ 		}
++
++		mem->map_id = mi;
++
++		INIT_LIST_HEAD(&mem->list_node);
++		list_add(&mem->list_node, &idev->mem_list);
++
+ 		kobject_init(&mem->kobj);
+ 		kobject_set_name(&mem->kobj,"map%d",mi);
+ 		mem->kobj.parent = &idev->map_attr_kset.kobj;
+@@ -180,6 +187,7 @@ static int uio_dev_add_attributes(struct
+ err_remove_maps:
+ 	for (mi--; mi>=0; mi--) {
+ 		mem = &idev->info->mem[mi];
++		list_del(&mem->list_node);
+ 		kobject_unregister(&mem->kobj);
+ 	}
+ 	kset_unregister(&idev->map_attr_kset); /* Needed ? */
+@@ -194,10 +202,11 @@ static void uio_dev_del_attributes(struc
+ {
+ 	int mi;
+ 	struct uio_mem *mem;
+-	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++	for (mi = 0; mi < ARRAY_SIZE(idev->info->mem); mi++) {
+ 		mem = &idev->info->mem[mi];
+ 		if (mem->size == 0)
+ 			break;
++		list_del(&mem->list_node);
+ 		kobject_unregister(&mem->kobj);
+ 	}
+ 	kset_unregister(&idev->map_attr_kset);
+@@ -386,18 +395,20 @@ static ssize_t uio_read(struct file *fil
+ 	return retval;
+ }
+ 
+-static int uio_find_mem_index(struct vm_area_struct *vma)
++static struct uio_mem *uio_find_mem_index(struct vm_area_struct *vma)
+ {
+-	int mi;
+ 	struct uio_device *idev = vma->vm_private_data;
++	struct list_head *mem_list;
++
++	list_for_each(mem_list, &idev->mem_list) {
+ 
+-	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
+-		if (idev->info->mem[mi].size == 0)
+-			return -1;
+-		if (vma->vm_pgoff == mi)
+-			return mi;
++		struct uio_mem *mem =
++			list_entry(mem_list, struct uio_mem, list_node);
++
++		if (vma->vm_pgoff == mem->map_id)
++			return mem;
+ 	}
+-	return -1;
++	return NULL;
+ }
+ 
+ static void uio_vma_open(struct vm_area_struct *vma)
+@@ -415,17 +426,16 @@ static void uio_vma_close(struct vm_area
+ static struct page *uio_vma_nopage(struct vm_area_struct *vma,
+ 				   unsigned long address, int *type)
+ {
+-	struct uio_device *idev = vma->vm_private_data;
+ 	struct page* page = NOPAGE_SIGBUS;
+ 
+-	int mi = uio_find_mem_index(vma);
+-	if (mi < 0)
++	struct uio_mem *mem = uio_find_mem_index(vma);
++	if (mem == NULL)
+ 		return page;
+ 
+-	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
+-		page = virt_to_page(idev->info->mem[mi].addr);
++	if (mem->memtype == UIO_MEM_LOGICAL)
++		page = virt_to_page(mem->addr);
+ 	else
+-		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
++		page = vmalloc_to_page((void*)mem->addr);
+ 	get_page(page);
+ 	if (type)
+ 		*type = VM_FAULT_MINOR;
+@@ -440,16 +450,15 @@ static struct vm_operations_struct uio_v
+ 
+ static int uio_mmap_physical(struct vm_area_struct *vma)
+ {
+-	struct uio_device *idev = vma->vm_private_data;
+-	int mi = uio_find_mem_index(vma);
+-	if (mi < 0)
++	struct uio_mem *mem = uio_find_mem_index(vma);
++	if (mem == NULL)
+ 		return -EINVAL;
+ 
+ 	vma->vm_flags |= VM_IO | VM_RESERVED;
+ 
+ 	return remap_pfn_range(vma,
+ 			       vma->vm_start,
+-			       idev->info->mem[mi].addr >> PAGE_SHIFT,
++			       mem->addr >> PAGE_SHIFT,
+ 			       vma->vm_end - vma->vm_start,
+ 			       vma->vm_page_prot);
+ }
+@@ -466,7 +475,7 @@ static int uio_mmap(struct file *filep, 
+ {
+ 	struct uio_listener *listener = filep->private_data;
+ 	struct uio_device *idev = listener->dev;
+-	int mi;
++	struct uio_mem *mem;
+ 	unsigned long requested_pages, actual_pages;
+ 	int ret = 0;
+ 
+@@ -475,12 +484,12 @@ static int uio_mmap(struct file *filep, 
+ 
+ 	vma->vm_private_data = idev;
+ 
+-	mi = uio_find_mem_index(vma);
+-	if (mi < 0)
++	mem = uio_find_mem_index(vma);
++	if (mem == NULL)
+ 		return -EINVAL;
+ 
+ 	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+-	actual_pages = (idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
++	actual_pages = (mem->size + PAGE_SIZE -1) >> PAGE_SHIFT;
+ 	if (requested_pages > actual_pages)
+ 		return -EINVAL;
+ 
+@@ -492,7 +501,7 @@ static int uio_mmap(struct file *filep, 
+ 		return ret;
+ 	}
+ 
+-	switch (idev->info->mem[mi].memtype) {
++	switch (mem->memtype) {
+ 		case UIO_MEM_PHYS:
+ 			return uio_mmap_physical(vma);
+ 		case UIO_MEM_LOGICAL:
+@@ -613,6 +622,7 @@ int __uio_register_device(struct module 
+ 	idev->info = info;
+ 	init_waitqueue_head(&idev->wait);
+ 	atomic_set(&idev->event, 0);
++	INIT_LIST_HEAD(&idev->mem_list);
+ 
+ 	ret = uio_get_minor(idev);
+ 	if (ret)
 
-	Invalid bit width in GAR, firmware bug?
 
-we have no context, and even a kernel developer can't figure out what
-to do.  We could ask for a copy of the FADT and DSDT, but even then,
-we don't know *which* GAR structure to look at, so we'll probably have
-to add some instrumentation and ask the user to reproduce the problem.
-
-If the check were in the caller, it could at least say something like:
-
-	ACPI: couldn't map generic address [io 0xcf8] for PCI config access
-
-which would give us more useful information.
-
-I guess your assumption is that *both* the caller and acpi_check_gar()
-would print something, so then we'd know which GAR was bad and also
-exactly what was wrong with it.  My opinion (and this is just my opinion)
-is that knowing with GAR is bad is the important part.  A GAR is simple
-enough that if we know which one to look at, the problem will be obvious,
-so we only need the message from the caller.
-
-Bjorn
