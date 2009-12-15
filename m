@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbZLOP2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbZLOP3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758539AbZLOP2n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbZLOP2e
+	id S1758434AbZLOP3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZLOP3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:28:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34740 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 10:29:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15104 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755510AbZLOP2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:28:31 -0500
+	id S1755510AbZLOP3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:29:00 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 11/14] perf probe: Reject second attempt of adding
-	same-name event
+Subject: [PATCH -tip 12/14] perf probe: Check build-id of vmlinux
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -26,8 +25,8 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 15 Dec 2009 10:32:25 -0500
-Message-ID: <20091215153225.17436.15166.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Tue, 15 Dec 2009 10:32:33 -0500
+Message-ID: <20091215153232.17436.45539.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -38,25 +37,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reject second attempt of adding same-name event. This patch
-also provides --force option which allows user to add additional
-probe events on the same-name event.
-
-e.g.
-(the first attempt : success)
- ./perf probe schedule
- Added new event:
-   probe:schedule                           (on schedule+0)
-
-(the second attempt : failure)
- ./perf probe schedule:11
- Error: event "schedule" already exists. (Use -f to force duplicates.)
-   Fatal: Can't add new event.
-
-(the second attempt with -f : successfully added)
- ./perf probe -f schedule:11
- Added new event:
-   probe:schedule_1                         (on schedule+45)
+Check build-id of vmlinux by using functions in symbol.c.
+This also exposes map__load() for getting vmlinux path,
+and removes vmlinux path list in builtin-probe.c,
+because symbol.c already has that. Checking build-id
+prevents users to open old or different debuginfo from
+current running kernel.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -74,127 +60,195 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
 
- tools/perf/builtin-probe.c    |    6 +++++-
- tools/perf/util/probe-event.c |   24 +++++++++++++++++++++---
- tools/perf/util/probe-event.h |    3 ++-
- 3 files changed, 28 insertions(+), 5 deletions(-)
+ tools/perf/builtin-probe.c |   72 ++++++++++++++++++--------------------------
+ tools/perf/util/event.h    |    2 +
+ tools/perf/util/map.c      |   14 ++++++---
+ 3 files changed, 41 insertions(+), 47 deletions(-)
 
 diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index 4f768f3..4d232cb 100644
+index 4d232cb..5008605 100644
 --- a/tools/perf/builtin-probe.c
 +++ b/tools/perf/builtin-probe.c
-@@ -61,6 +61,7 @@ static struct {
- 	char *release;
+@@ -38,33 +38,27 @@
+ #include "util/strlist.h"
+ #include "util/event.h"
+ #include "util/debug.h"
++#include "util/symbol.h"
++#include "util/thread.h"
++#include "util/session.h"
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"	/* For debugfs_path */
+ #include "util/probe-finder.h"
+ #include "util/probe-event.h"
+ 
+-/* Default vmlinux search paths */
+-#define NR_SEARCH_PATH 4
+-const char *default_search_path[NR_SEARCH_PATH] = {
+-"/lib/modules/%s/build/vmlinux",		/* Custom build kernel */
+-"/usr/lib/debug/lib/modules/%s/vmlinux",	/* Red Hat debuginfo */
+-"/boot/vmlinux-debug-%s",			/* Ubuntu */
+-"./vmlinux",					/* CWD */
+-};
+-
+ #define MAX_PATH_LEN 256
+ #define MAX_PROBES 128
+ 
+ /* Session management structure */
+ static struct {
+-	char *vmlinux;
+-	char *release;
  	bool need_dwarf;
  	bool list_events;
-+	bool force_add;
+ 	bool force_add;
  	int nr_probe;
  	struct probe_point probes[MAX_PROBES];
  	struct strlist *dellist;
-@@ -192,6 +193,8 @@ static const struct option options[] = {
++	struct symbol_conf conf;
++	struct perf_session *psession;
+ } session;
+ 
+ 
+@@ -122,33 +116,21 @@ static int opt_del_probe_event(const struct option *opt __used,
+ }
+ 
+ #ifndef NO_LIBDWARF
+-static int open_default_vmlinux(void)
++static int open_vmlinux(void)
+ {
+-	struct utsname uts;
+-	char fname[MAX_PATH_LEN];
+-	int fd, ret, i;
+-
+-	ret = uname(&uts);
+-	if (ret) {
+-		pr_debug("uname() failed.\n");
+-		return -errno;
++	struct map *kmap;
++	kmap = map_groups__find_by_name(&session.psession->kmaps,
++					MAP__FUNCTION, "[kernel.kallsyms]");
++	if (!kmap) {
++		pr_debug("Could not find kernel map.\n");
++		return -ENOENT;
+ 	}
+-	session.release = uts.release;
+-	for (i = 0; i < NR_SEARCH_PATH; i++) {
+-		ret = snprintf(fname, MAX_PATH_LEN,
+-			       default_search_path[i], session.release);
+-		if (ret >= MAX_PATH_LEN || ret < 0) {
+-			pr_debug("Filename(%d,%s) is too long.\n", i,
+-				uts.release);
+-			errno = E2BIG;
+-			return -E2BIG;
+-		}
+-		pr_debug("try to open %s\n", fname);
+-		fd = open(fname, O_RDONLY);
+-		if (fd >= 0)
+-			break;
++	if (map__load(kmap, session.psession, NULL) < 0) {
++		pr_debug("Failed to load kernel map.\n");
++		return -EINVAL;
+ 	}
+-	return fd;
++	pr_debug("Try to open %s\n", kmap->dso->long_name);
++	return open(kmap->dso->long_name, O_RDONLY);
+ }
  #endif
- 		"\t\t\tkprobe-tracer argument format.)\n",
- 		opt_add_probe_event),
-+	OPT_BOOLEAN('f', "force", &session.force_add, "forcibly add events"
-+		    " with existing name"),
- 	OPT_END()
- };
  
-@@ -296,7 +299,8 @@ end_dwarf:
+@@ -164,8 +146,8 @@ static const struct option options[] = {
+ 	OPT_BOOLEAN('v', "verbose", &verbose,
+ 		    "be more verbose (show parsed arguments, etc)"),
+ #ifndef NO_LIBDWARF
+-	OPT_STRING('k', "vmlinux", &session.vmlinux, "file",
+-		"vmlinux/module pathname"),
++	OPT_STRING('k', "vmlinux", &session.conf.vmlinux_name,
++		   "file", "vmlinux pathname"),
+ #endif
+ 	OPT_BOOLEAN('l', "list", &session.list_events,
+ 		    "list up current probe events"),
+@@ -236,17 +218,23 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
+ 			return 0;
  	}
  
- 	/* Settng up probe points */
--	add_trace_kprobe_events(session.probes, session.nr_probe);
-+	add_trace_kprobe_events(session.probes, session.nr_probe,
-+				session.force_add);
- 	return 0;
- }
- 
-diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 0b769bc..e74ecfc 100644
---- a/tools/perf/util/probe-event.c
-+++ b/tools/perf/util/probe-event.c
-@@ -482,7 +482,7 @@ static void write_trace_kprobe_event(int fd, const char *buf)
- }
- 
- static void get_new_event_name(char *buf, size_t len, const char *base,
--			       struct strlist *namelist)
-+			       struct strlist *namelist, bool allow_suffix)
- {
- 	int i, ret;
- 
-@@ -493,6 +493,12 @@ static void get_new_event_name(char *buf, size_t len, const char *base,
- 	if (!strlist__has_entry(namelist, buf))
- 		return;
- 
-+	if (!allow_suffix) {
-+		pr_warning("Error: event \"%s\" already exists. "
-+			   "(Use -f to force duplicates.)\n", base);
-+		die("Can't add new event.");
-+	}
++	/* Initialize symbol maps for vmlinux */
++	if (session.conf.vmlinux_name == NULL)
++		session.conf.try_vmlinux_path = true;
++	if (symbol__init(&session.conf) < 0)
++		die("Failed to init symbol map.");
++	session.psession = perf_session__new(NULL, O_WRONLY, false,
++					     &session.conf);
++	if (session.psession == NULL)
++		die("Failed to init perf_session.");
 +
- 	/* Try to add suffix */
- 	for (i = 1; i < MAX_EVENT_INDEX; i++) {
- 		ret = e_snprintf(buf, len, "%s_%d", base, i);
-@@ -505,13 +511,15 @@ static void get_new_event_name(char *buf, size_t len, const char *base,
- 		die("Too many events are on the same function.");
- }
+ 	if (session.need_dwarf)
+ #ifdef NO_LIBDWARF
+ 		die("Debuginfo-analysis is not supported");
+ #else	/* !NO_LIBDWARF */
+ 		pr_debug("Some probes require debuginfo.\n");
  
--void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
-+void add_trace_kprobe_events(struct probe_point *probes, int nr_probes,
-+			     bool force_add)
+-	if (session.vmlinux) {
+-		pr_debug("Try to open %s.", session.vmlinux);
+-		fd = open(session.vmlinux, O_RDONLY);
+-	} else
+-		fd = open_default_vmlinux();
++	fd = open_vmlinux();
+ 	if (fd < 0) {
+ 		if (session.need_dwarf)
+ 			die("Could not open debuginfo file.");
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index a92e0b0..8027309 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -152,6 +152,8 @@ size_t map__fprintf(struct map *self, FILE *fp);
+ 
+ struct perf_session;
+ 
++int map__load(struct map *self, struct perf_session *session,
++	      symbol_filter_t filter);
+ struct symbol *map__find_symbol(struct map *self, struct perf_session *session,
+ 				u64 addr, symbol_filter_t filter);
+ struct symbol *map__find_symbol_by_name(struct map *self, const char *name,
+diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+index 8b3dd46..c4d55a0 100644
+--- a/tools/perf/util/map.c
++++ b/tools/perf/util/map.c
+@@ -104,12 +104,16 @@ void map__fixup_end(struct map *self)
+ 
+ #define DSO__DELETED "(deleted)"
+ 
+-static int map__load(struct map *self, struct perf_session *session,
+-		     symbol_filter_t filter)
++int map__load(struct map *self, struct perf_session *session,
++	      symbol_filter_t filter)
  {
- 	int i, j, fd;
- 	struct probe_point *pp;
- 	char buf[MAX_CMDLEN];
- 	char event[64];
- 	struct strlist *namelist;
-+	bool allow_suffix;
+ 	const char *name = self->dso->long_name;
+-	int nr = dso__load(self->dso, self, session, filter);
++	int nr;
  
- 	fd = open_kprobe_events(O_RDWR, O_APPEND);
- 	/* Get current event names */
-@@ -524,9 +532,12 @@ void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
- 		if (!pp->group)
- 			pp->group = strdup(PERFPROBE_GROUP);
- 		DIE_IF(!pp->event || !pp->group);
-+		/* If force_add is true, suffix search is allowed */
-+		allow_suffix = force_add;
- 		for (i = 0; i < pp->found; i++) {
- 			/* Get an unused new event name */
--			get_new_event_name(event, 64, pp->event, namelist);
-+			get_new_event_name(event, 64, pp->event, namelist,
-+					   allow_suffix);
- 			snprintf(buf, MAX_CMDLEN, "%c:%s/%s %s\n",
- 				 pp->retprobe ? 'r' : 'p',
- 				 pp->group, event,
-@@ -538,6 +549,13 @@ void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
- 			show_perf_probe_event(event, buf, pp);
- 			/* Add added event name to namelist */
- 			strlist__add(namelist, event);
-+			/*
-+			 * Probes after the first probe which comes from same
-+			 * user input are always allowed to add suffix, because
-+			 * there might be several addresses corresponding to
-+			 * one code line.
-+			 */
-+			allow_suffix = true;
- 		}
- 	}
- 	/* Show how to use the event. */
-diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-index 8bb22f5..8fd3052 100644
---- a/tools/perf/util/probe-event.h
-+++ b/tools/perf/util/probe-event.h
-@@ -10,7 +10,8 @@ extern void parse_perf_probe_event(const char *str, struct probe_point *pp,
- extern int synthesize_perf_probe_event(struct probe_point *pp);
- extern void parse_trace_kprobe_event(const char *str, struct probe_point *pp);
- extern int synthesize_trace_kprobe_event(struct probe_point *pp);
--extern void add_trace_kprobe_events(struct probe_point *probes, int nr_probes);
-+extern void add_trace_kprobe_events(struct probe_point *probes, int nr_probes,
-+				    bool force_add);
- extern void del_trace_kprobe_events(struct strlist *dellist);
- extern void show_perf_probe_events(void);
++	if (dso__loaded(self->dso, self->type))
++		return 0;
++
++	nr = dso__load(self->dso, self, session, filter);
+ 	if (nr < 0) {
+ 		if (self->dso->has_build_id) {
+ 			char sbuild_id[BUILD_ID_SIZE * 2 + 1];
+@@ -147,7 +151,7 @@ static int map__load(struct map *self, struct perf_session *session,
+ struct symbol *map__find_symbol(struct map *self, struct perf_session *session,
+ 				u64 addr, symbol_filter_t filter)
+ {
+-	if (!dso__loaded(self->dso, self->type) && map__load(self, session, filter) < 0)
++	if (map__load(self, session, filter) < 0)
+ 		return NULL;
  
+ 	return dso__find_symbol(self->dso, self->type, addr);
+@@ -157,7 +161,7 @@ struct symbol *map__find_symbol_by_name(struct map *self, const char *name,
+ 					struct perf_session *session,
+ 					symbol_filter_t filter)
+ {
+-	if (!dso__loaded(self->dso, self->type) && map__load(self, session, filter) < 0)
++	if (map__load(self, session, filter) < 0)
+ 		return NULL;
+ 
+ 	if (!dso__sorted_by_name(self->dso, self->type))
 
 
 -- 
