@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZLOXNt (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 15 Dec 2009 18:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934141AbZLOXNR
+	id S934186AbZLOXOg (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 15 Dec 2009 18:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761599AbZLOXOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:13:17 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44981 "EHLO e3.ny.us.ibm.com"
+	Tue, 15 Dec 2009 18:14:23 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:36474 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762330AbZLOXCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:02:47 -0500
+	id S1762190AbZLOXCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:02:46 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC tip/core/rcu 16/18] rcu: make lockdep aware of SRCU read-side critical sections.
-Date: Tue, 15 Dec 2009 15:02:39 -0800
-Message-Id: <1260918161657-git-send-email->
+Subject: [PATCH RFC tip/core/rcu 14/18] rcu: lockdep check for exiting to user space as RCU reader
+Date: Tue, 15 Dec 2009 15:02:37 -0800
+Message-Id: <12609181612244-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20091215230213.GA9093@linux.vnet.ibm.com>
 References: <20091215230213.GA9093@linux.vnet.ibm.com>
@@ -30,139 +30,105 @@ From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 Proposed for 2.6.34, not for inclusion.
 
-This patch adds lockdep classes and code to make lockdep aware of
-SRCU read-side critical sections.
+It is illegal to return to user-space execution while running within an
+RCU read-side critical section.  It turns out that CONFIG_TREE_PREEMPT_RCU
+has enough information lying around to detect this, so add the checks
+to lockdep (CONFIG_PROVE_LOCKING).
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/srcu.h |   44 ++++++++++++++++++++++++++++++++++++++++++--
- kernel/srcu.c        |   26 +++++++++++++-------------
- 2 files changed, 55 insertions(+), 15 deletions(-)
+ include/linux/rcutiny.h |    4 ++++
+ include/linux/rcutree.h |    1 +
+ kernel/lockdep.c        |   10 ++++++++++
+ kernel/rcutree_plugin.h |   22 ++++++++++++++++++++++
+ 4 files changed, 37 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/srcu.h b/include/linux/srcu.h
-index 4765d97..5a07b90 100644
---- a/include/linux/srcu.h
-+++ b/include/linux/srcu.h
-@@ -45,10 +45,50 @@ struct srcu_struct {
+diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
+index b524590..c32b16d 100644
+--- a/include/linux/rcutiny.h
++++ b/include/linux/rcutiny.h
+@@ -29,6 +29,10 @@
  
- int init_srcu_struct(struct srcu_struct *sp);
- void cleanup_srcu_struct(struct srcu_struct *sp);
--int srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
--void srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
-+int __srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
-+void __srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
- void synchronize_srcu(struct srcu_struct *sp);
- void synchronize_srcu_expedited(struct srcu_struct *sp);
- long srcu_batches_completed(struct srcu_struct *sp);
- 
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+extern struct lockdep_map srcu_lock_map;
-+# define srcu_read_acquire() \
-+		lock_acquire(&srcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-+# define srcu_read_release() \
-+		lock_release(&srcu_lock_map, 1, _THIS_IP_)
-+#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-+# define srcu_read_acquire()	do { } while (0)
-+# define srcu_read_release()	do { } while (0)
-+#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-+
-+/**
-+ * srcu_read_lock - register a new reader for an SRCU-protected structure.
-+ * @sp: srcu_struct in which to register the new reader.
-+ *
-+ * Enter an SRCU read-side critical section.  Note that SRCU read-side
-+ * critical sections may be nested.
-+ */
-+static inline int srcu_read_lock(struct srcu_struct *sp) __acquires(sp)
+ void rcu_sched_qs(int cpu);
+ void rcu_bh_qs(int cpu);
++static inline int rcu_read_lock_held(void)
 +{
-+	int retval = __srcu_read_lock(sp);
-+
-+	srcu_read_acquire();
-+	return retval;
++	return 0;
++}
+ 
+ #define __rcu_read_lock()	preempt_disable()
+ #define __rcu_read_unlock()	preempt_enable()
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index 564a025..8cd4ac1 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -37,6 +37,7 @@ extern void rcu_bh_qs(int cpu);
+ extern int rcu_needs_cpu(int cpu);
+ extern void rcu_scheduler_starting(void);
+ extern int rcu_expedited_torture_stats(char *page);
++extern int rcu_read_lock_held(void);
+ 
+ #ifdef CONFIG_TREE_PREEMPT_RCU
+ 
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 9af5672..a912634 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -3799,4 +3799,14 @@ void lockdep_sys_exit(void)
+ 				curr->comm, curr->pid);
+ 		lockdep_print_held_locks(curr);
+ 	}
++	if (unlikely(rcu_read_lock_held())) {
++		if (!debug_locks_off())
++			return;
++		printk("\n================================================\n");
++		printk(  "[ BUG: returning to user space as RCU reader!  ]\n");
++		printk(  "------------------------------------------------\n");
++		printk("%s/%d is leaving the kernel as RCU reader!\n",
++				curr->comm, curr->pid);
++		lockdep_print_held_locks(curr);
++	}
+ }
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index e77cdf3..f6258ae 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -310,6 +310,18 @@ void __rcu_read_unlock(void)
+ }
+ EXPORT_SYMBOL_GPL(__rcu_read_unlock);
+ 
++/*
++ * Return 1 if the current task is provably within an RCU read-side
++ * critical section.  The bit about checking a running task to see if
++ * it is blocked is a bit strange, but keep in mind that sleep and
++ * wakeup are not atomic operations.
++ */
++int rcu_read_lock_held(void)
++{
++	return ACCESS_ONCE(current->rcu_read_lock_nesting) != 0 ||
++	       (current->rcu_read_unlock_special & RCU_READ_UNLOCK_BLOCKED);
 +}
 +
-+/**
-+ * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
-+ * @sp: srcu_struct in which to unregister the old reader.
-+ * @idx: return value from corresponding srcu_read_lock().
-+ *
-+ * Exit an SRCU read-side critical section.
-+ */
-+static inline void srcu_read_unlock(struct srcu_struct *sp, int idx)
-+	__releases(sp)
-+{
-+	srcu_read_release();
-+	__srcu_read_unlock(sp, idx);
-+}
-+
- #endif
-diff --git a/kernel/srcu.c b/kernel/srcu.c
-index 818d7d9..4575f63 100644
---- a/kernel/srcu.c
-+++ b/kernel/srcu.c
-@@ -34,6 +34,13 @@
- #include <linux/smp.h>
- #include <linux/srcu.h>
- 
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+static struct lock_class_key srcu_lock_key;
-+struct lockdep_map srcu_lock_map =
-+	STATIC_LOCKDEP_MAP_INIT("srcu_read_lock", &srcu_lock_key);
-+EXPORT_SYMBOL_GPL(srcu_lock_map);
-+#endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-+
- /**
-  * init_srcu_struct - initialize a sleep-RCU structure
-  * @sp: structure to initialize.
-@@ -100,15 +107,12 @@ void cleanup_srcu_struct(struct srcu_struct *sp)
- }
- EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
- 
--/**
-- * srcu_read_lock - register a new reader for an SRCU-protected structure.
-- * @sp: srcu_struct in which to register the new reader.
-- *
-+/*
-  * Counts the new reader in the appropriate per-CPU element of the
-  * srcu_struct.  Must be called from process context.
-  * Returns an index that must be passed to the matching srcu_read_unlock().
-  */
--int srcu_read_lock(struct srcu_struct *sp)
-+int __srcu_read_lock(struct srcu_struct *sp)
- {
- 	int idx;
- 
-@@ -120,26 +124,22 @@ int srcu_read_lock(struct srcu_struct *sp)
- 	preempt_enable();
- 	return idx;
- }
--EXPORT_SYMBOL_GPL(srcu_read_lock);
-+EXPORT_SYMBOL_GPL(__srcu_read_lock);
- 
--/**
-- * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
-- * @sp: srcu_struct in which to unregister the old reader.
-- * @idx: return value from corresponding srcu_read_lock().
-- *
-+/*
-  * Removes the count for the old reader from the appropriate per-CPU
-  * element of the srcu_struct.  Note that this may well be a different
-  * CPU than that which was incremented by the corresponding srcu_read_lock().
-  * Must be called from process context.
-  */
--void srcu_read_unlock(struct srcu_struct *sp, int idx)
-+void __srcu_read_unlock(struct srcu_struct *sp, int idx)
- {
- 	preempt_disable();
- 	srcu_barrier();  /* ensure compiler won't misorder critical section. */
- 	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
- 	preempt_enable();
- }
--EXPORT_SYMBOL_GPL(srcu_read_unlock);
-+EXPORT_SYMBOL_GPL(__srcu_read_unlock);
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
  
  /*
-  * Helper function for synchronize_srcu() and synchronize_srcu_expedited().
+@@ -761,6 +773,16 @@ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
+ 
+ #endif /* #ifdef CONFIG_HOTPLUG_CPU */
+ 
++/*
++ * Return 1 if the current task is provably within an RCU read-side
++ * critical section.  But without preemptible RCU, we never can be
++ * sure, so always return 0.
++ */
++int rcu_read_lock_held(void)
++{
++	return 0;
++}
++
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+ 
+ /*
 -- 
 1.5.2.5
 
