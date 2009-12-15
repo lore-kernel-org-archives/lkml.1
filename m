@@ -1,46 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZLOSrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbZLOSua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbZLOSrf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZLOSre
+	id S933305AbZLOSua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZLOSu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:47:34 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:47425 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755278AbZLOSrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:47:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type;
-        b=Iwb4fPJD+C3bWGVOCknQwCVEf6olFuft+gBqvJejAg1K/au2v0qGto0mM0QPbzNBod
-         NS2rN7cTMQBt4+f3v/kR4hfKHWSIImkA1BvrZTOY93zKs6BNRa1VTnfEhpU7LfoEvgcj
-         NgmNycMYXQ+O9eEFPhIpP1ny8MGHrxdvJc8+k=
+	Tue, 15 Dec 2009 13:50:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2402 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760133AbZLOSu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:50:27 -0500
+Date: Tue, 15 Dec 2009 20:47:40 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH] Subject: virtio: Add unused buffers detach from
+	vring
+Message-ID: <20091215184740.GD25724@redhat.com>
+References: <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260535613.30371.24.camel@localhost.localdomain> <20091213114320.GC7074@redhat.com> <1260828518.8716.105.camel@localhost.localdomain> <20091215113327.GC13110@redhat.com> <1260894320.4387.64.camel@localhost.localdomain> <20091215163901.GA24015@redhat.com> <1260902573.4387.76.camel@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <4B27D302.5060905@gmail.com>
-References: <4B27D302.5060905@gmail.com>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Tue, 15 Dec 2009 19:47:12 +0100
-Message-ID: <25e057c00912151047k436058ep2bcff69bdaedcc7a@mail.gmail.com>
-Subject: Re: [PATCH] e1000: Fix tests of unsigned in e1000_tx_map()
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260902573.4387.76.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 7:18 PM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> The variables count and i are unsigned so the (<|>=) 0 tests do not work.
+On Tue, Dec 15, 2009 at 10:42:53AM -0800, Shirley Ma wrote:
+> I submit one split patch for review to make sure that's the right format.
+> I copied Rusty's comment for the commit message, and change destroy
+> to detach since we destroy the buffers in caller. This patch is built
+> against Dave's net-next tree.
 
-I now see there are similar issues in igb and friends,
-I'll post a patch that includes these as well.
+Almost :) text not intended for git commit logs like the above
+should go after ---, this way git am knows to skip it.
 
-Roel
+> There's currently no way for a virtio driver to ask for unused
+> buffers, so it has to keep a list itself to reclaim them at shutdown.
+> This is redundant, since virtio_ring stores that information.  So
+> add a new hook to do this: virtio_net will be the first user.
+> 
+> Signed-off-by: Shirley Ma <xma@us.ibm.com> 
+> ---
+>  drivers/virtio/virtio_ring.c |   24 ++++++++++++++++++++++++
+>  include/linux/virtio.h       |    1 +
+>  2 files changed, 25 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> index fbd2ecd..f847bc3 100644
+> --- a/drivers/virtio/virtio_ring.c
+> +++ b/drivers/virtio/virtio_ring.c
+> @@ -334,6 +334,29 @@ static bool vring_enable_cb(struct virtqueue *_vq)
+>  	return true;
+>  }
+>  
+> +/* This function is used to return vring unused buffers to caller for free */
+> +static void *vring_detach_bufs(struct virtqueue *_vq)
+> +{
+> +	struct vring_virtqueue *vq = to_vvq(_vq);
+> +	unsigned int i;
+> +
+> +	START_USE(vq);
+> +
+> +	for (i = 0; i < vq->vring.num; ++i) {
+
+This is a single statement loop, so you do not need {}
+around it. Or even better:
+	for (i = 0; i < vq->vring.num; ++i) {
+		if (!vq->data[i])
+			continue;
+		...
+	}
+which has less nesting.
+
+> +		if (vq->data[i]) {
+> +			/* detach_buf clears data, so grab it now. */
+
+You wrote that comment, but did you read it :)
+
+> +			detach_buf(vq, i);
+> +			END_USE(vq);
+> +			return vq->data[i];
+
+In fact, this will return NULL always, won't it?
+
+> +		}
+> +	}
+> +	/* That should have freed everything. */
+> +	BUG_ON(vq->num_free != vq->vring.num);
+> +
+> +	END_USE(vq);
+> +	return NULL;
+> +}
+> +
+>  irqreturn_t vring_interrupt(int irq, void *_vq)
+>  {
+>  	struct vring_virtqueue *vq = to_vvq(_vq);
+> @@ -360,6 +383,7 @@ static struct virtqueue_ops vring_vq_ops = {
+>  	.kick = vring_kick,
+>  	.disable_cb = vring_disable_cb,
+>  	.enable_cb = vring_enable_cb,
+> +	.detach_bufs = vring_detach_bufs,
+>  };
+>  
+>  struct virtqueue *vring_new_virtqueue(unsigned int num,
+> diff --git a/include/linux/virtio.h b/include/linux/virtio.h
+> index 057a2e0..d7da456 100644
+> --- a/include/linux/virtio.h
+> +++ b/include/linux/virtio.h
+> @@ -71,6 +71,7 @@ struct virtqueue_ops {
+>  
+>  	void (*disable_cb)(struct virtqueue *vq);
+>  	bool (*enable_cb)(struct virtqueue *vq);
+> +	void *(*detach_bufs)(struct virtqueue *vq);
+>  };
+
+
+Please add documentation in virtio.h
+Thanks!
+
+>  
+>  /**
+> 
+> Thanks
+> Shirley
