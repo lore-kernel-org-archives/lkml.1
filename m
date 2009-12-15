@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZLOP2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZLOP2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbZLOP2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932335AbZLOP15
+	id S1758302AbZLOP2h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbZLOP21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:27:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48715 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 10:28:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48441 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932272AbZLOP1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:27:53 -0500
+	id S1756745AbZLOP2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:28:16 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 05/14] perf probe: Fix --del to show info instead of
-	warning
+Subject: [PATCH -tip 06/14] perf probe: Fix --del to update current event list
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -26,8 +25,8 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 15 Dec 2009 10:31:42 -0500
-Message-ID: <20091215153142.17436.7793.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Tue, 15 Dec 2009 10:31:49 -0500
+Message-ID: <20091215153149.17436.61265.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -38,8 +37,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix --del option to show info message instead of warning
-if failing to find specified event.
+Fix --del option to update current existing event list
+after perf probe deleted an event.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -57,23 +56,81 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
 
- tools/perf/util/probe-event.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ tools/perf/util/probe-event.c |    5 ++++-
+ tools/perf/util/strlist.c     |    6 +++---
+ tools/perf/util/strlist.h     |    7 ++++++-
+ 3 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 1653a62..d733bfa 100644
+index d733bfa..4055d01 100644
 --- a/tools/perf/util/probe-event.c
 +++ b/tools/perf/util/probe-event.c
-@@ -544,7 +544,8 @@ static void del_trace_kprobe_event(int fd, const char *group,
+@@ -540,10 +540,12 @@ static void del_trace_kprobe_event(int fd, const char *group,
+ 				   const char *event, struct strlist *namelist)
+ {
+ 	char buf[128];
++	struct str_node *ent;
+ 
  	if (e_snprintf(buf, 128, "%s:%s", group, event) < 0)
  		die("Failed to copy event.");
- 	if (!strlist__has_entry(namelist, buf)) {
--		pr_warning("Warning: event \"%s\" is not found.\n", buf);
-+		pr_info("Info: event \"%s\" does not exist."
-+			" Could not remove it.\n", buf);
+-	if (!strlist__has_entry(namelist, buf)) {
++	ent = strlist__find(namelist, buf);
++	if (!ent) {
+ 		pr_info("Info: event \"%s\" does not exist."
+ 			" Could not remove it.\n", buf);
  		return;
+@@ -554,6 +556,7 @@ static void del_trace_kprobe_event(int fd, const char *group,
+ 
+ 	write_trace_kprobe_event(fd, buf);
+ 	printf("Remove event: %s:%s\n", group, event);
++	strlist__remove(namelist, ent);
+ }
+ 
+ void del_trace_kprobe_events(struct strlist *dellist)
+diff --git a/tools/perf/util/strlist.c b/tools/perf/util/strlist.c
+index 7ad3817..6783a20 100644
+--- a/tools/perf/util/strlist.c
++++ b/tools/perf/util/strlist.c
+@@ -102,7 +102,7 @@ void strlist__remove(struct strlist *self, struct str_node *sn)
+ 	str_node__delete(sn, self->dupstr);
+ }
+ 
+-bool strlist__has_entry(struct strlist *self, const char *entry)
++struct str_node *strlist__find(struct strlist *self, const char *entry)
+ {
+ 	struct rb_node **p = &self->entries.rb_node;
+ 	struct rb_node *parent = NULL;
+@@ -120,10 +120,10 @@ bool strlist__has_entry(struct strlist *self, const char *entry)
+ 		else if (rc < 0)
+ 			p = &(*p)->rb_right;
+ 		else
+-			return true;
++			return sn;
  	}
- 	/* Convert from perf-probe event to trace-kprobe event */
+ 
+-	return false;
++	return NULL;
+ }
+ 
+ static int strlist__parse_list_entry(struct strlist *self, const char *s)
+diff --git a/tools/perf/util/strlist.h b/tools/perf/util/strlist.h
+index cb46593..59091c7 100644
+--- a/tools/perf/util/strlist.h
++++ b/tools/perf/util/strlist.h
+@@ -23,7 +23,12 @@ int strlist__load(struct strlist *self, const char *filename);
+ int strlist__add(struct strlist *self, const char *str);
+ 
+ struct str_node *strlist__entry(const struct strlist *self, unsigned int idx);
+-bool strlist__has_entry(struct strlist *self, const char *entry);
++struct str_node *strlist__find(struct strlist *self, const char *entry);
++
++static inline bool strlist__has_entry(struct strlist *self, const char *entry)
++{
++	return strlist__find(self, entry) != NULL;
++}
+ 
+ static inline bool strlist__empty(const struct strlist *self)
+ {
 
 
 -- 
