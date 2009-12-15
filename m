@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZLOM4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbZLOM6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbZLOM4N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 07:56:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZLOM4M
+	id S1757669AbZLOM6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 07:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZLOM6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 07:56:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43233 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753213AbZLOM4L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 07:56:11 -0500
-Date: Tue, 15 Dec 2009 10:55:42 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, shemminger@vyatta.com,
-       paulmck@linux.vnet.ibm.com, fweisbec@gmail.com, tglx@linutronix.de
-Subject: Re: [tip:perf/diff] perf diff: Introduce tool to show performance
-	difference
-Message-ID: <20091215125542.GF21796@ghostprotocols.net>
-References: <1260828571-3613-3-git-send-email-acme@infradead.org> <tip-86a9eee047ba09a714c3b8e27c9df2bbf715393a@git.kernel.org> <20091215095214.GA749@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091215095214.GA749@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 15 Dec 2009 07:58:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54363 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754999AbZLOM6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 07:58:52 -0500
+Date: Tue, 15 Dec 2009 23:58:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: Re: linux-next: ext3 tree build warning
+Message-Id: <20091215235845.da645ea0.sfr@canb.auug.org.au>
+In-Reply-To: <20091215122415.GA5405@quack.suse.cz>
+References: <20091215105925.59a66556.sfr@canb.auug.org.au>
+	<20091215122415.GA5405@quack.suse.cz>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, Dec 15, 2009 at 10:52:14AM +0100, Ingo Molnar escreveu:
-> 
-> 'perf diff' looks to be very useful!
-> 
-> I think we want to improve the default output some more:
-> 
-> For example there should be column names like for perf report:
-> 
-> # Overhead    Command                 Shared Object  Symbol
-> # ........  .........  ............................  ......
-> #
->     13.87%  hackbench  [kernel]                      [k] _raw_spin_lock
->      5.60%  hackbench  [kernel]                      [k] copy_user_generic_string
->      5.23%  hackbench  [kernel]                      [k] __cache_free
+--Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, most suggestions boil down to move more code from builtin-report.c
-to session.c and use in builtin-diff.c. Surgery beginning.
+Hi Jan,
 
-- Arnaldo
+On Tue, 15 Dec 2009 13:24:16 +0100 Jan Kara <jack@suse.cz> wrote:
+>
+>   Sorry, I forgot to commit this compilation fix before pushing. It should
+> be fixed now.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksniAUACgkQjjKRsyhoI8w+vACgmZt7RHwhElMbpF/6EaxFoh9c
+4g0AoIK26J/rtZZKnh3t2H36SqMGKaIM
+=E9+P
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP--
