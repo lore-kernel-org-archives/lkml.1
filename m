@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZLORBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbZLOREn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760628AbZLORBL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 12:01:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760602AbZLORBK
+	id S1760641AbZLOREn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 12:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760553AbZLOREm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 12:01:10 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:46208 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070AbZLORBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 12:01:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=hAxIWtkUlTGMRAbodrpHs+Rau2i9GG1fQa4GvCZeeL0maZZ98R7eh2jjhO5HbsTkgO
-         cPL15eNNW1BYMhvHCdebgndUbYnLdobaaMUc7GqebjrIVaMdKeHkA+rVeMKF7NED5cq+
-         yHdBrFyXoSfGp2LjGwwVWpu7hCaKSGWSMfY/Q=
-Message-ID: <4B27C140.6000105@gmail.com>
-Date: Tue, 15 Dec 2009 18:02:56 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Tue, 15 Dec 2009 12:04:42 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:48918 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754538AbZLOREl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 12:04:41 -0500
+Date: Tue, 15 Dec 2009 11:04:39 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-mm@vger.kernel.org
+Subject: Re: [patch 0/8] x86: UV - XPC fixes with related support
+	functionality V2.
+Message-ID: <20091215170439.GJ8934@sgi.com>
+References: <20091124013937.354595000@alcatraz.americas.sgi.com>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Input: Fix test of unsigned in altera_ps2_probe()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124013937.354595000@alcatraz.americas.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ps2if->irq is unsigned so the test does not work.
+Andrew, did this get lost in the shuffle?  If you need me to
+resubmit, please let me know.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Found using coccinelle: http://coccinelle.lip6.fr/
+Thanks,
+Robin
 
-diff --git a/drivers/input/serio/altera_ps2.c b/drivers/input/serio/altera_ps2.c
-index f479ea5..3aa8f2e 100644
---- a/drivers/input/serio/altera_ps2.c
-+++ b/drivers/input/serio/altera_ps2.c
-@@ -83,7 +83,7 @@ static int altera_ps2_probe(struct platform_device *pdev)
- {
- 	struct ps2if *ps2if;
- 	struct serio *serio;
--	int error;
-+	int error, irq;
- 
- 	ps2if = kzalloc(sizeof(struct ps2if), GFP_KERNEL);
- 	serio = kzalloc(sizeof(struct serio), GFP_KERNEL);
-@@ -108,11 +108,13 @@ static int altera_ps2_probe(struct platform_device *pdev)
- 		goto err_free_mem;
- 	}
- 
--	ps2if->irq  = platform_get_irq(pdev, 0);
--	if (ps2if->irq < 0) {
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0) {
- 		error = -ENXIO;
- 		goto err_free_mem;
- 	}
-+	ps2if->irq = irq;
- 
- 	if (!request_mem_region(ps2if->iomem_res->start,
- 				resource_size(ps2if->iomem_res), pdev->name)) {
+On Mon, Nov 23, 2009 at 07:39:37PM -0600, Robin Holt wrote:
+> 
+> The UV BIOS has been updated to implement some of our interface
+> functionality differently than originally expected.  These patches update
+> the kernel to the bios implementation and include a few minor bug fixes
+> which prevent us from doing significant testing on real hardware.
+> 
+> Changes from V1:
+> 
+> - Actually include the patch introducing the gru_read_gpa.  This
+>   was missed in the V1 submission.
+> 
+> - One additional BIOS change has the OS no longer passing blade
+>   to the BIOS when registering a message queue watchlist.
+> 
+> ---
+> 
+>  arch/x86/include/asm/uv/bios.h          |   11 --------
+>  arch/x86/include/asm/uv/uv_hub.h        |   20 +++++++++++++++
+>  arch/x86/kernel/bios_uv.c               |    8 +-----
+>  drivers/misc/sgi-gru/gru_instructions.h |   13 ++++++++++
+>  drivers/misc/sgi-gru/grukservices.c     |   23 +++++++++++++++++
+>  drivers/misc/sgi-gru/grukservices.h     |   14 ++++++++++
+>  drivers/misc/sgi-gru/gruprocfs.c        |    1 
+>  drivers/misc/sgi-gru/grutables.h        |    1 
+>  drivers/misc/sgi-xp/xp.h                |    1 
+>  drivers/misc/sgi-xp/xp_main.c           |    3 ++
+>  drivers/misc/sgi-xp/xp_sn2.c            |   10 +++++++
+>  drivers/misc/sgi-xp/xp_uv.c             |   33 +++++++++++++++++++++++++
+>  drivers/misc/sgi-xp/xpc_partition.c     |   13 +++++++---
+>  drivers/misc/sgi-xp/xpc_uv.c            |   41 +++++++++++++++++---------------
+>  14 files changed, 153 insertions(+), 39 deletions(-)
