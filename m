@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbZLOTGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933325AbZLOTFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760940AbZLOTGX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760930AbZLOTGV
+	id S933325AbZLOTFp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZLOTFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:06:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50945 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760904AbZLOTGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:06:21 -0500
-Message-ID: <4B27DDD7.5040301@kernel.org>
-Date: Tue, 15 Dec 2009 11:04:55 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 15 Dec 2009 14:05:44 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:49247 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758331AbZLOTFn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:05:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=k2Xdv11XnDde7IbaVzuOwFhtfeEUFAa0wDdpyKgV3FnUn+fXMijDL8YurQwxSTeTnU
+         EKsxCaDTgqmKUFUBTwZTXhMK2q2y5mbMWtfLtXzFgR0rqX5hCoPJvF24n+UMLnP5M9L3
+         v1V8Hr+b/rMnFPFCk5iBTxIQoYOGoXPG6NxqA=
+Message-ID: <4B27DE73.6060909@gmail.com>
+Date: Tue, 15 Dec 2009 20:07:31 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk>
-In-Reply-To: <20091215185941.GO28252@kernel.dk>
+To: Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] regulator: wm831x_reg_read() failure unnoticed in wm831x_aldo_get_mode()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, Dec 15 2009, Yinghai Lu wrote:
->> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
->>
->> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
-> 
-> On a "normal" non-kexec boot, I get:
-> 
-> [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
-> [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
-> [   12.216874] PCI: Using configuration type 1 for base access
-> 
+ret should be signed to notice a failure in wm831x_reg_read().
 
-can you run following scripts in first kernel?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Found using coccinelle: http://coccinelle.lip6.fr/
 
-cd /sys/firmware/memmap
-for dir in * ; do
-  start=$(cat $dir/start)
-  end=$(cat $dir/end)
-  type=$(cat $dir/type)
-  printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
-done
-
-and send out /tmp/memmap.txt
-
-what is your kexec tools version? could be too old?
-
-YH
-
+diff --git a/drivers/regulator/wm831x-ldo.c b/drivers/regulator/wm831x-ldo.c
+index 902db56..61e02ac 100644
+--- a/drivers/regulator/wm831x-ldo.c
++++ b/drivers/regulator/wm831x-ldo.c
+@@ -470,7 +470,7 @@ static unsigned int wm831x_aldo_get_mode(struct regulator_dev *rdev)
+ 	struct wm831x_ldo *ldo = rdev_get_drvdata(rdev);
+ 	struct wm831x *wm831x = ldo->wm831x;
+ 	int on_reg = ldo->base + WM831X_LDO_ON_CONTROL;
+-	unsigned int ret;
++	int ret;
+ 
+ 	ret = wm831x_reg_read(wm831x, on_reg);
+ 	if (ret < 0)
