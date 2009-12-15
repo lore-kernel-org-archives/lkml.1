@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbZLOP3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbZLOP3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbZLOP3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758533AbZLOP3c
+	id S1759011AbZLOP3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbZLOP3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:29:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9558 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 10:29:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8088 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758734AbZLOP27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758749AbZLOP27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Dec 2009 10:28:59 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 13/14] perf probe: Check symbols in symtab/kallsyms
+Subject: [PATCH -tip 14/14] perf probe: Fix to show which probe point is not
+	found
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: Paul Mackerras <paulus@samba.org>,
@@ -25,8 +26,8 @@ Cc: Paul Mackerras <paulus@samba.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 15 Dec 2009 10:32:40 -0500
-Message-ID: <20091215153239.17436.55034.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Tue, 15 Dec 2009 10:32:47 -0500
+Message-ID: <20091215153247.17436.49068.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091215153106.17436.66584.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -37,13 +38,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check symbols in symtab/kallsyms when no debuginfo
-is available.
-
+Fix perf probe to show which probe point is not found.
+With out this patch, it shows just "No probe point found."
+This doesn't help users if they specify several probes.
 e.g.
 
-# perf probe test
-  Fatal: Kernel symbol 'test' not found - probe not added.
+# perf probe -f --add schedule --add test
+  Fatal: No probe point found.
+
+This patch makes error message more helpful as below.
+
+# perf probe --add schedule --add test
+  Fatal: Probe point 'test' not found. - probe not added.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -61,86 +67,125 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
 
- tools/perf/builtin-probe.c |   32 ++++++++++++++++++++++----------
- 1 files changed, 22 insertions(+), 10 deletions(-)
+ tools/perf/builtin-probe.c    |    7 +++++--
+ tools/perf/util/probe-event.c |   34 ++++++++++++++++++++++++----------
+ tools/perf/util/probe-event.h |    1 +
+ 3 files changed, 30 insertions(+), 12 deletions(-)
 
 diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index 5008605..f019536 100644
+index f019536..beb49e3 100644
 --- a/tools/perf/builtin-probe.c
 +++ b/tools/perf/builtin-probe.c
-@@ -59,6 +59,7 @@ static struct {
- 	struct strlist *dellist;
- 	struct symbol_conf conf;
- 	struct perf_session *psession;
-+	struct map *kmap;
- } session;
- 
- 
-@@ -115,22 +116,26 @@ static int opt_del_probe_event(const struct option *opt __used,
- 	return 0;
+@@ -265,8 +265,11 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
+ 		ret = find_probepoint(fd, pp);
+ 		if (ret > 0)
+ 			continue;
+-		if (ret == 0)	/* No error but failed to find probe point. */
+-			die("No probe point found.");
++		if (ret == 0) {	/* No error but failed to find probe point. */
++			synthesize_perf_probe_point(pp);
++			die("Probe point '%s' not found. - probe not added.",
++			    pp->probes[0]);
++		}
+ 		/* Error path */
+ 		if (session.need_dwarf) {
+ 			if (ret == -ENOENT)
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index e74ecfc..3c2e743 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -249,11 +249,12 @@ void parse_trace_kprobe_event(const char *str, struct probe_point *pp)
+ 	argv_free(argv);
  }
  
-+/* Currently just checking function name from symbol map */
-+static void evaluate_probe_point(struct probe_point *pp)
-+{
-+	struct symbol *sym;
-+	sym = map__find_symbol_by_name(session.kmap, pp->function,
-+				       session.psession, NULL);
-+	if (!sym)
-+		die("Kernel symbol \'%s\' not found - probe not added.",
-+		    pp->function);
+-int synthesize_perf_probe_event(struct probe_point *pp)
++/* Synthesize only probe point (not argument) */
++int synthesize_perf_probe_point(struct probe_point *pp)
+ {
+ 	char *buf;
+ 	char offs[64] = "", line[64] = "";
+-	int i, len, ret;
++	int ret;
+ 
+ 	pp->probes[0] = buf = zalloc(MAX_CMDLEN);
+ 	if (!buf)
+@@ -274,10 +275,24 @@ int synthesize_perf_probe_event(struct probe_point *pp)
+ 				 offs, pp->retprobe ? "%return" : "", line);
+ 	else
+ 		ret = e_snprintf(buf, MAX_CMDLEN, "%s%s", pp->file, line);
+-	if (ret <= 0)
+-		goto error;
+-	len = ret;
++	if (ret <= 0) {
++error:
++		free(pp->probes[0]);
++		pp->probes[0] = NULL;
++	}
++	return ret;
 +}
 +
- #ifndef NO_LIBDWARF
- static int open_vmlinux(void)
- {
--	struct map *kmap;
--	kmap = map_groups__find_by_name(&session.psession->kmaps,
--					MAP__FUNCTION, "[kernel.kallsyms]");
--	if (!kmap) {
--		pr_debug("Could not find kernel map.\n");
--		return -ENOENT;
--	}
--	if (map__load(kmap, session.psession, NULL) < 0) {
-+	if (map__load(session.kmap, session.psession, NULL) < 0) {
- 		pr_debug("Failed to load kernel map.\n");
- 		return -EINVAL;
- 	}
--	pr_debug("Try to open %s\n", kmap->dso->long_name);
--	return open(kmap->dso->long_name, O_RDONLY);
-+	pr_debug("Try to open %s\n", session.kmap->dso->long_name);
-+	return open(session.kmap->dso->long_name, O_RDONLY);
++int synthesize_perf_probe_event(struct probe_point *pp)
++{
++	char *buf;
++	int i, len, ret;
+ 
++	len = synthesize_perf_probe_point(pp);
++	if (len < 0)
++		return 0;
++
++	buf = pp->probes[0];
+ 	for (i = 0; i < pp->nr_args; i++) {
+ 		ret = e_snprintf(&buf[len], MAX_CMDLEN - len, " %s",
+ 				 pp->args[i]);
+@@ -290,6 +305,7 @@ int synthesize_perf_probe_event(struct probe_point *pp)
+ 	return pp->found;
+ error:
+ 	free(pp->probes[0]);
++	pp->probes[0] = NULL;
+ 
+ 	return ret;
  }
- #endif
+@@ -319,6 +335,7 @@ int synthesize_trace_kprobe_event(struct probe_point *pp)
+ 	return pp->found;
+ error:
+ 	free(pp->probes[0]);
++	pp->probes[0] = NULL;
  
-@@ -219,6 +224,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 	}
+ 	return ret;
+ }
+@@ -418,7 +435,7 @@ static void show_perf_probe_event(const char *event, const char *place,
+ /* List up current perf-probe events */
+ void show_perf_probe_events(void)
+ {
+-	int fd, nr;
++	int fd;
+ 	struct probe_point pp;
+ 	struct strlist *rawlist;
+ 	struct str_node *ent;
+@@ -430,10 +447,7 @@ void show_perf_probe_events(void)
+ 	strlist__for_each(ent, rawlist) {
+ 		parse_trace_kprobe_event(ent->s, &pp);
+ 		/* Synthesize only event probe point */
+-		nr = pp.nr_args;
+-		pp.nr_args = 0;
+-		synthesize_perf_probe_event(&pp);
+-		pp.nr_args = nr;
++		synthesize_perf_probe_point(&pp);
+ 		/* Show an event */
+ 		show_perf_probe_event(pp.event, pp.probes[0], &pp);
+ 		clear_probe_point(&pp);
+diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
+index 8fd3052..7f1d499 100644
+--- a/tools/perf/util/probe-event.h
++++ b/tools/perf/util/probe-event.h
+@@ -7,6 +7,7 @@
  
- 	/* Initialize symbol maps for vmlinux */
-+	session.conf.sort_by_name = true;
- 	if (session.conf.vmlinux_name == NULL)
- 		session.conf.try_vmlinux_path = true;
- 	if (symbol__init(&session.conf) < 0)
-@@ -227,6 +233,11 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 					     &session.conf);
- 	if (session.psession == NULL)
- 		die("Failed to init perf_session.");
-+	session.kmap = map_groups__find_by_name(&session.psession->kmaps,
-+						MAP__FUNCTION,
-+						"[kernel.kallsyms]");
-+	if (!session.kmap)
-+		die("Could not find kernel map.\n");
- 
- 	if (session.need_dwarf)
- #ifdef NO_LIBDWARF
-@@ -279,6 +290,7 @@ end_dwarf:
- 		if (pp->found)	/* This probe is already found. */
- 			continue;
- 
-+		evaluate_probe_point(pp);
- 		ret = synthesize_trace_kprobe_event(pp);
- 		if (ret == -E2BIG)
- 			die("probe point definition becomes too long.");
+ extern void parse_perf_probe_event(const char *str, struct probe_point *pp,
+ 				   bool *need_dwarf);
++extern int synthesize_perf_probe_point(struct probe_point *pp);
+ extern int synthesize_perf_probe_event(struct probe_point *pp);
+ extern void parse_trace_kprobe_event(const char *str, struct probe_point *pp);
+ extern int synthesize_trace_kprobe_event(struct probe_point *pp);
 
 
 -- 
