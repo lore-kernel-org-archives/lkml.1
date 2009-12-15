@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934150AbZLOXzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbZLOX63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934150AbZLOXzv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934125AbZLOXzu
+	id S934140AbZLOX63 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbZLOX60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:55:50 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50191 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934102AbZLOXzs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:55:48 -0500
-Date: Tue, 15 Dec 2009 23:56:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <gregkh@suse.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       linux-kernel@vger.kernel.org, rubini@gnudd.com
-Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
- allocation
-Message-ID: <20091215235639.25e841f1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091215225630.GA12918@suse.de>
-References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
-	<1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
-	<1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
-	<4AF8B4FF.9050405@zytor.com>
-	<20091111153632.944a255c.akpm@linux-foundation.org>
-	<20091215143446.8b6a7e57.akpm@linux-foundation.org>
-	<4B2810D6.9030309@zytor.com>
-	<20091215225630.GA12918@suse.de>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Tue, 15 Dec 2009 18:58:26 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:39891 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756042AbZLOX6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:58:24 -0500
+Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
+From: Keith Mannthey <kmannth@us.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20091215151213.8b357858.randy.dunlap@oracle.com>
+References: <1260907788.6521.10.camel@keith-laptop>
+	 <20091215151213.8b357858.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Tue, 15 Dec 2009 15:58:22 -0800
+Message-Id: <1260921502.6521.14.camel@keith-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What I have been doing in response to requests for misc device
-allocations is to suggest people simply go and allocate some dynamic
-device space. There are very very few cases a misc device needs a
-specific minor and the large dynamic device space has really made misc a
-"historical" entity which should be treated that way.
+On Tue, 2009-12-15 at 15:12 -0800, Randy Dunlap wrote:
+> On Tue, 15 Dec 2009 12:09:48 -0800 Keith Mannthey wrote:
+> 
+> > diff -urN linux-2.6.32/drivers/misc/ibmrtl/rtl.h linux-2.6.32-rtl/drivers/misc/ibmrtl/rtl.h
+> > --- linux-2.6.32/drivers/misc/ibmrtl/rtl.h	1969-12-31 16:00:00.000000000 -0800
+> > +++ linux-2.6.32-rtl/drivers/misc/ibmrtl/rtl.h	2009-12-11 10:24:23.000000000 -0800
+> > @@ -0,0 +1,27 @@
+> > +#include <linux/io.h>
+> > +
+> > +/* The RTL table looks something like
+> 
+> Is this documented somewhere?  (besides here ;)
 
-If you want 2048 minors for a random new device, the kernel will just
-magic them for you, udev will magic the device nodes, and the tmpfs will
-handle it nicely
+Sorry not at this time to my knowledge. 
 
-(and if your udev isn't on its own private file system then I hope its an
-old one, because the current one has a hole in it, which doesn't seem to
-have been fixed yet)
+Thanks for the review and the comment suggestions. I will integrate
+them. 
 
-Alan
+Thanks, 
+  Keith Mannthey
+  LTC Real-Time 
+
