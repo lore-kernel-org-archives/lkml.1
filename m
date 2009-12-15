@@ -1,172 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbZLOSyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbZLOS6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760893AbZLOSyt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760855AbZLOSyr
+	id S1760890AbZLOS6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZLOS6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:54:47 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:41976 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760857AbZLOSyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:54:46 -0500
-Date: Tue, 15 Dec 2009 19:54:44 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-Message-ID: <20091215185444.GN28252@kernel.dk>
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org>
+	Tue, 15 Dec 2009 13:58:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33971 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752189AbZLOS6U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:58:20 -0500
+Date: Tue, 15 Dec 2009 10:57:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <alpine.LFD.2.00.0912150803250.14385@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0912151051580.14385@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912151047410.3566-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912150803250.14385@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B27D7E9.4030105@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15 2009, Yinghai Lu wrote:
-> Jens Axboe wrote:
-> > On Tue, Dec 15 2009, Yinghai Lu wrote:
-> >>>>>>>
-> >>>>>> let see how BIOS mess it up again!
-> >>>>> Heh, I had a feeling this was coming :-)
-> 
-> [    0.000000] user-defined physical RAM map:
-> 
-> [    0.000000]  user: 0000000000000100 - 0000000000098800 (usable)
-> 
-> [    0.000000]  user: 0000000000098800 - 00000000000a0000 (reserved)
-> 
-> [    0.000000]  user: 00000000000e0000 - 0000000000100000 (reserved)
-> 
-> [    0.000000]  user: 0000000000100000 - 0000000078c63000 (usable)
-> 
-> [    0.000000]  user: 0000000078c63000 - 0000000078e77000 (ACPI NVS)
-> 
-> [    0.000000]  user: 0000000078e77000 - 000000007924e000 (ACPI data)
-> 
-> [    0.000000]  user: 000000007924e000 - 00000000792c2000 (reserved)
-> 
-> [    0.000000]  user: 00000000792c2000 - 00000000792d2000 (ACPI data)
-> 
-> [    0.000000]  user: 00000000792d2000 - 00000000792e7000 (reserved)
-> 
-> [    0.000000]  user: 00000000792e7000 - 0000000079301000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079301000 - 0000000079303000 (reserved)
-> 
-> [    0.000000]  user: 0000000079303000 - 0000000079305000 (ACPI data)
-> 
-> 
-> [    0.000000]  user: 0000000079305000 - 0000000079310000 (reserved)
-> 
-> [    0.000000]  user: 0000000079310000 - 0000000079314000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079314000 - 0000000079319000 (reserved)
-> 
-> [    0.000000]  user: 0000000079319000 - 0000000079336000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079336000 - 0000000079358000 (reserved)
-> 
-> [    0.000000]  user: 0000000079358000 - 0000000079388000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079388000 - 00000000793c9000 (reserved)
-> 
-> [    0.000000]  user: 00000000793c9000 - 000000007968f000 (ACPI data)
-> 
-> [    0.000000]  user: 000000007968f000 - 00000000796bb000 (reserved)
-> 
-> [    0.000000]  user: 00000000796bb000 - 00000000799d8000 (ACPI data)
-> 
-> [    0.000000]  user: 00000000799d8000 - 0000000079bd8000 (ACPI NVS)
-> 
-> [    0.000000]  user: 0000000079bd8000 - 0000000079d87000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079d87000 - 0000000079d8a000 (reserved)
-> 
-> [    0.000000]  user: 0000000079d8a000 - 0000000079dca000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079dca000 - 0000000079dcb000 (reserved)
-> 
-> [    0.000000]  user: 0000000079dcb000 - 0000000079e1c000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000079e1c000 - 0000000079e87000 (reserved)
-> 
-> [    0.000000]  user: 0000000079e87000 - 000000007bd5f000 (ACPI data)
-> 
-> [    0.000000]  user: 000000007bd5f000 - 000000007be4f000 (reserved)
-> 
-> [    0.000000]  user: 000000007be4f000 - 000000007bf87000 (ACPI data)
-> 
-> [    0.000000]  user: 0000000100000000 - 0000001080000000 (usable)
-> ...
-> [    0.000000] SRAT: Node 0 PXM 0 0-80000000
-> 
-> [    0.000000] SRAT: Node 0 PXM 0 100000000-480000000
-> 
-> [    0.000000] SRAT: Node 2 PXM 1 480000000-880000000
-> 
-> [    0.000000] SRAT: Node 1 PXM 2 880000000-c80000000
-> 
-> [    0.000000] SRAT: Node 3 PXM 3 c80000000-1080000000
-> 
-> [    0.000000] ACPI: [SRAT:0x01] ignored 16 entries of 32 found
-> 
-> [    0.000000] NUMA: Using 31 for the hash shift.
-> 
-> [    0.000000] SRAT: PXMs only cover 49035MB of your 65419MB e820 RAM. Not used.
-> 
-> [    0.000000] SRAT: SRAT not used.
-> 
-> [    0.000000] No NUMA configuration found
-> 
-> so SRAT is broken?
-> 
->         if (max_entries && count > max_entries) {
->                 printk(KERN_WARNING PREFIX "[%4.4s:0x%02x] ignored %i entries of "
->                        "%i found\n", id, entry_id, count - max_entries, count);
->         }
-> ...
-> 
-> or what is your CONFIG_NODES_SHIFT? 3? can you try to set it to 6?
 
-Hmm funky, perhaps the BIOS changed that too. NUMA has otherwise been
-working fine, didn't check whether it still did after a BIOS upgrade.
-I'll try 6, it is set to 3 iirc.
 
-> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+On Tue, 15 Dec 2009, Linus Torvalds wrote:
 > 
-> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
+> And even when you know it's PCI, our rules are actually not simple at all. 
+> Our rules for PCI devices (and this strictly speaking is true for bridges 
+> too) are rather complex:
 > 
-> [   13.112475] PCI: not using MMCONFIG
+>  - do we have _any_ legacy PM support (ie the "direct" driver 
+>    suspend/resume functions in the driver ops, rather than having a 
+>    "struct dev_pm_ops" pointer)? If so, call "->suspend()"
 > 
-> [   13.206650] ACPI: No dock devices found.
+>  - If not - do we have that "dev_pm_ops" thing? If so, call it.
 > 
-> so mmconf is not used...<ask BIOS fix it please!>
+>  - If not - just disable the device entirely _UNLESS_ you're a PCI bridge.
+> 
+> Notice? The way things are set up, if you have no suspend routine, you'll 
+> not get suspended, but you will get disabled. 
 
-Reported, thanks.
+Side note - what I think might be a clean solution for PCI at least is to 
+do something like the following:
 
-> then we get 
-> 
-> [   13.990335] IOH bus: [00, 00]
-> 
-> [   13.993707] IOH bus: 00 index 0 io port: [0, fff]
-> 
-> [   13.999023] IOH bus: 00 index 1 mmio: [0, ffffff]
-> 
-> [   14.004335] IOH bus: 00 index 2 mmio: [0, 3ffffff]
-> 
-> please check
-> 
-> [PATCH] x86/pci: intel ioh bus num reg accessing fix
-> 
-> it is above 0x100, so if mmconf is not enable, need to skip it
+ - move that "disable the device entirely" thing to suspend_late, rather 
+   than the earlier suspend phase. Now PCI devices without drivers or PM 
+   will not be touched at all in the first suspend phase.
 
-Will check that now.
+ - initialize all PCI devices to have 'async_suspend = 1' on discovery
 
--- 
-Jens Axboe
+ - whenever we bind a driver to the PCI device, we'd then look at whether 
+   that driver implements suspend/resume callbacks (legacy or new), and 
+   clear the async_suspend bit if so.
 
+That way we'd have the same old synchronous behavior for all PCI suspend 
+and resume events (unless the driver itself then sets the async_suspend 
+bit at device init time, which it could do, of course), while still always 
+doing async "no-op" events.
+
+That would avoid the ugly one-liner that just "knows" that PCI bridges are 
+special and don't do anything at suspend time (even though they aren't 
+really - a PCI bridge _could_ have a driver associated with it that does 
+something that might not be happy being asynchronous).
+
+			Linus
