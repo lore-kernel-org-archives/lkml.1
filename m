@@ -1,254 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbZLOVeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbZLOViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932846AbZLOVeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 16:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760737AbZLOVeQ
+	id S933751AbZLOViT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 16:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932818AbZLOViR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 16:34:16 -0500
-Received: from www.tglx.de ([62.245.132.106]:37995 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755043AbZLOVeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 16:34:15 -0500
-Date: Tue, 15 Dec 2009 22:33:52 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Earl Chew <earl_chew@agilent.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, hugh <hugh@veritas.com>,
-       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-Message-ID: <20091215213352.GB2432@local>
-References: <1228379942.5092.14.camel@twins>
- <4B22DD89.2020901@agilent.com>
- <20091214192322.GA3245@bluebox.local>
- <4B27905B.4080006@agilent.com>
- <4B27CBB6.2030906@agilent.com>
+	Tue, 15 Dec 2009 16:38:17 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:56808 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932785AbZLOViP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 16:38:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=vsTltukxzFa58RvHPgG1S7m9qU7wzTyrqs77mTqTd59qzlO360tGPEYzvHcW4wlj+O
+         XrTXY+CGynptDHkp8rTjRUwjGudwBGew1sZLoOFgyuCketj9MjWBcl7wBc9T/dj3s1ru
+         UALoLHdkKXajQ2Uly2gpkJNjc6gEYY0n4v0LQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B27CBB6.2030906@agilent.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <9e4733910912151245ne442a5dlcfee92609e364f70@mail.gmail.com>
+References: <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	 <4B24DABA.9040007@redhat.com> <20091215115011.GB1385@ucw.cz>
+	 <4B279017.3080303@redhat.com> <20091215195859.GI24406@elf.ucw.cz>
+	 <9e4733910912151214n68161fc7tca0ffbf34c2c4e4@mail.gmail.com>
+	 <20091215201933.GK24406@elf.ucw.cz>
+	 <9e4733910912151229o371ee017tf3640d8f85728011@mail.gmail.com>
+	 <20091215203300.GL24406@elf.ucw.cz>
+	 <9e4733910912151245ne442a5dlcfee92609e364f70@mail.gmail.com>
+Date: Tue, 15 Dec 2009 16:38:14 -0500
+Message-ID: <9e4733910912151338n62b30af5i35f8d0963e6591c@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Deleted hugh <hugh@veritas.com> from Cc:, this address has permanent errors.)
+On Tue, Dec 15, 2009 at 3:45 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Tue, Dec 15, 2009 at 3:33 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> Untrue. Like ethernets and wifis, bluetooth devices have unique
+>> addresses. Communication is bidirectional.
 
-On Tue, Dec 15, 2009 at 09:47:34AM -0800, Earl Chew wrote:
-> Earl Chew wrote:
-> > I'd like to proceed by changing struct uio_mem [MAX_UIO_MAPS] to a
-> > linked list.
-> 
-> Here's my first go at changing to a linked list. I mistakenly
-> said that I would proceed by modifying struct uio_mem [MAX_UIO_MAPS].
+I read a little about how Bluetooth remotes work. Correct me if I get
+things wrong....
 
-NAK, for the reasons given in my other mail.
+They create pairings between the remote and the device. Each of these
+pairings is assigned a device type. Multiple devices in the same room
+are handled by the remote remembering the pairings and sending
+directed packets instead of broadcast. That lets you have two TVs in
+the same room.
 
-Thanks,
-Hans
+Bluetooth devices need to advertise what profiles they support. So on
+the Linux box you'd run a command to load the Bluetooth profile for
+TV. This command would create an evdev subdevice, load the Bluetooth
+keymap for TV, and tell the networking stack to advertise TV support.
+Next you initiate the pairing from the Bluetooth remote and pick the
+Linux box. This causes a pairing established exchange which tells the
+Linux box to make the pairing persistent.
 
-> 
-> In fact, I think that mem[MAX_UIO_MAPS] in struct uio_info can remain
-> intact -- thus preserving the client facing API.
-> 
-> The linked list change occurs in struct uio_device which is private
-> to uio.c ... thus hiding the change from client facing code.
-> 
-> 
-> Tying the regions into a linked list held by struct uio_device
-> simplifies the search-modify code in the rest of uio.c.
-> 
-> 
-> Earl
-> 
-> 
-> diff -uNpw uio_driver.h.old uio_driver.h
-> --- c:/tmp/makereview.AGgMh	2009-12-15 09:41:23.146608800 -0800
-> +++ c:/tmp/makereview.oXYWW	2009-12-15 09:41:23.255983800 -0800
-> @@ -20,6 +20,8 @@
->  
->  /**
->   * struct uio_mem - description of a UIO memory region
-> + * @list_node:		list node for struct uio_device list
-> + * @mapid:		mapping number for this region
->   * @kobj:		kobject for this mapping
->   * @addr:		address of the device's memory
->   * @size:		size of IO
-> @@ -27,6 +29,8 @@
->   * @internal_addr:	ioremap-ped version of addr, for driver internal use
->   */
->  struct uio_mem {
-> +        struct list_head        list_node;
-> +        unsigned                map_id;
->  	struct kobject		kobj;
->  	unsigned long		addr;
->  	unsigned long		size;
-> 
-> diff -uNpw uio.c.old uio.c
-> --- c:/tmp/makereview.O27Xv	2009-12-15 09:41:26.740358800 -0800
-> +++ c:/tmp/makereview.DAhCY	2009-12-15 09:41:26.834108800 -0800
-> @@ -35,6 +35,7 @@ struct uio_device {
->  	int			vma_count;
->  	struct uio_info		*info;
->  	struct kset 		map_attr_kset;
-> +	struct list_head	mem_list;
->  };
->  
->  static int uio_major;
-> @@ -153,7 +154,7 @@ static int uio_dev_add_attributes(struct
->  	if (ret)
->  		goto err_group;
->  
-> -	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
-> +	for (mi = 0; mi < ARRAY_SIZE(idev->info->mem); mi++) {
->  		mem = &idev->info->mem[mi];
->  		if (mem->size == 0)
->  			break;
-> @@ -166,6 +167,12 @@ static int uio_dev_add_attributes(struct
->  			if (ret)
->  				goto err_remove_group;
->  		}
-> +
-> +		mem->map_id = mi;
-> +
-> +		INIT_LIST_HEAD(&mem->list_node);
-> +		list_add(&mem->list_node, &idev->mem_list);
-> +
->  		kobject_init(&mem->kobj);
->  		kobject_set_name(&mem->kobj,"map%d",mi);
->  		mem->kobj.parent = &idev->map_attr_kset.kobj;
-> @@ -180,6 +187,7 @@ static int uio_dev_add_attributes(struct
->  err_remove_maps:
->  	for (mi--; mi>=0; mi--) {
->  		mem = &idev->info->mem[mi];
-> +		list_del(&mem->list_node);
->  		kobject_unregister(&mem->kobj);
->  	}
->  	kset_unregister(&idev->map_attr_kset); /* Needed ? */
-> @@ -194,10 +202,11 @@ static void uio_dev_del_attributes(struc
->  {
->  	int mi;
->  	struct uio_mem *mem;
-> -	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
-> +	for (mi = 0; mi < ARRAY_SIZE(idev->info->mem); mi++) {
->  		mem = &idev->info->mem[mi];
->  		if (mem->size == 0)
->  			break;
-> +		list_del(&mem->list_node);
->  		kobject_unregister(&mem->kobj);
->  	}
->  	kset_unregister(&idev->map_attr_kset);
-> @@ -386,18 +395,20 @@ static ssize_t uio_read(struct file *fil
->  	return retval;
->  }
->  
-> -static int uio_find_mem_index(struct vm_area_struct *vma)
-> +static struct uio_mem *uio_find_mem_index(struct vm_area_struct *vma)
->  {
-> -	int mi;
->  	struct uio_device *idev = vma->vm_private_data;
-> +	struct list_head *mem_list;
-> +
-> +	list_for_each(mem_list, &idev->mem_list) {
->  
-> -	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
-> -		if (idev->info->mem[mi].size == 0)
-> -			return -1;
-> -		if (vma->vm_pgoff == mi)
-> -			return mi;
-> +		struct uio_mem *mem =
-> +			list_entry(mem_list, struct uio_mem, list_node);
-> +
-> +		if (vma->vm_pgoff == mem->map_id)
-> +			return mem;
->  	}
-> -	return -1;
-> +	return NULL;
->  }
->  
->  static void uio_vma_open(struct vm_area_struct *vma)
-> @@ -415,17 +426,16 @@ static void uio_vma_close(struct vm_area
->  static struct page *uio_vma_nopage(struct vm_area_struct *vma,
->  				   unsigned long address, int *type)
->  {
-> -	struct uio_device *idev = vma->vm_private_data;
->  	struct page* page = NOPAGE_SIGBUS;
->  
-> -	int mi = uio_find_mem_index(vma);
-> -	if (mi < 0)
-> +	struct uio_mem *mem = uio_find_mem_index(vma);
-> +	if (mem == NULL)
->  		return page;
->  
-> -	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
-> -		page = virt_to_page(idev->info->mem[mi].addr);
-> +	if (mem->memtype == UIO_MEM_LOGICAL)
-> +		page = virt_to_page(mem->addr);
->  	else
-> -		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-> +		page = vmalloc_to_page((void*)mem->addr);
->  	get_page(page);
->  	if (type)
->  		*type = VM_FAULT_MINOR;
-> @@ -440,16 +450,15 @@ static struct vm_operations_struct uio_v
->  
->  static int uio_mmap_physical(struct vm_area_struct *vma)
->  {
-> -	struct uio_device *idev = vma->vm_private_data;
-> -	int mi = uio_find_mem_index(vma);
-> -	if (mi < 0)
-> +	struct uio_mem *mem = uio_find_mem_index(vma);
-> +	if (mem == NULL)
->  		return -EINVAL;
->  
->  	vma->vm_flags |= VM_IO | VM_RESERVED;
->  
->  	return remap_pfn_range(vma,
->  			       vma->vm_start,
-> -			       idev->info->mem[mi].addr >> PAGE_SHIFT,
-> +			       mem->addr >> PAGE_SHIFT,
->  			       vma->vm_end - vma->vm_start,
->  			       vma->vm_page_prot);
->  }
-> @@ -466,7 +475,7 @@ static int uio_mmap(struct file *filep, 
->  {
->  	struct uio_listener *listener = filep->private_data;
->  	struct uio_device *idev = listener->dev;
-> -	int mi;
-> +	struct uio_mem *mem;
->  	unsigned long requested_pages, actual_pages;
->  	int ret = 0;
->  
-> @@ -475,12 +484,12 @@ static int uio_mmap(struct file *filep, 
->  
->  	vma->vm_private_data = idev;
->  
-> -	mi = uio_find_mem_index(vma);
-> -	if (mi < 0)
-> +	mem = uio_find_mem_index(vma);
-> +	if (mem == NULL)
->  		return -EINVAL;
->  
->  	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-> -	actual_pages = (idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
-> +	actual_pages = (mem->size + PAGE_SIZE -1) >> PAGE_SHIFT;
->  	if (requested_pages > actual_pages)
->  		return -EINVAL;
->  
-> @@ -492,7 +501,7 @@ static int uio_mmap(struct file *filep, 
->  		return ret;
->  	}
->  
-> -	switch (idev->info->mem[mi].memtype) {
-> +	switch (mem->memtype) {
->  		case UIO_MEM_PHYS:
->  			return uio_mmap_physical(vma);
->  		case UIO_MEM_LOGICAL:
-> @@ -613,6 +622,7 @@ int __uio_register_device(struct module 
->  	idev->info = info;
->  	init_waitqueue_head(&idev->wait);
->  	atomic_set(&idev->event, 0);
-> +	INIT_LIST_HEAD(&idev->mem_list);
->  
->  	ret = uio_get_minor(idev);
->  	if (ret)
-> 
+I believe the Bluetooth remote profile is handled in user space by the
+BlueZ stack. BlueZ should be aware of the remote pairings. When it
+decodes a button press it would need to inject the scancode into the
+correct evdev subdevice. Evdev would translate it in the keymap and
+create the keyevent. This is the same mechanism LIRC is using.
+
+
+At a more general level we're missing a way for something like Myth to
+declare that it is a DVR device. Myth should load, say I'm a DVR, and
+then the remote control subsystem should automatically create a
+Bluetooth DVR profile, load an IR profile for Motorola DVR on a
+universal remote if the box has Bluetooth, IR or 802.15.4.
+
+The whole concept of a remote control subsystem seems like it needs
+more design work done. We keep coming up with big areas that no one
+has thought about.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
