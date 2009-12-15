@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbZLOU2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761059AbZLOUJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933586AbZLOU2M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbZLOU2L
+	id S1761059AbZLOUJW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbZLOUJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:28:11 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:11509 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933068AbZLOU2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:28:09 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5833"; a="30012036"
-Subject: Re: GPIO support for HTC Dream
-From: Daniel Walker <dwalker@codeaurora.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       H Hartley Sweeten <hartleys@visionengravers.com>,
-       Ryan Mallon <ryan@bluewatersys.com>,
-       Iliyan Malchev <malchev@google.com>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <20091215191229.GC26422@elf.ucw.cz>
-References: <4B203575.6050407@bluewatersys.com>
-	 <20091210172458.GJ19454@elf.ucw.cz> <4B2150B7.3040207@bluewatersys.com>
-	 <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
-	 <20091211221015.GB24456@elf.ucw.cz>
-	 <BD79186B4FD85F4B8E60E381CAEE190901FB10EA@mi8nycmail19.Mi8.com>
-	 <20091214064545.GK5114@elf.ucw.cz>
-	 <1260813293.13078.15.camel@c-dwalke-linux.qualcomm.com>
-	 <BD79186B4FD85F4B8E60E381CAEE19090200E9C6@mi8nycmail19.Mi8.com>
-	 <d6200be20912142240q5e7785e6h57fae538a5f4ea4e@mail.gmail.com>
-	 <20091215191229.GC26422@elf.ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Dec 2009 12:07:06 -0800
-Message-ID: <1260907626.32296.16.camel@c-dwalke-linux.qualcomm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Dec 2009 15:09:21 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:57103 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755176AbZLOUJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 15:09:20 -0500
+Date: Tue, 15 Dec 2009 21:09:18 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+Message-ID: <20091215200918.GX28252@kernel.dk>
+References: <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215194319.GT28252@kernel.dk> <4B27E817.6030705@kernel.org> <20091215195111.GV28252@kernel.dk> <4B27E9FD.5080306@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B27E9FD.5080306@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 20:12 +0100, Pavel Machek wrote:
-> > > One other thing.  Are the gpio's handled by Pavel's driver actually from the
-> > > MSM chip or from an external CPLD?  The registers are all defined as:
-> > >
-> > > +               .reg = reg_num + DREAM_CPLD_BASE,
-> > >
-> > > If they are external from the MSM chip this driver should probably be renamed
-> > > to something more appropriate since it is probably dream specific and not
-> > > generic to the msm architecture.
+On Tue, Dec 15 2009, Yinghai Lu wrote:
+> Jens Axboe wrote:
+> > On Tue, Dec 15 2009, Yinghai Lu wrote:
+> >> Jens Axboe wrote:
+> >>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+> >>>> [PATCH] x86/pci: intel ioh bus num reg accessing fix
+> >>>>
+> >>>> it is above 0x100, so if mmconf is not enable, need to skip it
+> >>> This works, it kexecs kernels fine. But since 2.6.32 doesn't have the
+> >>> mmconf problem to begin with, are we now just working around the issue?
+> >>> SRAT still reports issues, numa doesn't work.
+> >> that patch will be bullet proof... we need it.
+> >>
+> >> also still need to figure out why memmap range is not passed properly.
+> >>
+> >> do you mean 2.6.32 kexec 2.6.32 it have worked mmconf and numa in
+> >> second kernel?
 > > 
-> > These are board specific gpios. I think it would be less confusing if
-> > the msm gpio support was added first.
+> > Yes, 2.6.32 booted and 2.6.32 kexec'ed works just fine, no SRAT
+> > complaints and NUMA works fine.
+> > 
+> how about
 > 
-> I did not see msm-generic gpios in the trees, where are they? What is
-> connected over them?
+> current kernel booted and 2.6.32 kexec'ed works just fine, no SRAT
+> complaints and NUMA works fine. ?
 
-Did you look at arch/arm/mach-msm/gpio.[ch] ? It looks like there some
-idle related code in there, and "SMEM" is connected through that code.
-(unless I'm looking at an older tree.)
+Yes, that's exactly what happens, see the previous reply I sent. mmconf
+still complains, though.
 
-Daniel
+-- 
+Jens Axboe
 
