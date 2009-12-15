@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbZLOBDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbZLOBJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbZLOBDA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbZLOBC7
+	id S1758935AbZLOBJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:09:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbZLOBJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:02:59 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:41255 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757361AbZLOBC5 (ORCPT
+	Mon, 14 Dec 2009 20:09:16 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:65266 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758417AbZLOBJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:02:57 -0500
+	Mon, 14 Dec 2009 20:09:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=EWYF/ZJDp76qq8sSVWpV7kbHeAotl5hWJk3JC9TGKAoP2mISJobQ/egii6J7ygdlY4
-         VC3UEWMO3mm0MGZ2DSe1hnSt+ovSyfDXhXQwHHLm/9gKUbBEJ1/p6vZhhtKH1TNLwAi3
-         +1nmqF4oWpuhWye1dSMrbtaLEUGxI4dWR8f1w=
-Message-ID: <4B26E03E.5050309@gmail.com>
-Date: Mon, 14 Dec 2009 19:02:54 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Janos Haar <djani22@netcenter.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: HDD power up in standby
-References: <315c01ca7ca7$641ff8c0$0400a8c0@dcccs>
-In-Reply-To: <315c01ca7ca7$641ff8c0$0400a8c0@dcccs>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=SuP2b4njptYmjM6rdyFEmo3nOIYDdgGV3ZWJwLlk0dzHf+Rbnc/L5uPahCC0UnB9W1
+         ax861dJCaOhW/y/7sZyixrhF02b7L2CLggPJBZVQQvQNNVpykdgA5SSsX4Es0rZwSyBt
+         pX385179HuuFjdZ81jSzUmV5H5zi9R8QUZ4k4=
+Date: Tue, 15 Dec 2009 10:03:42 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@redhat.com>,
+       lwoodman@redhat.com, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/8] mm: Give up allocation if the task have fatal
+ signal
+Message-Id: <20091215100342.e77c8cbe.minchan.kim@barrios-desktop>
+In-Reply-To: <20091215094659.CDB8.A69D9226@jp.fujitsu.com>
+References: <20091214213224.BBC6.A69D9226@jp.fujitsu.com>
+	<20091215085455.13eb65cc.minchan.kim@barrios-desktop>
+	<20091215094659.CDB8.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/14/2009 04:22 AM, Janos Haar wrote:
-> Hello list,
->
-> I have posted to the common, because this theme is for more lists (ide,
-> sata, scsi), i think....
->
-> I know you will not like me guys, but i have one wish.... :-)
->
-> I am building cheap but big storages, and after 12 drive / PC i have faced
-> with one problem:
-> The too much spinup current wich made by the 12-16 drive at the same time.
-> In my actual case, in 12V, there is more than 2A / drive for some seconds.
->
-> I know, in SCSI, there is a jumper for this, and the card can wake up the
-> drives one by one, but i am using 2TB drives, and in SCSI/SAS this have
-> horrible price...
-> I have done some invesrtigation, and found this:
-> The most of the simple sata drives handles the PUIS mode (by set
-> features ata command), but unfortunately
-> only the professional and expensive raid cards supports the wakeing up.
-> If the cheap cards founds only 0 byte drives, this is not a problem at all,
-> because linux usually not use BIOS support fortunately. :-)
-> But i have found when i have spent a little time in google, and in the
-> documentation, linux doesn't support PUIS.
->
-> I think this would be great, and (relatively) simple to implement this
-> feature.
-> I can imagine in this way:
-> Wake up from PUIS is disabled by default, but can be enabled by command
-> line
-> parameter, or compile time configuration.
-> The drivers should send the wake up command one by one to the drives, waits
-> for RDY DSC, and than scan the drives, and register....
->
-> What do you think?
+On Tue, 15 Dec 2009 09:50:47 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-As far as I can see, if the drive reports it's in power-up in standby 
-mode from the identify response, the kernel will send the command to 
-spin up the drive. It might depend on whether parallel scan is enabled 
-for the controller as far as whether they actually spin up one at a 
-time, however.
+> > >  	/*
+> > > +	 * If the allocation is for userland page and we have fatal signal,
+> > > +	 * there isn't any reason to continue allocation. instead, the task
+> > > +	 * should exit soon.
+> > > +	 */
+> > > +	if (fatal_signal_pending(current) && (gfp_mask & __GFP_HIGHMEM))
+> > > +		goto nopage;
+> > 
+> > If we jump nopage, we meets dump_stack and show_mem. 
+> > Even, we can meet OOM which might kill innocent process.
+> 
+> Which point you oppose? noprint is better?
+> 
+> 
 
->
-> (Now i am searching for the solution to send the wakeup command by user
-> program, and than do a "hotplug" in software only, but this is not an
-> "elegant" solution...)
->
->
-> Best Regards,
-> Janos Haar
->
+Sorry fot not clarity.
+My point was following as. 
 
+First,
+I don't want to print.
+Why do we print stack and mem when the process receives the SIGKILL?
+
+Second, 
+1) A process try to allocate anon page in do_anonymous_page.
+2) A process receives SIGKILL.
+3) kernel doesn't allocate page to A process by your patch.
+4) do_anonymous_page returns VF_FAULT_OOM.
+5) call mm_fault_error
+6) call out_of_memory 
+7) It migth kill innocent task. 
+
+If I missed something, Pz, corret me. :)
+
+-- 
+Kind regards,
+Minchan Kim
