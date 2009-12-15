@@ -1,195 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbZLOOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbZLOOdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932420AbZLOOYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 09:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbZLOOYR
+	id S932433AbZLOOdx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 09:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbZLOOdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 09:24:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:24556 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932222AbZLOOYP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 09:24:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject:in-reply-to:mime-version
-         :x-firegpg-version:content-type;
-        b=Kh1f1fVnoxKBcrkpPRHniS2CvjyQEMgYnI0waxjl7PsIzaHkyPrgE/ymYd/JDXxvX6
-         ogRMixwFxlXCSNcwSBMFk/1/UbijCqA/QlmktFSPa9C9LV5y9M8sEEOETJWmb64rQpvL
-         b7OVS9g0E5s6MCpFf/DmpVtPk9Hg/kZLCGkiY=
-From: zdenek.kabelac@gmail.com
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Tue, 15 Dec 2009 15:23:41 +0100 (CET)
-Message-ID: <g38rks2i4f536eq31kUYAxe124vaj_firegpg@mail.gmail.com>
-Subject: Re: 2.6.32: WARNING: at net/wireless/core.c:614 wdev_cleanup_work+0xd9/0x100 [cfg80211]()
-In-Reply-To: <20091205005720.GB24944@hexapodia.org>
+	Tue, 15 Dec 2009 09:33:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38917 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932266AbZLOOdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 09:33:51 -0500
+Date: Tue, 15 Dec 2009 09:28:41 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cfq: set workload as expired if it doesn't have any
+	slice left.
+Message-ID: <20091215142841.GA5811@redhat.com>
+References: <4B26EC23.6020701@cn.fujitsu.com>
 MIME-Version: 1.0
-X-FireGPG-Version: 0.7.10
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="-----firegpg0710eqg38rks3ciuelenr3pn"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B26EC23.6020701@cn.fujitsu.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
--------firegpg0710eqg38rks3ciuelenr3pn
-Content-Type: text/plain; format=flowed; charset=UTF-8
-Content-Transfer-Encoding: base64
+On Tue, Dec 15, 2009 at 09:53:39AM +0800, Gui Jianfeng wrote:
+> When a group is resumed, if it doesn't have workload slice left,
+> we should set workload_expires as expired. Otherwise, we might
+> start from where we left in previous group by error. 
+> Thanks the idea from Corrado.
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 
-DQoNCjIwMDkvMTIvNSBBbmR5IElzYWFjc29uIDxhZGlAaGV4YXBvZGlhLm9yZz46DQo+IEdvdCB0
-aGlzIG9uIGEgRGVsbCBlNDMwMCAoQ29yZSAyIER1bywgSW50ZSBQcm8vV2lyZWxlc3MgNTMwMCBB
-R04pDQo+IHJ1bm5pbmcgMi42LjMyIGZpbmFsLCB3aGlsZSBkb2luZyBhIHN1c3BlbmQtb24tbGlk
-LWNsb3NlIHNvb24gYWZ0ZXINCj4gYm9vdHVwOg0KPg0KPiBbIMKgIDY1LjQ1NTg0Ml0gLS0tLS0t
-LS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tDQo+IFsgwqAgNjUuNDYwNDc3XSBXQVJOSU5H
-OiBhdCBuZXQvd2lyZWxlc3MvY29yZS5jOjYxNCB3ZGV2X2NsZWFudXBfd29yaysweGQ5LzB4MTAw
-IFtjZmc4MDIxMV0oKQ0KPiBbIMKgIDY1LjQ2ODY1Nl0gSGFyZHdhcmUgbmFtZTogTGF0aXR1ZGUg
-RTQzMDANCj4gPDk+WyDCoCA2NS40NzQyMjVdIE1vZHVsZXMgbGlua2VkIGluOiBiaW5mbXRfbWlz
-YyByZmNvbW0gc2NvIGJuZXAgbDJjYXAgY3JjMTYgc25kX2hkYV9jb2RlY19pbnRlbGhkbWkgc25k
-X2hkYV9jb2RlY19pZHQgc25kX2hkYV9pbnRlbCBzbmRfaGRhX2NvZGVjIHNuZF9od2RlcCBzbmRf
-cGNtX29zcyBzbmRfbWl4ZXJfb3NzIHNuZF9wY20gc25kX3NlcV9kdW1teSBhcmM0IGVjYiBzbmRf
-c2VxX29zcyBzbmRfc2VxX21pZGkgaXdsYWduIHNuZF9yYXdtaWRpIGl3bGNvcmUgc25kX3NlcV9t
-aWRpX2V2ZW50IHNuZF9zZXEgc25kX3RpbWVyIHNuZF9zZXFfZGV2aWNlIGJ0dXNiIHNuZCBsZWRf
-Y2xhc3Mgc291bmRjb3JlIHdtaSBtYWM4MDIxMSBibHVldG9vdGggcmljb2hfbW1jIHNuZF9wYWdl
-X2FsbG9jIHBzbW91c2UgZXZkZXYgc2VyaW9fcmF3IGRjZGJhcyBjZmc4MDIxMSB1c2JoaWQgaGlk
-IGk5MTUgZHJtX2ttc19oZWxwZXIgZHJtIGkyY19hbGdvX2JpdCBwYXRhX2FjcGkgaTJjX2NvcmUg
-aW50ZWxfYWdwIHVoY2lfaGNkWyDCoCA2NS41MjA2NTZdIC0tLVsgZW5kIHRyYWNlIGVhMDYzM2Zh
-YTZlM2UwY2EgXS0tLQ0KPiBbIMKgIDY1LjY0OTM2OF0gUE06IFN5bmNpbmcgZmlsZXN5c3RlbXMg
-Li4uIGRvbmUuDQo+IFsgwqAgNjUuNjg1ODMzXSBQTTogUHJlcGFyaW5nIHN5c3RlbSBmb3IgbWVt
-IHNsZWVwDQo+IFsgwqAgNjUuOTQ3NTg5XSBbZHJtXSBMVkRTLTg6IHNldCBtb2RlIDEyODB4ODAw
-IGMNCj4gPDk+WyDCoCA2Ni4wMTE5MThdIEZyZWV6aW5nIHVzZXIgc3BhY2UgcHJvY2Vzc2VzIC4u
-LiAoZWxhcHNlZCAwLjAwIHNlY29uZHMpIDw5PlsgwqAgNjYuMDIwNjM3XSBGcmVlemluZyByZW1h
-aW5pbmcgZnJlZXphYmxlIHRhc2tzIC4uLiAoZWxhcHNlZCAwLjAwIHNlY29uZHMpIGRvbmUuWyDC
-oCA2Ni4wMjgxMDBdIFBNOiBFbnRlcmluZyBtZW0gc2xlZXANCj4NCj4gSSBoYXZlbid0IHNlZW4g
-dGhpcyBlcnJvciBiZWZvcmUsIHNvIGl0IG1heSBiZSBhIHJlZ3Jlc3Npb24gZnJvbSAuMzEsDQo+
-IGJ1dCB0aGVuIEkgaGF2ZSBvbmx5IGhhZCBzZXJpYWwgY29uc29sZSBzZXQgdXAgZm9yIGEgZmV3
-IHdlZWtzLg0KPg0KPiBNb3JlIHNlcmlhbCBjb25zb2xlIGJlbG93LCBmdWxsIGRtZXNnIChhZnRl
-ciBhIHJlYm9vdCkgYXQNCj4gaHR0cDovL3dlYi5oZXhhcG9kaWEub3JnL35hZGkvdG1wL2U0MzAw
-LWRtZXNnLTIuNi4zMi50eHQNCj4NCj4gwqAqIFNldHRpbmcgcHJlbGltaW5hcnkga2V5bWFwLi4u
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgICogU3BlZWNoLWRpc3BhdGNoZXIgY29uZmlndXJlZCBmb3IgdXNlciBz
-ZXNzaW9uc3BzDQo+IMKgKiBTdGFydGluZyBDb21tb24gVW5peCBQcmludGluZyBTeXN0ZW06IGN1
-cHNkIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgICog
-UHVsc2VBdWRpbyBjb25maWd1cmVkIGZvciBwZXItdXNlciBzZXNzaW9ucw0KPiDCoCogRW5hYmxp
-bmcgYWRkaXRpb25hbCBleGVjdXRhYmxlIGJpbmFyeSBmb3JtYXRzIGJpbmZtdC1zdXBwb3J0IMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLi4uZG9uZS4gYmF0dGVyeSBzdGF0ZS4uLg0KPiBb
-IMKgIDMxLjk2MzIwMl0gW2RybV0gVFYtMjU6IHNldCBtb2RlIE5UU0MgNDgwaSAwDQo+IFsgwqAg
-MzIuMTA3NjgwXSBbZHJtXSBUVi0yNTogc2V0IG1vZGUgTlRTQyA0ODBpIDANCj4gWyDCoCAzMi40
-MDI3NjRdIFtkcm1dIFRWLTI1OiBzZXQgbW9kZSBOVFNDIDQ4MGkgMA0KPiBbIMKgIDMyLjU0NzQ1
-MF0gW2RybV0gVFYtMjU6IHNldCBtb2RlIE5UU0MgNDgwaSAwDQo+IFsgwqAgMzIuODQyNjkyXSBb
-ZHJtXSBUVi0yNTogc2V0IG1vZGUgTlRTQyA0ODBpIDANCj4gWyDCoCAzMi45ODc0NzhdIFtkcm1d
-IFRWLTI1OiBzZXQgbW9kZSBOVFNDIDQ4MGkgMA0KPiBbIMKgIDM1LjY1ODcxNl0gW2RybV0gVFYt
-MjU6IHNldCBtb2RlIE5UU0MgNDgwaSAwDQo+IFsgwqAgMzUuODAzMjYzXSBbZHJtXSBUVi0yNTog
-c2V0IG1vZGUgTlRTQyA0ODBpIDANCj4gWyDCoCA0Mi4xODY3ODddIHdsYW4wOiBkZWF1dGhlbnRp
-Y2F0aW5nIGZyb20gMDA6MGI6MGU6NDY6NWM6MDAgYnkgbG9jYWwgY2hvaWNlIChyZWFzb249MykN
-Cj4gWyDCoCA0Mi4xOTQ4ODVdIHdsYW4wOiBkaXJlY3QgcHJvYmUgdG8gQVAgMDA6MGI6MGU6NDY6
-NWM6MDAgKHRyeSAxKQ0KPiBbIMKgIDQyLjIwNDcwNl0gd2xhbjA6IGRpcmVjdCBwcm9iZSByZXNw
-b25kZWQNCj4gWyDCoCA0Mi4yMDg3MjFdIHdsYW4wOiBhdXRoZW50aWNhdGUgd2l0aCBBUCAwMDow
-YjowZTo0Njo1YzowMCAodHJ5IDEpDQo+IFsgwqAgNDIuMjE3NTQ0XSB3bGFuMDogYXV0aGVudGlj
-YXRlZA0KPiBbIMKgIDQyLjIyMDc5MF0gd2xhbjA6IGFzc29jaWF0ZSB3aXRoIEFQIDAwOjBiOjBl
-OjQ2OjVjOjAwICh0cnkgMSkNCj4gWyDCoCA0Mi4yMjk1NTRdIHdsYW4wOiBSWCBBc3NvY1Jlc3Ag
-ZnJvbSAwMDowYjowZTo0Njo1YzowMCAoY2FwYWI9MHg0MjEgc3RhdHVzPTAgYWlkPTYpDQo+IFsg
-wqAgNDIuMjM3MjA3XSB3bGFuMDogYXNzb2NpYXRlZA0KPiBbIMKgIDQyLjI1MjE3NV0gY2ZnODAy
-MTE6IENhbGxpbmcgQ1JEQSBmb3IgY291bnRyeTogVVMNCj4gWyDCoCA0Mi4yNTg3OTVdIGNmZzgw
-MjExOiBDdXJyZW50IHJlZ3VsYXRvcnkgZG9tYWluIHVwZGF0ZWQgYnkgQVAgdG86IFVTDQo+IFsg
-wqAgNDIuMjY1MTYxXSDCoChzdGFydF9mcmVxIC0gZW5kX2ZyZXEgQCBiYW5kd2lkdGgpLCAobWF4
-X2FudGVubmFfZ2FpbiwgbWF4X2VpcnApDQo+IFsgwqAgNDIuMjcyNDAxXSDCoCgyNDAyMDAwIEtI
-eiAtIDI0NzIwMDAgS0h6IEAgNDAwMDAgS0h6KSwgKDMwMCBtQmksIDI3MDAgbUJtKQ0KPiBbIMKg
-IDYzLjE1MTYxM10gW2RybV0gVFYtMjU6IHNldCBtb2RlIE5UU0MgNDgwaSAwDQo+IFsgwqAgNjMu
-NjA2NzY4XSBbZHJtXSBUVi0yNTogc2V0IG1vZGUgTlRTQyA0ODBpIDANCj4gWyDCoCA2My45MTk1
-NDNdIFtkcm1dIFRWLTI1OiBzZXQgbW9kZSBOVFNDIDQ4MGkgMA0KPiBbIMKgIDY0LjEwMzk3OF0g
-W2RybV0gVFYtMjU6IHNldCBtb2RlIE5UU0MgNDgwaSAwDQo+IFsgwqAgNjUuMzgxMjIwXSB3bGFu
-MDogZGVhdXRoZW50aWNhdGluZyBmcm9tIDAwOjBiOjBlOjQ2OjVjOjAwIGJ5IGxvY2FsIGNob2lj
-ZSAocmVhc29uPTMpDQo+IFsgwqAgNjUuMzkwMDM0XSB3bGFuMDogZGlyZWN0IHByb2JlIHRvIEFQ
-IDAwOjBiOjBlOjQ2OjVjOjAwICh0cnkgMSkNCj4gWyDCoCA2NS4zOTYwMjBdIHdsYW4wOiBkZWF1
-dGhlbnRpY2F0aW5nIGZyb20gMDA6MGI6MGU6NDY6NWM6MDAgYnkgbG9jYWwgY2hvaWNlIChyZWFz
-b249MykNCj4gWyDCoCA2NS40NTU4NDJdIC0tLS0tLS0tLS0tLVsgY3V0IGhlcmUgXS0tLS0tLS0t
-LS0tLQ0KPiBbIMKgIDY1LjQ2MDQ3N10gV0FSTklORzogYXQgbmV0L3dpcmVsZXNzL2NvcmUuYzo2
-MTQgd2Rldl9jbGVhbnVwX3dvcmsrMHhkOS8weDEwMCBbY2ZnODAyMTFdKCkNCj4gWyDCoCA2NS40
-Njg2NTZdIEhhcmR3YXJlIG5hbWU6IExhdGl0dWRlIEU0MzAwDQo+IDw5PlsgwqAgNjUuNDc0MjI1
-XSBNb2R1bGVzIGxpbmtlZCBpbjogYmluZm10X21pc2MgcmZjb21tIHNjbyBibmVwIGwyY2FwIGNy
-YzE2IHNuZF9oZGFfY29kZWNfaW50ZWxoZG1pIHNuZF9oZGFfY29kZWNfaWR0IHNuZF9oZGFfaW50
-ZWwgc25kX2hkYV9jb2RlYyBzbmRfaHdkZXAgc25kX3BjbV9vc3Mgc25kX21peGVyX29zcyBzbmRf
-cGNtIHNuZF9zZXFfZHVtbXkgYXJjNCBlY2Igc25kX3NlcV9vc3Mgc25kX3NlcV9taWRpIGl3bGFn
-biBzbmRfcmF3bWlkaSBpd2xjb3JlIHNuZF9zZXFfbWlkaV9ldmVudCBzbmRfc2VxIHNuZF90aW1l
-ciBzbmRfc2VxX2RldmljZSBidHVzYiBzbmQgbGVkX2NsYXNzIHNvdW5kY29yZSB3bWkgbWFjODAy
-MTEgYmx1ZXRvb3RoIHJpY29oX21tYyBzbmRfcGFnZV9hbGxvYyBwc21vdXNlIGV2ZGV2IHNlcmlv
-X3JhdyBkY2RiYXMgY2ZnODAyMTEgdXNiaGlkIGhpZCBpOTE1IGRybV9rbXNfaGVscGVyIGRybSBp
-MmNfYWxnb19iaXQgcGF0YV9hY3BpIGkyY19jb3JlIGludGVsX2FncCB1aGNpX2hjZFsgwqAgNjUu
-NTIwNjU2XSAtLS1bIGVuZCB0cmFjZSBlYTA2MzNmYWE2ZTNlMGNhIF0tLS0NCj4gWyDCoCA2NS42
-NDkzNjhdIFBNOiBTeW5jaW5nIGZpbGVzeXN0ZW1zIC4uLiBkb25lLg0KPiBbIMKgIDY1LjY4NTgz
-M10gUE06IFByZXBhcmluZyBzeXN0ZW0gZm9yIG1lbSBzbGVlcA0KPiBbIMKgIDY1Ljk0NzU4OV0g
-W2RybV0gTFZEUy04OiBzZXQgbW9kZSAxMjgweDgwMCBjDQo+IDw5PlsgwqAgNjYuMDExOTE4XSBG
-cmVlemluZyB1c2VyIHNwYWNlIHByb2Nlc3NlcyAuLi4gKGVsYXBzZWQgMC4wMCBzZWNvbmRzKSA8
-OT5bIMKgIDY2LjAyMDYzN10gRnJlZXppbmcgcmVtYWluaW5nIGZyZWV6YWJsZSB0YXNrcyAuLi4g
-KGVsYXBzZWQgMC4wMCBzZWNvbmRzKSBkb25lLlsgwqAgNjYuMDI4MTAwXSBQTTogRW50ZXJpbmcg
-bWVtIHNsZWVwDQo+DQoNCg0KSSd2ZSBhbHNvIGdvdCB0aGlzIG1lc3NhZ2UgLSB3aXRoIGRpZmZl
-cmVudCBodyAgLSBMZW5vdm8gVDYxIC0gaXdsMzk0NSwgQzJELCA2NGJpdCwgNEdCDQoNCiBpd2wz
-OTQ1IDAwMDA6MDM6MDAuMDogRXJyb3I6IFJlc3BvbnNlIE5VTEwgaW4gJ1JFUExZX0FERF9TVEEn
-DQogLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tDQogV0FSTklORzogYXQgbmV0
-L3dpcmVsZXNzL2NvcmUuYzo2MTQgd2Rldl9jbGVhbnVwX3dvcmsrMHhmMS8weDEyMCBbY2ZnODAy
-MTFdKCkNCiBIYXJkd2FyZSBuYW1lOiA2NDY0Q1RPDQogTW9kdWxlcyBsaW5rZWQgaW46IGR2Yl91
-c2JfZGliMDcwMCBkaWI3MDAwcCBkaWI3MDAwbSBkaWIwMDcwIGR2Yl91c2IgZGliMzAwMG1jIGRp
-YjgwMDAgZGlieDAwMF9jb21tb24gZHZiX2NvcmUgYWVzX2dlbmVyaWMgdXNibHAgdHVuIG5mc2Qg
-bG9ja2QgbmZzX2FjbCBhdXRoX3JwY2dzcyBleHBvcnRmcyBoaWRwIGlwdF9NQVNRVUVSQURFIGlw
-dGFibGVfbmF0IG5mX25hdCBuZl9jb25udHJhY2tfaXB2NCBuZl9kZWZyYWdfaXB2NCB4dF9zdGF0
-ZSBuZl9jb25udHJhY2sgaXB0X1JFSkVDVCB4dF90Y3B1ZHAgaXB0YWJsZV9maWx0ZXIgaXBfdGFi
-bGVzIHhfdGFibGVzIGJyaWRnZSBzdHAgbGxjIHJmY29tbSBzY28gbDJjYXAgc3VucnBjIGF1dG9m
-czQgaXB2NiBiaW5mbXRfbWlzYyBkbV9taXJyb3IgZG1fcmVnaW9uX2hhc2ggZG1fbG9nIGt2bV9p
-bnRlbCBrdm0gaTkxNSBkcm1fa21zX2hlbHBlciBkcm0gaTJjX2FsZ29fYml0IHVpbnB1dCBhcmM0
-IGVjYiBjcnlwdG9tZ3IgY3J5cHRvX2hhc2ggdXNiaGlkIGhpZCBidHVzYiBibHVldG9vdGggc25k
-X2hkYV9jb2RlY19hbmFsb2cgYWVhZCBwY29tcHJlc3MgY3J5cHRvX2Jsa2NpcGhlciBjcnlwdG9f
-YWxnYXBpIHNuZF9oZGFfaW50ZWwgaXdsMzk0NSBzbmRfaGRhX2NvZGVjIGl3bGNvcmUgbWFjODAy
-MTEgc25kX3NlcV9vc3Mgc25kX3NlcV9taWRpX2V2ZW50IHNuZF9zZXEgc25kX3NlcV9kZXZpY2Ug
-c25kX3BjbV9vc3MgdGhpbmtwYWRfYWNwaSBzZGhjaV9wY2kgc2RoY2kgc25kX21peGVyX29zcyBz
-bmRfcGNtIGNmZzgwMjExIG1tY19jb3JlIHNyX21vZCBpVENPX3dkdCBwc21vdXNlIGkyY19pODAx
-IGkyY19jb3JlIGFjIHNuZF90aW1lciBudnJhbSByZmtpbGwgcnRjX2Ntb3MgcnRjX2NvcmUgcnRj
-X2xpYiBpVENPX3ZlbmRvcl9zdXBwb3J0IGJhdHRlcnkgc25kIGVoY2lfaGNkIGUxMDAwZSBsZWRf
-Y2xhc3MgY2Ryb20gc291bmRjb3JlIHNuZF9wYWdlX2FsbG9jIGV2ZGV2IHMNCiBlcmlvX3JhdyB1
-aGNpX2hjZCB1c2Jjb3JlIGRtX211bHRpcGF0aCB2aWRlbyBiYWNrbGlnaHQgb3V0cHV0IGJ1dHRv
-biBkbV9tb2QgW2xhc3QgdW5sb2FkZWQ6IG1pY3JvY29kZV0NCiBQaWQ6IDI4NTg2LCBjb21tOiBl
-dmVudHMvMSBUYWludGVkOiBHICAgICAgICBXICAyLjYuMzItMDAwMDEtZzc2MzU3MDggIzQyDQog
-Q2FsbCBUcmFjZToNCiAgWzxmZmZmZmZmZjgxMDUzMzRiPl0gd2Fybl9zbG93cGF0aF9jb21tb24r
-MHg3Yi8weGMwDQogIFs8ZmZmZmZmZmY4MTA1MzNhND5dIHdhcm5fc2xvd3BhdGhfbnVsbCsweDE0
-LzB4MjANCiAgWzxmZmZmZmZmZmEwMTUwMGMxPl0gd2Rldl9jbGVhbnVwX3dvcmsrMHhmMS8weDEy
-MCBbY2ZnODAyMTFdDQogIFs8ZmZmZmZmZmZhMDE0ZmZkMD5dID8gd2Rldl9jbGVhbnVwX3dvcmsr
-MHgwLzB4MTIwIFtjZmc4MDIxMV0NCiAgWzxmZmZmZmZmZjgxMDc0NjJhPl0gd29ya2VyX3RocmVh
-ZCsweDIxYS8weDQwMA0KICBbPGZmZmZmZmZmODEwNzQ1ZDk+XSA/IHdvcmtlcl90aHJlYWQrMHgx
-YzkvMHg0MDANCiAgWzxmZmZmZmZmZjgxMDdhM2QwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rp
-b24rMHgwLzB4NDANCiAgWzxmZmZmZmZmZjgxMDc0NDEwPl0gPyB3b3JrZXJfdGhyZWFkKzB4MC8w
-eDQwMA0KICBbPGZmZmZmZmZmODEwN2EwNDY+XSBrdGhyZWFkKzB4OTYvMHhhMA0KICBbPGZmZmZm
-ZmZmODEwMGQyMWE+XSBjaGlsZF9yaXArMHhhLzB4MjANCiAgWzxmZmZmZmZmZjgxMDQyZmI0Pl0g
-PyBmaW5pc2hfdGFza19zd2l0Y2grMHg3NC8weGYwDQogIFs8ZmZmZmZmZmY4MTQyNTliYj5dID8g
-X3NwaW5fdW5sb2NrX2lycSsweDNiLzB4NjANCiAgWzxmZmZmZmZmZjgxMDBjYjgwPl0gPyByZXN0
-b3JlX2FyZ3MrMHgwLzB4MzANCiAgWzxmZmZmZmZmZjgxMDc5ZmIwPl0gPyBrdGhyZWFkKzB4MC8w
-eGEwDQogIFs8ZmZmZmZmZmY4MTAwZDIxMD5dID8gY2hpbGRfcmlwKzB4MC8weDIwDQogLS0tWyBl
-bmQgdHJhY2UgMmE4OGI5NGEzZWIyMWU5OCBdLS0tDQogKGVsYXBzZWQgMC4wMyBzZWNvbmRzKSBk
-b25lLg0KIEZyZWV6aW5nIHJlbWFpbmluZyBmcmVlemFibGUgdGFza3MgLi4uIChlbGFwc2VkIDAu
-MDAgc2Vjb25kcykgZG9uZS4NCiBzZCAwOjA6MDowOiBbc2RhXSBTeW5jaHJvbml6aW5nIFNDU0kg
-Y2FjaGUNCg0KDQpaZGVuZWsNCg==
--------firegpg0710eqg38rks3ciuelenr3pn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Thanks Gui. Looks good.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-Comment: Use GnuPG with Firefox : http://getfiregpg.org (Version: 0.7.10)
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
 
-iQIcBAEBAgAGBQJLJ5wJAAoJEBiFrTh9QvFuiGEP/j6WxxRZVTY/AyEcMFQofq6p
-HefOpr5EBpf2RdjCqaqGN2RdFow94xpkmVXn+CCum9CLyDztPFeGZOxjPnfr3+KO
-5nGBWAtrW0RGA7H6itdH47huYgnId+aoBBFPh2b7wga0Haf1O5k0BlTEB60LBgzW
-s5+KToQzKV74d14/A5v5pTGHN500gikgvBWMbFoDbDflege7dlgxDVxBPA7WGj44
-AAtg9+WGivRW3GjIq9Z76Y5fyBY6z6fjAkKc7HFttx+6eBZtzCYdouZSn40q5NKU
-l4tCgd+E5G36V9SHi+EfJ+dVoi2KohgMXPdYEfS9H3VWxeIfcPxLZfrymKtiE8nl
-yoH95T/OCYoShytnOhm+mL/Vs1j2us+9K78C8u+6GA5FIAUNu8BdUkJxvAlprkP+
-QLHxiP6sEx6McgjNsHEsqjc9gmTZyQsCyW2x7R24xl4SWGRUZvCVSQlkkVsAxCrz
-Rzk/p+hkRjUljf7n7SV0ahtUilkbp5ylZdan/GYJ+nsSUb+Pjf49Dmw1WBkrnZE4
-1H4xGXrco/Ljfi4z6oVnZ4bddoWLU8fFAiLL15kUdFOb+O6i8gkKOEZJiXx+rDAS
-YC27B3Cot6SgPUTXfeqZ+8dUMTLSyJnqogehztQkFqFr6bkjWpzeRIV51gOPspeZ
-Os5anFQeLVG4+U14W2uc
-=v4Aa
------END PGP SIGNATURE-----
+Vivek
 
--------firegpg0710eqg38rks3ciuelenr3pn--
-
+> ---
+>  block/cfq-iosched.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index f3f6239..e2f8046 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -2113,7 +2113,9 @@ static void cfq_choose_cfqg(struct cfq_data *cfqd)
+>  		cfqd->workload_expires = jiffies + cfqg->saved_workload_slice;
+>  		cfqd->serving_type = cfqg->saved_workload;
+>  		cfqd->serving_prio = cfqg->saved_serving_prio;
+> -	}
+> +	} else
+> +		cfqd->workload_expires = jiffies - 1;
+> +
+>  	choose_service_tree(cfqd, cfqg);
+>  }
+>  
+> -- 
+> 1.5.4.rc3
