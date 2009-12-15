@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760281AbZLOOBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZLOOEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760281AbZLOOBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 09:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760256AbZLOOBp
+	id S1760289AbZLOOEk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 09:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760276AbZLOOEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 09:01:45 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56587 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760247AbZLOOBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 09:01:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=thKPXbzoIdpHKT8VG/IJ5ME20kJNkQrSJfaMvD/xOi6esmRIo3p57FeHuRz6mD8PpA
-         ELqikdZUsgdEZQWSGxPzFN+XsFnXJzZOaR2o3e4qmsKkck9GZxo7NqqkFqjTLmNr8PYH
-         KVa0/fgfPxulKpqGO7n5lDbx37iNqUKYv1DMg=
-Date: Tue, 15 Dec 2009 15:01:37 +0100
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-To: Josua Dietze <digidietze@draisberghof.de>
-Cc: linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
-       Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-Message-ID: <20091215150137.46bd9817@strolchi.home.s3e.de>
-In-Reply-To: <4B278191.1010009@draisberghof.de>
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com>
-	<4B278191.1010009@draisberghof.de>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.1; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Dec 2009 09:04:39 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:41811 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760248AbZLOOEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 09:04:38 -0500
+Date: Tue, 15 Dec 2009 15:04:37 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] block fixes for 2.6.33-rc1
+Message-ID: <20091215140437.GJ28252@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Linus,
 
-On Tue, 15 Dec 2009 13:31:13 +0100
-Josua Dietze <digidietze@draisberghof.de> wrote:
+Basically some further tweaks and fixes for cfq, init failure fix for
+the old xd driver, and a fixup for drbd.
 
-> Stefan Seyfried schrieb:
-> 
-> > The USB ID claimed by zd1211rw for the fake storage device is
-> > also in use by other, non-zd1211rw devices (Sphairon Homelink
-> > 1202). Move the eject of these devices to where it belongs and
-> > where all the needed infrastructure already exists: usb-storage.
-> 
-> We can do the eject (as other mode switches) in userspace. Previous 
-> discussions pointed into that direction.
+Please pull:
 
-Well, the zd1211rw already did that, I wanted to fix that up and was
-told to do it in usb-storage instead (which, looking at the diffstat,
-seems like a good idea).
+  git://git.kernel.dk/linux-2.6-block.git for-2.6.33
 
-> And there is always the question of being able to access the "fake 
-> CD-ROM" without hacking the kernel.
+Corrado Zoccolo (2):
+      cfq-iosched: reduce write depth only if sync was delayed
+      cfq-iosched: commenting non-obvious initialization
 
-I was thinking that I would be able to achieve that by echoing an
-appropriate quirk into /sys/module/usb-storage/parameters/quirks,
-however, I could not get it to *not* eject the device.
-But given that there is already an "option_zero_cd" parameter in
-usb-storage, it should be easy to massage this into a general "do not
-eject virtual installer media" flag so that people are still able to
-get the windows driver files off their devices should they need to do
-so.
+Gui Jianfeng (3):
+      cfq: Optimization for close cooperating queue searching
+      cfq: Remove wait_request flag when idle time is being deleted
+      cfq: set workload as expired if it doesn't have any slice left
 
-> I'd like to see these devices removed from unusual_devs.h.
+Mel Gorman (1):
+      block,xd: Delay allocation of DMA buffers until device is known
 
-I'd like them to work with one driver, not two (one in kernel and one
-in userspace).
+Philipp Reisner (1):
+      drbd: Following the hmac change to SHASH (see linux commit 8bd1209cfff)
 
-That's a fundamental difference in opinions, and I fear I'm not the one
-who is going to decice how this will be handled ;)
+Vivek Goyal (3):
+      cfq-iosched: Get rid of cfqq wait_busy_done flag
+      cfq-iosched: Take care of corner cases of group losing share due to deletion
+      Fix a CFQ crash in "for-2.6.33" branch of block tree
 
-Have fun,
+ block/cfq-iosched.c          |   94 +++++++++++++++++++++++++++++++++--------
+ drivers/block/drbd/drbd_nl.c |    3 +-
+ drivers/block/xd.c           |   30 ++++++++-----
+ 3 files changed, 95 insertions(+), 32 deletions(-)
 
-	Stefan
 -- 
-Stefan Seyfried
+Jens Axboe
 
-"Any ideas, John?"
-"Well, surrounding them's out."
