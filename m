@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZLOXYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932616AbZLOXZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbZLOXYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759981AbZLOW61
+	id S932616AbZLOXZG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759937AbZLOXY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:58:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37581 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759979AbZLOW6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:58:22 -0500
-Date: Tue, 15 Dec 2009 22:58:08 GMT
-From: tip-bot for Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: linux-kernel@vger.kernel.org, phillip@lougher.demon.co.uk, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, phillip@lougher.demon.co.uk,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <4b26b1ef.0+ZWxT6886olqcSc%phillip@lougher.demon.co.uk>
-References: <4b26b1ef.0+ZWxT6886olqcSc%phillip@lougher.demon.co.uk>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] initramfs: add missing decompressor error check
-Message-ID: <tip-54291362d2a5738e1b0495df2abcb9e6b0563a3f@git.kernel.org>
-Git-Commit-ID: 54291362d2a5738e1b0495df2abcb9e6b0563a3f
-X-Mailer: tip-git-log-daemon
+	Tue, 15 Dec 2009 18:24:56 -0500
+Received: from na3sys009aog112.obsmtp.com ([74.125.149.207]:41909 "HELO
+	na3sys009aog112.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752058AbZLOW6R convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:58:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+In-Reply-To: <4B26FC52.6060307@billgatliff.com>
+References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
+	 <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se>
+	 <20091207114825.GA26965@rakim.wolfsonmicro.main>
+	 <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
+	 <20091207165628.GA24981@rakim.wolfsonmicro.main>
+	 <20091213132413.GB1437@ucw.cz>
+	 <20091214121247.GB22388@rakim.wolfsonmicro.main>
+	 <20091214212257.GA9213@elf.ucw.cz>
+	 <ed62800912141543v2ab7ef63v4b6b2c33018b3296@mail.gmail.com>
+	 <4B26FC52.6060307@billgatliff.com>
+Date: Wed, 16 Dec 2009 09:58:16 +1100
+Message-ID: <ed62800912151458p6bc1e551g54960af40c54facd@mail.gmail.com>
+Subject: Re: [POWER] battery calibration parameters from sysfs
+From: Aras Vaichas <arasv@magellan-technology.com>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Linus Walleij <linus.walleij@stericsson.com>, cbou@mail.ru,
+       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-embedded@vger.kernel.org, Brian Swetland <swetland@google.com>,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  54291362d2a5738e1b0495df2abcb9e6b0563a3f
-Gitweb:     http://git.kernel.org/tip/54291362d2a5738e1b0495df2abcb9e6b0563a3f
-Author:     Phillip Lougher <phillip@lougher.demon.co.uk>
-AuthorDate: Mon, 14 Dec 2009 21:45:19 +0000
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 15 Dec 2009 14:04:24 -0800
+2009/12/15 Bill Gatliff <bgat@billgatliff.com>:
+> Aras Vaichas wrote:
+>> Unfortunately the simple coulomb counting chips have the disadvantage
+>> that the CPU has to be running to accumulate the pulses. Of course,
+>> the pulses could wake the CPU from a suspend mode, but I'd rather not
+>> do that just to add "one" to a counter ...
+>>
+>
+> Could you have the coulomb-counting chip connected to a tiny
+> microcontroller, or even a dedicated hardware counter?  Then the main
+> CPU wouldn't need to wake as often, it could just ask the
+> microcontroller over I2C, or read/reset the hardware counter.
+>
+> b.g.
 
-initramfs: add missing decompressor error check
+Yes, but in that case you might as well just purchase a coulomb
+counter with a built-in accumulator and an I2C/SPI/microwire interface
+save yourself some PCB space and cost (maybe)
 
-The decompressors return error by calling a supplied error function, and/or
-by returning an error return value.  The initramfs code, however, fails to
-check the exit code returned by the decompressor, and only checks the error
-status set by calling the error function.
+Google for, say,  "coulomb counter i2c" and you'll get something like
+this: http://eu.st.com/stonline/products/literature/ds/15269.pdf as an
+example
 
-This patch adds a return code check and calls the error function.
+The only time we used a pulse-and-polarity-output coulomb counter was
+with an ATmega128. The CPU had to run all the time in order to
+maintain its RTC so we could use it to accumulate pulses as well. It
+wasn't a Linux project though.
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
-LKML-Reference: <4b26b1ef.0+ZWxT6886olqcSc%phillip@lougher.demon.co.uk>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- init/initramfs.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 4c00edc..b37d34b 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -413,7 +413,7 @@ static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
- 
- static char * __init unpack_to_rootfs(char *buf, unsigned len)
- {
--	int written;
-+	int written, res;
- 	decompress_fn decompress;
- 	const char *compress_name;
- 	static __initdata char msg_buf[64];
-@@ -445,10 +445,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len)
- 		}
- 		this_header = 0;
- 		decompress = decompress_method(buf, len, &compress_name);
--		if (decompress)
--			decompress(buf, len, NULL, flush_buffer, NULL,
-+		if (decompress) {
-+			res = decompress(buf, len, NULL, flush_buffer, NULL,
- 				   &my_inptr, error);
--		else if (compress_name) {
-+			if (res)
-+				error("decompressor failed");
-+		} else if (compress_name) {
- 			if (!message) {
- 				snprintf(msg_buf, sizeof msg_buf,
- 					 "compression method %s not configured",
+Aras
