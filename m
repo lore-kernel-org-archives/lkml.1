@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbZLOS6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbZLOS7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760890AbZLOS6X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZLOS6V
+	id S1760916AbZLOS7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbZLOS7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:58:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33971 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752189AbZLOS6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:58:20 -0500
-Date: Tue, 15 Dec 2009 10:57:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <alpine.LFD.2.00.0912150803250.14385@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0912151051580.14385@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912151047410.3566-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912150803250.14385@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 15 Dec 2009 13:59:43 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:53320 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753542AbZLOS7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:59:42 -0500
+Date: Tue, 15 Dec 2009 19:59:41 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+Message-ID: <20091215185941.GO28252@kernel.dk>
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B27D7E9.4030105@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 Dec 2009, Linus Torvalds wrote:
+On Tue, Dec 15 2009, Yinghai Lu wrote:
+> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
 > 
-> And even when you know it's PCI, our rules are actually not simple at all. 
-> Our rules for PCI devices (and this strictly speaking is true for bridges 
-> too) are rather complex:
-> 
->  - do we have _any_ legacy PM support (ie the "direct" driver 
->    suspend/resume functions in the driver ops, rather than having a 
->    "struct dev_pm_ops" pointer)? If so, call "->suspend()"
-> 
->  - If not - do we have that "dev_pm_ops" thing? If so, call it.
-> 
->  - If not - just disable the device entirely _UNLESS_ you're a PCI bridge.
-> 
-> Notice? The way things are set up, if you have no suspend routine, you'll 
-> not get suspended, but you will get disabled. 
+> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
 
-Side note - what I think might be a clean solution for PCI at least is to 
-do something like the following:
+On a "normal" non-kexec boot, I get:
 
- - move that "disable the device entirely" thing to suspend_late, rather 
-   than the earlier suspend phase. Now PCI devices without drivers or PM 
-   will not be touched at all in the first suspend phase.
+[   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+[   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
+[   12.216874] PCI: Using configuration type 1 for base access
 
- - initialize all PCI devices to have 'async_suspend = 1' on discovery
+-- 
+Jens Axboe
 
- - whenever we bind a driver to the PCI device, we'd then look at whether 
-   that driver implements suspend/resume callbacks (legacy or new), and 
-   clear the async_suspend bit if so.
-
-That way we'd have the same old synchronous behavior for all PCI suspend 
-and resume events (unless the driver itself then sets the async_suspend 
-bit at device init time, which it could do, of course), while still always 
-doing async "no-op" events.
-
-That would avoid the ugly one-liner that just "knows" that PCI bridges are 
-special and don't do anything at suspend time (even though they aren't 
-really - a PCI bridge _could_ have a driver associated with it that does 
-something that might not be happy being asynchronous).
-
-			Linus
