@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbZLOTuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932959AbZLOTu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761011AbZLOTuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932596AbZLOTuS
+	id S932959AbZLOTu4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760984AbZLOTuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:50:18 -0500
-Received: from kroah.org ([198.145.64.141]:43525 "EHLO coco.kroah.org"
+	Tue, 15 Dec 2009 14:50:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44161 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759707AbZLOTuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:50:17 -0500
-Date: Tue, 15 Dec 2009 11:49:38 -0800
-From: Greg KH <greg@kroah.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Ike Panhc <ike.pan@canonical.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Winkler, Tomas" <tomas.winkler@intel.com>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>
-Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
-Message-ID: <20091215194938.GA13297@kroah.com>
-References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>
- <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
- <20091215041500.GB31200@kroah.com>
- <4B273479.6050502@canonical.com>
- <20091215134943.GA11667@kroah.com>
- <20091215163100.GC8097@tuxdriver.com>
- <1260906168.9623.4.camel@rc-desk>
+	id S1760777AbZLOTuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:50:52 -0500
+Message-ID: <4B27E85C.20006@kernel.org>
+Date: Tue, 15 Dec 2009 11:49:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260906168.9623.4.camel@rc-desk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+References: <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk> <4B27DDD7.5040301@kernel.org> <20091215191129.GQ28252@kernel.dk> <4B27E71E.6020709@kernel.org> <20091215194818.GU28252@kernel.dk>
+In-Reply-To: <20091215194818.GU28252@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 11:42:48AM -0800, reinette chatre wrote:
-> On Tue, 2009-12-15 at 08:31 -0800, John W. Linville wrote:
-> > On Tue, Dec 15, 2009 at 05:49:43AM -0800, Greg KH wrote:
-> > > On Tue, Dec 15, 2009 at 03:02:17PM +0800, Ike Panhc wrote:
-> > 
-> > > > Please consider applying to linux-2.6.31.y
-> > > 
-> > > I need the subsystem maintainer to agree with this, have they?
-> > 
-> > It seems fine to me.  You may want to let Intel comment too.
-> > 
+Jens Axboe wrote:
+> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>> Jens Axboe wrote:
+>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>>>> Jens Axboe wrote:
+>>>>> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>>>>>> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+>>>>>>
+>>>>>> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
+>>>>> On a "normal" non-kexec boot, I get:
+>>>>>
+>>>>> [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+>>>>> [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
+>>>>> [   12.216874] PCI: Using configuration type 1 for base access
+>>>>>
+>>>> can you run following scripts in first kernel?
+>>>>
+>>>> cd /sys/firmware/memmap
+>>>> for dir in * ; do
+>>>>   start=$(cat $dir/start)
+>>>>   end=$(cat $dir/end)
+>>>>   type=$(cat $dir/type)
+>>>>   printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
+>>>> done
+>>>>
+>>>> and send out /tmp/memmap.txt
+>>> Below.
+>>>
+>>>> what is your kexec tools version? could be too old?
+>>> It says:
+>>>
+>>> kexec-tools-testing 20080324 released 24th March 2008
+>>>
+>>>
+>>> 0000000000000000-0000000000098800 (System RAM)
+>>> 0000000000098800-00000000000a0000 (reserved)
+>>> 0000000079301000-0000000079303000 (reserved)
+>>> 0000000079303000-0000000079305000 (ACPI Tables)
+>>> 0000000079305000-0000000079310000 (reserved)
+>>> 0000000079310000-0000000079314000 (ACPI Tables)
+>>> 0000000079314000-0000000079319000 (reserved)
+>>> 0000000079319000-0000000079336000 (ACPI Tables)
+>>> 0000000079336000-0000000079358000 (reserved)
+>>> 0000000079358000-0000000079388000 (ACPI Tables)
+>>> 0000000079388000-00000000793c9000 (reserved)
+>>> 00000000793c9000-000000007968f000 (ACPI Tables)
+>>> 00000000000e0000-0000000000100000 (reserved)
+>>> 000000007968f000-00000000796bb000 (reserved)
+>>> 00000000796bb000-00000000799d8000 (ACPI Tables)
+>>> 00000000799d8000-0000000079bd8000 (ACPI Non-volatile Storage)
+>>> 0000000079bd8000-0000000079d8b000 (ACPI Tables)
+>>> 0000000079d8b000-0000000079d8c000 (reserved)
+>>> 0000000079d8c000-0000000079dc8000 (ACPI Tables)
+>>> 0000000079dc8000-0000000079dcb000 (reserved)
+>>> 0000000079dcb000-0000000079e1c000 (ACPI Tables)
+>>> 0000000079e1c000-0000000079e87000 (reserved)
+>>> 0000000079e87000-000000007bd5f000 (ACPI Tables)
+>>> 0000000000100000-0000000078c59000 (System RAM)
+>>> 000000007bd5f000-000000007be4f000 (reserved)
+>>> 000000007be4f000-000000007bf87000 (ACPI Tables)
+>> so following ranges are not passed to second kernel by kexec?
 > 
-> No objection here. Even so, I find it strange that this patch fixes a
-> problem since it really should not have any functional changes. 
+> I have the following addition to my kexec kernel command line:
+> 
+> memmap=62G@4G
+> 
+> since that last big 62G RAM entry doesn't show up without it, that's why
+> you see a user defined e820 map as well in the boot logs. So a kexec'ed
+> kernel is missing at least that entry.
+> 
+> I just tried with the latest and greatest kexec-tools (2.0.1) and
+> there's no difference.
 
-Ok, if there is no functional change, why is this needed?
+current kernel kexec 2.6.32 make numa and mmconf working on second kernel?
 
-Ike?
-
-thanks,
-
-greg k-h
+YH
