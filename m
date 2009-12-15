@@ -1,53 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbZLOAKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbZLOAQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758868AbZLOAKX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 19:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbZLOAKV
+	id S1758896AbZLOAQl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 19:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbZLOAQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 19:10:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33038 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758276AbZLOAKU (ORCPT
+	Mon, 14 Dec 2009 19:16:40 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:37653 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757431AbZLOAQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 19:10:20 -0500
-Date: Mon, 14 Dec 2009 16:10:11 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912150018.11837.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912142311.31658.rjw@sisk.pl> <alpine.LFD.2.00.0912141416040.26135@localhost.localdomain> <200912150018.11837.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Dec 2009 19:16:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=NlwtfJVPOcVt4lXAUdJvOZVKybacdoTQMcCdp/OAmZPvAqXKq5T6M6L3SAdgB9/Psd
+         QzqkBmEH0IJBXeQDQpr69W4WyHTn9f9lvfSLsT5mAveM2g1JLPvShbAeBcSmc41zdYan
+         75sgzTTpAehIjkqr5vUv/Ln14d3qAJlmc8i4U=
+Date: Tue, 15 Dec 2009 09:11:07 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+Subject: Re: [PATCH 6/8] Stop reclaim quickly when the task reclaimed enough
+ lots pages
+Message-Id: <20091215091107.219644fe.minchan.kim@barrios-desktop>
+In-Reply-To: <20091214213103.BBC0.A69D9226@jp.fujitsu.com>
+References: <20091211164651.036f5340@annuminas.surriel.com>
+	<20091214210823.BBAE.A69D9226@jp.fujitsu.com>
+	<20091214213103.BBC0.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 Dec 2009 21:31:36 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-
-On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> Because the PCI bridges are not the only case where it matters (I'd say they
-> are really a corner case).  Basically, any two async devices separeted by a
-> series of sync ones are likely not to be suspended (or resumed) in parallel
-> with each other, because the parent is usually next to its children in dpm_list.
+> From latency view, There isn't any reason shrink_zones() continue to
+> reclaim another zone's page if the task reclaimed enough lots pages.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |   16 ++++++++++++----
+>  1 files changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 0880668..bf229d3 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1654,7 +1654,7 @@ static void shrink_zone_end(struct zone *zone, struct scan_control *sc)
+>  /*
+>   * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
+>   */
+> -static void shrink_zone(int priority, struct zone *zone,
+> +static int shrink_zone(int priority, struct zone *zone,
+>  			struct scan_control *sc)
+>  {
+>  	unsigned long nr[NR_LRU_LISTS];
+> @@ -1669,7 +1669,7 @@ static void shrink_zone(int priority, struct zone *zone,
+>  
+>  	ret = shrink_zone_begin(zone, sc);
+>  	if (ret)
+> -		return;
+> +		return ret;
+>  
+>  	/* If we have no swap space, do not bother scanning anon pages. */
+>  	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+> @@ -1692,6 +1692,7 @@ static void shrink_zone(int priority, struct zone *zone,
+>  					  &reclaim_stat->nr_saved_scan[l]);
+>  	}
+>  
+> +	ret = 0;
+>  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+>  					nr[LRU_INACTIVE_FILE]) {
+>  		for_each_evictable_lru(l) {
+> @@ -1712,8 +1713,10 @@ static void shrink_zone(int priority, struct zone *zone,
+>  		 * with multiple processes reclaiming pages, the total
+>  		 * freeing target can get unreasonably large.
+>  		 */
+> -		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY)
+> +		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY) {
+> +			ret = -ERESTARTSYS;
 
-Give a real example that matters.
+Just nitpick. 
 
-Really. 
+shrink_zone's return value is matter?
+shrink_zones never handle that. 
 
-How hard can it be to understand: KISS. Keep It Simple, Stupid.
+>  			break;
+> +		}
+>  	}
+>  
+>  	sc->nr_reclaimed = nr_reclaimed;
+> @@ -1727,6 +1730,8 @@ static void shrink_zone(int priority, struct zone *zone,
+>  
+>  	throttle_vm_writeout(sc->gfp_mask);
+>  	shrink_zone_end(zone, sc);
+> +
+> +	return ret;
+>  }
+>  
+>  /*
+> @@ -1751,6 +1756,7 @@ static void shrink_zones(int priority, struct zonelist *zonelist,
+>  	enum zone_type high_zoneidx = gfp_zone(sc->gfp_mask);
+>  	struct zoneref *z;
+>  	struct zone *zone;
+> +	int ret;
+>  
+>  	sc->all_unreclaimable = 1;
+>  	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
+> @@ -1780,7 +1786,9 @@ static void shrink_zones(int priority, struct zonelist *zonelist,
+>  							priority);
+>  		}
+>  
+> -		shrink_zone(priority, zone, sc);
+> +		ret = shrink_zone(priority, zone, sc);
+> +		if (ret)
+> +			return;
+>  	}
+>  }
 
-I get really tired of this whole stupid async discussion, because you're 
-overdesigning it.
 
-To a first approximation, THE ONLY THING THAT MATTERS IS USB.
+> -- 
+> 1.6.5.2
+> 
+> 
+> 
 
-		Linus
+As a matter of fact, I am worried about this patch. 
+
+My opinion is we put aside this patch until we can solve Larry's problem.
+We could apply this patch in future.
+
+I don't want to see the side effect while we focus Larry's problem.
+But If you mind my suggestion, I also will not bother you by this nitpick.
+
+
+Thanks for great cleanup and improving VM, Kosaki. :)
+
+-- 
+Kind regards,
+Minchan Kim
