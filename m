@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbZLOGDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZLOGEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbZLOGDg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 01:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZLOGDf
+	id S1752795AbZLOGEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 01:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZLOGEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 01:03:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55066 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751573AbZLOGDe (ORCPT
+	Tue, 15 Dec 2009 01:04:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43344
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752557AbZLOGEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 01:03:34 -0500
-Date: Mon, 14 Dec 2009 22:02:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Russ Dill <russ.dill@gmail.com>
-cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: [GIT PATCH] USB patches for 2.6.33-git
-In-Reply-To: <1260852335.1886.0.camel@russ-laptop>
-Message-ID: <alpine.LFD.2.00.0912142158260.14385@localhost.localdomain>
-References: <g383sjib9r8nlmw354UYAxe124vaj_firegpg@mail.gmail.com>  <1260849652.28808.1.camel@russ-laptop>  <alpine.LFD.2.00.0912142031170.14385@localhost.localdomain> <1260852335.1886.0.camel@russ-laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Dec 2009 01:04:42 -0500
+Date: Mon, 14 Dec 2009 22:04:43 -0800 (PST)
+Message-Id: <20091214.220443.109333463.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Match some minor bug fixes and feature additions done on
+x86 and powerpc during this merge window.
 
-On Mon, 14 Dec 2009, Russ Dill wrote:
->
-> From: Russ Dill <Russ.Dill@gmail.com>
-> Date: Wed, 18 Nov 2009 10:31:27 -0700
-> Subject: [PATCH] Close usb_find_interface race v3
- [...]
+Fix 64-bit PCI BAR handling when device is underneath 32-bit
+PCI bridge.
 
-Ok, patch looks good to me.
+Fix mcount based stack overflow detection wrt. IRQ stacks.
 
-However, now I just wonder whether this re-introduces the original race.
+Use new free_bootmem_late() and clock*_calc_mult_shift() helpers.
 
-In the original race description:
+Please pull, thanks a lot!
 
-> USB drivers that create character devices call usb_register_dev in their
-> probe function. This associates the usb_interface device with that minor
-> number and creates the character device and announces it to the world.
-> However, the driver's probe function is called before the new
-> usb_interface is added to the driver's klist_devices.
+The following changes since commit 053fe57ac249a9531c396175778160d9e9509399:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-and now we obviously no longer care about that klist_devices thing any 
-more, but we _do_ care about 'dev->driver'.
+are available in the git repository at:
 
-Has that been set by the time the driver's probe function is called? Or 
-are we now going to have the same situation as before the original patch?
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
-[ That obviously always worked for my printer situation, but I'm just 
-  wondering if this patch actually now helps whatever problem the original 
-  patch was supposed to help? ]
+David S. Miller (14):
+      sparc64: Fix overly strict range type matching for PCI devices.
+      sparc64: Fix stack debugging IRQ stack regression.
+      sparc64: Don't specify IRQF_SHARED for LDC interrupts.
+      sparc: Validate that kprobe address is 4-byte aligned.
+      sparc64: Use kprobes_built_in() to avoid ifdefs in fault_64.c
+      sparc64: Add some missing __kprobes annotations to kernel fault paths.
+      sparc: Use __builtin_object_size() to validate the buffer size for copy_from_user()
+      sparc: Stop trying to be so fancy and use __builtin_{memcpy,memset}()
+      sparc64: Add syscall tracepoint support.
+      sparc: Add alignment and emulation fault perf events.
+      sparc64: Use free_bootmem_late() in mdesc_lmb_free().
+      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
+      sparc64: Use clock{source,events}_calc_mult_shift().
+      sparc64: Fix clock event multiplier printf format.
 
-Somebody who knows the USB driver binding code better than I do should 
-look at this. Greg?
-
-		Linus
+ arch/sparc/Kconfig                      |    1 +
+ arch/sparc/Kconfig.debug                |   14 ++++++
+ arch/sparc/include/asm/string_32.h      |   78 +------------------------------
+ arch/sparc/include/asm/string_64.h      |   25 +---------
+ arch/sparc/include/asm/thread_info_64.h |    2 +
+ arch/sparc/include/asm/uaccess_32.h     |   15 ++++++
+ arch/sparc/include/asm/uaccess_64.h     |   23 ++++++++--
+ arch/sparc/include/asm/unistd.h         |    2 +-
+ arch/sparc/kernel/entry.S               |    2 +-
+ arch/sparc/kernel/ftrace.c              |   11 ++++
+ arch/sparc/kernel/kprobes.c             |    3 +
+ arch/sparc/kernel/ldc.c                 |    4 +-
+ arch/sparc/kernel/mdesc.c               |   21 ++------
+ arch/sparc/kernel/of_device_64.c        |   14 +++++-
+ arch/sparc/kernel/ptrace_64.c           |   10 ++++
+ arch/sparc/kernel/syscalls.S            |   14 +++---
+ arch/sparc/kernel/time_64.c             |   26 +---------
+ arch/sparc/kernel/unaligned_32.c        |   15 +-----
+ arch/sparc/kernel/unaligned_64.c        |   23 ++++------
+ arch/sparc/kernel/visemul.c             |    3 +
+ arch/sparc/lib/Makefile                 |    1 +
+ arch/sparc/lib/bzero.S                  |    5 --
+ arch/sparc/lib/checksum_32.S            |    2 +-
+ arch/sparc/lib/ksyms.c                  |    2 -
+ arch/sparc/lib/mcount.S                 |    5 +-
+ arch/sparc/lib/memcpy.S                 |    3 -
+ arch/sparc/lib/memset.S                 |    3 +-
+ arch/sparc/lib/usercopy.c               |    8 +++
+ arch/sparc/math-emu/math_32.c           |    3 +
+ arch/sparc/math-emu/math_64.c           |    2 +
+ arch/sparc/mm/fault_64.c                |   24 ++++------
+ 31 files changed, 154 insertions(+), 210 deletions(-)
+ create mode 100644 arch/sparc/lib/usercopy.c
