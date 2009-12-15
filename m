@@ -1,107 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbZLOW2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbZLOW2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934063AbZLOW2c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934054AbZLOW23
+	id S933986AbZLOW2M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761385AbZLOW2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:28:29 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42800 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933748AbZLOW21 (ORCPT
+	Tue, 15 Dec 2009 17:28:11 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:43281 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760335AbZLOW2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:28:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=XOQf7gFTa9TScpYs+kj1sfuQPl0y8AvrQPvtdsf+I88f/lYLAbfT265Jl/Em6appFe
-         3QR9OGiEUPKNOD0CSlW4a2E9mtchLMvK9BV7jCq0XMpvoVjKKRjMIeuw9IhVYxmQfWis
-         RUj77zFZNq84i6qLP5w6ZQimwrX68x5LIi6+w=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-Date: Tue, 15 Dec 2009 23:26:34 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+	Tue, 15 Dec 2009 17:28:05 -0500
+Date: Tue, 15 Dec 2009 17:27:58 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <alpine.LFD.2.00.0912151337350.14385@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0912151719300.4055-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Message-Id: <200912152326.34728.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 December 2009 10:57:49 pm Mikulas Patocka wrote:
+On Tue, 15 Dec 2009, Linus Torvalds wrote:
 
-> But some maintainers take output of the script checkpatch.pl dogmatically,
-> requiring that every new work must pass the script without a warning. This is
-> counterproductive --- if I write a driver and I will be doing most maintenance
-> work on it in the future, it is viable that the driver is formatted in such
-> a way that is best editable for me, not for anyone else. And as shown in example
-> (1), this 80-column requirement makes even simple changes much harder.
-
-It has been agreed in the past that 80-column warnings shouldn't result
-automatically in the rejection of the new hardware support so the above
-argumentation is a bit weak.
-
-> So: I am submitting this patch for the checkpatch.pl script.
+> On Tue, 15 Dec 2009, Alan Stern wrote:
+> > 
+> > Okay.  This obviously implies that if/when cardbus bridges are
+> > converted to async suspend/resume, the driver should make sure that the
+> > lower-numbered devices wait for their sibling higher-numbered devices
+> > to suspend (and vice versa for resume).  Awkward though it may be.
 > 
+> Yes. However, this is an excellent case where the whole "the device layer 
+> does things asynchronously" is really rather awkward.
 > 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> For cardbus, the nicest model really would be for the _driver_ to decide 
+> to do some things asynchronously, after having done some other things 
+> synchronously (to make sure of ordering).
 
-Having this limitation makes people at least think about designing their
-code properly and making it more compact.
+Have you considered the possibility of augmenting the design to allow 
+this?  Perhaps reserve a particular return code from the suspend 
+routine to mean that asynchronous operations are still underway, so the 
+PM core shouldn't automatically do the complete_all().
 
-If you don't want to see such warnings just apply the following patch that
-I've been keeping locally (it helped me to work on staging drivers):
+> So I suspect that we _can_ just do cardbus bridges asynchronously too, but 
+> it really needs some care. I suspect to a first approximation we would 
+> want to do the easy cases first, and ignore cardbus as being "known to 
+> possibly have issues".
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] checkpatch.pl: add option to disable 80 column limit check
+Certainly.  Start with the easy things and leave harder devices like 
+cardbus bridges for later.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- scripts/checkpatch.pl |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+> > > Subtle? Hell yes.
+> > 
+> > I don't disagree.  However the subtlety lies mainly in the matter of
+> > non-obvious dependencies.
+> 
+> Yes. But we don't necessarily even _know_ those dependencies.
 
-Index: b/scripts/checkpatch.pl
-===================================================================
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -17,6 +17,7 @@ use Getopt::Long qw(:config no_auto_abbr
- my $quiet = 0;
- my $tree = 1;
- my $chk_signoff = 1;
-+my $chk_cl = 1;
- my $chk_patch = 1;
- my $tst_only;
- my $emacs = 0;
-@@ -41,6 +42,7 @@ Options:
-   -q, --quiet                quiet
-   --no-tree                  run without a kernel tree
-   --no-signoff               do not check for 'Signed-off-by' line
-+  --no-cl                    do not apply 80 column limit
-   --patch                    treat FILE as patchfile (default)
-   --emacs                    emacs compile window format
-   --terse                    one line per report
-@@ -67,6 +69,7 @@ GetOptions(
- 	'q|quiet+'	=> \$quiet,
- 	'tree!'		=> \$tree,
- 	'signoff!'	=> \$chk_signoff,
-+	'cl!'		=> \$chk_cl,
- 	'patch!'	=> \$chk_patch,
- 	'emacs!'	=> \$emacs,
- 	'terse!'	=> \$terse,
-@@ -1365,7 +1368,7 @@ sub process {
- 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
- 
- #80 column limit
--		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
-+		if ($chk_cl && $line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
- 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
- 		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
- 		    $length > 80)
+Yep.  Both non-obvious and non-known.
+
+> The Cardbus ones I know about, but really only because I wrote much of 
+> that code initially when converting cardbus to look like the PCI bridge it 
+> largely is. But how many other cases like that do we have that we have 
+> perhaps never even hit, because we've never done anything out of order.
+> 
+> > The ACPI relations are definitely something to worry about.  It would
+> > be a good idea, at an early stage, to add those dependencies
+> > explicitly.  I don't know enough about them to say more; perhaps Rafael 
+> > does.
+> 
+> Quite frankly, I would really not want to do ACPI first at all.
+
+Dear me, no!  I wasn't saying ACPI should be made async; I was saying
+that ACPI "shadow" devices should be made to wait for their async PCI
+counterparts.
+
+> > Indeed.  Perhaps you were too hasty in suggesting that PCI bridges 
+> > should be async.
+> 
+> Oh, yes. I would suggest that first we do _nothing_ async except for 
+> within just a single USB tree, and perhaps some individual drivers like 
+> the PS/2 keyboard controller (and do even that perhaps only for the PC 
+> version, which we know is on the southbridge and not anywhere else).
+> 
+> If that ends up meaning that we block due to PCI bridges, so be it. I 
+> really would prefer baby steps over anything more complete.
+
+Agreed.  I'm not in any hurry.
+
+Alan Stern
+
