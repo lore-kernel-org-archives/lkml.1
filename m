@@ -1,110 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZLOGOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbZLOGdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZLOGOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 01:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZLOGOn
+	id S1755879AbZLOGdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 01:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZLOGdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 01:14:43 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46413 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbZLOGOm (ORCPT
+	Tue, 15 Dec 2009 01:33:15 -0500
+Received: from brmea-mail-1.Sun.COM ([192.18.98.31]:55640 "EHLO
+	brmea-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbZLOGdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 01:14:42 -0500
-Date: Mon, 14 Dec 2009 22:17:04 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Wensong Zhang <wensong@linux-vs.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
-Message-ID: <20091214221704.24c2665f@infradead.org>
-In-Reply-To: <20090930131109.2b3f71b8@infradead.org>
-References: <20090930131109.2b3f71b8@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 15 Dec 2009 01:33:12 -0500
+X-Greylist: delayed 788 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Dec 2009 01:33:12 EST
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Tue, 15 Dec 2009 01:19:57 -0500
+From: Oleg Drokin <green@linuxhacker.ru>
+Subject: Re: [PATCH] Possible data loss on ext[34],
+ reiserfs with external journal
+In-reply-to: <20091215053207.GA26541@thunk.org>
+To: tytso@mit.edu
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Message-id: <2EEF5D3D-AFA5-4D74-92A7-B42A0FB9A4F5@linuxhacker.ru>
+X-Mailer: Apple Mail (2.1077)
+References: <20091211081608.GA597088@fiona.linuxhacker.ru>
+ <20091215053207.GA26541@thunk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 13:11:09 +0200
-Arjan van de Ven <arjan@infradead.org> wrote:
+Hello!
 
-ping on the patch below.... the warning is now triggered in mainline
+On Dec 15, 2009, at 12:32 AM, tytso@mit.edu wrote:
+> Can you separate this patch into separate ones for each file system?
 
+Sure.
 
+> I think we can actually do better for ext4; for example, in the case
+> of data=journal or data=writeback, it's not necessary to flush the fs
+> data device.  It's only the case of data=ordered that we need to send
+> a barrier.  With that optimization, we do need to add a barrier in the
+> case of fsync() and when we are doing a journal checkpoint, but the
+> extra code complexity is worth not having to force a barrier for the
+> fs data device for every single commit, especially in the data=journal
+> mode with a heavy fsync workload.
+
+Indeed, this is a good idea too.
+I think we still can squeeze a bit more juice out of it if we can
+submit the data device flush right after submitting all the data, but
+only do the waiting for it before issuing journal device flush in normal
+journaling mode (we need to do the waiting before writing commit block
+in async journaling mode).
+
+> Do you have a test case that will allow you to easily try out this
+> patch, in all of ext4's various journalling modes?  Thanks!!
+
+Not for vanilla kernel, but I'll see if I can construct something easily
+for it.
+> @@ -277,6 +278,16 @@ static int journal_finish_inode_data_buffers(journal_t *journal,
+> 	struct jbd2_inode *jinode, *next_i;
+> 	int err, ret = 0;
 > 
-> >From 761a182f96b3707e1fee44e1079ba227e48745d1 Mon Sep 17 00:00:00
-> >2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Wed, 30 Sep 2009 13:05:51 +0200
-> Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
-> 
-> The ipvs code has a nifty system for doing the size of ioctl command
-> copies; it defines an array with values into which it indexes the cmd
-> to find the right length.
-> 
-> Unfortunately, the ipvs code forgot to check if the cmd was in the
-> range that the array provides, allowing for an index outside of the
-> array, which then gives a "garbage" result into the length, which
-> then gets used for copying into a stack buffer.
-> 
-> Fix this by adding sanity checks on these as well as the copy size.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
->  1 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/netfilter/ipvs/ip_vs_ctl.c
-> b/net/netfilter/ipvs/ip_vs_ctl.c index ac624e5..3c52796 100644
-> --- a/net/netfilter/ipvs/ip_vs_ctl.c
-> +++ b/net/netfilter/ipvs/ip_vs_ctl.c
-> @@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd,
-> void __user *user, unsigned int len) if (!capable(CAP_NET_ADMIN))
->  		return -EPERM;
->  
-> +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
-> +		return -EINVAL;
-> +	if (len < 0 || len >  MAX_ARG_LEN)
-> +		return -EINVAL;
->  	if (len != set_arglen[SET_CMDID(cmd)]) {
->  		pr_err("set_ctl: len %u != %u\n",
->  		       len, set_arglen[SET_CMDID(cmd)]);
-> @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd,
-> void __user *user, int *len) {
->  	unsigned char arg[128];
->  	int ret = 0;
-> +	unsigned int copylen;
->  
->  	if (!capable(CAP_NET_ADMIN))
->  		return -EPERM;
->  
-> +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
-> +		return -EINVAL;
+> +	/* 
+> +	 * If the journal is not located on the file system device,
+> +	 * then we must flush the file system device before we issue
+> +	 * the commit record
+> +	 */
+> +	if (commit_transaction->t_flushed_data_blocks &&
+> +	    (journal->j_fs_dev != journal->j_dev) &&
+> +	    (journal->j_flags & JBD2_BARRIER))
+> +		blkdev_issue_flush(journal->j_fs_dev, NULL);
 > +
->  	if (*len < get_arglen[GET_CMDID(cmd)]) {
->  		pr_err("get_ctl: len %u < %u\n",
->  		       *len, get_arglen[GET_CMDID(cmd)]);
->  		return -EINVAL;
->  	}
->  
-> -	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) !=
-> 0)
-> +	copylen = get_arglen[GET_CMDID(cmd)];
-> +	if (copylen > 128)
-> +		return -EINVAL;
-> +
-> +	if (copy_from_user(arg, user, copylen) != 0)
->  		return -EFAULT;
->  
->  	if (mutex_lock_interruptible(&__ip_vs_mutex))
 
+I am afraid this is not enough. This code is called after journal was flushed for
+async commit case, so it leaves a race window where journal transaction is already
+on disk and complete, but the data is still in cache somewhere.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Also the callsite has this comment which is misleading, I think:
+        /*
+         * This is the right place to wait for data buffers both for ASYNC
+         * and !ASYNC commit. If commit is ASYNC, we need to wait only after
+         * the commit block went to disk (which happens above). If commit is
+         * SYNC, we need to wait for data buffers before we start writing
+         * commit block, which happens below in such setting.
+         */
+
+In fact it is only safe to wait here in ASYNC mode (and internal journal only) because
+the device was already flushed (and I hope all device drivers drain the queue too, if not,
+even this might be problematic) by the blkdev_issue_flush.
+
+Bye,
+    Oleg
