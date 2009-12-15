@@ -1,113 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbZLOV0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbZLOV2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933721AbZLOV0V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 16:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933706AbZLOV0S
+	id S1761125AbZLOV2P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 16:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761114AbZLOV2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 16:26:18 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:36805 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933713AbZLOV0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 16:26:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=NLzgFgJP0llZ4z+NTc9Yf+32clJSI1C/0kHA1qw/iSSk9ingqjuQgTuC0YXiFVcuES
-         J7JSBGUUKTckcjH2KmfSXzmelsG+uFhtJE2huQnK/ka9V8sY2IVG1FqspqUIECkJegmU
-         o9/JEGw7jkFevoTyY1IDz43/eJiP4S5ydNbag=
-Message-ID: <4B27FF64.6070602@gmail.com>
-Date: Tue, 15 Dec 2009 22:28:04 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Tue, 15 Dec 2009 16:28:13 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51926 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761113AbZLOV2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 16:28:11 -0500
+Date: Tue, 15 Dec 2009 22:28:05 +0100
+From: Jan Kara <jack@suse.cz>
+To: Jerry Leo <jerryleo860202@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] quota: integer =?utf-8?Q?const?=
+	=?utf-8?Q?ant_is_too_large_for_=E2=80=98long=E2=80=99?= type in
+Message-ID: <20091215212805.GA9554@quack.suse.cz>
+References: <6304b52b0912150527v48056ccam8d1c318bcd7e085b@mail.gmail.com>
 MIME-Version: 1.0
-To: Tom Zanussi <tzanussi@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] relay: Fix signedness issues in relay_page_release() and
- relay_file_splice_read()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6304b52b0912150527v48056ccam8d1c318bcd7e085b@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In subbuf_splice_actor() `ret' is unsigned, so the `ret < 0'
-test does not work and splice_to_pipe() errors are not acted upon.
-It appears the cause is confusion between the signedness of the
-return values `ret' and `nonpad_ret'.
+On Tue 15-12-09 21:27:50, Jerry Leo wrote:
+> Hi, Jan Kara,
+> 
+> the Patch is for this:
+> 
+> CC      fs/quota/quota_v2.o
+> fs/quota/quota_v2.c: In function ‘v2_read_file_info’:
+> fs/quota/quota_v2.c:123: warning: integer constant is too large for ‘long’ type
+> fs/quota/quota_v2.c:124: warning: integer constant is too large for ‘long’ type
+> 
+> 
+> Can this patch be fixed?
+  Ops, yes. I didn't see these warnings because I'm using 64-bit
+machines... Thanks for the fix. You actually have to use ULL as Joe pointed
+out. So I've merged the patch below:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>From 0ec834cacfc98633133b5a90c951f2d02e341048 Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Tue, 15 Dec 2009 22:24:36 +0100
+Subject: [PATCH] quota: Fix 64-bit limits setting on 32-bit archs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fix warnings:
+fs/quota/quota_v2.c: In function ‘v2_read_file_info’:
+fs/quota/quota_v2.c:123: warning: integer constant is too large for ‘long’ type
+fs/quota/quota_v2.c:124: warning: integer constant is too large for ‘long’ type
+
+Reported-by: Jerry Leo <jerryleo860202@gmail.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 ---
-Found using coccinelle: http://coccinelle.lip6.fr/
+ fs/quota/quota_v2.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I tried to solve this in the patch below, A remaining problem may be
-that `spliced' wraps, any comments?
+diff --git a/fs/quota/quota_v2.c b/fs/quota/quota_v2.c
+index 3dfc23e..669855c 100644
+--- a/fs/quota/quota_v2.c
++++ b/fs/quota/quota_v2.c
+@@ -120,8 +120,8 @@ static int v2_read_file_info(struct super_block *sb, int type)
+ 		info->dqi_maxilimit = 0xffffffff;
+ 	} else {
+ 		/* used space is stored as unsigned 64-bit value */
+-		info->dqi_maxblimit = 0xffffffffffffffff;	/* 2^64-1 */
+-		info->dqi_maxilimit = 0xffffffffffffffff;
++		info->dqi_maxblimit = 0xffffffffffffffffULL;	/* 2^64-1 */
++		info->dqi_maxilimit = 0xffffffffffffffffULL;
+ 	}
+ 	info->dqi_bgrace = le32_to_cpu(dinfo.dqi_bgrace);
+ 	info->dqi_igrace = le32_to_cpu(dinfo.dqi_igrace);
+-- 
+1.6.4.2
 
-The rationale for the patch below:
-
-padding (size_t) is only added to `ret' and not to `*nonpad_ret', so
-I think that ret should be unsigned, or even size_t, whereas `*nonpad_ret'
-should be int and carry the error.
-
-the caller relay_file_splice_read() should therefore check the error in
-`nonpad_ret', which should be int, rather than in `ret' - unsigned.
-
-checkpatch likes it and it appears to build, but maybe there are
-comments?
-
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 760c262..632fca2 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1215,7 +1215,7 @@ static void relay_page_release(struct splice_pipe_desc *spd, unsigned int i)
- /*
-  *	subbuf_splice_actor - splice up to one subbuf's worth of data
-  */
--static int subbuf_splice_actor(struct file *in,
-+static unsigned int subbuf_splice_actor(struct file *in,
- 			       loff_t *ppos,
- 			       struct pipe_inode_info *pipe,
- 			       size_t len,
-@@ -1292,7 +1292,7 @@ static int subbuf_splice_actor(struct file *in,
- 		return 0;
- 
- 	ret = *nonpad_ret = splice_to_pipe(pipe, &spd);
--	if (ret < 0 || ret < total_len)
-+	if (*nonpad_ret < 0 || ret < total_len)
- 		return ret;
- 
-         if (read_start + ret == nonpad_end)
-@@ -1308,7 +1308,7 @@ static ssize_t relay_file_splice_read(struct file *in,
- 				      unsigned int flags)
- {
- 	ssize_t spliced;
--	int ret;
-+	unsigned ret;
- 	int nonpad_ret = 0;
- 
- 	ret = 0;
-@@ -1316,11 +1316,11 @@ static ssize_t relay_file_splice_read(struct file *in,
- 
- 	while (len && !spliced) {
- 		ret = subbuf_splice_actor(in, ppos, pipe, len, flags, &nonpad_ret);
--		if (ret < 0)
-+		if (nonpad_ret < 0)
- 			break;
- 		else if (!ret) {
- 			if (flags & SPLICE_F_NONBLOCK)
--				ret = -EAGAIN;
-+				nonpad_ret = -EAGAIN;
- 			break;
- 		}
- 
-@@ -1336,7 +1336,7 @@ static ssize_t relay_file_splice_read(struct file *in,
- 	if (spliced)
- 		return spliced;
- 
--	return ret;
-+	return nonpad_ret;
- }
- 
- const struct file_operations relay_file_operations = {
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
