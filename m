@@ -1,137 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934170AbZLOX43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933216AbZLOXwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934170AbZLOX43 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934097AbZLOX4Z
+	id S933216AbZLOXwM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933009AbZLOXwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:56:25 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43446 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934133AbZLOX4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:56:20 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Dec 2009 08:53:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, Lee.Schermerhorn@hp.com
-Subject: Re: [mmotm][PATCH 1/5] clean up mm_counter
-Message-Id: <20091216085305.d7b46376.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091216082529.8fc0d3c4.minchan.kim@barrios-desktop>
-References: <20091215180904.c307629f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091215181116.ee2c31f7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091216082529.8fc0d3c4.minchan.kim@barrios-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 Dec 2009 18:52:11 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41719 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932926AbZLOXwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:52:09 -0500
+Message-ID: <4B282189.70202@gmail.com>
+Date: Wed, 16 Dec 2009 00:53:45 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Paul Mundt <lethal@linux-sh.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/1] Constify struct address_space_operations for 2.6.32-git-053fe57ac
+ v2
+References: <cover.1260662994.git.re.emese@gmail.com>	<20091214003836.GD7812@parisc-linux.org>	<4B2595E7.701@gmail.com>	<20091214021916.GB12196@linux-sh.org>	<4B25E47C.1010803@gmail.com>	<20091214123636.GA7417@linux-sh.org>	<4B26BA4A.7080602@gmail.com> <20091214160153.2edfd026@infradead.org>
+In-Reply-To: <20091214160153.2edfd026@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009 08:25:29 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
-
-> On Tue, 15 Dec 2009 18:11:16 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Arjan van de Ven wrote:
+> On Mon, 14 Dec 2009 23:20:58 +0100
+> Emese Revfy <re.emese@gmail.com> wrote:
 > 
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > Now, per-mm statistics counter is defined by macro in sched.h
-> > 
-> > This patch modifies it to
-> >   - defined in mm.h as inlinf functions
-> >   - use array instead of macro's name creation.
-> > 
-> > This patch is for reducing patch size in future patch to modify
-> > implementation of per-mm counter.
-> > 
-> > Changelog: 2009/12/14
-> >  - added a struct rss_stat instead of bare counters.
-> >  - use memset instead of for() loop.
-> >  - rewrite macros into static inline functions.
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  fs/proc/task_mmu.c       |    4 -
-> >  include/linux/mm.h       |  104 +++++++++++++++++++++++++++++++++++++++++++++++
-> >  include/linux/mm_types.h |   33 +++++++++-----
-> >  include/linux/sched.h    |   54 ------------------------
-> >  kernel/fork.c            |    3 -
-> >  kernel/tsacct.c          |    1 
-> >  mm/filemap_xip.c         |    2 
-> >  mm/fremap.c              |    2 
-> >  mm/memory.c              |   56 +++++++++++++++----------
-> >  mm/oom_kill.c            |    4 -
-> >  mm/rmap.c                |   10 ++--
-> >  mm/swapfile.c            |    2 
-> >  12 files changed, 174 insertions(+), 101 deletions(-)
-> > 
-> > Index: mmotm-2.6.32-Dec8-pth/include/linux/mm.h
-> > ===================================================================
-> > --- mmotm-2.6.32-Dec8-pth.orig/include/linux/mm.h
-> > +++ mmotm-2.6.32-Dec8-pth/include/linux/mm.h
-> > @@ -868,6 +868,110 @@ extern int mprotect_fixup(struct vm_area
-> >   */
-> >  int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
-> >  			  struct page **pages);
-> > +/*
-> > + * per-process(per-mm_struct) statistics.
-> > + */
-> > +#if USE_SPLIT_PTLOCKS
-> > +/*
-> > + * The mm counters are not protected by its page_table_lock,
-> > + * so must be incremented atomically.
-> > + */
-> > +static inline void set_mm_counter(struct mm_struct *mm, int member, long value)
-> > +{
-> > +	atomic_long_set(&mm->rss_stat.count[member], value);
-> > +}
+>> Paul Mundt wrote:
+>>> I don't see anything relating to sparse in that mail. You've
+>>> effectively lumped sparse and constification together in the same
+>>> camp, but it's unclear why this makes constification a better
+>>> option other than that it's simply the option you opted for. All of
+>>> your arguments "against" sparse in that context are equally
+>>> applicable to constification, so I'll reiterate that you haven't
+>>> sufficiently addressed the sparse angle.
+>>>
+>>> At present you seem to be the only one convinced that
+>>> constification is the way to go, despite it being highly intrusive
+>>> and ignoring the potential for more favourable and less intrusive
+>>> options. You've also failed to adequately address the issues and
+>>> suggestsions pointed out by others, and until this happens there is
+>>> little point in posting any follow-up patches.
+>>>
+>>>>> Until such a consensus is reached one way or the other, please
+>>>>> refrain from sending hundreds of patches -- one or two are
+>>>>> sufficient for showing what you want to do until folks are on
+>>>>> board with it, as is the typical nature of mechanical changes.
+>>>> I think there is consensus to constify ops variables as much as
+>>>> possible (e.g., Alexey's similar patches).
+>>>>
+>>>> The discussions in these threads were about constifying the ops
+>>>> structure fields themselves and I already explained why they are
+>>>> useful, see the above link and this one:
+>>>> http://lkml.org/lkml/2009/12/8/492
+>>> And in here as well in the reply to that mail the same criticism
+>>> exists as does the suggestion to look at doing it cleanly in
+>>> sparse, which brings us back to what was already mentioned earlier.
+>> Let me summarise the discussion so far:
+>>
+>> As per Al Viro, Arjan and other developers the goal is to force
+>> static allocations and prevent runtime modification of ops structures
+>> (where it is possible, there are always exceptions like
+>> ata_port_operations).
+>>
+>> The current strategy of constifying variables achieves the second
+>> goal only, it still requires human review to catch violations of the
+>> first goal.
 > 
-> I can't find mm->rss_stat in this patch.
-> Maybe it's part of next patch. 
-
-It's in mm_types.h
-
-@@ -223,11 +233,6 @@ struct mm_struct {
- 						 * by mmlist_lock
- 						 */
- 
--	/* Special counters, in some configurations protected by the
--	 * page_table_lock, in other configurations by being atomic.
--	 */
--	mm_counter_t _file_rss;
--	mm_counter_t _anon_rss;
- 
- 	unsigned long hiwater_rss;	/* High-watermark of RSS usage */
- 	unsigned long hiwater_vm;	/* High-water virtual memory usage */
-@@ -240,6 +245,12 @@ struct mm_struct {
- 
- 	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
- 
-+	/*
-+	 * Special counters, in some configurations protected by the
-+	 * page_table_lock, in other configurations by being atomic.
-+	 */
-+	struct mm_rss_stat rss_stat;
-+
- 	struct linux_binfmt *binfmt;
-
-Moved to some bytes higher address for avoiding false sharing storm
-of mmap_sem..
-
-
-> Otherwise, Looks good to me. 
+> this is not correct.
 > 
-> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+> When the ops variable is const... the compiler will also warn if you
+> change it. Make some core APIs use const in their parameter that gets
+> a pointer to the ops structure, so that the compiler can optimize.
+> That is all goodness.
 > 
+> But if someone somewhere makes one that is not const.. that's what
+> checkpatch.pl is for .. make it warn!
+> But don't crap all over structures... I agree with Pavel/Al/etc.. 
+> that's bad code without gains.
+ 
+I still think it is a good idea for several reasons (see my last
+response to Pavel, http://lkml.org/lkml/2009/12/15/559), but I will
+remove the field constifications from the next patch series.
 
-Thank you for all your help for this series.
-
-Regards,
--Kame
+As for splitting up the patches, do you all agree that it should
+be one series per structure type at a time (as suggested by Pavel),
+with each patch mailed to the respective maintainers? If so, 
+how can I reliably determine the maintainers of a given file
+without spamming too many people?
+--
+Emese
 
