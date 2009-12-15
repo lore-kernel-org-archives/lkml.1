@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761414AbZLOXLI (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 15 Dec 2009 18:11:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932746AbZLOXJ6
+	id S1761767AbZLOXLj (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 15 Dec 2009 18:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934162AbZLOXLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:09:58 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36901 "EHLO e1.ny.us.ibm.com"
+	Tue, 15 Dec 2009 18:11:32 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:46729 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762346AbZLOXCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:02:50 -0500
+	id S1762340AbZLOXCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:02:49 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC tip/core/rcu 09/18] rcu: remove redundant grace-period check
-Date: Tue, 15 Dec 2009 15:02:32 -0800
-Message-Id: <1260918161762-git-send-email->
+Subject: [PATCH RFC tip/core/rcu 15/18] rcu: give different levels of the rcu_node hierarchy distinct lockdep names
+Date: Tue, 15 Dec 2009 15:02:38 -0800
+Message-Id: <12609181611666-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20091215230213.GA9093@linux.vnet.ibm.com>
 References: <20091215230213.GA9093@linux.vnet.ibm.com>
@@ -30,64 +30,49 @@ From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 Proposed for 2.6.34, not for inclusion.
 
-The rcu_process_dyntick() function checks twice for the end of
-the current grace period.  However, it holds the current rcu_node
-structure's ->lock field throughout, and doesn't get to the second call
-to rcu_gp_in_progress() unless there is at least one CPU corresponding
-to this rcu_node structure that has not yet checked in for the current
-grace period, which would prevent the current grace period from ending.
-So the current grace period cannot have ended, and the second check is
-redundant, so remove it.
-
-Also, given that this function is used even with !CONFIG_NO_HZ, its name
-is quite misleading.  Change from rcu_process_dyntick() to force_qs_rnp().
+Previously, each level of the rcu_node hierarchy had the same rather
+unimaginative name: "&rcu_node_class[i]".  This makes lockdep diagnostics
+involving these lockdep classes less helpful than would be nice.  This
+patch fixes this by giving each level of the rcu_node hierarchy a distinct
+name: "rcu_node_level_0", "rcu_node_level_1", and so on.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ kernel/rcutree.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 6268f37..d920285 100644
+index 0a4c328..a6e45f6 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1146,8 +1146,7 @@ void rcu_check_callbacks(int cpu, int user)
-  * have not yet encountered a quiescent state, using the function specified.
-  * The caller must have suppressed start of new grace periods.
+@@ -1811,11 +1811,17 @@ static void __init rcu_init_levelspread(struct rcu_state *rsp)
   */
--static void rcu_process_dyntick(struct rcu_state *rsp,
--				int (*f)(struct rcu_data *))
-+static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
+ static void __init rcu_init_one(struct rcu_state *rsp)
  {
- 	unsigned long bit;
- 	int cpu;
-@@ -1172,7 +1171,7 @@ static void rcu_process_dyntick(struct rcu_state *rsp,
- 			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
- 				mask |= bit;
- 		}
--		if (mask != 0 && rcu_gp_in_progress(rsp)) {
-+		if (mask != 0) {
++	static char *buf[] = { "rcu_node_level_0",
++			       "rcu_node_level_1",
++			       "rcu_node_level_2",
++			       "rcu_node_level_3" };  /* Match MAX_RCU_LVLS */
+ 	int cpustride = 1;
+ 	int i;
+ 	int j;
+ 	struct rcu_node *rnp;
  
- 			/* rcu_report_qs_rnp() releases rnp->lock. */
- 			rcu_report_qs_rnp(mask, rsp, rnp, flags);
-@@ -1222,7 +1221,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 			break; /* So gcc recognizes the dead code. */
++	WARN_ON_ONCE(MAX_RCU_LVLS > 4);  /* Fix buf[] initialization! */
++
+ 	/* Initialize the level-tracking arrays. */
  
- 		/* Record dyntick-idle state. */
--		rcu_process_dyntick(rsp, dyntick_save_progress_counter);
-+		force_qs_rnp(rsp, dyntick_save_progress_counter);
- 		spin_lock(&rnp->lock);  /* irqs already disabled */
- 		if (rcu_gp_in_progress(rsp))
- 			rsp->signaled = RCU_FORCE_QS;
-@@ -1232,7 +1231,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 
- 		/* Check dyntick-idle state, send IPI to laggarts. */
- 		spin_unlock(&rnp->lock);  /* irqs remain disabled */
--		rcu_process_dyntick(rsp, rcu_implicit_dynticks_qs);
-+		force_qs_rnp(rsp, rcu_implicit_dynticks_qs);
- 
- 		/* Leave state in case more forcing is required. */
- 
+ 	for (i = 1; i < NUM_RCU_LVLS; i++)
+@@ -1829,7 +1835,8 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 		rnp = rsp->level[i];
+ 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+ 			spin_lock_init(&rnp->lock);
+-			lockdep_set_class(&rnp->lock, &rcu_node_class[i]);
++			lockdep_set_class_and_name(&rnp->lock,
++						   &rcu_node_class[i], buf[i]);
+ 			rnp->gpnum = 0;
+ 			rnp->qsmask = 0;
+ 			rnp->qsmaskinit = 0;
 -- 
 1.5.2.5
 
