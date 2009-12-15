@@ -1,90 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbZLOMDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbZLOMFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbZLOMDe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 07:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbZLOMDd
+	id S1760061AbZLOMFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 07:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760021AbZLOMFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 07:03:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45899 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753618AbZLOMDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 07:03:32 -0500
-Message-ID: <4B277AB2.8030107@kernel.org>
-Date: Tue, 15 Dec 2009 04:01:54 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 15 Dec 2009 07:05:45 -0500
+Received: from cs18.vkontakte.ru ([93.186.224.18]:56840 "EHLO vkontakte.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760020AbZLOMFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 07:05:44 -0500
+Date: Tue, 15 Dec 2009 15:05:43 +0300
+To: linux-kernel <linux-kernel@vger.kernel.org>
+From: VK <admin@vkontakte.ru>
+Reply-to: "Pavel Durov, inContact.ru Admin" <admin@vkontakte.ru>
+Subject: =?UTF-8?Q?=D0=92=D0=B0=D0=B4=D0=B8=D0=BC_=D0=91=D0=BB=D0=B8=D0=BD=D0=BE?=
+ =?UTF-8?Q?=D0=B2_has_added_you_as_a_friend_on_the_website_VK.com?=
+Message-ID: <58a46a133ec9aa517b001e7e11ba32cf@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com
-Subject: Re: kexec boot regression
-References: <20091215115052.GA28252@kernel.dk>
-In-Reply-To: <20091215115052.GA28252@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> Hi,
-> 
-> I have this big box that takes forever to boot, so I use kexec to boot
-> into new kernels. Works fine, but some time past 2.6.32 it stopped
-> working. Instead of wasting brain cycles on finding out why, I handed
-> the problem to my trusty regression friend - git bisect.
-> 
-> This is what it found (sorry Yinghai it's you again, you owe me a beer
-> for hours of 2.6.32-git bisecting ;-)
+linux-kernel,
 
-sure.
+Вадим Блинов has added you as a friend on the website VK.com
 
-> 
-> 
-> 99935a7a59eaca0292c1a5880e10bae03f4a5e3d is the first bad commit
-> commit 99935a7a59eaca0292c1a5880e10bae03f4a5e3d
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Sun Oct 4 21:54:24 2009 -0700
-> 
->     x86/PCI: read root resources from IOH on Intel
->     
->     For intel systems with multi IOH, we should read peer root resources
->     directly from PCI config space, and don't trust _CRS.
-> 
-> 
-> I could not revert this single commit, as a further commit made other
-> changes. So I reverted 67f241f4 first and then 99935a7a. I confirmed
-> that this kernel then works fine.
->
+You can log in and view your friends` pages using your email and automatically created password: nv1Q2xb7
 
-let see how BIOS mess it up again!
- 
-> With current -git, I get tons and tons of:
-> 
-> [   16.841724] pci 0000:00:01.0: BAR 7: no parent found for bridge [io
-> 0x6000-0x6fff]
-> [   16.850368] pci 0000:00:01.0: BAR 7: can't allocate [io
-> 0x6000-0x6fff]
-> [   16.857821] pci 0000:00:01.0: BAR 8: no parent found for bridge [mem
-> 0x9bc00000-0x9bcfffff]
-> [   16.867238] pci 0000:00:01.0: BAR 8: can't allocate [mem
-> 0x9bc00000-0x9bcfffff]
-> [   16.875492] pci 0000:00:02.0: BAR 7: no parent found for bridge [io
-> 0x5000-0x5fff]
-> [   16.884137] pci 0000:00:02.0: BAR 7: can't allocate [io
-> 0x5000-0x5fff]
-> [   16.891591] pci 0000:00:02.0: BAR 8: no parent found for bridge [mem
-> 0x9bb00000-0x9bbfffff]
-> [   16.901010] pci 0000:00:02.0: BAR 8: can't allocate [mem
-> 0x9bb00000-0x9bbfffff]
-> [   16.909264] pci 0000:00:03.0: BAR 7: no parent found for bridge [io
-> 0x4000-0x4fff]
-> [   16.917908] pci 0000:00:03.0: BAR 7: can't allocate [io
-> 0x4000-0x4fff]
-> [...]
-> 
-> I can provide a full log if needed.
+VK.com is a website that helps dozens of millions of people find their old friends, share photos and events and always stay in touch.
 
-please.
+To log in, please follow this link:
+http://vkontakte.ru/login.php?regemail=linux-kernel@vger.kernel.org#nv1Q2xb7
 
-YH
+You can change your password in Settings.
+
+Attention: If you ignore this invitation, your registration will not be activated.
+
+Good luck!Best regards,
+VK Administration
+
+
