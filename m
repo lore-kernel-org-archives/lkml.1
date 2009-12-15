@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760451AbZLOO6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760478AbZLOO70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760451AbZLOO6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 09:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757352AbZLOO6r
+	id S1760478AbZLOO70 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 09:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760436AbZLOO7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 09:58:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34308 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 09:59:25 -0500
+Received: from 007.netroom.de ([194.0.247.207]:10915 "EHLO 007.netroom.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756859AbZLOO6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 09:58:46 -0500
-Message-ID: <4B27A417.3040206@redhat.com>
-Date: Tue, 15 Dec 2009 09:58:31 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	id S1760404AbZLOO7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 09:59:24 -0500
+Message-ID: <4B27A443.6040908@draisberghof.de>
+Date: Tue, 15 Dec 2009 15:59:15 +0100
+From: Josua Dietze <digidietze@draisberghof.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead prepare_to_wait()
-References: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>	 <4B264CCA.5010609@redhat.com> <20091215085631.CDAD.A69D9226@jp.fujitsu.com> <1260855146.6126.30.camel@marge.simson.net>
-In-Reply-To: <1260855146.6126.30.camel@marge.simson.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Stefan Seyfried <stefan.seyfried@googlemail.com>
+CC: linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+       Stefan Seyfried <seife@sphairon.com>
+Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
+References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com>	<4B278191.1010009@draisberghof.de> <20091215150137.46bd9817@strolchi.home.s3e.de>
+In-Reply-To: <20091215150137.46bd9817@strolchi.home.s3e.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/15/2009 12:32 AM, Mike Galbraith wrote:
-> On Tue, 2009-12-15 at 09:45 +0900, KOSAKI Motohiro wrote:
->>> On 12/14/2009 07:30 AM, KOSAKI Motohiro wrote:
->>>> if we don't use exclusive queue, wake_up() function wake _all_ waited
->>>> task. This is simply cpu wasting.
->>>>
->>>> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
->>>
->>>>    		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
->>>>    					0, 0)) {
->>>> -			wake_up(wq);
->>>> +			wake_up_all(wq);
->>>>    			finish_wait(wq,&wait);
->>>>    			sc->nr_reclaimed += sc->nr_to_reclaim;
->>>>    			return -ERESTARTSYS;
->>>
->>> I believe we want to wake the processes up one at a time
->>> here.
+Stefan Seyfried schrieb:
+ > But given that there is already an "option_zero_cd" parameter in
 
->> Actually, wake_up() and wake_up_all() aren't different so much.
->> Although we use wake_up(), the task wake up next task before
->> try to alloate memory. then, it's similar to wake_up_all().
+> usb-storage, it should be easy to massage this into a general "do not
+> eject virtual installer media" flag so that people are still able to
+> get the windows driver files off their devices should they need to do
+> so.
+> 
+>> I'd like to see these devices removed from unusual_devs.h.
+> 
+> I'd like them to work with one driver, not two (one in kernel and one
+> in userspace).
 
-That is a good point.  Maybe processes need to wait a little
-in this if() condition, before the wake_up().  That would give
-the previous process a chance to allocate memory and we can
-avoid waking up too many processes.
 
-> What happens to waiters should running tasks not allocate for a while?
+The more basic arguments that prevailed at the last time such an 
+"eject" command was being considered for inclusion into usb-storage 
+were:
 
-When a waiter is woken up, it will either:
-1) see that there is enough free memory and wake up the next guy, or
-2) run shrink_zone and wake up the next guy
+1. Userspace can obviously react a lot quicker than kernel space to 
+new or changed devices popping up.
 
-Either way, the processes that just got woken up will ensure that
-the sleepers behind them in the queue will get woken up.
+2. Userspace works with older kernels immediately.
 
+> That's a fundamental difference in opinions, and I fear I'm not the one
+> who is going to decice how this will be handled ;)
+
+
+Neither am I. But the number of known mode-switching USB devices is 
+now at around 50. New ones are arriving by the month or even week.
+
+A decision to handle *all of them* in usb-storage would lead to the 
+disadvantages pointed out.
+
+A decision to handle just *some of them* can hardly be made 
+plausible if there are no immediate technical reasons.
+
+Oh, and in most cases (including your suggestion) there *are* 
+already two drivers necessary to make these devices work, 
+independent of where the switching is happening ...
+
+> Have fun,
+
+You too!
+
+Josh
 -- 
-All rights reversed.
+Man is the only creature on earth enabled to take a
+warm meal while flying!                      Loriot
