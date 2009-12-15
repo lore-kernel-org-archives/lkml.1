@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZLOMwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760167AbZLOMcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbZLOMwJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 07:52:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZLOMwI
+	id S1760167AbZLOMcz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 07:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760146AbZLOMcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 07:52:08 -0500
-Received: from 007.netroom.de ([194.0.247.207]:24490 "EHLO 007.netroom.de"
+	Tue, 15 Dec 2009 07:32:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37381 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752849AbZLOMwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 07:52:07 -0500
-X-Greylist: delayed 1238 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Dec 2009 07:52:07 EST
-Message-ID: <4B278191.1010009@draisberghof.de>
-Date: Tue, 15 Dec 2009 13:31:13 +0100
-From: Josua Dietze <digidietze@draisberghof.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1760144AbZLOMcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 07:32:54 -0500
+Message-ID: <4B2781AC.8020301@kernel.org>
+Date: Tue, 15 Dec 2009 04:31:40 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-CC: linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
-       Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com>
-In-Reply-To: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com
+Subject: Re: kexec boot regression
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk>
+In-Reply-To: <20091215121436.GB28252@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Seyfried schrieb:
+Jens Axboe wrote:
+> On Tue, Dec 15 2009, Yinghai Lu wrote:
+>> Jens Axboe wrote:
+>>> Hi,
+>>>
+>>> I have this big box that takes forever to boot, so I use kexec to boot
+>>> into new kernels. Works fine, but some time past 2.6.32 it stopped
+>>> working. Instead of wasting brain cycles on finding out why, I handed
+>>> the problem to my trusty regression friend - git bisect.
+>>>
+>>> This is what it found (sorry Yinghai it's you again, you owe me a beer
+>>> for hours of 2.6.32-git bisecting ;-)
+>> sure.
+>>
+>>>
+>>> 99935a7a59eaca0292c1a5880e10bae03f4a5e3d is the first bad commit
+>>> commit 99935a7a59eaca0292c1a5880e10bae03f4a5e3d
+>>> Author: Yinghai Lu <yinghai@kernel.org>
+>>> Date:   Sun Oct 4 21:54:24 2009 -0700
+>>>
+>>>     x86/PCI: read root resources from IOH on Intel
+>>>     
+>>>     For intel systems with multi IOH, we should read peer root resources
+>>>     directly from PCI config space, and don't trust _CRS.
+>>>
+>>>
+>>> I could not revert this single commit, as a further commit made other
+>>> changes. So I reverted 67f241f4 first and then 99935a7a. I confirmed
+>>> that this kernel then works fine.
+>>>
+>> let see how BIOS mess it up again!
+> 
+> Heh, I had a feeling this was coming :-)
+> 
+>> please.
+> 
+> Please find two logs attached - one from a boot with -git and the two
+> patches reverted, and one from a boot with -git.
 
-> The USB ID claimed by zd1211rw for the fake storage device is
-> also in use by other, non-zd1211rw devices (Sphairon Homelink
-> 1202). Move the eject of these devices to where it belongs and
-> where all the needed infrastructure already exists: usb-storage.
+please enabled CONFIG_PCI_DEBUG and boot with debug in boot command line.
 
+Thanks
 
-We can do the eject (as other mode switches) in userspace. Previous 
-discussions pointed into that direction.
-
-And there is always the question of being able to access the "fake 
-CD-ROM" without hacking the kernel.
-
-I'd like to see these devices removed from unusual_devs.h.
-
-
-Josua Dietze
+Yinghai
