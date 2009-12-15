@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760491AbZLOXb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZLOX0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760491AbZLOXb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:31:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZLOXb0
+	id S1756818AbZLOX0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZLOX0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:31:26 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:61018 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbZLOXbY (ORCPT
+	Tue, 15 Dec 2009 18:26:21 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:59696 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbZLOX0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:31:24 -0500
+	Tue, 15 Dec 2009 18:26:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=VkDApswDx/hJFPd35ziL+OWnmITUc6KUbg15HB46BnEq8nLDOalT75PLpqfiWCH+IU
-         dc+y02xKiYC38YUHRKVjbsvOnPC/pg+WWEBRQnQrgUQ5pRRHcYliVsAVsGBDkL+ZWxzn
-         bqdOe3g3usz1roQjcqj4cjIGwwLckVnQom2is=
-Date: Wed, 16 Dec 2009 08:25:29 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, minchan.kim@gmail.com, Lee.Schermerhorn@hp.com
-Subject: Re: [mmotm][PATCH 1/5] clean up mm_counter
-Message-Id: <20091216082529.8fc0d3c4.minchan.kim@barrios-desktop>
-In-Reply-To: <20091215181116.ee2c31f7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091215180904.c307629f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091215181116.ee2c31f7.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=VUqpT+2YqUoV68ZwUUiukpxPEZMojg0OgbB1OXxZ8zVLRTphRxpauO2yR4nWRwoJWn
+         hFRvI7Y7YRliRg4SPV6VU66ewRm3NrosqZlvXLGrTXjCryW4UhctditPOrOmPXgY8biP
+         XmUjIqrh7/J4s8/6JCSK27aY9Fe2HtlhJH59w=
+MIME-Version: 1.0
+In-Reply-To: <20091214.214923.241454954.davem@davemloft.net>
+References: <d45a3acc0912141402v69ea4ccet143f8ef7bc04e585@mail.gmail.com>
+	 <20091214.214923.241454954.davem@davemloft.net>
+Date: Wed, 16 Dec 2009 10:26:19 +1100
+Message-ID: <d45a3acc0912151526n2de0a64bh3dc0221fc2720d3e@mail.gmail.com>
+Subject: Re: [RESEND PATCH 1/3] X25: Move SYSCTL ifdefs into header
+From: andrew hendry <andrew.hendry@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009 18:11:16 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Sorry, ignore these resends, all 3 are were in net-2.6 and made it to linux-next
+2f5517aefcfbdd7fdf0f03b13d292a10d445887f
+1fd975a0520cdb27681855d5a18526e328d36b5c
+429d33ace5ce6122817f8abe9d170eaa55dc3af9
+I'll watch git in the future, not the mailing list pull requests to track.
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Now, per-mm statistics counter is defined by macro in sched.h
-> 
-> This patch modifies it to
->   - defined in mm.h as inlinf functions
->   - use array instead of macro's name creation.
-> 
-> This patch is for reducing patch size in future patch to modify
-> implementation of per-mm counter.
-> 
-> Changelog: 2009/12/14
->  - added a struct rss_stat instead of bare counters.
->  - use memset instead of for() loop.
->  - rewrite macros into static inline functions.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  fs/proc/task_mmu.c       |    4 -
->  include/linux/mm.h       |  104 +++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/mm_types.h |   33 +++++++++-----
->  include/linux/sched.h    |   54 ------------------------
->  kernel/fork.c            |    3 -
->  kernel/tsacct.c          |    1 
->  mm/filemap_xip.c         |    2 
->  mm/fremap.c              |    2 
->  mm/memory.c              |   56 +++++++++++++++----------
->  mm/oom_kill.c            |    4 -
->  mm/rmap.c                |   10 ++--
->  mm/swapfile.c            |    2 
->  12 files changed, 174 insertions(+), 101 deletions(-)
-> 
-> Index: mmotm-2.6.32-Dec8-pth/include/linux/mm.h
-> ===================================================================
-> --- mmotm-2.6.32-Dec8-pth.orig/include/linux/mm.h
-> +++ mmotm-2.6.32-Dec8-pth/include/linux/mm.h
-> @@ -868,6 +868,110 @@ extern int mprotect_fixup(struct vm_area
->   */
->  int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
->  			  struct page **pages);
-> +/*
-> + * per-process(per-mm_struct) statistics.
-> + */
-> +#if USE_SPLIT_PTLOCKS
-> +/*
-> + * The mm counters are not protected by its page_table_lock,
-> + * so must be incremented atomically.
-> + */
-> +static inline void set_mm_counter(struct mm_struct *mm, int member, long value)
-> +{
-> +	atomic_long_set(&mm->rss_stat.count[member], value);
-> +}
-
-I can't find mm->rss_stat in this patch.
-Maybe it's part of next patch. 
-It could break bisect.
-
-Otherwise, Looks good to me. 
-
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-
--- 
-Kind regards,
-Minchan Kim
+On Tue, Dec 15, 2009 at 4:49 PM, David Miller <davem@davemloft.net> wrote:
+>
+> These patches do not apply to the current sources.
+>
+> Please respin them against net-2.6
+>
+> In fact it looks like at least your first patch is already in the
+> tree.
+>
