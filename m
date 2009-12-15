@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbZLODJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbZLODSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbZLODJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 22:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759118AbZLODJv
+	id S1759177AbZLODSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 22:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759162AbZLODSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 22:09:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38055 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759092AbZLODJv (ORCPT
+	Mon, 14 Dec 2009 22:18:11 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:57486 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759082AbZLODSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 22:09:51 -0500
-Date: Mon, 14 Dec 2009 19:09:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Greg KH <greg@kroah.com>, Russ Dill <Russ.Dill@gmail.com>
-cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 14 Dec 2009 22:18:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject:in-reply-to:mime-version
+         :x-firegpg-version:content-type;
+        b=CkyEIxzDtHg6uSGtRaksxA05zUlZpsWbJ8bhsDlxPtxMwpFjNPIAZatk/lPuorSmDu
+         uiz5X9uCwqvO7eL3l/O5E+7yni/gBJEXQrQth/Rt3rTDPoAkHHQoCu4FEbcRpZMYCanh
+         7puvTqs6K4qTLUshXq0xVkW5Vs7h5TarQ5L8c=
+From: russ.dill@gmail.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-usb@vger.kernel.org
+Date: Mon, 14 Dec 2009 20:17:52 -0700 (MST)
+Message-ID: <g383sjib9r8nlmw354UYAxe124vaj_firegpg@mail.gmail.com>
 Subject: Re: [GIT PATCH] USB patches for 2.6.33-git
-In-Reply-To: <alpine.LFD.2.00.0912141827200.14385@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0912141902040.14385@localhost.localdomain>
-References: <20091211212646.GB6624@kroah.com> <alpine.LFD.2.00.0912141635000.14385@localhost.localdomain> <20091215005216.GA9309@kroah.com> <alpine.LFD.2.00.0912141658290.14385@localhost.localdomain> <alpine.LFD.2.00.0912141744360.14385@localhost.localdomain>
- <alpine.LFD.2.00.0912141827200.14385@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+In-Reply-To: <alpine.LFD.2.00.0912141902040.14385@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-FireGPG-Version: 0.7.10
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="-----firegpg0710eqg383sjjxfkytq6jayq"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+-------firegpg0710eqg383sjjxfkytq6jayq
+Content-Type: text/plain; format=flowed; charset=UTF-8
+Content-Transfer-Encoding: base64
 
+DQoNCk9uIE1vbiwgRGVjIDE0LCAyMDA5IGF0IDg6MDkgUE0sIExpbnVzIFRvcnZhbGRzIDx0b3J2
+YWxkc0BsaW51eC1mb3VuZGF0aW9uLm9yZz4gd3JvdGU6DQo+DQo+DQo+IE9uIE1vbiwgMTQgRGVj
+IDIwMDksIExpbnVzIFRvcnZhbGRzIHdyb3RlOg0KPj4NCj4+IEknbGwgZG91YmxlLWNoZWNrIGJ5
+IHJldmVydGluZyBpdCBmcm9tIGN1cnJlbnQgLXRpcCwgYnV0IGlmIHlvdSBkb24ndCBoZWFyDQo+
+PiBhbnl0aGluZyBkaWZmZXJlbnQgZnJvbSBtZSwgeW91IGNhbiBhc3N1bWUgdGhhdCB0aGF0IGRv
+dWJsZS1jaGVjaw0KPj4gc3VjY2VlZGVkIGFuZCBjb25maXJtcyB0aGF0IHRoYXQgY29tbWl0IHJl
+YWxseSBpcyB0aGUgY2F1c2Ugb2YgbXkgcHJpbnRlcg0KPj4gbm8gbG9uZ2VyIHdvcmtpbmcuDQo+
+DQo+IENvbmZpcm1lZC4NCj4NCj4gV2l0aCB0aGF0IGNvbW1pdCByZXZlcnRlZCwgZXZlcnl0aGlu
+ZyB3b3JrcyBmaW5lIGFnYWluLiBTbyBpdCdzIGRlZmluaXRlbHkNCj4gYTI1ODJiZDQ3OGMxM2M1
+NzRkNGMxNmVmMTIwOWQzMzNmMmEyNTkzNSwgYWx0aG91Z2ggSSBoYXZlIG5vIGlkZWEgX3doeV8g
+aXQNCj4gY2F1c2VzIHByb2JsZW1zLg0KPg0KPiBPbmUgdGhpbmcgSSBub3RlIGlzIHRoYXQgaXQg
+bGl0ZXJhbGx5IGNoYW5nZWQgc2VtYW50aWNzLCBhcyBwZXIgdGhlDQo+IGNvbW1lbnQgaW4gdGhl
+cmUuIEl0IHVzZWQgdG8gYmU6DQo+DQo+IMKgIMKgIMKgIMKgVGhpcyB3YWxrcyB0aGUgZHJpdmVy
+IGRldmljZSBsaXN0IGFuZCByZXR1cm5zIGEgcG9pbnRlciB0byB0aGUgaW50ZXJmYWNlDQo+IMKg
+IMKgIMKgIMKgd2l0aCB0aGUgbWF0Y2hpbmcgbWlub3IuDQo+DQo+IGFuZCBhZnRlciB0aGF0IGl0
+IGlzDQo+DQo+IMKgIMKgIMKgIMKgVGhpcyB3YWxrcyB0aGUgYnVzIGRldmljZSBsaXN0IGFuZCBy
+ZXR1cm5zIGEgcG9pbnRlciB0byB0aGUgaW50ZXJmYWNlDQo+IMKgIMKgIMKgIMKgd2l0aCB0aGUg
+bWF0Y2hpbmcgbWlub3IuDQo+DQo+IE5vdGljZSB0aGUgImRyaXZlciBkZXZpY2UgbGlzdCIgLT4g
+ImJ1cyBkZXZpY2UgbGlzdCIgY2hhbmdlLg0KPg0KPiBBbHNvIG5vdGljZSB0aGF0IHRoZSBtaW5v
+ciBudW1iZXIgb2YgbXkgJ2xwMCcgZGV2aWNlIGlzIHplcm8sIHNvIEkgY291bGQNCj4gZWFzaWx5
+IGltYWdpbmUgdGhhdCBzb21lIGRldmljZSB3aXRob3V0IGEgZHJpdmVyIGF0IGFsbCBvciB3aGF0
+ZXZlciB3aWxsDQo+IGhhdmUgYSB6ZXJvIHRoZXJlLCBhbmQgdGhlbiBpdCB3b3VsZCByZXR1cm4g
+dGhlIHdyb25nIGRldmljZSBlbnRpcmVseS4NCj4NCj4gU28gSSByZWFsbHkgdGhpbmsgdGhhdCBj
+b21taXQgaXMgdmVyeSBzdXNwZWN0LiBOb3QgbWF0Y2hpbmcgYWdhaW5zdCB0aGUNCj4gZHJpdmVy
+IHRoYXQgd2UgcGFzc2VkIGluIGxvb2tzIGxpa2Ugc29tZSB0b3RhbCBzY3Jld3VwLg0KPg0KPiBC
+dXQgSSBkb24ndCBrbm93IHRoZSBjb2RlIG9yIHRoZSB1c2UuIEkgZG8ga25vdyB0aGF0IHJldmVy
+dGluZyBpdCBmaXhlcw0KPiBpdC4NCg0KWWVzLCB5b3UgYXJlIHJpZ2h0LiBTb3JyeSBmb3IgYnJl
+YWtpbmcgeW91ciBwcmludGVyLiBUaGVyZSBpcyBib3RoIFVTQl9NQUpPUiBhbmQgVVNCX0RFVklD
+RV9NQUpPUi4gSSBoYXZlbid0IGludmVzdGlnYXRlZCBpdCBpbiBncmVhdCBkZXRhaWwgeWV0LCBi
+dXQgdGhhdCBzZWVtcyBsaWtlbHkgdG8gYmUgdGhlIGlzc3VlLiBJJ2xsIGNsZWFuIHVwIHRoZSBw
+YXRjaC4gQW5kIHllcywgaXQgc2hvdWxkIGRlZmluaXRlbHkgbm90IGJlIGdvaW5nIGludG8gc3Rh
+YmxlIHlldC4gUmV2ZXJ0IGZvciBub3cgYW5kIEknbGwgcmVzdWJtaXQuDQo=
+-------firegpg0710eqg383sjjxfkytq6jayq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-On Mon, 14 Dec 2009, Linus Torvalds wrote:
-> 
-> I'll double-check by reverting it from current -tip, but if you don't hear 
-> anything different from me, you can assume that that double-check 
-> succeeded and confirms that that commit really is the cause of my printer 
-> no longer working.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Use GnuPG with Firefox : http://getfiregpg.org (Version: 0.7.10)
 
-Confirmed.
+iEYEARECAAYFAksm/+MACgkQfNRrxBinbdundQCeKUMkvQ2PneMjKFSRnwtp8+k5
+H0oAniDs0ZWXyWpHg5vbguKDa6yAuYR1
+=aUUC
+-----END PGP SIGNATURE-----
 
-With that commit reverted, everything works fine again. So it's definitely 
-a2582bd478c13c574d4c16ef1209d333f2a25935, although I have no idea _why_ it 
-causes problems.
+-------firegpg0710eqg383sjjxfkytq6jayq--
 
-One thing I note is that it literally changed semantics, as per the 
-comment in there. It used to be:
-
-	This walks the driver device list and returns a pointer to the interface
-	with the matching minor.
-
-and after that it is
-
-	This walks the bus device list and returns a pointer to the interface
-	with the matching minor.
-
-Notice the "driver device list" -> "bus device list" change.
-
-Also notice that the minor number of my 'lp0' device is zero, so I could 
-easily imagine that some device without a driver at all or whatever will 
-have a zero there, and then it would return the wrong device entirely.
-
-So I really think that commit is very suspect. Not matching against the 
-driver that we passed in looks like some total screwup.
-
-But I don't know the code or the use. I do know that reverting it fixes 
-it.
-
-		Linus
