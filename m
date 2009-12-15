@@ -1,306 +1,518 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbZLOSIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760723AbZLOSJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760692AbZLOSIp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbZLOSIn
+	id S1760723AbZLOSJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759935AbZLOSJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:08:43 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:13466 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754673AbZLOSIm convert rfc822-to-8bit (ORCPT
+	Tue, 15 Dec 2009 13:09:18 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:50647 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760671AbZLOSJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:08:42 -0500
-From: "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-CC: "davej@redhat.com" <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "mjg@redhat.com" <mjg@redhat.com>, "trenn@suse.de" <trenn@suse.de>,
-       "lenb@kernel.org" <lenb@kernel.org>
-Date: Tue, 15 Dec 2009 18:08:08 +0000
-Subject: RE: [PATCH] cpufreq: Processor Clocking Control interface driver
-Thread-Topic: [PATCH] cpufreq: Processor Clocking Control interface driver
-Thread-Index: Acp6t25fuUX9ge7TSNWagCVgfwYj3wC5SNqw
-Message-ID: <66D9D2F0CDB5C9428E6166B01EC85EE161DEEE3CB7@GVW0676EXC.americas.hpqcorp.net>
-References: <20091128034424.6796.75673.sendpatchset@localhost.localdomain>
- <20091211231233.GA4291@isilmar.linta.de>
-In-Reply-To: <20091211231233.GA4291@isilmar.linta.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 15 Dec 2009 13:09:17 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
+Date: Tue, 15 Dec 2009 19:08:50 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
+References: <20091214125729.6d699d94.akpm@linux-foundation.org>
+In-Reply-To: <20091214125729.6d699d94.akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912151908.50827.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/8ERBzpoYV5z6qtRnmY1MJNlFVkkUy0yZBP2G
+ LMe6V1VDM2Hs7eF6WOkvvU+TGGIhufQAxQPbbKIu3ppbv28LiB
+ gKE0SxjIX7uQ+PRmmTg9A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I have addressed your concerns below: 
+From: Al Viro <viro@zeniv.linux.org.uk>
+Date: Mon, 14 Dec 2009 12:57:55 -0800
+Subject: [PATCH] raw: fix rawctl compat ioctls breakage on amd64 and itanic
 
->-----Original Message-----
->From: Dominik Brodowski [mailto:linux@dominikbrodowski.net] 
->Sent: Friday, December 11, 2009 5:13 PM
->To: Chumbalkar, Nagananda
->Cc: davej@redhat.com; linux-kernel@vger.kernel.org; 
->cpufreq@vger.kernel.org; linux-acpi@vger.kernel.org; 
->mjg@redhat.com; trenn@suse.de; lenb@kernel.org
->Subject: Re: [PATCH] cpufreq: Processor Clocking Control 
->interface driver
->
->Hey,
->
->On Fri, Dec 11, 2009 at 10:55:40PM +0000, Naga Chumbalkar wrote:
->> +The VERSION number for the driver will be of the format v.xy.ab.
->> +eg: 1.00.02
->> +   ----- --
->> +    |    |
->> +    |    -- this will increase with bug fixes/enhancements 
->to the driver
->> +    |-- this is the version of the PCC specification the 
->driver adheres to
->
->If this is _really_ necessary... Doesn't the driver version 
->relate to some
->Linux kernel version anyway?
->
+RAW_SETBIND and RAW_GETBIND 32bit versions are fscked in interesting ways.
 
-If distros backport this driver to different kernel versions, it will be
-easy to keep track of which driver version is in the distro.
+1) fs/compat_ioctl.c has COMPATIBLE_IOCTL(RAW_SETBIND) followed by
+HANDLE_IOCTL(RAW_SETBIND, raw_ioctl).  The latter is ignored.
 
+2) on amd64 (and itanic) the damn thing is broken - we have int + u64 + u64
+and layouts on i386 and amd64 are _not_ the same.  raw_ioctl() would
+work there, but it's never called due to (1).  As it is, i386 /sbin/raw
+definitely doesn't work on amd64 boxen.
 
->> +2.1 scaling_available_frequencies:
->> +----------------------------------
->> +scaling_available_frequencies indicates the minimum and 
->maximum speed
->> +the CPU can take as advertised by the BIOS. No intermediate 
->frequencies are
->> +listed because the BIOS will try to achieve any 
->intermediate frequency
->> +requested by the governor. An intermediate frequency does 
->not have to be
->> +strictly associated with a P-state.
->
->Why do you export scaling_available_frequencies anyway? It's 
->made available
->by the _optional_ freq-table helper module, which is wrong to 
->use in this
->case anyway.
->
+3) switching to raw_ioctl() as is would *not* work on e.g. sparc64 and ppc64,
+which would be rather sad, seeing that normal userland there is 32bit.
+The thing is, slapping __packed on the struct in question does not DTRT -
+it eliminates *all* padding.  The real solution is to use compat_u64.
 
-You are correct. I don't need the dependency on CPU_FREQ_TABLE. I ripped
-it out and made suitable changes:
+4) of course, all that stuff has no business being outside of raw.c in the
+first place - there should be ->compat_ioctl() for /dev/rawctl instead of
+messing with compat_ioctl.c.
 
-diff -bur orig/pcc-cpufreq.c fix/pcc-cpufreq.c
---- orig/pcc-cpufreq.c	2009-11-30 20:05:23.000000000 -0600
-+++ fix/pcc-cpufreq.c	2009-11-30 21:14:31.000000000 -0600
-@@ -111,15 +111,11 @@
+[akpm@linux-foundation.org: coding-style fixes]
+
+[arnd@arndb.de:]
+Another problem is the handling of ioctl passthrough to
+block devices, which is not implemented for the compat_ioctl
+case and has been broken for ages. This patch does not
+fix the problem but prints a diagnostic message in case
+someone hits it.
+
+Finally, push the big kernel lock into the ioctl functions,
+since we're touching them anyway.
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+
+On Monday 14 December 2009, Andrew Morton wrote:
+> 
+> Arnd, I've been minding this patch for a while, but `md: move
+> compat_ioctl handling into md.c' broke it.
+
+I've added the additional changes I had in my patch to Al's version now
+and updated it to apply against the current fs/compat_ioctl.c.
+
+This now takes the BKL explicitly in both native and compat mode,
+as my version did, and does not take it for the passthrough ioctls
+to blockdev, which just takes it again anyway.
+
+For everything else, my version was now as clean as this one,
+since I basically moved the code over from fs/compat_ioctl.c
+but did not perform all the cleanup that Al did.
+
+	Arnd
+
+diff --git a/drivers/char/raw.c b/drivers/char/raw.c
+index 64acd05..026f5e1 100644
+--- a/drivers/char/raw.c
++++ b/drivers/char/raw.c
+@@ -20,6 +20,7 @@
+ #include <linux/device.h>
+ #include <linux/mutex.h>
+ #include <linux/smp_lock.h>
++#include <linux/compat.h>
  
- static struct pcc_cpu *pcc_cpu_info;
+ #include <asm/uaccess.h>
  
--static struct cpufreq_frequency_table pcc_freq_table[] = {
--	{0x1, 0},
--	{0x2, 0},
--	{0, CPUFREQ_TABLE_END},
--};
--
- static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
+@@ -120,143 +121,211 @@ static int raw_release(struct inode *inode, struct file *filp)
+ /*
+  * Forward ioctls to the underlying block device.
+  */
+-static int
+-raw_ioctl(struct inode *inode, struct file *filp,
+-		  unsigned int command, unsigned long arg)
++static long
++raw_ioctl(struct file *filp, unsigned int command, unsigned long arg)
  {
--	return cpufreq_frequency_table_verify(policy, pcc_freq_table);
-+	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
-+				     policy->cpuinfo.max_freq);
+ 	struct block_device *bdev = filp->private_data;
+ 
+ 	return blkdev_ioctl(bdev, 0, command, arg);
+ }
+ 
+-static void bind_device(struct raw_config_request *rq)
++static int bind_set(int number, u64 major, u64 minor)
+ {
+-	device_destroy(raw_class, MKDEV(RAW_MAJOR, rq->raw_minor));
+-	device_create(raw_class, NULL, MKDEV(RAW_MAJOR, rq->raw_minor), NULL,
+-		      "raw%d", rq->raw_minor);
++	dev_t dev = MKDEV(major, minor);
++	struct raw_device_data *rawdev;
++	int err = 0;
++
++	if (number <= 0 || number >= MAX_RAW_MINORS)
++		return -EINVAL;
++
++	rawdev = &raw_devices[number];
++
++	/*
++	 * This is like making block devices, so demand the
++	 * same capability
++	 */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/*
++	 * For now, we don't need to check that the underlying
++	 * block device is present or not: we can do that when
++	 * the raw device is opened.  Just check that the
++	 * major/minor numbers make sense.
++	 */
++
++	if (MAJOR(dev) == 0 && dev)
++		return -EINVAL;
++
++	if (MAJOR(dev) != major || MINOR(dev) != minor)
++		return -EINVAL;
++
++	mutex_lock(&raw_mutex);
++	if (rawdev->inuse) {
++		mutex_unlock(&raw_mutex);
++		return -EBUSY;
++	}
++	if (rawdev->binding) {
++		bdput(rawdev->binding);
++		module_put(THIS_MODULE);
++	}
++	if (!dev) {
++		/* unbind */
++		rawdev->binding = NULL;
++		device_destroy(raw_class, MKDEV(RAW_MAJOR, number));
++	} else {
++		rawdev->binding = bdget(dev);
++		if (rawdev->binding == NULL) {
++			err = -ENOMEM;
++		} else {
++			dev_t raw = MKDEV(RAW_MAJOR, number);
++			__module_get(THIS_MODULE);
++			device_destroy(raw_class, raw);
++			device_create(raw_class, NULL, raw, NULL,
++				      "raw%d", number);
++		}
++	}
++	mutex_unlock(&raw_mutex);
++	return err;
++}
++
++static int bind_get(int number, dev_t *dev)
++{
++	struct raw_device_data *rawdev;
++	struct block_device *bdev;
++
++	if (number <= 0 || number >= MAX_RAW_MINORS)
++		return -EINVAL;
++
++	rawdev = &raw_devices[number];
++
++	mutex_lock(&raw_mutex);
++	bdev = rawdev->binding;
++	*dev = bdev ? bdev->bd_dev : 0;
++	mutex_unlock(&raw_mutex);
 +	return 0;
  }
  
- static inline void pcc_cmd(void)
-@@ -534,10 +530,6 @@
- 		goto pcch_free;
- 	}
- 
--	pcc_freq_table[0].frequency =
--		ioread32(&pcch_hdr->minimum_frequency) * 1000;
--	pcc_freq_table[1].frequency = ioread32(&pcch_hdr->nominal) * 1000;
--
- 	printk(KERN_DEBUG "pcc-cpufreq: (v%s) driver loaded with frequency"
- 	       " limits: %d MHz, %d MHz\n", PCC_VERSION,
- 	       ioread32(&pcch_hdr->minimum_frequency),
-@@ -576,12 +568,6 @@
- 	dprintk("init: policy->max is %d, policy->min is %d\n",
- 		policy->max, policy->min);
- 
--	result = cpufreq_frequency_table_cpuinfo(policy, pcc_freq_table);
--	if (result)
--		goto free;
--
--	cpufreq_frequency_table_get_attr(pcc_freq_table, policy->cpu);
--
- 	return 0;
- free:
- 	pcc_clear_mapping();
-@@ -592,15 +578,9 @@
- 
- static int pcc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ /*
+  * Deal with ioctls against the raw-device control interface, to bind
+  * and unbind other raw devices.
+  */
+-static int raw_ctl_ioctl(struct inode *inode, struct file *filp,
+-			unsigned int command, unsigned long arg)
++static long raw_ctl_ioctl(struct file *file, unsigned int command, unsigned long arg)
  {
--	cpufreq_frequency_table_put_attr(policy->cpu);
- 	return 0;
- }
+ 	struct raw_config_request rq;
+-	struct raw_device_data *rawdev;
+-	int err = 0;
++	dev_t dev;
++	int err;
  
--static struct freq_attr *pcc_cpufreq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
--	NULL,
--};
+ 	switch (command) {
+ 	case RAW_SETBIND:
++		if (copy_from_user(&rq, (void __user *) arg, sizeof(rq)))
++			return -EFAULT;
++
++		lock_kernel();
++		err = bind_set(rq.raw_minor, rq.block_major, rq.block_minor);
++		unlock_kernel();
++		return err;
++
+ 	case RAW_GETBIND:
++		if (copy_from_user(&rq, (void __user *) arg, sizeof(rq)))
++			return -EFAULT;
+ 
+-		/* First, find out which raw minor we want */
++		lock_kernel();
++		err = bind_get(rq.raw_minor, &dev);
++		unlock_kernel();
++		if (err)
++			return err;
+ 
+-		if (copy_from_user(&rq, (void __user *) arg, sizeof(rq))) {
+-			err = -EFAULT;
+-			goto out;
+-		}
++		rq.block_major = MAJOR(dev);
++		rq.block_minor = MINOR(dev);
+ 
+-		if (rq.raw_minor <= 0 || rq.raw_minor >= MAX_RAW_MINORS) {
+-			err = -EINVAL;
+-			goto out;
+-		}
+-		rawdev = &raw_devices[rq.raw_minor];
 -
- static struct cpufreq_driver pcc_cpufreq_driver = {
- 	.flags = CPUFREQ_CONST_LOOPS,
- 	.get = pcc_get_freq,
-@@ -610,7 +590,6 @@
- 	.exit = pcc_cpufreq_cpu_exit,
- 	.name = "pcc-cpufreq",
- 	.owner = THIS_MODULE,
--	.attr = pcc_cpufreq_attr,
- };
- 
- static int __init pcc_cpufreq_init(void)
-
-
-diff -bur orig/pcc-cpufreq.txt fix/pcc-cpufreq.txt
---- orig/pcc-cpufreq.txt	2009-11-30 20:05:55.000000000 -0600
-+++ fix/pcc-cpufreq.txt	2009-11-30 21:15:10.000000000 -0600
-@@ -152,11 +152,10 @@
- 
- 2.1 scaling_available_frequencies:
- ----------------------------------
--scaling_available_frequencies indicates the minimum and maximum speed
--the CPU can take as advertised by the BIOS. No intermediate frequencies are
--listed because the BIOS will try to achieve any intermediate frequency
--requested by the governor. An intermediate frequency does not have to be
--strictly associated with a P-state.
-+scaling_available_frequencies is not created in /sys. No intermediate
-+frequencies need to be listed because the BIOS will try to achieve any
-+frequency, within limits, requested by the governor. A frequency does not have
-+to be strictly associated with a P-state.
- 
- 2.2 cpuinfo_transition_latency:
- -------------------------------
-@@ -203,7 +202,7 @@
- 
- 3. Caveats:
- -----------
--Currently, the "cpufreq_stats" module in its present form cannot be loaded and
--expected to work with the PCC driver. A patch to cpufreq_stats will be
--submitted to fix this.
-+The "cpufreq_stats" module in its present form cannot be loaded and
-+expected to work with the PCC driver. Since the "cpufreq_stats" module
-+provides information wrt each P-state, it is not applicable to the PCC driver.
- 
-
-
->> +2.2 cpuinfo_transition_latency:
->> +-------------------------------
->> +The cpuinfo_transition_latency field is 0. The PCC 
->specification does
->> +not include a field to expose this value currently.
->
->Uh, bad specification... So does it work properly with ondemand and/or
->conservative (which read out this field, and if latency=0 use a minimum
->value)?
->
-
-Yes, it works fine. Both "ondemand" and "conservative" sanitize the
-latency value, and set it to a default value which is good.
-
->> +config X86_PCC_CPUFREQ
->> +	tristate "Processor Clocking Control interface driver"
->> +	select CPU_FREQ_TABLE
->Uh, see above.
->
-
-diff -bur orig/Kconfig fix/Kconfig
---- orig/Kconfig	2009-11-30 20:05:32.000000000 -0600
-+++ fix/Kconfig	2009-11-30 21:14:47.000000000 -0600
-@@ -12,7 +12,6 @@
- 
- config X86_PCC_CPUFREQ
- 	tristate "Processor Clocking Control interface driver"
--	select CPU_FREQ_TABLE
- 	depends on ACPI && ACPI_PROCESSOR
- 	help
- 	  This driver adds support for the PCC interface.
-
-
->> +static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
->> +{
->> +	return cpufreq_frequency_table_verify(policy, pcc_freq_table);
->> +}
->
->Well, AFAICS, this limits the whole interface to two values: 
->min or max. So
->let's allow for any intermediate value:
->
->static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
->{
->	cpufreq_verify_within_limits(policy, 
->policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
->}
->
-
-Took this suggestion, (see the first "diff" changeset above), especially
-since I cannot use the freq-table helper function anymore.
-
-
->but well... later on, you check this
->
->> +	if (target_freq <= 
->(ioread32(&pcch_hdr->minimum_frequency) * 1000)) {
->> +		target_freq = 
->ioread32(&pcch_hdr->minimum_frequency) * 1000;
->> +		dprintk("target: target_freq for cpu %d was 
->below limit, "
->> +			"converted it to %d\n", cpu, target_freq);
->> +	}
->
->why not do this in the _verify() step? Does pcch_hdr->minimum_frequency
->even change "on the fly"?
-
-pcch_hdr->minimum_frequency does not change "on the fly". Also, there is no
-need for those IO accesses:
-
-diff -bur orig/pcc-cpufreq.c fix/pcc-cpufreq.c
---- orig/pcc-cpufreq.c	2009-12-15 10:52:01.000000000 -0600
-+++ fix/pcc-cpufreq.c	2009-12-15 10:52:06.000000000 -0600
-@@ -212,12 +212,18 @@
- 
- 	pcc_cpu_data = per_cpu_ptr(pcc_cpu_info, cpu);
- 
--	if (target_freq <= (ioread32(&pcch_hdr->minimum_frequency) * 1000)) {
--		target_freq = ioread32(&pcch_hdr->minimum_frequency) * 1000;
-+	if (target_freq < policy->min) {
-+		target_freq = policy->min;
- 		dprintk("target: target_freq for cpu %d was below limit, "
- 			"converted it to %d\n", cpu, target_freq);
+-		if (command == RAW_SETBIND) {
+-			dev_t dev;
+-
+-			/*
+-			 * This is like making block devices, so demand the
+-			 * same capability
+-			 */
+-			if (!capable(CAP_SYS_ADMIN)) {
+-				err = -EPERM;
+-				goto out;
+-			}
+-
+-			/*
+-			 * For now, we don't need to check that the underlying
+-			 * block device is present or not: we can do that when
+-			 * the raw device is opened.  Just check that the
+-			 * major/minor numbers make sense.
+-			 */
+-
+-			dev = MKDEV(rq.block_major, rq.block_minor);
+-			if ((rq.block_major == 0 && rq.block_minor != 0) ||
+-					MAJOR(dev) != rq.block_major ||
+-					MINOR(dev) != rq.block_minor) {
+-				err = -EINVAL;
+-				goto out;
+-			}
+-
+-			mutex_lock(&raw_mutex);
+-			if (rawdev->inuse) {
+-				mutex_unlock(&raw_mutex);
+-				err = -EBUSY;
+-				goto out;
+-			}
+-			if (rawdev->binding) {
+-				bdput(rawdev->binding);
+-				module_put(THIS_MODULE);
+-			}
+-			if (rq.block_major == 0 && rq.block_minor == 0) {
+-				/* unbind */
+-				rawdev->binding = NULL;
+-				device_destroy(raw_class,
+-						MKDEV(RAW_MAJOR, rq.raw_minor));
+-			} else {
+-				rawdev->binding = bdget(dev);
+-				if (rawdev->binding == NULL)
+-					err = -ENOMEM;
+-				else {
+-					__module_get(THIS_MODULE);
+-					bind_device(&rq);
+-				}
+-			}
+-			mutex_unlock(&raw_mutex);
+-		} else {
+-			struct block_device *bdev;
+-
+-			mutex_lock(&raw_mutex);
+-			bdev = rawdev->binding;
+-			if (bdev) {
+-				rq.block_major = MAJOR(bdev->bd_dev);
+-				rq.block_minor = MINOR(bdev->bd_dev);
+-			} else {
+-				rq.block_major = rq.block_minor = 0;
+-			}
+-			mutex_unlock(&raw_mutex);
+-			if (copy_to_user((void __user *)arg, &rq, sizeof(rq))) {
+-				err = -EFAULT;
+-				goto out;
+-			}
+-		}
+-		break;
+-	default:
+-		err = -EINVAL;
+-		break;
++		if (copy_to_user((void __user *)arg, &rq, sizeof(rq)))
++			return -EFAULT;
++
++		return 0;
  	}
- 
-+	if (target_freq > policy->max) {
-+		target_freq = policy->max;
-+		dprintk("target: target_freq for cpu %d was above limit, "
-+			"converted it to %d\n", cpu, target_freq);
+-out:
+-	return err;
++
++	return -EINVAL;
++}
++
++#ifdef CONFIG_COMPAT
++struct compat_raw_config_request {
++	compat_int_t	raw_minor;
++	compat_u64	block_major;
++	compat_u64	block_minor;
++};
++
++static long raw_ctl_compat_ioctl(struct file *file, unsigned int command, unsigned long arg)
++{
++	struct compat_raw_config_request __user *user_rq = compat_ptr(arg);
++	struct compat_raw_config_request rq;
++	dev_t dev;
++	int err;
++
++	switch (command) {
++	case RAW_SETBIND:
++		if (copy_from_user(&rq, user_rq, sizeof(rq)))
++			return -EFAULT;
++
++		lock_kernel();
++		err = bind_set(rq.raw_minor, rq.block_major, rq.block_minor);
++		unlock_kernel();
++
++		return err;
++
++	case RAW_GETBIND:
++		if (copy_from_user(&rq, user_rq, sizeof(rq)))
++			return -EFAULT;
++
++		lock_kernel();
++		err = bind_get(rq.raw_minor, &dev);
++		unlock_kernel();
++		if (err)
++			return err;
++
++		rq.block_major = MAJOR(dev);
++		rq.block_minor = MINOR(dev);
++
++		if (copy_to_user(user_rq, &rq, sizeof(rq)))
++			return -EFAULT;
++
++		return 0;
 +	}
 +
- 	dprintk("target: CPU %d should go to target freq: %d "
- 		"(virtual) input_offset is 0x%x\n",
- 		cpu, target_freq,
-
->
->So, I'd propose to NACK this patch at the moment.
->
->Best,
->	Dominik
->
-
-If you are okay with the changes, I will send v2 of the patch.
-
-Thanks,
-- naga -
-
++	return -EINVAL;
++}
++
++static long
++raw_compat_ioctl(struct file *filp, unsigned int command, unsigned long arg)
++{
++	/* FIXME: should pass through ioctls */
++	compat_printk("%s: no support for block ioctls\n", __func__);
++
++	return -ENOIOCTLCMD;
+ }
++#endif /* CONFIG_COMPAT */
+ 
+ static const struct file_operations raw_fops = {
+-	.read	=	do_sync_read,
+-	.aio_read = 	generic_file_aio_read,
+-	.write	=	do_sync_write,
+-	.aio_write =	blkdev_aio_write,
+-	.open	=	raw_open,
+-	.release=	raw_release,
+-	.ioctl	=	raw_ioctl,
+-	.owner	=	THIS_MODULE,
++	.read		= do_sync_read,
++	.aio_read	= generic_file_aio_read,
++	.write		= do_sync_write,
++	.aio_write	= blkdev_aio_write,
++	.open		= raw_open,
++	.release	= raw_release,
++	.unlocked_ioctl	= raw_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= raw_compat_ioctl,
++#endif
++	.owner		= THIS_MODULE,
+ };
+ 
+ static const struct file_operations raw_ctl_fops = {
+-	.ioctl	=	raw_ctl_ioctl,
+-	.open	=	raw_open,
+-	.owner	=	THIS_MODULE,
++	.unlocked_ioctl	= raw_ctl_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= raw_ctl_compat_ioctl,
++#endif
++	.open		= raw_open,
++	.owner		= THIS_MODULE,
+ };
+ 
+ static struct cdev raw_cdev;
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index 4c0e5e6..ad97a13 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -524,70 +524,6 @@ static int mt_ioctl_trans(unsigned int fd, unsigned int cmd, void __user *argp)
+ #define HIDPGETCONNLIST	_IOR('H', 210, int)
+ #define HIDPGETCONNINFO	_IOR('H', 211, int)
+ 
+-#ifdef CONFIG_BLOCK
+-struct raw32_config_request
+-{
+-        compat_int_t    raw_minor;
+-        __u64   block_major;
+-        __u64   block_minor;
+-} __attribute__((packed));
+-
+-static int get_raw32_request(struct raw_config_request *req, struct raw32_config_request __user *user_req)
+-{
+-        int ret;
+-
+-        if (!access_ok(VERIFY_READ, user_req, sizeof(struct raw32_config_request)))
+-                return -EFAULT;
+-
+-        ret = __get_user(req->raw_minor, &user_req->raw_minor);
+-        ret |= __get_user(req->block_major, &user_req->block_major);
+-        ret |= __get_user(req->block_minor, &user_req->block_minor);
+-
+-        return ret ? -EFAULT : 0;
+-}
+-
+-static int set_raw32_request(struct raw_config_request *req, struct raw32_config_request __user *user_req)
+-{
+-	int ret;
+-
+-        if (!access_ok(VERIFY_WRITE, user_req, sizeof(struct raw32_config_request)))
+-                return -EFAULT;
+-
+-        ret = __put_user(req->raw_minor, &user_req->raw_minor);
+-        ret |= __put_user(req->block_major, &user_req->block_major);
+-        ret |= __put_user(req->block_minor, &user_req->block_minor);
+-
+-        return ret ? -EFAULT : 0;
+-}
+-
+-static int raw_ioctl(unsigned fd, unsigned cmd,
+-		struct raw32_config_request __user *user_req)
+-{
+-        int ret;
+-
+-        switch (cmd) {
+-        case RAW_SETBIND:
+-        case RAW_GETBIND: {
+-                struct raw_config_request req;
+-                mm_segment_t oldfs = get_fs();
+-
+-                if ((ret = get_raw32_request(&req, user_req)))
+-                        return ret;
+-
+-                set_fs(KERNEL_DS);
+-                ret = sys_ioctl(fd,cmd,(unsigned long)&req);
+-                set_fs(oldfs);
+-
+-                if ((!ret) && (cmd == RAW_GETBIND)) {
+-                        ret = set_raw32_request(&req, user_req);
+-                }
+-                break;
+-        }
+-        }
+-        return ret;
+-}
+-#endif /* CONFIG_BLOCK */
+-
+ struct serial_struct32 {
+         compat_int_t    type;
+         compat_int_t    line;
+@@ -1064,9 +1000,6 @@ COMPATIBLE_IOCTL(SOUND_MIXER_PRIVATE5)
+ COMPATIBLE_IOCTL(SOUND_MIXER_GETLEVELS)
+ COMPATIBLE_IOCTL(SOUND_MIXER_SETLEVELS)
+ COMPATIBLE_IOCTL(OSS_GETVERSION)
+-/* Raw devices */
+-COMPATIBLE_IOCTL(RAW_SETBIND)
+-COMPATIBLE_IOCTL(RAW_GETBIND)
+ /* Watchdog */
+ COMPATIBLE_IOCTL(WDIOC_GETSUPPORT)
+ COMPATIBLE_IOCTL(WDIOC_GETSTATUS)
+@@ -1306,10 +1239,6 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
+ 	case MTIOCGET32:
+ 	case MTIOCPOS32:
+ 		return mt_ioctl_trans(fd, cmd, argp);
+-	/* Raw devices */
+-	case RAW_SETBIND:
+-	case RAW_GETBIND:
+-		return raw_ioctl(fd, cmd, argp);
+ #endif
+ 	/* Serial */
+ 	case TIOCGSERIAL:
