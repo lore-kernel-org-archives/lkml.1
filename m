@@ -1,108 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760663AbZLOVF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933668AbZLOVHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760663AbZLOVF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 16:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760214AbZLOVFZ
+	id S933668AbZLOVHV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 16:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760214AbZLOVHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 16:05:25 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46480 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755069AbZLOVFW (ORCPT
+	Tue, 15 Dec 2009 16:07:20 -0500
+Received: from 216-239-44-51.google.com ([216.239.44.51]:38225 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760194AbZLOVHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 16:05:22 -0500
-Date: Tue, 15 Dec 2009 22:05:14 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR system?
-Message-ID: <20091215210514.GO24406@elf.ucw.cz>
-References: <20091207184153.GD998@core.coreip.homeip.net>
- <4B24DABA.9040007@redhat.com>
- <20091215115011.GB1385@ucw.cz>
- <4B279017.3080303@redhat.com>
- <20091215195859.GI24406@elf.ucw.cz>
- <9e4733910912151214n68161fc7tca0ffbf34c2c4e4@mail.gmail.com>
- <20091215201933.GK24406@elf.ucw.cz>
- <9e4733910912151229o371ee017tf3640d8f85728011@mail.gmail.com>
- <20091215203300.GL24406@elf.ucw.cz>
- <9e4733910912151245ne442a5dlcfee92609e364f70@mail.gmail.com>
+	Tue, 15 Dec 2009 16:07:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=eEXgL42CNImggIcV+9U2FoTdhkyBIXjLpc/q55cNihPmxfcIK0yj0xew6NNnbFQe4
+	rs77MxR3ene8mjGgrSaLg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9e4733910912151245ne442a5dlcfee92609e364f70@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091215204803.GA26319@shareable.org>
+References: <4B1ECEEE.3000209@bluewatersys.com>
+	 <20091210172458.GJ19454@elf.ucw.cz>
+	 <4B2150B7.3040207@bluewatersys.com>
+	 <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
+	 <20091211221015.GB24456@elf.ucw.cz>
+	 <BD79186B4FD85F4B8E60E381CAEE190901FB10EA@mi8nycmail19.Mi8.com>
+	 <20091214064545.GK5114@elf.ucw.cz>
+	 <1260813293.13078.15.camel@c-dwalke-linux.qualcomm.com>
+	 <BD79186B4FD85F4B8E60E381CAEE19090200E9C6@mi8nycmail19.Mi8.com>
+	 <20091215204803.GA26319@shareable.org>
+Date: Tue, 15 Dec 2009 13:07:13 -0800
+Message-ID: <a55d774e0912151307i12777a67jabf190742be3883e@mail.gmail.com>
+Subject: Re: GPIO support for HTC Dream
+From: Brian Swetland <swetland@google.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       Daniel Walker <dwalker@codeaurora.org>, Pavel Machek <pavel@ucw.cz>,
+       Iliyan Malchev <malchev@google.com>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Ryan Mallon <ryan@bluewatersys.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-12-15 15:45:14, Jon Smirl wrote:
-> On Tue, Dec 15, 2009 at 3:33 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Tue 2009-12-15 15:29:51, Jon Smirl wrote:
-> >> On Tue, Dec 15, 2009 at 3:19 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >> > On Tue 2009-12-15 15:14:02, Jon Smirl wrote:
-> >> >> On Tue, Dec 15, 2009 at 2:58 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >> >> > Hi!
-> >> >> >
-> >> >> >>       (11) if none is against renaming IR as RC, I'll do it on a next patch;
-> >> >> >
-> >> >> > Call it irc -- infrared remote control. Bluetooth remote controls will
-> >> >> > have very different characteristics.
-> >> >>
-> >> >> How are they different after the scancode is extracted from the
-> >> >> network packet? The scancode still needs to be passed to the input
-> >> >> system, go through a keymap, and end up on an evdev device.
-> >> >>
-> >> >> I would expect the code for extracting the scancode to live in the
-> >> >> networking stack, but after it is recovered the networking code would
-> >> >> use the same API as IR to submit it to input.
-> >> >
-> >> > For one thing,  bluetooth (etc) has concept of devices (and reliable
-> >> > transfer). If you have two same bluetooth remotes, you can tell them
-> >> > apart, unlike IR.
-> >>
-> >> IR has the same concept of devices. That's what those codes you enter
-> >> into a universal remote do - they set the device.
-> >
-> > They set the device _model_.
-> >
-> >> There are three classes of remotes..
-> >> Fixed function - the device is hardwired
-> >> Universal - you can change the device
-> >> Multi-function - a universal that can be multiple devices - TV, cable,
-> >> audio, etc
-> >>
-> >> If you set two Bluetooth remotes both to the same device you can't
-> >> tell them apart either.
-> >
-> > Untrue. Like ethernets and wifis, bluetooth devices have unique
-> > addresses. Communication is bidirectional.
-> 
-> I agree with that, but the 802.15.4 remote control software I've
-> worked with ignores the MAC address. You set your remote to send codes
-> for a specific device.  The mac address of the remote is ignored so
-> that any remote can control the device.  You don't need to pair
-> 802.15.4 remotes like Bluetooth devices need to be paired.
-> 
-> I haven't played around with a Bluetooth remote. Nothing I own can
-> send the signals.  How can a Bluetooth remote control multiple devices
-> in the same room if it needs to be paired?
+On Tue, Dec 15, 2009 at 12:48 PM, Jamie Lokier <jamie@shareable.org> wrote:
+>
+> Perhaps the Dream's GPIOs are similar, but with opposite polarity.
+> If it also has the same transition driving spike, writing a 1->0
+> transition would be bad for the hardware making the shadow variable
+> even more important.
 
-I'd guess that bluetooth remote would be very similar to bluetooth
-keyboard, and present itself in a very similar way.
+Arve will certainly step in if I'm wrong here, but I believe the issue
+is that the dream CPLD GPIOs (which is what we're talking about, not
+the MSM7K's onboard GPIOs which are more flexible) have no way to read
+the set output state back.  So, you can't read-modify-write to change
+just one of the 8 bits in a given bank.  The default mask values in
+the android msm tree's trout gpio board files are based on what he
+shipping HTC bootloader initializes things to.
 
-I still believe infrared is different -- it is essentially light with
-very little protocol above. 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Brian
