@@ -1,71 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbZLOBUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZLOCMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbZLOBUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758975AbZLOBUJ
+	id S1758797AbZLOCMF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 21:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbZLOCL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:20:09 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59246 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758945AbZLOBUG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:20:06 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B26E436.9000806@jp.fujitsu.com>
-Date: Tue, 15 Dec 2009 10:19:50 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 14 Dec 2009 21:11:58 -0500
+Received: from ns.netcenter.hu ([195.228.254.57]:53143 "EHLO mail.netcenter.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755853AbZLOCL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 21:11:57 -0500
+X-Greylist: delayed 2944 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Dec 2009 21:11:57 EST
+Message-ID: <369401ca7d25$0045b230$0400a8c0@dcccs>
+From: "Janos Haar" <janos.haar@netcenter.hu>
+To: "Robert Hancock" <hancockrwd@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+References: <315c01ca7ca7$641ff8c0$0400a8c0@dcccs> <4B26E03E.5050309@gmail.com>
+Subject: Re: HDD power up in standby
+Date: Tue, 15 Dec 2009 02:21:58 +0100
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Jiri Slaby <jslaby@suse.cz>, Aristeu Sergio <arozansk@redhat.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       x86@kernel.org
-Subject: [PATCH] pci: fix section mismatch on update_res()
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-2";
+	reply-type=response
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3598
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jslaby@suse.cz>
+Hello,
 
-Remark update_res from __init to __devinit as it is called also
-from __devinit functions.
+----- Original Message ----- 
+From: "Robert Hancock" <hancockrwd@gmail.com>
+To: "Janos Haar" <djani22@netcenter.hu>
+Cc: <linux-kernel@vger.kernel.org>
+Sent: Tuesday, December 15, 2009 2:02 AM
+Subject: Re: HDD power up in standby
 
-This patch removes the following warning message:
 
-  WARNING: vmlinux.o(.devinit.text+0x774a): Section mismatch
-  in reference from the function pci_root_bus_res() to the
-  function .init.text:update_res()
-  The function __devinit pci_root_bus_res() references
-  a function __init update_res().
-  If update_res is only used by pci_root_bus_res then
-  annotate update_res with a matching annotation.
+> On 12/14/2009 04:22 AM, Janos Haar wrote:
+>> Hello list,
+>>
+>> I have posted to the common, because this theme is for more lists (ide,
+>> sata, scsi), i think....
+>>
+>> I know you will not like me guys, but i have one wish.... :-)
+>>
+>> I am building cheap but big storages, and after 12 drive / PC i have 
+>> faced
+>> with one problem:
+>> The too much spinup current wich made by the 12-16 drive at the same 
+>> time.
+>> In my actual case, in 12V, there is more than 2A / drive for some 
+>> seconds.
+>>
+>> I know, in SCSI, there is a jumper for this, and the card can wake up the
+>> drives one by one, but i am using 2TB drives, and in SCSI/SAS this have
+>> horrible price...
+>> I have done some invesrtigation, and found this:
+>> The most of the simple sata drives handles the PUIS mode (by set
+>> features ata command), but unfortunately
+>> only the professional and expensive raid cards supports the wakeing up.
+>> If the cheap cards founds only 0 byte drives, this is not a problem at 
+>> all,
+>> because linux usually not use BIOS support fortunately. :-)
+>> But i have found when i have spent a little time in google, and in the
+>> documentation, linux doesn't support PUIS.
+>>
+>> I think this would be great, and (relatively) simple to implement this
+>> feature.
+>> I can imagine in this way:
+>> Wake up from PUIS is disabled by default, but can be enabled by command
+>> line
+>> parameter, or compile time configuration.
+>> The drivers should send the wake up command one by one to the drives, 
+>> waits
+>> for RDY DSC, and than scan the drives, and register....
+>>
+>> What do you think?
+>
+> As far as I can see, if the drive reports it's in power-up in standby mode 
+> from the identify response, the kernel will send the command to spin up 
+> the drive. It might depend on whether parallel scan is enabled for the 
+> controller as far as whether they actually spin up one at a time, however.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Aristeu Sergio <arozansk@redhat.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org
-Cc: x86@kernel.org
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- arch/x86/pci/bus_numa.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I am working with 2TB Hitachi drive wich is set to PUIS, and reports itself 
+as 0 byte, but existing device (pcb factory alias), but with my promise 
+card, the kernel see only bad geometry and disable the port only. :-(
+I have missed something?
 
-diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
-index 145df00..f939d60 100644
---- a/arch/x86/pci/bus_numa.c
-+++ b/arch/x86/pci/bus_numa.c
-@@ -51,7 +51,7 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
- 	}
- }
- 
--void __init update_res(struct pci_root_info *info, size_t start,
-+void __devinit update_res(struct pci_root_info *info, size_t start,
- 			      size_t end, unsigned long flags, int merge)
- {
- 	int i;
--- 
-1.6.5.6
-
+>
+>>
+>> (Now i am searching for the solution to send the wakeup command by user
+>> program, and than do a "hotplug" in software only, but this is not an
+>> "elegant" solution...)
+>>
+>>
+>> Best Regards,
+>> Janos Haar
+>> 
 
