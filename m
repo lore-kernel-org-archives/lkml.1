@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbZLOSnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbZLOSoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759657AbZLOSnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbZLOSnV
+	id S1759700AbZLOSoT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZLOSoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:43:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59969 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759339AbZLOSnR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:43:17 -0500
-Subject: [PATCH] perf: fix perf_event_attr layout -v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1260902179.8023.767.camel@laptop>
-References: <1260902179.8023.767.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Dec 2009 19:43:11 +0100
-Message-ID: <1260902591.8023.781.camel@laptop>
+	Tue, 15 Dec 2009 13:44:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45593 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759986AbZLOSoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:44:16 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/rQcx4LZ/r7aGhopikRVqSDPduyVc35F2a6fja5Y
+	CLtVgmKa+B4G8k
+Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead
+ prepare_to_wait()
+From: Mike Galbraith <efault@gmx.de>
+To: Rik van Riel <riel@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+In-Reply-To: <4B27A417.3040206@redhat.com>
+References: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>
+	 <4B264CCA.5010609@redhat.com> <20091215085631.CDAD.A69D9226@jp.fujitsu.com>
+	 <1260855146.6126.30.camel@marge.simson.net>  <4B27A417.3040206@redhat.com>
+Content-Type: text/plain
+Date: Tue, 15 Dec 2009 19:43:30 +0100
+Message-Id: <1260902610.5913.19.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 19:36 +0100, Peter Zijlstra wrote:
-> [now with lkml added too]
-
-compile tested...
-
+On Tue, 2009-12-15 at 09:58 -0500, Rik van Riel wrote:
+> On 12/15/2009 12:32 AM, Mike Galbraith wrote:
+> > On Tue, 2009-12-15 at 09:45 +0900, KOSAKI Motohiro wrote:
+> >>> On 12/14/2009 07:30 AM, KOSAKI Motohiro wrote:
+> >>>> if we don't use exclusive queue, wake_up() function wake _all_ waited
+> >>>> task. This is simply cpu wasting.
+> >>>>
+> >>>> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+> >>>
+> >>>>    		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
+> >>>>    					0, 0)) {
+> >>>> -			wake_up(wq);
+> >>>> +			wake_up_all(wq);
+> >>>>    			finish_wait(wq,&wait);
+> >>>>    			sc->nr_reclaimed += sc->nr_to_reclaim;
+> >>>>    			return -ERESTARTSYS;
+> >>>
+> >>> I believe we want to wake the processes up one at a time
+> >>> here.
 > 
-> The miss-alignment of bp_addr created a 32bit hole, causing different
-> structure packings on 32 and 64 bit machines.
+> >> Actually, wake_up() and wake_up_all() aren't different so much.
+> >> Although we use wake_up(), the task wake up next task before
+> >> try to alloate memory. then, it's similar to wake_up_all().
 > 
-> Fix that by moving __reserve_2 into that hole.
-> 
-> Further, remove the useless struct and redundant __bp_reserve muck.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/perf_event.h |   12 +++---------
- kernel/perf_event.c        |    2 +-
- 2 files changed, 4 insertions(+), 10 deletions(-)
+> That is a good point.  Maybe processes need to wait a little
+> in this if() condition, before the wake_up().  That would give
+> the previous process a chance to allocate memory and we can
+> avoid waking up too many processes.
 
-Index: linux-2.6/include/linux/perf_event.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_event.h
-+++ linux-2.6/include/linux/perf_event.h
-@@ -211,17 +211,11 @@ struct perf_event_attr {
- 		__u32		wakeup_watermark; /* bytes before wakeup   */
- 	};
- 
--	struct { /* Hardware breakpoint info */
--		__u64		bp_addr;
--		__u32		bp_type;
--		__u32		bp_len;
--		__u64		__bp_reserved_1;
--		__u64		__bp_reserved_2;
--	};
--
- 	__u32			__reserved_2;
- 
--	__u64			__reserved_3;
-+	__u64			bp_addr;
-+	__u32			bp_type;
-+	__u32			bp_len;
- };
- 
- /*
-Index: linux-2.6/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/kernel/perf_event.c
-+++ linux-2.6/kernel/perf_event.c
-@@ -4564,7 +4564,7 @@ static int perf_copy_attr(struct perf_ev
- 	if (attr->type >= PERF_TYPE_MAX)
- 		return -EINVAL;
- 
--	if (attr->__reserved_1 || attr->__reserved_2 || attr->__reserved_3)
-+	if (attr->__reserved_1 || attr->__reserved_2)
- 		return -EINVAL;
- 
- 	if (attr->sample_type & ~(PERF_SAMPLE_MAX-1))
+Pondering, I think I'd at least wake NR_CPUS.  If there's not enough to
+go round, oh darn, but if there is, you have full utilization quicker.
 
+$.02.
+
+	-Mike
 
