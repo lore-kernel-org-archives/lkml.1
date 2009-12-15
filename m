@@ -1,101 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbZLOJl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbZLOJnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759477AbZLOJl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759423AbZLOJlO
+	id S1759487AbZLOJnN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbZLOJnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:41:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59225 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759410AbZLOJlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:41:08 -0500
-Date: Tue, 15 Dec 2009 09:40:43 GMT
-From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tzanussi@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tzanussi@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1260867220-15699-7-git-send-email-tzanussi@gmail.com>
-References: <1260867220-15699-7-git-send-email-tzanussi@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf trace/scripting: Update Documentation
-Message-ID: <tip-a6005123ce22770dbd91bc3cb637ce0807ab959b@git.kernel.org>
-Git-Commit-ID: a6005123ce22770dbd91bc3cb637ce0807ab959b
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Tue, 15 Dec 2009 04:43:12 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50255
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752270AbZLOJnK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 04:43:10 -0500
+Date: Tue, 15 Dec 2009 01:43:08 -0800 (PST)
+Message-Id: <20091215.014308.77044043.davem@davemloft.net>
+To: daniel@caiaq.de
+Cc: linux-kernel@vger.kernel.org, dcbw@redhat.com, m.hirsch@raumfeld.com,
+       netdev@vger.kernel.org, libertas-dev@lists.infradead.org,
+       stable@kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
+ for 32byte SSIDs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a6005123ce22770dbd91bc3cb637ce0807ab959b
-Gitweb:     http://git.kernel.org/tip/a6005123ce22770dbd91bc3cb637ce0807ab959b
-Author:     Tom Zanussi <tzanussi@gmail.com>
-AuthorDate: Tue, 15 Dec 2009 02:53:40 -0600
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 15 Dec 2009 10:31:33 +0100
+From: Daniel Mack <daniel@caiaq.de>
+Date: Sun, 13 Dec 2009 04:47:30 +0800
 
-perf trace/scripting: Update Documentation
+> We've experienced a long standing bug when quickly switching from
+> ad-hoc to managed mode on a hardware using a Libertas chipset.
 
-Update the perf-trace page with new and missing options and
-remove some unused ones.
+Can you please CC: linux-wireless for wireless patches?
 
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-Cc: fweisbec@gmail.com
-Cc: rostedt@goodmis.org
-LKML-Reference: <1260867220-15699-7-git-send-email-tzanussi@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/Documentation/perf-trace.txt |   27 ++++++++++++++++++++++++++-
- 1 files changed, 26 insertions(+), 1 deletions(-)
+Thanks.
 
-diff --git a/tools/perf/Documentation/perf-trace.txt b/tools/perf/Documentation/perf-trace.txt
-index 07065ef..60e5900 100644
---- a/tools/perf/Documentation/perf-trace.txt
-+++ b/tools/perf/Documentation/perf-trace.txt
-@@ -8,18 +8,43 @@ perf-trace - Read perf.data (created by perf record) and display trace output
- SYNOPSIS
- --------
- [verse]
--'perf trace' [-i <file> | --input=file] symbol_name
-+'perf trace' {record <script> | report <script> [args] }
- 
- DESCRIPTION
- -----------
- This command reads the input file and displays the trace recorded.
- 
-+There are several variants of perf trace:
-+
-+  'perf trace' to see a detailed trace of the workload that was
-+  recorded.
-+
-+  'perf trace record <script>' to record the events required for 'perf
-+  trace report'.  <script> is the name displayed in the output of
-+  'perf trace --list' i.e. the actual script name minus any language
-+  extension.
-+
-+  'perf trace report <script>' to run and display the results of
-+  <script>.  <script> is the name displayed in the output of 'perf
-+  trace --list' i.e. the actual script name minus any language
-+  extension.  The perf.data output from a previous run of 'perf trace
-+  record <script>' is used and should be present for this command to
-+  succeed.
-+
- OPTIONS
- -------
- -D::
- --dump-raw-trace=::
-         Display verbose dump of the trace data.
- 
-+-L::
-+--Latency=::
-+        Show latency attributes (irqs/preemption disabled, etc).
-+
-+-l::
-+--list=::
-+        Display a list of available trace scripts.
-+
- -s::
- --script=::
-         Process trace data with the given script ([lang]:script[.ext]).
+> The effect is that after a number of mode transistions (sometimes as few
+> as two sufficed), the kernel will oops at very strange locations, mostly
+> in something like __kmem_alloc().
+> 
+> While the root cause turned out to be an issue with the wpa-supplicant
+> which feeds the kernel driver with garbage, this occasion pointed out a
+> bug in the wireless wext core when SSIDs with 32 byte lengths are passed
+> from userspace. In this case, the string is not properly NULL-terminated
+> which causes some other part to corrupt memory.
+> 
+> (In the particular case I observed, an SIOCSIWESSID was issued with
+>  bogus data in iwp->pointer but iwp->length=32).
+> 
+> I admitedly couldn't find where the actual corruption itself happens,
+> but with this trivial fix, I can't reproduce the bug anymore.
+> 
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Dan Williams <dcbw@redhat.com>
+> Cc: Michael Hirsch <m.hirsch@raumfeld.com>
+> Cc: netdev@vger.kernel.org
+> Cc: libertas-dev@lists.infradead.org
+> Cc: stable@kernel.org
+> ---
+>  net/wireless/wext.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> ---
+>  net/wireless/wext-core.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/net/wireless/wext-core.c b/net/wireless/wext-core.c
+> index 5e1656b..3d8f4b0 100644
+> --- a/net/wireless/wext-core.c
+> +++ b/net/wireless/wext-core.c
+> @@ -759,8 +759,8 @@ static int ioctl_standard_iw_point(struct iw_point *iwp, unsigned int cmd,
+>  		}
+>  	}
+>  
+> -	/* kzalloc() ensures NULL-termination for essid_compat. */
+> -	extra = kzalloc(extra_size, GFP_KERNEL);
+> +	/* kzalloc() +1 ensures NULL-termination for essid_compat. */
+> +	extra = kzalloc(extra_size + 1, GFP_KERNEL);
+>  	if (!extra)
+>  		return -ENOMEM;
+>  
+> -- 
+> 1.6.3.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
