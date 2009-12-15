@@ -1,116 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759796AbZLOK2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbZLOK3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759796AbZLOK2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759782AbZLOK2t
+	id S1759822AbZLOK3Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbZLOK3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:28:49 -0500
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:44211 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759779AbZLOK2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:28:46 -0500
-Date: Tue, 15 Dec 2009 15:59:09 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Salman Qazi <sqazi@google.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the
- Linux Kernel
-Message-ID: <20091215102909.GA878@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
- <20091214161922.6f252492@infradead.org>
- <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
+	Tue, 15 Dec 2009 05:29:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47939 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759264AbZLOK3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 05:29:13 -0500
+Message-ID: <4B2764F5.9000206@redhat.com>
+Date: Tue, 15 Dec 2009 12:29:09 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: Poor KVM guest performance on an HP rack server
+References: <4B243B2B.806@pardus.org.tr> <4B24BE52.6060703@redhat.com> <4B24D1C2.9010807@pardus.org.tr> <4B24D6DD.8060509@pardus.org.tr>
+In-Reply-To: <4B24D6DD.8060509@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Salman Qazi <sqazi@google.com> [2009-12-14 16:36:20]:
+On 12/13/2009 01:58 PM, Ozan Çağlayan wrote:
+>
+> KVM related messages on the host server:
+>
+> ~ # dmesg |grep kvm
+> [ 3649.058945] loaded kvm module (kvm-kmod-2.6.32)
+> [ 3683.736737] kvm: emulating exchange as write (It's interesting, what does it mean?)
+>    
 
-> On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> > On Mon, 14 Dec 2009 15:11:47 -0800
-> > Salman Qazi <sqazi@google.com> wrote:
-> >
-> >
-> > I like the general idea, I have one request (that I didn't see quite in
-> > your explanation): Please make sure that all cpus in the system do
-> > their idle injection at the same time, so that memory can go into power
-> > saving mode as well during this time etc etc...
-> >
+An exchange instruction (cmpxchg, likely) was emulated using a write.  
+Since it happens under lock, this is safe.
 
-The value of the overall idea is well understood but the
-implementation and benefits in terms of power savings was the major
-point of discussion earlier. 
- 
-> With the current interface, the forced idle percentages on the CPUs
-> are controlled independently.  There's a trade-off here.  If we inject
-> idle cycles on all the CPU at the same time, our machine
-> responsiveness also degrades: essentially every CPU becomes equally
-> bad for an interactive task to run on.  Our aim at the moment is to
-> try to concentrate the idle cycles on a small set of CPUs, to strive
-> to leave some CPUs where interactive tasks can run unhindered.  But,
-> given a different workload and goals the correct policy may be
-> different.
-> 
-> Simultaneously idling multiple "cores" becomes necessary in the SMT
-> case: as there is no point in idling a single thread, while the other
-> thread is running full tilt.  So, in such a case it is necessary to
-> idle all the threads making up the physical core.  This feature has
-> not been implemented yet.
-> 
-> I think the best approach may be to provide a way to specify the
-> policy from the user space.  Basically let the user decide at what
-> level of CPU hierarchy the forced idle percentages are specified.
-> Then, in the levels below, we simply inject at the same time.
+> First of all if there are some specific outputs that will reveal the
+> IO/CPU boundness of the workload, I'd like to give them too. I'm not
+> much familiar with diagnostic/analysis tools..
+>
+>  From host's POV:
+> ----------------
+>
+> Guest is idle:
+>
+>    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 26117 root      20   0 2153m 175m 1356 S    5  0.5   0:33.57 qemu-kvm
+>
+> Guest is configuring CUPS:
+>
+>    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 26117 root      20   0 2129m 180m 1356 S  143  0.6   0:44.34 qemu-kvm (peak at 140,150~ %CPU)
+>
+>    
 
-Synchronising the idle times across multiple cores and also selecting
-sibling threads belonging to the same core is important.  The current
-ACPI forced idle driver can inject idle time but not synchronized
-across multiple cores.
+Definitely looks cpu bound.
 
-Allowing the scheduler load balancer to avoid using a part of the
-sched domain tree will allow easy grouping of sibling threads and
-sibling cores if that saves more power.
+> load average reached 0.91 at the end of the configuration.
+>
+> SMP view of top command shows that only Cpu2 and Cpu9 are involved,
+> other ones are zeroed (maybe coherent with -smp 2, don't have much idea):
+>
+> Cpu2  : 28.4%us, 31.4%sy,  0.0%ni, 40.2%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
+> Cpu9  : 27.7%us, 26.7%sy,  0.0%ni, 45.5%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
+>    
 
-However as Arjan mentioned, new architectures have significant power
-savings at full system idle where memory power is reduced.  Injecting
-idle time in any of the core will actually increase the utilisation on
-the other cores (unless the system is full loaded) and reduce the full
-system idle time opportunity.  Basically injecting idle time on some
-of the cores in the system goes against the race-to-idle policy
-thereby decreasing overall system operating efficiency.
+Can you provide kvm_stat output while this happens?
 
-Can you please clarify the following questions:
+> Configuring CUPS:
+>
+>    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> 19258 root      20   0  3396 1656 1192 R   18  0.1   0:05.20 configure (Saw maximum 22 %CPU)
+>    
 
-* What is the typical duration of idle time injected?
-        - 10s of milli seconds?  CPUs are expected to goto lowest
-          power idle state within this time?
+Do you have any idea what this configure does?  If it is a very 
+fork/exec intensive workload, you can expect some slowdown on older 
+processors.
 
-* You mentioned that natural idle time in the system is taken into
-  account before injecting forced idle time, which is a good feature
-  to have.
-        - In most workloads, as the utilisation drops, all the cpus
-          have similar idle times.  This is favourable for exploiting
-          memory power saving.  
-        - Now when more idle time need to be inserted, is it
-          uniformly spread across all CPUs?
+> The following is the highest load average instant during configuration:
+>
+> top - 11:35:32 up 33 min,  3 users,  load average: 0.56, 0.25, 0.15
+> Tasks:  99 total,   4 running,  95 sleeping,   0 stopped,   0 zombie
+> Cpu0  :  4.7%us, 68.3%sy,  0.0%ni, 27.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
+> Cpu1  :  4.3%us, 66.3%sy,  0.0%ni, 29.3%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
+> Mem:   2061660k total,   137564k used,  1924096k free,    58672k buffers
+> Swap:   307192k total,        0k used,   307192k free,    49240k cached
+>
+> vmstat -n 1:
+> ------------
+>
+> (context switches and interrupts are much more higher during
+> configuration than the idle state)
+>    
 
-Suggestions:
+>   1  0      0 1924788  58592  49176    0    0     0     0 1413  401  2 33 65  0  0  (./configure)
+>   1  0      0 1924092  58592  49072    0    0     0     4 2210  599  5 57 38  0  0
+>   1  0      0 1924544  58592  49080    0    0     0     0 2131  349  5 51 45  0  0
+>    
 
-* Can cgroup hardlimits help here to inject idle times
-  http://lkml.org/lkml/2009/11/17/191
+That's consistent with a fork/exec load, though the numbers are not that 
+high.
 
-  The problem of distributing idle time equally across CPUs and
-  relating sibling threads is still and issue, but can be worked out.
-  As of now hardlimits can distribute idle time across CPUs thereby
-  enabling full system idle.
+-- 
+error compiling committee.c: too many arguments to function
 
---Vaidy
