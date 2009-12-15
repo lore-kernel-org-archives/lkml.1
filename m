@@ -1,117 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZLONrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbZLONyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbZLONrj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 08:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbZLONrh
+	id S1760251AbZLONyj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 08:54:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760228AbZLONyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 08:47:37 -0500
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:49708 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755344AbZLONrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 08:47:36 -0500
-Message-ID: <4B279370.5050800@in.ibm.com>
-Date: Tue, 15 Dec 2009 19:17:28 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Tue, 15 Dec 2009 08:54:38 -0500
+Received: from kroah.org ([198.145.64.141]:42420 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760201AbZLONyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 08:54:37 -0500
+Date: Tue, 15 Dec 2009 05:49:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Ike Panhc <ike.pan@canonical.com>
+Cc: linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>,
+       stable@kernel.org, Wey-Yi Guy <wey-yi.w.guy@intel.com>
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+Message-ID: <20091215134943.GA11667@kroah.com>
+References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>
+ <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
+ <20091215041500.GB31200@kroah.com>
+ <4B273479.6050502@canonical.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins> <4B261D7A.9040802@in.ibm.com>  <1260793182.4165.223.camel@twins> <1260825420.2217.40.camel@pasglop>  <4B275A6B.9030200@in.ibm.com> <1260873827.4165.362.camel@twins>
-In-Reply-To: <1260873827.4165.362.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B273479.6050502@canonical.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->> I added some debug statements within the above code. 
->> This is a 2 cpu machine.
->>
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 1024 
->> XMON dest_cpu = 1024 . dead_cpu = 1
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 1024 
->> XMON dest_cpu = 1024 . dead_cpu = 1
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 1024 
->> XMON dest_cpu = 1024 . dead_cpu = 1
->>
->> Seems to me that the control is stuck in an infinite loop and hence the
->> machine appears to be in hung state. The dest_cpu value is always 1024
->> and never changes, which result in an infinite loop.
->>
->> In working scenario the o/p is something on the following lines
->>
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 0 
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 0 
->> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->> XMON dest_cpu = 0 
->>
->> Let me know if i should try to record any specific value ?
->>     
->
-> Could you possibly print the two masks themselves? cpumask_scnprintf()
-> and friend come in handy for this.
->
-> The dest_cpu=1024 thing seem to suggest the intersection between
-> p->cpus_allowed and cpu_active_mask is empty for some reason, even
-> though we forcefully reset p->cpus_allowed to the full set using
-> cpuset_cpus_allowed_locked().
->   
-So here is the data related to the two masks.
+On Tue, Dec 15, 2009 at 03:02:17PM +0800, Ike Panhc wrote:
+> Greg KH wrote:
+> > On Tue, Dec 15, 2009 at 11:45:10AM +0800, Ike Panhc wrote:
+> >> This patch unifies setup_rxon_timing funcions
+> >> of AGN and 3945. HWs differ only in supported maximal
+> >> beacon interval. This is reflected in hw_paras.max_beacon_itrvl
+> >>
+> >> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+> >> Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+> >> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> >> (cherry picked from commit 2c2f3b33888419fb9e7d015b9dc67b9db4437efa)
+> >>
+> >> Conflicts:
+> >>
+> >> 	drivers/net/wireless/iwlwifi/iwl-dev.h
+> > 
+> > What does this mean?
+> > 
+> After cherry-pick:
+> 
+> --- a/drivers/net/wireless/iwlwifi/iwl-dev.h
+> +++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
+> @@@ -625,7 -608,7 +625,11 @@@ struct iwl_hw_params 
+> 	u8  max_stations;
+> 	u8  bcast_sta_id;
+> 	u8 fat_channel;
+> ++<<<<<<< HEAD:drivers/net/wireless/iwlwifi/iwl-dev.h
+>  +	u8 sw_crypto;
+> ++=======
+> +	u8  max_beacon_itrvl;   /* in 1024 ms */
+> ++>>>>>>> 2c2f3b3... iwlwifi: unify iwl_setup_rxon_timing:drivers/net/wireless/iwlwifi/iwl-dev.h
+> 	u32 max_inst_size;
+> 	u32 max_data_size;
+> 	u32 max_bsm_size;
+> 
+> The sw_crypto is removed in the prior commit (90e8e4), and the commit
+> is not in the stable tree. We still need sw_crypto.
+> 
+> So, the patch is modified to keep sw_crypto.
 
-cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000
-XMON dest_cpu = 1024
+And why would we care?  We've never used this kind of marking before in
+the kernel changelogs that I know of.
 
-while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000001
-XMON dest_cpu = 1024
+> >> CC: stable@kernel.org
+> >> Signed-off-by: Ike Panhc <ike.pan@canonical.com>
+> >>
+> >> BugLink: http://bugs.launchpad.net/bugs/496496
+> > 
+> > What are you expecting this patch to be applied to?
+> > 
+> > confused,
+> Please consider applying to linux-2.6.31.y
 
-In working scenario the above data looks like
+I need the subsystem maintainer to agree with this, have they?
 
-cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000002
-XMON dest_cpu = 1
+thanks,
 
-while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-00000000,00000000,00000002
-XMON dest_cpu = 1
-
-
-hope i got the data correct.
-
-Thanks
--Sachin
-
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+greg k-h
