@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932498AbZLOQpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbZLOQpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932498AbZLOQpj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 11:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760596AbZLOQpg
+	id S1760578AbZLOQpP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 11:45:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbZLOQpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 11:45:36 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36282 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760594AbZLOQpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 11:45:34 -0500
-Date: Tue, 15 Dec 2009 11:39:24 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Greg KH <greg@kroah.com>, Reinette Chatre <reinette.chatre@intel.com>,
-       Ike Panhc <ike.pan@canonical.com>, linux-kernel@vger.kernel.org,
-       Tomas Winkler <tomas.winkler@intel.com>, stable@kernel.org,
-       Wey-Yi Guy <wey-yi.w.guy@intel.com>
-Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
-Message-ID: <20091215163923.GA8735@tuxdriver.com>
-References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com> <1260848710-5650-1-git-send-email-ike.pan@canonical.com> <20091215041500.GB31200@kroah.com> <4B273479.6050502@canonical.com> <20091215134943.GA11667@kroah.com> <1260894840.4041.35.camel@localhost.localdomain>
+	Tue, 15 Dec 2009 11:45:12 -0500
+Received: from thunk.org ([69.25.196.29]:42862 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754711AbZLOQpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 11:45:11 -0500
+Date: Tue, 15 Dec 2009 11:45:03 -0500
+From: tytso@mit.edu
+To: Oleg Drokin <green@linuxhacker.ru>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] Possible data loss on ext[34], reiserfs with external
+ journal
+Message-ID: <20091215164503.GI4867@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Oleg Drokin <green@linuxhacker.ru>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <20091211081608.GA597088@fiona.linuxhacker.ru>
+ <20091215053207.GA26541@thunk.org>
+ <2EEF5D3D-AFA5-4D74-92A7-B42A0FB9A4F5@linuxhacker.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260894840.4041.35.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <2EEF5D3D-AFA5-4D74-92A7-B42A0FB9A4F5@linuxhacker.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 08:34:00AM -0800, Marcel Holtmann wrote:
+On Tue, Dec 15, 2009 at 01:19:57AM -0500, Oleg Drokin wrote:
+> > +	/* 
+> > +	 * If the journal is not located on the file system device,
+> > +	 * then we must flush the file system device before we issue
+> > +	 * the commit record
+> > +	 */
+> > +	if (commit_transaction->t_flushed_data_blocks &&
+> > +	    (journal->j_fs_dev != journal->j_dev) &&
+> > +	    (journal->j_flags & JBD2_BARRIER))
+> > +		blkdev_issue_flush(journal->j_fs_dev, NULL);
+> > +
+> 
+> I am afraid this is not enough. This code is called after journal
+> was flushed for async commit case, so it leaves a race window where
+> journal transaction is already on disk and complete, but the data is
+> still in cache somewhere.
 
-> I agree here. Not copying Reinette on this is just wrong. And blindly
-> picking some patches and sending them for -stable even more.
+No, that's actually fine.  In the ASYNC_COMMIT case, the commit won't
+be valid until the checksum is correct, and we won't have written any
+descriptor blocks yet at this point.  So there is no race because
+during that window, the commit is written but we won't write any
+descriptor blocks until after the barrier returns.
 
-I agree that Reinette should have been copied.  I'm not sure I agree
-that sending the patches was wrong by itself.
+> Also the callsite has this comment which is misleading, I think:
+>         /*
+>          * This is the right place to wait for data buffers both for ASYNC
+>          * and !ASYNC commit. If commit is ASYNC, we need to wait only after
+>          * the commit block went to disk (which happens above). If commit is
+>          * SYNC, we need to wait for data buffers before we start writing
+>          * commit block, which happens below in such setting.
+>          */
 
-Canonical gets kicked in the teeth for lack of upstream participation
-all the time.  I even have some of their enamel on my shoes...
-But let's not be too hard on them for making a mistake while trying
-to do something that is overall helpful to the community at large.
+Yeah, that comment is confusing and not entirely accurate.  I thought
+about cleaning it up, and then decided to do that in a separate patch.
 
-Just my $0.02...
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+      	       	      	       	       	  - Ted
