@@ -1,119 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbZLOGxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZLOHC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbZLOGxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 01:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZLOGxq
+	id S1755002AbZLOHC2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 02:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZLOHC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 01:53:46 -0500
-Received: from stargate.chelsio.com ([67.207.112.58]:9448 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbZLOGxp (ORCPT
+	Tue, 15 Dec 2009 02:02:27 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:47541 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbZLOHC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 01:53:45 -0500
-Date: Tue, 15 Dec 2009 12:19:19 +0530 (IST)
-From: Rakesh Ranjan <rakesh@chelsio.com>
-X-X-Sender: rakesh@rakeshpc.asicdesigner.com
-To: OISCSIML <open-iscsi@googlegroups.com>,
-       LSCSIML <linux-scsi@vger.kernel.org>, LNDML <netdev@vger.kernel.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Mike Christie <michaelc@cs.wisc.edu>,
-       David Miller <davem@davemloft.net>,
-       James Bottomley <james.bottomley@hansenpartnership.com>,
-       Karen Xie <kxie@chelsio.com>, Rakesh Ranjan <rakesh@chelsio.com>
-Subject: [RESEND PATCH 1/1]cxgb3i: Fix a login over vlan issue
-Message-ID: <alpine.LFD.2.00.0912151214230.11944@rakeshpc.asicdesigner.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 15 Dec 2009 02:02:26 -0500
+Message-ID: <4B273479.6050502@canonical.com>
+Date: Tue, 15 Dec 2009 15:02:17 +0800
+From: Ike Panhc <ike.pan@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 15 Dec 2009 06:51:57.0015 (UTC) FILETIME=[17E56E70:01CA7D53]
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>,
+       stable@kernel.org, Wey-Yi Guy <wey-yi.w.guy@intel.com>
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com> <1260848710-5650-1-git-send-email-ike.pan@canonical.com> <20091215041500.GB31200@kroah.com>
+In-Reply-To: <20091215041500.GB31200@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rakesh Ranjan <rakesh@chelsio.com>
+Greg KH wrote:
+> On Tue, Dec 15, 2009 at 11:45:10AM +0800, Ike Panhc wrote:
+>> This patch unifies setup_rxon_timing funcions
+>> of AGN and 3945. HWs differ only in supported maximal
+>> beacon interval. This is reflected in hw_paras.max_beacon_itrvl
+>>
+>> Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+>> Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+>> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+>> (cherry picked from commit 2c2f3b33888419fb9e7d015b9dc67b9db4437efa)
+>>
+>> Conflicts:
+>>
+>> 	drivers/net/wireless/iwlwifi/iwl-dev.h
+> 
+> What does this mean?
+> 
+After cherry-pick:
 
-Fix a target login issue, when parent interface is vlan and we are using cxgb3i sepecific
-private ip address in '/etc/iscsi/ifaces/' iface file.
+--- a/drivers/net/wireless/iwlwifi/iwl-dev.h
++++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
+@@@ -625,7 -608,7 +625,11 @@@ struct iwl_hw_params 
+	u8  max_stations;
+	u8  bcast_sta_id;
+	u8 fat_channel;
+++<<<<<<< HEAD:drivers/net/wireless/iwlwifi/iwl-dev.h
+ +	u8 sw_crypto;
+++=======
++	u8  max_beacon_itrvl;   /* in 1024 ms */
+++>>>>>>> 2c2f3b3... iwlwifi: unify iwl_setup_rxon_timing:drivers/net/wireless/iwlwifi/iwl-dev.h
+	u32 max_inst_size;
+	u32 max_data_size;
+	u32 max_bsm_size;
 
-Acked-by: Karen Xie <kxie@chelsio.com>
-Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
----
- drivers/scsi/cxgb3i/cxgb3i_offload.c |   34 +++++++++++++++++++++++++++++++++-
- 1 files changed, 33 insertions(+), 1 deletions(-)
+The sw_crypto is removed in the prior commit (90e8e4), and the commit
+is not in the stable tree. We still need sw_crypto.
 
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-index 26ffdcd..15a00e8 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-@@ -1440,6 +1440,10 @@ void cxgb3i_c3cn_release(struct s3_conn *c3cn)
- static int is_cxgb3_dev(struct net_device *dev)
- {
- 	struct cxgb3i_sdev_data *cdata;
-+	struct net_device *ndev = dev;
-+
-+	if (dev->priv_flags & IFF_802_1Q_VLAN)
-+		ndev = vlan_dev_real_dev(dev);
- 
- 	write_lock(&cdata_rwlock);
- 	list_for_each_entry(cdata, &cdata_list, list) {
-@@ -1447,7 +1451,7 @@ static int is_cxgb3_dev(struct net_device *dev)
- 		int i;
- 
- 		for (i = 0; i < ports->nports; i++)
--			if (dev == ports->lldevs[i]) {
-+			if (ndev == ports->lldevs[i]) {
- 				write_unlock(&cdata_rwlock);
- 				return 1;
- 			}
-@@ -1566,6 +1570,26 @@ out_err:
- 	return -EINVAL;
- }
- 
-+/**
-+ * cxgb3i_find_dev - find the interface associated with the given address
-+ * @ipaddr: ip address
-+ */
-+static struct net_device *
-+cxgb3i_find_dev(struct net_device *dev, __be32 ipaddr)
-+{
-+	struct flowi fl;
-+	int err;
-+	struct rtable *rt;
-+
-+	memset(&fl, 0, sizeof(fl));
-+	fl.nl_u.ip4_u.daddr = ipaddr;
-+
-+	err = ip_route_output_key(dev ? dev_net(dev) : &init_net, &rt, &fl);
-+	if (!err)
-+		return (&rt->u.dst)->dev;
-+
-+	return NULL;
-+}
- 
- /**
-  * cxgb3i_c3cn_connect - initiates an iscsi tcp connection to a given address
-@@ -1581,6 +1605,7 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
- 	struct cxgb3i_sdev_data *cdata;
- 	struct t3cdev *cdev;
- 	__be32 sipv4;
-+	struct net_device *dstdev;
- 	int err;
- 
- 	c3cn_conn_debug("c3cn 0x%p, dev 0x%p.\n", c3cn, dev);
-@@ -1591,6 +1616,13 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
- 	c3cn->daddr.sin_port = usin->sin_port;
- 	c3cn->daddr.sin_addr.s_addr = usin->sin_addr.s_addr;
- 
-+	dstdev = cxgb3i_find_dev(dev, usin->sin_addr.s_addr);
-+	if (!dstdev || !is_cxgb3_dev(dstdev))
-+		return -ENETUNREACH;
-+
-+	if (dstdev->priv_flags & IFF_802_1Q_VLAN)
-+		dev = dstdev;
-+
- 	rt = find_route(dev, c3cn->saddr.sin_addr.s_addr,
- 			c3cn->daddr.sin_addr.s_addr,
- 			c3cn->saddr.sin_port,
--- 
-1.6.0.6
+So, the patch is modified to keep sw_crypto.
 
+--- a/drivers/net/wireless/iwlwifi/iwl-dev.h
++++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
+@@ -626,6 +626,7 @@ struct iwl_hw_params {
+	u8  bcast_sta_id;
+	u8 fat_channel;
+	u8 sw_crypto;
++	u8  max_beacon_itrvl;   /* in 1024 ms */
+	u32 max_inst_size;
+	u32 max_data_size;
+	u32 max_bsm_size;
 
+>> CC: stable@kernel.org
+>> Signed-off-by: Ike Panhc <ike.pan@canonical.com>
+>>
+>> BugLink: http://bugs.launchpad.net/bugs/496496
+> 
+> What are you expecting this patch to be applied to?
+> 
+> confused,
+Please consider applying to linux-2.6.31.y
+
+> 
+> greg k-h
