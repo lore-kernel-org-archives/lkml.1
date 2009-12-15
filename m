@@ -1,74 +1,368 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbZLOKHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbZLOKKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbZLOKHh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759621AbZLOKHg
+	id S1759528AbZLOKKi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbZLOKKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:07:36 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:50177 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbZLOKHf (ORCPT
+	Tue, 15 Dec 2009 05:10:37 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58566 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754907AbZLOKKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:07:35 -0500
-Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
- for 32byte SSIDs
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Miller <davem@davemloft.net>
-Cc: daniel@caiaq.de, linux-kernel@vger.kernel.org, dcbw@redhat.com,
-       m.hirsch@raumfeld.com, netdev@vger.kernel.org,
-       libertas-dev@lists.infradead.org, stable@kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1260871411.3692.4.camel@johannes.local>
-References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
-	 <20091215.014308.77044043.davem@davemloft.net>
-	 <1260871411.3692.4.camel@johannes.local>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-r6YB1NbF3MRdj3ecHy74"
-Date: Tue, 15 Dec 2009 11:07:14 +0100
-Message-ID: <1260871634.3692.6.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 15 Dec 2009 05:10:36 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] [input] add mc13783 touchscreen driver
+Date: Tue, 15 Dec 2009 11:10:28 +0100
+Message-Id: <1260871828-358-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091212074214.GB2956@core.coreip.homeip.net>
+References: <20091212074214.GB2956@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Sascha Hauer <s.hauer@pengutronix.de>
 
---=-r6YB1NbF3MRdj3ecHy74
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This driver provides support for the touchscreen interface
+integrated into the Freescale MC13783.
 
-On Tue, 2009-12-15 at 11:03 +0100, Johannes Berg wrote:
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Acked-by: Luotao Fu <l.fu@pengutronix.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-input@vger.kernel.org
+---
+Hi Dmitry,
 
-> Since you indicate the kernel crashed, it is likely that libertas is
-> treating the buffer as a string, instead of an SSID.
+I squashed your changes into this patch, restored my indention style and
+simplified error handling in mc13783_ts_probe to assign ret = -ENOMEM 
+once at the start of the function instead of each error branch.
 
-drivers/net/wireless/libertas$ grep lbs_deb_ * | grep ssid|grep '%s'
-assoc.c:	lbs_deb_join("current SSID '%s', ssid length %u\n",
-assoc.c:	lbs_deb_join("requested ssid '%s', ssid length %u\n",
-assoc.c:	lbs_deb_join("ADHOC_START: SSID '%s', ssid length %u\n",
-scan.c:		lbs_deb_wext("set_scan, essid '%s'\n",
+In the meantime the changes to mc13783-core are merged in Linus' tree,
+so it can go via your's.
 
-johannes
+Best regards and thanks for your review,
+Uwe
 
---=-r6YB1NbF3MRdj3ecHy74
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+ drivers/input/touchscreen/Kconfig      |   12 ++
+ drivers/input/touchscreen/Makefile     |    1 +
+ drivers/input/touchscreen/mc13783_ts.c |  258 ++++++++++++++++++++++++++++++++
+ 3 files changed, 271 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/mc13783_ts.c
 
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLJ1/PAAoJEODzc/N7+Qmax1cQANNVqB5R6BTqIt9JfqOtkgPu
-+SG0Sae0601AI+4aRwTj2ROOmDuh2Q+/DelahR7US2FnuVcUHArHWg7CQQ1iXvsi
-E7o9NMG+VY84/ZWShYBDW1bfpr6l2fbBh0Vl+2PE2B/epWwgw1Z5axfx6QWdvEqG
-V4SDMugBJy2a1N3X2YX0WWvQHmuZblzr1QwoeWGYPpWUJ/MqcnNCNXlOhT4G9n9c
-pD4PNET0EoVfqf/R9QiskCKtWJCjQuXw/lYm6quA47CBZNVePis7vtGRa8mGLltb
-vXCuSHq1LYzXA1srIr3G11hCoC52irB3+xdAI62g7o+rLX4WMw53HVKU6Nm59jVu
-ewfrssCk2kkn6P4U3jrthjENQrKA85wrwwrW9q3H6mvZMwVC0Q9cIQ1c8DxUlJQA
-6Kbd79STZ5cug6SgrmsowupPHMHvwwTskPnHjP/u+60bRYtVXEhLbRvFpZNCW/3G
-9xDILpXorhLDV0dYG18TFkKmh9w+2K2xVIXioct2Sp2kifYgyUk4u/tgtIEANNGT
-pW7cmUyekpdzZRaLReTluHmrwb2zo+jQOgGv6KK7EpfhtUeTJrYDN1KqPNAC9jFy
-bzP7kNJM3tSMI9X2xGcwXVlV1MIO+dcWoU7X+Dgn4LP9bwZLh7rkDk8BbYnfxElA
-wy1sLkPblKw/1I+cWtkn
-=Zxn7
------END PGP SIGNATURE-----
-
---=-r6YB1NbF3MRdj3ecHy74--
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 32fc8ba..dfafc76 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -450,6 +450,18 @@ config TOUCHSCREEN_USB_COMPOSITE
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called usbtouchscreen.
+ 
++config TOUCHSCREEN_MC13783
++	tristate "Freescale MC13783 touchscreen input driver"
++	depends on MFD_MC13783
++	help
++	  Say Y here if you have an Freescale MC13783 PMIC on your
++	  board and want to use its touchscreen
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called mc13783_ts.
++
+ config TOUCHSCREEN_USB_EGALAX
+ 	default y
+ 	bool "eGalax, eTurboTouch CT-410/510/700 device support" if EMBEDDED
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index f1f59c9..7416bab 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -22,6 +22,7 @@ obj-$(CONFIG_TOUCHSCREEN_MCS5000)	+= mcs5000_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_MIGOR)		+= migor_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_MTOUCH)	+= mtouch.o
+ obj-$(CONFIG_TOUCHSCREEN_MK712)		+= mk712.o
++obj-$(CONFIG_TOUCHSCREEN_MC13783)	+= mc13783_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_HP600)		+= hp680_ts_input.o
+ obj-$(CONFIG_TOUCHSCREEN_HP7XX)		+= jornada720_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_HTCPEN)	+= htcpen.o
+diff --git a/drivers/input/touchscreen/mc13783_ts.c b/drivers/input/touchscreen/mc13783_ts.c
+new file mode 100644
+index 0000000..87de17f
+--- /dev/null
++++ b/drivers/input/touchscreen/mc13783_ts.c
+@@ -0,0 +1,258 @@
++/*
++ * Driver for the Freescale Semiconductor MC13783 touchscreen.
++ *
++ * Copyright 2004-2007 Freescale Semiconductor, Inc. All Rights Reserved.
++ * Copyright (C) 2009 Sascha Hauer, Pengutronix
++ *
++ * Initial development of this code was funded by
++ * Phytec Messtechnik GmbH, http://www.phytec.de/
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++#include <linux/platform_device.h>
++#include <linux/mfd/mc13783.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/input.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++
++#define MC13783_TS_NAME	"mc13783-ts"
++
++#define DEFAULT_SAMPLE_TOLERANCE 300
++
++static unsigned int sample_tolerance = DEFAULT_SAMPLE_TOLERANCE;
++module_param(sample_tolerance, uint, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(sample_tolerance,
++		"If the minimal and maximal value read out for one axis (out "
++		"of three) differ by this value (default: "
++		__stringify(DEFAULT_SAMPLE_TOLERANCE) ") or more, the reading "
++		"is supposed to be wrong and is discarded.  Set to 0 to "
++		"disable this check.");
++
++struct mc13783_ts_priv {
++	struct input_dev *idev;
++	struct mc13783 *mc13783;
++	struct delayed_work work;
++	struct workqueue_struct *workq;
++	unsigned int sample[4];
++};
++
++static irqreturn_t mc13783_ts_handler(int irq, void *data)
++{
++	struct mc13783_ts_priv *priv = data;
++
++	mc13783_ackirq(priv->mc13783, irq);
++
++	/*
++	 * Kick off reading coordinates. Note that if work happens already
++	 * be queued for future execution (it rearms itself) it will not
++	 * be rescheduled for immediate execution here. However the rearm
++	 * delay is HZ / 50 which is acceptable.
++	 */
++	queue_delayed_work(priv->workq, &priv->work, 0);
++
++	return IRQ_HANDLED;
++}
++
++#define sort3(a0, a1, a2) ({ 						\
++		if (a0 > a1)						\
++			swap(a0, a1);					\
++		if (a1 > a2)						\
++			swap(a1, a2);					\
++		if (a0 > a1)						\
++			swap(a0, a1);					\
++		})
++
++static void mc13783_ts_report_sample(struct mc13783_ts_priv *priv)
++{
++	struct input_dev *idev = priv->idev;
++	int x0, x1, x2, y0, y1, y2;
++	int cr0, cr1;
++
++	/*
++	 * the values are 10-bit wide only, but the two least significant
++	 * bits are for future 12 bit use and reading yields 0
++	 */
++	x0 = priv->sample[0] & 0xfff;
++	x1 = priv->sample[1] & 0xfff;
++	x2 = priv->sample[2] & 0xfff;
++	y0 = priv->sample[3] & 0xfff;
++	y1 = (priv->sample[0] >> 12) & 0xfff;
++	y2 = (priv->sample[1] >> 12) & 0xfff;
++	cr0 = (priv->sample[2] >> 12) & 0xfff;
++	cr1 = (priv->sample[3] >> 12) & 0xfff;
++
++	dev_dbg(&idev->dev,
++		"x: (% 4d,% 4d,% 4d) y: (% 4d, % 4d,% 4d) cr: (% 4d, % 4d)\n",
++		x0, x1, x2, y0, y1, y2, cr0, cr1);
++
++	sort3(x0, x1, x2);
++	sort3(y0, y1, y2);
++
++	cr0 = (cr0 + cr1) / 2;
++
++	if (!cr0 || !sample_tolerance ||
++			(x2 - x0 < sample_tolerance &&
++			 y2 - y0 < sample_tolerance)) {
++		/* report the median coordinate and average pressure */
++		if (cr0) {
++			input_report_abs(idev, ABS_X, x1);
++			input_report_abs(idev, ABS_Y, y1);
++
++			dev_dbg(&idev->dev, "report (%d, %d, %d)\n",
++					x1, y1, 0x1000 - cr0);
++			queue_delayed_work(priv->workq, &priv->work, HZ / 50);
++		} else
++			dev_dbg(&idev->dev, "report release\n");
++
++		input_report_abs(idev, ABS_PRESSURE,
++				cr0 ? 0x1000 - cr0 : cr0);
++		input_report_key(idev, BTN_TOUCH, cr0);
++		input_sync(idev);
++	} else
++		dev_dbg(&idev->dev, "discard event\n");
++}
++
++static void mc13783_ts_work(struct work_struct *work)
++{
++	struct mc13783_ts_priv *priv =
++		container_of(work, struct mc13783_ts_priv, work.work);
++	unsigned int mode = MC13783_ADC_MODE_TS;
++	unsigned int channel = 12;
++
++	if (mc13783_adc_do_conversion(priv->mc13783,
++				mode, channel, priv->sample) == 0)
++		mc13783_ts_report_sample(priv);
++}
++
++static int mc13783_ts_open(struct input_dev *dev)
++{
++	struct mc13783_ts_priv *priv = input_get_drvdata(dev);
++	int ret;
++
++	mc13783_lock(priv->mc13783);
++
++	mc13783_ackirq(priv->mc13783, MC13783_IRQ_TS);
++
++	ret = mc13783_irq_request(priv->mc13783, MC13783_IRQ_TS,
++		mc13783_ts_handler, MC13783_TS_NAME, priv);
++	if (ret)
++		goto out;
++
++	ret = mc13783_reg_rmw(priv->mc13783, MC13783_ADC0,
++			MC13783_ADC0_TSMOD_MASK, MC13783_ADC0_TSMOD0);
++	if (ret)
++		mc13783_irq_free(priv->mc13783, MC13783_IRQ_TS, priv);
++out:
++	mc13783_unlock(priv->mc13783);
++	return ret;
++}
++
++static void mc13783_ts_close(struct input_dev *dev)
++{
++	struct mc13783_ts_priv *priv = input_get_drvdata(dev);
++
++	mc13783_lock(priv->mc13783);
++	mc13783_reg_rmw(priv->mc13783, MC13783_ADC0,
++			MC13783_ADC0_TSMOD_MASK, 0);
++	mc13783_irq_free(priv->mc13783, MC13783_IRQ_TS, priv);
++	mc13783_unlock(priv->mc13783);
++
++	cancel_delayed_work_sync(&priv->work);
++}
++
++static int __init mc13783_ts_probe(struct platform_device *pdev)
++{
++	struct mc13783_ts_priv *priv;
++	struct input_dev *idev;
++	int ret = -ENOMEM;
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	idev = input_allocate_device();
++	if (!priv || !idev)
++		goto err_free_mem;
++
++	INIT_DELAYED_WORK(&priv->work, mc13783_ts_work);
++	priv->mc13783 = dev_get_drvdata(pdev->dev.parent);
++	priv->idev = idev;
++
++	/*
++	 * We need separate workqueue because mc13783_adc_do_conversion
++	 * uses keventd and thus would deadlock.
++	 */
++	priv->workq = create_singlethread_workqueue("mc13783_ts");
++	if (!priv->workq)
++		goto err_free_mem;
++
++	idev->name = MC13783_TS_NAME;
++	idev->dev.parent = &pdev->dev;
++
++	idev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
++	idev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
++	input_set_abs_params(idev, ABS_X, 0, 0xfff, 0, 0);
++	input_set_abs_params(idev, ABS_Y, 0, 0xfff, 0, 0);
++	input_set_abs_params(idev, ABS_PRESSURE, 0, 0xfff, 0, 0);
++
++	idev->open = mc13783_ts_open;
++	idev->close = mc13783_ts_close;
++
++	input_set_drvdata(idev, priv);
++
++	ret = input_register_device(priv->idev);
++	if (ret) {
++		dev_err(&pdev->dev,
++			"register input device failed with %d\n", ret);
++		goto err_destroy_wq;
++	}
++
++	platform_set_drvdata(pdev, priv);
++	return 0;
++
++err_destroy_wq:
++	destroy_workqueue(priv->workq);
++err_free_mem:
++	input_free_device(idev);
++	kfree(priv);
++	return ret;
++}
++
++static int __devexit mc13783_ts_remove(struct platform_device *pdev)
++{
++	struct mc13783_ts_priv *priv = platform_get_drvdata(pdev);
++
++	platform_set_drvdata(pdev, NULL);
++
++	destroy_workqueue(priv->workq);
++	input_unregister_device(priv->idev);
++	kfree(priv);
++
++	return 0;
++}
++
++static struct platform_driver mc13783_ts_driver = {
++	.remove		= __devexit_p(mc13783_ts_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= MC13783_TS_NAME,
++	},
++};
++
++static int __init mc13783_ts_init(void)
++{
++	return platform_driver_probe(&mc13783_ts_driver, &mc13783_ts_probe);
++}
++module_init(mc13783_ts_init);
++
++static void __exit mc13783_ts_exit(void)
++{
++	platform_driver_unregister(&mc13783_ts_driver);
++}
++module_exit(mc13783_ts_exit);
++
++MODULE_DESCRIPTION("MC13783 input touchscreen driver");
++MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:" MC13783_TS_NAME);
+-- 
+1.6.5.2
 
