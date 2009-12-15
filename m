@@ -1,103 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933609AbZLOU35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbZLOUbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933609AbZLOU35 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761075AbZLOU3z
+	id S933632AbZLOUbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZLOUbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:29:55 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:42413 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbZLOU3x convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:29:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GF/y4dNay6kRlZUhpnq9q/sMF4RHvmO9Tym0e8oU65Sb3NPrlF1I9LLbfsjTm6du2T
-         ry6HgCm39y1TOrecygX3IKrCpbidYusjt+YN2u5dIHziNzPEumJd4Vor1C/hPkP7VN3m
-         CgwRpXmU1/g/DGR2G3JWH3YNl8CCzsT3ztuk0=
+	Tue, 15 Dec 2009 15:31:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34963 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932738AbZLOUbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 15:31:45 -0500
+Date: Tue, 15 Dec 2009 20:30:40 GMT
+From: tip-bot for Jonathan Nieder <jrnieder@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, jkenisto@us.ibm.com, jrnieder@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jkenisto@us.ibm.com, fweisbec@gmail.com, jrnieder@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091213220437.GA27718@progeny.tock>
+References: <20091213220437.GA27718@progeny.tock>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Fix kprobes build with non-gawk awk
+Message-ID: <tip-23637568ad0c9b5ab0ad27d2f2f26d1e9282c527@git.kernel.org>
+Git-Commit-ID: 23637568ad0c9b5ab0ad27d2f2f26d1e9282c527
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <20091215201933.GK24406@elf.ucw.cz>
-References: <4B1B99A5.2080903@redhat.com>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-	 <20091207184153.GD998@core.coreip.homeip.net>
-	 <4B24DABA.9040007@redhat.com> <20091215115011.GB1385@ucw.cz>
-	 <4B279017.3080303@redhat.com> <20091215195859.GI24406@elf.ucw.cz>
-	 <9e4733910912151214n68161fc7tca0ffbf34c2c4e4@mail.gmail.com>
-	 <20091215201933.GK24406@elf.ucw.cz>
-Date: Tue, 15 Dec 2009 15:29:51 -0500
-Message-ID: <9e4733910912151229o371ee017tf3640d8f85728011@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 3:19 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Tue 2009-12-15 15:14:02, Jon Smirl wrote:
->> On Tue, Dec 15, 2009 at 2:58 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> > Hi!
->> >
->> >>       (11) if none is against renaming IR as RC, I'll do it on a next patch;
->> >
->> > Call it irc -- infrared remote control. Bluetooth remote controls will
->> > have very different characteristics.
->>
->> How are they different after the scancode is extracted from the
->> network packet? The scancode still needs to be passed to the input
->> system, go through a keymap, and end up on an evdev device.
->>
->> I would expect the code for extracting the scancode to live in the
->> networking stack, but after it is recovered the networking code would
->> use the same API as IR to submit it to input.
->
-> For one thing,  bluetooth (etc) has concept of devices (and reliable
-> transfer). If you have two same bluetooth remotes, you can tell them
-> apart, unlike IR.
+Commit-ID:  23637568ad0c9b5ab0ad27d2f2f26d1e9282c527
+Gitweb:     http://git.kernel.org/tip/23637568ad0c9b5ab0ad27d2f2f26d1e9282c527
+Author:     Jonathan Nieder <jrnieder@gmail.com>
+AuthorDate: Sun, 13 Dec 2009 16:04:38 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 15 Dec 2009 20:35:49 +0100
 
-IR has the same concept of devices. That's what those codes you enter
-into a universal remote do - they set the device.
+x86: Fix kprobes build with non-gawk awk
 
-There are three classes of remotes..
-Fixed function - the device is hardwired
-Universal - you can change the device
-Multi-function - a universal that can be multiple devices - TV, cable,
-audio, etc
+The instruction attribute table generator fails when run by mawk
+or original-awk:
 
-If you set two Bluetooth remotes both to the same device you can't
-tell them apart either.
-Two identical fixed function remotes can be distinguished and they
-shouldn't be distinguishable.
+ $ mawk -f arch/x86/tools/gen-insn-attr-x86.awk \
+	arch/x86/lib/x86-opcode-map.txt > /dev/null
+ Semantic error at 240: Second IMM error
+ $ echo $?
+ 1
 
-To distinguish between universal remotes just change the device being emulated.
+Line 240 contains "c8: ENTER Iw,Ib", which indicates that this
+instruction has two immediate operands, the second of which is
+one byte.  The script loops through the immediate operands using
+a for loop.
 
+Unfortunately, there is no guarantee in awk that a for (variable
+in array) loop will return the indices in increasing order.
+Internally, both original-awk and mawk iterate over a hash table
+for this purpose, and both implementations happen to produce the
+index 2 before 1.  The supposed second immediate operand is more
+than one byte wide, producing the error.
 
->
-> So yes, keymapping is the same, but that's pretty much it. Decoding
-> will not be the same (IR is special), etc...
->                                                                        Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+So loop over the indices in increasing order instead.  As a
+side-effect, with mawk this means the silly two-entry hash table
+never has to be built.
 
+Signed-off-by: Jonathan Nieder <jrnieder@gmail.com>
+Acked-by Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091213220437.GA27718@progeny.tock>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/tools/gen-insn-attr-x86.awk |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
+index e34e92a..7a68506 100644
+--- a/arch/x86/tools/gen-insn-attr-x86.awk
++++ b/arch/x86/tools/gen-insn-attr-x86.awk
+@@ -226,12 +226,12 @@ function add_flags(old,new) {
+ }
+ 
+ # convert operands to flags.
+-function convert_operands(opnd,       i,imm,mod)
++function convert_operands(count,opnd,       i,j,imm,mod)
+ {
+ 	imm = null
+ 	mod = null
+-	for (i in opnd) {
+-		i  = opnd[i]
++	for (j = 1; j <= count; j++) {
++		i = opnd[j]
+ 		if (match(i, imm_expr) == 1) {
+ 			if (!imm_flag[i])
+ 				semantic_error("Unknown imm opnd: " i)
+@@ -282,8 +282,8 @@ function convert_operands(opnd,       i,imm,mod)
+ 		# parse one opcode
+ 		if (match($i, opnd_expr)) {
+ 			opnd = $i
+-			split($(i++), opnds, ",")
+-			flags = convert_operands(opnds)
++			count = split($(i++), opnds, ",")
++			flags = convert_operands(count, opnds)
+ 		}
+ 		if (match($i, ext_expr))
+ 			ext = $(i++)
