@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759868AbZLOLMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbZLOLNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759868AbZLOLMZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 06:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759711AbZLOLMX
+	id S1759922AbZLOLNf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 06:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759887AbZLOLNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 06:12:23 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:47193 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759700AbZLOLMV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 06:12:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YxI+wwWeIT9D1963XWW/i7zNY+Tw+8t/OI3dOANsFvUZgG4FqO+z7H28VFhVTYDzkh
-         +CQb4fbpqwFSgxghMnadRzAP9/7v+CvgRnIvd4cR1OWvlDJ7GDCPCeCWrMPHA1cUxhaT
-         vJmwVMOccNV6q70ZcIWeNek7+Nq5P2y2+2KE4=
+	Tue, 15 Dec 2009 06:13:33 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51689 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759837AbZLOLNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 06:13:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Tue, 15 Dec 2009 12:14:10 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain> <alpine.LFD.2.00.0912141610460.14385@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912141610460.14385@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <200912101731.43050.agruen@suse.de>
-References: <20091203055315.21918.83562.stgit@paris.rdu.redhat.com>
-	 <20091204153925.GA17062@infradead.org>
-	 <200912101731.43050.agruen@suse.de>
-Date: Tue, 15 Dec 2009 16:42:20 +0530
-Message-ID: <b82a89170912150312s63d25bb7i97b42a19c31a59c7@mail.gmail.com>
-Subject: Re: [PATCH 1/5] fsnotify/vfsmount: add fsnotify fields to struct 
-	vfsmount
-From: Niraj kumar <niraj17@gmail.com>
-To: Andreas Gruenbacher <agruen@suse.de>, Eric Paris <eparis@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912151214.10980.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 10:01 PM, Andreas Gruenbacher <agruen@suse.de> wrote:
-> On Friday 04 December 2009 16:39:25 Christoph Hellwig wrote:
->> What's the rationale for adding them?
->
-> The idea is to provide a mechanism to watch for "all events", but in a
-> namespace aware way: for that, a process registers interest in all mount
-> points it can reach.  With the previous hack, a global "I want it all" flag,
-> per-namespace listeners were not possible.
->
-> Root can use bind mounts onto themselves (e.g., mount --bind /foo/bar
-> /foo/bar) to watch arbitrary directories with the per-mount-point mechanism.
-> Mount as user will open up additional use cases.
->
-> It would be nice to be able to register interest in all events below a
-> directory which is not a mount point, too.  The problem with that is that the
-> number of cached inodes below a given directory could be huge -- and we would
-> have to visit them all atomically in order to "mark" them, which is not
-> feasible.  The per-mount-point mechanism will eventually give us *almost* the
-> same, and so I believe it's good enough.
->
+On Tuesday 15 December 2009, Linus Torvalds wrote:
+> 
+> On Mon, 14 Dec 2009, Linus Torvalds wrote:
+> > 
+> > I get really tired of this whole stupid async discussion, because you're 
+> > overdesigning it.
+> 
+> Btw, this is important. I'm not going to pull even your _current_ async 
+> stuff if you can't show that you fundamentally UNDERSTAND this fact.
 
-As another dimension of the same problem, it would be nice to
-register interest in events generated by only a particular set of processes.
-As a special case of this, can I register only for events generated
-by myself and all my child processes. Is it already covered in some way?
+What fact?  The only thing that matters is USB?  For resume, it is.  For
+suspend, it clearly isn't.
 
-There are situations where this could be very useful. One such case could be
-somebody wanting to audit any random application. Collecting data for the whole
-system and then filtering might be possible, but maynot be very efficient.
-It might be good to add this while we are at it.
+> Stop making up idiotic complex interfaces. Look at my one-liner patch, and 
+> realize that it gets you 99% there - the 99% that matters.
 
-Let me know if I am missing something.
+I said I was going to use it, but I don't think that's going to be sufficient.
 
--Niraj
+[BTW, I'm not sure what you want to achieve by insulting me.  Either you may
+want to scare me, but I'm not scared, or you may want to try to make me so
+disgusted that I'll just give up and back off, but this is not going to happen
+either.]
+
+Insults aside, I'm going to make some measurements to see how much time we can
+save.
+
+Rafael
