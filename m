@@ -1,168 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbZLOUub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932936AbZLOUut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbZLOUub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbZLOUua
+	id S932936AbZLOUut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760233AbZLOUur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:50:30 -0500
-Received: from 216-239-44-51.google.com ([216.239.44.51]:33632 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754027AbZLOUu3 convert rfc822-to-8bit (ORCPT
+	Tue, 15 Dec 2009 15:50:47 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:42946 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754069AbZLOUup convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:50:29 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=pKnyq35ZaaC7CaCMKmX3WzhuYH2UQTK7rv1jjluRdpQra8xZRn1jmKRqtTctBVwaL
-	ZqJ3UROvZes8Fwg+CDRNg==
+	Tue, 15 Dec 2009 15:50:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HedE+SpbjOa818v7TotILumVx9m3chwuzD8RDVU72F/zdFvh2K7xGqcXagJGqqCoeG
+         5MZ74lltpiQaeMVMdU0GZj/K1kxcvAMMAnv6aD/uYNA+a18ojAQ/r73cKnN1kVB5bBtQ
+         VrUu1uHvqBdc5BHYLPnL1QqmTGlDfxQjIPfgk=
 MIME-Version: 1.0
-In-Reply-To: <20091215102909.GA878@dirshya.in.ibm.com>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	 <20091214161922.6f252492@infradead.org>
-	 <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
-	 <20091215102909.GA878@dirshya.in.ibm.com>
-Date: Tue, 15 Dec 2009 12:50:24 -0800
-Message-ID: <4352991a0912151250o38ec0d19id0518e4e1313654f@mail.gmail.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the 
-	Linux Kernel
-From: Salman Qazi <sqazi@google.com>
-To: svaidy@linux.vnet.ibm.com
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
+In-Reply-To: <200912150955.03974.bjorn.helgaas@hp.com>
+References: <200912130807.44905.tvrtko@ursulin.net>
+	 <4B26E4C7.8040100@gmail.com> <4B26E973.6080305@kernel.org>
+	 <200912150955.03974.bjorn.helgaas@hp.com>
+Date: Tue, 15 Dec 2009 14:50:44 -0600
+Message-ID: <51f3faa70912151250y709a42c8l91012a64ef21a476@mail.gmail.com>
+Subject: Re: Are these MTRR settings correct?
+From: Robert Hancock <hancockrwd@gmail.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Tvrtko Ursulin <tvrtko@ursulin.net>,
+       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 2:29 AM, Vaidyanathan Srinivasan
-<svaidy@linux.vnet.ibm.com> wrote:
-> * Salman Qazi <sqazi@google.com> [2009-12-14 16:36:20]:
->
->> On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven <arjan@infradead.org> wrote:
->> > On Mon, 14 Dec 2009 15:11:47 -0800
->> > Salman Qazi <sqazi@google.com> wrote:
+On Tue, Dec 15, 2009 at 10:55 AM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> On Monday 14 December 2009 06:42:11 pm Yinghai Lu wrote:
+>> Robert Hancock wrote:
+>> > Something else isn't quite right. It looks like MMCONFIG area should be
+>> > reserved:
 >> >
+>> > [    0.308434] system 00:0c: iomem range 0xe0000000-0xefffffff has been
+>> > reserved
 >> >
->> > I like the general idea, I have one request (that I didn't see quite in
->> > your explanation): Please make sure that all cpus in the system do
->> > their idle injection at the same time, so that memory can go into power
->> > saving mode as well during this time etc etc...
+>> > but the code didn't seem to detect that. In fact there doesn't seem to
+>> > be any output about whether it was or wasn't reserved, which from the
+>> > code it seems there should be.
 >> >
->
-> The value of the overall idea is well understood but the
-> implementation and benefits in terms of power savings was the major
-> point of discussion earlier.
->
->> With the current interface, the forced idle percentages on the CPUs
->> are controlled independently.  There's a trade-off here.  If we inject
->> idle cycles on all the CPU at the same time, our machine
->> responsiveness also degrades: essentially every CPU becomes equally
->> bad for an interactive task to run on.  Our aim at the moment is to
->> try to concentrate the idle cycles on a small set of CPUs, to strive
->> to leave some CPUs where interactive tasks can run unhindered.  But,
->> given a different workload and goals the correct policy may be
->> different.
+>> > Maybe because of that ACPI method execution error?
 >>
->> Simultaneously idling multiple "cores" becomes necessary in the SMT
->> case: as there is no point in idling a single thread, while the other
->> thread is running full tilt.  So, in such a case it is necessary to
->> idle all the threads making up the physical core.  This feature has
->> not been implemented yet.
->>
->> I think the best approach may be to provide a way to specify the
->> policy from the user space.  Basically let the user decide at what
->> level of CPU hierarchy the forced idle percentages are specified.
->> Then, in the levels below, we simply inject at the same time.
+>> could be sth pnpacpi brokenness?
 >
-> Synchronising the idle times across multiple cores and also selecting
-> sibling threads belonging to the same core is important.  The current
-> ACPI forced idle driver can inject idle time but not synchronized
-> across multiple cores.
+> Robert, I assume you're referring to this from Tvrtko's post
+> (http://lkml.org/lkml/2009/12/13/90):
 >
-> Allowing the scheduler load balancer to avoid using a part of the
-> sched domain tree will allow easy grouping of sibling threads and
-> sibling cores if that saves more power.
+> [    0.000000]  BIOS-e820: 00000000dffd0000 - 00000000e0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000ff700000 - 0000000100000000 (reserved)
+> ...
+> [    0.250088] PCI: Found AMD Family 10h NB with MMCONFIG support.
+> [    0.250091] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
+> [    0.250092] PCI: Not using MMCONFIG.
+> ...
+> [    0.253491] ACPI Error (psargs-0359): [ECEN] Namespace lookup failure, AE_NOT_FOUND
+> [    0.253495] ACPI Error (psparse-0537): Method parse/execution failed [\] (Node ffffffff81656ab0), AE_NOT_FOUND
+> ...
+> [    0.308434] system 00:0c: iomem range 0xe0000000-0xefffffff has been reserved
 >
-> However as Arjan mentioned, new architectures have significant power
-> savings at full system idle where memory power is reduced.  Injecting
-> idle time in any of the core will actually increase the utilisation on
-> the other cores (unless the system is full loaded) and reduce the full
-> system idle time opportunity.  Basically injecting idle time on some
-> of the cores in the system goes against the race-to-idle policy
-> thereby decreasing overall system operating efficiency.
+> I think we're rejecting MMCONFIG in the early call to
+> pci_mmcfg_reject_broken(), when we check only E820 resources, not
+> ACPI resources.  And indeed, the 0xe0000000-0xefffffff range is
+> not mentioned in E820.  Which output did you expect to see?
 >
-> Can you please clarify the following questions:
->
-> * What is the typical duration of idle time injected?
->        - 10s of milli seconds?  CPUs are expected to goto lowest
->          power idle state within this time?
+> I am uncomfortable with this early/late checking and looking at both
+> E820 and ACPI.  It just feels hacky and error-prone.  I'm not happy about
+> adding Yinghai's special-case "if we found AMD Fam10h, don't check for
+> reservations" patch either.
 
-This depends on the specific user.  I can only speak for our Google's
-intentions for this.  The duration of the injected time would
-typically be single digit milliseconds.  We don't need the CPUs to go
-into the lowest power idle state for our purposes.  We care more about
-the predictable component of the power savings, as this is the
-component that we can use elsewhere.  Given that there may be
-interrupts that prevent us from reaching the lowest power idle state,
-we should really not rely on that in our power models.  Therefore,
-while it is great from an energy savings point of view to reach the
-lowest power idle state, it doesn't help us from a power shifting
-point of view.
+I would expect to see the report of whether it was reserved in ACPI or
+not, if the E820 check failed. The early check would reject it, but
+the late call (after the ACPI interpreter initializes) would accept it
+because it discovers that it's actually reserved in the ACPI
+motherboard resources.
 
 >
-> * You mentioned that natural idle time in the system is taken into
->  account before injecting forced idle time, which is a good feature
->  to have.
->        - In most workloads, as the utilisation drops, all the cpus
->          have similar idle times.  This is favourable for exploiting
->          memory power saving.
->        - Now when more idle time need to be inserted, is it
->          uniformly spread across all CPUs?
+> I assume that Windows runs on this box without requiring per-machine
+> hacks in the kernel.  Linux should be able to do the same, and the fact
+> that we can't is telling us we're doing somethign wrong.  We should fix
+> whatever's wrong rather than papering over it.
 
-The settings at the moment are per-CPU and so is enforcement.  The
-current implementation does not do any CPU cross talk.  Each CPU
-simply maintains its own minimum forced idle percentage and these
-cycles are not horse traded across CPUs.  So, the answer to your
-question in the general case is no.  The user may even choose to not
-set any kind of a cap on some subset of CPUs.
+I wouldn't have a problem with the E820 check being removed, since
+it's not actually reliable by itself anyway. In fact I'm not sure that
+we need any of the reservation checks at all.
 
->
-> Suggestions:
->
-> * Can cgroup hardlimits help here to inject idle times
->  http://lkml.org/lkml/2009/11/17/191
->
->  The problem of distributing idle time equally across CPUs and
->  relating sibling threads is still and issue, but can be worked out.
->  As of now hardlimits can distribute idle time across CPUs thereby
->  enabling full system idle.
+The whole reason we have this junk in there is because early on it was
+thought that a bunch of problems people were seeing with systems not
+working with MMCONFIG turned on were because their MMCONFIG was
+broken, and the reservation checks were there to try to weed this out
+by making sure the MCFG data pointed to a memory area that was marked
+as reserved. Originally it was checking E820 only, which turned out to
+be invalid because the firmware specification only told BIOS people to
+reserve the space in ACPI motherboard resources, not E820.
 
-Sibling threads is a major issue here.  If all of the idle cycles are
-not injected simultaneously on both threads, then the resulting power
-savings will not match the expected power savings.  Since we care
-about predictability of the power savings, such savings would not help
-us at all.  So, having a heuristic that improves the probability of
-the right thing happening is not sufficient.  Hard assurances are
-required.
+ Later on it was discovered that most of the problems were because we
+did all config-space access using MMCONFIG, including the base access,
+and combined with the fact that we don't disable decode on PCI devices
+when sizing memory BARs, the BAR location during sizing would overlap
+the MMCONFIG space and result in the device sucking up the MMCONFIG
+accesses, usually causing a lockup. So it wasn't actually due to any
+broken MMCONFIG motherboards at all. This was solved by using MMCONFIG
+for extended config space access only, so that when we move the BAR
+temporarily during sizing, we're not trying to access the MMCONFIG
+region it overlaps (since BAR sizing requires only base access).
 
-Aside from that, our current implementation discriminates between
-batch and interactive tasks.  In the first phase called "eager
-injection", we let the interactive tasks run but prevent batch tasks
-from running (preferring to idle the machine instead).  This allows us
-to reduce the impact on interactive tasks by preventing batch tasks
-from forcing the interactive tasks into the fully idle part of the
-time period.  Thus, interactive tasks should not incur any additional
-latency due to the behavior of the batch tasks.  If we are going to
-use cgroup hardlimits, an equivalent feature would need to be added.
-Basically, have an initial "protected period" for interactive tasks
-where we do not let batch tasks run.
+(Lesson: yes, BIOSes are broken a lot, but you can't jump to conclusions.)
 
-
-
->
-> --Vaidy
->
+It would be interesting to know if there are any systems where the
+code reports the MCFG area is not reserved in the ACPI motherboard
+resources. I would tend to suspect not, because if it wasn't, Windows
+would potentially assign devices to that memory area on such boards
+and cause things to fail horribly, which presumably isn't happening.
+We might be able to just get rid of all that code.
