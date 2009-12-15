@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751433AbZLOFch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZLOFbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751433AbZLOFch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 00:32:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZLOFcc
+	id S1751287AbZLOFbP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 00:31:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZLOFbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 00:32:32 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36188 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751171AbZLOFcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 00:32:31 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX198mDhMO6983PaptP+8RskjWoz/SqoaeVSc87euJg
-	Q9DHxNYdHl+mMJ
-Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead
- prepare_to_wait()
-From: Mike Galbraith <efault@gmx.de>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-In-Reply-To: <20091215085631.CDAD.A69D9226@jp.fujitsu.com>
-References: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>
-	 <4B264CCA.5010609@redhat.com> <20091215085631.CDAD.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Tue, 15 Dec 2009 06:32:26 +0100
-Message-Id: <1260855146.6126.30.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+	Tue, 15 Dec 2009 00:31:14 -0500
+Received: from lists.laptop.org ([18.85.2.145]:41142 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751123AbZLOFbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 00:31:13 -0500
+Date: Tue, 15 Dec 2009 00:33:08 -0500
+From: Michael Stone <michael@laptop.org>
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: setrlimit(RLIMIT_NETWORK) vs. prctl(???)
+Message-ID: <20091215053307.GA6837@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <a36005b50912122120n4656b97bx6a6d862a57671e6d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 09:45 +0900, KOSAKI Motohiro wrote:
-> > On 12/14/2009 07:30 AM, KOSAKI Motohiro wrote:
-> > > if we don't use exclusive queue, wake_up() function wake _all_ waited
-> > > task. This is simply cpu wasting.
-> > >
-> > > Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> > 
-> > >   		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
-> > >   					0, 0)) {
-> > > -			wake_up(wq);
-> > > +			wake_up_all(wq);
-> > >   			finish_wait(wq,&wait);
-> > >   			sc->nr_reclaimed += sc->nr_to_reclaim;
-> > >   			return -ERESTARTSYS;
-> > 
-> > I believe we want to wake the processes up one at a time
-> > here.  If the queue of waiting processes is very large
-> > and the amount of excess free memory is fairly low, the
-> > first processes that wake up can take the amount of free
-> > memory back down below the threshold.  The rest of the
-> > waiters should stay asleep when this happens.
+Ulrich Drepper wrote:
+> On Sat, Dec 12, 2009 at 21:09, Michael Stone <michael@laptop.org> wrote:
+>> That being said, I'm not wedded to the decision. Could you give me some
+>> more specific examples of the kinds of changes in low-level userspace code
+>> that you're worried about?
 > 
-> OK.
-> 
-> Actually, wake_up() and wake_up_all() aren't different so much.
-> Although we use wake_up(), the task wake up next task before
-> try to alloate memory. then, it's similar to wake_up_all().
+> As summarized in the paraphrased comment, it's a pain to deal with
+> rlimit extensions.  It's easy enough to do all this using prctl() with
+> the same semantics and without forcing any other code to be modified.
+> I let others more competent to judge the usefulness.  But using rlimit
+> as the interface is just plain wrong.
 
-What happens to waiters should running tasks not allocate for a while?
+I still like the rlimit-based interface because I think it gives good intuition
+about how to use the facility and about how it ought to be exposed to high-level
+parts of userland but it certainly can't hurt to cook up a version based on
+prctl() so that we can make a fair comparison of the two. 
 
-> However, there are few difference. recent scheduler latency improvement
-> effort reduce default scheduler latency target. it mean, if we have
-> lots tasks of running state, the task have very few time slice. too
-> frequently context switch decrease VM efficiency.
-> Thank you, Rik. I didn't notice wake_up() makes better performance than
-> wake_up_all() on current kernel.
+I'll see what I can come up with.
 
-Perhaps this is a spot where an explicit wake_up_all_nopreempt() would
-be handy.  Excessive wakeup preemption from wake_up_all() has long been
-annoying when there are many waiters, but converting it to only have the
-first wakeup be preemptive proved harmful to performance.  Recent tweaks
-will have aggravated the problem somewhat, but it's not new.
+Regards,
 
-	-Mike
-
+Michael
