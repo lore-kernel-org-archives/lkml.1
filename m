@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZLOEbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbZLOEcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbZLOEbB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 23:31:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759258AbZLOEbA
+	id S1759306AbZLOEcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 23:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbZLOEcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 23:31:00 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:18261 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbZLOEa6 (ORCPT
+	Mon, 14 Dec 2009 23:32:45 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:61231 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754421AbZLOEcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 23:30:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=SIiW8GS4Ga/HTPVFOs0D8QrEd+lEWopWGpy16l6jXKLclSz34awyQ0WJJq5gQnXyU
-	KKPGaiyVb3eiMdKt1RXZA==
-Date: Mon, 14 Dec 2009 20:30:37 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
- v4.2
-In-Reply-To: <20091215103202.eacfd64e.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0912142025090.29243@chino.kir.corp.google.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com> <20091110163419.361E.A69D9226@jp.fujitsu.com> <20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com> <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp> <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
- <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com> <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com>
- <20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com> <20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com>
- <20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com> <20091214171632.0b34d833.akpm@linux-foundation.org> <20091215103202.eacfd64e.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 14 Dec 2009 23:32:43 -0500
+Date: Mon, 14 Dec 2009 20:32:36 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Tim Blechmann <tim@klingt.org>
+cc: LKML <linux-kernel@vger.kernel.org>, dieb13 <dieb13@klingt.org>,
+       eparis@redhat.com
+Subject: Re: WARNING: at fs/notify/inotify/inotify_fsnotify.c:129
+In-Reply-To: <4B215C64.8050206@klingt.org>
+Message-ID: <alpine.DEB.2.01.0912142025200.3483@bogon.housecafe.de>
+References: <4B215C64.8050206@klingt.org>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+X-Provags-ID: V01U2FsdGVkX19cSVLMv58a0KNcbl+hIQZ0CGTyXZ/Mun9h6Fg
+ 9Qu6PuQ3NnYjc9fehwRYxJoYr0GO4gEX+shRj3Dja+EKLeIL3r
+ /gvUPIolsAnKNSDSCVwfQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009, KAMEZAWA Hiroyuki wrote:
+On Thu, 10 Dec 2009 at 21:39, Tim Blechmann wrote:
+> Dec  9 00:37:37 es kernel: WARNING: at fs/notify/inotify/inotify_fsnotify.c:129 idr_callback+0x2a/0x4b()
 
->     I'm now preparing more counters for mm's statistics. It's better to
->     wait  and to see what we can do more. And other patches for total
->     oom-killer improvement is under development.
-> 
->     And, there is a compatibility problem.
->     As David says, this may break some crazy software which uses
->     fake_numa+cpuset+oom_killer+oom_adj for resource controlling.
->    (even if I recommend them to use memcg rather than crazy tricks...)
->     
+I've got a similar message here too, with 2.6.32-rc8. However, I'm not 
+sure how to reproduce this one...
 
-That's not at all what I said.  I said using total_vm as a baseline allows 
-users to define when a process is to be considered "rogue," that is, using 
-more memory than expected.  Using rss would be inappropriate since it is 
-highly dynamic and depends on the state of the VM at the time of oom, 
-which userspace cannot possibly keep updated.
+@Eric, should we reopen #14090 or create a new bug?
 
-You consistently ignore that point: the power of /proc/pid/oom_adj to 
-influence when a process, such as a memory leaker, is to be considered as 
-a high priority for an oom kill.  It has absolutely nothing to do with 
-fake NUMA, cpusets, or memcg.
+Thanks,
+Christian.
 
->     2 ideas which I can think of now are..
->     1) add sysctl_oom_calc_on_committed_memory 
->        If this is set, use vm-size instead of rss.
-> 
+[0] http://bugzilla.kernel.org/show_bug.cgi?id=14090
 
-I would agree only if the oom killer used total_vm as a the default, it is 
-long-standing and allows for the aforementioned capability that you lose 
-with rss.  I have no problem with the added sysctl to use rss as the 
-baseline when enabled.
+------------[ cut here ]------------
+WARNING: at /data/Scratch/scm/linux-2.6-git/fs/notify/inotify/inotify_fsnotify.c:129 idr_callback+0x36/0x60()
+inotify closing but id=0 for entry=ffff88004f8a59a0 in group=ffff880003be0200 still in idr.  Probably leaking memory
+Modules linked in: sit tunnel4 xfs sha256_generic aes_x86_64 aes_generic nfsd lockd auth_rpcgss sunrpc exportfs ipv6 tun jfs nls_base reiserfs fuse twofish_x86_64 twofish_common
+Pid: 9740, comm: imap Not tainted 2.6.32-rc8 #4
+Call Trace:
+ [<ffffffff810ce906>] ? idr_callback+0x36/0x60
+ [<ffffffff810ce906>] ? idr_callback+0x36/0x60
+ [<ffffffff810352c9>] ? warn_slowpath_common+0x79/0xd0
+ [<ffffffff81035381>] ? warn_slowpath_fmt+0x51/0x60
+ [<ffffffff8120326c>] ? _spin_lock_irq+0xc/0x10
+ [<ffffffff81200bcf>] ? wait_for_common+0x15f/0x1a0
+ [<ffffffff8100e4b2>] ? check_events+0x12/0x20
+ [<ffffffff810cd627>] ? fsnotify_flush_notify+0x97/0xc0
+ [<ffffffff8100dd99>] ? xen_force_evtchn_callback+0x9/0x10
+ [<ffffffff8100e4b2>] ? check_events+0x12/0x20
+ [<ffffffff810ce906>] ? idr_callback+0x36/0x60
+ [<ffffffff81138d04>] ? idr_for_each+0x84/0xe0
+ [<ffffffff810ce8d0>] ? idr_callback+0x0/0x60
+ [<ffffffff8100e49f>] ? xen_restore_fl_direct_end+0x0/0x1
+ [<ffffffff81096a77>] ? kmem_cache_free+0x87/0xc0
+ [<ffffffff810ce8ba>] ? inotify_free_group_priv+0x1a/0x30
+ [<ffffffff810cd6cb>] ? fsnotify_final_destroy_group+0x1b/0x30
+ [<ffffffff810ceb4c>] ? inotify_release+0x2c/0x50
+ [<ffffffff8109e450>] ? __fput+0xc0/0x1f0
+ [<ffffffff8109a9cb>] ? filp_close+0x5b/0x90
+ [<ffffffff8109aab3>] ? sys_close+0xb3/0x120
+ [<ffffffff81010d42>] ? system_call_fastpath+0x16/0x1b
+---[ end trace 50bb54b8ed08a018 ]---
+entry->group=(null) inode=(null) wd=4096
 
->     2) add /proc/<pid>/oom_guard_size
->        This allows users to specify "valid/expected size" of a task.
->        When
->        #echo 10M > /proc/<pid>/oom_guard_size
->        At OOM calculation, 10Mbytes is subtracted from rss size.
->        (The best way is to estimate this automatically from vm_size..but...)
+-- 
+BOFH excuse #119:
 
-Expected rss is almost impossible to tune for cpusets that have a highly 
-dynamic set of mems, let alone without containment.
+evil hackers from Serbia.
