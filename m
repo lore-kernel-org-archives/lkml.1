@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbZLOUDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbZLOUvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761045AbZLOUDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZLOUDt
+	id S1760278AbZLOUvX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbZLOUvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:03:49 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52177 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760989AbZLOUDs (ORCPT
+	Tue, 15 Dec 2009 15:51:21 -0500
+Received: from linuxhacker.ru ([217.76.32.60]:45270 "EHLO fiona.linuxhacker.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932442AbZLOUvU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:03:48 -0500
-Subject: Re: [PATCH resend] x86, amd: Get multi-node CPU info from NodeId MSR instead of PCI config space
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Tue, 15 Dec 2009 12:00:36 -0800
-To: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>
-CC: Andreas Herrmann <herrmann.der.user@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Message-ID: <mkk2iqhh6vhhmxaxruuvafvb.1260907236343@email.android.com>
-Content-Type: multipart/mixed; boundary="----LLVGJF2YJEGSVVBH1SKKSPA3M42TQY"
-MIME-Version: 1.0
+	Tue, 15 Dec 2009 15:51:20 -0500
+X-Greylist: delayed 2976 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Dec 2009 15:51:19 EST
+Subject: Re: [PATCH] Possible data loss on ext[34], reiserfs with external journal
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Oleg Drokin <green@linuxhacker.ru>
+In-Reply-To: <20091215164503.GI4867@thunk.org>
+Date: Tue, 15 Dec 2009 15:01:32 -0500
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Message-Id: <02CF0C94-BEC0-428A-878D-D61ADA302944@linuxhacker.ru>
+References: <20091211081608.GA597088@fiona.linuxhacker.ru> <20091215053207.GA26541@thunk.org> <2EEF5D3D-AFA5-4D74-92A7-B42A0FB9A4F5@linuxhacker.ru> <20091215164503.GI4867@thunk.org>
+To: tytso@mit.edu
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------LLVGJF2YJEGSVVBH1SKKSPA3M42TQY
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
+Hello!
 
-VGhhdCdzIG5pY2UuICBJdCBzaG91bGQgYmUgaW4gdGhlIGNvZGUsIG5vdCBpbiB0aGUgY29tbWl0
-IG1lc3NhZ2UuCgoiQm9yaXNsYXYgUGV0a292IiA8Ym9yaXNsYXYucGV0a292QGFtZC5jb20+IHdy
-b3RlOgoKPk9uIFR1ZSwgRGVjIDE1LCAyMDA5IGF0IDA4OjMxOjUwUE0gKzAxMDAsIEluZ28gTW9s
-bmFyIHdyb3RlOg0KPj4gDQo+PiAqIEFuZHJlYXMgSGVycm1hbm4gPGhlcnJtYW5uLmRlci51c2Vy
-QGdvb2dsZW1haWwuY29tPiB3cm90ZToNCj4+IA0KPj4gPiArCXJkbXNybCgweGMwMDExMDBjLCB2
-YWx1ZSk7DQo+PiANCj4+IERvbnQgd2Ugd2FudCBzb21lIG5pY2UsIG1lYW5pbmdmdWxseSBuYW1l
-ZCBzeW1ib2xpYyBjb25zdGFudCBoZXJlLCBpbnN0ZWFkIG9mIA0KPj4gMHhjMDAxMTAwYz8NCj4N
-Cj5UaGUgTVNSIG5hbWUgaXMgYWN0dWFsbHkgaW4gdGhlIGNvbW1pdCBtc2csIG1heWJlIHNvbWV0
-aGluZyBsaWtlDQo+TVNSX0YxMEhfTk9ERV9JRC4NCj4NCj4tLSANCj5SZWdhcmRzL0dydXNzLA0K
-PkJvcmlzLg0KPg0KPk9wZXJhdGluZyB8IEFkdmFuY2VkIE1pY3JvIERldmljZXMgR21iSA0KPiAg
-U3lzdGVtICB8IEthcmwtSGFtbWVyc2NobWlkdC1TdHIuIDM0LCA4NTYwOSBEb3JuYWNoIGIuIE3D
-vG5jaGVuLCBHZXJtYW55DQo+IFJlc2VhcmNoIHwgR2VzY2jDpGZ0c2bDvGhyZXI6IEFuZHJldyBC
-b3dkLCBUaG9tYXMgTS4gTWNDb3ksIEdpdWxpYW5vIE1lcm9uaQ0KPiAgQ2VudGVyICB8IFNpdHo6
-IERvcm5hY2gsIEdlbWVpbmRlIEFzY2hoZWltLCBMYW5ka3JlaXMgTcO8bmNoZW4NCj4gIChPU1JD
-KSAgfCBSZWdpc3RlcmdlcmljaHQgTcO8bmNoZW4sIEhSQiBOci4gNDM2MzINCj4NCgotLQpTZW50
-IGZyb20gbXkgbW9iaWxlIHBob25lLiBQbGVhc2UgZXhjdXNlIGFueSBsYWNrIG9mIGZvcm1hdHRp
-bmcu
+On Dec 15, 2009, at 11:45 AM, tytso@mit.edu wrote:
+>>> +	/* 
+>>> +	 * If the journal is not located on the file system device,
+>>> +	 * then we must flush the file system device before we issue
+>>> +	 * the commit record
+>>> +	 */
+>>> +	if (commit_transaction->t_flushed_data_blocks &&
+>>> +	    (journal->j_fs_dev != journal->j_dev) &&
+>>> +	    (journal->j_flags & JBD2_BARRIER))
+>>> +		blkdev_issue_flush(journal->j_fs_dev, NULL);
+>>> +
+>> I am afraid this is not enough. This code is called after journal
+>> was flushed for async commit case, so it leaves a race window where
+>> journal transaction is already on disk and complete, but the data is
+>> still in cache somewhere.
+> No, that's actually fine.  In the ASYNC_COMMIT case, the commit won't
+> be valid until the checksum is correct, and we won't have written any
+> descriptor blocks yet at this point.  So there is no race because
 
-------LLVGJF2YJEGSVVBH1SKKSPA3M42TQY--
+What do you mean by descriptor blocks? Actual logged blocks?
 
+> during that window, the commit is written but we won't write any
+> descriptor blocks until after the barrier returns.
+
+>From my reading of the code, in jbd2_journal_commit_transaction:
+After first "JBD: commit phase 2" message we submit actual data buffers.
+Then after second "JBD: commit phase 2" message (in the
+"while (commit_transaction->t_buffers) {" loop) we actually iterate
+through all metadata changes and submit them to disk (after
+start_journal_io: label)
+Then journal_submit_commit_record writes commit record.
+At this point on we have entire transacton + commit
+block in the write queue (or partially already on disk) +
+all the data blocks in the write queue.
+Next blkdev_issue_flush on journal device is done, cementing the transaction
+on the permanent storage, but the actual data is still potentially not
+there abd it is not until the call to journal_finish_inode_data_buffers()
+where that data is flushed too.
+
+If you refer to the code after "JBD: commit phase 3" that waits on actual
+transaction blocks buffers to make sure they made it to the disk,
+my reading of blkdev_issue_flush is that it adds the flush at the end of the
+queue, i.e. after all of the journalled blocks that are sitting in there,
+so they all would be already copleted by the time blkdev_issue_flush returns.
+
+Bye,
+    Oleg
