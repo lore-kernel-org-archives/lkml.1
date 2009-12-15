@@ -1,318 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbZLOCl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbZLOCoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbZLOCl6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 21:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbZLOClz
+	id S1759042AbZLOCoP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 21:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbZLOCoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 21:41:55 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39446 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759057AbZLOClx (ORCPT
+	Mon, 14 Dec 2009 21:44:14 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:63886 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758746AbZLOCoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 21:41:53 -0500
-Date: Tue, 15 Dec 2009 11:41:49 +0900 (JST)
-Message-Id: <20091215.114149.189724375.d.hatayama@jp.fujitsu.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, jdike@addtoit.com, tony.luck@intel.com,
-       mhiramat@redhat.com
-Subject: [RFC, PATCH 4/4] elf_core_dump(): Add extended numbering support
-From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Dec 2009 21:44:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:x-url:user-agent;
+        b=CKMUjcmMIlCQ18kikx/L1iI3rI/GVSKmggsYSojWf4JUYfvA0+eaXEW9rX53/UtFXr
+         /G+V1df2T2W/DiD6BLjLKTCBkXnQwX/cS/CceyqackiDFvomW+peRs+JNx3cvFjR9bts
+         omJU0Wogd6lFt75eYHX22TGlLXFJA5kcw4aiE=
+Date: Tue, 15 Dec 2009 00:44:06 -0200
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/urgent] perf symbols: Allow lookups by symbol name too
+Message-ID: <20091215024406.GA27237@ghostprotocols.net>
+References: <1260564622-12392-1-git-send-email-acme@infradead.org>
+ <tip-79406cd789f745ac6aa9d597895f904a98a14007@git.kernel.org>
+ <20091215021201.GB6048@nowhere>
+ <20091215022020.GD21796@ghostprotocols.net>
+ <20091215023228.GC6048@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091215023228.GC6048@nowhere>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current ELF dumper implementation can produce broken corefiles
-if program headers exceed 65535. This number is determined by the
-number of vmas which the process have. In particular, some extreme
-programs may use more than 65535 vmas. (If you google max_map_count,
-you can find some users facing this problem.) This kind of program
-never be able to generate correct coredumps.
+Em Tue, Dec 15, 2009 at 03:32:30AM +0100, Frederic Weisbecker escreveu:
+> On Tue, Dec 15, 2009 at 12:20:20AM -0200, Arnaldo Carvalho de Melo wrote:
+> > Em Tue, Dec 15, 2009 at 03:12:03AM +0100, Frederic Weisbecker escreveu:
+> > > On Sat, Dec 12, 2009 at 07:22:03AM +0000, tip-bot for Arnaldo Carvalho de Melo wrote:
+> > > > Looking over the vmlinux/kallsyms is common enough that I'll add a
+> > > > variable to the upcoming struct perf_session to avoid the need to
+> > > > use map_groups__find_by_name to get the main vmlinux/kallsyms map.
+> > > > 
+> > > > The above example looks on the 'variable' symtab, but it is just
+> > > > like that for the functions one.
+> > > > 
+> > > > Also the sort operation is done when we first use
+> > > > map__find_symbol_by_name, in a lazy way.
+> > > 
+> > > It would be nice to also have a kernel symbol resolution
+> > > helper independant of any session.
+> > > 
+> > > The problem is that I need to resolve a kernel variable symbol
+> > > very early, when we parse record options. We don't have any
+> > > session at this time so I can't retrieve the kmaps.
+> > 
+> > Humm, I don't think that is a problem, we just have to create the
+> > session before processing the args, after all at record time we can use
+> > kallsyms already.
+> 
+> Yeah but we need the output filename before creating it, which
+> we even don't have yet at this time.
 
-This patch implements ``extended numbering'' that uses sh_info
-field of the first section header instead of e_phnum field in order
-to represent upto 4294967295 vmas.
+Well, see top it should shed some light:
 
-This is supported by AMD64-ABI(http://www.x86-64.org/documentation.html)
-and Solaris(http://docs.sun.com/app/docs/doc/817-1984/). Of course,
-we are preparing patches for gdb and binutils.
+        /*
+         * FIXME: perf_session__new should allow passing a O_MMAP, so that all this
+         * mmap reading, etc is encapsulated in it. Use O_WRONLY for now.
+         */
+        struct perf_session *session = perf_session__new(NULL, O_WRONLY, false,
+                                                         &symbol_conf);
 
-Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
----
- arch/ia64/kernel/elfcore.c |   16 ++++++++
- arch/um/sys-i386/elfcore.c |   18 +++++++++
- fs/binfmt_elf.c            |   88 +++++++++++++++++++++++++++++++++++++++-----
- include/linux/elf.h        |   26 ++++++++++++-
- 4 files changed, 137 insertions(+), 11 deletions(-)
+8-)
 
-diff --git a/arch/ia64/kernel/elfcore.c b/arch/ia64/kernel/elfcore.c
-index 9c0dd8b..a15d8d4 100644
---- a/arch/ia64/kernel/elfcore.c
-+++ b/arch/ia64/kernel/elfcore.c
-@@ -73,3 +73,19 @@ int elf_core_write_extra_data(struct file *file, size_t *size,
- 	}
- 	return 1;
- }
-+
-+size_t elf_core_extra_data_size(void)
-+{
-+	const struct elf_phdr *const gate_phdrs =
-+		(const struct elf_phdr *) (GATE_ADDR + GATE_EHDR->e_phoff);
-+	int i;
-+	size_t size = 0;
-+
-+	for (i = 0; i < GATE_EHDR->e_phnum; ++i) {
-+		if (gate_phdrs[i].p_type == PT_LOAD) {
-+			size += PAGE_ALIGN(gate_phdrs[i].p_memsz);
-+			break;
-+		}
-+	}
-+	return size;
-+}
-diff --git a/arch/um/sys-i386/elfcore.c b/arch/um/sys-i386/elfcore.c
-index 4e320f0..4e34e47 100644
---- a/arch/um/sys-i386/elfcore.c
-+++ b/arch/um/sys-i386/elfcore.c
-@@ -76,3 +76,21 @@ int elf_core_write_extra_data(struct file *file, size_t *size,
- 	}
- 	return 1;
- }
-+
-+size_t elf_core_extra_data_size(void)
-+{
-+	if ( vsyscall_ehdr ) {
-+		const struct elfhdr *const ehdrp =
-+			(struct elfhdr *)vsyscall_ehdr;
-+		const struct elf_phdr *const phdrp =
-+			(const struct elf_phdr *) (vsyscall_ehdr + ehdrp->e_phoff);
-+		int i;
-+
-+		for (i = 0; i < ehdrp->e_phnum; ++i) {
-+			if (phdrp[i].p_type == PT_LOAD) {
-+				return (size_t) phdrp[i].p_filesz;
-+			}
-+		}
-+	}
-+	return 0;
-+}
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index cded1ba..ad2ad5f 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1895,6 +1895,38 @@ static struct vm_area_struct *next_vma(struct vm_area_struct *this_vma,
- 	return gate_vma;
- }
- 
-+static void fill_extnum_info(struct elfhdr *elf, struct elf_shdr *shdr4extnum,
-+			     elf_addr_t e_shoff, int segs)
-+{
-+	elf->e_shoff = e_shoff;
-+	elf->e_shentsize = sizeof(*shdr4extnum);
-+	elf->e_shnum = 1;
-+	elf->e_shstrndx = SHN_UNDEF;
-+
-+	shdr4extnum->sh_name = 0;
-+	shdr4extnum->sh_addr = 0;
-+	shdr4extnum->sh_offset = 0;
-+	shdr4extnum->sh_type = SHT_NULL;
-+	shdr4extnum->sh_flags = 0;
-+	shdr4extnum->sh_size = elf->e_shnum;
-+	shdr4extnum->sh_link = elf->e_shstrndx;
-+	shdr4extnum->sh_info = segs;
-+	shdr4extnum->sh_addralign = 0;
-+	shdr4extnum->sh_entsize = 0;
-+}
-+
-+static size_t elf_core_vma_data_size(struct vm_area_struct *gate_vma,
-+				     unsigned long mm_flags)
-+{
-+	struct vm_area_struct *vma;
-+	size_t size = 0;
-+
-+	for (vma = first_vma(current, gate_vma); vma != NULL;
-+	     vma = next_vma(vma, gate_vma))
-+		size += vma_dump_size(vma, mm_flags);
-+	return size;
-+}
-+
- /*
-  * It's been implemented that some architectures write out some extra
-  * data into segments. On the other hand, other architechtures use
-@@ -1917,6 +1949,11 @@ int __weak elf_core_write_extra_data(struct file *file, size_t *size,
- 	return 1;
- }
- 
-+size_t __weak elf_core_extra_data_size(void)
-+{
-+	return 0;
-+}
-+
- /*
-  * Actual dumper
-  *
-@@ -1936,6 +1973,9 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	unsigned long mm_flags;
- 	struct elf_note_info info;
- 	struct elf_phdr *phdr4note = NULL;
-+	struct elf_shdr *shdr4extnum = NULL;
-+	Elf_Half e_phnum = 0;
-+	elf_addr_t e_shoff;
- 
- 	/*
- 	 * We no longer stop all VM operations.
-@@ -1964,12 +2004,19 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	if (gate_vma != NULL)
- 		segs++;
- 
-+	/* for notes section */
-+	segs++;
-+
-+	/* If segs > PN_XNUM(0xffff), then e_phnum overflows. To avoid
-+	 * this, kernel supports extended numbering. Have a look at
-+	 * include/linux/elf.h for further information. */
-+	e_phnum = segs > PN_XNUM ? PN_XNUM : segs;
-+
- 	/*
- 	 * Collect all the non-memory information about the process for the
- 	 * notes.  This also sets up the file header.
- 	 */
--	if (!fill_note_info(elf, segs + 1, /* including notes section */
--			    &info, signr, regs))
-+	if (!fill_note_info(elf, e_phnum, &info, signr, regs))
- 		goto cleanup;
- 
- 	has_dumped = 1;
-@@ -1979,7 +2026,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	set_fs(KERNEL_DS);
- 
- 	offset += sizeof(*elf);				/* Elf header */
--	offset += (segs + 1) * sizeof(struct elf_phdr); /* Program headers */
-+	offset += segs * sizeof(struct elf_phdr); /* Program headers */
- 	foffset = offset;
- 
- 	/* Write notes phdr entry */
-@@ -1998,6 +2045,26 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 
- 	dataoff = offset = roundup(offset, ELF_EXEC_PAGESIZE);
- 
-+	/*
-+	 * We must use the same mm->flags while dumping core to avoid
-+	 * inconsistency between the program headers and bodies, otherwise an
-+	 * unusable core file can be generated.
-+	 */
-+	mm_flags = current->mm->flags;
-+
-+	offset += elf_core_vma_data_size(gate_vma, mm_flags);
-+	offset += elf_core_extra_data_size();
-+	e_shoff = offset;
-+
-+	if (e_phnum == PN_XNUM) {
-+		shdr4extnum = kmalloc(sizeof(*shdr4extnum), GFP_KERNEL);
-+		if (!shdr4extnum)
-+			goto end_coredump;
-+		fill_extnum_info(elf, shdr4extnum, e_shoff, segs);
-+	}
-+
-+	offset = dataoff;
-+
- 	size += sizeof(*elf);
- 	if (size > limit || !dump_write(file, elf, sizeof(*elf)))
- 		goto end_coredump;
-@@ -2006,13 +2073,6 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	if (size > limit || !dump_write(file, phdr4note, sizeof(*phdr4note)))
- 		goto end_coredump;
- 
--	/*
--	 * We must use the same mm->flags while dumping core to avoid
--	 * inconsistency between the program headers and bodies, otherwise an
--	 * unusable core file can be generated.
--	 */
--	mm_flags = current->mm->flags;
--
- 	/* Write program headers for segments dump */
- 	for (vma = first_vma(current, gate_vma); vma != NULL;
- 			vma = next_vma(vma, gate_vma)) {
-@@ -2079,11 +2139,19 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
- 	if (!elf_core_write_extra_data(file, &size, limit))
- 		goto end_coredump;
- 
-+	if (e_phnum == PN_XNUM) {
-+		size += sizeof(*shdr4extnum);
-+		if (size > limit
-+		    || !dump_write(file, shdr4extnum, sizeof(*shdr4extnum)))
-+			goto end_coredump;
-+	}
-+
- end_coredump:
- 	set_fs(fs);
- 
- cleanup:
- 	free_note_info(&info);
-+	kfree(shdr4extnum);
- 	kfree(phdr4note);
- 	kfree(elf);
- out:
-diff --git a/include/linux/elf.h b/include/linux/elf.h
-index d103127..027fdfe 100644
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -50,6 +50,28 @@ typedef __s64	Elf64_Sxword;
- 
- #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
- 
-+/*
-+ * Extended Numbering
-+ *
-+ * If the real number of program header table entries is larger than
-+ * or equal to PN_XNUM(0xffff), it is set to sh_info field of the
-+ * section header at index 0, and PN_XNUM is set to e_phnum
-+ * field. Otherwise, the section header at index 0 is zero
-+ * initialized, if it exists.
-+ *
-+ * Specifications are available in:
-+ *
-+ * - Sun microsystems: Linker and Libraries.
-+ *   Part No: 817-1984-17, September 2008.
-+ *   URL: http://docs.sun.com/app/docs/doc/817-1984
-+ *
-+ * - System V ABI AMD64 Architecture Processor Supplement
-+ *   Draft Version 0.99.,
-+ *   May 11, 2009.
-+ *   URL: http://www.x86-64.org/
-+ */
-+#define PN_XNUM 0xffff
-+
- /* These constants define the different elf file types */
- #define ET_NONE   0
- #define ET_REL    1
-@@ -286,7 +308,7 @@ typedef struct elf64_phdr {
- #define SHN_COMMON	0xfff2
- #define SHN_HIRESERVE	0xffff
-  
--typedef struct {
-+typedef struct elf32_shdr {
-   Elf32_Word	sh_name;
-   Elf32_Word	sh_type;
-   Elf32_Word	sh_flags;
-@@ -384,6 +406,7 @@ typedef struct elf64_note {
- extern Elf32_Dyn _DYNAMIC [];
- #define elfhdr		elf32_hdr
- #define elf_phdr	elf32_phdr
-+#define elf_shdr	elf32_shdr
- #define elf_note	elf32_note
- #define elf_addr_t	Elf32_Off
- #define Elf_Half	Elf32_Half
-@@ -393,6 +416,7 @@ extern Elf32_Dyn _DYNAMIC [];
- extern Elf64_Dyn _DYNAMIC [];
- #define elfhdr		elf64_hdr
- #define elf_phdr	elf64_phdr
-+#define elf_shdr	elf64_shdr
- #define elf_note	elf64_note
- #define elf_addr_t	Elf64_Off
- #define Elf_Half	Elf64_Half
--- 
-1.6.5.1
+> May be I should just init it very early without the filename
+> and assign it later with a small new helper.
+> 
+> Another problem is that the record session is not available
+> from parse-events.c, may be should I create a single wide scope
+> record_session that would be shared among record, top and stat
+> so that it's available from parse-event.c
+> 
+> > > I'm not sure what's the proper way to handle that.
+> > 
+> > What is the problem? I'm not following :-)
+> 
+> I think the real problem actually is that I should join
+> my bed.
+> The above questions will retrieve their trivial essence after
+> some sleep :)
 
+Ok, I'm some hours behind you but neverthless ahead of my own bedtime,
+lets see tomorrow how to add support for your scenario and for O_MMAP
+before some other top-like app needs to use our mutant teenage libperf
+kid :-)
+
+- Arnaldo
