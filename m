@@ -1,115 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbZLOTLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933362AbZLOTLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933368AbZLOTLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbZLOTLL
+	id S933362AbZLOTLn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933336AbZLOTLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:11:11 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:39657 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933070AbZLOTLH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:11:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type;
-        b=YT2C6hJRbfduSqi/YyUaalyXPOa3I+swuckPHTYbmQiver1xadiY9RmuJk0JbDwuB4
-         fZe3iaHOqp86XWGhbc9131z4SZfJ5YP6N3Pyx/4HYyYha8HEHLTzeeaceUfW6t2WgC9w
-         Pcf45jEveXnWBroMM8eE/aphs5l2SXjPLOknk=
+	Tue, 15 Dec 2009 14:11:32 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:48388 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933328AbZLOTLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:11:30 -0500
+Date: Tue, 15 Dec 2009 20:11:29 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+Message-ID: <20091215191129.GQ28252@kernel.dk>
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk> <4B27DDD7.5040301@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <4B27D756.4050102@gawab.com>
-References: <1260065000-5573-1-git-send-email-jdm64@gawab.com> 
-	<2c0942db0912142002p638a187araa837812862e5b17@mail.gmail.com> 
-	<4B27D756.4050102@gawab.com>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Tue, 15 Dec 2009 11:10:47 -0800
-X-Google-Sender-Auth: e00e04f9b836338f
-Message-ID: <2c0942db0912151110n28f339a7m53d276044623adef@mail.gmail.com>
-Subject: Re: [PATCH] staging: s5k3e2fx.c: reduce complexity by factoring
-To: Justin Madru <jdm64@gawab.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       Dan Carpenter <error27@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B27DDD7.5040301@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 10:37 AM, Justin Madru <jdm64@gawab.com> wrote:
-> But, wouldn't you agree that if the code was suppose to deal with "rounding
-> issues" that there's a
-> simpler expression?
+On Tue, Dec 15 2009, Yinghai Lu wrote:
+> Jens Axboe wrote:
+> > On Tue, Dec 15 2009, Yinghai Lu wrote:
+> >> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+> >>
+> >> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
+> > 
+> > On a "normal" non-kexec boot, I get:
+> > 
+> > [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
+> > [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
+> > [   12.216874] PCI: Using configuration type 1 for base access
+> > 
+> 
+> can you run following scripts in first kernel?
+> 
+> cd /sys/firmware/memmap
+> for dir in * ; do
+>   start=$(cat $dir/start)
+>   end=$(cat $dir/end)
+>   type=$(cat $dir/type)
+>   printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
+> done
+> 
+> and send out /tmp/memmap.txt
 
-No, I don't agree. Five minutes of effort below shows your patch will
-generate different numbers than the original. If this is controlling a
-stepper motor trying to hit a home position, it's off now. Or, the
-errors in the expressions for moving near and far may have balanced
-each other out before, and now there may be a systematic error causing
-a skew over time toward one end rather than the other.
+Below.
 
-My point is that you need to run this past the guy with the actual
-hardware who wrote it in the first place such that it can be tested,
-and make sure the slapped-together expression isn't just working by
-accident, as ugly as it might be.
+> what is your kexec tools version? could be too old?
 
-#include <stdio.h>
+It says:
 
-typedef int int32_t;
-typedef short int16_t;
-typedef unsigned int uint32_t;
-
-enum {MOVE_NEAR, MOVE_FAR} move_direction;
-
-int32_t s5k3e2fx_move_focus(int direction, int32_t num_steps)
-{
-        int32_t i;
-        int16_t step_direction;
-        int16_t actual_step;
-        int16_t s_move[5], s_move_2[5];
-        uint32_t gain, gain_2;
-
-        if (direction == MOVE_NEAR)
-                step_direction = 20;
-        else
-                step_direction = -20;
-
-        actual_step = step_direction * (int16_t)num_steps;
-
-        gain = actual_step * 0x400 / 5;
-	gain_2 = actual_step / 5;
-	
-        for (i = 0; i <= 4; i++) {
-                if (actual_step >= 0)
-                        s_move[i] = ((((i+1)*gain+0x200) -
-(i*gain+0x200))/0x400);
-                else
-                        s_move[i] = ((((i+1)*gain-0x200) -
-(i*gain-0x200))/0x400);
-        }
-
-        for (i = 0; i <= 4; i++)
-                s_move_2[i] = gain_2;
-
-	if (memcmp(s_move, s_move_2, sizeof(s_move))) {
-		printf("s1, s2 differ for direction %d, num_steps %d\n", direction,
-num_steps);
-		for (i=0; i<5; i++)
-			printf(" [%d] %d %d", i, s_move[i], s_move_2[i]);
-		printf("\n");
-	}
-
-}
-
-int main(void) {
-	int steps;
-	for (steps = -65535; steps < 65536; steps++) {
-		s5k3e2fx_move_focus(MOVE_NEAR, steps);
-		s5k3e2fx_move_focus(MOVE_FAR, steps);
-	}
-}
+kexec-tools-testing 20080324 released 24th March 2008
 
 
+0000000000000000-0000000000098800 (System RAM)
+0000000000098800-00000000000a0000 (reserved)
+0000000079301000-0000000079303000 (reserved)
+0000000079303000-0000000079305000 (ACPI Tables)
+0000000079305000-0000000079310000 (reserved)
+0000000079310000-0000000079314000 (ACPI Tables)
+0000000079314000-0000000079319000 (reserved)
+0000000079319000-0000000079336000 (ACPI Tables)
+0000000079336000-0000000079358000 (reserved)
+0000000079358000-0000000079388000 (ACPI Tables)
+0000000079388000-00000000793c9000 (reserved)
+00000000793c9000-000000007968f000 (ACPI Tables)
+00000000000e0000-0000000000100000 (reserved)
+000000007968f000-00000000796bb000 (reserved)
+00000000796bb000-00000000799d8000 (ACPI Tables)
+00000000799d8000-0000000079bd8000 (ACPI Non-volatile Storage)
+0000000079bd8000-0000000079d8b000 (ACPI Tables)
+0000000079d8b000-0000000079d8c000 (reserved)
+0000000079d8c000-0000000079dc8000 (ACPI Tables)
+0000000079dc8000-0000000079dcb000 (reserved)
+0000000079dcb000-0000000079e1c000 (ACPI Tables)
+0000000079e1c000-0000000079e87000 (reserved)
+0000000079e87000-000000007bd5f000 (ACPI Tables)
+0000000000100000-0000000078c59000 (System RAM)
+000000007bd5f000-000000007be4f000 (reserved)
+000000007be4f000-000000007bf87000 (ACPI Tables)
+000000007bf87000-000000007bfcf000 (ACPI Non-volatile Storage)
+000000007bfcf000-000000007bfff000 (ACPI Tables)
+000000007bfff000-0000000090000000 (reserved)
+00000000fc000000-00000000fd000000 (reserved)
+00000000fed1c000-00000000fed20000 (reserved)
+00000000ff000000-0000000100000000 (reserved)
+0000000100000000-0000001080000000 (System RAM)
+0000000078c59000-0000000078e6d000 (ACPI Non-volatile Storage)
+0000000078e6d000-000000007924e000 (ACPI Tables)
+000000007924e000-00000000792c2000 (reserved)
+00000000792c2000-00000000792d2000 (ACPI Tables)
+00000000792d2000-00000000792e7000 (reserved)
+00000000792e7000-0000000079301000 (ACPI Tables)
 
->
-> Justin
->
+-- 
+Jens Axboe
+
