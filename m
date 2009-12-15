@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZLOJsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbZLOJsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759537AbZLOJsM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:48:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759524AbZLOJsL
+	id S1759552AbZLOJsn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbZLOJsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:48:11 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:41813 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759523AbZLOJsJ (ORCPT
+	Tue, 15 Dec 2009 04:48:42 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33305 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759444AbZLOJsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:48:09 -0500
-Subject: Re: linux-next: manual merge of the voltage tree with Linus' tree
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Eduardo Valentin <eduardo.valentin@nokia.com>,
-       Rajendra Nayak <rnayak@ti.com>, Samuel Ortiz <sameo@linux.intel.com>,
-       Balaji T K <balajitk@ti.com>
-In-Reply-To: <20091215133808.cd3d4b8b.sfr@canb.auug.org.au>
-References: <20091215133808.cd3d4b8b.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Dec 2009 09:48:05 +0000
-Message-ID: <1260870485.3591.25.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Dec 2009 04:48:41 -0500
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+In-reply-to: <ac3eb2510912120207r528229f6uf8bd0535a6ce76a@mail.gmail.com>
+	(message from Kay Sievers on Sat, 12 Dec 2009 11:07:54 +0100)
+Subject: Re: get_sb_single() - do not pass options twice
+References: <1257460103.2126.0.camel@yio.site> <ac3eb2510912120207r528229f6uf8bd0535a6ce76a@mail.gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1NKU1C-0005jr-P8@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 15 Dec 2009 10:48:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
-
-On Tue, 2009-12-15 at 13:38 +1100, Stephen Rothwell wrote:
-> Hi Liam,
+On Sat, 12 Dec 2009, Kay Sievers wrote:
+> Ping! Can someone please have a look and comment on that?
+> Something like this will now be needed for 2.6.33 to silent a warning.
 > 
-> Today's linux-next merge of the voltage tree got a conflict in
-> drivers/regulator/twl-regulator.c between commit
-> 441a450554dada1c59fc06fdf068cb0eeba53c6d ("regulator: Add support for
-> twl6030 regulators") from Linus' tree and commits
-> 6360cf42ae51be5f6e6e72d6e81f202d9db0f7e9 ("twl4030-regulator: Remove
-> regulator from all groups when disabling") and
-> 3277b9fce0fcaa68d5947429e062163852ebc6fb ("twl4030-regulator: Add all TWL
-> regulators to twreg_info") from the voltage tree.
+> Thanks,
+> Kay
 > 
-> I cannot begin to fix this mess up.  I do wonder why the regulator patch
-> above was never in linux-next before being sent upstream yesterday
-> (Samuel?).  All I can do is use the version of the voltage tree from
-> next-20091120 (commit id b0a7a2ad0aebb35934de6d2509c73fe93a362c0e) for
-> today and hope that Liam can do the merge with Linus' tree.
-> 
+> > Cc: Greg KH <greg@kroah.com>
+> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > ---
+> >  fs/super.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> >
+> > --- a/fs/super.c
+> > +++ b/fs/super.c
+> > @@ -900,6 +900,8 @@ int get_sb_single(struct file_system_typ
+> >                        deactivate_locked_super(s);
+> >                        return error;
+> >                }
+> > +               /* options usually get mangled and can only be parsed once */
+> > +               data = NULL;
+> >                s->s_flags |= MS_ACTIVE;
+> >        }
+> >        do_remount_sb(s, flags, data, 0);
 
-Sorry about this. There were some large patch sets that did span both
-mfd and regulator recently.
+I think the do_remount_sb() is a NOP in that case.  So shouldn't it
+rather be
 
-I'll fix and do my pull request today.
+	} else {
+		do_remount_sb(s, flags, data, 0);
+	}
 
-Liam
+?
 
+Thanks,
+Miklos
