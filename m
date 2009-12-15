@@ -1,105 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZLOBox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZLOBne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZLOBox (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZLOBow
+	id S1755083AbZLOBne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZLOBne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:44:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42803 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751444AbZLOBow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:44:52 -0500
-Message-ID: <4B26E973.6080305@kernel.org>
-Date: Mon, 14 Dec 2009 17:42:11 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 14 Dec 2009 20:43:34 -0500
+Received: from cgp-fe01.mtu.ru ([62.5.255.15]:42126 "EHLO umail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750844AbZLOBnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 20:43:33 -0500
+From: Pavel Vasilyev <pavel@pavlinux.ru>
+Organization: Pavlinux. Inc
+To: linux-kernel@vger.kernel.org
+Subject: May be not need MTRR for K8 systems without  AGP
+Date: Tue, 15 Dec 2009 04:43:30 +0300
+User-Agent: KMail/1.12.4 (Linux/2.6.32; KDE/4.3.4; x86_64; ; )
+X-Face: $dO4505L-bM3\Iz"(
+ =?utf-8?q?V=3Dy=2EbL/75=7B5ys3=3AB=5B-aPBQvs*Z=25fdBqFhvc85hmZN4j1kwRzwvY*?=
+ =?utf-8?q?R=0A=094=09nvQ/=23/+kWXH?=((aXWh\%mvG1V()Z0k:NwZAIu\S0d1%,nv`^
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Tvrtko Ursulin <tvrtko@ursulin.net>,
-       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Are these MTRR settings correct?
-References: <200912130807.44905.tvrtko@ursulin.net> <200912141934.10628.tvrtko@ursulin.net> <4B26965C.6020203@kernel.org> <200912142016.53160.tvrtko@ursulin.net> <4B269F92.1050909@kernel.org> <4B26E4C7.8040100@gmail.com>
-In-Reply-To: <4B26E4C7.8040100@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912150443.30405@PAVLINUX->
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> On 12/14/2009 02:26 PM, Yinghai Lu wrote:
->> Tvrtko Ursulin wrote:
->>> On Monday 14 Dec 2009 19:47:40 Yinghai Lu wrote:
->>>> Tvrtko Ursulin wrote:
->>>>> On Monday 14 Dec 2009 11:25:58 Yinghai Lu wrote:
->>>>>>>> something wrong, we should not check that with e820 or acpi
->>>>>>>> resource
->>>>>>>> in that case. please check
->>>>>>>>
->>>>>>>> {PATCH] x86/pci: don't check mmconf again if it is from MSR with
->>>>>>>> amd
->>>>>>>> faml0h
->>>>>>>>
->>>>>>>> for AMD Fam10h, it we read mmconf from MSR early, we should just
->>>>>>>> trust
->>>>>>>> it because we check it and correct it already.
->>>>>>>>
->>>>>>>> so skip the reject check there.
->>>>>>> [path snipped]
->>>>>>>
->>>>>>> Do you want me to test with this patch and that pci=.. option active
->>>>>>> and post dmesg? Or without the pci=... option?
->>>>>> with this patch and pci=... and post dmesg...
->>>>> Here you go:
->>>> ...
->>>>
->>>>> [    0.250041] node 0 link 0: io port [1000, ffffff]
->>>>> [    0.250043] TOM: 00000000e0000000 aka 3584M
->>>>> [    0.250044] Fam 10h mmconf [e0000000, efffffff]
->>>>> [    0.250046] node 0 link 0: mmio [a0000, bffff]
->>>>> [    0.250048] node 0 link 0: mmio [e0000000, efffffff] ==>  none
->>>>> [    0.250050] node 0 link 0: mmio [f0000000, fe7fffff]
->>>>> [    0.250051] node 0 link 0: mmio [fe800000, fe9fffff]
->>>>> [    0.250053] node 0 link 0: mmio [fea00000, ffefffff]
->>>>> [    0.250054] TOM2: 0000000120000000 aka 4608M
->>>>> [    0.250056] bus: [00,07] on node 0 link 0
->>>>> [    0.250057] bus: 00 index 0 io port: [0, ffff]
->>>>> [    0.250058] bus: 00 index 1 mmio: [a0000, bffff]
->>>>> [    0.250060] bus: 00 index 2 mmio: [f0000000, ffffffff]
->>>>> [    0.250061] bus: 00 index 3 mmio: [120000000, fcffffffff]
->>>>> [    0.250068] ACPI: bus type pci registered
->>>>> [    0.250091] PCI: Found AMD Family 10h NB with MMCONFIG support.
->>>>> [    0.254793] PCI: Using MMCONFIG at e0000000 - efffffff
->>>>> [    0.254795] PCI: Using configuration type 1 for base access
->>>> ...
->>>>
->>>> thanks, mmconf works on your system.
->>>
->>> So I should keep using both your patch and
->>> pci=check_enable_amd_mmconf option?
->>>
->>
->> I will push the driver to Jesse.
->>
->> but you need to have pci=check_enable_amd_mmconf, unless we add one
->> DMI entry for your kind of system.
-> 
-> Something else isn't quite right. It looks like MMCONFIG area should be
-> reserved:
-> 
-> [    0.308434] system 00:0c: iomem range 0xe0000000-0xefffffff has been
-> reserved
-> 
-> but the code didn't seem to detect that. In fact there doesn't seem to
-> be any output about whether it was or wasn't reserved, which from the
-> code it seems there should be.
-> 
-> Maybe because of that ACPI method execution error?
-> 
+Subj!
 
-could be sth pnpacpi brokenness?
-
-YH
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 32a1918..571d8b7 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1334,7 +1334,7 @@ config MATH_EMULATION
+ config MTRR
+        bool
+        default y
+-       prompt "MTRR (Memory Type Range Register) support" if EMBEDDED
++       prompt "MTRR (Memory Type Range Register) support" if (EMBEDDED || 
+(MK8 && AGP))
+        ---help---
+          On Intel P6 family processors (Pentium Pro, Pentium II and later)
+          the Memory Type Range Registers (MTRRs) may be used to control
