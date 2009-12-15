@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbZLOMNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbZLOMNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760101AbZLOMNR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 07:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760074AbZLOMNQ
+	id S1760113AbZLOMNf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 07:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbZLOMNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 07:13:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51252 "EHLO hera.kernel.org"
+	Tue, 15 Dec 2009 07:13:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51261 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760069AbZLOMNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 07:13:13 -0500
-Date: Tue, 15 Dec 2009 12:12:32 GMT
-From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, rdreier@cisco.com, fujita.tomonori@lab.ntt.co.jp,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, rdreier@cisco.com, fujita.tomonori@lab.ntt.co.jp,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091215204729A.fujita.tomonori@lab.ntt.co.jp>
-References: <20091215204729A.fujita.tomonori@lab.ntt.co.jp>
+	id S1760104AbZLOMNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 07:13:30 -0500
+Date: Tue, 15 Dec 2009 12:12:46 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, stable@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, mikey@neuling.org
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, stable@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu, mikey@neuling.org
+In-Reply-To: <20091215084032.GA18661@brick.ozlabs.ibm.com>
+References: <20091215084032.GA18661@brick.ozlabs.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Split swiotlb initialization into two stages
-Message-ID: <tip-186a25026c44d1bfa97671110ff14dcd0c99678e@git.kernel.org>
-Git-Commit-ID: 186a25026c44d1bfa97671110ff14dcd0c99678e
+Subject: [tip:perf/urgent] perf_event: Fix incorrect range check on cpu number
+Message-ID: <tip-0f624e7e5625f4c30c836b7a5decfe2553582391@git.kernel.org>
+Git-Commit-ID: 0f624e7e5625f4c30c836b7a5decfe2553582391
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,146 +31,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  186a25026c44d1bfa97671110ff14dcd0c99678e
-Gitweb:     http://git.kernel.org/tip/186a25026c44d1bfa97671110ff14dcd0c99678e
-Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-AuthorDate: Tue, 15 Dec 2009 20:47:56 +0900
+Commit-ID:  0f624e7e5625f4c30c836b7a5decfe2553582391
+Gitweb:     http://git.kernel.org/tip/0f624e7e5625f4c30c836b7a5decfe2553582391
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Tue, 15 Dec 2009 19:40:32 +1100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 15 Dec 2009 13:01:57 +0100
+CommitDate: Tue, 15 Dec 2009 13:09:55 +0100
 
-x86: Split swiotlb initialization into two stages
+perf_event: Fix incorrect range check on cpu number
 
-The commit f4780ca005404166cc40af77ef0e86132ab98a81 moves
-swiotlb initialization before dma32_free_bootmem(). It's
-supposed to fix a bug that the commit
-75f1cdf1dda92cae037ec848ae63690d91913eac introduced, we
-initialize SWIOTLB right after dma32_free_bootmem so we wrongly
-steal memory area allocated for GART with broken BIOS earlier.
+It is quite legitimate for CPUs to be numbered sparsely, meaning
+that it possible for an online CPU to have a number which is
+greater than the total count of possible CPUs.
 
-However, the above commit introduced another problem, which
-likely breaks machines with huge amount of memory. Such a box
-use the majority of DMA32_ZONE so there is no memory for
-swiotlb.
+Currently find_get_context() has a sanity check on the cpu
+number where it checks it against num_possible_cpus().  This
+test can fail for a legitimate cpu number if the
+cpu_possible_mask is sparsely populated.
 
-With this patch, the x86 IOMMU initialization sequence are:
+This fixes the problem by checking the CPU number against
+nr_cpumask_bits instead, since that is the appropriate check to
+ensure that the cpu number is same to pass to cpu_isset()
+subsequently.
 
-1. We set swiotlb to 1 in the case of (max_pfn > MAX_DMA32_PFN
-   && !no_iommu). If swiotlb usage is forced by the boot option,
-   we go to the step 3 and finish (we don't try to detect IOMMUs).
-
-2. We call the detection functions of all the IOMMUs. The
-   detection function sets x86_init.iommu.iommu_init to the IOMMU
-   initialization function (so we can avoid calling the
-   initialization functions of all the IOMMUs needlessly).
-
-3. We initialize swiotlb (and set dma_ops to swiotlb_dma_ops) if
-   swiotlb is set to 1.
-
-4. If the IOMMU initialization function doesn't need swiotlb
-   (e.g. the initialization is sucessful) then sets swiotlb to zero.
-
-5. If we find that swiotlb is set to zero, we free swiotlb
-   resource.
-
-Reported-by: Yinghai Lu <yinghai@kernel.org>
-Reported-by: Roland Dreier <rdreier@cisco.com>
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-LKML-Reference: <20091215204729A.fujita.tomonori@lab.ntt.co.jp>
-Tested-by: Yinghai Lu <yinghai@kernel.org>
+Reported-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Tested-by: Michael Neuling <mikey@neuling.org>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: <stable@kernel.org>
+LKML-Reference: <20091215084032.GA18661@brick.ozlabs.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/swiotlb.h |    8 ++++++--
- arch/x86/kernel/pci-dma.c      |    9 ++++-----
- arch/x86/kernel/pci-swiotlb.c  |   11 +++++++----
- 3 files changed, 17 insertions(+), 11 deletions(-)
+ kernel/perf_event.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
-index 87ffcb1..8085277 100644
---- a/arch/x86/include/asm/swiotlb.h
-+++ b/arch/x86/include/asm/swiotlb.h
-@@ -5,13 +5,17 @@
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index d891ec4..8823b08 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1603,7 +1603,7 @@ static struct perf_event_context *find_get_context(pid_t pid, int cpu)
+ 		if (perf_paranoid_cpu() && !capable(CAP_SYS_ADMIN))
+ 			return ERR_PTR(-EACCES);
  
- #ifdef CONFIG_SWIOTLB
- extern int swiotlb;
--extern int pci_swiotlb_init(void);
-+extern int __init pci_swiotlb_detect(void);
-+extern void __init pci_swiotlb_init(void);
- #else
- #define swiotlb 0
--static inline int pci_swiotlb_init(void)
-+static inline int pci_swiotlb_detect(void)
- {
- 	return 0;
- }
-+static inline void pci_swiotlb_init(void)
-+{
-+}
- #endif
+-		if (cpu < 0 || cpu > num_possible_cpus())
++		if (cpu < 0 || cpu >= nr_cpumask_bits)
+ 			return ERR_PTR(-EINVAL);
  
- static inline void dma_mark_clean(void *addr, size_t size) {}
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index fcc2f2b..75e14e2 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -120,15 +120,12 @@ static void __init dma32_free_bootmem(void)
- 
- void __init pci_iommu_alloc(void)
- {
--	int use_swiotlb;
--
--	use_swiotlb = pci_swiotlb_init();
- #ifdef CONFIG_X86_64
- 	/* free the range so iommu could get some range less than 4G */
- 	dma32_free_bootmem();
- #endif
--	if (use_swiotlb)
--		return;
-+	if (pci_swiotlb_detect())
-+		goto out;
- 
- 	gart_iommu_hole_init();
- 
-@@ -138,6 +135,8 @@ void __init pci_iommu_alloc(void)
- 
- 	/* needs to be called after gart_iommu_hole_init */
- 	amd_iommu_detect();
-+out:
-+	pci_swiotlb_init();
- }
- 
- void *dma_generic_alloc_coherent(struct device *dev, size_t size,
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index e3c0a66..7d2829d 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -43,12 +43,12 @@ static struct dma_map_ops swiotlb_dma_ops = {
- };
- 
- /*
-- * pci_swiotlb_init - initialize swiotlb if necessary
-+ * pci_swiotlb_detect - set swiotlb to 1 if necessary
-  *
-  * This returns non-zero if we are forced to use swiotlb (by the boot
-  * option).
-  */
--int __init pci_swiotlb_init(void)
-+int __init pci_swiotlb_detect(void)
- {
- 	int use_swiotlb = swiotlb | swiotlb_force;
- 
-@@ -60,10 +60,13 @@ int __init pci_swiotlb_init(void)
- 	if (swiotlb_force)
- 		swiotlb = 1;
- 
-+	return use_swiotlb;
-+}
-+
-+void __init pci_swiotlb_init(void)
-+{
- 	if (swiotlb) {
- 		swiotlb_init(0);
- 		dma_ops = &swiotlb_dma_ops;
- 	}
--
--	return use_swiotlb;
- }
+ 		/*
