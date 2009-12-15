@@ -1,108 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933422AbZLOTSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933399AbZLOTRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933422AbZLOTSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933405AbZLOTSq
+	id S933399AbZLOTRu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbZLOTRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:18:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40104 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933352AbZLOTSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:18:43 -0500
-Message-ID: <4B27E0C7.9060909@kernel.org>
-Date: Tue, 15 Dec 2009 11:17:27 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 15 Dec 2009 14:17:48 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:60902 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933347AbZLOTRr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:17:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=rIWILICIwmerw5p/24Nf7ZTTW7ldRnw1LcJK3btIoPg2h2B7CCN39scF2AcNdtx3cu
+         mGxv1+uQkhgLB0IouZ80p1OvmfFNjxThK5kvqfsH/1mI/jZ20xgtc0aVKDMA0068FzEU
+         wHJ5tOoDA4KS1PGsbEilJWvo6SnOKFlRKT/bM=
+Message-ID: <4B27E146.1070206@gmail.com>
+Date: Tue, 15 Dec 2009 20:19:34 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215185941.GO28252@kernel.dk> <4B27DDD7.5040301@kernel.org> <20091215191129.GQ28252@kernel.dk>
-In-Reply-To: <20091215191129.GQ28252@kernel.dk>
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] serial: Fix test of unsigned
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, Dec 15 2009, Yinghai Lu wrote:
->> Jens Axboe wrote:
->>> On Tue, Dec 15 2009, Yinghai Lu wrote:
->>>> [   13.018720] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
->>>>
->>>> [   13.100724] [Firmware Bug]: PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] not reserved in ACPI motherboard resources
->>> On a "normal" non-kexec boot, I get:
->>>
->>> [   12.173583] PCI: MMCONFIG for domain 0000 [bus 00-ff] at [mem 0x80000000-0x8fffffff] (base 0x80000000)
->>> [   12.184075] PCI: MMCONFIG at [mem 0x80000000-0x8fffffff] reserved in E820
->>> [   12.216874] PCI: Using configuration type 1 for base access
->>>
->> can you run following scripts in first kernel?
->>
->> cd /sys/firmware/memmap
->> for dir in * ; do
->>   start=$(cat $dir/start)
->>   end=$(cat $dir/end)
->>   type=$(cat $dir/type)
->>   printf "%016x-%016x (%s)\n" $start $[ $end +1] "$type" >> /tmp/memmap.txt
->> done
->>
->> and send out /tmp/memmap.txt
-> 
-> Below.
-> 
->> what is your kexec tools version? could be too old?
-> 
-> It says:
-> 
-> kexec-tools-testing 20080324 released 24th March 2008
-> 
-> 
-> 0000000000000000-0000000000098800 (System RAM)
-> 0000000000098800-00000000000a0000 (reserved)
-> 0000000079301000-0000000079303000 (reserved)
-> 0000000079303000-0000000079305000 (ACPI Tables)
-> 0000000079305000-0000000079310000 (reserved)
-> 0000000079310000-0000000079314000 (ACPI Tables)
-> 0000000079314000-0000000079319000 (reserved)
-> 0000000079319000-0000000079336000 (ACPI Tables)
-> 0000000079336000-0000000079358000 (reserved)
-> 0000000079358000-0000000079388000 (ACPI Tables)
-> 0000000079388000-00000000793c9000 (reserved)
-> 00000000793c9000-000000007968f000 (ACPI Tables)
-> 00000000000e0000-0000000000100000 (reserved)
-> 000000007968f000-00000000796bb000 (reserved)
-> 00000000796bb000-00000000799d8000 (ACPI Tables)
-> 00000000799d8000-0000000079bd8000 (ACPI Non-volatile Storage)
-> 0000000079bd8000-0000000079d8b000 (ACPI Tables)
-> 0000000079d8b000-0000000079d8c000 (reserved)
-> 0000000079d8c000-0000000079dc8000 (ACPI Tables)
-> 0000000079dc8000-0000000079dcb000 (reserved)
-> 0000000079dcb000-0000000079e1c000 (ACPI Tables)
-> 0000000079e1c000-0000000079e87000 (reserved)
-> 0000000079e87000-000000007bd5f000 (ACPI Tables)
-> 0000000000100000-0000000078c59000 (System RAM)
-> 000000007bd5f000-000000007be4f000 (reserved)
-> 000000007be4f000-000000007bf87000 (ACPI Tables)
-> 000000007bf87000-000000007bfcf000 (ACPI Non-volatile Storage)
-> 000000007bfcf000-000000007bfff000 (ACPI Tables)
-> 000000007bfff000-0000000090000000 (reserved)
-> 00000000fc000000-00000000fd000000 (reserved)
-> 00000000fed1c000-00000000fed20000 (reserved)
-> 00000000ff000000-0000000100000000 (reserved)
-> 0000000100000000-0000001080000000 (System RAM)
-> 0000000078c59000-0000000078e6d000 (ACPI Non-volatile Storage)
-> 0000000078e6d000-000000007924e000 (ACPI Tables)
-> 000000007924e000-00000000792c2000 (reserved)
-> 00000000792c2000-00000000792d2000 (ACPI Tables)
-> 00000000792d2000-00000000792e7000 (reserved)
-> 00000000792e7000-0000000079301000 (ACPI Tables)
-> 
+The variables were unsigned so the tests did not work.
 
-boot log of first kernel?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Found using coccinelle: http://coccinelle.lip6.fr/
 
-YH
+ drivers/serial/msm_serial.c |    6 ++++--
+ drivers/serial/timbuart.c   |    7 ++++---
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/serial/msm_serial.c b/drivers/serial/msm_serial.c
+index b05c5aa..ecdc0fa 100644
+--- a/drivers/serial/msm_serial.c
++++ b/drivers/serial/msm_serial.c
+@@ -691,6 +691,7 @@ static int __init msm_serial_probe(struct platform_device *pdev)
+ 	struct msm_port *msm_port;
+ 	struct resource *resource;
+ 	struct uart_port *port;
++	int irq;
+ 
+ 	if (unlikely(pdev->id < 0 || pdev->id >= UART_NR))
+ 		return -ENXIO;
+@@ -711,9 +712,10 @@ static int __init msm_serial_probe(struct platform_device *pdev)
+ 		return -ENXIO;
+ 	port->mapbase = resource->start;
+ 
+-	port->irq = platform_get_irq(pdev, 0);
+-	if (unlikely(port->irq < 0))
++	irq = platform_get_irq(pdev, 0);
++	if (unlikely(irq < 0))
+ 		return -ENXIO;
++	port->irq = irq;
+ 
+ 	platform_set_drvdata(pdev, port);
+ 
+diff --git a/drivers/serial/timbuart.c b/drivers/serial/timbuart.c
+index 34b31da..7bf1026 100644
+--- a/drivers/serial/timbuart.c
++++ b/drivers/serial/timbuart.c
+@@ -421,7 +421,7 @@ static struct uart_driver timbuart_driver = {
+ 
+ static int timbuart_probe(struct platform_device *dev)
+ {
+-	int err;
++	int err, irq;
+ 	struct timbuart_port *uart;
+ 	struct resource *iomem;
+ 
+@@ -453,11 +453,12 @@ static int timbuart_probe(struct platform_device *dev)
+ 	uart->port.mapbase = iomem->start;
+ 	uart->port.membase = NULL;
+ 
+-	uart->port.irq = platform_get_irq(dev, 0);
+-	if (uart->port.irq < 0) {
++	irq = platform_get_irq(dev, 0);
++	if (irq < 0) {
+ 		err = -EINVAL;
+ 		goto err_register;
+ 	}
++	uart->port.irq = irq;
+ 
+ 	tasklet_init(&uart->tasklet, timbuart_tasklet, (unsigned long)uart);
+ 
