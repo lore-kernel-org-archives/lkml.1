@@ -1,67 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757988AbZLONBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbZLONFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757988AbZLONBs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 08:01:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759164AbZLONBp
+	id S1759377AbZLONFb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 08:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZLONFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 08:01:45 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:53111 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757286AbZLONBn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 08:01:43 -0500
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: origin tree build failure
-Date: Tue, 15 Dec 2009 15:01:27 +0200
-User-Agent: KMail/1.12.4 (Linux/2.6.32-gentoo; KDE/4.3.4; i686; ; )
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-References: <20091215164108.45c9d766.sfr@canb.auug.org.au>
-In-Reply-To: <20091215164108.45c9d766.sfr@canb.auug.org.au>
+	Tue, 15 Dec 2009 08:05:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37357 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752224AbZLONF3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 08:05:29 -0500
+Message-ID: <4B27894B.9090705@kernel.org>
+Date: Tue, 15 Dec 2009 05:04:11 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912151501.27582.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 15 Dec 2009 13:01:29.0192 (UTC) FILETIME=[B78B2680:01CA7D86]
-X-Nokia-AV: Clean
+To: mingo@elte.hu
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: bisected crash due to "x86: Move swiotlb initialization before
+ dma32_free_bootmem"
+References: <4B2752A9.10903@kernel.org>	<20091215182243R.fujita.tomonori@lab.ntt.co.jp>	<20091215105650.GA13214@elte.hu> <20091215201039V.fujita.tomonori@lab.ntt.co.jp> <4B277235.4010308@kernel.org>
+In-Reply-To: <4B277235.4010308@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Tuesday 15 December 2009 07:41:08 ext Stephen Rothwell wrote:
-> Hi all,
+Yinghai Lu wrote:
+> FUJITA Tomonori wrote:
+>> I simply wanted to say that it's not a bug that breaks lots of boxes
+>> or leads to something serious like data corruption (no need to say
+>> something like "revert it now!"). It's also worth investigating why it
+>> breaks, I think.
 > 
-> Today's linux-next build (powerpc allyesconfig) failed like this:
-> 
-> drivers/mfd/twl4030-codec.c:29:31: error: linux/i2c/twl4030.h: No such file
->  or directory
-> 
-> (there were more, but I assume that they all stem form this one).
-> 
-> Caused by commit 0b83ddebc6e884dc0221358cf68c461520fbdd8e ("MFD: twl4030:
-> add twl4030_codec MFD as a new child to the core") from Linus' tree
-> interacting with commit b07682b6056eb6701f8cb86aa5800e6f2ea7919b ("mfd:
-> Rename twl4030* driver files to enable re-use") also from Linus' tree.
-> This file seems to have been missed in the renaming.
+> will look at it later
 
-Yes, the twl4030-codec MFD driver went in earlier than the twl4030 rename patch, 
-which does not taken care of the twl4030-codec MFD driver for some reasons.
+ok, have the solutions for that.
 
-The patch looks good, I might also align the twl4030-codec MFD driver with the 
-renamed twl core soon.
-I have to check the feasibility of this first, since the renaming was done to 
-facilitate the addition of twl6030 (OMAP4 companion chip), and I don't have yet 
-access to the documentation.
+Ingo,
 
-Thank you,
-Péter
+this patch depends on 4 early_res related patches i sent before.
+
+YH
+
+[PATCH] x86: make early_node_mem get mem > 4g if possible
+
+so we could put pgdata for the node high, and later sparse
+vmmap will get the section nr that need.
+
+with this patch will make <4g ram will not use sparse vmmap
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/mm/numa_64.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/arch/x86/mm/numa_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/numa_64.c
++++ linux-2.6/arch/x86/mm/numa_64.c
+@@ -163,14 +163,27 @@ static void * __init early_node_mem(int
+ 				    unsigned long end, unsigned long size,
+ 				    unsigned long align)
+ {
+-	unsigned long mem = find_e820_area(start, end, size, align);
++	unsigned long mem;
+ 
++	/*
++	 * put it on high as possible
++	 * something will go with NODE_DATA
++	 */
++	if (start < (MAX_DMA_PFN<<PAGE_SHIFT))
++		start = MAX_DMA_PFN<<PAGE_SHIFT;
++	if (start < (MAX_DMA32_PFN<<PAGE_SHIFT) &&
++	    end > (MAX_DMA32_PFN<<PAGE_SHIFT))
++		start = MAX_DMA32_PFN<<PAGE_SHIFT;
++	mem = find_e820_area(start, end, size, align);
+ 	if (mem != -1L)
+ 		return __va(mem);
+ 
+ 
+-	start = __pa(MAX_DMA_ADDRESS);
+-	end = max_low_pfn_mapped << PAGE_SHIFT;
++	end = max_pfn_mapped << PAGE_SHIFT;
++	if (end > (MAX_DMA32_PFN<<PAGE_SHIFT))
++		start = MAX_DMA32_PFN<<PAGE_SHIFT;
++	else
++		start = MAX_DMA_PFN<<PAGE_SHIFT;
+ 	mem = find_e820_area(start, end, size, align);
+ 	if (mem != -1L)
+ 		return __va(mem);
+
