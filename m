@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbZLOJYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZLOJYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759459AbZLOJYG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759432AbZLOJYC
+	id S1759471AbZLOJYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbZLOJYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:24:02 -0500
-Received: from sh.osrg.net ([192.16.179.4]:39334 "EHLO sh.osrg.net"
+	Tue, 15 Dec 2009 04:24:22 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39336 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759383AbZLOJYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:24:00 -0500
-Date: Tue, 15 Dec 2009 18:23:07 +0900
+	id S1759383AbZLOJYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 04:24:05 -0500
+Date: Tue, 15 Dec 2009 18:23:08 +0900
 To: yinghai@kernel.org
 Cc: fujita.tomonori@lab.ntt.co.jp, rdreier@cisco.com,
        linux-kernel@vger.kernel.org, mingo@elte.hu
 Subject: Re: bisected crash due to "x86: Move swiotlb initialization before
  dma32_free_bootmem"
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B27510A.1000501@kernel.org>
+In-Reply-To: <4B2752A9.10903@kernel.org>
 References: <ada8wd4brwk.fsf@roland-alpha.cisco.com>
 	<20091215175439V.fujita.tomonori@lab.ntt.co.jp>
-	<4B27510A.1000501@kernel.org>
+	<4B2752A9.10903@kernel.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091215181412N.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20091215182243R.fujita.tomonori@lab.ntt.co.jp>
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 15 Dec 2009 18:23:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009 01:04:10 -0800
+On Tue, 15 Dec 2009 01:11:05 -0800
 Yinghai Lu <yinghai@kernel.org> wrote:
 
 > FUJITA Tomonori wrote:
@@ -67,38 +67,21 @@ Yinghai Lu <yinghai@kernel.org> wrote:
 > > 
 > > With coming huge memory boxes, we might need to work on ZONE_DMA32
 > > shortage issue anyway (sparse-vmemmap, anything else)?
-> > 
-> > 
-> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> > index 75e14e2..fbe7154 100644
-> > --- a/arch/x86/kernel/pci-dma.c
-> > +++ b/arch/x86/kernel/pci-dma.c
-> > @@ -67,7 +67,7 @@ EXPORT_SYMBOL(dma_set_mask);
-> >  
-> >  #ifdef CONFIG_X86_64
-> >  static __initdata void *dma32_bootmem_ptr;
-> > -static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
-> > +static unsigned long dma32_bootmem_size __initdata = (64ULL<<20);
-> >  
-> >  static int __init parse_dma32_size_opt(char *p)
-> >  {
 > 
-> static __initdata void *dma32_bootmem_ptr;
-> static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
-> 
-> static int __init parse_dma32_size_opt(char *p)
-> {
->         if (!p)
->                 return -EINVAL;
->         dma32_bootmem_size = memparse(p, &p);
->         return 0;
-> }
-> early_param("dma32_size", parse_dma32_size_opt);
-> 
-> dma32_size is the command line..., user could adjust that.
+> maybe just revert f4780ca0... for now
 
-Yeah, I know but I'm not sure what you mean.
+As I wrote, I think that the following patch works.
 
-You mean that user increases dma32_size and hit the problem even if we
-decrease the default allocation to 64MB? If so, I'm not sure that huge
-boxes users need this option for broken GART BIOS.
+http://www.kernel.org/pub/linux/kernel/people/tomo/misc/0001-x86-two-stage-swiotlb-initialization.patch
+
+There are a few people who hit this. How many people use a box with
+over 256GB memory?
+
+And you can work around this with "dma32_size" kernel boot option.
+
+
+> actually dma32_free_bootmem will also make sure it will give some buffer to pci_swiotlb_init...
+
+But unlike broken GART BIOS, swiotlb doesn't set the goal. swiotlb had
+been fine without dma32_reserve_bootmem(). We use more DMA32_ZONE than
+we did though.
