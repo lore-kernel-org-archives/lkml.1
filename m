@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZLOVO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbZLOVRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbZLOVO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 16:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760492AbZLOVO5
+	id S1761095AbZLOVRl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 16:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbZLOVRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 16:14:57 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:56937 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755537AbZLOVO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 16:14:56 -0500
-Date: Tue, 15 Dec 2009 16:14:46 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cs5535: CS5535_MFGPT_DEFAULT_IRQ should depend on 
- CS5535_MFGPT
-Message-ID: <20091215161446.0b49ca92@mycelium.queued.net>
-In-Reply-To: <alpine.DEB.2.00.0912152201380.4208@ayla.of.borg>
-References: <alpine.DEB.2.00.0912152201380.4208@ayla.of.borg>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Dec 2009 16:17:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59290 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755550AbZLOVRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 16:17:39 -0500
+Date: Tue, 15 Dec 2009 23:14:50 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH] Subject: virtio: Add unused buffers detach from
+	vring
+Message-ID: <20091215211450.GE26712@redhat.com>
+References: <1260534506.30371.6.camel@localhost.localdomain> <1260535613.30371.24.camel@localhost.localdomain> <20091213114320.GC7074@redhat.com> <1260828518.8716.105.camel@localhost.localdomain> <20091215113327.GC13110@redhat.com> <1260894320.4387.64.camel@localhost.localdomain> <20091215163901.GA24015@redhat.com> <1260902573.4387.76.camel@localhost.localdomain> <20091215184740.GD25724@redhat.com> <1260904447.4387.85.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260904447.4387.85.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Andres Salomon <dilinger@collabora.co.uk>
+On Tue, Dec 15, 2009 at 11:14:07AM -0800, Shirley Ma wrote:
+> Hello Michael,
+> 
+> On Tue, 2009-12-15 at 20:47 +0200, Michael S. Tsirkin wrote:
+> > > +                     detach_buf(vq, i);
+> > > +                     END_USE(vq);
+> > > +                     return vq->data[i];
+> > 
+> > In fact, this will return NULL always, won't it?
+> 
+> Nope, I changed the destroy to detach and return the buffers without
+> destroying them within the call. I thought it might be useful in some
+> other case. 
+> 
+> Maybe I should put destroy call back?
+> 
+> Thanks
+> Shirley
 
-On Tue, 15 Dec 2009
-22:02:09 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+No I think it's good as is, we do not need a callback.
+I was simply saying that detach_buf sets data to NULL,
+so return vq->data[i] after detach does not make sense.
+You need to save data as comment below says.c
 
-> From 707c6b36fcf474c31f57a55fa983f3e1db59cf56 Mon Sep 17 00:00:00 2001
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> Date: Tue, 15 Dec 2009 21:52:59 +0100
-> Subject: [PATCH] cs5535: CS5535_MFGPT_DEFAULT_IRQ should depend on
-> CS5535_MFGPT
-> 
-> It doesn't make much sense to have CS5535_MFGPT_DEFAULT_IRQ show up in
-> configs that cannot have CS5535_MFGPT.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/misc/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> index 59f4ba1..d4beee2 100644
-> --- a/drivers/misc/Kconfig
-> +++ b/drivers/misc/Kconfig
-> @@ -203,6 +203,7 @@ config CS5535_MFGPT
->  
->  config CS5535_MFGPT_DEFAULT_IRQ
->  	int
-> +	depends on CS5535_MFGPT
->  	default 7
->  	help
->  	  MFGPTs on the CS5535 require an interrupt.  The selected
-> IRQ
+-- 
+MST
