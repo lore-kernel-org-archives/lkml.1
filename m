@@ -1,193 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbZLOSWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbZLOSXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760822AbZLOSWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760775AbZLOSWS
+	id S933280AbZLOSXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760778AbZLOSXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:22:18 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:47858 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760735AbZLOSWR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:22:17 -0500
-From: Matthew Garrett <mjg@redhat.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH v3] laptop-mode: Make flushes per-device
-Date: Tue, 15 Dec 2009 13:21:35 -0500
-Message-Id: <1260901295-1821-1-git-send-email-mjg@redhat.com>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <20091214195806.GV8742@kernel.dk>
-References: <20091214195806.GV8742@kernel.dk>
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 66.187.234.200
-X-SA-Exim-Mail-From: mjg@redhat.com
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Tue, 15 Dec 2009 13:23:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46461 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760796AbZLOSXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:23:16 -0500
+Date: Tue, 15 Dec 2009 16:21:39 -0200
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Zachary Amsden <zamsden@redhat.com>
+Cc: kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
+       Dor Laor <dlaor@redhat.com>
+Subject: Re: [PATCH RFC: kvm tsc virtualization 15/20] Fix longstanding
+	races
+Message-ID: <20091215182139.GA14005@amt.cnet>
+References: <1260850127-9766-7-git-send-email-zamsden@redhat.com> <1260850127-9766-8-git-send-email-zamsden@redhat.com> <1260850127-9766-9-git-send-email-zamsden@redhat.com> <1260850127-9766-10-git-send-email-zamsden@redhat.com> <1260850127-9766-11-git-send-email-zamsden@redhat.com> <1260850127-9766-12-git-send-email-zamsden@redhat.com> <1260850127-9766-13-git-send-email-zamsden@redhat.com> <1260850127-9766-14-git-send-email-zamsden@redhat.com> <1260850127-9766-15-git-send-email-zamsden@redhat.com> <1260850127-9766-16-git-send-email-zamsden@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260850127-9766-16-git-send-email-zamsden@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the features of laptop-mode is that it forces a writeout of dirty
-pages if something else triggers a physical read or write from a device.
-The current implementation flushes pages on all devices, rather than only
-the one that triggered the flush. This patch alters the behaviour so that
-only the recently accessed block device is flushed, preventing other
-disks being spun up for no terribly good reason.
+On Mon, Dec 14, 2009 at 06:08:42PM -1000, Zachary Amsden wrote:
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
----
+<snip>
 
-This removes the work struct and triggers the writeback directly from the
-timer.
++               atomic_set(&per_cpu(cpu_tsc_synchronized, freq->cpu),
+0);
++               spin_lock(&kvm_lock);
++               list_for_each_entry(kvm, &vm_list, vm_list) {
++                       kvm_for_each_vcpu(i, vcpu, kvm) {
++                               if (vcpu->cpu != freq->cpu)
++                                       continue;
++                               if (vcpu->cpu != smp_processor_id())
++                                       send_ipi++;
++                               kvm_request_guest_time_update(vcpu);
 
- block/blk-core.c            |    5 ++++-
- include/linux/backing-dev.h |    3 +++
- include/linux/writeback.h   |    4 +++-
- mm/page-writeback.c         |   39 ++++++++++++++++++++-------------------
- 4 files changed, 30 insertions(+), 21 deletions(-)
+There is some overlap here between KVM_REQ_KVMCLOCK_UPDATE and
+cpu_tsc_synchronized. Its the same information (frequency for a CPU has
+changed) stored in two places.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 718897e..6cddae7 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -450,6 +450,7 @@ void blk_cleanup_queue(struct request_queue *q)
- 	 */
- 	blk_sync_queue(q);
- 
-+	del_timer_sync(&q->backing_dev_info.laptop_mode_wb_timer);
- 	mutex_lock(&q->sysfs_lock);
- 	queue_flag_set_unlocked(QUEUE_FLAG_DEAD, q);
- 	mutex_unlock(&q->sysfs_lock);
-@@ -510,6 +511,8 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
- 		return NULL;
- 	}
- 
-+	setup_timer(&q->backing_dev_info.laptop_mode_wb_timer,
-+		    laptop_mode_timer_fn, (unsigned long) q);
- 	init_timer(&q->unplug_timer);
- 	setup_timer(&q->timeout, blk_rq_timed_out_timer, (unsigned long) q);
- 	INIT_LIST_HEAD(&q->timeout_list);
-@@ -2109,7 +2112,7 @@ static void blk_finish_request(struct request *req, int error)
- 	BUG_ON(blk_queued_rq(req));
- 
- 	if (unlikely(laptop_mode) && blk_fs_request(req))
--		laptop_io_completion();
-+		laptop_io_completion(&req->q->backing_dev_info);
- 
- 	blk_delete_timer(req);
- 
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index fcbc26a..2742e1a 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/fs.h>
- #include <linux/sched.h>
-+#include <linux/timer.h>
- #include <linux/writeback.h>
- #include <asm/atomic.h>
- 
-@@ -88,6 +89,8 @@ struct backing_dev_info {
- 
- 	struct device *dev;
- 
-+	struct timer_list laptop_mode_wb_timer;
-+
- #ifdef CONFIG_DEBUG_FS
- 	struct dentry *debug_dir;
- 	struct dentry *debug_stats;
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index 705f01f..c2ca22c 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -93,8 +93,10 @@ static inline void inode_sync_wait(struct inode *inode)
- /*
-  * mm/page-writeback.c
-  */
--void laptop_io_completion(void);
-+void laptop_io_completion(struct backing_dev_info *info);
- void laptop_sync_completion(void);
-+void laptop_mode_sync(struct work_struct *work);
-+void laptop_mode_timer_fn(unsigned long data);
- void throttle_vm_writeout(gfp_t gfp_mask);
- 
- /* These are exported to sysctl. */
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 0b19943..d0f2b37 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -683,10 +683,6 @@ void throttle_vm_writeout(gfp_t gfp_mask)
-         }
- }
- 
--static void laptop_timer_fn(unsigned long unused);
--
--static DEFINE_TIMER(laptop_mode_wb_timer, laptop_timer_fn, 0, 0);
--
- /*
-  * sysctl handler for /proc/sys/vm/dirty_writeback_centisecs
-  */
-@@ -697,21 +693,19 @@ int dirty_writeback_centisecs_handler(ctl_table *table, int write,
- 	return 0;
- }
- 
--static void do_laptop_sync(struct work_struct *work)
-+void laptop_mode_timer_fn(unsigned long data)
- {
--	wakeup_flusher_threads(0);
--	kfree(work);
--}
-+	struct request_queue *q = (struct request_queue *)data;
-+	int nr_pages = global_page_state(NR_FILE_DIRTY) +
-+		global_page_state(NR_UNSTABLE_NFS);
- 
--static void laptop_timer_fn(unsigned long unused)
--{
--	struct work_struct *work;
-+	/*
-+	 * We want to write everything out, not just down to the dirty
-+	 * threshold
-+	 */
- 
--	work = kmalloc(sizeof(*work), GFP_ATOMIC);
--	if (work) {
--		INIT_WORK(work, do_laptop_sync);
--		schedule_work(work);
--	}
-+	if (bdi_has_dirty_io(&q->backing_dev_info))
-+		bdi_start_writeback(&q->backing_dev_info, NULL, nr_pages);
- }
- 
- /*
-@@ -719,9 +713,9 @@ static void laptop_timer_fn(unsigned long unused)
-  * of all dirty data a few seconds from now.  If the flush is already scheduled
-  * then push it back - the user is still using the disk.
-  */
--void laptop_io_completion(void)
-+void laptop_io_completion(struct backing_dev_info *info)
- {
--	mod_timer(&laptop_mode_wb_timer, jiffies + laptop_mode);
-+	mod_timer(&info->laptop_mode_wb_timer, jiffies + laptop_mode);
- }
- 
- /*
-@@ -731,7 +725,14 @@ void laptop_io_completion(void)
-  */
- void laptop_sync_completion(void)
- {
--	del_timer(&laptop_mode_wb_timer);
-+	struct backing_dev_info *bdi;
-+
-+	rcu_read_lock();
-+
-+	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list)
-+		del_timer(&bdi->laptop_mode_wb_timer);
-+
-+	rcu_read_unlock();
- }
- 
- /*
--- 
-1.6.5.2
+Later you do:
+
+                spin_lock(&kvm_lock);
+                list_for_each_entry(kvm, &vm_list, vm_list) {
+                        kvm_for_each_vcpu(i, vcpu, kvm) {
+                                if (vcpu->cpu != freq->cpu)
+                                        continue;
+                                if (vcpu->cpu != smp_processor_id())
+                                       send_ipi++;
+                                kvm_request_guest_time_update(vcpu);
+                        }
+                }
+                spin_unlock(&kvm_lock);
+                <--- a remote CPU could have updated kvmclock information
+                     with stale cpu_tsc_khz, clearing the
+                     KVM_REQ_KVMCLOCK_UPDATE bit.
+                smp_call_function(evict) (which sets cpu_tsc_synchronized
+                                          to zero)
+
+Maybe worthwhile to unify it. Perhaps use the per cpu tsc generation in
+addition to vcpu_load to update kvmclock info (on arch vcpu_load update
+kvmclock store generation, update again on generation change).
 
