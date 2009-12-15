@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZLOH11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbZLOH3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbZLOH11 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 02:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbZLOH1Z
+	id S1757342AbZLOH3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 02:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbZLOH3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 02:27:25 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:64085 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZLOH1Y (ORCPT
+	Tue, 15 Dec 2009 02:29:22 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:33350 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756436AbZLOH3V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 02:27:24 -0500
-Message-ID: <4B273A32.5020407@monstr.eu>
-Date: Tue, 15 Dec 2009 08:26:42 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Tue, 15 Dec 2009 02:29:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=STBP2OSlNIkEwVDNre6PpKU9z4ZO2MSOix1EyNtpkSQD8tb5Uh0TPY7m97VUg23O9U
+         r9dU/ImCrtGobaR0sLEDhZl1aq2eHu7/R/s5GPcmSPQkYC6OFHU9FhXxetKO7n27Tt5D
+         aqcFlsh0XYuuf+3+tUSpcADAtCkLSJv+ykXJs=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Ralf Baechle <ralf@linux-mips.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Li Hong <lihong.hi@gmail.com>,
-       Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: Re: linux-next: manual merge of the mips tree with Linus' tree
-References: <20091215102046.6fc8faa8.sfr@canb.auug.org.au>
-In-Reply-To: <20091215102046.6fc8faa8.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1260797602-7476-1-git-send-email-Vishnu@freescale.com>
+References: <1260797602-7476-1-git-send-email-Vishnu@freescale.com>
+Date: Tue, 15 Dec 2009 00:29:20 -0700
+X-Google-Sender-Auth: 8e63984068ea036a
+Message-ID: <e9c3a7c20912142329j6603402ah2963d075419efa1c@mail.gmail.com>
+Subject: Re: [PATCH v0] Crypto: Talitos: re-initialize async_tx descriptors
+From: Dan Williams <dan.j.williams@intel.com>
+To: Vishnu Suresh <Vishnu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-crypto@vger.kernel.org,
+       herbert@gondor.apana.org.au, B04825@freescale.com, R58472@freescale.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Ralf,
-> 
-> Today's linux-next merge of the mips tree got a conflict in
-> scripts/recordmcount.pl between commits
-> e2d753fac5b3954a3b6001f98479f0435fe7c868 ("tracing: Correct the check for
-> number of arguments in recordmcount.pl") and
-> 7d241ff0567b9503d79ee775c40927d09b509f83 ("microblaze: ftrace: Add
-> dynamic trace support") from Linus' tree and commits
-> 84bc2d35f211a83e806711c94f78a227c4810848 ("MIPS: Tracing: Add an endian
-> argument to scripts/recordmcount.pl") and
-> b2b11a5cb24b8f234bc4746dc40722b01fa45a43 ("MIPS: Tracing: Add dynamic
-> function tracer support") from the mips tree.
-> 
-> These conflicts are now between Linus' tree and the mips tree so, Ralf,
-> you should be able to fix them up by merging with Linus' tree.
-> 
-> I have fixed them up (see below) (for the first pair of commits above, I
-> used the mips tree version) and can carry the fix for a while.
+On Mon, Dec 14, 2009 at 6:33 AM, Vishnu Suresh <Vishnu@freescale.com> wrote:
+> The async_tx descriptors contains dangling pointers.
+> Hence, re-initialize them to NULL before use.
+>
+> Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+> ---
+> o. Rebased to linux-next as of 20091214
+>
+>  drivers/crypto/talitos.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+> index 87f06be..9e261c6 100644
+> --- a/drivers/crypto/talitos.c
+> +++ b/drivers/crypto/talitos.c
+> @@ -952,6 +952,9 @@ static struct dma_async_tx_descriptor * talitos_prep_dma_xor(
+>                return NULL;
+>        }
+>        dma_async_tx_descriptor_init(&new->async_tx, &xor_chan->common);
+> +       new->async_tx.parent = NULL;
+> +       new->async_tx.next = NULL;
+> +
+>
+>        desc = &new->hwdesc;
+>        /* Set destination: Last pointer pair */
 
-Yes, because I sent pull request to Linus and he added Microblaze 
-patches to his tree. Sorry for this additional work but you had chance 
-to pull your tree first.
+These two values are owned by the async_tx api, drivers are not
+supposed to touch them.  Both iop_adma and the new ppx4xx driver
+(which use the async_tx channel switching capability) get away without
+touching these fields which makes me suspect there is a
+misunderstanding/bug somewhere else in the talitos implementation.
+Also that dma_async_tx_descriptor_init() is unexpected in the hot
+path, it's only needed at initial descriptor allocation.  End result I
+think this driver needs some more time to brew.
 
-Michal
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+--
+Dan
