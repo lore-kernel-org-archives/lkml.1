@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762510AbZLOXDS (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 15 Dec 2009 18:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762460AbZLOXDN
+	id S1762560AbZLOXDX (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 15 Dec 2009 18:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762466AbZLOXDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:03:13 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43871 "EHLO e4.ny.us.ibm.com"
+	Tue, 15 Dec 2009 18:03:14 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:33539 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762329AbZLOXCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:02:45 -0500
+	id S934170AbZLOXCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:02:46 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC tip/core/rcu 05/18] rcu: eliminate local variable lastcomp from force_quiescent_state()
-Date: Tue, 15 Dec 2009 15:02:28 -0800
-Message-Id: <12609181612745-git-send-email->
+Subject: [PATCH RFC tip/core/rcu 03/18] rcu: prohibit starting new grace periods while forcing quiescent states
+Date: Tue, 15 Dec 2009 15:02:26 -0800
+Message-Id: <12609181611516-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20091215230213.GA9093@linux.vnet.ibm.com>
 References: <20091215230213.GA9093@linux.vnet.ibm.com>
@@ -30,82 +30,120 @@ From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 Proposed for 2.6.34, not for inclusion.
 
-Because rsp->fqs_active is set to 1 across force_quiescent_state()'s
-switch statement, rcu_start_gp() will refrain from starting a new
-grace period during this time.  Therefore, rsp->gpnum is constant,
-and can be propagated to all uses of lastcomp, eliminating this local
-variable.
+Reduce the number and variety of race conditions by prohibiting the
+start of a new grace period while force_quiescent_state() is active.
+A new fqs_active flag in the rcu_state structure is used to trace
+whether or not force_quiescent_state() is active, and this new flag
+is tested by rcu_start_gp().  If the CPU that closed out the last
+grace period needs another grace period, this new grace period may
+be delayed up to one scheduling-clock tick, but it will eventually
+get started.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c |   10 +++-------
- kernel/rcutree.h |    2 --
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ kernel/rcutree.c |   31 +++++++++++++++++--------------
+ kernel/rcutree.h |    2 ++
+ 2 files changed, 19 insertions(+), 14 deletions(-)
 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 1d8cfb1..62b6433 100644
+index d42ad30..41688ff 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1191,7 +1191,6 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
- static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- {
- 	unsigned long flags;
--	long lastcomp;
+@@ -659,7 +659,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 	struct rcu_data *rdp = rsp->rda[smp_processor_id()];
  	struct rcu_node *rnp = rcu_get_root(rsp);
+ 
+-	if (!cpu_needs_another_gp(rsp, rdp)) {
++	if (!cpu_needs_another_gp(rsp, rdp) || rsp->fqs_active) {
+ 		if (rnp->completed == rsp->completed) {
+ 			spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return;
+@@ -1195,6 +1195,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	struct rcu_node *rnp = rcu_get_root(rsp);
+ 	u8 signaled;
  	u8 forcenow;
- 	u8 gpdone;
-@@ -1207,7 +1206,6 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
++	u8 gpdone;
+ 
+ 	if (!rcu_gp_in_progress(rsp))
+ 		return;  /* No grace period in progress, nothing to force. */
+@@ -1206,15 +1207,16 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	    (long)(rsp->jiffies_force_qs - jiffies) >= 0)
  		goto unlock_fqs_ret; /* no emergency and done recently. */
  	rsp->n_force_qs++;
- 	spin_lock(&rnp->lock);  /* irqs already disabled */
--	lastcomp = rsp->gpnum - 1;
+-	spin_lock(&rnp->lock);
++	spin_lock(&rnp->lock);  /* irqs already disabled */
+ 	lastcomp = rsp->gpnum - 1;
+ 	signaled = rsp->signaled;
  	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
  	if(!rcu_gp_in_progress(rsp)) {
  		rsp->n_force_qs_ngp++;
-@@ -1228,7 +1226,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+-		spin_unlock(&rnp->lock);
++		spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ 		goto unlock_fqs_ret;  /* no GP in progress, time updated. */
+ 	}
++	rsp->fqs_active = 1;
+ 	switch (signaled) {
+ 	case RCU_GP_IDLE:
+ 	case RCU_GP_INIT:
+@@ -1223,15 +1225,16 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 
+ 	case RCU_SAVE_DYNTICK:
+ 
+-		spin_unlock(&rnp->lock);
++		spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ 		if (RCU_SIGNAL_INIT != RCU_SAVE_DYNTICK)
  			break; /* So gcc recognizes the dead code. */
  
  		/* Record dyntick-idle state. */
--		gpdone = rcu_process_dyntick(rsp, lastcomp,
-+		gpdone = rcu_process_dyntick(rsp, rsp->gpnum - 1,
- 					     dyntick_save_progress_counter);
- 		spin_lock(&rnp->lock);  /* irqs already disabled */
- 		if (gpdone)
-@@ -1239,11 +1237,9 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+-		if (rcu_process_dyntick(rsp, lastcomp,
+-					dyntick_save_progress_counter))
+-			goto unlock_fqs_ret;
+-		spin_lock(&rnp->lock);
++		gpdone = rcu_process_dyntick(rsp, lastcomp,
++					     dyntick_save_progress_counter);
++		spin_lock(&rnp->lock);  /* irqs already disabled */
++		if (gpdone)
++			break;
+ 		/* fall into next case. */
  
- 		/* Update state, record completion counter. */
- 		forcenow = 0;
--		if (lastcomp + 1 == rsp->gpnum &&
--		    lastcomp == rsp->completed) {
-+		if (rsp->gpnum - 1 == rsp->completed) {
- 			forcenow = rsp->signaled == RCU_SAVE_COMPLETED;
- 			rsp->signaled = RCU_FORCE_QS;
--			rsp->completed_fqs = lastcomp;
- 		}
- 		if (!forcenow)
- 			break;
-@@ -1253,7 +1249,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	case RCU_SAVE_COMPLETED:
+@@ -1252,17 +1255,17 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	case RCU_FORCE_QS:
  
  		/* Check dyntick-idle state, send IPI to laggarts. */
- 		spin_unlock(&rnp->lock);  /* irqs remain disabled */
--		gpdone = rcu_process_dyntick(rsp, rsp->completed_fqs,
-+		gpdone = rcu_process_dyntick(rsp, rsp->gpnum - 1,
- 					     rcu_implicit_dynticks_qs);
+-		spin_unlock(&rnp->lock);
+-		if (rcu_process_dyntick(rsp, rsp->completed_fqs,
+-					rcu_implicit_dynticks_qs))
+-			goto unlock_fqs_ret;
++		spin_unlock(&rnp->lock);  /* irqs remain disabled */
++		gpdone = rcu_process_dyntick(rsp, rsp->completed_fqs,
++					     rcu_implicit_dynticks_qs);
  
  		/* Leave state in case more forcing is required. */
+ 
+-		spin_lock(&rnp->lock);
++		spin_lock(&rnp->lock);  /* irqs already disabled */
+ 		break;
+ 	}
+-	spin_unlock(&rnp->lock);
++	rsp->fqs_active = 0;
++	spin_unlock(&rnp->lock);  /* irqs remain disabled */
+ unlock_fqs_ret:
+ 	spin_unlock_irqrestore(&rsp->fqslock, flags);
+ }
 diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index dc386a7..5348561 100644
+index d2a0046..dc386a7 100644
 --- a/kernel/rcutree.h
 +++ b/kernel/rcutree.h
-@@ -296,8 +296,6 @@ struct rcu_state {
- 	long orphan_qlen;			/* Number of orphaned cbs. */
- 	spinlock_t fqslock;			/* Only one task forcing */
- 						/*  quiescent states. */
--	long	completed_fqs;			/* Value of completed @ snap. */
--						/*  Protected by fqslock. */
- 	unsigned long jiffies_force_qs;		/* Time at which to invoke */
- 						/*  force_quiescent_state(). */
- 	unsigned long n_force_qs;		/* Number of calls to */
+@@ -277,6 +277,8 @@ struct rcu_state {
+ 
+ 	u8	signaled ____cacheline_internodealigned_in_smp;
+ 						/* Force QS state. */
++	u8	fqs_active;			/* force_quiescent_state() */
++						/*  is running. */
+ 	long	gpnum;				/* Current gp number. */
+ 	long	completed;			/* # of last completed gp. */
+ 
 -- 
 1.5.2.5
 
