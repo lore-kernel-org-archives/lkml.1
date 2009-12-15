@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbZLOKUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759694AbZLOKU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759651AbZLOKUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759643AbZLOKUk
+	id S1759694AbZLOKU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759662AbZLOKUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:20:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47700 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 05:20:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14233 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753158AbZLOKUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:20:39 -0500
-Date: Tue, 15 Dec 2009 11:19:36 +0100
+	id S1759661AbZLOKUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 05:20:47 -0500
+Date: Tue, 15 Dec 2009 11:19:59 +0100
 From: Veaceslav Falico <vfalico@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
@@ -24,9 +24,9 @@ Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
        Louis Rilling <louis.rilling@kerlabs.com>,
        David Howells <dhowells@redhat.com>,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH v3 2/4 -mmotm] copy_signal() cleanup: kill
-	taskstats_tgid_init() and acct_init_pacct()
-Message-ID: <20091215101936.GC9134@darkmag.usersys.redhat.com>
+Subject: [PATCH v3 3/4 -mmotm] copy_signal() cleanup: clean
+	thread_group_cputime_init()
+Message-ID: <20091215101959.GD9134@darkmag.usersys.redhat.com>
 References: <20091201221036.GA10052@darkmag.usersys.redhat.com> <20091202135759.GA791@redhat.com> <20091204142814.GH10052@darkmag.usersys.redhat.com> <20091207123615.fc841a83.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,73 +37,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kill unused functions taskstats_tgid_init() and acct_init_pacct() because we
-don't use them anywhere after using kmem_cache_zalloc() in copy_signal().
+Remove unneeded initializations in thread_group_cputime_init() and
+in posix_cpu_timers_init_group(). They are useless after 
+kmem_cache_zalloc() was used in copy_signal().
 
 Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 ---
-diff --git a/include/linux/acct.h b/include/linux/acct.h
-index 882dc72..93f4609 100644
---- a/include/linux/acct.h
-+++ b/include/linux/acct.h
-@@ -123,14 +123,12 @@ struct pacct_struct;
- struct pid_namespace;
- extern void acct_auto_close_mnt(struct vfsmount *m);
- extern void acct_auto_close(struct super_block *sb);
--extern void acct_init_pacct(struct pacct_struct *pacct);
- extern void acct_collect(long exitcode, int group_dead);
- extern void acct_process(void);
- extern void acct_exit_ns(struct pid_namespace *);
- #else
- #define acct_auto_close_mnt(x)	do { } while (0)
- #define acct_auto_close(x)	do { } while (0)
--#define acct_init_pacct(x)	do { } while (0)
- #define acct_collect(x,y)	do { } while (0)
- #define acct_process()		do { } while (0)
- #define acct_exit_ns(ns)	do { } while (0)
-diff --git a/include/linux/taskstats_kern.h b/include/linux/taskstats_kern.h
-index 3398f45..b6523c1 100644
---- a/include/linux/taskstats_kern.h
-+++ b/include/linux/taskstats_kern.h
-@@ -14,11 +14,6 @@
- extern struct kmem_cache *taskstats_cache;
- extern struct mutex taskstats_exit_mutex;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 23b26c7..c26bdb8 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2434,9 +2434,7 @@ void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times);
  
--static inline void taskstats_tgid_init(struct signal_struct *sig)
--{
--	sig->stats = NULL;
--}
--
- static inline void taskstats_tgid_free(struct signal_struct *sig)
+ static inline void thread_group_cputime_init(struct signal_struct *sig)
  {
- 	if (sig->stats)
-@@ -30,8 +25,6 @@ extern void taskstats_init_early(void);
- #else
- static inline void taskstats_exit(struct task_struct *tsk, int group_dead)
- {}
--static inline void taskstats_tgid_init(struct signal_struct *sig)
--{}
- static inline void taskstats_tgid_free(struct signal_struct *sig)
- {}
- static inline void taskstats_init_early(void)
-diff --git a/kernel/acct.c b/kernel/acct.c
-index a6605ca..24f8c81 100644
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -588,16 +588,6 @@ out:
+-	sig->cputimer.cputime = INIT_CPUTIME;
+ 	spin_lock_init(&sig->cputimer.lock);
+-	sig->cputimer.running = 0;
  }
  
- /**
-- * acct_init_pacct - initialize a new pacct_struct
-- * @pacct: per-process accounting info struct to initialize
-- */
--void acct_init_pacct(struct pacct_struct *pacct)
--{
--	memset(pacct, 0, sizeof(struct pacct_struct));
--	pacct->ac_utime = pacct->ac_stime = cputime_zero;
--}
+ static inline void thread_group_cputime_free(struct signal_struct *sig)
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 404e6ca..a9252bf 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -829,17 +829,6 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
+ 	/* Thread group counters. */
+ 	thread_group_cputime_init(sig);
+ 
+-	/* Expiration times and increments. */
+-	sig->it[CPUCLOCK_PROF].expires = cputime_zero;
+-	sig->it[CPUCLOCK_PROF].incr = cputime_zero;
+-	sig->it[CPUCLOCK_VIRT].expires = cputime_zero;
+-	sig->it[CPUCLOCK_VIRT].incr = cputime_zero;
 -
--/**
-  * acct_collect - collect accounting information into pacct_struct
-  * @exitcode: task exit code
-  * @group_dead: not 0, if this thread is the last one in the process.
+-	/* Cached expiration times. */
+-	sig->cputime_expires.prof_exp = cputime_zero;
+-	sig->cputime_expires.virt_exp = cputime_zero;
+-	sig->cputime_expires.sched_exp = 0;
+-
+ 	cpu_limit = ACCESS_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
+ 	if (cpu_limit != RLIM_INFINITY) {
+ 		sig->cputime_expires.prof_exp = secs_to_cputime(cpu_limit);
