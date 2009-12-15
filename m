@@ -1,73 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756455AbZLOAwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZLOAwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756455AbZLOAwn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 19:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758078AbZLOAwj
+	id S1757984AbZLOAwa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 19:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbZLOAw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 19:52:39 -0500
-Received: from kroah.org ([198.145.64.141]:47977 "EHLO coco.kroah.org"
+	Mon, 14 Dec 2009 19:52:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23890 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758067AbZLOAwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 19:52:36 -0500
-Date: Mon, 14 Dec 2009 16:52:16 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [GIT PATCH] USB patches for 2.6.33-git
-Message-ID: <20091215005216.GA9309@kroah.com>
-References: <20091211212646.GB6624@kroah.com>
- <alpine.LFD.2.00.0912141635000.14385@localhost.localdomain>
+	id S1755616AbZLOAw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 19:52:28 -0500
+Date: Mon, 14 Dec 2009 19:52:19 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Corrado Zoccolo <czoccolo@gmail.com>
+Subject: Re: [PATCH] cfq: Take whether cfq group is changed into account
+	when choosing service tree
+Message-ID: <20091215005219.GA2725@redhat.com>
+References: <4B21D252.1060902@cn.fujitsu.com> <20091211150727.GB2756@redhat.com> <4e5e476b0912111001h3c0b9798u2a2b25c9fcc39504@mail.gmail.com> <20091211184630.GA7066@redhat.com> <4B25A4F0.60407@cn.fujitsu.com> <4e5e476b0912140039s2f802786t84f53ee62b87c04e@mail.gmail.com> <4B260B72.9020204@cn.fujitsu.com> <4e5e476b0912140301x398ac2b7k5ab7fc5698b9675e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912141635000.14385@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b0912140301x398ac2b7k5ab7fc5698b9675e@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 04:39:37PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 11 Dec 2009, Greg KH wrote:
+On Mon, Dec 14, 2009 at 12:01:14PM +0100, Corrado Zoccolo wrote:
+> Hi Gui,
+> On Mon, Dec 14, 2009 at 10:54 AM, Gui Jianfeng
+> <guijianfeng@cn.fujitsu.com> wrote:
+> > Corrado Zoccolo wrote:
+> >> Hi,
+> > Currently, IIUC, only the workload that didn't use up its slice will be saved, and only
+> > such workloads are restoring when a group is resumed. So sometimes, we'll still get the
+> > previous serving_type and workload_expires. Am i missing something?
+> You are right. cfq_choose_cfqg should set the workload as expired if
+> !cfqg->saved_workload_slice (just set cfqd->workload_expires = jiffies
+> - 1), so the workload will be chosen again as the lowest keyed one.
+> Can you send a patch to fix this?
 > >
-> > Here is the big USB merge for the 2.6.33-git tree.
-> 
-> I haven't bisected this yet, but something bad has happened to the USB 
-> printer connected to Tove's computer since 2.6.32. Current -git doesn't 
-> work, 2.6.32 works fine.
-> 
-> The USB pull is obviously an easy suspect, but on the other hand the code 
-> still sees the printer - but for some reason Fedora-11 print manager still 
-> complains about it perhaps being unconnected (and is unable to see any 
-> printer if I try to go into "Printer admin" and remove and add the 
-> printer)..
 
-Any kind of kernel log messages?  This would be a USB 2.0 device, right?
+I agree too. This is a bug and needs to be fixed. Declaring workload
+expired if we did not save a state, sounds good. We will be forced to
+choose workload with-in group again and that is the right thing to do.
 
-> Booting back into 2.6.32 gets me a fine working printer again.
-> 
-> Does this ring a bell for anybody? The bisect is ongoing, but it will take 
-> some time (at least 12 more compiles and reboots - I just started).
+Gui, the point about prio_changed across group also will be solved by
+above fix. We do save/restore the state of prio being served with-in
+group. The only case missed out was, what if workload slice has expired
+at the time of group expiry. So above patch should fix that too.
 
-Hm, I just tried to print from mine on your latest tree, and I have a
-stream of:
-	[440651.362550] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440656.363409] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440661.364296] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440666.365009] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440677.692298] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440682.693080] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440687.697054] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440692.697784] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
-	[440697.698653] usb 4-1.2: usbfs: interface 0 claimed by usblp while 'usb' sets config #1
+> >
+> >>
+> >> I have one more concern, though.
+> >> RT priority has now changed meaning. Before, an RT task would always
+> >> have priority access to the disk. Now, a BE task in a different group,
+> >> with lower weight, can steal the disk from the RT task.
+> >> A way to preserve the old meaning is to consider wheter a group has RT
+> >> tasks inside when sorting groups tree, and putting those groups at the
+> >> front.
+> >> Usually, RT tasks will be put in the root group, and this (if
+> >> group_isolation=0) will automatically make sure that also the noidle
+> >> workload gets serviced quickly after RT tasks release the disk. We
+> >> could even enforce that, with group_isolation=0, all RT tasks are put
+> >> in the root group.
+> >>
+> >> The rationale behind this suggestion is that groups are for user
+> >> processes, while RT is system wide, since it is only root that can
+> >> grant it.
 
-messages in the log, which doesn't seem good.
+This sounds reasonable. I was also thinking of having a separate group
+service tree for RT groups. That will allow root to create RT groups
+of different weights and achieve proportionate share between RT groups.
+But I am not sure how useful that actually is.
 
-Alan, any ideas?
+So to preserve the meaning of original RT tasks systemwide, a simple 
+solution is to determine if a group as RT tasks and if answer is yes, then
+put it at the front of service tree or at the back of currently backlogged
+RT groups.
 
-thanks,
+I will play a bit with this and come up with a patch.
 
-greg k-h
+> >
+> >  I agree, and one more thing, currently we can't see fairness between different
+> >  idle tasks in different groups. Because we only allow idle cfqq dispatch one request
+> >  for its dispatch round even if it's the only task in the cgroup, group always loose it
+> >  share. So whether we can rely on group_isolation, when group_isolation == 1 we provide
+> >  isolation for idle tasks.
+> Agreed.
+
+What's the practical usage of this? In theory it sounds fine that groups
+should provide isolation for idle task also. But what's the use case for
+this. In the first phase, the way RT class is system wide, why idle class
+can't be more or less system wide.
+
+So I don't mind putting a patch in for making sure idle class task in a
+group does not loose share. But I would rather put that patch once
+somebody really needs it. Are you being impacted with this in your
+workflow? If yes, please do post a patch to fix it.
+
+Thanks
+Vivek
