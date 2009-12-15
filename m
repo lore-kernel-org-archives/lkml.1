@@ -1,109 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbZLOK3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbZLOKac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759822AbZLOK3Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbZLOK3P
+	id S1759511AbZLOKac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZLOKab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:29:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47939 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759264AbZLOK3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:29:13 -0500
-Message-ID: <4B2764F5.9000206@redhat.com>
-Date: Tue, 15 Dec 2009 12:29:09 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
+	Tue, 15 Dec 2009 05:30:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:16929 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753077AbZLOKaa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 05:30:30 -0500
 MIME-Version: 1.0
-To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>
-Subject: Re: Poor KVM guest performance on an HP rack server
-References: <4B243B2B.806@pardus.org.tr> <4B24BE52.6060703@redhat.com> <4B24D1C2.9010807@pardus.org.tr> <4B24D6DD.8060509@pardus.org.tr>
-In-Reply-To: <4B24D6DD.8060509@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091215183533.1a1e87d9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	 <ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	 <cc557aab0912150111k41517b41t8999568db3bd8daa@mail.gmail.com>
+	 <20091215183533.1a1e87d9.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 15 Dec 2009 12:30:27 +0200
+Message-ID: <cc557aab0912150230g54863bb8rabc8b8c1c58d5a55@mail.gmail.com>
+Subject: Re: [PATCH RFC v2 1/4] cgroup: implement eventfd-based generic API 
+	for notifications
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       containers@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/13/2009 01:58 PM, Ozan Çağlayan wrote:
+On Tue, Dec 15, 2009 at 11:35 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 15 Dec 2009 11:11:16 +0200
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 >
-> KVM related messages on the host server:
+>> Could anybody review the patch?
+>>
+>> Thank you.
 >
-> ~ # dmesg |grep kvm
-> [ 3649.058945] loaded kvm module (kvm-kmod-2.6.32)
-> [ 3683.736737] kvm: emulating exchange as write (It's interesting, what does it mean?)
->    
+> some nitpicks.
+>
+>>
+>> On Sat, Dec 12, 2009 at 12:59 AM, Kirill A. Shutemov
+>> <kirill@shutemov.name> wrote:
+>
+>> > +       /*
+>> > +        * Unregister events and notify userspace.
+>> > +        * FIXME: How to avoid race with cgroup_event_remove_work()
+>> > +        *        which runs from workqueue?
+>> > +        */
+>> > +       mutex_lock(&cgrp->event_list_mutex);
+>> > +       list_for_each_entry_safe(event, tmp, &cgrp->event_list, list) {
+>> > +               cgroup_event_remove(event);
+>> > +               eventfd_signal(event->eventfd, 1);
+>> > +       }
+>> > +       mutex_unlock(&cgrp->event_list_mutex);
+>> > +
+>> > +out:
+>> >        return ret;
+>> >  }
+>
+> How ciritical is this FIXME ?
 
-An exchange instruction (cmpxchg, likely) was emulated using a write.  
-Since it happens under lock, this is safe.
+There is potential race. I have never seen it. When userspace closes
+eventfd associated
+with cgroup event, cgroup_event_remove() will not be called
+immediately. It will be called
+later from workqueue. If somebody removes cgroup before the workqueue calls
+cgroup_event_remove() we will get problem.
+It's unlikely, but theoretically possible.
 
-> First of all if there are some specific outputs that will reveal the
-> IO/CPU boundness of the workload, I'd like to give them too. I'm not
-> much familiar with diagnostic/analysis tools..
->
->  From host's POV:
-> ----------------
->
-> Guest is idle:
->
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 26117 root      20   0 2153m 175m 1356 S    5  0.5   0:33.57 qemu-kvm
->
-> Guest is configuring CUPS:
->
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 26117 root      20   0 2129m 180m 1356 S  143  0.6   0:44.34 qemu-kvm (peak at 140,150~ %CPU)
->
->    
+> But Hmm..can't we use RCU ?
 
-Definitely looks cpu bound.
+I'll play with it.
 
-> load average reached 0.91 at the end of the configuration.
+>> >
+>> > @@ -1136,6 +1187,8 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+>> >        INIT_LIST_HEAD(&cgrp->release_list);
+>> >        INIT_LIST_HEAD(&cgrp->pidlists);
+>> >        mutex_init(&cgrp->pidlist_mutex);
+>> > +       INIT_LIST_HEAD(&cgrp->event_list);
+>> > +       mutex_init(&cgrp->event_list_mutex);
+>> >  }
+>> >
+>> >  static void init_cgroup_root(struct cgroupfs_root *root)
+>> > @@ -1935,6 +1988,16 @@ static const struct inode_operations cgroup_dir_inode_operations = {
+>> >        .rename = cgroup_rename,
+>> >  };
+>> >
+>> > +/*
+>> > + * Check if a file is a control file
+>> > + */
+>> > +static inline struct cftype *__file_cft(struct file *file)
+>> > +{
+>> > +       if (file->f_dentry->d_inode->i_fop != &cgroup_file_operations)
+>> > +               return ERR_PTR(-EINVAL);
+>> > +       return __d_cft(file->f_dentry);
+>> > +}
+>> > +
+>> >  static int cgroup_create_file(struct dentry *dentry, mode_t mode,
+>> >                                struct super_block *sb)
+>> >  {
+>> > @@ -2789,6 +2852,151 @@ static int cgroup_write_notify_on_release(struct cgroup *cgrp,
+>> >        return 0;
+>> >  }
+>> >
+>> > +static inline void cgroup_event_remove(struct cgroup_event *event)
+>> > +{
+>> > +       struct cgroup *cgrp = event->cgrp;
+>> > +
+>> > +       BUG_ON(event->cft->unregister_event(cgrp, event->cft, event->eventfd));
 >
-> SMP view of top command shows that only Cpu2 and Cpu9 are involved,
-> other ones are zeroed (maybe coherent with -smp 2, don't have much idea):
+> Hmm ? BUG ? If bug, please add document or comment.
+
+I'll remove it, since we check it in cgroup_write_event_control().
+
+>> > +       eventfd_ctx_put(event->eventfd);
+>> > +       remove_wait_queue(event->wqh, &event->wait);
+>> > +       list_del(&event->list);
 >
-> Cpu2  : 28.4%us, 31.4%sy,  0.0%ni, 40.2%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-> Cpu9  : 27.7%us, 26.7%sy,  0.0%ni, 45.5%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
->    
+> please add comment as /* event_list_mutex must be held */
 
-Can you provide kvm_stat output while this happens?
+Ok.
 
-> Configuring CUPS:
+>> > +       kfree(event);
+>> > +}
+>> > +
+>> > +static void cgroup_event_remove_work(struct work_struct *work)
+>> > +{
+>> > +       struct cgroup_event *event = container_of(work, struct cgroup_event,
+>> > +                       remove);
+>> > +       struct cgroup *cgrp = event->cgrp;
+>> > +
+>> > +       mutex_lock(&cgrp->event_list_mutex);
+>> > +       cgroup_event_remove(event);
+>> > +       mutex_unlock(&cgrp->event_list_mutex);
+>> > +}
+>> > +
+>> > +static int cgroup_event_wake(wait_queue_t *wait, unsigned mode,
+>> > +               int sync, void *key)
+>> > +{
+>> > +       struct cgroup_event *event = container_of(wait,
+>> > +                       struct cgroup_event, wait);
+>> > +       unsigned long flags = (unsigned long)key;
+>> > +
+>> > +       if (flags & POLLHUP)
+>> > +               /*
+>> > +                * This function called with spinlock taken, but
+>> > +                * cgroup_event_remove() may sleep, so we have
+>> > +                * to run it in a workqueue.
+>> > +                */
+>> > +               schedule_work(&event->remove);
+>> > +
+>> > +       return 0;
+>> > +}
 >
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 19258 root      20   0  3396 1656 1192 R   18  0.1   0:05.20 configure (Saw maximum 22 %CPU)
->    
-
-Do you have any idea what this configure does?  If it is a very 
-fork/exec intensive workload, you can expect some slowdown on older 
-processors.
-
-> The following is the highest load average instant during configuration:
+>> > +
+>> > +static void cgroup_event_ptable_queue_proc(struct file *file,
+>> > +               wait_queue_head_t *wqh, poll_table *pt)
+>> > +{
+>> > +       struct cgroup_event *event = container_of(pt,
+>> > +                       struct cgroup_event, pt);
+>> > +
+>> > +       event->wqh = wqh;
+>> > +       add_wait_queue(wqh, &event->wait);
+>> > +}
+>> > +
+>> > +static int cgroup_write_event_control(struct cgroup *cont, struct cftype *cft,
+>> > +                                     const char *buffer)
+>> > +{
+>> > +       struct cgroup_event *event = NULL;
+>> > +       unsigned int efd, cfd;
+>> > +       struct file *efile = NULL;
+>> > +       struct file *cfile = NULL;
+>> > +       char *endp;
+>> > +       int ret;
+>> > +
+>> > +       efd = simple_strtoul(buffer, &endp, 10);
+>> > +       if (*endp != ' ')
+>> > +               return -EINVAL;
+>> > +       buffer = endp + 1;
+>> > +
+>> > +       cfd = simple_strtoul(buffer, &endp, 10);
+>> > +       if ((*endp != ' ') && (*endp != '\0'))
+>> > +               return -EINVAL;
+>> > +       buffer = endp + 1;
+>> > +
+>> > +       event = kzalloc(sizeof(*event), GFP_KERNEL);
+>> > +       if (!event)
+>> > +               return -ENOMEM;
+>> > +       event->cgrp = cont;
+>> > +       INIT_LIST_HEAD(&event->list);
+>> > +       init_poll_funcptr(&event->pt, cgroup_event_ptable_queue_proc);
+>> > +       init_waitqueue_func_entry(&event->wait, cgroup_event_wake);
+>> > +       INIT_WORK(&event->remove, cgroup_event_remove_work);
+>> > +
+>> > +       efile = eventfd_fget(efd);
+>> > +       if (IS_ERR(efile)) {
+>> > +               ret = PTR_ERR(efile);
+>> > +               goto fail;
+>> > +       }
+>> > +
+>> > +       event->eventfd = eventfd_ctx_fileget(efile);
+>> > +       if (IS_ERR(event->eventfd)) {
+>> > +               ret = PTR_ERR(event->eventfd);
+>> > +               goto fail;
+>> > +       }
+>> > +
+>> > +       cfile = fget(cfd);
+>> > +       if (!cfile) {
+>> > +               ret = -EBADF;
+>> > +               goto fail;
+>> > +       }
+>> > +
+>> > +       /* the process need read permission on control file */
+>> > +       ret = file_permission(cfile, MAY_READ);
+>> > +       if (ret < 0)
+>> > +               goto fail;
+>> > +
+>> > +       event->cft = __file_cft(cfile);
+>> > +       if (IS_ERR(event->cft)) {
+>> > +               ret = PTR_ERR(event->cft);
+>> > +               goto fail;
+>> > +       }
+>> > +
+>> > +       if (!event->cft->register_event || !event->cft->unregister_event) {
+>> > +               ret = -EINVAL;
+>> > +               goto fail;
+>> > +       }
+>> > +
+>> > +       ret = event->cft->register_event(cont, event->cft,
+>> > +                       event->eventfd, buffer);
+>> > +       if (ret)
+>> > +               goto fail;
+>> > +
+>> > +       efile->f_op->poll(efile, &event->pt);
 >
-> top - 11:35:32 up 33 min,  3 users,  load average: 0.56, 0.25, 0.15
-> Tasks:  99 total,   4 running,  95 sleeping,   0 stopped,   0 zombie
-> Cpu0  :  4.7%us, 68.3%sy,  0.0%ni, 27.0%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-> Cpu1  :  4.3%us, 66.3%sy,  0.0%ni, 29.3%id,  0.0%wa,  0.0%hi,  0.0%si, 0.0%st
-> Mem:   2061660k total,   137564k used,  1924096k free,    58672k buffers
-> Swap:   307192k total,        0k used,   307192k free,    49240k cached
->
-> vmstat -n 1:
-> ------------
->
-> (context switches and interrupts are much more higher during
-> configuration than the idle state)
->    
+> Not necessary to check return value ?
 
->   1  0      0 1924788  58592  49176    0    0     0     0 1413  401  2 33 65  0  0  (./configure)
->   1  0      0 1924092  58592  49072    0    0     0     4 2210  599  5 57 38  0  0
->   1  0      0 1924544  58592  49080    0    0     0     0 2131  349  5 51 45  0  0
->    
+You are right. We need to check return value for POLLHUP.
 
-That's consistent with a fork/exec load, though the numbers are not that 
-high.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Thanks!
