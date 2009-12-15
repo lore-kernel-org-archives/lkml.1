@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZLOAfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbZLOAvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbZLOAfs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 19:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbZLOAfr
+	id S1757758AbZLOAvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 19:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZLOAvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 19:35:47 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50079 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZLOAfq (ORCPT
+	Mon, 14 Dec 2009 19:51:14 -0500
+Received: from 216-239-44-51.google.com ([216.239.44.51]:42749 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755616AbZLOAvN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 19:35:46 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH 6/8] Stop reclaim quickly when the task reclaimed enough lots pages
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       lwoodman@redhat.com, akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091215091107.219644fe.minchan.kim@barrios-desktop>
-References: <20091214213103.BBC0.A69D9226@jp.fujitsu.com> <20091215091107.219644fe.minchan.kim@barrios-desktop>
-Message-Id: <20091215092654.CDB3.A69D9226@jp.fujitsu.com>
+	Mon, 14 Dec 2009 19:51:13 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=ZKYhC4OQylDxJrxRXD7k+lUtcAJLHr5C4VSjMCzeYV0pVgLZANFmCTcg8D/f+VcTZ
+	YyL7v+vOT9s7qfW8nFD6A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 15 Dec 2009 09:35:41 +0900 (JST)
+In-Reply-To: <20091214161922.6f252492@infradead.org>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+	 <20091214161922.6f252492@infradead.org>
+Date: Mon, 14 Dec 2009 16:36:20 -0800
+Message-ID: <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
+Subject: Re: RFC: A proposal for power capping through forced idle in the 
+	Linux Kernel
+From: Salman Qazi <sqazi@google.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 14 Dec 2009 21:31:36 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > 
-> > From latency view, There isn't any reason shrink_zones() continue to
-> > reclaim another zone's page if the task reclaimed enough lots pages.
-> > 
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > ---
-> >  mm/vmscan.c |   16 ++++++++++++----
-> >  1 files changed, 12 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 0880668..bf229d3 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -1654,7 +1654,7 @@ static void shrink_zone_end(struct zone *zone, struct scan_control *sc)
-> >  /*
-> >   * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
-> >   */
-> > -static void shrink_zone(int priority, struct zone *zone,
-> > +static int shrink_zone(int priority, struct zone *zone,
-> >  			struct scan_control *sc)
-> >  {
-> >  	unsigned long nr[NR_LRU_LISTS];
-> > @@ -1669,7 +1669,7 @@ static void shrink_zone(int priority, struct zone *zone,
-> >  
-> >  	ret = shrink_zone_begin(zone, sc);
-> >  	if (ret)
-> > -		return;
-> > +		return ret;
-> >  
-> >  	/* If we have no swap space, do not bother scanning anon pages. */
-> >  	if (!sc->may_swap || (nr_swap_pages <= 0)) {
-> > @@ -1692,6 +1692,7 @@ static void shrink_zone(int priority, struct zone *zone,
-> >  					  &reclaim_stat->nr_saved_scan[l]);
-> >  	}
-> >  
-> > +	ret = 0;
-> >  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
-> >  					nr[LRU_INACTIVE_FILE]) {
-> >  		for_each_evictable_lru(l) {
-> > @@ -1712,8 +1713,10 @@ static void shrink_zone(int priority, struct zone *zone,
-> >  		 * with multiple processes reclaiming pages, the total
-> >  		 * freeing target can get unreasonably large.
-> >  		 */
-> > -		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY)
-> > +		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY) {
-> > +			ret = -ERESTARTSYS;
-> 
-> Just nitpick. 
-> 
-> shrink_zone's return value is matter?
-> shrink_zones never handle that. 
+On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Mon, 14 Dec 2009 15:11:47 -0800
+> Salman Qazi <sqazi@google.com> wrote:
+>
+>
+> I like the general idea, I have one request (that I didn't see quite in
+> your explanation): Please make sure that all cpus in the system do
+> their idle injection at the same time, so that memory can go into power
+> saving mode as well during this time etc etc...
+>
 
-shrink_zones() stop vmscan quickly if ret isn't !0.
-if we already scanned rather than nr_to_reclaim, we can stop vmscan.
+With the current interface, the forced idle percentages on the CPUs
+are controlled independently.  There's a trade-off here.  If we inject
+idle cycles on all the CPU at the same time, our machine
+responsiveness also degrades: essentially every CPU becomes equally
+bad for an interactive task to run on.  Our aim at the moment is to
+try to concentrate the idle cycles on a small set of CPUs, to strive
+to leave some CPUs where interactive tasks can run unhindered.  But,
+given a different workload and goals the correct policy may be
+different.
 
+Simultaneously idling multiple "cores" becomes necessary in the SMT
+case: as there is no point in idling a single thread, while the other
+thread is running full tilt.  So, in such a case it is necessary to
+idle all the threads making up the physical core.  This feature has
+not been implemented yet.
 
-> As a matter of fact, I am worried about this patch. 
-> 
-> My opinion is we put aside this patch until we can solve Larry's problem.
-> We could apply this patch in future.
-> 
-> I don't want to see the side effect while we focus Larry's problem.
-> But If you mind my suggestion, I also will not bother you by this nitpick.
-> 
-> Thanks for great cleanup and improving VM, Kosaki. :)
+I think the best approach may be to provide a way to specify the
+policy from the user space.  Basically let the user decide at what
+level of CPU hierarchy the forced idle percentages are specified.
+Then, in the levels below, we simply inject at the same time.
 
-I agree with Larry's issue is highest priority.
-
-
-
+>
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+>
