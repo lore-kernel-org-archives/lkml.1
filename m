@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759571AbZLOKTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbZLOKUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759571AbZLOKTO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759426AbZLOKTN
+	id S1759628AbZLOKUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 05:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbZLOKUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:19:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52011 "EHLO mx1.redhat.com"
+	Tue, 15 Dec 2009 05:20:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42370 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753183AbZLOKTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:19:12 -0500
-Date: Tue, 15 Dec 2009 11:18:21 +0100
+	id S1752297AbZLOKUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 05:20:12 -0500
+Date: Tue, 15 Dec 2009 11:19:13 +0100
 From: Veaceslav Falico <vfalico@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
@@ -24,8 +24,9 @@ Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
        Louis Rilling <louis.rilling@kerlabs.com>,
        David Howells <dhowells@redhat.com>,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: [PATCH v3 0/4 -mmotm] copy_signal() cleanup
-Message-ID: <20091215101821.GA9134@darkmag.usersys.redhat.com>
+Subject: [PATCH v3 1/4 -mmotm] copy_signal() cleanup: use zalloc and remove
+	initializations
+Message-ID: <20091215101913.GB9134@darkmag.usersys.redhat.com>
 References: <20091201221036.GA10052@darkmag.usersys.redhat.com> <20091202135759.GA791@redhat.com> <20091204142814.GH10052@darkmag.usersys.redhat.com> <20091207123615.fc841a83.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,16 +37,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use kmem_cache_zalloc() instead of kmem_cache_alloc() and remove all
-unneeded initializations from copy_signal() and several other functions.
-Should be applied on top of 0cf55e1ec08bb5a22e068309e2d8ba1180ab4239
-commit.
+Use kmem_cache_zalloc() on signal creation and remove unneeded initialization
+lines in copy_signal().
 
- drivers/char/tty_audit.c       |    1 -
- include/linux/acct.h           |    2 --
- include/linux/sched.h          |    2 --
- include/linux/taskstats_kern.h |    7 -------
- kernel/acct.c                  |   10 ----------
- kernel/fork.c                  |   38 +-------------------------------------
- 6 files changed, 1 insertions(+), 59 deletions(-)
+Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 ---
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 404e6ca..a9252bf 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -859,7 +848,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	if (clone_flags & CLONE_THREAD)
+ 		return 0;
+ 
+-	sig = kmem_cache_alloc(signal_cachep, GFP_KERNEL);
++	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
+ 	tsk->signal = sig;
+ 	if (!sig)
+ 		return -ENOMEM;
+@@ -867,46 +856,21 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	atomic_set(&sig->count, 1);
+ 	atomic_set(&sig->live, 1);
+ 	init_waitqueue_head(&sig->wait_chldexit);
+-	sig->flags = 0;
+ 	if (clone_flags & CLONE_NEWPID)
+ 		sig->flags |= SIGNAL_UNKILLABLE;
+-	sig->group_exit_code = 0;
+-	sig->group_exit_task = NULL;
+-	sig->group_stop_count = 0;
+ 	sig->curr_target = tsk;
+ 	init_sigpending(&sig->shared_pending);
+ 	INIT_LIST_HEAD(&sig->posix_timers);
+ 
+ 	hrtimer_init(&sig->real_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+-	sig->it_real_incr.tv64 = 0;
+ 	sig->real_timer.function = it_real_fn;
+ 
+-	sig->leader = 0;	/* session leadership doesn't inherit */
+-	sig->tty_old_pgrp = NULL;
+-	sig->tty = NULL;
+-
+-	sig->utime = sig->stime = sig->cutime = sig->cstime = cputime_zero;
+-	sig->gtime = cputime_zero;
+-	sig->cgtime = cputime_zero;
+-#ifndef CONFIG_VIRT_CPU_ACCOUNTING
+-	sig->prev_utime = sig->prev_stime = cputime_zero;
+-#endif
+-	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
+-	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+-	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
+-	sig->maxrss = sig->cmaxrss = 0;
+-	task_io_accounting_init(&sig->ioac);
+-	sig->sum_sched_runtime = 0;
+-	taskstats_tgid_init(sig);
+-
+ 	task_lock(current->group_leader);
+ 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
+ 	task_unlock(current->group_leader);
+ 
+ 	posix_cpu_timers_init_group(sig);
+ 
+-	acct_init_pacct(&sig->pacct);
+-
+ 	tty_audit_fork(sig);
+ 
+ 	sig->oom_adj = current->signal->oom_adj;
