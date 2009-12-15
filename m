@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbZLOA4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZLOA45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758101AbZLOA4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 19:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbZLOA4V
+	id S1758203AbZLOA45 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 19:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757798AbZLOA44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 19:56:21 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:37366 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756702AbZLOA4U (ORCPT
+	Mon, 14 Dec 2009 19:56:56 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51243 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757361AbZLOA4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 19:56:20 -0500
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0912140848160.20953@router.home>
-References: <200912111124.18118.kernel@kolivas.org>
-	 <200912121300.54803.kernel@kolivas.org>
-	 <20091212055459.GC32739@1wt.eu>
-	 <200912121710.44216.kernel@kolivas.org>
-	 <alpine.DEB.2.00.0912140848160.20953@router.home>
-Date: Tue, 15 Dec 2009 11:56:19 +1100
-X-Google-Sender-Auth: 6e8d7e1227a743ae
-Message-ID: <7574305f0912141656y3c90eeebxd3f57f576605048a@mail.gmail.com>
-Subject: Re: BFS v0.311 CPU scheduler for 2.6.32
-From: Con Kolivas <kernel@kolivas.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Willy Tarreau <w@1wt.eu>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Mon, 14 Dec 2009 19:56:54 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH 5/8] Use io_schedule() instead schedule()
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       lwoodman@redhat.com, akpm@linux-foundation.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20091215084636.c7790658.minchan.kim@barrios-desktop>
+References: <20091214213026.BBBD.A69D9226@jp.fujitsu.com> <20091215084636.c7790658.minchan.kim@barrios-desktop>
+Message-Id: <20091215090441.CDB0.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 15 Dec 2009 09:56:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/15 Christoph Lameter <cl@linux-foundation.org>:
-> On Sat, 12 Dec 2009, Con Kolivas wrote:
->
->> That's the first meaningful reason I've heard for it. I may have to consider
->> it now. It still would be compile time limited so probably not quite what
->> you're hoping for. I don't have the time and energy to do and maintain the
->> whole plugsched crap for boottime selection all over again, and that adds
->> overhead which goes against one of my prime objectives.
->
-> There was no such suggestion. It would help you a lot if you would be less
-> uptight about things. If you are near Chicago: Want to get together for
-> a beer or so?
+> On Mon, 14 Dec 2009 21:30:54 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > All task sleeping point in vmscan (e.g. congestion_wait) use
+> > io_schedule. then shrink_zone_begin use it too.
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  mm/vmscan.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 3562a2d..0880668 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -1624,7 +1624,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
+> >  		    max_zone_concurrent_reclaimers)
+> >  			break;
+> >  
+> > -		schedule();
+> > +		io_schedule();
+> 
+> Hmm. We have many cond_resched which is not io_schedule in vmscan.c.
+
+cond_resched don't mean sleep on wait queue. it's similar to yield.
+
+> In addition, if system doesn't have swap device space and out of page cache 
+> due to heavy memory pressue, VM might scan & drop pages until priority is zero
+> or zone is unreclaimable. 
+> 
+> I think it would be not a IO wait.
+
+two point.
+1. For long time, Administrator usually watch iowait% at heavy memory pressure. I
+don't hope change this without reasonable reason. 2. iowait makes scheduler
+bonus a bit, vmscan task should have many time slice than memory consume
+task. it improve VM stabilization.
+
+but I agree the benefit isn't so big. if we have reasonable reason, I
+don't oppose use schedule().
 
 
-That's good advice at the best of times, thanks.
 
-Alas, I'm afraid I'm in Australia and would have loved to have taken
-you up on that offer of a drink together since that is a mode of
-communication I'm much better with.
-
-Regards,
-Con
