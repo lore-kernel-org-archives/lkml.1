@@ -1,64 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZLOGsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbZLOGxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbZLOGsG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 01:48:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZLOGsF
+	id S1754362AbZLOGxr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 01:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZLOGxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 01:48:05 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:44337 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041AbZLOGsC convert rfc822-to-8bit (ORCPT
+	Tue, 15 Dec 2009 01:53:46 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:9448 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbZLOGxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 01:48:02 -0500
+	Tue, 15 Dec 2009 01:53:45 -0500
+Date: Tue, 15 Dec 2009 12:19:19 +0530 (IST)
+From: Rakesh Ranjan <rakesh@chelsio.com>
+X-X-Sender: rakesh@rakeshpc.asicdesigner.com
+To: OISCSIML <open-iscsi@googlegroups.com>,
+       LSCSIML <linux-scsi@vger.kernel.org>, LNDML <netdev@vger.kernel.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Mike Christie <michaelc@cs.wisc.edu>,
+       David Miller <davem@davemloft.net>,
+       James Bottomley <james.bottomley@hansenpartnership.com>,
+       Karen Xie <kxie@chelsio.com>, Rakesh Ranjan <rakesh@chelsio.com>
+Subject: [RESEND PATCH 1/1]cxgb3i: Fix a login over vlan issue
+Message-ID: <alpine.LFD.2.00.0912151214230.11944@rakeshpc.asicdesigner.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20091214064545.GK5114@elf.ucw.cz>
-References: <20091208102842.GH12264@elf.ucw.cz>
-	 <20091208214658.GC4164@elf.ucw.cz> <4B1ECEEE.3000209@bluewatersys.com>
-	 <4B203575.6050407@bluewatersys.com>
-	 <20091210172458.GJ19454@elf.ucw.cz>
-	 <4B2150B7.3040207@bluewatersys.com>
-	 <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
-	 <20091211221015.GB24456@elf.ucw.cz>
-	 <BD79186B4FD85F4B8E60E381CAEE190901FB10EA@mi8nycmail19.Mi8.com>
-	 <20091214064545.GK5114@elf.ucw.cz>
-Date: Mon, 14 Dec 2009 22:48:01 -0800
-Message-ID: <d6200be20912142248n67cf020fw2bda313febe90fb9@mail.gmail.com>
-Subject: Re: GPIO support for HTC Dream
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       Ryan Mallon <ryan@bluewatersys.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 15 Dec 2009 06:51:57.0015 (UTC) FILETIME=[17E56E70:01CA7D53]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 13, 2009 at 10:45 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> > +int __init dream_init_gpio(void)
->> > +{
->> > +        int i;
->> > +
->> > +        for (i = 0; i < ARRAY_SIZE(msm_gpio_banks); i++)
->> > +                gpiochip_add(&msm_gpio_banks[i].chip);
->> > +
->> > +   return 0;
->> > +}
->>
->> Your original patch was initially writing the shadow values to the registers.
->> Do you still need to do that?
->
-> It seems to boot this way :-). If writing the shadow values is not
-> needed, lets try getting away without it...
+From: Rakesh Ranjan <rakesh@chelsio.com>
 
-I may boot this way, but unless you know that the bootloader
-initialized all the registers to the same value, some outputs will be
-in the wrong state until someone writes to a gpio in the same bank.
+Fix a target login issue, when parent interface is vlan and we are using cxgb3i sepecific
+private ip address in '/etc/iscsi/ifaces/' iface file.
 
+Acked-by: Karen Xie <kxie@chelsio.com>
+Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
+---
+ drivers/scsi/cxgb3i/cxgb3i_offload.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+index 26ffdcd..15a00e8 100644
+--- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
++++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+@@ -1440,6 +1440,10 @@ void cxgb3i_c3cn_release(struct s3_conn *c3cn)
+ static int is_cxgb3_dev(struct net_device *dev)
+ {
+ 	struct cxgb3i_sdev_data *cdata;
++	struct net_device *ndev = dev;
++
++	if (dev->priv_flags & IFF_802_1Q_VLAN)
++		ndev = vlan_dev_real_dev(dev);
+ 
+ 	write_lock(&cdata_rwlock);
+ 	list_for_each_entry(cdata, &cdata_list, list) {
+@@ -1447,7 +1451,7 @@ static int is_cxgb3_dev(struct net_device *dev)
+ 		int i;
+ 
+ 		for (i = 0; i < ports->nports; i++)
+-			if (dev == ports->lldevs[i]) {
++			if (ndev == ports->lldevs[i]) {
+ 				write_unlock(&cdata_rwlock);
+ 				return 1;
+ 			}
+@@ -1566,6 +1570,26 @@ out_err:
+ 	return -EINVAL;
+ }
+ 
++/**
++ * cxgb3i_find_dev - find the interface associated with the given address
++ * @ipaddr: ip address
++ */
++static struct net_device *
++cxgb3i_find_dev(struct net_device *dev, __be32 ipaddr)
++{
++	struct flowi fl;
++	int err;
++	struct rtable *rt;
++
++	memset(&fl, 0, sizeof(fl));
++	fl.nl_u.ip4_u.daddr = ipaddr;
++
++	err = ip_route_output_key(dev ? dev_net(dev) : &init_net, &rt, &fl);
++	if (!err)
++		return (&rt->u.dst)->dev;
++
++	return NULL;
++}
+ 
+ /**
+  * cxgb3i_c3cn_connect - initiates an iscsi tcp connection to a given address
+@@ -1581,6 +1605,7 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
+ 	struct cxgb3i_sdev_data *cdata;
+ 	struct t3cdev *cdev;
+ 	__be32 sipv4;
++	struct net_device *dstdev;
+ 	int err;
+ 
+ 	c3cn_conn_debug("c3cn 0x%p, dev 0x%p.\n", c3cn, dev);
+@@ -1591,6 +1616,13 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
+ 	c3cn->daddr.sin_port = usin->sin_port;
+ 	c3cn->daddr.sin_addr.s_addr = usin->sin_addr.s_addr;
+ 
++	dstdev = cxgb3i_find_dev(dev, usin->sin_addr.s_addr);
++	if (!dstdev || !is_cxgb3_dev(dstdev))
++		return -ENETUNREACH;
++
++	if (dstdev->priv_flags & IFF_802_1Q_VLAN)
++		dev = dstdev;
++
+ 	rt = find_route(dev, c3cn->saddr.sin_addr.s_addr,
+ 			c3cn->daddr.sin_addr.s_addr,
+ 			c3cn->saddr.sin_port,
 -- 
-Arve Hjønnevåg
+1.6.0.6
+
+
