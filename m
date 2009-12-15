@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbZLOM6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbZLONBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbZLOM6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 07:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZLOM6x
+	id S1758866AbZLONBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 08:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbZLONBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 07:58:53 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:54363 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754999AbZLOM6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 07:58:52 -0500
-Date: Tue, 15 Dec 2009 23:58:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dmitry Monakhov <dmonakhov@openvz.org>
-Subject: Re: linux-next: ext3 tree build warning
-Message-Id: <20091215235845.da645ea0.sfr@canb.auug.org.au>
-In-Reply-To: <20091215122415.GA5405@quack.suse.cz>
-References: <20091215105925.59a66556.sfr@canb.auug.org.au>
-	<20091215122415.GA5405@quack.suse.cz>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP"
+	Tue, 15 Dec 2009 08:01:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45556 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756313AbZLONBb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 08:01:31 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/1] perf diff: Fix documentation
+Date: Tue, 15 Dec 2009 11:01:22 -0200
+Message-Id: <1260882082-10007-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Hi Jan,
+Add a newline do fix this problem:
 
-On Tue, 15 Dec 2009 13:24:16 +0100 Jan Kara <jack@suse.cz> wrote:
->
->   Sorry, I forgot to commit this compilation fix before pushing. It should
-> be fixed now.
+ERROR: perf-diff.txt: line 31: closing [blockdef-listing] delimiter
+expected
 
-Thanks.
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/Documentation/perf-diff.txt |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+diff --git a/tools/perf/Documentation/perf-diff.txt b/tools/perf/Documentation/perf-diff.txt
+index b7c393b..6936fdb 100644
+--- a/tools/perf/Documentation/perf-diff.txt
++++ b/tools/perf/Documentation/perf-diff.txt
+@@ -26,6 +26,7 @@ OPTIONS
+ --verbose::
+ 	Be verbose, for instance, show the raw counts in addition to the
+ 	diff.
++
+ SEE ALSO
+ --------
+ linkperf:perf-record[1]
+-- 
+1.6.2.5
 
---Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksniAUACgkQjjKRsyhoI8w+vACgmZt7RHwhElMbpF/6EaxFoh9c
-4g0AoIK26J/rtZZKnh3t2H36SqMGKaIM
-=E9+P
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_Dec_2009_23_58_45_+1100_JbOVRV0QuCvwcdWP--
