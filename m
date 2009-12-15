@@ -1,135 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbZLOWfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934092AbZLOWgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934078AbZLOWfe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZLOWfd
+	id S934092AbZLOWgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934064AbZLOWgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:35:33 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60936 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933763AbZLOWfb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:35:31 -0500
-Date: Tue, 15 Dec 2009 14:34:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       linux-kernel@vger.kernel.org, rubini@gnudd.com, gregkh@suse.de
-Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
- allocation
-Message-Id: <20091215143446.8b6a7e57.akpm@linux-foundation.org>
-In-Reply-To: <20091111153632.944a255c.akpm@linux-foundation.org>
-References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
-	<1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
-	<1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
-	<4AF8B4FF.9050405@zytor.com>
-	<20091111153632.944a255c.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 Dec 2009 17:36:18 -0500
+Received: from ozlabs.org ([203.10.76.45]:40218 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934059AbZLOWgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:36:17 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v2 1/4] Defer skb allocation -- add destroy buffers function for virtio
+Date: Wed, 16 Dec 2009 09:06:12 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: Shirley Ma <mashirle@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+References: <1258697359.7416.14.camel@localhost.localdomain> <1260821285.8716.7.camel@localhost.localdomain> <20091214202253.GG6150@redhat.com>
+In-Reply-To: <20091214202253.GG6150@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912160906.12430.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 15:36:32 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 09 Nov 2009 16:34:07 -0800
-> "H. Peter Anvin" <hpa@zytor.com> wrote:
-> 
-> > On 11/09/2009 04:30 PM, Thadeu Lima de Souza Cascardo wrote:
-> > > The current dynamic allocation of minor number for misc devices has some
-> > > drawbacks.
-> > > 
-> > > First of all, the range for dynamic numbers include some statically
-> > > allocated numbers. It goes from 63 to 0, and we have numbers in the
-> > > range from 1 to 15 already allocated. Although, it gives priority to the
-> > > higher and not allocated numbers, we may end up in a situation where we
-> > > must reject registering a driver which got a static number because a
-> > > driver got its number with dynamic allocation. Considering fs/dlm/user.c
-> > > allocates as many misc devices as lockspaces are created, and that we
-> > > have more than 50 users around, it's not unreasonable to reach that
-> > > situation.
-> > > 
-> > > The proposed solution uses the not yet reserved range from 64 to 127. If
-> > > more devices are needed, we may push 64 to 16.
-> > > 
+On Tue, 15 Dec 2009 06:52:53 am Michael S. Tsirkin wrote:
+> On Mon, Dec 14, 2009 at 12:08:05PM -0800, Shirley Ma wrote:
+> > Hello Michael,
 > > 
-> > Again, why not push these up above 256?
+> > I agree with the comments (will have two patches instead of 4 based on
+> > Rusty's comments) except below one.
 > > 
+> > On Sun, 2009-12-13 at 12:26 +0200, Michael S. Tsirkin wrote:
+> > > That said - do we have to use a callback?
+> > > I think destroy_buf which returns data pointer,
+> > > and which we call repeatedly until we get NULL
+> > > or error, would be an a better, more flexible API.
+> > > This is not critical though.
+> > 
+> > The reason to use this is because in virtio_net remove, it has
+> > BUG_ON(vi->num != 0), which will be consistent with small skb packet. If
+> > we use NULL, error then we lose the track for vi->num, since we don't
+> > know how many buffers have been passed to ULPs or still unused.
+> > 
+> > Thanks
+> > Shirley
 > 
-> I merged this patch, but made a note-to-self that there are remaining
-> open issues..
+> I dont insist, but my idea was
+> 
+> for (;;) {
+> 	b = vq->destroy(vq);
+> 	if (!b)
+> 		break;
+> 	--vi->num;
+> 	put_page(b);
+> }
 
-And nothing else happened.  Can we revisit this please?
+In this case it should be called "get_unused_buf" or something.  But I like
+Shirley's approach here; destroy (with callback) accurately reflects the only
+time this can be validly used.
 
-
-
-
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-
-The current dynamic allocation of minor number for misc devices has some
-drawbacks.
-
-First of all, the range for dynamic numbers include some statically
-allocated numbers.  It goes from 63 to 0, and we have numbers in the range
-from 1 to 15 already allocated.  Although, it gives priority to the higher
-and not allocated numbers, we may end up in a situation where we must
-reject registering a driver which got a static number because a driver got
-its number with dynamic allocation.  Considering fs/dlm/user.c allocates
-as many misc devices as lockspaces are created, and that we have more than
-50 users around, it's not unreasonable to reach that situation.
-
-The proposed solution uses the not yet reserved range from 64 to 127.  If
-more devices are needed, we may push 64 to 16.
-
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/char/misc.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff -puN drivers/char/misc.c~drivers-char-miscc-use-a-proper-range-for-minor-number-dynamic-allocation drivers/char/misc.c
---- a/drivers/char/misc.c~drivers-char-miscc-use-a-proper-range-for-minor-number-dynamic-allocation
-+++ a/drivers/char/misc.c
-@@ -59,6 +59,7 @@ static DEFINE_MUTEX(misc_mtx);
- /*
-  * Assigned numbers, used for dynamic minors
-  */
-+#define DYNAMIC_MINOR_BASE 64
- #define DYNAMIC_MINORS 64 /* like dynamic majors */
- static DECLARE_BITMAP(misc_minors, DYNAMIC_MINORS);
- 
-@@ -201,7 +202,7 @@ int misc_register(struct miscdevice * mi
- 			mutex_unlock(&misc_mtx);
- 			return -EBUSY;
- 		}
--		misc->minor = DYNAMIC_MINORS - i - 1;
-+		misc->minor = DYNAMIC_MINOR_BASE + i;
- 		set_bit(i, misc_minors);
- 	}
- 
-@@ -210,7 +211,7 @@ int misc_register(struct miscdevice * mi
- 	misc->this_device = device_create(misc_class, misc->parent, dev,
- 					  misc, "%s", misc->name);
- 	if (IS_ERR(misc->this_device)) {
--		int i = DYNAMIC_MINORS - misc->minor - 1;
-+		int i = misc->minor - DYNAMIC_MINOR_BASE;
- 		if (i < DYNAMIC_MINORS && i >= 0)
- 			clear_bit(i, misc_minors);
- 		err = PTR_ERR(misc->this_device);
-@@ -239,7 +240,7 @@ int misc_register(struct miscdevice * mi
- 
- int misc_deregister(struct miscdevice *misc)
- {
--	int i = DYNAMIC_MINORS - misc->minor - 1;
-+	int i = misc->minor - DYNAMIC_MINOR_BASE;
- 
- 	if (list_empty(&misc->list))
- 		return -EINVAL;
-_
-
+Cheers,
+Rusty.
