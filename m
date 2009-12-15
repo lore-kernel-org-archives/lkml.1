@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933860AbZLOWBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbZLOWCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933860AbZLOWBf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933875AbZLOWB1
+	id S933883AbZLOWCw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933854AbZLOWCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:01:27 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:32881 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933852AbZLOWBX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:01:23 -0500
-Date: Tue, 15 Dec 2009 17:01:18 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912152226.22578.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912151653140.2643-100000@iolanthe.rowland.org>
+	Tue, 15 Dec 2009 17:02:52 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:58885 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933852AbZLOWCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:02:50 -0500
+Date: Tue, 15 Dec 2009 23:02:50 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: Heinz Diehl <htd@fancy-poultry.org>, LKML <linux-kernel@vger.kernel.org>,
+       martin.petersen@oracle.com
+Subject: Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device
+	mapper warnings
+Message-ID: <20091215220249.GG28252@kernel.dk>
+References: <200912091049.12604.borntraeger@de.ibm.com> <20091209212516.GA6206@fancy-poultry.org> <20091209214501.GC8742@kernel.dk> <20091209220749.GD8742@kernel.dk> <alpine.DEB.2.01.0912151354350.3483@bogon.housecafe.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.01.0912151354350.3483@bogon.housecafe.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-
-> > Ideally we would figure out how to do the slow devices in parallel
-> > without interference from fast devices having unknown dependencies.  
-> > Unfortunately this may not be possible.
-> 
-> I really expect to see those "unknown dependencies" in the _noirq
-> suspend/resume phases and above.  [The very fact they exist is worrisome,
-> because that's why we don't know why things work on one system and don't
-> work on another, although they appear to be very similar.]
-
-This is a good reason for keeping the _noirq phases synchronous.  AFAIK 
-they don't take long enough to be worth converting, so there's no loss.
-
-> > The real issue is "blockage": synchronous devices preventing 
-> > possible concurrency among async devices.  That's what you thought 
-> > making PCI bridges async would help.
+On Tue, Dec 15 2009, Christian Kujau wrote:
+> On Wed, 9 Dec 2009 at 23:07, Jens Axboe wrote:
+> > Does this work?
 > > 
-> > In general, blockage arises in suspend when you have an async child
-> > with a synchronous parent.  The parent has to wait for the child, which
-> > might take a long time, thereby delaying other unrelated devices.
+> [...]
+> > +#if 0
+> >  	if (offset &&
+> >  	    (offset & (b->discard_granularity - 1)) != b->discard_alignment) {
+> >  		t->discard_misaligned = 1;
+> >  		ret = -1;
+> >  	}
+> > +#endif
 > 
-> Exactly, but the Linus' point seems to be that's going to be rare and we
-> should be able to special case all of the interesting cases.
+> I can't tell: is this a purely cosmetical change or is it dangerous to run 
+> my DM devices without that patch? I'm trying to track mainline -git but 
+> the patch hasn't made into the tree yet, so I always have to manually
+> apply the patch - or can I just ignore the warning?
 
-Maybe that's true.  Without seeing some examples of actual dpm_list
-contents, we can't tell.  Can you post the interesting parts of the
-lists from some of your test machines?  Maybe with a USB device or two
-plugged in?  (The device names together with the names of their parents
-should be enough.)
+You can ignore it, it wont harm the functionality or data integrity. The
+code "failure" will always trigger, since the default settings are 0.
+Thus:
 
-> > (This explains why you wanted to make PCI bridges async -- they are the
-> > parents of USB controllers.)  For resume it's the opposite: an async
-> > parent with synchronous children.
-> 
-> Is that really going to happen in practice?  I mean, what would be the point?
+(offset & (b->discard_granularity - 1)) != b->discard_alignment
 
-I don't know.  It's all speculation until we see some actual lists.
+will always be true.
 
-Alan Stern
+I'll revert the bad commit tomorrow so that -rc1 wont be affected, at
+least.
+
+-- 
+Jens Axboe
 
