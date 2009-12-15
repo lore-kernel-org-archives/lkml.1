@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbZLOJRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbZLOJSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759420AbZLOJRT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 04:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759400AbZLOJRS
+	id S1759429AbZLOJSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 04:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbZLOJSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 04:17:18 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48530 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbZLOJRP (ORCPT
+	Tue, 15 Dec 2009 04:18:24 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57047 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757496AbZLOJSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 04:17:15 -0500
+	Tue, 15 Dec 2009 04:18:23 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 15 Dec 2009 18:14:13 +0900
+Date: Tue, 15 Dec 2009 18:15:17 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
        cl@linux-foundation.org, minchan.kim@gmail.com, Lee.Schermerhorn@hp.com
-Subject: [mmotm][PATCH 3/5] mm: count swap usage
-Message-Id: <20091215181413.5ae4e2ad.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [mmotm][PATCH 4/5] mm : add lowmem detection logic
+Message-Id: <20091215181517.19077213.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20091215180904.c307629f.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20091215180904.c307629f.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
@@ -31,194 +31,152 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-One of frequent questions from users about memory management is
-what numbers of swap ents are user for processes. And this information will
-give some hints to oom-killer.
+Final purpose of this patch is for improving oom/memoy shortage detection
+better. In general there are OOM cases that lowmem is exhausted. What
+this lowmem means is determined by the situation, but in general, 
+limited amount of memory for some special use is lowmem.
 
-Besides we can count the number of swapents per a process by scanning
-/proc/<pid>/smaps, this is very slow and not good for usual process information
-handler which works like 'ps' or 'top'.
-(ps or top is now enough slow..)
+This patch adds an integer lowmem_zone, which is initialized to -1.
+If zone_idx(zone) <= lowmem_zone, the zone is lowmem.
 
-This patch adds a counter of swapents to mm_counter and update is at 
-each swap events. Information is exported via /proc/<pid>/status file as
+This patch uses simple definition that the zone for special use is the lowmem.
+Not taking the amount of memory into account.
 
-[kamezawa@bluextal memory]$ cat /proc/self/status
-Name:   cat
-State:  R (running)
-Tgid:   2910
-Pid:    2910
-PPid:   2823
-TracerPid:      0
-Uid:    500     500     500     500
-Gid:    500     500     500     500
-FDSize: 256
-Groups: 500
-VmPeak:    82696 kB
-VmSize:    82696 kB
-VmLck:         0 kB
-VmHWM:       432 kB
-VmRSS:       432 kB
-VmData:      172 kB
-VmStk:        84 kB
-VmExe:        48 kB
-VmLib:      1568 kB
-VmPTE:        40 kB
-VmSwap:        0 kB <=============== this.
+For example,
+  - if HIGHMEM is used, NORMAL is lowmem.
+  - If the system has both of NORMAL and DMA32, DMA32 is lowmem.
+  - When the system consists of only one zone, there are no lowmem.
+
+This will be used for lowmem accounting per mm_struct and its information
+will be used for oom-killer.
+
+ Q: Why you don't use policy_zone ?
+ A: It's for NUMA only. I want to use unified approach for detecting lowmem.
+    And policy_zone sounds like "for mempolicy"..
+
+Concerns or TODO: 
+ - Now, we have polizy_zone if CONFIG_NUMA=y. Maybe we can make it as
+   #define policy_zone  (lowmem_zone + 1)
+   or remove it. But this itself should be done in other patch.
 
 Changelog: 2009/12/14
- - removed a bad comment.
- - Added Documentation
+ - no change.
+Changelog: 2009/12/09
+ - stop using policy_zone and use unified definition on each config.
 
 Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- Documentation/filesystems/proc.txt |    2 ++
- fs/proc/task_mmu.c                 |    9 ++++++---
- include/linux/mm_types.h           |    1 +
- mm/memory.c                        |   16 ++++++++++++----
- mm/rmap.c                          |    1 +
- mm/swapfile.c                      |    1 +
- 6 files changed, 23 insertions(+), 7 deletions(-)
+ include/linux/mm.h |    9 +++++++
+ mm/page_alloc.c    |   62 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+)
 
-Index: mmotm-2.6.32-Dec8-pth/include/linux/mm_types.h
+Index: mmotm-2.6.32-Dec8-pth/include/linux/mm.h
 ===================================================================
---- mmotm-2.6.32-Dec8-pth.orig/include/linux/mm_types.h
-+++ mmotm-2.6.32-Dec8-pth/include/linux/mm_types.h
-@@ -196,6 +196,7 @@ struct core_state {
- enum {
- 	MM_FILEPAGES,
- 	MM_ANONPAGES,
-+	MM_SWAPENTS,
- 	NR_MM_COUNTERS
- };
- 
-Index: mmotm-2.6.32-Dec8-pth/mm/memory.c
-===================================================================
---- mmotm-2.6.32-Dec8-pth.orig/mm/memory.c
-+++ mmotm-2.6.32-Dec8-pth/mm/memory.c
-@@ -679,7 +679,9 @@ copy_one_pte(struct mm_struct *dst_mm, s
- 						 &src_mm->mmlist);
- 				spin_unlock(&mmlist_lock);
- 			}
--			if (is_write_migration_entry(entry) &&
-+			if (likely(!non_swap_entry(entry)))
-+				rss[MM_SWAPENTS]++;
-+			else if (is_write_migration_entry(entry) &&
- 					is_cow_mapping(vm_flags)) {
- 				/*
- 				 * COW mappings require pages in both parent
-@@ -974,9 +976,14 @@ static unsigned long zap_pte_range(struc
- 		if (pte_file(ptent)) {
- 			if (unlikely(!(vma->vm_flags & VM_NONLINEAR)))
- 				print_bad_pte(vma, addr, ptent, NULL);
--		} else if
--		  (unlikely(!free_swap_and_cache(pte_to_swp_entry(ptent))))
--			print_bad_pte(vma, addr, ptent, NULL);
-+		} else {
-+			swp_entry_t entry = pte_to_swp_entry(ptent);
-+
-+			if (!non_swap_entry(entry))
-+				rss[MM_SWAPENTS]--;
-+		  	if (unlikely(!free_swap_and_cache(entry)))
-+				print_bad_pte(vma, addr, ptent, NULL);
-+		}
- 		pte_clear_not_present_full(mm, addr, pte, tlb->fullmm);
- 	} while (pte++, addr += PAGE_SIZE, (addr != end && *zap_work > 0));
- 
-@@ -2688,6 +2695,7 @@ static int do_swap_page(struct mm_struct
- 	 */
- 
- 	inc_mm_counter_fast(mm, MM_ANONPAGES);
-+	dec_mm_counter_fast(mm, MM_SWAPENTS);
- 	pte = mk_pte(page, vma->vm_page_prot);
- 	if ((flags & FAULT_FLAG_WRITE) && reuse_swap_page(page)) {
- 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
-Index: mmotm-2.6.32-Dec8-pth/mm/rmap.c
-===================================================================
---- mmotm-2.6.32-Dec8-pth.orig/mm/rmap.c
-+++ mmotm-2.6.32-Dec8-pth/mm/rmap.c
-@@ -840,6 +840,7 @@ int try_to_unmap_one(struct page *page, 
- 				spin_unlock(&mmlist_lock);
- 			}
- 			dec_mm_counter(mm, MM_ANONPAGES);
-+			inc_mm_counter(mm, MM_SWAPENTS);
- 		} else if (PAGE_MIGRATION) {
- 			/*
- 			 * Store the pfn of the page in a special migration
-Index: mmotm-2.6.32-Dec8-pth/mm/swapfile.c
-===================================================================
---- mmotm-2.6.32-Dec8-pth.orig/mm/swapfile.c
-+++ mmotm-2.6.32-Dec8-pth/mm/swapfile.c
-@@ -840,6 +840,7 @@ static int unuse_pte(struct vm_area_stru
- 		goto out;
- 	}
- 
-+	dec_mm_counter(vma->vm_mm, MM_SWAPENTS);
- 	inc_mm_counter(vma->vm_mm, MM_ANONPAGES);
- 	get_page(page);
- 	set_pte_at(vma->vm_mm, addr, pte,
-Index: mmotm-2.6.32-Dec8-pth/fs/proc/task_mmu.c
-===================================================================
---- mmotm-2.6.32-Dec8-pth.orig/fs/proc/task_mmu.c
-+++ mmotm-2.6.32-Dec8-pth/fs/proc/task_mmu.c
-@@ -16,7 +16,7 @@
- 
- void task_mem(struct seq_file *m, struct mm_struct *mm)
- {
--	unsigned long data, text, lib;
-+	unsigned long data, text, lib, swap;
- 	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss;
- 
- 	/*
-@@ -36,6 +36,7 @@ void task_mem(struct seq_file *m, struct
- 	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
- 	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
- 	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
-+	swap = get_mm_counter(mm, MM_SWAPENTS);
- 	seq_printf(m,
- 		"VmPeak:\t%8lu kB\n"
- 		"VmSize:\t%8lu kB\n"
-@@ -46,7 +47,8 @@ void task_mem(struct seq_file *m, struct
- 		"VmStk:\t%8lu kB\n"
- 		"VmExe:\t%8lu kB\n"
- 		"VmLib:\t%8lu kB\n"
--		"VmPTE:\t%8lu kB\n",
-+		"VmPTE:\t%8lu kB\n"
-+		"VmSwap:\t%8lu kB\n",
- 		hiwater_vm << (PAGE_SHIFT-10),
- 		(total_vm - mm->reserved_vm) << (PAGE_SHIFT-10),
- 		mm->locked_vm << (PAGE_SHIFT-10),
-@@ -54,7 +56,8 @@ void task_mem(struct seq_file *m, struct
- 		total_rss << (PAGE_SHIFT-10),
- 		data << (PAGE_SHIFT-10),
- 		mm->stack_vm << (PAGE_SHIFT-10), text, lib,
--		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10);
-+		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10,
-+		swap << (PAGE_SHIFT-10));
+--- mmotm-2.6.32-Dec8-pth.orig/include/linux/mm.h
++++ mmotm-2.6.32-Dec8-pth/include/linux/mm.h
+@@ -583,6 +583,15 @@ static inline void set_page_links(struct
  }
  
- unsigned long task_vsize(struct mm_struct *mm)
-Index: mmotm-2.6.32-Dec8-pth/Documentation/filesystems/proc.txt
+ /*
++ * Check a page is in lower zone
++ */
++extern int lowmem_zone;
++static inline bool is_lowmem_page(struct page *page)
++{
++	return page_zonenum(page) <= lowmem_zone;
++}
++
++/*
+  * Some inline functions in vmstat.h depend on page_zone()
+  */
+ #include <linux/vmstat.h>
+Index: mmotm-2.6.32-Dec8-pth/mm/page_alloc.c
 ===================================================================
---- mmotm-2.6.32-Dec8-pth.orig/Documentation/filesystems/proc.txt
-+++ mmotm-2.6.32-Dec8-pth/Documentation/filesystems/proc.txt
-@@ -164,6 +164,7 @@ read the file /proc/PID/status:
-   VmExe:        68 kB
-   VmLib:      1412 kB
-   VmPTE:        20 kb
-+  VmSwap:        0 kB
-   Threads:        1
-   SigQ:   0/28578
-   SigPnd: 0000000000000000
-@@ -220,6 +221,7 @@ Table 1-2: Contents of the statm files (
-  VmExe                       size of text segment
-  VmLib                       size of shared library code
-  VmPTE                       size of page table entries
-+ VmSwap                      size of swap usage (the number of referred swapents)
-  Threads                     number of threads
-  SigQ                        number of signals queued/max. number for queue
-  SigPnd                      bitmap of pending signals for the thread
+--- mmotm-2.6.32-Dec8-pth.orig/mm/page_alloc.c
++++ mmotm-2.6.32-Dec8-pth/mm/page_alloc.c
+@@ -2311,6 +2311,59 @@ static void zoneref_set_zone(struct zone
+ 	zoneref->zone_idx = zone_idx(zone);
+ }
+ 
++/* the zone is lowmem if zone_idx(zone) <= lowmem_zone */
++int lowmem_zone __read_mostly;
++/*
++ * Find out LOWMEM zone on this host. LOWMEM means a zone for special use
++ * and its size seems small and precious than other zones. For example,
++ * NORMAL zone is considered to be LOWMEM on a host which has HIGHMEM.
++ *
++ * This lowmem zone is determined by zone ordering and equipped memory layout.
++ * The amount of memory is not taken into account now.
++ */
++static void find_lowmem_zone(void)
++{
++	unsigned long pages[MAX_NR_ZONES];
++	struct zone *zone;
++	int idx;
++
++	for (idx = 0; idx < MAX_NR_ZONES; idx++)
++		pages[idx] = 0;
++	/* count the number of pages */
++	for_each_populated_zone(zone) {
++		idx = zone_idx(zone);
++		pages[idx] += zone->present_pages;
++	}
++	/* If We have HIGHMEM...we ignore ZONE_MOVABLE in this case. */
++#ifdef CONFIG_HIGHMEM
++	if (pages[ZONE_HIGHMEM]) {
++		lowmem_zone = ZONE_NORMAL;
++		return;
++	}
++#endif
++	/* If We have MOVABLE zone...which works like HIGHMEM. */
++	if (pages[ZONE_MOVABLE]) {
++		lowmem_zone = ZONE_NORMAL;
++		return;
++	}
++#ifdef CONFIG_ZONE_DMA32
++	/* If we have DMA32 and there is ZONE_NORMAL...*/
++	if (pages[ZONE_DMA32] && pages[ZONE_NORMAL]) {
++		lowmem_zone = ZONE_DMA32;
++		return;
++	}
++#endif
++#ifdef CONFIG_ZONE_DMA
++	/* If we have DMA and there is ZONE_NORMAL...*/
++	if (pages[ZONE_DMA] && pages[ZONE_NORMAL]) {
++		lowmem_zone = ZONE_DMA;
++		return;
++	}
++#endif
++	lowmem_zone = -1;
++	return;
++}
++
+ /*
+  * Builds allocation fallback zone lists.
+  *
+@@ -2790,12 +2843,21 @@ void build_all_zonelists(void)
+ 	else
+ 		page_group_by_mobility_disabled = 0;
+ 
++	find_lowmem_zone();
++
+ 	printk("Built %i zonelists in %s order, mobility grouping %s.  "
+ 		"Total pages: %ld\n",
+ 			nr_online_nodes,
+ 			zonelist_order_name[current_zonelist_order],
+ 			page_group_by_mobility_disabled ? "off" : "on",
+ 			vm_total_pages);
++
++	if (lowmem_zone >= 0)
++		printk("LOWMEM zone is detected as %s\n",
++			zone_names[lowmem_zone]);
++	else
++		printk("There are no special LOWMEM. The system seems flat\n");
++
+ #ifdef CONFIG_NUMA
+ 	printk("Policy zone: %s\n", zone_names[policy_zone]);
+ #endif
 
