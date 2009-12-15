@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZLOK5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbZLOLAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZLOK5R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 05:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbZLOK5M
+	id S1759898AbZLOLAh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 06:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759870AbZLOLAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 05:57:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43363 "EHLO mx3.mail.elte.hu"
+	Tue, 15 Dec 2009 06:00:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1624 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759579AbZLOK5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 05:57:10 -0500
-Date: Tue, 15 Dec 2009 11:56:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: yinghai@kernel.org, rdreier@cisco.com, linux-kernel@vger.kernel.org
-Subject: Re: bisected crash due to "x86: Move swiotlb initialization before
- dma32_free_bootmem"
-Message-ID: <20091215105650.GA13214@elte.hu>
-References: <ada8wd4brwk.fsf@roland-alpha.cisco.com>
- <20091215175439V.fujita.tomonori@lab.ntt.co.jp>
- <4B2752A9.10903@kernel.org>
- <20091215182243R.fujita.tomonori@lab.ntt.co.jp>
+	id S1757988AbZLOLAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 06:00:35 -0500
+Date: Tue, 15 Dec 2009 12:57:48 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [PATCH v2 1/4] Defer skb allocation -- add destroy buffers
+	function for virtio
+Message-ID: <20091215105748.GB11525@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260534805.30371.10.camel@localhost.localdomain> <20091213102632.GB6789@redhat.com> <1260821285.8716.7.camel@localhost.localdomain> <20091214202253.GG6150@redhat.com> <1260832942.4387.9.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091215182243R.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1260832942.4387.9.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> There are a few people who hit this. How many people use a box with over 
-> 256GB memory?
+On Mon, Dec 14, 2009 at 03:22:22PM -0800, Shirley Ma wrote:
+> Hello Michael,
 > 
-> And you can work around this with "dma32_size" kernel boot option.
+> On Mon, 2009-12-14 at 22:22 +0200, Michael S. Tsirkin wrote:
+> > I dont insist, but my idea was
+> > 
+> > for (;;) {
+> >         b = vq->destroy(vq);
+> >         if (!b)
+> >                 break;
+> >         --vi->num;
+> >         put_page(b);
+> > }
+> > 
+> > so we do not have to lose track of the counter.
+> 
+> That's not a bad idea, but to do this, then this fuction will be
+> specific for virtio_net device (vi is virtnet_info) only in a generic
+> virtqueue API.
+> 
+> Thanks
+> Shirley
 
-Well, since the kernel has not crashed before this change there's really just 
-two options as per upstream kernel regression policy: either we fix it or we 
-revert it.
+No, this code would be in virtio net.
+destroy would simply be the virtqueue API that returns
+data pointer.
 
-	Ingo
+-- 
+MST
