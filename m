@@ -1,45 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZLOBne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbZLOBqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbZLOBne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZLOBne
+	id S1757282AbZLOBqt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZLOBqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:43:34 -0500
-Received: from cgp-fe01.mtu.ru ([62.5.255.15]:42126 "EHLO umail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750844AbZLOBnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:43:33 -0500
-From: Pavel Vasilyev <pavel@pavlinux.ru>
-Organization: Pavlinux. Inc
-To: linux-kernel@vger.kernel.org
-Subject: May be not need MTRR for K8 systems without  AGP
-Date: Tue, 15 Dec 2009 04:43:30 +0300
-User-Agent: KMail/1.12.4 (Linux/2.6.32; KDE/4.3.4; x86_64; ; )
-X-Face: $dO4505L-bM3\Iz"(
- =?utf-8?q?V=3Dy=2EbL/75=7B5ys3=3AB=5B-aPBQvs*Z=25fdBqFhvc85hmZN4j1kwRzwvY*?=
- =?utf-8?q?R=0A=094=09nvQ/=23/+kWXH?=((aXWh\%mvG1V()Z0k:NwZAIu\S0d1%,nv`^
+	Mon, 14 Dec 2009 20:46:45 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:60144 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753780AbZLOBqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 20:46:44 -0500
+Message-Id: <200912150146.nBF1kfsx067046@www262.sakura.ne.jp>
+Subject: [PATCH] TOMOYO: Replace rw_semaphore by mutex.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: linux-security-module@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912150443.30405@PAVLINUX->
+Date: Tue, 15 Dec 2009 10:46:41 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 15122009 #3129599, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subj!
+[PATCH] TOMOYO: Replace rw_semaphore by mutex.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 32a1918..571d8b7 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1334,7 +1334,7 @@ config MATH_EMULATION
- config MTRR
-        bool
-        default y
--       prompt "MTRR (Memory Type Range Register) support" if EMBEDDED
-+       prompt "MTRR (Memory Type Range Register) support" if (EMBEDDED || 
-(MK8 && AGP))
-        ---help---
-          On Intel P6 family processors (Pentium Pro, Pentium II and later)
-          the Memory Type Range Registers (MTRRs) may be used to control
+Since readers no longer use down_read(), writers no longer
+need to use rw_semaphore. Replace individual rw_semaphore by
+single mutex.
+
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> 
+---
+ security/tomoyo/common.c |   12 +++++++-----
+ security/tomoyo/common.h |    5 ++---
+ security/tomoyo/domain.c |   20 ++++++++------------
+ security/tomoyo/file.c   |   26 ++++++++++----------------
+ 4 files changed, 27 insertions(+), 36 deletions(-)
+
+--- security-testing-2.6.orig/security/tomoyo/common.c
++++ security-testing-2.6/security/tomoyo/common.c
+@@ -16,6 +16,9 @@
+ #include "common.h"
+ #include "tomoyo.h"
+ 
++/* Lock for protecting policy. */
++DEFINE_MUTEX(tomoyo_policy_lock);
++
+ /* Has loading policy done? */
+ bool tomoyo_policy_loaded;
+ 
+@@ -1086,7 +1089,6 @@ struct tomoyo_policy_manager_entry {
+  * # cat /sys/kernel/security/tomoyo/manager
+  */
+ static LIST_HEAD(tomoyo_policy_manager_list);
+-static DECLARE_RWSEM(tomoyo_policy_manager_list_lock);
+ 
+ /**
+  * tomoyo_update_manager_entry - Add a manager entry.
+@@ -1118,7 +1120,7 @@ static int tomoyo_update_manager_entry(c
+ 	saved_manager = tomoyo_save_name(manager);
+ 	if (!saved_manager)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_policy_manager_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_policy_manager_list, list) {
+ 		if (ptr->manager != saved_manager)
+ 			continue;
+@@ -1138,7 +1140,7 @@ static int tomoyo_update_manager_entry(c
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_policy_manager_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_policy_manager_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -1315,7 +1317,7 @@ static int tomoyo_delete_domain(char *do
+ 
+ 	name.name = domainname;
+ 	tomoyo_fill_path_info(&name);
+-	down_write(&tomoyo_domain_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	/* Is there an active domain? */
+ 	list_for_each_entry_rcu(domain, &tomoyo_domain_list, list) {
+ 		/* Never delete tomoyo_kernel_domain */
+@@ -1327,7 +1329,7 @@ static int tomoyo_delete_domain(char *do
+ 		domain->is_deleted = true;
+ 		break;
+ 	}
+-	up_write(&tomoyo_domain_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return 0;
+ }
+ 
+--- security-testing-2.6.orig/security/tomoyo/common.h
++++ security-testing-2.6/security/tomoyo/common.h
+@@ -431,10 +431,9 @@ static inline bool tomoyo_is_invalid(con
+ 
+ /* The list for "struct tomoyo_domain_info". */
+ extern struct list_head tomoyo_domain_list;
+-extern struct rw_semaphore tomoyo_domain_list_lock;
+ 
+-/* Lock for domain->acl_info_list. */
+-extern struct rw_semaphore tomoyo_domain_acl_info_list_lock;
++/* Lock for protecting policy. */
++extern struct mutex tomoyo_policy_lock;
+ 
+ /* Has /sbin/init started? */
+ extern bool tomoyo_policy_loaded;
+--- security-testing-2.6.orig/security/tomoyo/domain.c
++++ security-testing-2.6/security/tomoyo/domain.c
+@@ -58,7 +58,6 @@ struct tomoyo_domain_info tomoyo_kernel_
+  * exceptions.
+  */
+ LIST_HEAD(tomoyo_domain_list);
+-DECLARE_RWSEM(tomoyo_domain_list_lock);
+ 
+ /*
+  * tomoyo_domain_initializer_entry is a structure which is used for holding
+@@ -206,7 +205,6 @@ const char *tomoyo_get_last_name(const s
+  * unless executed from "<kernel> /etc/rc.d/init.d/httpd" domain.
+  */
+ static LIST_HEAD(tomoyo_domain_initializer_list);
+-static DECLARE_RWSEM(tomoyo_domain_initializer_list_lock);
+ 
+ /**
+  * tomoyo_update_domain_initializer_entry - Update "struct tomoyo_domain_initializer_entry" list.
+@@ -247,7 +245,7 @@ static int tomoyo_update_domain_initiali
+ 	saved_program = tomoyo_save_name(program);
+ 	if (!saved_program)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_domain_initializer_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_domain_initializer_list, list) {
+ 		if (ptr->is_not != is_not ||
+ 		    ptr->domainname != saved_domainname ||
+@@ -271,7 +269,7 @@ static int tomoyo_update_domain_initiali
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_domain_initializer_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_domain_initializer_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -423,7 +421,6 @@ static bool tomoyo_is_domain_initializer
+  * explicitly specified by "initialize_domain".
+  */
+ static LIST_HEAD(tomoyo_domain_keeper_list);
+-static DECLARE_RWSEM(tomoyo_domain_keeper_list_lock);
+ 
+ /**
+  * tomoyo_update_domain_keeper_entry - Update "struct tomoyo_domain_keeper_entry" list.
+@@ -464,7 +461,7 @@ static int tomoyo_update_domain_keeper_e
+ 	saved_domainname = tomoyo_save_name(domainname);
+ 	if (!saved_domainname)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_domain_keeper_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_domain_keeper_list, list) {
+ 		if (ptr->is_not != is_not ||
+ 		    ptr->domainname != saved_domainname ||
+@@ -488,7 +485,7 @@ static int tomoyo_update_domain_keeper_e
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_domain_keeper_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_domain_keeper_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -624,7 +621,6 @@ static bool tomoyo_is_domain_keeper(cons
+  * execve() succeeds is calculated using /bin/cat rather than /bin/busybox .
+  */
+ static LIST_HEAD(tomoyo_alias_list);
+-static DECLARE_RWSEM(tomoyo_alias_list_lock);
+ 
+ /**
+  * tomoyo_update_alias_entry - Update "struct tomoyo_alias_entry" list.
+@@ -654,7 +650,7 @@ static int tomoyo_update_alias_entry(con
+ 	saved_aliased_name = tomoyo_save_name(aliased_name);
+ 	if (!saved_original_name || !saved_aliased_name)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_alias_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_alias_list, list) {
+ 		if (ptr->original_name != saved_original_name ||
+ 		    ptr->aliased_name != saved_aliased_name)
+@@ -675,7 +671,7 @@ static int tomoyo_update_alias_entry(con
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_alias_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_alias_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -745,7 +741,7 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 	struct tomoyo_domain_info *domain = NULL;
+ 	const struct tomoyo_path_info *saved_domainname;
+ 
+-	down_write(&tomoyo_domain_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	domain = tomoyo_find_domain(domainname);
+ 	if (domain)
+ 		goto out;
+@@ -792,7 +788,7 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 		list_add_tail_rcu(&domain->list, &tomoyo_domain_list);
+ 	}
+  out:
+-	up_write(&tomoyo_domain_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return domain;
+ }
+ 
+--- security-testing-2.6.orig/security/tomoyo/file.c
++++ security-testing-2.6/security/tomoyo/file.c
+@@ -167,9 +167,6 @@ static struct tomoyo_path_info *tomoyo_g
+ 	return NULL;
+ }
+ 
+-/* Lock for domain->acl_info_list. */
+-DECLARE_RWSEM(tomoyo_domain_acl_info_list_lock);
+-
+ static int tomoyo_update_double_path_acl(const u8 type, const char *filename1,
+ 					 const char *filename2,
+ 					 struct tomoyo_domain_info *
+@@ -204,7 +201,6 @@ static int tomoyo_update_single_path_acl
+  * belongs to.
+  */
+ static LIST_HEAD(tomoyo_globally_readable_list);
+-static DECLARE_RWSEM(tomoyo_globally_readable_list_lock);
+ 
+ /**
+  * tomoyo_update_globally_readable_entry - Update "struct tomoyo_globally_readable_file_entry" list.
+@@ -229,7 +225,7 @@ static int tomoyo_update_globally_readab
+ 	saved_filename = tomoyo_save_name(filename);
+ 	if (!saved_filename)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_globally_readable_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_globally_readable_list, list) {
+ 		if (ptr->filename != saved_filename)
+ 			continue;
+@@ -248,7 +244,7 @@ static int tomoyo_update_globally_readab
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_globally_readable_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_globally_readable_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -352,7 +348,6 @@ bool tomoyo_read_globally_readable_polic
+  * current process from accessing other process's information.
+  */
+ static LIST_HEAD(tomoyo_pattern_list);
+-static DECLARE_RWSEM(tomoyo_pattern_list_lock);
+ 
+ /**
+  * tomoyo_update_file_pattern_entry - Update "struct tomoyo_pattern_entry" list.
+@@ -377,7 +372,7 @@ static int tomoyo_update_file_pattern_en
+ 	saved_pattern = tomoyo_save_name(pattern);
+ 	if (!saved_pattern)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_pattern_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_pattern_list, list) {
+ 		if (saved_pattern != ptr->pattern)
+ 			continue;
+@@ -396,7 +391,7 @@ static int tomoyo_update_file_pattern_en
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_pattern_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_pattern_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -505,7 +500,6 @@ bool tomoyo_read_file_pattern(struct tom
+  * need to worry whether the file is already unlink()ed or not.
+  */
+ static LIST_HEAD(tomoyo_no_rewrite_list);
+-static DECLARE_RWSEM(tomoyo_no_rewrite_list_lock);
+ 
+ /**
+  * tomoyo_update_no_rewrite_entry - Update "struct tomoyo_no_rewrite_entry" list.
+@@ -529,7 +523,7 @@ static int tomoyo_update_no_rewrite_entr
+ 	saved_pattern = tomoyo_save_name(pattern);
+ 	if (!saved_pattern)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_no_rewrite_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	list_for_each_entry_rcu(ptr, &tomoyo_no_rewrite_list, list) {
+ 		if (ptr->pattern != saved_pattern)
+ 			continue;
+@@ -548,7 +542,7 @@ static int tomoyo_update_no_rewrite_entr
+ 	list_add_tail_rcu(&new_entry->list, &tomoyo_no_rewrite_list);
+ 	error = 0;
+  out:
+-	up_write(&tomoyo_no_rewrite_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -881,7 +875,7 @@ static int tomoyo_update_single_path_acl
+ 	saved_filename = tomoyo_save_name(filename);
+ 	if (!saved_filename)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_domain_acl_info_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	if (is_delete)
+ 		goto delete;
+ 	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
+@@ -943,7 +937,7 @@ static int tomoyo_update_single_path_acl
+ 		break;
+ 	}
+  out:
+-	up_write(&tomoyo_domain_acl_info_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
+@@ -981,7 +975,7 @@ static int tomoyo_update_double_path_acl
+ 	saved_filename2 = tomoyo_save_name(filename2);
+ 	if (!saved_filename1 || !saved_filename2)
+ 		return -ENOMEM;
+-	down_write(&tomoyo_domain_acl_info_list_lock);
++	mutex_lock(&tomoyo_policy_lock);
+ 	if (is_delete)
+ 		goto delete;
+ 	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
+@@ -1027,7 +1021,7 @@ static int tomoyo_update_double_path_acl
+ 		break;
+ 	}
+  out:
+-	up_write(&tomoyo_domain_acl_info_list_lock);
++	mutex_unlock(&tomoyo_policy_lock);
+ 	return error;
+ }
+ 
