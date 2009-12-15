@@ -1,64 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbZLON6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbZLON7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760258AbZLON6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 08:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760237AbZLON6T
+	id S1760269AbZLON7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 08:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760245AbZLON7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 08:58:19 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45121 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753952AbZLON6S (ORCPT
+	Tue, 15 Dec 2009 08:59:06 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:22794 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760237AbZLON7C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 08:58:18 -0500
-To: Zachary Amsden <zamsden@redhat.com>
-Cc: kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
-       Dor Laor <dlaor@redhat.com>
-Subject: Re: [PATCH RFC: kvm tsc virtualization 15/20] Fix longstanding races
-From: Andi Kleen <andi@firstfloor.org>
-References: <1260850127-9766-1-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-2-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-3-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-4-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-5-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-6-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-7-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-8-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-9-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-10-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-11-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-12-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-13-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-14-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-15-git-send-email-zamsden@redhat.com>
-	<1260850127-9766-16-git-send-email-zamsden@redhat.com>
-Date: Tue, 15 Dec 2009 14:58:13 +0100
-In-Reply-To: <1260850127-9766-16-git-send-email-zamsden@redhat.com> (Zachary Amsden's message of "Mon, 14 Dec 2009 18:08:42 -1000")
-Message-ID: <87ws0owd8q.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 15 Dec 2009 08:59:02 -0500
+Date: Tue, 15 Dec 2009 14:58:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] perf_event: fix getting point
+Message-ID: <20091215135855.GA5833@nowhere>
+References: <4B27702F.1080507@cn.fujitsu.com> <4B2770AD.90005@cn.fujitsu.com> <4B2770FA.7090803@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2770FA.7090803@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden <zamsden@redhat.com> writes:
->
-> Damn, this is complicated crap.  The analagous task in real life would
-> be keeping a band of howler monkeys, each in their own tree, singing in
-> unison while the lead vocalist jumps from tree to tree, and meanwhile,
-> an unseen conductor keeps changing the tempo the piece is played at.
-> Thankfully, there are no key changes, however, occasionally new trees
-> sprout up at random and live ones fall over.
+On Tue, Dec 15, 2009 at 07:20:26PM +0800, Xiao Guangrong wrote:
+> The point that got by raw_field_ptr() is point to @data offset not
+> tracepoint saved.
+> 
+> Introduce raw_field_arry() to get arry data is tracepoint save
+> arry to it.
 
-On CPUs where the TSC frequency is not constant typically you can't tell
-exactly when the frequency changes. So you would always have a race window
-where the frequency is unknown and wrong results occur. This can be worked
-around, but it's quite complicated.
 
-The safe way is to not use the TSC on such CPUs.
+Could you please rename it into raw_field_array()?
+I feel like...a kind of loss there :)
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
+
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  tools/perf/builtin-sched.c          |    3 +--
+>  tools/perf/util/trace-event-parse.c |   25 ++++++++++++++++++++++---
+>  tools/perf/util/trace-event.h       |    3 +++
+>  3 files changed, 26 insertions(+), 5 deletions(-)
+> 
+> diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+> index d67f274..8df982e 100644
+> --- a/tools/perf/builtin-sched.c
+> +++ b/tools/perf/builtin-sched.c
+> @@ -630,8 +630,7 @@ static void test_calibrations(void)
+>  
+>  #define FILL_ARRAY(ptr, array, event, data)			\
+>  do {								\
+> -	void *__array = raw_field_ptr(event, #array, data);	\
+> -	memcpy(ptr.array, __array, sizeof(ptr.array));	\
+> +	raw_field_arry(event, #array, data, ptr.array, sizeof(ptr.array));\
+>  } while(0)
+>  
+>  #define FILL_COMMON_FIELDS(ptr, event, data)			\
+> diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+> index c5c32be..b0ee64f 100644
+> --- a/tools/perf/util/trace-event-parse.c
+> +++ b/tools/perf/util/trace-event-parse.c
+> @@ -840,7 +840,7 @@ static int event_read_fields(struct event *event, struct format_field **fields)
+>  			field->flags |= FIELD_IS_ARRAY;
+>  
+>  			type = read_token(&token);
+> -		        while (strcmp(token, "]") != 0) {
+> +			while (strcmp(token, "]") != 0) {
+>  				if (last_type == EVENT_ITEM &&
+>  				    type == EVENT_ITEM)
+>  					len = 2;
+> @@ -1919,13 +1919,32 @@ raw_field_value(struct event *event, const char *name, void *data)
+>  
+>  void *raw_field_ptr(struct event *event, const char *name, void *data)
+>  {
+> +	void *ptr;
+> +	unsigned long long value;
+> +
+> +	value = raw_field_value(event, name, data);
+> +
+> +	if (!value)
+> +		return NULL;
+> +
+> +	memcpy(&ptr, &value, sizeof(ptr));
+
+
+
+Could you perhaps just do
+
+ptr = (void *)value; ?
+
+This memcpy suggest we are dereferencing some field while
+actually just copy a pointer.
+
+Thanks!
+
