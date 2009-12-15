@@ -1,88 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbZLOBLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZLOBNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbZLOBLN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZLOBLM
+	id S932294AbZLOBNv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbZLOBNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:11:12 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59604 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047AbZLOBLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:11:12 -0500
-Message-ID: <4B26E11D.1000801@cn.fujitsu.com>
-Date: Tue, 15 Dec 2009 09:06:37 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 14 Dec 2009 20:13:50 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:51427 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758434AbZLOBNt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 20:13:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MzCP2Hj/oElbIHx3KzQgS7OhtTYnILnk0aKpfqlfW900lFKp+573XEG20gU/YxnDfN
+         fiJ/HCjPW25O5W9eySg5+Ds84fAB5Iz7ysxEve6+RHxTrK1b9C9K6GbtPurXlwr1E1UY
+         SQH0CPpBpfccZaJQqc9/iQqCkb8Vjci7VDyh4=
 MIME-Version: 1.0
-To: Corrado Zoccolo <czoccolo@gmail.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cfq: Take whether cfq group is changed into account when
- 	choosing service tree
-References: <4B21D252.1060902@cn.fujitsu.com>	 <20091211150727.GB2756@redhat.com>	 <4e5e476b0912111001h3c0b9798u2a2b25c9fcc39504@mail.gmail.com>	 <20091211184630.GA7066@redhat.com> <4B25A4F0.60407@cn.fujitsu.com>	 <4e5e476b0912140039s2f802786t84f53ee62b87c04e@mail.gmail.com>	 <4B260B72.9020204@cn.fujitsu.com> <4e5e476b0912140301x398ac2b7k5ab7fc5698b9675e@mail.gmail.com>
-In-Reply-To: <4e5e476b0912140301x398ac2b7k5ab7fc5698b9675e@mail.gmail.com>
+In-Reply-To: <20091215090441.CDB0.A69D9226@jp.fujitsu.com>
+References: <20091214213026.BBBD.A69D9226@jp.fujitsu.com>
+	 <20091215084636.c7790658.minchan.kim@barrios-desktop>
+	 <20091215090441.CDB0.A69D9226@jp.fujitsu.com>
+Date: Tue, 15 Dec 2009 10:13:48 +0900
+Message-ID: <28c262360912141713t6e0e5915m3bb30aa099914c40@mail.gmail.com>
+Subject: Re: [PATCH 5/8] Use io_schedule() instead schedule()
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo wrote:
-> Hi Gui,
-> On Mon, Dec 14, 2009 at 10:54 AM, Gui Jianfeng
-> <guijianfeng@cn.fujitsu.com> wrote:
->> Corrado Zoccolo wrote:
->>> Hi,
->> Currently, IIUC, only the workload that didn't use up its slice will be saved, and only
->> such workloads are restoring when a group is resumed. So sometimes, we'll still get the
->> previous serving_type and workload_expires. Am i missing something?
-> You are right. cfq_choose_cfqg should set the workload as expired if
-> !cfqg->saved_workload_slice (just set cfqd->workload_expires = jiffies
-> - 1), so the workload will be chosen again as the lowest keyed one.
-> Can you send a patch to fix this?
+On Tue, Dec 15, 2009 at 9:56 AM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> On Mon, 14 Dec 2009 21:30:54 +0900 (JST)
+>> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>>
+>> > All task sleeping point in vmscan (e.g. congestion_wait) use
+>> > io_schedule. then shrink_zone_begin use it too.
+>> >
+>> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> > ---
+>> >  mm/vmscan.c |    2 +-
+>> >  1 files changed, 1 insertions(+), 1 deletions(-)
+>> >
+>> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+>> > index 3562a2d..0880668 100644
+>> > --- a/mm/vmscan.c
+>> > +++ b/mm/vmscan.c
+>> > @@ -1624,7 +1624,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
+>> >                 max_zone_concurrent_reclaimers)
+>> >                     break;
+>> >
+>> > -           schedule();
+>> > +           io_schedule();
+>>
+>> Hmm. We have many cond_resched which is not io_schedule in vmscan.c.
+>
+> cond_resched don't mean sleep on wait queue. it's similar to yield.
 
-Will do.
+I confused it.
+Thanks for correcting me. :)
 
-Thanks
-Gui
+>
+>> In addition, if system doesn't have swap device space and out of page cache
+>> due to heavy memory pressue, VM might scan & drop pages until priority is zero
+>> or zone is unreclaimable.
+>>
+>> I think it would be not a IO wait.
+>
+> two point.
+> 1. For long time, Administrator usually watch iowait% at heavy memory pressure. I
+> don't hope change this without reasonable reason. 2. iowait makes scheduler
+> bonus a bit, vmscan task should have many time slice than memory consume
+> task. it improve VM stabilization.
 
->>
->>> I have one more concern, though.
->>> RT priority has now changed meaning. Before, an RT task would always
->>> have priority access to the disk. Now, a BE task in a different group,
->>> with lower weight, can steal the disk from the RT task.
->>> A way to preserve the old meaning is to consider wheter a group has RT
->>> tasks inside when sorting groups tree, and putting those groups at the
->>> front.
->>> Usually, RT tasks will be put in the root group, and this (if
->>> group_isolation=0) will automatically make sure that also the noidle
->>> workload gets serviced quickly after RT tasks release the disk. We
->>> could even enforce that, with group_isolation=0, all RT tasks are put
->>> in the root group.
->>>
->>> The rationale behind this suggestion is that groups are for user
->>> processes, while RT is system wide, since it is only root that can
->>> grant it.
->>  I agree, and one more thing, currently we can't see fairness between different
->>  idle tasks in different groups. Because we only allow idle cfqq dispatch one request
->>  for its dispatch round even if it's the only task in the cgroup, group always loose it
->>  share. So whether we can rely on group_isolation, when group_isolation == 1 we provide
->>  isolation for idle tasks.
-> Agreed.
-> 
-> Thanks,
-> Corrado
-> 
->> Thanks
->> Gui
->>
->>
->>
-> 
-> 
-> 
+AFAIK, CFS scheduler doesn't give the bonus to I/O wait task any more.
+
+>
+> but I agree the benefit isn't so big. if we have reasonable reason, I
+> don't oppose use schedule().
+>
+>
+>
+>
+
+
 
 -- 
-Regards
-Gui Jianfeng
-
+Kind regards,
+Minchan Kim
