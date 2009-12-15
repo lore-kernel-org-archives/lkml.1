@@ -1,138 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbZLOUPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933508AbZLOUPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933236AbZLOUPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 15:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761052AbZLOUPR
+	id S933508AbZLOUPi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 15:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933456AbZLOUPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 15:15:17 -0500
-Received: from exprod6og106.obsmtp.com ([64.18.1.191]:42149 "HELO
-	exprod6og106.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761030AbZLOUPQ convert rfc822-to-8bit (ORCPT
+	Tue, 15 Dec 2009 15:15:36 -0500
+Received: from 216-239-44-51.google.com ([216.239.44.51]:24661 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933136AbZLOUPe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 15:15:16 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 15 Dec 2009 15:15:34 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=nyu7mbmrxMWM13gJ5+UX1IJPG2LzD4k6PEcep9GE5SQS/D1exawLao+i3qiUwaH6C
+	EDLQ1tcR+gpHriuRuNKCA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: GPIO support for HTC Dream
-Date: Tue, 15 Dec 2009 15:15:14 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200EBE8@mi8nycmail19.Mi8.com>
-In-Reply-To: <20091215194725.GH24406@elf.ucw.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: GPIO support for HTC Dream
-Thread-Index: Acp9v3LFMBJCliqPRQOQMi36yE+lYgAAeW4g
-References: <20091208214658.GC4164@elf.ucw.cz> <4B1ECEEE.3000209@bluewatersys.com> <4B203575.6050407@bluewatersys.com> <20091210172458.GJ19454@elf.ucw.cz> <4B2150B7.3040207@bluewatersys.com> <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com> <20091211221015.GB24456@elf.ucw.cz> <BD79186B4FD85F4B8E60E381CAEE190901FB10EA@mi8nycmail19.Mi8.com> <20091214064545.GK5114@elf.ucw.cz> <BD79186B4FD85F4B8E60E381CAEE19090200E9E6@mi8nycmail19.Mi8.com> <20091215194725.GH24406@elf.ucw.cz>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Ryan Mallon" <ryan@bluewatersys.com>,
-       "Daniel Walker" <dwalker@codeaurora.org>,
-       "Iliyan Malchev" <malchev@google.com>,
-       "Brian Swetland" <swetland@google.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Arve Hj?nnev?g" <arve@android.com>,
-       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>
-X-OriginalArrivalTime: 15 Dec 2009 20:15:13.0428 (UTC) FILETIME=[4F326D40:01CA7DC3]
+In-Reply-To: <20091214170616.59fc163f@infradead.org>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+	 <20091214161922.6f252492@infradead.org>
+	 <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
+	 <20091214170616.59fc163f@infradead.org>
+Date: Tue, 15 Dec 2009 12:15:30 -0800
+Message-ID: <4352991a0912151215o33524766p830e7fcbf9f1fc87@mail.gmail.com>
+Subject: Re: RFC: A proposal for power capping through forced idle in the 
+	Linux Kernel
+From: Salman Qazi <sqazi@google.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, December 15, 2009 12:47 PM, Pavel Machek wrote:
+On Mon, Dec 14, 2009 at 5:06 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Mon, 14 Dec 2009 16:36:20 -0800
+> Salman Qazi <sqazi@google.com> wrote:
 >
-> Hi!
->
->>> +int gpio_to_irq(unsigned gpio)
->>> +{
->>> +	return -EINVAL;
->>> +}
->> 
->> This should probably just be an inline function in
->> arch/arm/mach-msm/include/mach/gpio.h
->
-> Well, it is not performance critical in any way and it is likely to
-> change in future. I'd leave it here.
-
-Comment below..
-
->>> diff --git a/arch/arm/mach-msm/board-dream.h b/arch/arm/mach-msm/board-dream.h
->>> index 4f345a5..dbd78b9 100644
->>> --- a/arch/arm/mach-msm/board-dream.h
->>> +++ b/arch/arm/mach-msm/board-dream.h
->>> @@ -1,5 +1,58 @@
->>>  
->>> -#define TROUT_CPLD_BASE   0xE8100000
->>> -#define TROUT_CPLD_START  0x98000000
->>> -#define TROUT_CPLD_SIZE   SZ_4K
->>> +#define MSM_SMI_BASE		0x00000000
->>> +#define MSM_SMI_SIZE		0x00800000
-...
->>> +#define DREAM_CPLD_BASE   0xE8100000
->>> +#define DREAM_CPLD_START  0x98000000
->>> +#define DREAM_CPLD_SIZE   SZ_4K
->>> +
+>> On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven
+>> <arjan@infradead.org> wrote:
+>> > On Mon, 14 Dec 2009 15:11:47 -0800
+>> > Salman Qazi <sqazi@google.com> wrote:
+>> >
+>> >
+>> > I like the general idea, I have one request (that I didn't see
+>> > quite in your explanation): Please make sure that all cpus in the
+>> > system do their idle injection at the same time, so that memory can
+>> > go into power saving mode as well during this time etc etc...
+>> >
 >>
->> This header might need to be a separate patch.  The only thing in it
->> related to the rest of this is DREAM_CPLD_BASE.
+>> With the current interface, the forced idle percentages on the CPUs
+>> are controlled independently.  There's a trade-off here.  If we inject
 >
-> Yep.
->
->>> +#ifndef __ASM_ARCH_MSM_GPIO_H
->>> +#define __ASM_ARCH_MSM_GPIO_H
->>> +
->>> +extern int gpio_to_irq(unsigned gpio);
->> 
->> This should probably be an inline as mentioned above.
->> 
->> For completeness you should probably also add:
->> 
->> static inline int irq_to_gpio(unsigned irq)
->> {
->> 	return -EINVAL;
->> }
->
-> I'd say that would be overdoing it.
+> I'm fine with that... just want to ask that even if we inject different
+> percentages, that we inject them for maximum overlap
+> (having the memory power in a machine suddenly be half or less is a
+> huge step in power, for something, the alignment itself, that does not
+> cost much if any extra performance over randomly distributed idle
+> insertions)
 
-I only mentioned that one because it is one of the functions listed in
-Documentation/gpio.txt.  I'm not sure if that means it's "required".  You
-make the call...
+I think there is a difference in goals here.  Our goal is to free up
+power from one machine, so that it can be used elsewhere.  This means
+that any power that we save has to be predictably saved.  We have
+models that map between CPU time and power usage, that have to account
+for the worst case.  So, if we can save some extra power by
+opportunistic means, unfortunately we have no way of using that power
+elsewhere.
 
->> And, nitpick, move both of them after the gpio_cansleep below.
->
-> I'll do the move.
->
->>> +#define DREAM_GPIO_CABLE_IN1		(83)
->>> +#define DREAM_GPIO_CABLE_IN2		(49)
->>> +
->>> +#define DREAM_GPIO_START (128)
->> 
->> Nitpick.  Tab align these three with the ones below.
->
-> Ok.
->
->>> +#define DREAM_GPIO_SDMC_CD_N                (DREAM_GPIO_VIRTUAL_BASE + 0)
->>> +#define DREAM_GPIO_END                      (DREAM_GPIO_SDMC_CD_N)
->>> +#define DREAM_GPIO_BANK1_FIRST_INT_SOURCE   (DREAM_GPIO_SDMC_CD_N)
->>> +#define DREAM_GPIO_BANK1_LAST_INT_SOURCE    (DREAM_GPIO_SDMC_CD_N)
->>> +
->>> +#endif
->> 
->> Otherwise, looks good to me.  Just test it to make sure it works :-).
->> 
->> Since I have no way of compiling or testing this...
->> 
->> Reviewed-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->
-> I believe inlining that function would be bad change. Can I still use
-> reviewed-by tag?
+Having said that, energy savings is a worthy goal by itself.  But, we
+have to make sure to balance it with performance.
 
-The reason I suggest making it an inline in the header is you might
-eventually want to change both gpio_to_irq and irq_to_gpio into macros
-so that they can be used for static initializers.  For right now both
-are simple return -EINVAL but when gpio irq's are supported you might
-find a need to use one or the other in a platform init...
+>
+>> idle cycles on all the CPU at the same time, our machine
+>> responsiveness also degrades: essentially every CPU becomes equally
+>> bad for an interactive task to run on.  Our aim at the moment is to
+>> try to concentrate the idle cycles on a small set of CPUs, to strive
+>> to leave some CPUs where interactive tasks can run unhindered.  But,
+>> given a different workload and goals the correct policy may be
+>> different.
+>
+> as long as the tentative portion of the idle time gets injected at the
+> same time.. I suspect there can be a decent balance here where most of
+> the time we get the full CPU *and* memory savings, while we degrade
+> gracefully for the case where we get increasingly more interactive
+> activity.
 
-Regardless, yes you can still use my reviesed-by tag.
+Let me rephrase what you just said to verify that I understand you
+correctly:  we should align the enforcement intervals across CPUs and
+thereby eagerly inject over the same time period across multiple CPUs.
+ If there is no interactive workload then we would get maximal CPU and
+memory savings.  If there are interactive tasks, then we just let them
+run like we would in the eager injection in original design.
 
-Regards,
-Hartley
+If I understand correctly, then I like your idea.
+
+>
+>
+>> Simultaneously idling multiple "cores" becomes necessary in the SMT
+>> case: as there is no point in idling a single thread, while the other
+>> thread is running full tilt.
+>
+> I can argue the same for package level btw ;)
+>
+>
+>> I think the best approach may be to provide a way to specify the
+>> policy from the user space.  Basically let the user decide at what
+>> level of CPU hierarchy the forced idle percentages are specified.
+>> Then, in the levels below, we simply inject at the same time.
+>
+> it's not so much about the specification part; per logical cpu is a nice
+> place to specify things... as long as we, in the execution part, align
+> things up smart.
+>
+>
+>
+>
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+>
