@@ -1,151 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbZLOBEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZLOBD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758928AbZLOBEY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:04:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbZLOBEV
+	id S1758602AbZLOBD5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbZLOBDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:04:21 -0500
-Received: from mga11.intel.com ([192.55.52.93]:44713 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757695AbZLOBET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:04:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,397,1257148800"; 
-   d="scan'208";a="756152431"
-Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
-From: Huang Ying <ying.huang@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200912111036.15063.bjorn.helgaas@hp.com>
-References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com>
-	 <200912111036.15063.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Dec 2009 09:04:13 +0800
-Message-ID: <1260839053.12561.1098.camel@yhuang-dev.sh.intel.com>
+	Mon, 14 Dec 2009 20:03:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40791 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757361AbZLOBDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Dec 2009 20:03:54 -0500
+Date: Mon, 14 Dec 2009 17:06:16 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Salman Qazi <sqazi@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
+Subject: Re: RFC: A proposal for power capping through forced idle in the 
+ Linux Kernel
+Message-ID: <20091214170616.59fc163f@infradead.org>
+In-Reply-To: <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+	<20091214161922.6f252492@infradead.org>
+	<4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
-> I see you posted a first version of this series a couple days
-> ago, but there weren't any responses (at least on linux-acpi),
-> and you didn't say anything about what you changed between
-> -v1 and -v2.
+On Mon, 14 Dec 2009 16:36:20 -0800
+Salman Qazi <sqazi@google.com> wrote:
 
-The only change between -v1 and -v2 is that atomic ACPI read/write is
-separated from drivers/acpi/apei/apei-base.c to drivers/acpi/atomicio.c
-and in a separated patch.
-
-> On Thursday 10 December 2009 12:16:53 am Huang Ying wrote:
-> > Some ACPI IO accessing need to be done in atomic context. For example,
-> > APEI ERST operations may be used for permanent storage in hardware
-> > error handler. That is, it may be called in atomic contexts such as
-> > IRQ or NMI, etc. And, ERST/EINJ implement their operations via IO
-> > memory/port accessing.  But the IO memory accessing method provided by
-> > ACPI (acpi_read/acpi_write) maps the IO memory during it is accessed,
-> > so it can not be used in atomic context. To solve the issue, the IO
-> > memory should be pre-mapped during EINJ/ERST initializing. A linked
-> > list is used to record which memory area has been mapped, when memory
-> > is accessed in hardware error handler, search the linked list for the
-> > mapped virtual address from the given physical address.
+> On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven
+> <arjan@infradead.org> wrote:
+> > On Mon, 14 Dec 2009 15:11:47 -0800
+> > Salman Qazi <sqazi@google.com> wrote:
+> >
+> >
+> > I like the general idea, I have one request (that I didn't see
+> > quite in your explanation): Please make sure that all cpus in the
+> > system do their idle injection at the same time, so that memory can
+> > go into power saving mode as well during this time etc etc...
+> >
 > 
-> The ACPI CA has functions called acpi_hw_read() and acpi_hw_write()
-> that have similar prototypes and functionality (but of course, they
-> don't work in atomic context).  It'd be nice if your new functions
-> had similar names, e.g., acpi_hw_map(), acpi_hw_unmap(),
-> acpi_hw_read_atomic(), acpi_hw_write_atomic().
+> With the current interface, the forced idle percentages on the CPUs
+> are controlled independently.  There's a trade-off here.  If we inject
 
-acpi_hw_read/write is the 32-bit optimized version of acpi_read/write.
-So I think it is better to follow the naming convention of
-acpi_read/write.
+I'm fine with that... just want to ask that even if we inject different
+percentages, that we inject them for maximum overlap
+(having the memory power in a machine suddenly be half or less is a
+huge step in power, for something, the alignment itself, that does not
+cost much if any extra performance over randomly distributed idle
+insertions)
 
-> I think your code would be simpler if acpi_pre_map_gar() returned a
-> struct acpi_iomap pointer (from the caller's point of view, this would
-> be an opaque cookie).  Then you could just supply that cookie to
-> acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
-> you could even get rid of the list and all the fancy RCU & kref stuff
-> then, too.
+> idle cycles on all the CPU at the same time, our machine
+> responsiveness also degrades: essentially every CPU becomes equally
+> bad for an interactive task to run on.  Our aim at the moment is to
+> try to concentrate the idle cycles on a small set of CPUs, to strive
+> to leave some CPUs where interactive tasks can run unhindered.  But,
+> given a different workload and goals the correct policy may be
+> different.
 
-The interface chosen is based on usage model, which is:
+as long as the tentative portion of the idle time gets injected at the
+same time.. I suspect there can be a decent balance here where most of
+the time we get the full CPU *and* memory savings, while we degrade
+gracefully for the case where we get increasingly more interactive
+activity.
 
-1. In init function, all GARs needed are pre-mapped
-2. In atomic context, pre-mapped GARs are accessed
-3. In exit function, all GARs are post-unmapped
+ 
+> Simultaneously idling multiple "cores" becomes necessary in the SMT
+> case: as there is no point in idling a single thread, while the other
+> thread is running full tilt.  
 
-In 3), if struct acpi_iomap* is used as parameter for post-unmap
-function, we need to record that pointer in another list. In 2), we need
-find mapped address from GAR.
-
-> > +/* In NMI handler, should set silent = 1 */
-> > +static int acpi_check_gar(struct acpi_generic_address *reg,
-> > +			  u64 *paddr, int silent)
-> > +{
-> > +	u32 width;
-> > +
-> > +	/* Handle possible alignment issues */
-> > +	memcpy(paddr, &reg->address, sizeof(*paddr));
-> > +	if (!*paddr) {
-> > +		if (!silent)
-> > +			pr_info(
-> > +			"Invalid physical address in GAR, firmware bug?\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	width = reg->bit_width;
-> > +	if ((width != 8) && (width != 16) && (width != 32) && (width != 64)) {
-> > +		if (!silent)
-> > +			pr_info(
-> > +			"Invalid bit width in GAR, firmware bug?\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
-> > +	    reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO) {
-> > +		if (!silent)
-> > +			pr_info(
-> > +			"Invalid address space type in GAR, firmware bug?\n");
-> 
-> Error messages with constant text are nearly useless because they
-> don't give much of a clue about where to look for a problem.
-> Personally, for something this, I would just return failure and
-> never print anything.  If a map fails, the caller should notice
-> and you then have a good idea of where to look.
-
-The checking here is for bug in firmware not software. I think it is
-necessary for the user to know where the bugs may come from, and it is
-hard to express the bug in return code.
-
-> > +static int acpi_atomic_read_port(u64 port, u32 *val, u32 width)
-> > +{
-> > +	switch (width) {
-> > +	case 8:
-> > +		*val = inb(port);
-> > +		break;
-> > +	case 16:
-> > +		*val = inw(port);
-> > +		break;
-> > +	case 32:
-> > +		*val = inl(port);
-> > +		break;
-> > +	default:
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> 
-> Can you use acpi_os_read_port() and acpi_os_write_port() instead of
-> duplicating this code?
-
-Yes. You are right. I will use that.
-
-Thanks,
-Huang Ying
+I can argue the same for package level btw ;)
 
 
+> I think the best approach may be to provide a way to specify the
+> policy from the user space.  Basically let the user decide at what
+> level of CPU hierarchy the forced idle percentages are specified.
+> Then, in the levels below, we simply inject at the same time.
+
+it's not so much about the specification part; per logical cpu is a nice
+place to specify things... as long as we, in the execution part, align
+things up smart.
+
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
