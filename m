@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbZLOXJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934161AbZLOXLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932934AbZLOXJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbZLOXJK
+	id S934161AbZLOXLe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933004AbZLOXL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:09:10 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:51502 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932828AbZLOXJG (ORCPT
+	Tue, 15 Dec 2009 18:11:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51696 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933806AbZLOXL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:09:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wdW9zv4AOdMdx2PgerXMpM9x+wNzB8B6ce3luLW7+15/Xdcr1+VePzBXhDBqAWHvs+
-         i53lAvZ8b1CF9mJxzXFSZ/M3GItt8noj+AEezrrlsOuYNDjkJeSqvntmU1PyevTTiQMZ
-         kAYHI4YFo86y9MR0XIReBTqFht+zHvTdQrMag=
-Message-ID: <4B28170F.9010808@pobox.com>
-Date: Tue, 15 Dec 2009 18:09:03 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: SATA_SIL: Add a work-around for IXP4xx CPU.
-References: <m3fx8m0vwh.fsf@intrepid.localdomain> <4B274694.6020701@kernel.org> <m3hbrrc013.fsf@intrepid.localdomain>
-In-Reply-To: <m3hbrrc013.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Dec 2009 18:11:26 -0500
+Date: Tue, 15 Dec 2009 15:10:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: mmotm 2009-11-24-16-47 uploaded (gpio_max7301)
+Message-Id: <20091215151045.0b9fdb4d.akpm@linux-foundation.org>
+In-Reply-To: <20091215144643.30756c30.randy.dunlap@oracle.com>
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>
+	<4B0DDDFE.5060600@xenotime.net>
+	<20091215144306.2d3aeeff.akpm@linux-foundation.org>
+	<20091215144643.30756c30.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/15/2009 06:03 PM, Krzysztof Halasa wrote:
-> Tejun Heo<tj@kernel.org>  writes:
->
->> Hmmm... Given that there are some platforms which have problem with
->> mmio and sil3112/4 can do everything via io accesses, it would be nice
->> to generalize this so that there's CONFIG_SATA_SIL_NO_MMIO which is
->> selected by affected platforms.  Are you interested in doing it?
->
-> Unfortunately I no longer have access to that SIL3512 miniPCI card so
-> I wouln't be able to test on IXP425. Perhaps it's not a problem, testing
-> on i386 (probably with disabled MMIO BAR) should be enough.
->
-> OTOH IIRC SIL3x12 needs to use the MMIO write to start BM DMA, otherwise
-> the AT-style 64 KB limits apply. I think IXP4xx would benefit from only
-> ioread8() going through normal IO.
->
-> Do you know what platforms have the MMIO problems? What kind of problems
-> are there, inability to use MMIO at all? (IXP4xx can't do 8/16-bit MMIO
-> reads).
+On Tue, 15 Dec 2009 14:46:43 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-The inability to do 8/16-bit MMIO reads are a repeated sticking point 
-with embedded scenarios.  That's it.
+> On Tue, 15 Dec 2009 14:43:06 -0800 Andrew Morton wrote:
+> 
+> > On Wed, 25 Nov 2009 17:46:38 -0800
+> > Randy Dunlap <rdunlap@xenotime.net> wrote:
+> > 
+> > > akpm@linux-foundation.org wrote:
+> > > > The mm-of-the-moment snapshot 2009-11-24-16-47 has been uploaded to
+> > > > 
+> > > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > > 
+> > > > and will soon be available at
+> > > > 
+> > > >    git://git.zen-sources.org/zen/mmotm.git
+> > > > 
+> > > > It contains the following patches against 2.6.32-rc8:
+> > > >
+> > > > gpio-add-driver-for-max7300-i2c-gpio-extender.patch
+> > > 
+> > > This driver has build failures when CONFIG_I2C=m and
+> > > MAX7301=y, MAX7301_I2C=y, MAX7301_SPI=y:
+> > > 
+> > > drivers/built-in.o: In function `max7301_i2c_write':
+> > > max7301.c:(.text+0x2d9e): undefined reference to `i2c_smbus_write_byte_data'
+> > > drivers/built-in.o: In function `max7301_i2c_read':
+> > > max7301.c:(.text+0x2dc6): undefined reference to `i2c_smbus_read_byte_data'
+> > > drivers/built-in.o: In function `max7301_init':
+> > > max7301.c:(.init.text+0x42e): undefined reference to `i2c_register_driver'
+> > > max7301.c:(.init.text+0x496): undefined reference to `i2c_del_driver'
+> > > drivers/built-in.o: In function `max7301_exit':
+> > > max7301.c:(.exit.text+0x14): undefined reference to `i2c_del_driver'
+> > > 
+> > > 
+> > > This kconfig syntax:
+> > > 
+> > > config GPIO_MAX7301
+> > >         tristate "Maxim MAX730x GPIO expander"
+> > >         depends on I2C || SPI_MASTER
+> > > 
+> > > allows GPIO_MAX7301 to be y when SPI_MASTER=y and I2C=m.
+> > > If you want to do that, you'll need to handle CONFIG_I2C=m somehow.
+> > > 
+> > 
+> > fyi, I have this patch "on hold" due to this issue.
+> 
+> Wolfram sent a large replacement patch on Sun Dec. 13:
+> Subject: [PATCH V4] gpio: add driver for MAX7300 I2C GPIO extender
 
-I keep meaning to give the docs a hard look, and see if we can combine 
-multiple taskfile register reads/writes into a single 32-bit one.  That 
-would solve all these problems, without having to resort to the use of 
-standard BARs.
+So he did, thanks.
 
-	Jeff
-
-
+Wolfram, the V4 patch doesn't have a usable changelog.  Please send one
+along sometime?
 
