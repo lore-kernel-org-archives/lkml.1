@@ -1,81 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbZLOLCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbZLOLMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759474AbZLOLCu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 06:02:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbZLOLCq
+	id S1759917AbZLOLMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 06:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759904AbZLOLMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 06:02:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51600 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbZLOLCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 06:02:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 12:03:22 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912150018.11837.rjw@sisk.pl> <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 15 Dec 2009 06:12:40 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53581 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759903AbZLOLMi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 06:12:38 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 15 Dec 2009 20:09:27 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v2 4/4] memcg: implement memory thresholds
+Message-Id: <20091215200927.68126d96.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <cc557aab0912150246k476aa85m6c1b61045fb0b26e@mail.gmail.com>
+References: <cover.1260571675.git.kirill@shutemov.name>
+	<ca59c422b495907678915db636f70a8d029cbf3a.1260571675.git.kirill@shutemov.name>
+	<c1847dfb5c4fed1374b7add236d38e0db02eeef3.1260571675.git.kirill@shutemov.name>
+	<747ea0ec22b9348208c80f86f7a813728bf8e50a.1260571675.git.kirill@shutemov.name>
+	<9e6e8d687224c6cbc54281f7c3d07983f701f93d.1260571675.git.kirill@shutemov.name>
+	<20091215105850.87203454.kamezawa.hiroyu@jp.fujitsu.com>
+	<cc557aab0912150246k476aa85m6c1b61045fb0b26e@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912151203.22916.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 December 2009, Linus Torvalds wrote:
+On Tue, 15 Dec 2009 12:46:32 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+
+> On Tue, Dec 15, 2009 at 3:58 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Sat, 12 Dec 2009 00:59:19 +0200
+> > "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+
+> > If you use have to use spinlock here, this is a system-wide spinlock,
+> > threshold as "100" is too small, I think.
 > 
-> On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > Because the PCI bridges are not the only case where it matters (I'd say they
-> > are really a corner case).  Basically, any two async devices separeted by a
-> > series of sync ones are likely not to be suspended (or resumed) in parallel
-> > with each other, because the parent is usually next to its children in dpm_list.
+> What is reasonable value for THRESHOLDS_EVENTS_THRESH for you?
 > 
-> Give a real example that matters.
-
-I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
-like this:
-
-..., A->B->C, D, E->F->G, ...
-
-where A, B, E, F are all async and C, D, G are sync (E, F, G may be USB and
-A, B, C may be serio input devices and D is a device that just happens to be in
-dpm_list between them).  Say A and C take the majority of the total suspend
-time and assume we traverse the dpm_list from left to right.
-
-Now, during suspend, C waits for B that waits for A and G waits for F that
-waits for E.  Moreover, since C is sync, the PM core won't start the suspend
-of D until the suspend of C has returned.  In turn, since D is sync, the
-suspend of E won't be started until the suspend of D has returned.  So in
-this situation the gain from the async suspends of A, B, E, F is zero.
-
-However, it won't be zero if we start the async suspends of A, B, E, F
-upfront.
-
-I'm not sure if this is sufficiently "real life" for you, but this is how
-dpm_list looks on one of my test boxes, more or less.
-
-> Really. 
+> In most cases spinlock taken only for two checks. Is it significant time?
 > 
-> How hard can it be to understand: KISS. Keep It Simple, Stupid.
+I tend to think about "bad case" when I see spinlock. 
+
+And...I'm not sure but, recently, there are many VM users.
+spinlock can be a big pitfall in some enviroment if not para-virtualized.
+(I'm sorry I misunderstand somehing and VM handle this well...)
+
+> Unfortunately, I can't test it on a big box. I have only dual-core system.
+> It's not enough to test scalability.
 > 
-> I get really tired of this whole stupid async discussion, because you're 
-> overdesigning it.
-> 
-> To a first approximation, THE ONLY THING THAT MATTERS IS USB.
 
-If this applies to _resume_ only, then I agree, but the Arjan's data clearly
-show that serio devices take much more time to suspend than USB.
+please leave it as 100 for now. But there is a chance to do simple optimization
+for reducing the number of checks.
 
-But if we only talk about resume, the PCI bridges don't really matter,
-because they are resumed before all devices that depend on them, so they don't
-really need to wait for anyone anyway.
+example)
+static void mem_cgroup_threshold(struct mem_cgroup *memcg, bool swap)
+{
+	/* For handle memory allocation in rush, check jiffies */
+	*/
+	smp_rmb();
+	if (memcg->last_checkpoint_jiffies == jiffies)
+		return;   /* reset event to half value ..*/
+	memcg->last_checkpoint_jiffies = jiffies;
+	smp_wmb();
+	.....
 
-Rafael
+I think this kind of check is necessary for handle "Rushing" memory allocation
+in scalable way. Above one is just an example, 1 tick may be too long.
+
+Other simple plan is
+
+	/* Allow only one thread to do scan the list at the same time. */
+	if (atomic_inc_not_zero(&memcg->threahold_scan_count) {
+		atomic_dec(&memcg->threshold_scan_count);
+		return;
+	}
+	...
+	atomic_dec(&memcg->threahold_scan_count)
+
+Some easy logic (as above) for taking care of scalability and commenary for that
+is enough at 1st stage. Then, if there seems to be a trouble/concern, someone
+(me?) will do some work later.
+
+
+
+
+Thanks,
+-Kame
+
