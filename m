@@ -1,197 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbZLOXaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760717AbZLOXbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbZLOXaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZLOXaV
+	id S1760717AbZLOXbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 18:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760700AbZLOXbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:30:21 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:52792 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752751AbZLOXaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:30:20 -0500
-Message-ID: <4B281C05.7050404@sgi.com>
-Date: Tue, 15 Dec 2009 15:30:13 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org
-Subject: Re: [PATCH] x86, mce: rework output of MCE banks ownership information
-References: <4B26EBB0.3090507@jp.fujitsu.com>
-In-Reply-To: <4B26EBB0.3090507@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Tue, 15 Dec 2009 18:31:34 -0500
+Received: from ns.penguin.cz ([84.21.108.25]:37694 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755798AbZLOXbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 18:31:31 -0500
+Subject: Re: [POWER] battery calibration parameters from sysfs
+From: Stanislav Brabec <utx@penguin.cz>
+To: Aras Vaichas <arasv@magellan-technology.com>
+Cc: Bill Gatliff <bgat@billgatliff.com>, Pavel Machek <pavel@ucw.cz>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Linus Walleij <linus.walleij@stericsson.com>, cbou@mail.ru,
+       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-embedded@vger.kernel.org, Brian Swetland <swetland@google.com>,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       zaurus-devel@www.linuxtogo.org
+In-Reply-To: <ed62800912151458p6bc1e551g54960af40c54facd@mail.gmail.com>
+References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
+	 <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se>
+	 <20091207114825.GA26965@rakim.wolfsonmicro.main>
+	 <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
+	 <20091207165628.GA24981@rakim.wolfsonmicro.main>
+	 <20091213132413.GB1437@ucw.cz>
+	 <20091214121247.GB22388@rakim.wolfsonmicro.main>
+	 <20091214212257.GA9213@elf.ucw.cz>
+	 <ed62800912141543v2ab7ef63v4b6b2c33018b3296@mail.gmail.com>
+	 <4B26FC52.6060307@billgatliff.com>
+	 <ed62800912151458p6bc1e551g54960af40c54facd@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-2"
+Date: Wed, 16 Dec 2009 00:32:18 +0100
+Message-Id: <1260919938.10441.18.camel@utx.utx.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] x86, mce: rework output of MCE banks ownership information
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Aras Vaichas wrote:
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
+> Yes, but in that case you might as well just purchase a coulomb
+> counter with a built-in accumulator and an I2C/SPI/microwire interface
+> save yourself some PCB space and cost (maybe)
 
-The output of MCE banks ownership information on boot tend
-to be long on new processor which has many banks:
+Well, Pavel attempts to implement a "poor man's Coulomb counter" or at
+least "poor man's Ampere meter" for devices that are not equipped with
+any of it.
 
-  CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
+- We know the time.
+- We know the backlight power consumption, it's dependent only on
+  brightness.
+- We know how much eats the HDD and how long it is on.
+- We know how much eats the CPU and companion chips (it is not as
+  stable, but it eats less).
+- We don't know, how much USB host eats, but we know how much USB
+  clients claim to eat.
+- Well, and we don't know how much eats CF and SD.
 
-This message can fill up the console output when the number
-of cpus is large.
+=> We can guess how many Coulombs the device already consumed. If the
+Coulomb counting would be inaccurate, we can at least correct voltage ->
+remaining energy table using current power consumption guess.
 
-This patch suppress this info message on boot, and introduce
-debug message in shorter format instead, like:
 
-  CPU 1 MCE banks map: ssCC PCss ssPP ssss ssss ss
-
-  where: s: shared, C: checked by cmci, P: checked by poll.
-
-This patch still keep the info when ownership is updated.
-E.g. when a cpu take over the ownership from hot-removed cpu,
-both message will be shown:
-
-  CPU 1 MCE banks map updated: CMCI:6 CMCI:7 CMCI:10 CMCI:11
-  CPU 1 MCE banks map: ssCC PCCC ssPP ssCC ssss ss
-
-v2:
-  - stop changing the level of message on update
-  - change the number of banks message on boot to debug level
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-
-v3: (again)
-  - avoid use of pr_cont with pr_debug in print_banks_map()
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/kernel/cpu/mcheck/mce.c       |    6 +--
- arch/x86/kernel/cpu/mcheck/mce_intel.c |   53 ++++++++++++++++++++++++++-------
- 2 files changed, 46 insertions(+), 13 deletions(-)
-
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce.c
-+++ linux/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1215,11 +1215,11 @@
- 
- 	b = cap & MCG_BANKCNT_MASK;
- 	if (!banks)
--		printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
-+		pr_debug("mce: CPU supports %d MCE banks\n", b);
- 
- 	if (b > MAX_NR_BANKS) {
--		printk(KERN_WARNING
--		       "MCE: Using only %u machine check banks out of %u\n",
-+		pr_warning(
-+			"MCE: Using only %u machine check banks out of %u\n",
- 			MAX_NR_BANKS, b);
- 		b = MAX_NR_BANKS;
- 	}
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_intel.c
-@@ -14,6 +14,8 @@
- #include <asm/msr.h>
- #include <asm/mce.h>
- 
-+#define	MCE_BUFF_LEN	120
-+
- /*
-  * Support for Intel Correct Machine Check Interrupts. This allows
-  * the CPU to raise an interrupt when a corrected machine check happened.
-@@ -64,13 +66,39 @@
- 	mce_notify_irq();
- }
- 
--static void print_update(char *type, int *hdr, int num)
-+#ifdef DEBUG_KERNEL
-+static void print_banks_map(int banks)
-+{
-+	char buf[32 + MAX_NR_BANKS * 5 / 4]; /* 72 if MAX_NR_BANKS == 32 */
-+	int i, n, ln = sizeof(buf);
-+
-+	n = snprintf(buf, ln, "CPU %d MCE banks map:", smp_processor_id());
-+	for (i = 0; i < banks; i++) {
-+		n += snprintf(&buf[n], ln - n, "%s%s", (i % 4) ? "" : " ",
-+			test_bit(i, __get_cpu_var(mce_banks_owned)) ? "C" :
-+			test_bit(i, __get_cpu_var(mce_poll_banks)) ? "P" : "s");
-+	}
-+	pr_debug("%s\n", buf);
-+}
-+
-+static void print_update(char *type, int *hdr, int num, char *buf)
- {
- 	if (*hdr == 0)
--		printk(KERN_INFO "CPU %d MCA banks", smp_processor_id());
--	*hdr = 1;
--	printk(KERN_CONT " %s:%d", type, num);
-+		*hdr += snprintf(buf, MCE_BUFF_LEN,
-+			"CPU %d MCE banks map updated:", smp_processor_id());
-+
-+	snprintf(&buf[*hdr], MCE_BUFF_LEN - *hdr, " %s:%d", type, num);
-+}
-+
-+#else	/* !DEBUG_KERNEL */
-+static inline void print_banks_map(int banks)
-+{
-+}
-+
-+static inline void print_update(char *type, int *hdr, int num, char *buf)
-+{
- }
-+#endif
- 
- /*
-  * Enable CMCI (Corrected Machine Check Interrupt) for available MCE banks
-@@ -83,8 +111,10 @@
- 	unsigned long flags;
- 	int hdr = 0;
- 	int i;
-+	char buf[MCE_BUFF_LEN];
- 
- 	spin_lock_irqsave(&cmci_discover_lock, flags);
-+
- 	for (i = 0; i < banks; i++) {
- 		u64 val;
- 
-@@ -95,8 +125,8 @@
- 
- 		/* Already owned by someone else? */
- 		if (val & CMCI_EN) {
--			if (test_and_clear_bit(i, owned) || boot)
--				print_update("SHD", &hdr, i);
-+			if (test_and_clear_bit(i, owned) && !boot)
-+				print_update("SHD", &hdr, i, buf);
- 			__clear_bit(i, __get_cpu_var(mce_poll_banks));
- 			continue;
- 		}
-@@ -107,16 +137,19 @@
- 
- 		/* Did the enable bit stick? -- the bank supports CMCI */
- 		if (val & CMCI_EN) {
--			if (!test_and_set_bit(i, owned) || boot)
--				print_update("CMCI", &hdr, i);
-+			if (!test_and_set_bit(i, owned) && !boot)
-+				print_update("CMCI", &hdr, i, buf);
- 			__clear_bit(i, __get_cpu_var(mce_poll_banks));
- 		} else {
- 			WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
- 		}
- 	}
--	spin_unlock_irqrestore(&cmci_discover_lock, flags);
- 	if (hdr)
--		printk(KERN_CONT "\n");
-+		pr_debug("%s\n", buf);
-+	if (hdr || boot)
-+		print_banks_map(banks);
-+
-+	spin_unlock_irqrestore(&cmci_discover_lock, flags);
- }
- 
- /*
+________________________________________________________________________
+Stanislav Brabec
+http://www.penguin.cz/~utx/zaurus
 
