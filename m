@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751150AbZLOPKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbZLOPK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751150AbZLOPKs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbZLOPKr
+	id S1751728AbZLOPK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:10:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZLOPKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:10:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60284 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZLOPKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:10:47 -0500
-Message-ID: <4B27A6BC.5080402@redhat.com>
-Date: Tue, 15 Dec 2009 10:09:48 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 15 Dec 2009 10:10:55 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53270 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbZLOPKx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:10:53 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Josua Dietze <digidietze@draisberghof.de>
+Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
+Date: Tue, 15 Dec 2009 16:11:08 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Stefan Seyfried <stefan.seyfried@googlemail.com>,
+       linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+       Stefan Seyfried <seife@sphairon.com>
+References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <4B278191.1010009@draisberghof.de>
+In-Reply-To: <4B278191.1010009@draisberghof.de>
 MIME-Version: 1.0
-To: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jdike@addtoit.com,
-       tony.luck@intel.com
-Subject: Re: [RFC, PATCH 0/4] elf_core_dump(): Add extended numbering support
-References: <20091215.114053.193686180.d.hatayama@jp.fujitsu.com>
-In-Reply-To: <20091215.114053.193686180.d.hatayama@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912151611.08576.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi HATAYAMA-san,
-
-Daisuke HATAYAMA wrote:
-> Question to Maintainers
-> ========
+Am Dienstag, 15. Dezember 2009 13:31:13 schrieb Josua Dietze:
+> Stefan Seyfried schrieb:
 > 
-> I know these patches are conflicting with Hiramatsu-san's
-> (http://lkml.org/lkml/2009/11/28/143), so I am planning to remake
-> them. But now, I don't know what tree is sutable to send these
-> patches. Do you have any suggestions?
+> > The USB ID claimed by zd1211rw for the fake storage device is
+> > also in use by other, non-zd1211rw devices (Sphairon Homelink
+> > 1202). Move the eject of these devices to where it belongs and
+> > where all the needed infrastructure already exists: usb-storage.
+> 
+> 
+> We can do the eject (as other mode switches) in userspace. Previous 
+> discussions pointed into that direction.
+> 
+> And there is always the question of being able to access the "fake 
+> CD-ROM" without hacking the kernel.
+> 
+> I'd like to see these devices removed from unusual_devs.h.
 
-Currently, my patches are merged into Andrew's -mm tree.
-I think your patch also may be picked up to -mm tree.
+This would break existing systems and thus introduce a regression.
+We'd need to go through a feature removal process. For the time being
+I see no alternative to Seife's patch, as we cannot introduce ejection
+code to another wireless driver and need to support these devices.
 
-BTW, I had asked him and Ingo that is possible to copy it to
--tip tree too, because coredump tracepoint patch depends
-on both of signal-tracepoint and the coredump parameters
-patch. However, since now signal-tracepoint patches has
-been merged to linus git tree, I assume that coredump
-tracepoint patch can be applied after -mm tree moved on
-to .33-rc1.
-
-
-Thank you!
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+	Regards
+		Oliver
