@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbZLOTpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbZLOToN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760785AbZLOTpt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758411AbZLOTpp
+	id S1759320AbZLOToN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZLOToH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:45:45 -0500
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:22198
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753817AbZLOTpo convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:45:44 -0500
-X-SpamScore: -13
-X-BigFish: VPS-13(zz1432R98dNzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KUPLJS-01-A4E-02
-X-M-MSG: 
-Date: Tue, 15 Dec 2009 20:45:36 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andreas Herrmann <herrmann.der.user@googlemail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend] x86, amd: Get multi-node CPU info from NodeId
- MSR instead of PCI config space
-Message-ID: <20091215194536.GC10747@aftab>
-References: <20091215124418.GA6414@alberich.amd.com>
- <20091215193150.GE15443@elte.hu>
+	Tue, 15 Dec 2009 14:44:07 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43073 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757297AbZLOToB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:44:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=DaMBZ/eezKGE3b1WHsQW0LifMLI9I8Y0FMnH4xyicitntZ8dOcEF2/w7oyyfrrmwcp
+         aQqrg6JcH5c4kOVSGStdvM4ba0nBGxhpR2Zd1SZIa2/PxtjSHdHe+m0GaNI4LP89N+mv
+         LPGx9artDd75BnEpqe71FtBfhXISVEk7lBFaQ=
+Message-ID: <4B27E76D.8070904@gmail.com>
+Date: Tue, 15 Dec 2009 20:45:49 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20091215193150.GE15443@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 15 Dec 2009 19:45:25.0585 (UTC) FILETIME=[258F3C10:01CA7DBF]
-X-Reverse-DNS: unknown
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] asiliantfb: Fix test of unsigned in asiliant_calc_dclk2()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 08:31:50PM +0100, Ingo Molnar wrote:
-> 
-> * Andreas Herrmann <herrmann.der.user@googlemail.com> wrote:
-> 
-> > +	rdmsrl(0xc001100c, value);
-> 
-> Dont we want some nice, meaningfully named symbolic constant here, instead of 
-> 0xc001100c?
+Ftarget, Fret, n and m are unsigned so the tests did not work.
 
-The MSR name is actually in the commit msg, maybe something like
-MSR_F10H_NODE_ID.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Found using coccinelle: http://coccinelle.lip6.fr/
 
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
+index 9fe90ce..e70bc22 100644
+--- a/drivers/video/asiliantfb.c
++++ b/drivers/video/asiliantfb.c
+@@ -140,7 +140,7 @@ static void asiliant_calc_dclk2(u32 *ppixclock, u8 *dclk2_m, u8 *dclk2_n, u8 *dc
+ 
+ 		/* 3 <= m <= 257 */
+ 		if (m >= 3 && m <= 257) {
+-			unsigned new_error = ((Ftarget * n) - (Fref * m)) >= 0 ?
++			unsigned new_error = Ftarget * n >= Fref * m ?
+ 					       ((Ftarget * n) - (Fref * m)) : ((Fref * m) - (Ftarget * n));
+ 			if (new_error < best_error) {
+ 				best_n = n;
+@@ -152,7 +152,7 @@ static void asiliant_calc_dclk2(u32 *ppixclock, u8 *dclk2_m, u8 *dclk2_n, u8 *dc
+ 		else if (m <= 1028) {
+ 			/* remember there are still only 8-bits of precision in m, so
+ 			 * avoid over-optimistic error calculations */
+-			unsigned new_error = ((Ftarget * n) - (Fref * (m & ~3))) >= 0 ?
++			unsigned new_error = Ftarget * n >= Fref * (m & ~3) ?
+ 					       ((Ftarget * n) - (Fref * (m & ~3))) : ((Fref * (m & ~3)) - (Ftarget * n));
+ 			if (new_error < best_error) {
+ 				best_n = n;
