@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbZLOQpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932563AbZLOQqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760578AbZLOQpP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 11:45:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbZLOQpM
+	id S932563AbZLOQqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 11:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbZLOQqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 11:45:12 -0500
-Received: from thunk.org ([69.25.196.29]:42862 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754711AbZLOQpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 11:45:11 -0500
-Date: Tue, 15 Dec 2009 11:45:03 -0500
-From: tytso@mit.edu
-To: Oleg Drokin <green@linuxhacker.ru>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] Possible data loss on ext[34], reiserfs with external
- journal
-Message-ID: <20091215164503.GI4867@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Oleg Drokin <green@linuxhacker.ru>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <20091211081608.GA597088@fiona.linuxhacker.ru>
- <20091215053207.GA26541@thunk.org>
- <2EEF5D3D-AFA5-4D74-92A7-B42A0FB9A4F5@linuxhacker.ru>
+	Tue, 15 Dec 2009 11:46:14 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:53755 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759876AbZLOQqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 11:46:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Qe4Noml0Wis13RbKlYjweR0DG6Uwj399fm2pFen74yev5YttLl8w6CayZmG+11+eru
+         ZpW6V74aR72SuM6F3nvaRz2FbM/l+Yf2/ih9dTqN4QTAslc48zsmPJWRxqdDVudDeGcT
+         g8G6axi+4cQv3mPx8U/EZVpTW/hWsriqbdgVQ=
+Date: Tue, 15 Dec 2009 08:45:57 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] [input] add mc13783 touchscreen driver
+Message-ID: <20091215164557.GA21995@core.coreip.homeip.net>
+References: <20091212074214.GB2956@core.coreip.homeip.net> <1260871828-358-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <2EEF5D3D-AFA5-4D74-92A7-B42A0FB9A4F5@linuxhacker.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1260871828-358-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 01:19:57AM -0500, Oleg Drokin wrote:
-> > +	/* 
-> > +	 * If the journal is not located on the file system device,
-> > +	 * then we must flush the file system device before we issue
-> > +	 * the commit record
-> > +	 */
-> > +	if (commit_transaction->t_flushed_data_blocks &&
-> > +	    (journal->j_fs_dev != journal->j_dev) &&
-> > +	    (journal->j_flags & JBD2_BARRIER))
-> > +		blkdev_issue_flush(journal->j_fs_dev, NULL);
-> > +
+Hi Uwe,
+
+On Tue, Dec 15, 2009 at 11:10:28AM +0100, Uwe Kleine-König wrote:
+> Hi Dmitry,
 > 
-> I am afraid this is not enough. This code is called after journal
-> was flushed for async commit case, so it leaves a race window where
-> journal transaction is already on disk and complete, but the data is
-> still in cache somewhere.
+> I squashed your changes into this patch, restored my indention style and
+> simplified error handling in mc13783_ts_probe to assign ret = -ENOMEM 
+> once at the start of the function instead of each error branch.
 
-No, that's actually fine.  In the ASYNC_COMMIT case, the commit won't
-be valid until the checksum is correct, and we won't have written any
-descriptor blocks yet at this point.  So there is no race because
-during that window, the commit is written but we won't write any
-descriptor blocks until after the barrier returns.
+I prefer to have error defined right before we jump because it allows
+reader to see explicitely set error condition instead of having to
+verify if earlier code set it properly; it also forces you to set error
+conditions on every error branch properly (if you forget while adding a
+new one compiler will warn you about uninitialized variable), but I
+won't insist.
 
-> Also the callsite has this comment which is misleading, I think:
->         /*
->          * This is the right place to wait for data buffers both for ASYNC
->          * and !ASYNC commit. If commit is ASYNC, we need to wait only after
->          * the commit block went to disk (which happens above). If commit is
->          * SYNC, we need to wait for data buffers before we start writing
->          * commit block, which happens below in such setting.
->          */
+> 
+> In the meantime the changes to mc13783-core are merged in Linus' tree,
+> so it can go via your's.
+> 
 
-Yeah, that comment is confusing and not entirely accurate.  I thought
-about cleaning it up, and then decided to do that in a separate patch.
+It settled then.
 
-      	       	      	       	       	  - Ted
+-- 
+Dmitry
