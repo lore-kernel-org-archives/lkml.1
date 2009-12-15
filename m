@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbZLOSkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbZLOSnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760864AbZLOSkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:40:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760053AbZLOSkW
+	id S1758389AbZLOSnF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZLOSnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:40:22 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:48264 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753542AbZLOSkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:40:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=VYJdMHTbW8ibHy5iK62rVomXk092r+BkorbfJer4JfgGJaYio76Hr/SyQ6Y2AB8i/9
-         uZsiDOBses55ZeRit5xHwLfdYg3SJL2NngIUfdxsz1/bD2Wtf2emYK7GvBREKTS44b3N
-         E/OoreWvBHNksO55YmP6lWDzEc+D3ymQiLy80=
-Message-ID: <4B27D87D.5070908@gmail.com>
-Date: Tue, 15 Dec 2009 19:42:05 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] gianfar: Fix tests of unsigneds in gfar_parse_group()
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 Dec 2009 13:43:00 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39721 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756283AbZLOSm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:42:58 -0500
+Subject: [RFC PATCH] Subject: virtio: Add unused buffers detach from vring
+From: Shirley Ma <mashirle@us.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+       "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <20091215163901.GA24015@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain>
+	 <200911231123.18898.rusty@rustcorp.com.au>
+	 <20091208122134.GA17286@redhat.com>
+	 <1260534506.30371.6.camel@localhost.localdomain>
+	 <1260535613.30371.24.camel@localhost.localdomain>
+	 <20091213114320.GC7074@redhat.com>
+	 <1260828518.8716.105.camel@localhost.localdomain>
+	 <20091215113327.GC13110@redhat.com>
+	 <1260894320.4387.64.camel@localhost.localdomain>
+	 <20091215163901.GA24015@redhat.com>
+Content-Type: text/plain
+Date: Tue, 15 Dec 2009 10:42:53 -0800
+Message-Id: <1260902573.4387.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-interruptTransmit, -Receive and -Error are unsigned so the tests did not work.
+I submit one split patch for review to make sure that's the right format.
+I copied Rusty's comment for the commit message, and change destroy
+to detach since we destroy the buffers in caller. This patch is built
+against Dave's net-next tree.
 
-This also changes that if irq_of_parse_and_map(np, 0) returns NO_IRQ, that
-gfar_parse_group() returns an -EINVAL.
+There's currently no way for a virtio driver to ask for unused
+buffers, so it has to keep a list itself to reclaim them at shutdown.
+This is redundant, since virtio_ring stores that information.  So
+add a new hook to do this: virtio_net will be the first user.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Shirley Ma <xma@us.ibm.com> 
 ---
-Found using coccinelle: http://coccinelle.lip6.fr/
+ drivers/virtio/virtio_ring.c |   24 ++++++++++++++++++++++++
+ include/linux/virtio.h       |    1 +
+ 2 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 6850dc0..c411682 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -522,6 +522,7 @@ static int gfar_parse_group(struct device_node *np,
- {
- 	u32 *queue_mask;
- 	u64 addr, size;
-+	int irq;
+diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+index fbd2ecd..f847bc3 100644
+--- a/drivers/virtio/virtio_ring.c
++++ b/drivers/virtio/virtio_ring.c
+@@ -334,6 +334,29 @@ static bool vring_enable_cb(struct virtqueue *_vq)
+ 	return true;
+ }
  
- 	addr = of_translate_address(np,
- 			of_get_address(np, 0, &size, NULL));
-@@ -530,20 +531,22 @@ static int gfar_parse_group(struct device_node *np,
- 	if (!priv->gfargrp[priv->num_grps].regs)
- 		return -ENOMEM;
- 
--	priv->gfargrp[priv->num_grps].interruptTransmit =
--			irq_of_parse_and_map(np, 0);
-+	irq = irq_of_parse_and_map(np, 0);
-+	if (irq < 0)
-+		return -EINVAL;
-+	priv->gfargrp[priv->num_grps].interruptTransmit = irq;
- 
- 	/* If we aren't the FEC we have multiple interrupts */
- 	if (model && strcasecmp(model, "FEC")) {
--		priv->gfargrp[priv->num_grps].interruptReceive =
--			irq_of_parse_and_map(np, 1);
--		priv->gfargrp[priv->num_grps].interruptError =
--			irq_of_parse_and_map(np,2);
--		if (priv->gfargrp[priv->num_grps].interruptTransmit < 0 ||
--			priv->gfargrp[priv->num_grps].interruptReceive < 0 ||
--			priv->gfargrp[priv->num_grps].interruptError < 0) {
-+		irq = irq_of_parse_and_map(np, 1);
-+		if (irq < 0)
- 			return -EINVAL;
--		}
-+		priv->gfargrp[priv->num_grps].interruptReceive = irq;
++/* This function is used to return vring unused buffers to caller for free */
++static void *vring_detach_bufs(struct virtqueue *_vq)
++{
++	struct vring_virtqueue *vq = to_vvq(_vq);
++	unsigned int i;
 +
-+		irq = irq_of_parse_and_map(np, 2);
-+		if (irq < 0)
-+			return -EINVAL;
-+		priv->gfargrp[priv->num_grps].interruptError = irq;
- 	}
++	START_USE(vq);
++
++	for (i = 0; i < vq->vring.num; ++i) {
++		if (vq->data[i]) {
++			/* detach_buf clears data, so grab it now. */
++			detach_buf(vq, i);
++			END_USE(vq);
++			return vq->data[i];
++		}
++	}
++	/* That should have freed everything. */
++	BUG_ON(vq->num_free != vq->vring.num);
++
++	END_USE(vq);
++	return NULL;
++}
++
+ irqreturn_t vring_interrupt(int irq, void *_vq)
+ {
+ 	struct vring_virtqueue *vq = to_vvq(_vq);
+@@ -360,6 +383,7 @@ static struct virtqueue_ops vring_vq_ops = {
+ 	.kick = vring_kick,
+ 	.disable_cb = vring_disable_cb,
+ 	.enable_cb = vring_enable_cb,
++	.detach_bufs = vring_detach_bufs,
+ };
  
- 	priv->gfargrp[priv->num_grps].grp_id = priv->num_grps;
+ struct virtqueue *vring_new_virtqueue(unsigned int num,
+diff --git a/include/linux/virtio.h b/include/linux/virtio.h
+index 057a2e0..d7da456 100644
+--- a/include/linux/virtio.h
++++ b/include/linux/virtio.h
+@@ -71,6 +71,7 @@ struct virtqueue_ops {
+ 
+ 	void (*disable_cb)(struct virtqueue *vq);
+ 	bool (*enable_cb)(struct virtqueue *vq);
++	void *(*detach_bufs)(struct virtqueue *vq);
+ };
+ 
+ /**
+
+Thanks
+Shirley
+
