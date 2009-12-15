@@ -1,101 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933105AbZLOSDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbZLOSIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933105AbZLOSDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933169AbZLOSDs
+	id S1760692AbZLOSIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbZLOSIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:03:48 -0500
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:49700
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933213AbZLOSDQ (ORCPT
+	Tue, 15 Dec 2009 13:08:43 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:13466 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbZLOSIm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:03:16 -0500
-Date: Tue, 15 Dec 2009 10:03:00 -0800
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Josua Dietze <digidietze@draisberghof.de>,
-       Stefan Seyfried <stefan.seyfried@googlemail.com>,
-       linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
-       Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-Message-ID: <20091215180300.GF16426@one-eyed-alien.net>
-Mail-Followup-To: Oliver Neukum <oliver@neukum.org>,
-	Josua Dietze <digidietze@draisberghof.de>,
-	Stefan Seyfried <stefan.seyfried@googlemail.com>,
-	linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
-	Stefan Seyfried <seife@sphairon.com>
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <4B278191.1010009@draisberghof.de> <200912151611.08576.oliver@neukum.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0H629O+sVkh21xTi"
-Content-Disposition: inline
-In-Reply-To: <200912151611.08576.oliver@neukum.org>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2009 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 15 Dec 2009 10:03:00 -0800 (PST)
+	Tue, 15 Dec 2009 13:08:42 -0500
+From: "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+CC: "davej@redhat.com" <davej@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "mjg@redhat.com" <mjg@redhat.com>, "trenn@suse.de" <trenn@suse.de>,
+       "lenb@kernel.org" <lenb@kernel.org>
+Date: Tue, 15 Dec 2009 18:08:08 +0000
+Subject: RE: [PATCH] cpufreq: Processor Clocking Control interface driver
+Thread-Topic: [PATCH] cpufreq: Processor Clocking Control interface driver
+Thread-Index: Acp6t25fuUX9ge7TSNWagCVgfwYj3wC5SNqw
+Message-ID: <66D9D2F0CDB5C9428E6166B01EC85EE161DEEE3CB7@GVW0676EXC.americas.hpqcorp.net>
+References: <20091128034424.6796.75673.sendpatchset@localhost.localdomain>
+ <20091211231233.GA4291@isilmar.linta.de>
+In-Reply-To: <20091211231233.GA4291@isilmar.linta.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, I have addressed your concerns below: 
 
---0H629O+sVkh21xTi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>-----Original Message-----
+>From: Dominik Brodowski [mailto:linux@dominikbrodowski.net] 
+>Sent: Friday, December 11, 2009 5:13 PM
+>To: Chumbalkar, Nagananda
+>Cc: davej@redhat.com; linux-kernel@vger.kernel.org; 
+>cpufreq@vger.kernel.org; linux-acpi@vger.kernel.org; 
+>mjg@redhat.com; trenn@suse.de; lenb@kernel.org
+>Subject: Re: [PATCH] cpufreq: Processor Clocking Control 
+>interface driver
+>
+>Hey,
+>
+>On Fri, Dec 11, 2009 at 10:55:40PM +0000, Naga Chumbalkar wrote:
+>> +The VERSION number for the driver will be of the format v.xy.ab.
+>> +eg: 1.00.02
+>> +   ----- --
+>> +    |    |
+>> +    |    -- this will increase with bug fixes/enhancements 
+>to the driver
+>> +    |-- this is the version of the PCC specification the 
+>driver adheres to
+>
+>If this is _really_ necessary... Doesn't the driver version 
+>relate to some
+>Linux kernel version anyway?
+>
 
-On Tue, Dec 15, 2009 at 04:11:08PM +0100, Oliver Neukum wrote:
-> Am Dienstag, 15. Dezember 2009 13:31:13 schrieb Josua Dietze:
-> > Stefan Seyfried schrieb:
-> >=20
-> > > The USB ID claimed by zd1211rw for the fake storage device is
-> > > also in use by other, non-zd1211rw devices (Sphairon Homelink
-> > > 1202). Move the eject of these devices to where it belongs and
-> > > where all the needed infrastructure already exists: usb-storage.
-> >=20
-> >=20
-> > We can do the eject (as other mode switches) in userspace. Previous=20
-> > discussions pointed into that direction.
-> >=20
-> > And there is always the question of being able to access the "fake=20
-> > CD-ROM" without hacking the kernel.
-> >=20
-> > I'd like to see these devices removed from unusual_devs.h.
->=20
-> This would break existing systems and thus introduce a regression.
-> We'd need to go through a feature removal process. For the time being
-> I see no alternative to Seife's patch, as we cannot introduce ejection
-> code to another wireless driver and need to support these devices.
+If distros backport this driver to different kernel versions, it will be
+easy to keep track of which driver version is in the distro.
 
-The right answer here is neither to move the eject code nor to introduce
-more of it.  New devices should be supported via userspace.
 
-Matt
+>> +2.1 scaling_available_frequencies:
+>> +----------------------------------
+>> +scaling_available_frequencies indicates the minimum and 
+>maximum speed
+>> +the CPU can take as advertised by the BIOS. No intermediate 
+>frequencies are
+>> +listed because the BIOS will try to achieve any 
+>intermediate frequency
+>> +requested by the governor. An intermediate frequency does 
+>not have to be
+>> +strictly associated with a P-state.
+>
+>Why do you export scaling_available_frequencies anyway? It's 
+>made available
+>by the _optional_ freq-table helper module, which is wrong to 
+>use in this
+>case anyway.
+>
 
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
+You are correct. I don't need the dependency on CPU_FREQ_TABLE. I ripped
+it out and made suitable changes:
 
-A:  The most ironic oxymoron wins ...
-DP: "Microsoft Works"
-A:  Uh, okay, you win.
-					-- A.J. & Dust Puppy
-User Friendly, 1/18/1998
+diff -bur orig/pcc-cpufreq.c fix/pcc-cpufreq.c
+--- orig/pcc-cpufreq.c	2009-11-30 20:05:23.000000000 -0600
++++ fix/pcc-cpufreq.c	2009-11-30 21:14:31.000000000 -0600
+@@ -111,15 +111,11 @@
+ 
+ static struct pcc_cpu *pcc_cpu_info;
+ 
+-static struct cpufreq_frequency_table pcc_freq_table[] = {
+-	{0x1, 0},
+-	{0x2, 0},
+-	{0, CPUFREQ_TABLE_END},
+-};
+-
+ static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+-	return cpufreq_frequency_table_verify(policy, pcc_freq_table);
++	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
++				     policy->cpuinfo.max_freq);
++	return 0;
+ }
+ 
+ static inline void pcc_cmd(void)
+@@ -534,10 +530,6 @@
+ 		goto pcch_free;
+ 	}
+ 
+-	pcc_freq_table[0].frequency =
+-		ioread32(&pcch_hdr->minimum_frequency) * 1000;
+-	pcc_freq_table[1].frequency = ioread32(&pcch_hdr->nominal) * 1000;
+-
+ 	printk(KERN_DEBUG "pcc-cpufreq: (v%s) driver loaded with frequency"
+ 	       " limits: %d MHz, %d MHz\n", PCC_VERSION,
+ 	       ioread32(&pcch_hdr->minimum_frequency),
+@@ -576,12 +568,6 @@
+ 	dprintk("init: policy->max is %d, policy->min is %d\n",
+ 		policy->max, policy->min);
+ 
+-	result = cpufreq_frequency_table_cpuinfo(policy, pcc_freq_table);
+-	if (result)
+-		goto free;
+-
+-	cpufreq_frequency_table_get_attr(pcc_freq_table, policy->cpu);
+-
+ 	return 0;
+ free:
+ 	pcc_clear_mapping();
+@@ -592,15 +578,9 @@
+ 
+ static int pcc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+-	cpufreq_frequency_table_put_attr(policy->cpu);
+ 	return 0;
+ }
+ 
+-static struct freq_attr *pcc_cpufreq_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	NULL,
+-};
+-
+ static struct cpufreq_driver pcc_cpufreq_driver = {
+ 	.flags = CPUFREQ_CONST_LOOPS,
+ 	.get = pcc_get_freq,
+@@ -610,7 +590,6 @@
+ 	.exit = pcc_cpufreq_cpu_exit,
+ 	.name = "pcc-cpufreq",
+ 	.owner = THIS_MODULE,
+-	.attr = pcc_cpufreq_attr,
+ };
+ 
+ static int __init pcc_cpufreq_init(void)
 
---0H629O+sVkh21xTi
-Content-Type: application/pgp-signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+diff -bur orig/pcc-cpufreq.txt fix/pcc-cpufreq.txt
+--- orig/pcc-cpufreq.txt	2009-11-30 20:05:55.000000000 -0600
++++ fix/pcc-cpufreq.txt	2009-11-30 21:15:10.000000000 -0600
+@@ -152,11 +152,10 @@
+ 
+ 2.1 scaling_available_frequencies:
+ ----------------------------------
+-scaling_available_frequencies indicates the minimum and maximum speed
+-the CPU can take as advertised by the BIOS. No intermediate frequencies are
+-listed because the BIOS will try to achieve any intermediate frequency
+-requested by the governor. An intermediate frequency does not have to be
+-strictly associated with a P-state.
++scaling_available_frequencies is not created in /sys. No intermediate
++frequencies need to be listed because the BIOS will try to achieve any
++frequency, within limits, requested by the governor. A frequency does not have
++to be strictly associated with a P-state.
+ 
+ 2.2 cpuinfo_transition_latency:
+ -------------------------------
+@@ -203,7 +202,7 @@
+ 
+ 3. Caveats:
+ -----------
+-Currently, the "cpufreq_stats" module in its present form cannot be loaded and
+-expected to work with the PCC driver. A patch to cpufreq_stats will be
+-submitted to fix this.
++The "cpufreq_stats" module in its present form cannot be loaded and
++expected to work with the PCC driver. Since the "cpufreq_stats" module
++provides information wrt each P-state, it is not applicable to the PCC driver.
+ 
 
-iD8DBQFLJ89UHL9iwnUZqnkRAq2bAJ4iWbg2zp+JMXfran8P1HyHPCOKoACfZpFi
-OCcWRKIkW33enNpjN3qh7b0=
-=UIM0
------END PGP SIGNATURE-----
 
---0H629O+sVkh21xTi--
+>> +2.2 cpuinfo_transition_latency:
+>> +-------------------------------
+>> +The cpuinfo_transition_latency field is 0. The PCC 
+>specification does
+>> +not include a field to expose this value currently.
+>
+>Uh, bad specification... So does it work properly with ondemand and/or
+>conservative (which read out this field, and if latency=0 use a minimum
+>value)?
+>
+
+Yes, it works fine. Both "ondemand" and "conservative" sanitize the
+latency value, and set it to a default value which is good.
+
+>> +config X86_PCC_CPUFREQ
+>> +	tristate "Processor Clocking Control interface driver"
+>> +	select CPU_FREQ_TABLE
+>Uh, see above.
+>
+
+diff -bur orig/Kconfig fix/Kconfig
+--- orig/Kconfig	2009-11-30 20:05:32.000000000 -0600
++++ fix/Kconfig	2009-11-30 21:14:47.000000000 -0600
+@@ -12,7 +12,6 @@
+ 
+ config X86_PCC_CPUFREQ
+ 	tristate "Processor Clocking Control interface driver"
+-	select CPU_FREQ_TABLE
+ 	depends on ACPI && ACPI_PROCESSOR
+ 	help
+ 	  This driver adds support for the PCC interface.
+
+
+>> +static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
+>> +{
+>> +	return cpufreq_frequency_table_verify(policy, pcc_freq_table);
+>> +}
+>
+>Well, AFAICS, this limits the whole interface to two values: 
+>min or max. So
+>let's allow for any intermediate value:
+>
+>static int pcc_cpufreq_verify(struct cpufreq_policy *policy)
+>{
+>	cpufreq_verify_within_limits(policy, 
+>policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+>}
+>
+
+Took this suggestion, (see the first "diff" changeset above), especially
+since I cannot use the freq-table helper function anymore.
+
+
+>but well... later on, you check this
+>
+>> +	if (target_freq <= 
+>(ioread32(&pcch_hdr->minimum_frequency) * 1000)) {
+>> +		target_freq = 
+>ioread32(&pcch_hdr->minimum_frequency) * 1000;
+>> +		dprintk("target: target_freq for cpu %d was 
+>below limit, "
+>> +			"converted it to %d\n", cpu, target_freq);
+>> +	}
+>
+>why not do this in the _verify() step? Does pcch_hdr->minimum_frequency
+>even change "on the fly"?
+
+pcch_hdr->minimum_frequency does not change "on the fly". Also, there is no
+need for those IO accesses:
+
+diff -bur orig/pcc-cpufreq.c fix/pcc-cpufreq.c
+--- orig/pcc-cpufreq.c	2009-12-15 10:52:01.000000000 -0600
++++ fix/pcc-cpufreq.c	2009-12-15 10:52:06.000000000 -0600
+@@ -212,12 +212,18 @@
+ 
+ 	pcc_cpu_data = per_cpu_ptr(pcc_cpu_info, cpu);
+ 
+-	if (target_freq <= (ioread32(&pcch_hdr->minimum_frequency) * 1000)) {
+-		target_freq = ioread32(&pcch_hdr->minimum_frequency) * 1000;
++	if (target_freq < policy->min) {
++		target_freq = policy->min;
+ 		dprintk("target: target_freq for cpu %d was below limit, "
+ 			"converted it to %d\n", cpu, target_freq);
+ 	}
+ 
++	if (target_freq > policy->max) {
++		target_freq = policy->max;
++		dprintk("target: target_freq for cpu %d was above limit, "
++			"converted it to %d\n", cpu, target_freq);
++	}
++
+ 	dprintk("target: CPU %d should go to target freq: %d "
+ 		"(virtual) input_offset is 0x%x\n",
+ 		cpu, target_freq,
+
+>
+>So, I'd propose to NACK this patch at the moment.
+>
+>Best,
+>	Dominik
+>
+
+If you are okay with the changes, I will send v2 of the patch.
+
+Thanks,
+- naga -
+
