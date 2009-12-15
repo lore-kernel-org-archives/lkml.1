@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZLOLuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbZLOLu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbZLOLuR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 06:50:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760011AbZLOLuJ
+	id S1760035AbZLOLu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 06:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760000AbZLOLuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 06:50:09 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39442 "EHLO
+	Tue, 15 Dec 2009 06:50:22 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39468 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758233AbZLOLuF (ORCPT
+	with ESMTP id S1760025AbZLOLuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 06:50:05 -0500
-Date: Tue, 15 Dec 2009 12:49:56 +0100
+	Tue, 15 Dec 2009 06:50:17 -0500
+Date: Tue, 15 Dec 2009 12:50:11 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified run-time PM
-	support
-Message-ID: <20091215114956.GA1415@ucw.cz>
-References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl> <200911291644.27288.rjw@sisk.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Jon Smirl <jonsmirl@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091215115011.GB1385@ucw.cz>
+References: <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <20091207184153.GD998@core.coreip.homeip.net> <4B24DABA.9040007@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911291644.27288.rjw@sisk.pl>
+In-Reply-To: <4B24DABA.9040007@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Use the PCI run-time power management framework to add simplified
-> run-time PM support to the r8169 driver.  Namely, make the driver
-> suspend the device when the link is off and set it up for generating
-> wake-up event after the link has been detected again.
+> > This sounds like "merge first, think later"...
+> > 
+> > The question is why we need to merge lirc interface right now, before we
+> > agreed on the sybsystem architecture? Noone _in kernel_ user lirc-dev
+> > yet and, looking at the way things are shaping, no drivers will be
+> > _directly_ using it after it is complete. So, even if we merge it right
+> > away, the code will have to be restructured and reworked. Unfortunately,
+> > just merging what Jarod posted, will introduce sysfs hierarchy which
+> > is userspace interface as well (although we not as good maintaining it
+> > at times) and will add more constraints on us.
+> > 
+> > That is why I think we should go the other way around - introduce the
+> > core which receivers could plug into and decoder framework and once it
+> > is ready register lirc-dev as one of the available decoders.
+> > 
+> 
+> I've committed already some IR restruct code on my linux-next -git tree:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-next.git
+> 
+> The code there basically moves the input/evdev registering code and 
+> scancode/keycode management code into a separate ir-core module.
+> 
+> To make my life easy, I've moved the code temporarily into drivers/media/IR.
+> This way, it helps me to move V4L specific code outside ir-core and to later
+> use it for DVB. After having it done, probably the better is to move it to
+> be under /drivers or /drivers/input.
 
-Nice!
-
-Do you have any idea how much power it saves?
-								Pavel
-
+Well, -next is for stuff to be merged into 2.6.34. You are quite an
+optimist.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
