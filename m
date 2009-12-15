@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbZLOTtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbZLOTuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932687AbZLOTtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759707AbZLOTtl
+	id S1761011AbZLOTuV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932596AbZLOTuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:49:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44125 "EHLO hera.kernel.org"
+	Tue, 15 Dec 2009 14:50:18 -0500
+Received: from kroah.org ([198.145.64.141]:43525 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759409AbZLOTtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:49:39 -0500
-Message-ID: <4B27E817.6030705@kernel.org>
-Date: Tue, 15 Dec 2009 11:48:39 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1759707AbZLOTuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:50:17 -0500
+Date: Tue, 15 Dec 2009 11:49:38 -0800
+From: Greg KH <greg@kroah.com>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Ike Panhc <ike.pan@canonical.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+Message-ID: <20091215194938.GA13297@kroah.com>
+References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>
+ <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
+ <20091215041500.GB31200@kroah.com>
+ <4B273479.6050502@canonical.com>
+ <20091215134943.GA11667@kroah.com>
+ <20091215163100.GC8097@tuxdriver.com>
+ <1260906168.9623.4.camel@rc-desk>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: kexec boot regression
-References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org> <20091215194319.GT28252@kernel.dk>
-In-Reply-To: <20091215194319.GT28252@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260906168.9623.4.camel@rc-desk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, Dec 15 2009, Yinghai Lu wrote:
->> [PATCH] x86/pci: intel ioh bus num reg accessing fix
->>
->> it is above 0x100, so if mmconf is not enable, need to skip it
+On Tue, Dec 15, 2009 at 11:42:48AM -0800, reinette chatre wrote:
+> On Tue, 2009-12-15 at 08:31 -0800, John W. Linville wrote:
+> > On Tue, Dec 15, 2009 at 05:49:43AM -0800, Greg KH wrote:
+> > > On Tue, Dec 15, 2009 at 03:02:17PM +0800, Ike Panhc wrote:
+> > 
+> > > > Please consider applying to linux-2.6.31.y
+> > > 
+> > > I need the subsystem maintainer to agree with this, have they?
+> > 
+> > It seems fine to me.  You may want to let Intel comment too.
+> > 
 > 
-> This works, it kexecs kernels fine. But since 2.6.32 doesn't have the
-> mmconf problem to begin with, are we now just working around the issue?
-> SRAT still reports issues, numa doesn't work.
+> No objection here. Even so, I find it strange that this patch fixes a
+> problem since it really should not have any functional changes. 
 
-that patch will be bullet proof... we need it.
+Ok, if there is no functional change, why is this needed?
 
-also still need to figure out why memmap range is not passed properly.
+Ike?
 
-do you mean 2.6.32 kexec 2.6.32 it have worked mmconf and numa in second kernel?
+thanks,
 
-YH
+greg k-h
