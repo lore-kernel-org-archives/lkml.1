@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZLOBNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbZLOBSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbZLOBNv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Dec 2009 20:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbZLOBNu
+	id S1758942AbZLOBSh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Dec 2009 20:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbZLOBSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Dec 2009 20:13:50 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:51427 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758434AbZLOBNt convert rfc822-to-8bit (ORCPT
+	Mon, 14 Dec 2009 20:18:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39228 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758940AbZLOBSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Dec 2009 20:13:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MzCP2Hj/oElbIHx3KzQgS7OhtTYnILnk0aKpfqlfW900lFKp+573XEG20gU/YxnDfN
-         fiJ/HCjPW25O5W9eySg5+Ds84fAB5Iz7ysxEve6+RHxTrK1b9C9K6GbtPurXlwr1E1UY
-         SQH0CPpBpfccZaJQqc9/iQqCkb8Vjci7VDyh4=
-MIME-Version: 1.0
-In-Reply-To: <20091215090441.CDB0.A69D9226@jp.fujitsu.com>
-References: <20091214213026.BBBD.A69D9226@jp.fujitsu.com>
-	 <20091215084636.c7790658.minchan.kim@barrios-desktop>
-	 <20091215090441.CDB0.A69D9226@jp.fujitsu.com>
-Date: Tue, 15 Dec 2009 10:13:48 +0900
-Message-ID: <28c262360912141713t6e0e5915m3bb30aa099914c40@mail.gmail.com>
-Subject: Re: [PATCH 5/8] Use io_schedule() instead schedule()
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 14 Dec 2009 20:18:35 -0500
+Date: Mon, 14 Dec 2009 17:16:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
+ nodemask v4.2
+Message-Id: <20091214171632.0b34d833.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
+	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110163419.361E.A69D9226@jp.fujitsu.com>
+	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
+	<20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com>
+	<20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com>
+	<20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com>
+	<20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 9:56 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> On Mon, 14 Dec 2009 21:30:54 +0900 (JST)
->> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->>
->> > All task sleeping point in vmscan (e.g. congestion_wait) use
->> > io_schedule. then shrink_zone_begin use it too.
->> >
->> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> > ---
->> >  mm/vmscan.c |    2 +-
->> >  1 files changed, 1 insertions(+), 1 deletions(-)
->> >
->> > diff --git a/mm/vmscan.c b/mm/vmscan.c
->> > index 3562a2d..0880668 100644
->> > --- a/mm/vmscan.c
->> > +++ b/mm/vmscan.c
->> > @@ -1624,7 +1624,7 @@ static int shrink_zone_begin(struct zone *zone, struct scan_control *sc)
->> >                 max_zone_concurrent_reclaimers)
->> >                     break;
->> >
->> > -           schedule();
->> > +           io_schedule();
->>
->> Hmm. We have many cond_resched which is not io_schedule in vmscan.c.
->
-> cond_resched don't mean sleep on wait queue. it's similar to yield.
 
-I confused it.
-Thanks for correcting me. :)
+So I have a note-to-self here that these patches:
 
->
->> In addition, if system doesn't have swap device space and out of page cache
->> due to heavy memory pressue, VM might scan & drop pages until priority is zero
->> or zone is unreclaimable.
->>
->> I think it would be not a IO wait.
->
-> two point.
-> 1. For long time, Administrator usually watch iowait% at heavy memory pressure. I
-> don't hope change this without reasonable reason. 2. iowait makes scheduler
-> bonus a bit, vmscan task should have many time slice than memory consume
-> task. it improve VM stabilization.
+oom_kill-use-rss-value-instead-of-vm-size-for-badness.patch
+oom-kill-show-virtual-size-and-rss-information-of-the-killed-process.patch
+oom-kill-fix-numa-consraint-check-with-nodemask-v42.patch
 
-AFAIK, CFS scheduler doesn't give the bonus to I/O wait task any more.
+are tentative and it was unclear whether I should merge them.
 
->
-> but I agree the benefit isn't so big. if we have reasonable reason, I
-> don't oppose use schedule().
->
->
->
->
-
-
-
--- 
-Kind regards,
-Minchan Kim
+What do we think?
