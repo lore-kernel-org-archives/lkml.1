@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbZLOHlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZLOHke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757120AbZLOHlG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 02:41:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZLOHkc
+	id S1755914AbZLOHke (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 02:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZLOHk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 02:40:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50113 "EHLO song.cn.fujitsu.com"
+	Tue, 15 Dec 2009 02:40:26 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64775 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752939AbZLOHkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 02:40:18 -0500
-Message-ID: <4B273D3E.2000704@cn.fujitsu.com>
-Date: Tue, 15 Dec 2009 15:39:42 +0800
+	id S1753543AbZLOHkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 02:40:21 -0500
+Message-ID: <4B273D41.609@cn.fujitsu.com>
+Date: Tue, 15 Dec 2009 15:39:45 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 06/10] tracing: add print_fmt field
+Subject: [PATCH 07/10] trace_syscalls: init print_fmt
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,8 +26,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Adds print_fmt field to struct ftrace_event_call
-and some initialization code. But this field is not used now,
+Init print_fmt for trace_syscalls.
+
+But this field is still not used now,
 the next patches will use it and replace the ->show_format().
 
 It is preparing patch for new way of printing format files which
@@ -42,120 +43,94 @@ use struct ftrace_event_call->print_fmt to print "print fmt: XXXXXXXXXXX"
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index f883406..58db567 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -120,6 +120,7 @@ struct ftrace_event_call {
- 	int			(*regfunc)(struct ftrace_event_call *);
- 	void			(*unregfunc)(struct ftrace_event_call *);
- 	int			id;
-+	const char		*print_fmt;
- 	int			(*raw_init)(struct ftrace_event_call *);
- 	int			(*show_format)(struct ftrace_event_call *,
- 					       struct trace_seq *);
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 54258a0..eb63c97 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -723,8 +723,20 @@ static struct trace_event ftrace_event_type_##call = {			\
- 
- #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
- 
-+#undef __entry
-+#define __entry REC
-+
-+#undef __print_flags
-+#undef __print_symbolic
-+#undef __get_dynamic_array
-+#undef __get_str
-+
-+#undef TP_printk
-+#define TP_printk(fmt, args...) #fmt ", "  __stringify(args)
-+
- #undef DECLARE_EVENT_CLASS
--#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)
-+#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
-+static const char print_fmt_##call[] = print;
- 
- #undef DEFINE_EVENT
- #define DEFINE_EVENT(template, call, proto, args)			\
-@@ -738,6 +750,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.raw_init		= trace_event_raw_init,			\
- 	.regfunc		= ftrace_raw_reg_event_##call,		\
- 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
-+	.print_fmt		= print_fmt_##template,			\
- 	.show_format		= ftrace_format_##template,		\
- 	.define_fields		= ftrace_define_fields_##template,	\
- 	_TRACE_PROFILE_INIT(call)					\
-@@ -746,6 +759,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- #undef DEFINE_EVENT_PRINT
- #define DEFINE_EVENT_PRINT(template, call, proto, args, print)		\
- 									\
-+static const char print_fmt_##call[] = print;				\
-+									\
- static struct ftrace_event_call __used					\
- __attribute__((__aligned__(4)))						\
- __attribute__((section("_ftrace_events"))) event_##call = {		\
-@@ -755,6 +770,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.raw_init		= trace_event_raw_init,			\
- 	.regfunc		= ftrace_raw_reg_event_##call,		\
- 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
-+	.print_fmt		= print_fmt_##call,			\
- 	.show_format		= ftrace_format_##call,			\
- 	.define_fields		= ftrace_define_fields_##template,	\
- 	_TRACE_PROFILE_INIT(call)					\
-@@ -838,6 +854,16 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 
- #ifdef CONFIG_EVENT_PROFILE
- 
-+#undef __entry
-+#define __entry entry
-+
-+#undef __get_dynamic_array
-+#define __get_dynamic_array(field)	\
-+		((void *)__entry + (__entry->__data_loc_##field & 0xffff))
-+
-+#undef __get_str
-+#define __get_str(field) (char *)__get_dynamic_array(field)
-+
- #undef __perf_addr
- #define __perf_addr(a) __addr = (a)
- 
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 9978a4f..95d14b6 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -203,6 +203,9 @@ static int ftrace_raw_init_event(struct ftrace_event_call *call)
- 	return 0;
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index 75289f3..1352b0a 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -191,6 +191,67 @@ int syscall_enter_format(struct ftrace_event_call *call, struct trace_seq *s)
+ 	return trace_seq_putc(s, '\n');
  }
  
-+#undef __entry
-+#define __entry REC
++static
++int  __set_enter_print_fmt(struct syscall_metadata *entry, char *buf, int len)
++{
++	int i;
++	int pos = 0;
 +
- #undef __field
- #define __field(type, item)
- 
-@@ -218,6 +221,9 @@ static int ftrace_raw_init_event(struct ftrace_event_call *call)
- #undef __dynamic_array
- #define __dynamic_array(type, item)
- 
-+#undef F_printk
-+#define F_printk(fmt, args...) #fmt ", "  __stringify(args)
++	/* When len=0, we just calculate the needed length */
++#define LEN_OR_ZERO (len ? len - pos : 0)
 +
- #undef FTRACE_ENTRY
- #define FTRACE_ENTRY(call, struct_name, type, tstruct, print)		\
- 									\
-@@ -228,6 +234,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.id			= type,					\
- 	.system			= __stringify(TRACE_SYSTEM),		\
- 	.raw_init		= ftrace_raw_init_event,		\
-+	.print_fmt		= print,				\
- 	.show_format		= ftrace_format_##call,			\
- 	.define_fields		= ftrace_define_fields_##call,		\
- };									\
-
-
++	pos += snprintf(buf + pos, LEN_OR_ZERO, "\"");
++	for (i = 0; i < entry->nb_args; i++) {
++		pos += snprintf(buf + pos, LEN_OR_ZERO, "%s: 0x%%0%zulx%s",
++				entry->args[i], sizeof(unsigned long),
++				i == entry->nb_args - 1 ? "" : ", ");
++	}
++	pos += snprintf(buf + pos, LEN_OR_ZERO, "\"");
++
++	for (i = 0; i < entry->nb_args; i++) {
++		pos += snprintf(buf + pos, LEN_OR_ZERO,
++				", ((unsigned long)(REC->%s))", entry->args[i]);
++	}
++
++#undef LEN_OR_ZERO
++
++	/* return the length of print_fmt */
++	return pos;
++}
++
++static int set_syscall_print_fmt(struct ftrace_event_call *call)
++{
++	char *print_fmt;
++	int len;
++	struct syscall_metadata *entry = call->data;
++
++	if (entry->enter_event != call) {
++		call->print_fmt = "\"0x%lx\", REC->ret";
++		return 0;
++	}
++
++	/* First: called with 0 length to calculate the needed length */
++	len = __set_enter_print_fmt(entry, NULL, 0);
++
++	print_fmt = kmalloc(len + 1, GFP_KERNEL);
++	if (!print_fmt)
++		return -ENOMEM;
++
++	/* Second: actually write the @print_fmt */
++	__set_enter_print_fmt(entry, print_fmt, len + 1);
++	call->print_fmt = print_fmt;
++
++	return 0;
++}
++
++static void free_syscall_print_fmt(struct ftrace_event_call *call)
++{
++	struct syscall_metadata *entry = call->data;
++
++	if (entry->enter_event == call)
++		kfree(call->print_fmt);
++}
++
+ int syscall_exit_format(struct ftrace_event_call *call, struct trace_seq *s)
+ {
+ 	int ret;
+@@ -386,9 +447,14 @@ int init_syscall_trace(struct ftrace_event_call *call)
+ {
+ 	int id;
+ 
++	if (set_syscall_print_fmt(call) < 0)
++		return -ENOMEM;
++
+ 	id = register_ftrace_event(call->event);
+-	if (!id)
++	if (!id) {
++		free_syscall_print_fmt(call);
+ 		return -ENODEV;
++	}
+ 	call->id = id;
+ 	INIT_LIST_HEAD(&call->fields);
+ 	return 0;
 
 
 
