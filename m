@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZLOTmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZLOTm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755344AbZLOTmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 14:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZLOTmo
+	id S1758613AbZLOTm5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 14:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbZLOTmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 14:42:44 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39465 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbZLOTmn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 14:42:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=UZsqgXzPgGerosdz8GQ/4zE8zno7WtniFTPz7HeTIxylrfNb1dtUJ4DTaQ/GZglZoD
-         V7vj4HVlQXyBbGhbLgRz6tznYxlgc+Aswatoq/7CLxdMctHEY+7qt0d4HkyOpTQXnf52
-         lD3RuRZQbaa21/k9RwgMhmIojxlU3IYrPD8S4=
-Date: Tue, 15 Dec 2009 20:42:33 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.32 build problem on Mint 8 (kubuntu-9.10 i86-x64)
-Message-ID: <20091215204233.2dca0783@varda>
-In-Reply-To: <200912151426.26285.gene.heskett@verizon.net>
-References: <200912151426.26285.gene.heskett@verizon.net>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Tue, 15 Dec 2009 14:42:53 -0500
+Received: from mga02.intel.com ([134.134.136.20]:41522 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757661AbZLOTmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 14:42:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,401,1257148800"; 
+   d="scan'208";a="579189078"
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+From: reinette chatre <reinette.chatre@intel.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Greg KH <greg@kroah.com>, Ike Panhc <ike.pan@canonical.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>
+In-Reply-To: <20091215163100.GC8097@tuxdriver.com>
+References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>
+	 <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
+	 <20091215041500.GB31200@kroah.com> <4B273479.6050502@canonical.com>
+	 <20091215134943.GA11667@kroah.com>  <20091215163100.GC8097@tuxdriver.com>
+Content-Type: text/plain
+Date: Tue, 15 Dec 2009 11:42:48 -0800
+Message-Id: <1260906168.9623.4.camel@rc-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 15 Dec 2009 14:26:26 -0500
-Gene Heskett <gene.heskett@verizon.net> escribió:
+On Tue, 2009-12-15 at 08:31 -0800, John W. Linville wrote:
+> On Tue, Dec 15, 2009 at 05:49:43AM -0800, Greg KH wrote:
+> > On Tue, Dec 15, 2009 at 03:02:17PM +0800, Ike Panhc wrote:
+> 
+> > > Please consider applying to linux-2.6.31.y
+> > 
+> > I need the subsystem maintainer to agree with this, have they?
+> 
+> It seems fine to me.  You may want to let Intel comment too.
+> 
 
-> Greetings;
-[...]
-> 
-> The  I tried a 'make menuconfig' which also quits quickly because it can't 
-> find the ncurses stuff either.
+No objection here. Even so, I find it strange that this patch fixes a
+problem since it really should not have any functional changes. 
 
- sudo aptitude install build-essential libncurses5-dev
+I see this patch is 2/2 of a series ... was 1/2 an iwlwifi patch also?
 
-> 
-> At this point, maybe I should have tried as root rather than as a common 
-> user, me, but I'm told its better not to build this stuff as root.
-> 
-> I took some pix, where should I post them?
-> 
+Reinette
+
+
