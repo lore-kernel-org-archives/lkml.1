@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbZLOSoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZLOSrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbZLOSoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZLOSoR
+	id S1759586AbZLOSrf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:47:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZLOSre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:44:17 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45593 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759986AbZLOSoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:44:16 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/rQcx4LZ/r7aGhopikRVqSDPduyVc35F2a6fja5Y
-	CLtVgmKa+B4G8k
-Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead
- prepare_to_wait()
-From: Mike Galbraith <efault@gmx.de>
-To: Rik van Riel <riel@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-In-Reply-To: <4B27A417.3040206@redhat.com>
-References: <20091214212936.BBBA.A69D9226@jp.fujitsu.com>
-	 <4B264CCA.5010609@redhat.com> <20091215085631.CDAD.A69D9226@jp.fujitsu.com>
-	 <1260855146.6126.30.camel@marge.simson.net>  <4B27A417.3040206@redhat.com>
-Content-Type: text/plain
-Date: Tue, 15 Dec 2009 19:43:30 +0100
-Message-Id: <1260902610.5913.19.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Tue, 15 Dec 2009 13:47:34 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:47425 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbZLOSrd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:47:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type;
+        b=Iwb4fPJD+C3bWGVOCknQwCVEf6olFuft+gBqvJejAg1K/au2v0qGto0mM0QPbzNBod
+         NS2rN7cTMQBt4+f3v/kR4hfKHWSIImkA1BvrZTOY93zKs6BNRa1VTnfEhpU7LfoEvgcj
+         NgmNycMYXQ+O9eEFPhIpP1ny8MGHrxdvJc8+k=
+MIME-Version: 1.0
+In-Reply-To: <4B27D302.5060905@gmail.com>
+References: <4B27D302.5060905@gmail.com>
+From: roel kluin <roel.kluin@gmail.com>
+Date: Tue, 15 Dec 2009 19:47:12 +0100
+Message-ID: <25e057c00912151047k436058ep2bcff69bdaedcc7a@mail.gmail.com>
+Subject: Re: [PATCH] e1000: Fix tests of unsigned in e1000_tx_map()
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       e1000-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 09:58 -0500, Rik van Riel wrote:
-> On 12/15/2009 12:32 AM, Mike Galbraith wrote:
-> > On Tue, 2009-12-15 at 09:45 +0900, KOSAKI Motohiro wrote:
-> >>> On 12/14/2009 07:30 AM, KOSAKI Motohiro wrote:
-> >>>> if we don't use exclusive queue, wake_up() function wake _all_ waited
-> >>>> task. This is simply cpu wasting.
-> >>>>
-> >>>> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> >>>
-> >>>>    		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
-> >>>>    					0, 0)) {
-> >>>> -			wake_up(wq);
-> >>>> +			wake_up_all(wq);
-> >>>>    			finish_wait(wq,&wait);
-> >>>>    			sc->nr_reclaimed += sc->nr_to_reclaim;
-> >>>>    			return -ERESTARTSYS;
-> >>>
-> >>> I believe we want to wake the processes up one at a time
-> >>> here.
-> 
-> >> Actually, wake_up() and wake_up_all() aren't different so much.
-> >> Although we use wake_up(), the task wake up next task before
-> >> try to alloate memory. then, it's similar to wake_up_all().
-> 
-> That is a good point.  Maybe processes need to wait a little
-> in this if() condition, before the wake_up().  That would give
-> the previous process a chance to allocate memory and we can
-> avoid waking up too many processes.
+On Tue, Dec 15, 2009 at 7:18 PM, Roel Kluin <roel.kluin@gmail.com> wrote:
+> The variables count and i are unsigned so the (<|>=) 0 tests do not work.
 
-Pondering, I think I'd at least wake NR_CPUS.  If there's not enough to
-go round, oh darn, but if there is, you have full utilization quicker.
+I now see there are similar issues in igb and friends,
+I'll post a patch that includes these as well.
 
-$.02.
-
-	-Mike
-
+Roel
