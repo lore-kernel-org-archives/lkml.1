@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZLOPzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbZLOP4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbZLOPzz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 10:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbZLOPzy
+	id S1758005AbZLOP4t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 10:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZLOP4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 10:55:54 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37066 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754384AbZLOPzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 10:55:53 -0500
-Date: Tue, 15 Dec 2009 10:55:52 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <alpine.LFD.2.00.0912150722310.14385@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0912151047410.3566-100000@iolanthe.rowland.org>
+	Tue, 15 Dec 2009 10:56:48 -0500
+Received: from kroah.org ([198.145.64.141]:39975 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754364AbZLOP4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 10:56:47 -0500
+Date: Tue, 15 Dec 2009 07:56:25 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB printer fix for 2.6.33-git
+Message-ID: <20091215155625.GA3394@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009, Linus Torvalds wrote:
+Here is the revert, and fix, for the USB printer issue you found.
 
-> My whole point was that by doing the whole "wait for children" in generic 
-> code, you also made devices - such as PCI bridges - have to wait for 
-> children, even though they don't need to, and don't want to.
-> 
-> So I suggested an admittedly ugly hack to take care of it - rather than 
-> some complex infrastructure.
+Note, when I tested this, I couldn't get it to work at all, with the
+original patch applied, or reverted.  Turns out that this is an issue
+with my system and CUPS, it wanted the usblp driver to not be loaded at
+all in order for it to print to my printer, which is something new to
+me, and I'll need to figure that out later.
 
-It doesn't feel like an ugly hack to me.  It seems like exactly the 
-Right Thing To Do: Make as many devices as possible use async 
-suspend/resume.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-The only reason we don't make every device async is because we don't
-know whether it's safe.  In the case of PCI bridges we _do_ know --
-because they don't have any work to do outside of
-late_suspend/early_resume -- and so they _should_ be async.
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
-The same goes for devices that don't have suspend or resume methods.
+thanks,
 
-There remains a separate question: Should async devices also be forced
-to wait for their children?  I don't see why not.  For PCI bridges it
-won't make any significant difference.  As long as the async code
-doesn't have to do anything, who cares when it runs?
+greg k-h
 
-Alan Stern
+------------
+
+ drivers/usb/core/usb.c |   23 ++++++++++++++++-------
+ 1 files changed, 16 insertions(+), 7 deletions(-)
+
+---------------
+
+Greg Kroah-Hartman (1):
+      Revert "USB: Close usb_find_interface race"
+
+Russ Dill (1):
+      USB: Close usb_find_interface race v3
 
