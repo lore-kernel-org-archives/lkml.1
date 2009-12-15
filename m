@@ -1,40 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbZLOOJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbZLOOLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760316AbZLOOJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 09:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbZLOOJ4
+	id S1760327AbZLOOLF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 09:11:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760293AbZLOOLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 09:09:56 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39303 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760275AbZLOOJ4 (ORCPT
+	Tue, 15 Dec 2009 09:11:04 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:53539 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760285AbZLOOLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 09:09:56 -0500
-To: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jdike@addtoit.com,
-       tony.luck@intel.com, mhiramat@redhat.com
-Subject: Re: [RFC, PATCH 4/4] elf_core_dump(): Add extended numbering support
-From: Andi Kleen <andi@firstfloor.org>
-References: <20091215.114149.189724375.d.hatayama@jp.fujitsu.com>
-Date: Tue, 15 Dec 2009 15:09:54 +0100
-In-Reply-To: <20091215.114149.189724375.d.hatayama@jp.fujitsu.com> (Daisuke HATAYAMA's message of "Tue, 15 Dec 2009 11:41:49 +0900 (JST)")
-Message-ID: <87k4wowcp9.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 15 Dec 2009 09:11:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=peUIQGYmsVWVxa/k9XuhF5FvWOxXeahw7l0joUZrGAM7B7LFQsmSz6IH9aEmM19fEt
+         9lidB6ImG+1ofTp9nEXUHvBumkf2voe2xKuPYJpdANOuJCwGmVsCZ2EgJ/WGr2UYFUFU
+         GIn65remD22P2L92WWTF8N/StVOSOUqgqd8y4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 15 Dec 2009 16:10:59 +0200
+Message-ID: <7f9112a50912150610j589b553eiee016e4417f50dd6@mail.gmail.com>
+Subject: what is prerequest needed to manipulate with kernel security?
+From: khaled MOHAMMED atteya <khaled.m.atteya@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com> writes:
+Hi all,
+I want to understand linux kernel security ,so what am i needing to
+study security directory in linux package(i.e prerequests)?
 
-> diff --git a/arch/um/sys-i386/elfcore.c b/arch/um/sys-i386/elfcore.c
-> index 4e320f0..4e34e47 100644
-> --- a/arch/um/sys-i386/elfcore.c
-> +++ b/arch/um/sys-i386/elfcore.c
+Thanks
 
-Again you only seem to patch UML, not real x86 (arch/x86/*) ?
-
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+          ####################
+     THERE IS NO GOD BUT ALLAH
+MOHAMMED IS MASSENGER OF ALLAH
+          ####################
+WITH MY RESPECT
+Khaled.M.Atteya
