@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbZLORPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbZLORPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932649AbZLORPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 12:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932628AbZLORPr
+	id S932555AbZLORPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 12:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932604AbZLORPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 12:15:47 -0500
-Received: from kroah.org ([198.145.64.141]:41849 "EHLO coco.kroah.org"
+	Tue, 15 Dec 2009 12:15:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47989 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932614AbZLORPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 12:15:45 -0500
-Date: Tue, 15 Dec 2009 09:14:33 -0800
-From: Greg KH <greg@kroah.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Ike Panhc <ike.pan@canonical.com>, linux-kernel@vger.kernel.org,
-       Tomas Winkler <tomas.winkler@intel.com>, stable@kernel.org,
-       Wey-Yi Guy <wey-yi.w.guy@intel.com>
-Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
-Message-ID: <20091215171433.GA4337@kroah.com>
-References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>
- <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
- <20091215041500.GB31200@kroah.com>
- <4B273479.6050502@canonical.com>
- <20091215134943.GA11667@kroah.com>
- <1260894840.4041.35.camel@localhost.localdomain>
- <20091215163923.GA8735@tuxdriver.com>
+	id S932454AbZLORPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 12:15:37 -0500
+Message-ID: <4B27C437.5010607@redhat.com>
+Date: Tue, 15 Dec 2009 12:15:35 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091215163923.GA8735@tuxdriver.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/3] perf symbols: Make symbol_conf global
+References: <1260892717-20841-1-git-send-email-acme@infradead.org> <20091215161120.GH21796@ghostprotocols.net>
+In-Reply-To: <20091215161120.GH21796@ghostprotocols.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 11:39:24AM -0500, John W. Linville wrote:
-> On Tue, Dec 15, 2009 at 08:34:00AM -0800, Marcel Holtmann wrote:
+Arnaldo Carvalho de Melo wrote:
+> Em Tue, Dec 15, 2009 at 01:58:35PM -0200, Arnaldo Carvalho de Melo escreveu:
+>> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+>>
+>> This simplifies a lot of functions, less stuff to be done by tool
+>> writers.
 > 
-> > I agree here. Not copying Reinette on this is just wrong. And blindly
-> > picking some patches and sending them for -stable even more.
-> 
-> I agree that Reinette should have been copied.  I'm not sure I agree
-> that sending the patches was wrong by itself.
+> Ingo, this clashes with the batch Masami-san just submitted, please
+> defer applying my series so that I can rework it to take into account
+> the changes that Masami-san contributed.
 
-I'm not saying it is wrong, but I agree, you need to copy the
-maintainer, as we would need their ack before being able to accept any
-type of backport.
+Ah, thank you for working on that!
+Feel free to update builtin-probe.c too :-) it might be use
+symbol.c in different way from others. (for getting vmlinux path)
 
-Ike, the script, scripts/get_maintainer.pl is your friend here.
+Thanks,
 
-thanks,
+-- 
+Masami Hiramatsu
 
-greg k-h
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
