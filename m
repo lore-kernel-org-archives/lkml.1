@@ -1,33 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759759AbZLOQdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbZLOQZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759759AbZLOQdX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 11:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZLOQdX
+	id S1760545AbZLOQZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 11:25:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760529AbZLOQZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 11:33:23 -0500
-Received: from webmail1.ode.cdnet.dk ([85.218.129.42]:60180 "EHLO webmail1.ode"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754389AbZLOQdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 11:33:22 -0500
-MIME-Version: 1.0
-Date: Tue, 15 Dec 2009 17:22:32 +0100
-From: "winners@thebigbiglotto.co.uk" <ga01640@galnet.dk>
-To: undisclosed-recipients:;
-Subject: THE-BIG-BIG LOTTO, UK =?UTF-8?Q?=C2=A9=32=30=30=39?=
-Organization: "De gamle"
-Reply-To: mrbenham.cole@gmx.com
-Message-ID: <c68096f25c405d889c4a774571b06693@localhost>
-User-Agent: RoundCube Webmail/0.2.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 15 Dec 2009 11:25:29 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:59112 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754523AbZLOQZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 11:25:28 -0500
+Subject: Re: PATCH v2 3/4] Defer skb allocation -- new recvbuf alloc &
+ receive calls
+From: Shirley Ma <mashirle@us.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <20091215113327.GC13110@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain>
+	 <200911231123.18898.rusty@rustcorp.com.au>
+	 <20091208122134.GA17286@redhat.com>
+	 <1260534506.30371.6.camel@localhost.localdomain>
+	 <1260535613.30371.24.camel@localhost.localdomain>
+	 <20091213114320.GC7074@redhat.com>
+	 <1260828518.8716.105.camel@localhost.localdomain>
+	 <20091215113327.GC13110@redhat.com>
+Content-Type: text/plain
+Date: Tue, 15 Dec 2009 08:25:20 -0800
+Message-Id: <1260894320.4387.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-12-15 at 13:33 +0200, Michael S. Tsirkin wrote:
+> So what I would suggest is, have function
+> that just copies part of skb, and have
+> caller open-code allocating the skb and free up
+> pages as necessary.
+Yes, the updated patch has changed the function.
 
+> What I am asking is why do we add skb in vi->recv.
+> Can't we use vq destoy hack here as well?
+Yes, I removed recv queue skb link totally in the updated patch.
 
--- 
-Your e-mail address attached to Winning ticket number 00002765649541,Serial
-number BIG-3673050706-07 and lucky numbers (46)0023/4440/20/89 won
-£500,000.00 GBP. Contact Mr Benham Cole for info. Email:
-2009agent.benhamcole@gmail.com
+> > One is for big packet virtio_net_hdr, one is for goodcopy skb.
+> 
+> 
+> Maybe put this in a comment then.
+Ok, will do.
+
+> 
+> I mean the for loop: can i be for(i = 0, ..., ++i) just as well?
+> Why do you start at the end of buffer and decrement?
+
+Are asking why reverse order for new page to sg? The reason is we link
+the new page in first, and only maintain the first pointer. So the most
+recent new page should be related to sg[0], if we put the new page in
+the last, then we need to travel the page list to get last pointer. Am I
+missing your point here?
+
+Thanks
+Shirley 
+
