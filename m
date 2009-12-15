@@ -1,128 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbZLOSua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbZLOSsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933305AbZLOSua (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 13:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZLOSu3
+	id S1758439AbZLOSsG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 13:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbZLOSsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 13:50:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2402 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760133AbZLOSu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 13:50:27 -0500
-Date: Tue, 15 Dec 2009 20:47:40 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Shirley Ma <mashirle@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH] Subject: virtio: Add unused buffers detach from
-	vring
-Message-ID: <20091215184740.GD25724@redhat.com>
-References: <200911231123.18898.rusty@rustcorp.com.au> <20091208122134.GA17286@redhat.com> <1260534506.30371.6.camel@localhost.localdomain> <1260535613.30371.24.camel@localhost.localdomain> <20091213114320.GC7074@redhat.com> <1260828518.8716.105.camel@localhost.localdomain> <20091215113327.GC13110@redhat.com> <1260894320.4387.64.camel@localhost.localdomain> <20091215163901.GA24015@redhat.com> <1260902573.4387.76.camel@localhost.localdomain>
+	Tue, 15 Dec 2009 13:48:00 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:33538 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756753AbZLOSr7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 13:47:59 -0500
+Date: Tue, 15 Dec 2009 11:47:58 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       rdreier@cisco.com, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: kexec boot regression
+Message-ID: <20091215184758.GP7812@parisc-linux.org>
+References: <20091215115052.GA28252@kernel.dk> <4B277AB2.8030107@kernel.org> <20091215121436.GB28252@kernel.dk> <4B2781AC.8020301@kernel.org> <20091215123951.GD28252@kernel.dk> <4B278734.2040704@kernel.org> <20091215141105.GK28252@kernel.dk> <4B27D7E9.4030105@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260902573.4387.76.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B27D7E9.4030105@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 10:42:53AM -0800, Shirley Ma wrote:
-> I submit one split patch for review to make sure that's the right format.
-> I copied Rusty's comment for the commit message, and change destroy
-> to detach since we destroy the buffers in caller. This patch is built
-> against Dave's net-next tree.
+On Tue, Dec 15, 2009 at 10:39:37AM -0800, Yinghai Lu wrote:
+> +	/* some sys doesn't get mmconf enabled */
+> +	if (dev->cfg_size < 0x200)
+> +		return;
 
-Almost :) text not intended for git commit logs like the above
-should go after ---, this way git am knows to skip it.
+What is the meaning of this mystic 0x200?
 
-> There's currently no way for a virtio driver to ask for unused
-> buffers, so it has to keep a list itself to reclaim them at shutdown.
-> This is redundant, since virtio_ring stores that information.  So
-> add a new hook to do this: virtio_net will be the first user.
-> 
-> Signed-off-by: Shirley Ma <xma@us.ibm.com> 
-> ---
->  drivers/virtio/virtio_ring.c |   24 ++++++++++++++++++++++++
->  include/linux/virtio.h       |    1 +
->  2 files changed, 25 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> index fbd2ecd..f847bc3 100644
-> --- a/drivers/virtio/virtio_ring.c
-> +++ b/drivers/virtio/virtio_ring.c
-> @@ -334,6 +334,29 @@ static bool vring_enable_cb(struct virtqueue *_vq)
->  	return true;
->  }
->  
-> +/* This function is used to return vring unused buffers to caller for free */
-> +static void *vring_detach_bufs(struct virtqueue *_vq)
-> +{
-> +	struct vring_virtqueue *vq = to_vvq(_vq);
-> +	unsigned int i;
-> +
-> +	START_USE(vq);
-> +
-> +	for (i = 0; i < vq->vring.num; ++i) {
-
-This is a single statement loop, so you do not need {}
-around it. Or even better:
-	for (i = 0; i < vq->vring.num; ++i) {
-		if (!vq->data[i])
-			continue;
-		...
-	}
-which has less nesting.
-
-> +		if (vq->data[i]) {
-> +			/* detach_buf clears data, so grab it now. */
-
-You wrote that comment, but did you read it :)
-
-> +			detach_buf(vq, i);
-> +			END_USE(vq);
-> +			return vq->data[i];
-
-In fact, this will return NULL always, won't it?
-
-> +		}
-> +	}
-> +	/* That should have freed everything. */
-> +	BUG_ON(vq->num_free != vq->vring.num);
-> +
-> +	END_USE(vq);
-> +	return NULL;
-> +}
-> +
->  irqreturn_t vring_interrupt(int irq, void *_vq)
->  {
->  	struct vring_virtqueue *vq = to_vvq(_vq);
-> @@ -360,6 +383,7 @@ static struct virtqueue_ops vring_vq_ops = {
->  	.kick = vring_kick,
->  	.disable_cb = vring_disable_cb,
->  	.enable_cb = vring_enable_cb,
-> +	.detach_bufs = vring_detach_bufs,
->  };
->  
->  struct virtqueue *vring_new_virtqueue(unsigned int num,
-> diff --git a/include/linux/virtio.h b/include/linux/virtio.h
-> index 057a2e0..d7da456 100644
-> --- a/include/linux/virtio.h
-> +++ b/include/linux/virtio.h
-> @@ -71,6 +71,7 @@ struct virtqueue_ops {
->  
->  	void (*disable_cb)(struct virtqueue *vq);
->  	bool (*enable_cb)(struct virtqueue *vq);
-> +	void *(*detach_bufs)(struct virtqueue *vq);
->  };
-
-
-Please add documentation in virtio.h
-Thanks!
-
->  
->  /**
-> 
-> Thanks
-> Shirley
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
