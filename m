@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbZLOWOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbZLOWQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761362AbZLOWOA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 17:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761352AbZLOWOA
+	id S933976AbZLOWQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 17:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761355AbZLOWQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 17:14:00 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:53657 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761349AbZLOWN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 17:13:59 -0500
-Date: Tue, 15 Dec 2009 22:13:58 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
-Message-ID: <20091215221357.GA26024@opensource.wolfsonmicro.com>
-References: <alpine.DEB.2.00.0912152157330.27772@ayla.of.borg>
+	Tue, 15 Dec 2009 17:16:25 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:46344 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761353AbZLOWQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 17:16:24 -0500
+Date: Tue, 15 Dec 2009 23:16:23 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       Heinz Diehl <htd@fancy-poultry.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device
+	mapper warnings
+Message-ID: <20091215221623.GH28252@kernel.dk>
+References: <200912091049.12604.borntraeger@de.ibm.com> <20091209212516.GA6206@fancy-poultry.org> <20091209214501.GC8742@kernel.dk> <20091209220749.GD8742@kernel.dk> <alpine.DEB.2.01.0912151354350.3483@bogon.housecafe.de> <20091215220249.GG28252@kernel.dk> <yq14onrubyq.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0912152157330.27772@ayla.of.borg>
-X-Cookie: Condense soup, not books!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <yq14onrubyq.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 10:00:02PM +0100, Geert Uytterhoeven wrote:
-> From e2def3261a58e9c0e56b710b2020858df010a2c1 Mon Sep 17 00:00:00 2001
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> Date: Tue, 15 Dec 2009 21:49:57 +0100
-> Subject: [PATCH] mfd: MFD_WM831X should depend on GENERIC_HARDIRQS
+On Tue, Dec 15 2009, Martin K. Petersen wrote:
+> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> commit 5fb4d38b19d95a5f980f0a10adba798f5b92128c ("mfd: Move WM831x to generic
-> IRQ") didn't take into account that genirq support depends on GENERIC_HARDIRQS.
+> Jens> I'll revert the bad commit tomorrow so that -rc1 wont be affected,
+> Jens> at least.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> I'm pretty close to having a new stacking algorithm that works.  If I
+> don't have it ready by tomorrow maybe we should commit the following
+> patch instead of reverting the discard changes wholesale?
+> 
+> diff --git a/block/blk-settings.c b/block/blk-settings.c
+> index dd1f1e0..65ae861 100644
+> --- a/block/blk-settings.c
+> +++ b/block/blk-settings.c
+> @@ -555,10 +555,8 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
+>  	}
+>  
+>  	if (offset &&
+> -	    (offset & (b->discard_granularity - 1)) != b->discard_alignment) {
+> +	    (offset & (b->discard_granularity - 1)) != b->discard_alignment)
+>  		t->discard_misaligned = 1;
+> -		ret = -1;
+> -	}
+>  
+>  	/* If top has no alignment offset, inherit from bottom */
+>  	if (!t->alignment_offset)
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+I guess we could do that, as long as it gets really fixed before 2.6.33.
+It's a bit ugly to be exporting the device as misaligned, when it's
+really just a fudged internally.
+
+-- 
+Jens Axboe
+
