@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934901AbZLPQFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934230AbZLPQEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934901AbZLPQFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 11:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932857AbZLPQFs
+	id S934230AbZLPQEn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 11:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZLPQEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 11:05:48 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56016 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934054AbZLPQFo (ORCPT
+	Wed, 16 Dec 2009 11:04:42 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:44555 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbZLPQEl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 11:05:44 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf diff: Change the default sort order to "dso,symbol"
-Date: Wed, 16 Dec 2009 14:05:30 -0200
-Message-Id: <1260979530-1883-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Wed, 16 Dec 2009 11:04:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=nysVDw+MNAe/LF4wNMgqgxH8xcTy5FyPKkFmoB+G/sQ6l0NYMj9wd3MHN7OFylya0d
+         uTxHHaAn6DQm20ITW7FtpmXz/Fx4lTlEn+wXaCK7zJoSS7uCr9AW3jpqtzv1mk6JJ9/j
+         gpxI94Vir/Hhwb1MTMkiFO/9ZdVQMyRbkrpu8=
+Message-ID: <4B290589.2030607@gmail.com>
+Date: Wed, 16 Dec 2009 17:06:33 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] vivi: Fix test of unsigned in vivi_create_instance()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+video_nr is unsigned so the test did not work.
 
-$ perf diff | head -8
-     9.02%     +1.00%  libc-2.10.1.so               [.] _IO_vfprintf_internal
-     2.91%     -1.00%  [kernel]                     [k] __kmalloc
-     2.85%     -1.00%  [kernel]                     [k] ext4_htree_store_dirent
-     1.99%     -1.00%  [kernel]                     [k] _atomic_dec_and_lock
-     2.44%             [kernel]
-$
-
-Suggested-by: Ingo Molnar <mingo@elte.hu>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- tools/perf/builtin-diff.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Found using coccinelle: http://coccinelle.lip6.fr/
 
-diff --git a/tools/perf/builtin-diff.c b/tools/perf/builtin-diff.c
-index 66f100d..4d33b55 100644
---- a/tools/perf/builtin-diff.c
-+++ b/tools/perf/builtin-diff.c
-@@ -18,6 +18,7 @@
+diff --git a/drivers/media/video/vivi.c b/drivers/media/video/vivi.c
+index 7705fc6..328af3a 100644
+--- a/drivers/media/video/vivi.c
++++ b/drivers/media/video/vivi.c
+@@ -1375,7 +1375,7 @@ static int __init vivi_create_instance(int inst)
+ 	snprintf(vfd->name, sizeof(vfd->name), "%s (%i)",
+ 			vivi_template.name, vfd->num);
  
- static char const *input_old = "perf.data.old",
- 		  *input_new = "perf.data";
-+static char	  diff__default_sort_order[] = "dso,symbol";
- static int  force;
- static bool show_displacement;
+-	if (video_nr >= 0)
++	if (video_nr != -1)
+ 		video_nr++;
  
-@@ -220,6 +221,7 @@ static const struct option options[] = {
- 
- int cmd_diff(int argc, const char **argv, const char *prefix __used)
- {
-+	sort_order = diff__default_sort_order;
- 	argc = parse_options(argc, argv, options, diff_usage, 0);
- 	if (argc) {
- 		if (argc > 2)
--- 
-1.6.2.5
-
+ 	dev->vfd = vfd;
