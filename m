@@ -1,121 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762039AbZLPLJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbZLPLPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762039AbZLPLJP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 06:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762018AbZLPLJO
+	id S1762071AbZLPLPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 06:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762063AbZLPLPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 06:09:14 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:34593 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbZLPLJM convert rfc822-to-8bit (ORCPT
+	Wed, 16 Dec 2009 06:15:40 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42297 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762062AbZLPLPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 06:09:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Vgsnag1xU4N7sDSMo654bipn+phloFKxIKleuKBiWB92rJxc7ypg0M0LMf+29SLSNb
-         A2BF5jRnBTUHDi0iM6Iq6ZHF5tQ67CX+f9SGDWDuAU9v6I/5tJDjbpXFCIVhCsSx1RY9
-         ly8LaNSY8tbTAGHqRD7Ff94VgNjUCLs86rJsU=
-MIME-Version: 1.0
-In-Reply-To: <4B289C93.3070603@cn.fujitsu.com>
-References: <4B289C93.3070603@cn.fujitsu.com>
-Date: Wed, 16 Dec 2009 12:09:10 +0100
-Message-ID: <4e5e476b0912160309o100f538fo2462c8ac98dca844@mail.gmail.com>
-Subject: Re: [PATCH] cfq: Remove useless css reference get
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Dec 2009 06:15:38 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 16 Dec 2009 20:12:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+Message-Id: <20091216201218.42ff7f05.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091216104951.GD15031@basil.fritz.box>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091216101107.GA15031@basil.fritz.box>
+	<20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091216102806.GC15031@basil.fritz.box>
+	<20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091216104951.GD15031@basil.fritz.box>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gui,
-maybe you can add a comment that cfq_find_alloc_cfqg can now be called
-only under rcu_read_lock().
+On Wed, 16 Dec 2009 11:49:51 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-On Wed, Dec 16, 2009 at 9:38 AM, Gui Jianfeng
-<guijianfeng@cn.fujitsu.com> wrote:
-> There's no need to take css reference here, for the caller
-> has already called rcu_read_lock() to prevent cgroup from
-> being removed.
->
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  block/blk-cgroup.c  |   14 --------------
->  block/blk-cgroup.h  |    3 ---
->  block/cfq-iosched.c |    5 -----
->  3 files changed, 0 insertions(+), 22 deletions(-)
->
-> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-> index 1fa2654..cba28f4 100644
-> --- a/block/blk-cgroup.c
-> +++ b/block/blk-cgroup.c
-> @@ -23,20 +23,6 @@ static LIST_HEAD(blkio_list);
->  struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
->  EXPORT_SYMBOL_GPL(blkio_root_cgroup);
->
-> -bool blkiocg_css_tryget(struct blkio_cgroup *blkcg)
-> -{
-> -       if (!css_tryget(&blkcg->css))
-> -               return false;
-> -       return true;
-> -}
-> -EXPORT_SYMBOL_GPL(blkiocg_css_tryget);
-> -
-> -void blkiocg_css_put(struct blkio_cgroup *blkcg)
-> -{
-> -       css_put(&blkcg->css);
-> -}
-> -EXPORT_SYMBOL_GPL(blkiocg_css_put);
-> -
->  struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
->  {
->        return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
-> diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-> index 4d316df..84bf745 100644
-> --- a/block/blk-cgroup.h
-> +++ b/block/blk-cgroup.h
-> @@ -43,9 +43,6 @@ struct blkio_group {
->        unsigned long sectors;
->  };
->
-> -extern bool blkiocg_css_tryget(struct blkio_cgroup *blkcg);
-> -extern void blkiocg_css_put(struct blkio_cgroup *blkcg);
-> -
->  typedef void (blkio_unlink_group_fn) (void *key, struct blkio_group *blkg);
->  typedef void (blkio_update_group_weight_fn) (struct blkio_group *blkg,
->                                                unsigned int weight);
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index e2f8046..5d6b427 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -958,10 +958,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
->        struct backing_dev_info *bdi = &cfqd->queue->backing_dev_info;
->        unsigned int major, minor;
->
-> -       /* Do we need to take this reference */
-> -       if (!blkiocg_css_tryget(blkcg))
-> -               return NULL;;
-> -
->        cfqg = cfqg_of_blkg(blkiocg_lookup_group(blkcg, key));
->        if (cfqg || !create)
->                goto done;
-> @@ -992,7 +988,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
->        hlist_add_head(&cfqg->cfqd_node, &cfqd->cfqg_list);
->
->  done:
-> -       blkiocg_css_put(blkcg);
->        return cfqg;
->  }
->
-> --
-> 1.5.4.rc3
+> On Wed, Dec 16, 2009 at 07:31:09PM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Wed, 16 Dec 2009 11:28:06 +0100
+> > Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > > > Also the patches didn't fare too well in testing unfortunately.
+> > > > > 
+> > > > > I suspect we'll rather need multiple locks split per address
+> > > > > space range.
+> > > > 
+> > > > This set doesn't include any changes of the logic. Just replace all mmap_sem.
+> > > > I think this is good start point (for introducing another logic etc..)
+> > > 
+> > > The problem is that for range locking simple wrapping the locks
+> > > in macros is not enough. You need more changes.
+> > > 
+> > maybe. but removing scatterred mmap_sem from codes is the first thing to do.
+> > I think this removing itself will take 3 month or a half year.
+> > (So, I didn't remove mmap_sem and leave it as it is.)
+> 
+> I suspect you would just need to change them again then.
+> 
+Do you have alternative recommendation rather than wrapping all accesses by
+special functions ?
 
 Thanks,
-Corrado
+-Kame
+
