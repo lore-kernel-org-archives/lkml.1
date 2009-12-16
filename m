@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759331AbZLPO5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbZLPO6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759331AbZLPO5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 09:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbZLPO5R
+	id S1758518AbZLPO6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 09:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbZLPO6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 09:57:17 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:46887 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758361AbZLPO5M (ORCPT
+	Wed, 16 Dec 2009 09:58:36 -0500
+Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:52432 "EHLO
+	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756279AbZLPO6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 09:57:12 -0500
-Date: Wed, 16 Dec 2009 09:56:47 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: anyone including <linux/perf_counter.h>?
-In-Reply-To: <20091216145120.GL28962@bombadil.infradead.org>
-Message-ID: <alpine.LFD.2.00.0912160955420.7853@localhost>
-References: <alpine.LFD.2.00.0912160939510.7588@localhost> <20091216145120.GL28962@bombadil.infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 16 Dec 2009 09:58:35 -0500
+From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Subject: radeon KMS causes GART Table Walk Errors (was: K8 ECC error with linux-2.6.32)
+Date: Wed, 16 Dec 2009 15:58:30 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-fglrx; KDE/4.3.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de> <200912152300.46325.johannes.hirte@fem.tu-ilmenau.de> <20091216071443.GA18814@aftab>
+In-Reply-To: <20091216071443.GA18814@aftab>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912161558.30819.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009, Kyle McMartin wrote:
+Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
+> On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
+> > This patch (as the BIOS option) will only disable the error reports. The
+> > error itself will still occur, right? So necessary to find out why the
+> > radeon driver trigger this error.
+> 
+> Because the graphics driver does aperture accesses with no
+> matching GART translation, and the hw generates mchecks for
+> that. The whole story on GART table walk errors is in section
+> "13.10.1 GART Table Walk Error Reporting" in the document here:
+> http://support.amd.com/us/Processor_TechDocs/32559.pdf
+> 
+> I can't say for sure about your BIOS, but if it is done as described in
+> the abovementioned section, the BIOS option should disable logging of
+> the error, which implies reporting too.
+> 
+> The patch is still needed for machines that do not have that BIOS
+> option.
 
-> On Wed, Dec 16, 2009 at 09:42:50AM -0500, Robert P. J. Day wrote:
-> >
-> >   just prepping to run my cleanup suggestion scripts after the merge
-> > window closes, quick test run on some scripts and ran across the fact
-> > that no one appears to be including <linux/perf_counter.h>.
-> >
-> >   any value to that file?  just curious.  much more pedantry after the
-> > merge window, of course.
->
-> See the comment at the top, it's being provided to provide the old
-> names to userspace for a short time, now that the functionality has
-> been renamed to perf_events.
+Disabling in BIOS doesn't made any difference. The errors were still reported. 
+Your patch disabled it. But I think this will make work harder for driver 
+developers as they won't get this error anymore. Could this be made changeable 
+on runtime/boottime?
 
-  but if it's supposed to be providing info to user-space, shouldn't
-it be *exported* to user space?  it's not listed in
-include/linux/Kbuild.  or am i misunderstanding?
+I've added drm people to CC as they're responsible for this error.
 
-rday
---
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+regards,
+  Johannes
