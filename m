@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbZLPVRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbZLPVVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300AbZLPVRm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 16:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZLPVRl
+	id S932329AbZLPVVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 16:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbZLPVVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 16:17:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53617 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757570AbZLPVRl (ORCPT
+	Wed, 16 Dec 2009 16:21:14 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:57192 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932210AbZLPVVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 16:17:41 -0500
-Subject: [PATCH 13/12] sched: remove debug check
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091216170430.073353839@chello.nl>
-References: <20091216170430.073353839@chello.nl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 22:17:18 +0100
-Message-ID: <1260998238.21028.384.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 16 Dec 2009 16:21:13 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes when ..."
+Date: Wed, 16 Dec 2009 21:20:34 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.32-07500-g8bea867-dirty; KDE/4.3.2; x86_64; ; )
+Cc: Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
+       Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
+       Daniel Vetter <daniel.vetter@ffwll.ch>
+References: <200912071830.14697.arnd@arndb.de> <200912161453.12100.arnd@arndb.de> <20091216121823.08b5f0a6@jbarnes-piketon>
+In-Reply-To: <20091216121823.08b5f0a6@jbarnes-piketon>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912162120.34163.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19g1YcjeLXhJMEZDQWkg0MI92QUDYCxDOVeWPF
+ HuU+bJwgFbrtYxCnedJrecxGMGDhnPDiMmqcJ2fXiAN+uzH6uc
+ skpeW1BGFHViMOgdnecjw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since you're running into this warning and not seeing any obvious ill
-side-effects (you'd see some serious starvation issues), please stick
-this patch in for now.
+On Wednesday 16 December 2009 20:18:23 Jesse Barnes wrote:
+> On Wed, 16 Dec 2009 14:53:11 +0100
+> Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> > It's working fine so far, no more crashes, but I supposed this
+> > effectively disables the power saving on my card again, right?
+> 
+> The patch just disables one (probably ineffective) power saving
+> feature.  So if things are working well for you with it I'll queue up a
+> revert patch.  I'm working on a better version of dynamic clock control
+> anyway.
 
-I can't seem to convince myself if its a real problem or not, and how it
-could possibly happen, but my brain is giving up for today.
+It just crashed again after a few hours of uptime with some unrelated
+reboots in-between, with your patch applied.
 
----
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2036,14 +2036,6 @@ task_hot(struct task_struct *p, u64 now,
- 
- void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- {
--#ifdef CONFIG_SCHED_DEBUG
--	/*
--	 * We should never call set_task_cpu() on a blocked task,
--	 * ttwu() will sort out the placement.
--	 */
--	WARN_ON(p->state != TASK_RUNNING && p->state != TASK_WAKING);
--#endif
--
- 	trace_sched_migrate_task(p, new_cpu);
- 
- 	if (task_cpu(p) == new_cpu)
+The symptom was slightly different, now the whole screen was filled
+with random patterns, not just parts of the screen. Aside from that, it
+was just the same complete lockup as without the patch. Possibly less
+frequent, but that's hard to tell after a single sample.
 
-
+	Arnd
