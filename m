@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZLPFiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZLPFko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZLPFiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 00:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZLPFiU
+	id S1753978AbZLPFko (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 00:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZLPFkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 00:38:20 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:42891 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606AbZLPFiT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 00:38:19 -0500
-Message-ID: <4B287242.5070002@in.ibm.com>
-Date: Wed, 16 Dec 2009 11:08:10 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins> <4B261D7A.9040802@in.ibm.com>  <1260793182.4165.223.camel@twins> <1260825420.2217.40.camel@pasglop>  <4B275A6B.9030200@in.ibm.com> <1260873827.4165.362.camel@twins>  <4B279370.5050800@in.ibm.com> <1260889402.4165.434.camel@twins>
-In-Reply-To: <1260889402.4165.434.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 16 Dec 2009 00:40:41 -0500
+Received: from mga11.intel.com ([192.55.52.93]:5704 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752606AbZLPFkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 00:40:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,403,1257148800"; 
+   d="scan'208";a="523553118"
+Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
+From: Huang Ying <ying.huang@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0912160032450.28497@localhost.localdomain>
+References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com>
+	 <alpine.LFD.2.00.0912160032450.28497@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 13:40:38 +0800
+Message-ID: <1260942038.13378.17.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Could you try the below?
->   
-No luck. Still the same issue. The mask values don't change.
+On Wed, 2009-12-16 at 13:38 +0800, Len Brown wrote: 
+> Please use git send-email for sending a patch series,
+> or some other tool that will properly format the Subject line,
+> and result in the series being properly threaded in my e-mail reader
+> rather than being a collection of unrelated messages.
+> 
+> As these patches were sent as independent e-mails
+> and had a typo in the manaully typed in subject line,
+> I didn't find 1/5 when I was looking at 2/5.
+> (and these should be preceeded with 0/5, per previous feedback)
 
-Thanks
--Sachin
+OK. I will send with git send-email in following versions.
 
-> ---
->  init/main.c |    7 +------
->  1 files changed, 1 insertions(+), 6 deletions(-)
->
-> diff --git a/init/main.c b/init/main.c
-> index 4051d75..4be7de2 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -369,12 +369,6 @@ static void __init smp_init(void)
->  {
->  	unsigned int cpu;
->  
-> -	/*
-> -	 * Set up the current CPU as possible to migrate to.
-> -	 * The other ones will be done by cpu_up/cpu_down()
-> -	 */
-> -	set_cpu_active(smp_processor_id(), true);
-> -
->  	/* FIXME: This should be done in userspace --RR */
->  	for_each_present_cpu(cpu) {
->  		if (num_online_cpus() >= setup_max_cpus)
-> @@ -486,6 +480,7 @@ static void __init boot_cpu_init(void)
->  	int cpu = smp_processor_id();
->  	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
->  	set_cpu_online(cpu, true);
-> +	set_cpu_active(cpu, true);
->  	set_cpu_present(cpu, true);
->  	set_cpu_possible(cpu, true);
->  }
->
->
->   
+Best Regards,
+Huang Ying
 
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
 
