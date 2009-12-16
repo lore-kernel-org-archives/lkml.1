@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763371AbZLPXO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965233AbZLPXPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763371AbZLPXO7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763362AbZLPXO6
+	id S965233AbZLPXPY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:15:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935295AbZLPXPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:14:58 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:35045 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760988AbZLPXO4 (ORCPT
+	Wed, 16 Dec 2009 18:15:19 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:40760 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935282AbZLPXPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:14:56 -0500
-Date: Wed, 16 Dec 2009 21:14:51 -0200
-From: cascardo@holoscopio.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Greg KH <gregkh@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rubini@gnudd.com
-Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
- allocation
-Message-ID: <20091216231451.GC7791@holoscopio.com>
-References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
- <1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
- <1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
- <4AF8B4FF.9050405@zytor.com>
- <20091111153632.944a255c.akpm@linux-foundation.org>
- <20091215143446.8b6a7e57.akpm@linux-foundation.org>
- <4B2810D6.9030309@zytor.com>
- <20091215225630.GA12918@suse.de>
- <20091215235639.25e841f1@lxorguk.ukuu.org.uk>
+	Wed, 16 Dec 2009 18:15:16 -0500
+Date: Thu, 17 Dec 2009 07:15:08 +0800
+From: Daniel Mack <daniel@caiaq.de>
+To: Dan Williams <dcbw@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Holger Schurig <holgerschurig@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Maithili Hinge <maithili@marvell.com>,
+       Kiran Divekar <dkiran@marvell.com>,
+       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] Libertas: fix buffer overflow in lbs_get_essid()
+Message-ID: <20091216231508.GX28375@buzzloop.caiaq.de>
+References: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
+ <1260982667.2179.9.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091215235639.25e841f1@lxorguk.ukuu.org.uk>
+In-Reply-To: <1260982667.2179.9.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 11:56:39PM +0000, Alan Cox wrote:
-> What I have been doing in response to requests for misc device
-> allocations is to suggest people simply go and allocate some dynamic
-> device space. There are very very few cases a misc device needs a
-> specific minor and the large dynamic device space has really made misc a
-> "historical" entity which should be treated that way.
+On Wed, Dec 16, 2009 at 08:57:47AM -0800, Dan Williams wrote:
+> On Wed, 2009-12-16 at 05:12 +0100, Daniel Mack wrote:
+> > The libertas driver copies the SSID buffer back to the wireless core and
+> > appends a trailing NULL character for termination. This is
+> > 
+> > a) unnecessary because the buffer is allocated with kzalloc and is hence
+> >    already NULLed when this function is called, and
+> > 
+> > b) for priv->curbssparams.ssid_len == 32, it writes back one byte too
+> >    much which causes memory corruptions.
+> > 
+> > Fix this by removing the extra write.
 > 
-> If you want 2048 minors for a random new device, the kernel will just
-> magic them for you, udev will magic the device nodes, and the tmpfs will
-> handle it nicely
+> Acked-by: Dan Williams <dcbw@redhat.com>
+
+Thanks, everyone. Who will care to pick an queue this one?
+
+Daniel
+
+
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > Cc: Dan Williams <dcbw@redhat.com>
+> > Cc: Holger Schurig <holgerschurig@gmail.com>
+> > Cc: John W. Linville <linville@tuxdriver.com>
+> > Cc: Stephen Hemminger <shemminger@vyatta.com>
+> > Cc: Maithili Hinge <maithili@marvell.com>
+> > Cc: Kiran Divekar <dkiran@marvell.com>
+> > Cc: Michael Hirsch <m.hirsch@raumfeld.com>
+> > Cc: netdev@vger.kernel.org
+> > Cc: libertas-dev@lists.infradead.org
+> > Cc: linux-wireless@lists.infradead.org
+> > Cc: stable@kernel.org
+> > ---
+> >  drivers/net/wireless/libertas/wext.c |    2 --
+> >  1 files changed, 0 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/net/wireless/libertas/wext.c b/drivers/net/wireless/libertas/wext.c
+> > index be837a0..01c738b 100644
+> > --- a/drivers/net/wireless/libertas/wext.c
+> > +++ b/drivers/net/wireless/libertas/wext.c
+> > @@ -1953,10 +1953,8 @@ static int lbs_get_essid(struct net_device *dev, struct iw_request_info *info,
+> >  	if (priv->connect_status == LBS_CONNECTED) {
+> >  		memcpy(extra, priv->curbssparams.ssid,
+> >  		       priv->curbssparams.ssid_len);
+> > -		extra[priv->curbssparams.ssid_len] = '\0';
+> >  	} else {
+> >  		memset(extra, 0, 32);
+> > -		extra[priv->curbssparams.ssid_len] = '\0';
+> >  	}
+> >  	/*
+> >  	 * If none, we may want to get the one that was set
 > 
-> (and if your udev isn't on its own private file system then I hope its an
-> old one, because the current one has a hole in it, which doesn't seem to
-> have been fixed yet)
-> 
-> Alan
-
-I have one "issue" to raise about using anything else: misc devices are
-easy to register: they have a class of its own, you don't need to
-allocate a range and, then, create the device with its respective file
-operations and all that. For one-shot devices, they are really a good
-thing.
-
-Does it make sense to create an easier and simpler API for creating
-character devices that does not allocate a major with minor 0 and 255
-minors which also creates your own class?
-
-I think many device driver writers go for proc filesystem these days
-because you just have to call a function with your file name and file
-operations and that's it. Most of these people are damn lazy people, I
-would agree. But, perhaps, we should make it easier for these lazy
-people to write better interfaces. Or perhaps this would spoil them and
-they would not do their homework and use the right interface anyway.
-
-I've seen code that should have been using the input subsystem and was
-using proc files. And that's why I'm saying they could be spoiled with
-such an easy interface. They would still use the wrong interface anyway,
-with character devices instead of using the input subsystem.
-
-Well, I'll have a go for such an interface and request comments. It
-would not be much different from the misc system anyway, but would allow
-more than one device, any (dynamic) major to be used, and a class name
-for each registerer.
-
-Regards,
-Cascardo.
