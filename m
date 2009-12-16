@@ -1,134 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933486AbZLPG4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbZLPG5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933486AbZLPG4K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 01:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbZLPG4I
+	id S933562AbZLPG5A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 01:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbZLPG46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 01:56:08 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:41931 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932717AbZLPG4F convert rfc822-to-8bit (ORCPT
+	Wed, 16 Dec 2009 01:56:58 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:33757 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932187AbZLPG45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 01:56:05 -0500
+	Wed, 16 Dec 2009 01:56:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=evY5lU7RjeFuVhFo0Pgw1EPrR4IYdhB6lYP1Lyx6BTDEY+wpWSNztjqYrYdB2SIWLf
-         WsQzXh/gFGq0E4x08mGHH7Vs50CFL9pinbGqxgrCy+6QOAj9PjHo6m6lOq/Z4BmNIMDl
-         aYPh5DJ+LNQ5K2FxsK9rvim0FAK2Au93y692E=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=w1XkO4yIlT7K829ee/BileG/N7zuxcHnv4c1eWi0Wy1rgokCACf/PX/FV8qaZOxtAu
+         mO6JiewElsH66gNCP+VkzqEI+3c60UxqAUKPZiF5WsAQcLYCJjlkvavrSQipBJ0ahBTp
+         ItVIUPHGv83JYUpwkaHNwZgDV/6+aj32sK0hc=
+Date: Tue, 15 Dec 2009 22:56:53 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Alex Chiang <achiang@hp.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: synaptics touchpad doesn't click
+Message-ID: <20091216065652.GE2699@core.coreip.homeip.net>
+References: <20091214173450.GB2373@core.coreip.homeip.net> <20091215034127.GC587@ldl.fc.hp.com> <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com> <20091216025934.GA2699@core.coreip.homeip.net> <s5hk4wn5s4x.wl%tiwai@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <4B279370.5050800@in.ibm.com>
-References: <4B2224C7.1020908@in.ibm.com> <1260786122.4165.142.camel@twins>
-	 <4B261D7A.9040802@in.ibm.com> <1260793182.4165.223.camel@twins>
-	 <1260825420.2217.40.camel@pasglop> <4B275A6B.9030200@in.ibm.com>
-	 <1260873827.4165.362.camel@twins> <4B279370.5050800@in.ibm.com>
-Date: Wed, 16 Dec 2009 14:56:01 +0800
-Message-ID: <7b6bb4a50912152256j58cdc8f6u7fc0f38c60281dc8@mail.gmail.com>
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-From: Xiaotian Feng <xtfeng@gmail.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hk4wn5s4x.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 9:47 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
-> Peter Zijlstra wrote:
->>>
->>> I added some debug statements within the above code. This is a 2 cpu
->>> machine.
->>>
->>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->>> XMON dest_cpu = 1024 XMON dest_cpu = 1024 . dead_cpu = 1
->>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->>> XMON dest_cpu = 1024 XMON dest_cpu = 1024 . dead_cpu = 1
->>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->>> XMON dest_cpu = 1024 XMON dest_cpu = 1024 . dead_cpu = 1
->>>
->>> Seems to me that the control is stuck in an infinite loop and hence the
->>> machine appears to be in hung state. The dest_cpu value is always 1024
->>> and never changes, which result in an infinite loop.
->>>
->>> In working scenario the o/p is something on the following lines
->>>
->>> XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->>> XMON dest_cpu = 0 XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->>> XMON dest_cpu = 0 XMON dest_cpu = 1024 . dead_cpu = 1 . nr_cpu_ids = 2
->>> XMON dest_cpu = 0
->>> Let me know if i should try to record any specific value ?
->>>
->>
->> Could you possibly print the two masks themselves? cpumask_scnprintf()
->> and friend come in handy for this.
->>
->> The dest_cpu=1024 thing seem to suggest the intersection between
->> p->cpus_allowed and cpu_active_mask is empty for some reason, even
->> though we forcefully reset p->cpus_allowed to the full set using
->> cpuset_cpus_allowed_locked().
->>
->
-> So here is the data related to the two masks.
->
-> cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000
-> XMON dest_cpu = 1024
->
+On Wed, Dec 16, 2009 at 07:50:54AM +0100, Takashi Iwai wrote:
+> At Tue, 15 Dec 2009 18:59:34 -0800,
+> Dmitry Torokhov wrote:
+> > 
+> > On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
+> > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> > > >
+> > > > The updated patch is below.
+> > > > 
+> > > > -- 
+> > > > Dmitry
+> > > 
+> > > Should I test this one or wait one more iteration to address
+> > > Takashi's last comments?
+> > > 
+> > 
+> > Actually I think we took the wrong direction with the original patch and
+> > we should do what other buttonless devices (bcm5974) do: report touchpad
+> > click as left button and have Synaptics X driver provide enhanced
+> > support. This way we can have both modes (ClickZones and ClickButtons)
+> > and users will get to chose (provided that someone takes time to add
+> > that support to Synaptics driver of course ;) ).
+> 
+> My concern is, still, how would you identify this device.  Will you
+> extend also some ioctls to expose caps and extcaps?  Otherwise it's
+> difficult to identify this device automatically from the user-space.
+> 
 
-How about cpu_online_mask? commit 6ad4c1 switches from cpu_online_mask
-to cpu_active_mask.
-Is there a mismatch for cpu_online_mask and cpu_active_mask?
+No.. Synaptics without right button == ClickPad.
 
-> while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000001
-> XMON dest_cpu = 1024
->
-> In working scenario the above data looks like
->
-> cpu_active_mask = 00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000002
-> XMON dest_cpu = 1
->
-> while p->cpus_allowed =  00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-> 00000000,00000000,00000002
-> XMON dest_cpu = 1
->
->
-> hope i got the data correct.
->
-> Thanks
-> -Sachin
->
->
-> --
->
-> ---------------------------------
-> Sachin Sant
-> IBM Linux Technology Center
-> India Systems and Technology Labs
-> Bangalore, India
-> ---------------------------------
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-next" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> The user-space can know that it's button-less, yes.  But, how can it
+> know whether the device should be emulated via ClickZone?
+> We can use a driver option to x11 synaptics driver for that, as I
+> already sent you another patch.  However, the driver option is
+> nowadays not preferred because xorg.conf is being dead on new
+> systems...
+
+Driver still takes options, from UDEV/HAL. We could pick one behavior
+by default and ovverride, by box vendor/model (DMI).
+
+> 
+> Or maybe HAL (or whatever upcoming one) can check the vendor/product
+> id of the machine (not the device) to provide the information.  OTOH
+> this will also need frequent updates.
+
+Hopefully vendors won;t be flip/flopping between ClickZone and
+ClickButtons too much. Still option is better than hardcoding ClickZone
+for everyone.
+
+-- 
+Dmitry
