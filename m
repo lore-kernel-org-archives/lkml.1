@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbZLPTbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935620AbZLPTb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935612AbZLPTbO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:31:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935574AbZLPTbM
+	id S935620AbZLPTb4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935203AbZLPTbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:31:12 -0500
-Received: from outbound-mail-24.bluehost.com ([69.89.21.19]:37181 "HELO
-	outbound-mail-24.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S935466AbZLPTbK (ORCPT
+	Wed, 16 Dec 2009 14:31:55 -0500
+Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:47085 "EHLO
+	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935492AbZLPTby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:31:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=gy+tuKAaXS797yG0z83iFDB8QRQjXp2Ri4tJAlvjFDDiEdKJKmTp8VDS6bPuHjprusA49cSVblSa2mIl1tXmtkrzmBtPDiDodPS92AaLISloi84N/gIvHY5X1cwysSOj;
-Date: Wed, 16 Dec 2009 11:30:44 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
-       Aristeu Sergio <arozansk@redhat.com>, linux-pci@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH] pci: fix section mismatch on update_res()
-Message-ID: <20091216113044.2d3e282b@jbarnes-piketon>
-In-Reply-To: <4B26E436.9000806@jp.fujitsu.com>
-References: <4B26E436.9000806@jp.fujitsu.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Dec 2009 14:31:54 -0500
+From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+To: Jerome Glisse <glisse@freedesktop.org>
+Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error with linux-2.6.32)
+Date: Wed, 16 Dec 2009 20:31:48 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-fglrx; KDE/4.3.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de> <200912161558.30819.johannes.hirte@fem.tu-ilmenau.de> <20091216184148.GB22703@localhost.localdomain>
+In-Reply-To: <20091216184148.GB22703@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200912162031.48983.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009 10:19:50 +0900
-Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+Am Mittwoch 16 Dezember 2009 19:41:48 schrieb Jerome Glisse:
+> On Wed, Dec 16, 2009 at 03:58:30PM +0100, Johannes Hirte wrote:
+> > Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
+> > > On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
+> > > > This patch (as the BIOS option) will only disable the error reports.
+> > > > The error itself will still occur, right? So necessary to find out
+> > > > why the radeon driver trigger this error.
+> > >
+> > > Because the graphics driver does aperture accesses with no
+> > > matching GART translation, and the hw generates mchecks for
+> > > that. The whole story on GART table walk errors is in section
+> > > "13.10.1 GART Table Walk Error Reporting" in the document here:
+> > > http://support.amd.com/us/Processor_TechDocs/32559.pdf
+> > >
+> > > I can't say for sure about your BIOS, but if it is done as described in
+> > > the abovementioned section, the BIOS option should disable logging of
+> > > the error, which implies reporting too.
+> > >
+> > > The patch is still needed for machines that do not have that BIOS
+> > > option.
+> >
+> > Disabling in BIOS doesn't made any difference. The errors were still
+> > reported. Your patch disabled it. But I think this will make work harder
+> > for driver developers as they won't get this error anymore. Could this be
+> > made changeable on runtime/boottime?
+> >
+> > I've added drm people to CC as they're responsible for this error.
+> >
+> >
+> > regards,
+> >   Johannes
+> 
+> More context would be usefull. Are you using KMS ? If so is your userspace
+> KMS capable ? Does this GART error happen all the time or only after
+>  sometimes or when doing somethings specific ?
 
-> From: Jiri Slaby <jslaby@suse.cz>
-> 
-> Remark update_res from __init to __devinit as it is called also
-> from __devinit functions.
-> 
-> This patch removes the following warning message:
-> 
->   WARNING: vmlinux.o(.devinit.text+0x774a): Section mismatch
->   in reference from the function pci_root_bus_res() to the
->   function .init.text:update_res()
->   The function __devinit pci_root_bus_res() references
->   a function __init update_res().
->   If update_res is only used by pci_root_bus_res then
->   annotate update_res with a matching annotation.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Aristeu Sergio <arozansk@redhat.com>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Cc: linux-pci@vger.kernel.org
-> Cc: x86@kernel.org
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> ---
->  arch/x86/pci/bus_numa.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
-> index 145df00..f939d60 100644
-> --- a/arch/x86/pci/bus_numa.c
-> +++ b/arch/x86/pci/bus_numa.c
-> @@ -51,7 +51,7 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
->  	}
->  }
->  
-> -void __init update_res(struct pci_root_info *info, size_t start,
-> +void __devinit update_res(struct pci_root_info *info, size_t start,
->  			      size_t end, unsigned long flags, int
-> merge) {
->  	int i;
+Yes I'm using KMS when this error occours.
+Hardware:
+- Tyan Tiger K8W S8875 (AMD8151 Northbridge)
+- Radeon HD3650 AGP (RV635)
 
-Applied, thanks Hidetoshi-san and Jiri.
+Software:
+- linux-2.6.32
+- libdrm-2.4.16
+- mesa-7.7_rc2
+- xf86-video-ati-9999 (latest git everytime)
+- KDE-4.3.4 with compositing enabled (OpenGL)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+The errors occours after a while of normal desktop work. I haven't tested 
+without KMS or compisiting. Will do this as well.
+
+regards,
+  Johannes
+
+
+
