@@ -1,85 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZLPI4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761824AbZLPIX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757712AbZLPI4N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:56:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZLPI4L
+	id S1761824AbZLPIX0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761748AbZLPIXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:56:11 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:45382 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbZLPI4F (ORCPT
+	Wed, 16 Dec 2009 03:23:23 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:64423 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751230AbZLPIXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:56:05 -0500
-Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
- for 32byte SSIDs
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       dcbw@redhat.com, m.hirsch@raumfeld.com, netdev@vger.kernel.org,
-       libertas-dev@lists.infradead.org, stable@kernel.org,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20091216035844.GN28375@buzzloop.caiaq.de>
-References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
-	 <20091215.014308.77044043.davem@davemloft.net>
-	 <1260871411.3692.4.camel@johannes.local>
-	 <20091216035844.GN28375@buzzloop.caiaq.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-L/Dl6eEgTCZxlb0x32KY"
-Date: Wed, 16 Dec 2009 09:20:33 +0100
-Message-ID: <1260951633.10356.61.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 16 Dec 2009 03:23:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fIOILSzno3teB1Pkhib6wZM2PXWq94XbSkuQGjQIMH29lwlCiDQCB1IrlFMxCrh5Tm
+         FgEjqLGuaky3iBPjSbxhSWUZ6Y8MmeVV9dIcuSVgYGn4+0xMFvVtB27RGIXZMYKuxpNK
+         yt9m1tRsf9kdW9La9CB/o6q3Qm2C3J4igXuZc=
+Date: Wed, 16 Dec 2009 00:23:16 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Alex Chiang <achiang@hp.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: synaptics touchpad doesn't click
+Message-ID: <20091216082316.GH2699@core.coreip.homeip.net>
+References: <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com> <20091216025934.GA2699@core.coreip.homeip.net> <s5hk4wn5s4x.wl%tiwai@suse.de> <20091216065652.GE2699@core.coreip.homeip.net> <s5heimv5r20.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5heimv5r20.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 16, 2009 at 08:14:15AM +0100, Takashi Iwai wrote:
+> At Tue, 15 Dec 2009 22:56:53 -0800,
+> Dmitry Torokhov wrote:
+> > 
+> > On Wed, Dec 16, 2009 at 07:50:54AM +0100, Takashi Iwai wrote:
+> > > At Tue, 15 Dec 2009 18:59:34 -0800,
+> > > Dmitry Torokhov wrote:
+> > > > 
+> > > > On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
+> > > > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> > > > > >
+> > > > > > The updated patch is below.
+> > > > > > 
+> > > > > > -- 
+> > > > > > Dmitry
+> > > > > 
+> > > > > Should I test this one or wait one more iteration to address
+> > > > > Takashi's last comments?
+> > > > > 
+> > > > 
+> > > > Actually I think we took the wrong direction with the original patch and
+> > > > we should do what other buttonless devices (bcm5974) do: report touchpad
+> > > > click as left button and have Synaptics X driver provide enhanced
+> > > > support. This way we can have both modes (ClickZones and ClickButtons)
+> > > > and users will get to chose (provided that someone takes time to add
+> > > > that support to Synaptics driver of course ;) ).
+> > > 
+> > > My concern is, still, how would you identify this device.  Will you
+> > > extend also some ioctls to expose caps and extcaps?  Otherwise it's
+> > > difficult to identify this device automatically from the user-space.
+> > > 
+> > 
+> > No.. Synaptics without right button == ClickPad.
+> 
+> So, is there only Clickpad device that has a single button?
+> No other option?
+> 
 
---=-L/Dl6eEgTCZxlb0x32KY
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I have not seen any other Synaptics devices using less than 2 buttons.
 
-On Wed, 2009-12-16 at 11:58 +0800, Daniel Mack wrote:
+> > > The user-space can know that it's button-less, yes.  But, how can it
+> > > know whether the device should be emulated via ClickZone?
+> > > We can use a driver option to x11 synaptics driver for that, as I
+> > > already sent you another patch.  However, the driver option is
+> > > nowadays not preferred because xorg.conf is being dead on new
+> > > systems...
+> > 
+> > Driver still takes options, from UDEV/HAL. We could pick one behavior
+> > by default and ovverride, by box vendor/model (DMI).
+> > 
+> > > 
+> > > Or maybe HAL (or whatever upcoming one) can check the vendor/product
+> > > id of the machine (not the device) to provide the information.  OTOH
+> > > this will also need frequent updates.
+> > 
+> > Hopefully vendors won;t be flip/flopping between ClickZone and
+> > ClickButtons too much. Still option is better than hardcoding ClickZone
+> > for everyone.
+> 
+> Yeah, I agree that hard-coding isn't good, and that's why I first
+> posted separated patches.  OTOH, the kernel-side hack makes the device
+> working *as is* even without changing anything else.
+>
 
-> > If this is used in a GET, then it will be filled up to 32 bytes by the
-> > get handler, and the trailing \0 your patch reserves will never be
-> > copied into userspace.
->=20
-> The problem is the GET case. The libertas driver copies ssid_len
-> characters here and appends a trailing \0, which my patch caught now and
-> which caused memory corruption in before.
->=20
-> From what I've seen, libertas _does_ treat the extra data correctly
-> at all places, I checked it several times now. (Btw, the %s format
-> string you pointed out all use print_ssid() to properly escape all
-> non-printable characters, so they're rules out, too).
+For "ClickZone" - yes, but not all users would want this I guess and not
+all laptops will have that zone marked. Pushing it off to userspace
+gives more flexibility, including the ability to change zone size, etc.
 
-Oh, ok, print_ssid() is correct of course, it gets the length.
-
-> I'll send a patch to fix the flaw in libertas.
-
-Thanks.
-
-johannes
-
---=-L/Dl6eEgTCZxlb0x32KY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLKJhNAAoJEODzc/N7+QmahVwP/jMVe1Xgd0dEbJLXx/u1bOVA
-rBEUz7YVaCaS9DSS7jhb1l3FmPmnQJ1vtryfOikdSCBAVOUyOH2AQAQkkCyZvxPm
-Fvf7nNqsQ+mKiazZT8I/q8TG8Ht3BMmTsw08IW2qrY6L6FtGvKa7u6hVYxwuYTmW
-hzasJKwAhh6y5bpMATQGeByVPWU5VHSOXdmTCEHUJvwx5va4pIJtCiEfoxmJbH62
-4Qkz3dN0TxjvROHg2ADaHTSuD4IMOUtLB9/o2yJ0OQRFWCSoexq942zFRk87m3rv
-hCyXdjuMZGUH01F4CdRLarpIJU9KdScM38yeMt8DiuR2kQYEqaMl12plQElc1RoV
-CNNQorYfNPyOuzS9yGlwx71bIiO/U8aaeXE7ncq60/yE49BzGN61kPJRUvdVkBCO
-4mV54R+KdoRXKwW38FGc3yWIDfKDRjImKVvGCzexEW9CXoyPQj//a3Afd7U8CzxN
-XBeT2OrmEf1qpkbsJc/amYlQWZeQSKSOy+lD+MA2CtClhIzt+MCm6f3OnPpHjSoy
-g9cQAWqyzygZslxcZiidTmYoymRMoTls91uOr++bd2hAXA5G09M5fWdmPE1YQgl9
-lM/PfLN+NQo1g/osG29e7xliRqOhrXsTCzeKaMsGWPgYeEGGokXK0fnrph+4bquE
-v/CC73TaeITP7aiYuYAH
-=SGfL
------END PGP SIGNATURE-----
-
---=-L/Dl6eEgTCZxlb0x32KY--
-
+-- 
+Dmitry
