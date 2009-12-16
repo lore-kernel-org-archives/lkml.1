@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935846AbZLPWlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935858AbZLPWlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935846AbZLPWlc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935343AbZLPWl0
+	id S935858AbZLPWlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935847AbZLPWlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:41:26 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38464 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934361AbZLPWlZ (ORCPT
+	Wed, 16 Dec 2009 17:41:32 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:35999 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935158AbZLPWl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:41:25 -0500
-Message-ID: <4B296209.2010902@zytor.com>
-Date: Wed, 16 Dec 2009 14:41:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Wed, 16 Dec 2009 17:41:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=vvds3ECtJH9V1Bih/exle60y8jzBRTid78d5Rk5GqelmeqCnWcT0H1rdJdjecAW26o
+         Xas6u1SsvAsLr3NvfaT3BZTk06i8vnAbEONWvcyo/NgF//7GFEpDudf79ydSL8Ohdgd3
+         VqDDQqtCyOTz6LStmDlPOxa2xwZ/CtEpON3Mg=
+Date: Wed, 16 Dec 2009 23:41:21 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.33-rc0: reiserfs: inconsistent lock state
+Message-ID: <20091216224117.GA5014@nowhere>
+References: <a4423d670912111406g5967eb1fw93e49de242fbf54@mail.gmail.com> <20091214110921.GA5168@nowhere> <a4423d670912141211q3e63011ftfd526ec541b09d44@mail.gmail.com>
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] x86 msrs: alloc/free for CONFIG_SMP=n
-References: <20091216183212.118c5e14.sfr@canb.auug.org.au> <20091216092424.5f87214c.randy.dunlap@oracle.com> <4B2919BD.40001@zytor.com> <20091216174524.GH11618@aftab> <4B2928AC.3020807@zytor.com> <20091216135119.e283e525.randy.dunlap@oracle.com> <20091216215808.GB27228@liondog.tnic>
-In-Reply-To: <20091216215808.GB27228@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a4423d670912141211q3e63011ftfd526ec541b09d44@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/16/2009 01:58 PM, Borislav Petkov wrote:
+On Mon, Dec 14, 2009 at 11:11:35PM +0300, Alexander Beregalov wrote:
+> 2009/12/14 Frederic Weisbecker <fweisbec@gmail.com>:
+> > On Sat, Dec 12, 2009 at 01:06:29AM +0300, Alexander Beregalov wrote:
+> >> Hi Frederic
+> >>
+> >> It is x86_32 UP
+> >>
+> >>
+> >> [ INFO: inconsistent lock state ]
+> >> 2.6.32-05594-g3ef884b #2
+> > [...]
+> >
+> >
+> > Thanks! I've pushed two fixes in my tree. May be could
+> > you test them by merging it on latest upstream?
+> >
+> > As usual, it's on:
+> >
+> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> >        reiserfs/kill-bkl
 > 
->>
->> --- linux-next-20091216.orig/arch/x86/lib/Makefile
->> +++ linux-next-20091216/arch/x86/lib/Makefile
->> @@ -14,7 +14,7 @@ $(obj)/inat.o: $(obj)/inat-tables.c
->>  
->>  clean-files := inat-tables.c
->>  
->> -obj-$(CONFIG_SMP) := msr.o
->> +obj-$(CONFIG_X86_MSR) := msr.o
+> Thanks, I'm going to test it.
 > 
-> however, CONFIG_X86_MSR is the x86 MSR access module and the <lib/msr.c>
-> is the library of MSR accessing functions which is always in. So this
-> should be unconditional as in my version or Peter might have a better
-> idea...?
+> Another piece of work for you. You should hate me.
+
+
+Not really, I much prefer to see your reports and fix them than later
+try to find sources of obscure soft lockups from users reports :)
+
+
 > 
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.32-06793-gf405425-dirty #2
 
-Both are wrong.
 
-CONFIG_X86_MSR has nothing at all to do with this and is a complete red
-herring.  Involving CONFIG_X86_MSR is just totally bogus.
+I've sent a patch in another answer of this report,
+hopefully that fixes the issue. I've also pushed it out
+in my tree with the two others.
 
-Including msr.o unconditionally is also wrong, but for a more subtle
-reason: msr.c is written to contain functions that apply to SMP only;
-with UP replacement stubs written as inlines in
-arch/x86/include/asm/msr.h.
+Thanks!
 
-Putting most of the file inside a big #ifdef of course works, but is a
-pretty bad case of beating it with the ugly stick.  My preference would
-be to move the SMP-specific functions to a new file, call it msr-smp.c,
-and then leave only the functions that should be included
-unconditionally in msr.c (I believe it is cleaner to do it that way than
-the opposite.)
-
-	-hpa
