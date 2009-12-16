@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbZLPX4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbZLPX5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762865AbZLPX4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761642AbZLPX4M
+	id S1763368AbZLPX5F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763377AbZLPX4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:56:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61893 "EHLO mx1.redhat.com"
+	Wed, 16 Dec 2009 18:56:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24143 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761665AbZLPX4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:56:11 -0500
+	id S1761723AbZLPX4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:56:38 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/6] NOMMU: Optimise away the {dac_,}mmap_min_addr tests
+Subject: [PATCH 2/6] NOMMU: Provide per-task stack usage through /proc for
+	NOMMU
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: dhowells@redhat.com, vapier@gentoo.org, lethal@linux-sh.org,
        linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
-       David Howells <dhowells@redhat.com>, Eric Paris <eparis@redhat.com>
-Date: Wed, 16 Dec 2009 23:55:58 +0000
-Message-ID: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
+       David Howells <dhowells@redhat.com>, Mike Frysinger <vapier@gentoo.org>,
+       Stefani Seibold <stefani@seibold.net>, Paul Mundt <lethal@linux-sh.org>,
+       Robin Getz <rgetz@blackfin.uclinux.org>
+Date: Wed, 16 Dec 2009 23:56:03 +0000
+Message-ID: <20091216235603.4310.71243.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
+References: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -29,101 +34,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In NOMMU mode clamp dac_mmap_min_addr to zero to cause the tests on it to be
-skipped by the compiler.  We do this as the minimum mmap address doesn't make
-any sense in NOMMU mode.
+Make it possible to get the per-task stack usage through /proc on a NOMMU
+system.  The MMU-mode routine can't be used because walk_page_range() doesn't
+work on NOMMU.
 
-mmap_min_addr and round_hint_to_min() can be discarded entirely in NOMMU mode.
+It can be tested to show the stack usages of non-kernel-thread processes:
+
+	# grep "Stack usage:" /proc/*/status | grep -v "0 kB"
+	/proc/1/status:Stack usage:     2 kB
+	/proc/57/status:Stack usage:    3 kB
+	/proc/58/status:Stack usage:    1 kB
+	/proc/59/status:Stack usage:    3 kB
+	/proc/60/status:Stack usage:    5 kB
+	/proc/self/status:Stack usage:  1 kB
+
+I've only tested it with ELF-FDPIC, though it should work with FLAT too.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Cc: Stefani Seibold <stefani@seibold.net>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>
 ---
 
- include/linux/security.h |    7 +++++++
- kernel/sysctl.c          |    2 ++
- mm/Kconfig               |    1 +
- security/Makefile        |    3 ++-
- 4 files changed, 12 insertions(+), 1 deletions(-)
+ fs/proc/array.c |   20 +++++++++++++++++---
+ 1 files changed, 17 insertions(+), 3 deletions(-)
 
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 466cbad..2c627d3 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -95,8 +95,13 @@ struct seq_file;
- extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
- extern int cap_netlink_recv(struct sk_buff *skb, int cap);
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 4badde1..c67251e 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -387,8 +387,7 @@ static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
+ 	return ss.usage;
+ }
  
-+#ifdef CONFIG_MMU
- extern unsigned long mmap_min_addr;
- extern unsigned long dac_mmap_min_addr;
+-static inline void task_show_stack_usage(struct seq_file *m,
+-						struct task_struct *task)
++static void task_show_stack_usage(struct seq_file *m, struct task_struct *task)
+ {
+ 	struct vm_area_struct	*vma;
+ 	struct mm_struct	*mm = get_task_mm(task);
+@@ -404,9 +403,24 @@ static inline void task_show_stack_usage(struct seq_file *m,
+ 		mmput(mm);
+ 	}
+ }
+-#else
++#else /* CONFIG_MMU */
++/*
++ * Calculate the size of a NOMMU process's stack
++ */
+ static void task_show_stack_usage(struct seq_file *m, struct task_struct *task)
+ {
++	unsigned long sp, base, usage;
++
++	base = task->stack_start;
++	sp = KSTK_ESP(task);
++
++#ifdef CONFIG_STACK_GROWSUP
++	usage = sp - base;
 +#else
-+#define dac_mmap_min_addr	0UL
++	usage = base - sp;
 +#endif
 +
- /*
-  * Values used in the task_security_ops calls
-  */
-@@ -121,6 +126,7 @@ struct request_sock;
- #define LSM_UNSAFE_PTRACE	2
- #define LSM_UNSAFE_PTRACE_CAP	4
- 
-+#ifdef CONFIG_MMU
- /*
-  * If a hint addr is less than mmap_min_addr change hint to be as
-  * low as possible but still greater than mmap_min_addr
-@@ -135,6 +141,7 @@ static inline unsigned long round_hint_to_min(unsigned long hint)
++	seq_printf(m, "Stack usage:\t%lu kB\n", (usage + 1023) >> 10);
  }
- extern int mmap_min_addr_handler(struct ctl_table *table, int write,
- 				 void __user *buffer, size_t *lenp, loff_t *ppos);
-+#endif
+ #endif		/* CONFIG_MMU */
  
- #ifdef CONFIG_SECURITY
- 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 45e4bef..856a24e 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1214,6 +1214,7 @@ static struct ctl_table vm_table[] = {
- 		.proc_handler	= proc_dointvec_jiffies,
- 	},
- #endif
-+#ifdef CONFIG_MMU
- 	{
- 		.procname	= "mmap_min_addr",
- 		.data		= &dac_mmap_min_addr,
-@@ -1221,6 +1222,7 @@ static struct ctl_table vm_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= mmap_min_addr_handler,
- 	},
-+#endif
- #ifdef CONFIG_NUMA
- 	{
- 		.procname	= "numa_zonelist_order",
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 43ea8c3..ee9f3e0 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -221,6 +221,7 @@ config KSM
- 
- config DEFAULT_MMAP_MIN_ADDR
-         int "Low address space to protect from user allocation"
-+	depends on MMU
-         default 4096
-         help
- 	  This is the portion of low virtual memory which should be protected
-diff --git a/security/Makefile b/security/Makefile
-index bb44e35..da20a19 100644
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -8,7 +8,8 @@ subdir-$(CONFIG_SECURITY_SMACK)		+= smack
- subdir-$(CONFIG_SECURITY_TOMOYO)        += tomoyo
- 
- # always enable default capabilities
--obj-y		+= commoncap.o min_addr.o
-+obj-y					+= commoncap.o
-+obj-$(CONFIG_MMU)			+= min_addr.o
- 
- # Object file lists
- obj-$(CONFIG_SECURITY)			+= security.o capability.o
 
