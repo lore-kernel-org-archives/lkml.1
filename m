@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751718AbZLPFFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbZLPFOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751718AbZLPFFG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 00:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZLPFFB
+	id S1752756AbZLPFOo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 00:14:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZLPFOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 00:05:01 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:53929 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbZLPFE7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 00:04:59 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Wed, 16 Dec 2009 00:14:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39288
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752400AbZLPFOl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 00:14:41 -0500
+Date: Tue, 15 Dec 2009 21:14:41 -0800 (PST)
+Message-Id: <20091215.211441.39161790.davem@davemloft.net>
+To: eric.dumazet@gmail.com
+Cc: fweisbec@gmail.com, nhorman@tuxdriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: packet_sendmsg_spkt sleeping from invalid context
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B27AF77.7010809@gmail.com>
+References: <4B26B09A.7050607@gmail.com>
+	<20091215151302.GD5833@nowhere>
+	<4B27AF77.7010809@gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] gianfar: Fix tests of unsigneds in gfar_parse_group()
-Date: Wed, 16 Dec 2009 10:34:56 +0530
-Message-ID: <9F4C7D19E8361D4C94921B95BE08B81BA08D5A@zin33exm22.fsl.freescale.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] gianfar: Fix tests of unsigneds in gfar_parse_group()
-Thread-Index: Acp9tjfZB7rai7bPRBmj1fS0nDtdCQAVjRfQAAAtFDA=
-References: <4B27D87D.5070908@gmail.com> 
-From: "Kumar Gopalpet-B05799" <B05799@freescale.com>
-To: "Roel Kluin" <roel.kluin@gmail.com>, <netdev@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
->Won't it be better to change types of interruptTransmit, 
->-Receive and -Error in  struct gfar_priv_grp itself. Something 
->like this:
->
->struct gfar_priv_grp {
->....
->-	unsigned int interruptTransmit;
->-	unsigned int interruptReceive;
->-	unsigned int interruptError;
->
->+	unsigned int interruptTransmit;
->+	unsigned int interruptReceive;
->+	unsigned int interruptError;
->....
->}
->
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Tue, 15 Dec 2009 16:47:03 +0100
 
-Sorry for my earlier mail, What I meant is something like this:
+> Le 15/12/2009 16:13, Frederic Weisbecker a écrit :
+> 
+>> Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+>> 
+> 
+> Thanks for testing Frederic, here is the official patch submission then :)
+> 
+> 
+> [PATCH] packet: dont call sleeping functions while holding rcu_read_lock()
 
-struct gfar_priv_grp {
-....
--	unsigned int interruptTransmit;
--	unsigned int interruptReceive;
--	unsigned int interruptError;
-
-+	int interruptTransmit;
-+	int interruptReceive;
-+	int interruptError;
-....
-}
-
---
-
-Thanks
-Sandeep
+Applied, thanks.
