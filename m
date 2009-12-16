@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935567AbZLPTXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935595AbZLPTYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935567AbZLPTXr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935571AbZLPTXk
+	id S935595AbZLPTYN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:24:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935434AbZLPTYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:23:40 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:42077 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935399AbZLPTXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:23:37 -0500
-Date: Wed, 16 Dec 2009 11:23:34 -0800
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Ray Copeland <ray.copeland@aprius.com>
-Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       Arvind Vasudev <arvind.vasudev@aprius.com>
-Subject: Re: [PATCH 1/2] Wrong ADT7462_VOLT_COUNT for linux-2.6.30 adt7462
-	hwmon driver
-Message-ID: <20091216192334.GC10356@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA312@EXVBE012-13.exch012.intermedia.net> <AFEAE911EE22F64BACAB05ED86B4D4FC018DA31A@EXVBE012-13.exch012.intermedia.net>
+	Wed, 16 Dec 2009 14:24:06 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:45861 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935559AbZLPTYB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:24:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EQwDB46IFa7Hu91GIHzJ41pXGZis1yuekEb1DLw1ElVf6/0NvHPEWJA7OUZRBZNQra
+         zIsIlGb0fJEisuOY2LIQJbEMhhpdkpqZToyfDaBxhwCNGEuyJ4cqLz11zrtqd7mcXVXG
+         VUrkdaEa+ULxLwsKafJ2CzKMRD6wkDNi3bZSo=
+Date: Wed, 16 Dec 2009 20:23:57 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] sched: Teach might_sleep() about preemptible RCU
+Message-ID: <20091216192354.GC5211@nowhere>
+References: <20091216142536.GA18091@elte.hu> <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA31A@EXVBE012-13.exch012.intermedia.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 09:58:32AM -0800, Ray Copeland wrote:
-> From: Ray Copeland <ray.copeland@aprius.com>
-> Date: Wed, 16 Dec 2009
-> Subject: [PATCH 1/2] Wrong ADT7462_VOLT_COUNT for linux-2.6.30 adt7462 hwmon driver 
-> 
-> Description:
-> 
-> The #define ADT7462_VOLT_COUNT is wrong, it should be 13 not 12. All the 
-<snip>
-> -#define ADT7462_VOLT_COUNT	13
-> +#define ADT7462_VOLT_COUNT	12
+On Wed, Dec 16, 2009 at 08:21:05PM +0100, Frederic Weisbecker wrote:
+> From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 
-Uh... I think this patch is reversed?  This part of the diff replaces 13 with
-12, which is the opposite of what I think you want.
 
---D
+Crap... I think I'm really becoming this cyborg...
+
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+
+Although I've happily put Paul's Reviewed-by tag in this v2,
+I'd feel more comfortable if he could confirm it :)
+
+Thanks!
+
