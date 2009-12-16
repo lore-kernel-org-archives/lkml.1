@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbZLPW5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934807AbZLPW7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763310AbZLPW5l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762909AbZLPW5h
+	id S934807AbZLPW7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763125AbZLPW7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:57:37 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:36730 "EHLO gir.skynet.ie"
+	Wed, 16 Dec 2009 17:59:04 -0500
+Received: from www.tglx.de ([62.245.132.106]:38759 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753460AbZLPW5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:57:36 -0500
-Date: Wed, 16 Dec 2009 22:57:29 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Jean Delvare <jdelvare@suse.de>,
-       Jeff Mahoney <jeffm@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fb/intelfb: Do not depend on EMBEDDED
-In-Reply-To: <m34onq1r4q.fsf@intrepid.localdomain>
-Message-ID: <alpine.DEB.2.00.0912162255501.25055@skynet.skynet.ie>
-References: <aa541tsbrtanvarunansa3uh.1260654940760@email.android.com> <200912131250.13797.jdelvare@suse.de> <alpine.DEB.2.00.0912132148550.24123@skynet.skynet.ie> <200912161437.32134.jdelvare@suse.de> <20091216100005.2c7e6d69@jbarnes-piketon>
- <m34onq1r4q.fsf@intrepid.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1761610AbZLPW67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:58:59 -0500
+Date: Wed, 16 Dec 2009 23:58:37 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH -next] nfs: fix ISO C90 warning
+In-Reply-To: <20091216144700.34b80b4b.randy.dunlap@oracle.com>
+Message-ID: <alpine.LFD.2.00.0912162355350.2755@localhost.localdomain>
+References: <20091215165309.58e98eea.sfr@canb.auug.org.au> <20091216142334.6a0ba115.randy.dunlap@oracle.com> <1261003219.13878.6.camel@localhost> <20091216144700.34b80b4b.randy.dunlap@oracle.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
+On Wed, 16 Dec 2009, Randy Dunlap wrote:
+> On Wed, 16 Dec 2009 17:40:19 -0500 Trond Myklebust wrote:
 > 
-> > Actually, that's one of the big advantages of the KMS based driver.  It
-> > *does* transparently pick the native resolution of the detected
-> > output(s) and set up a high res console.  You can provide boot options
-> > to override it, but unlike intelfb, boot options aren't necessary to
-> > get things working in the first place.
+> > On Wed, 2009-12-16 at 14:23 -0800, Randy Dunlap wrote: 
+> > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > 
+> > > Fix gcc ISO C90 warning:
+> > > 
+> > > fs/nfs/callback.c:356: warning: ISO C90 forbids mixed declarations and code
+> > > 
+> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > > ---
+> > >  fs/nfs/callback.c |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > --- linux-next-20091215.orig/fs/nfs/callback.c
+> > > +++ linux-next-20091215/fs/nfs/callback.c
+> > > @@ -352,8 +352,8 @@ static int check_gss_callback_principal(
+> > >  static int nfs_callback_authenticate(struct svc_rqst *rqstp)
+> > >  {
+> > >  	struct nfs_client *clp;
+> > > -	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
+> > >  	int ret = SVC_OK;
+> > > +	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
+> > >  
+> > 
+> > What version of gcc is giving rise to this warning?
 > 
-> How do I set the (default) resolution and timings with non-EDID display
-> (e.g. analog RGB TV)?
+> > gcc --version
+> gcc (GCC) 4.2.1 (SUSE Linux)
 > 
-> fbset seems to only set the "logical" resolution, doesn't like the
-> pixclock.
+> > RPC_IFDEBUG is a macro that either evaluates to its argument, or to
+> > nothing, depending on whether or not RPC_DEBUG is defined or not. In
+> > neither case should it evaluate to anything illegal under C90 rules
+> > afaics.
+> 
+> Yep.  Odd warning.
 
-Currently with the command line video=, this isn't optimal but still
-nobody has come up with a way to make fbset useful since it can't deal
-with multiple heads.
+Not really. If the debug macro evaluates to nothing then you have:
 
-also the old intelfb didn't deal with analog rgb tv at all.
+    struct nfs_client *clp;
+    ;
+    int ret = SVC_OK;
 
-Dave.
+So you have a stray semicolon, which is interpreted as an empty code
+line. That qualifies for the mixed declaration and code case :)
+
+I know it's nitpicking, but ...
+
+Thanks,
+
+	tglx
