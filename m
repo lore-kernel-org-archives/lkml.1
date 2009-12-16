@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763046AbZLPWWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935262AbZLPW0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763046AbZLPWWk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbZLPWWi
+	id S935262AbZLPW0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932535AbZLPW0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:22:38 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59941 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762625AbZLPWWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:22:36 -0500
-Message-ID: <4B295E12.1000408@gmail.com>
-Date: Wed, 16 Dec 2009 23:24:18 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Arjan van de Ven <arjan@infradead.org>, Paul Mundt <lethal@linux-sh.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 0/1] Constify struct address_space_operations for 2.6.32-git-053fe57ac
- v2
-References: <4B2595E7.701@gmail.com> <20091214021916.GB12196@linux-sh.org> <4B25E47C.1010803@gmail.com> <20091214112656.GB1959@elf.ucw.cz> <20091214080049.19930729@infradead.org> <20091214212526.GB9213@elf.ucw.cz> <20091214141757.73606259@infradead.org> <4B26BF14.3040709@gmail.com> <20091215181403.GB24406@elf.ucw.cz> <4B281BA4.8090806@gmail.com> <20091216080653.GU24406@elf.ucw.cz>
-In-Reply-To: <20091216080653.GU24406@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Dec 2009 17:26:20 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:60856 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932486AbZLPW0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:26:19 -0500
+Date: Wed, 16 Dec 2009 14:26:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org
+Subject: [PATCH -next] power: fix printk formats
+Message-Id: <20091216142606.1a9f3817.randy.dunlap@oracle.com>
+In-Reply-To: <20091216183212.118c5e14.sfr@canb.auug.org.au>
+References: <20091216183212.118c5e14.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B295E73.022A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->>> One const in structure declaration seems to be just enough, see:
->>>
->>> const struct a {
->>> 	void (* f)(void);
->>> 	void (* const g)(void);
->>> } s;
->>>
->>> void h(void)
->>> {
->>> 	struct a *p = &s;
->>> 	s.f = 0;
->>> 	s.g = 0;
->>> 	p->f = 0;
->>> 	p->g = 0;
->>> }
->>>
->>>
->>> delme.c: In function 'h':
->>> delme.c:8: warning: initialization discards qualifiers from pointer target type
->>> delme.c:9: error: assignment of read-only variable 's'
->>> delme.c:10: error: assignment of read-only variable 's'
->>> delme.c:12: error: assignment of read-only member 'g'
->>>
->>> You get clean-enough warnings.
->> Notice how you got an error for line 12 (p->g assignment) but no warning or error
->> at all for line 11 (p->f assignment). This example illustrates what I was explaining
->> so far:
-> 
-> And notice how you get warning for line 8? That's what I'm talking
-> about, and it should be enough to make the developer think about what
-> he's doing. 
-> 									Pavel
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-You are talking about in-kernel ops structures whose constness will
-prevent bad code from being written. On the other hand, I was talking
-about new code yet-to-enter the kernel where the developer has no indication
-that he should be using a const ops structure (other than perhaps checkpatch
-except apparently things easily fall through the cracks, see my series for
-file_operations) and this is where const structure fields would help.
+Fix printk format warnings:
 
-In any case, as I indicated already, I will remove these parts from the patches.
---
-Emese
+drivers/base/power/main.c:398:warning: format '%Lu' expects type 'long long unsigned int', but argument 5 has type 'long int'
+drivers/base/power/main.c:398:warning: format '%03Lu' expects type 'long long unsigned int', but argument 6 has type 'long int'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/base/power/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20091216.orig/drivers/base/power/main.c
++++ linux-next-20091216/drivers/base/power/main.c
+@@ -395,7 +395,7 @@ static void dpm_show_time(ktime_t startt
+ 	usecs = usecs64;
+ 	if (usecs == 0)
+ 		usecs = 1;
+-	pr_info("PM: %s%s%s of devices complete after %Lu.%03Lu msecs\n",
++	pr_info("PM: %s%s%s of devices complete after %lu.%03lu msecs\n",
+ 		info ?: "", info ? " " : "", pm_verb(state.event),
+ 		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
+ }
