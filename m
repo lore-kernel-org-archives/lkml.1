@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbZLPRyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbZLPR43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbZLPRyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZLPRyX
+	id S1756431AbZLPR43 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZLPR42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:54:23 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:33901 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751872AbZLPRyW (ORCPT
+	Wed, 16 Dec 2009 12:56:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45709 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753218AbZLPR41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:54:22 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Huang Ying <ying.huang@intel.com>
-Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
-Date: Wed, 16 Dec 2009 10:54:18 -0700
-User-Agent: KMail/1.9.10
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com> <200912151047.14196.bjorn.helgaas@hp.com> <1260926595.12561.1188.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1260926595.12561.1188.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 16 Dec 2009 12:56:27 -0500
+Subject: Re: [PATCH 02/12] sched: Fix set_cpu_active() in cpu_down()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Xiaotian Feng <dfeng@redhat.com>
+In-Reply-To: <20091216170517.500272612@chello.nl>
+References: <20091216170430.073353839@chello.nl>
+	 <20091216170517.500272612@chello.nl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 18:56:19 +0100
+Message-ID: <1260986179.21028.151.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912161054.19951.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 December 2009 06:23:15 pm Huang Ying wrote:
-> On Wed, 2009-12-16 at 01:47 +0800, Bjorn Helgaas wrote: 
-> > On Monday 14 December 2009 06:04:13 pm Huang Ying wrote:
-> > > On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
-> > > > I think your code would be simpler if acpi_pre_map_gar() returned a
-> > > > struct acpi_iomap pointer (from the caller's point of view, this would
-> > > > be an opaque cookie).  Then you could just supply that cookie to
-> > > > acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
-> > > > you could even get rid of the list and all the fancy RCU & kref stuff
-> > > > then, too.
-> > > 
-> > > The interface chosen is based on usage model, which is:
-> > > 
-> > > 1. In init function, all GARs needed are pre-mapped
-> > > 2. In atomic context, pre-mapped GARs are accessed
-> > > 3. In exit function, all GARs are post-unmapped
-> > > 
-> > > In 3), if struct acpi_iomap* is used as parameter for post-unmap
-> > > function, we need to record that pointer in another list. In 2), we need
-> > > find mapped address from GAR.
-> > 
-> > I understand that my proposal would require a slight change in your
-> > usage model.  I am suggesting that you make it follow the same pattern
-> > as pci_iomap(), e.g.:
-> > 
-> > 	void *pci_iomap(struct pci_dev *, int bar, unsigned long len);
-> > 	unsigned int ioread32(void *);
-> > 	void pci_iounmap(struct pci_dev *, void *);
-> > 
-> > 	void *acpi_map_generic_address(struct acpi_generic_address *);
-> > 	u64 acpi_read_atomic(void *);
-> > 	void acpi_unmap_generic_address(void *);
-> > 
-> > acpi_map_generic_address() would validate the GAR and do the ioremap().
-> > If the validation or ioremap() failed, it would return a NULL pointer.
-> > 
-> > This would require the caller of acpi_map_generic_address() to hang onto
-> > the pointer returned (just as callers of pci_iomap() must hang onto the
-> > pointer it returns).
-> > 
-> > The pointer would be supplied to acpi_read_atomic(), so it would not
-> > need to do acpi_check_gar() because we know it was done successfully
-> > in acpi_map_generic_address().  It wouldn't need to look up the GAR
-> > in the list because the list entry was passed in.  Since all the
-> > possible failure conditions were checked in acpi_map_generic_address(),
-> > acpi_read_atomic() doesn't need to return status and could simply
-> > return the u64 directly.
+On Wed, 2009-12-16 at 18:04 +0100, Peter Zijlstra wrote:
+> plain text document attachment (foo13.patch)
+
+still need to fix quilt...
+
+From: Xiaotian Feng <dfeng@redhat.com>
+
+> Sachin found cpu hotplug test failures on powerpc, which made the
+> kernel hang on his POWER box. 
 > 
-> The usage model is different. Please take a look at
-> __apei_exec_read_register(). We need to get virtual address from
-> physical address in GAR. And many small-size GARs in ERST or EINJ may
-> share same page, so some kind of virtual space optimization is
-> necessary.
+> The problem is that we fail to re-activate a cpu when a hot-unplug
+> fails. Fix this by moving the de-activation into _cpu_down after doing
+> the initial checks.
+> 
+> Remove the synchronize_sched() calls and rely on those implied by
+> rebuilding the sched domains using the new mask.
+> 
+> Reported-by: Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> Tested-by: Sachin Sant <sachinp@in.ibm.com>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-The sharing could be done with a reference count in the map/unmap
-path.
-
-I don't have time to fully understand your patch series, but I suspect
-the issue is that you're interpreting opcodes, and those contain or
-reference generic_address structures, and you think it's easier just
-pass around the GAR pointer than it is to remember a (GAR, mapped-GAR)
-association made by pre_map_gar() and use the mapped-GAR when executing
-the "read" opcode.
-
-Bjorn
