@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbZLPDLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZLPDM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760899AbZLPDLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 22:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbZLPDLl
+	id S1760959AbZLPDM3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 22:12:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbZLPDM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 22:11:41 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50586 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756180AbZLPDLk (ORCPT
+	Tue, 15 Dec 2009 22:12:27 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49525 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759993AbZLPDM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 22:11:40 -0500
+	Tue, 15 Dec 2009 22:12:26 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Dec 2009 12:08:34 +0900
+Date: Wed, 16 Dec 2009 12:09:18 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -19,8 +19,8 @@ Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
        "mingo@elte.hu" <mingo@elte.hu>, andi@firstfloor.org,
        minchan.kim@gmail.com
-Subject: [mm][RFC][PATCH 8/11] mm accessor for video
-Message-Id: <20091216120834.0a7376a4.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [mm][RFC][PATCH 9/11] mm accessor for sgi gru
+Message-Id: <20091216120918.41b684ba.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
@@ -32,149 +32,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replacing mmap_sem with mm_accessor functions.
-for driver/media/video
+Replacing mmap_sem with mm_accessor functions. for sgi-gru.
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- drivers/media/video/davinci/vpif_capture.c |    4 ++--
- drivers/media/video/davinci/vpif_display.c |    5 +++--
- drivers/media/video/ivtv/ivtv-udma.c       |    4 ++--
- drivers/media/video/ivtv/ivtv-yuv.c        |    4 ++--
- drivers/media/video/videobuf-core.c        |    4 ++--
- drivers/media/video/videobuf-dma-contig.c  |    4 ++--
- drivers/media/video/videobuf-dma-sg.c      |    4 ++--
- 7 files changed, 15 insertions(+), 14 deletions(-)
+ drivers/misc/sgi-gru/grufault.c |   16 ++++++++--------
+ drivers/misc/sgi-gru/grufile.c  |    4 ++--
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-Index: mmotm-mm-accessor/drivers/media/video/davinci/vpif_capture.c
+Index: mmotm-mm-accessor/drivers/misc/sgi-gru/grufault.c
 ===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/davinci/vpif_capture.c
-+++ mmotm-mm-accessor/drivers/media/video/davinci/vpif_capture.c
-@@ -122,11 +122,11 @@ static inline u32 vpif_uservirt_to_phys(
- 		int res, nr_pages = 1;
- 			struct page *pages;
- 
--		down_read(&current->mm->mmap_sem);
-+		mm_read_lock(current->mm);
- 
- 		res = get_user_pages(current, current->mm,
- 				     virtp, nr_pages, 1, 0, &pages, NULL);
--		up_read(&current->mm->mmap_sem);
-+		mm_read_unlock(current->mm);
- 
- 		if (res == nr_pages)
- 			physp = __pa(page_address(&pages[0]) +
-Index: mmotm-mm-accessor/drivers/media/video/ivtv/ivtv-udma.c
-===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/ivtv/ivtv-udma.c
-+++ mmotm-mm-accessor/drivers/media/video/ivtv/ivtv-udma.c
-@@ -124,10 +124,10 @@ int ivtv_udma_setup(struct ivtv *itv, un
- 	}
- 
- 	/* Get user pages for DMA Xfer */
--	down_read(&current->mm->mmap_sem);
-+	mm_read_lock(current->mm);
- 	err = get_user_pages(current, current->mm,
- 			user_dma.uaddr, user_dma.page_count, 0, 1, dma->map, NULL);
--	up_read(&current->mm->mmap_sem);
-+	mm_read_unlock(current->mm);
- 
- 	if (user_dma.page_count != err) {
- 		IVTV_DEBUG_WARN("failed to map user pages, returned %d instead of %d\n",
-Index: mmotm-mm-accessor/drivers/media/video/ivtv/ivtv-yuv.c
-===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/ivtv/ivtv-yuv.c
-+++ mmotm-mm-accessor/drivers/media/video/ivtv/ivtv-yuv.c
-@@ -75,10 +75,10 @@ static int ivtv_yuv_prep_user_dma(struct
- 	ivtv_udma_get_page_info (&uv_dma, (unsigned long)args->uv_source, 360 * uv_decode_height);
- 
- 	/* Get user pages for DMA Xfer */
--	down_read(&current->mm->mmap_sem);
-+	mm_read_lock(current->mm);
- 	y_pages = get_user_pages(current, current->mm, y_dma.uaddr, y_dma.page_count, 0, 1, &dma->map[0], NULL);
- 	uv_pages = get_user_pages(current, current->mm, uv_dma.uaddr, uv_dma.page_count, 0, 1, &dma->map[y_pages], NULL);
--	up_read(&current->mm->mmap_sem);
-+	mm_read_unlock(current->mm);
- 
- 	dma->page_count = y_dma.page_count + uv_dma.page_count;
- 
-Index: mmotm-mm-accessor/drivers/media/video/videobuf-core.c
-===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/videobuf-core.c
-+++ mmotm-mm-accessor/drivers/media/video/videobuf-core.c
-@@ -485,7 +485,7 @@ int videobuf_qbuf(struct videobuf_queue 
- 	MAGIC_CHECK(q->int_ops->magic, MAGIC_QTYPE_OPS);
- 
- 	if (b->memory == V4L2_MEMORY_MMAP)
--		down_read(&current->mm->mmap_sem);
-+		mm_read_lock(current->mm);
- 
- 	mutex_lock(&q->vb_lock);
- 	retval = -EBUSY;
-@@ -575,7 +575,7 @@ int videobuf_qbuf(struct videobuf_queue 
- 	mutex_unlock(&q->vb_lock);
- 
- 	if (b->memory == V4L2_MEMORY_MMAP)
--		up_read(&current->mm->mmap_sem);
-+		mm_read_unlock(current->mm);
- 
- 	return retval;
- }
-Index: mmotm-mm-accessor/drivers/media/video/videobuf-dma-contig.c
-===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/videobuf-dma-contig.c
-+++ mmotm-mm-accessor/drivers/media/video/videobuf-dma-contig.c
-@@ -147,7 +147,7 @@ static int videobuf_dma_contig_user_get(
- 	mem->is_userptr = 0;
- 	ret = -EINVAL;
+--- mmotm-mm-accessor.orig/drivers/misc/sgi-gru/grufault.c
++++ mmotm-mm-accessor/drivers/misc/sgi-gru/grufault.c
+@@ -81,14 +81,14 @@ static struct gru_thread_state *gru_find
+ 	struct vm_area_struct *vma;
+ 	struct gru_thread_state *gts = NULL;
  
 -	down_read(&mm->mmap_sem);
 +	mm_read_lock(mm);
+ 	vma = gru_find_vma(vaddr);
+ 	if (vma)
+ 		gts = gru_find_thread_state(vma, TSID(vaddr, vma));
+ 	if (gts)
+ 		mutex_lock(&gts->ts_ctxlock);
+ 	else
+-		up_read(&mm->mmap_sem);
++		mm_read_unlock(mm);
+ 	return gts;
+ }
  
- 	vma = find_vma(mm, vb->baddr);
+@@ -98,7 +98,7 @@ static struct gru_thread_state *gru_allo
+ 	struct vm_area_struct *vma;
+ 	struct gru_thread_state *gts = ERR_PTR(-EINVAL);
+ 
+-	down_write(&mm->mmap_sem);
++	mm_write_lock(mm);
+ 	vma = gru_find_vma(vaddr);
  	if (!vma)
-@@ -182,7 +182,7 @@ static int videobuf_dma_contig_user_get(
- 		mem->is_userptr = 1;
+ 		goto err;
+@@ -107,11 +107,11 @@ static struct gru_thread_state *gru_allo
+ 	if (IS_ERR(gts))
+ 		goto err;
+ 	mutex_lock(&gts->ts_ctxlock);
+-	downgrade_write(&mm->mmap_sem);
++	mm_write_to_read_lock(mm);
+ 	return gts;
  
-  out_up:
--	up_read(&current->mm->mmap_sem);
-+	mm_read_unlock(current->mm);
- 
- 	return ret;
+ err:
+-	up_write(&mm->mmap_sem);
++	mm_write_unlock(mm);
+ 	return gts;
  }
-Index: mmotm-mm-accessor/drivers/media/video/videobuf-dma-sg.c
-===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/videobuf-dma-sg.c
-+++ mmotm-mm-accessor/drivers/media/video/videobuf-dma-sg.c
-@@ -179,9 +179,9 @@ int videobuf_dma_init_user(struct videob
- 			   unsigned long data, unsigned long size)
+ 
+@@ -121,7 +121,7 @@ err:
+ static void gru_unlock_gts(struct gru_thread_state *gts)
  {
- 	int ret;
--	down_read(&current->mm->mmap_sem);
-+	mm_read_lock(current->mm);
- 	ret = videobuf_dma_init_user_locked(dma, direction, data, size);
+ 	mutex_unlock(&gts->ts_ctxlock);
 -	up_read(&current->mm->mmap_sem);
 +	mm_read_unlock(current->mm);
+ }
+ 
+ /*
+@@ -583,9 +583,9 @@ static irqreturn_t gru_intr(int chiplet,
+ 		 */
+ 		gts->ustats.fmm_tlbmiss++;
+ 		if (!gts->ts_force_cch_reload &&
+-					down_read_trylock(&gts->ts_mm->mmap_sem)) {
++					mm_read_trylock(gts->ts_mm)) {
+ 			gru_try_dropin(gru, gts, tfh, NULL);
+-			up_read(&gts->ts_mm->mmap_sem);
++			mm_read_unlock(gts->ts_mm);
+ 		} else {
+ 			tfh_user_polling_mode(tfh);
+ 			STAT(intr_mm_lock_failed);
+Index: mmotm-mm-accessor/drivers/misc/sgi-gru/grufile.c
+===================================================================
+--- mmotm-mm-accessor.orig/drivers/misc/sgi-gru/grufile.c
++++ mmotm-mm-accessor/drivers/misc/sgi-gru/grufile.c
+@@ -144,7 +144,7 @@ static int gru_create_new_context(unsign
+ 	if (!(req.options & GRU_OPT_MISS_MASK))
+ 		req.options |= GRU_OPT_MISS_FMM_INTR;
+ 
+-	down_write(&current->mm->mmap_sem);
++	mm_write_lock(current->mm);
+ 	vma = gru_find_vma(req.gseg);
+ 	if (vma) {
+ 		vdata = vma->vm_private_data;
+@@ -155,7 +155,7 @@ static int gru_create_new_context(unsign
+ 		vdata->vd_tlb_preload_count = req.tlb_preload_count;
+ 		ret = 0;
+ 	}
+-	up_write(&current->mm->mmap_sem);
++	mm_write_unlock(current->mm);
  
  	return ret;
  }
-Index: mmotm-mm-accessor/drivers/media/video/davinci/vpif_display.c
-===================================================================
---- mmotm-mm-accessor.orig/drivers/media/video/davinci/vpif_display.c
-+++ mmotm-mm-accessor/drivers/media/video/davinci/vpif_display.c
-@@ -116,11 +116,12 @@ static u32 vpif_uservirt_to_phys(u32 vir
- 		/* otherwise, use get_user_pages() for general userland pages */
- 		int res, nr_pages = 1;
- 		struct page *pages;
--		down_read(&current->mm->mmap_sem);
-+
-+		mm_read_lock(current->mm);
- 
- 		res = get_user_pages(current, current->mm,
- 				     virtp, nr_pages, 1, 0, &pages, NULL);
--		up_read(&current->mm->mmap_sem);
-+		mm_read_unlock(current->mm);
- 
- 		if (res == nr_pages) {
- 			physp = __pa(page_address(&pages[0]) +
 
