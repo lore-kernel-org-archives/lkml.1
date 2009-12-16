@@ -1,84 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZLPEST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbZLPE1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZLPEST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 23:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758981AbZLPESQ
+	id S1761511AbZLPE1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 23:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760375AbZLPE1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 23:18:16 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:49317 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759393AbZLPESO (ORCPT
+	Tue, 15 Dec 2009 23:27:09 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:45102 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755986AbZLPE1E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 23:18:14 -0500
-Date: Wed, 16 Dec 2009 12:18:06 +0800
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Dan Williams <dcbw@redhat.com>, Holger Schurig <holgerschurig@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Maithili Hinge <maithili@marvell.com>,
-       Kiran Divekar <dkiran@marvell.com>,
-       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
-       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] Libertas: fix buffer overflow in lbs_get_essid()
-Message-ID: <20091216041805.GO28375@buzzloop.caiaq.de>
-References: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
+	Tue, 15 Dec 2009 23:27:04 -0500
+Date: Wed, 16 Dec 2009 13:27:01 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-sh@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sh: Fix test of unsigned in se7722_irq_demux()
+Message-ID: <20091216042700.GB31265@linux-sh.org>
+References: <4B27BB12.1050008@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B27BB12.1050008@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry, had a typo in the linux-wireless list address, corrected now).
-
-On Wed, Dec 16, 2009 at 05:12:58AM +0100, Daniel Mack wrote:
+On Tue, Dec 15, 2009 at 05:36:34PM +0100, Roel Kluin wrote:
+> se7722_fpga_irq[] is unsigned so the test does not work.
 > 
-> The libertas driver copies the SSID buffer back to the wireless core and
-> appends a trailing NULL character for termination. This is
-> 
-> a) unnecessary because the buffer is allocated with kzalloc and is hence
->    already NULLed when this function is called, and
-> 
-> b) for priv->curbssparams.ssid_len == 32, it writes back one byte too
->    much which causes memory corruptions.
-> 
-> Fix this by removing the extra write.
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Dan Williams <dcbw@redhat.com>
-> Cc: Holger Schurig <holgerschurig@gmail.com>
-> Cc: John W. Linville <linville@tuxdriver.com>
-> Cc: Stephen Hemminger <shemminger@vyatta.com>
-> Cc: Maithili Hinge <maithili@marvell.com>
-> Cc: Kiran Divekar <dkiran@marvell.com>
-> Cc: Michael Hirsch <m.hirsch@raumfeld.com>
-> Cc: netdev@vger.kernel.org
-> Cc: libertas-dev@lists.infradead.org
-> Cc: linux-wireless@lists.infradead.org
-> Cc: stable@kernel.org
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > ---
->  drivers/net/wireless/libertas/wext.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
+> Found using coccinelle: http://coccinelle.lip6.fr/
 > 
-> diff --git a/drivers/net/wireless/libertas/wext.c b/drivers/net/wireless/libertas/wext.c
-> index be837a0..01c738b 100644
-> --- a/drivers/net/wireless/libertas/wext.c
-> +++ b/drivers/net/wireless/libertas/wext.c
-> @@ -1953,10 +1953,8 @@ static int lbs_get_essid(struct net_device *dev, struct iw_request_info *info,
->  	if (priv->connect_status == LBS_CONNECTED) {
->  		memcpy(extra, priv->curbssparams.ssid,
->  		       priv->curbssparams.ssid_len);
-> -		extra[priv->curbssparams.ssid_len] = '\0';
->  	} else {
->  		memset(extra, 0, 32);
-> -		extra[priv->curbssparams.ssid_len] = '\0';
->  	}
->  	/*
->  	 * If none, we may want to get the one that was set
-> -- 
-> 1.6.3.3
-> 
+Applied, thanks.
