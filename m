@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbZLPXCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935909AbZLPXGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763130AbZLPXCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763179AbZLPXCi
+	id S935909AbZLPXGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935308AbZLPXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:02:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41369 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964874AbZLPXC0 (ORCPT
+	Wed, 16 Dec 2009 18:06:14 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:16794 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935312AbZLPXGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:02:26 -0500
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
-In-Reply-To: <alpine.DEB.2.00.0912161025290.8572@router.home>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091216101107.GA15031@basil.fritz.box>
-	 <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091216102806.GC15031@basil.fritz.box>
-	 <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091216104951.GD15031@basil.fritz.box>
-	 <20091216201218.42ff7f05.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091216113158.GE15031@basil.fritz.box>
-	 <alpine.DEB.2.00.0912161025290.8572@router.home>
+	Wed, 16 Dec 2009 18:06:13 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5834"; a="30130240"
+Subject: Re: GPIO support for HTC Dream
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       Arve Hj?nnev?g <arve@android.com>, Ryan Mallon <ryan@bluewatersys.com>,
+       Iliyan Malchev <malchev@google.com>,
+       Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <20091216225342.GH21102@elf.ucw.cz>
+References: <4B1EB57D.6070408@bluewatersys.com>
+	 <20091208214658.GC4164@elf.ucw.cz> <4B1ECEEE.3000209@bluewatersys.com>
+	 <4B203575.6050407@bluewatersys.com> <20091210172458.GJ19454@elf.ucw.cz>
+	 <4B2150B7.3040207@bluewatersys.com>
+	 <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
+	 <20091211221015.GB24456@elf.ucw.cz>
+	 <d6200be20912111440k427c5013j2b17191bcbae2d52@mail.gmail.com>
+	 <BD79186B4FD85F4B8E60E381CAEE190901FB10EB@mi8nycmail19.Mi8.com>
+	 <20091216225342.GH21102@elf.ucw.cz>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 00:01:55 +0100
-Message-ID: <1261004515.21028.510.camel@laptop>
+Date: Wed, 16 Dec 2009 15:03:41 -0800
+Message-ID: <1261004621.10141.82.camel@c-dwalke-linux.qualcomm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -39,29 +40,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 10:27 -0600, Christoph Lameter wrote:
-> On Wed, 16 Dec 2009, Andi Kleen wrote:
-> 
-> > > Do you have alternative recommendation rather than wrapping all accesses by
-> > > special functions ?
-> >
-> > Work out what changes need to be done for ranged mmap locks and do them all
-> > in one pass.
-> 
-> Locking ranges is already possible through the split ptlock and
-> could be enhanced through placing locks in the vma structures.
-> 
-> That does nothing solve the basic locking issues of mmap_sem. We need
-> Kame-sans abstraction layer. A vma based lock or a ptlock still needs to
-> ensure that the mm struct does not vanish while the lock is held.
+On Wed, 2009-12-16 at 23:53 +0100, Pavel Machek wrote:
 
-It should, you shouldn't be able to remove a mm while there's still
-vma's around, and you shouldn't be able to remove a vma when there's
-still pagetables around. And if you rcu-free all of them you're stable
-enough for lots of speculative behaviour.
+> > Where is the msm tree located?  mach-msm in mainline doesn't appea to
+> > have _any_ gpio support.  
+> 
+> Right.
+> 
+> > Is Pavel's implementation generic enough to
+> > work with any msm based board?
+> 
+> I think so but I'm not sure; thats what I wanted google to
+> clarify. Lets keep it dream-specific for now...
 
-No need to retain mmap_sem for any of that.
+I don't think so, since it was something added by HTC.. I'm pretty sure
+the generic msm gpio's are accessed differently.
 
-As for per-vma locks, those are pretty much useless too, there's plenty
-applications doing lots of work on a few very large vmas.
+Daniel
 
