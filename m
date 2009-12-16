@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935607AbZLPT1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbZLPTbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935607AbZLPT1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935447AbZLPT1a
+	id S935612AbZLPTbO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:31:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935574AbZLPTbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:27:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59002 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935446AbZLPT12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:27:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC][PATCH 3/12] PCI / PM: Propagate wake-up enable for PCIe devices too
-Date: Wed, 16 Dec 2009 20:28:21 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
-References: <200911160047.46299.rjw@sisk.pl> <200911291635.54352.rjw@sisk.pl> <20091216111939.1a756377@jbarnes-piketon>
-In-Reply-To: <20091216111939.1a756377@jbarnes-piketon>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 16 Dec 2009 14:31:12 -0500
+Received: from outbound-mail-24.bluehost.com ([69.89.21.19]:37181 "HELO
+	outbound-mail-24.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S935466AbZLPTbK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:31:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=gy+tuKAaXS797yG0z83iFDB8QRQjXp2Ri4tJAlvjFDDiEdKJKmTp8VDS6bPuHjprusA49cSVblSa2mIl1tXmtkrzmBtPDiDodPS92AaLISloi84N/gIvHY5X1cwysSOj;
+Date: Wed, 16 Dec 2009 11:30:44 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>,
+       Aristeu Sergio <arozansk@redhat.com>, linux-pci@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH] pci: fix section mismatch on update_res()
+Message-ID: <20091216113044.2d3e282b@jbarnes-piketon>
+In-Reply-To: <4B26E436.9000806@jp.fujitsu.com>
+References: <4B26E436.9000806@jp.fujitsu.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912162028.21775.rjw@sisk.pl>
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 December 2009, Jesse Barnes wrote:
-> On Sun, 29 Nov 2009 16:35:54 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Having read the PM part of the PCIe 2.0 specification more carefully
-> > I think that it was a mistake to restrict the wake-up enable
-> > propagation to non-PCIe devices, because if we do not request
-> > control of the root ports' PME registers via OSC, PCIe PME is
-> > supposed to be handled by the platform, just like the non-PCIe PME.
-> > Even if we do that, the wake-up propagation is done to allow the
-> > devices to wake up the system from sleep states which involves the
-> > platform anyway, so it won't hurt.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/pci/pci-acpi.c |   10 ++--------
-> >  1 file changed, 2 insertions(+), 8 deletions(-)
-> 
-> Applied after fixing up conflicts related to dev->is_pcie.
+On Tue, 15 Dec 2009 10:19:50 +0900
+Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
 
-Thanks!
+> From: Jiri Slaby <jslaby@suse.cz>
+> 
+> Remark update_res from __init to __devinit as it is called also
+> from __devinit functions.
+> 
+> This patch removes the following warning message:
+> 
+>   WARNING: vmlinux.o(.devinit.text+0x774a): Section mismatch
+>   in reference from the function pci_root_bus_res() to the
+>   function .init.text:update_res()
+>   The function __devinit pci_root_bus_res() references
+>   a function __init update_res().
+>   If update_res is only used by pci_root_bus_res then
+>   annotate update_res with a matching annotation.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Aristeu Sergio <arozansk@redhat.com>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: linux-pci@vger.kernel.org
+> Cc: x86@kernel.org
+> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> ---
+>  arch/x86/pci/bus_numa.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
+> index 145df00..f939d60 100644
+> --- a/arch/x86/pci/bus_numa.c
+> +++ b/arch/x86/pci/bus_numa.c
+> @@ -51,7 +51,7 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
+>  	}
+>  }
+>  
+> -void __init update_res(struct pci_root_info *info, size_t start,
+> +void __devinit update_res(struct pci_root_info *info, size_t start,
+>  			      size_t end, unsigned long flags, int
+> merge) {
+>  	int i;
+
+Applied, thanks Hidetoshi-san and Jiri.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
