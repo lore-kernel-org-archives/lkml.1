@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935595AbZLPTYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964926AbZLPTZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935595AbZLPTYN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935434AbZLPTYG
+	id S964926AbZLPTZn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762885AbZLPTZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:24:06 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:45861 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935559AbZLPTYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:24:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=EQwDB46IFa7Hu91GIHzJ41pXGZis1yuekEb1DLw1ElVf6/0NvHPEWJA7OUZRBZNQra
-         zIsIlGb0fJEisuOY2LIQJbEMhhpdkpqZToyfDaBxhwCNGEuyJ4cqLz11zrtqd7mcXVXG
-         VUrkdaEa+ULxLwsKafJ2CzKMRD6wkDNi3bZSo=
-Date: Wed, 16 Dec 2009 20:23:57 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] sched: Teach might_sleep() about preemptible RCU
-Message-ID: <20091216192354.GC5211@nowhere>
-References: <20091216142536.GA18091@elte.hu> <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
+	Wed, 16 Dec 2009 14:25:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58970 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763169AbZLPTZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:25:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Wed, 16 Dec 2009 20:26:00 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912161018100.2909-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912161018100.2909-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912162026.00991.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 08:21:05PM +0100, Frederic Weisbecker wrote:
-> From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+On Wednesday 16 December 2009, Alan Stern wrote:
+> On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > I measured the total time of suspending and resuming devices as shown by the
+> > code added by this patch:
+> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
+> > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
+> > different and the HP was running 64-bit kernel and user space).
+> 
+> > I carried out 5 consecutive suspend-resume cycles (started from under X) on
+> > each box in each case, and the raw data are here (all times in milliseconds):
+> > http://www.sisk.pl/kernel/data/async-suspend.pdf
+> 
+> I'd like to see much more detailed data.  For each device, let's get 
+> the device name, the parent's name, and the start time, end time, and 
+> duration for suspend or resume.  The start time should be measured when 
+> you have finished waiting for the children.  The end time should be 
+> measured just before the complete_all().
 
+I'm going to use the Arjan's patch + script to chart the suspend/resume times
+for individual devices.  I can send you the raw data, though.
 
-Crap... I think I'm really becoming this cyborg...
-
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-
-Although I've happily put Paul's Reviewed-by tag in this v2,
-I'd feel more comfortable if he could confirm it :)
-
-Thanks!
-
+Rafael
