@@ -1,86 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbZLPRGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935087AbZLPRHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762383AbZLPRGg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762287AbZLPRGZ
+	id S935087AbZLPRHv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbZLPRGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:06:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36119 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762273AbZLPRGR (ORCPT
+	Wed, 16 Dec 2009 12:06:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53825 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762284AbZLPRGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 12:06:17 -0500
-Message-Id: <20091216170517.732561278@chello.nl>
+Message-Id: <20091216170517.807938893@chello.nl>
 References: <20091216170430.073353839@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Dec 2009 18:04:35 +0100
+Date: Wed, 16 Dec 2009 18:04:36 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 05/12] sched: Use TASK_WAKING for fork wakups
-Content-Disposition: inline; filename=foo11.patch
+Subject: [PATCH 06/12] sched: Ensure set_task_cpu() is never called on blocked tasks
+Content-Disposition: inline; filename=foo4.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For later convenience use TASK_WAKING for fresh tasks.
+In order to clean up the set_task_cpu() rq dependencies we need to
+ensure it is never called on blocked tasks because such usage does not
+pair with consistent rq->lock usage.
+
+This puts the migration burden on ttwu().
+
+Furthermore we need to close a race against changing ->cpus_allowed,
+since select_task_rq() runs with only preemption disabled.
+
+For sched_fork() this is safe because the child isn't in the tasklist
+yet, for wakeup we fix this by synchronizing set_cpus_allowed_ptr()
+against TASK_WAKING, which leaves sched_exec to be a problem
+
+This also closes a hole in (6ad4c1888 sched: Fix balance vs hotplug
+race) where ->select_task_rq() doesn't validate the result against the
+sched_domain/root_domain.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ kernel/sched.c |   85 ++++++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 66 insertions(+), 19 deletions(-)
 
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -2544,14 +2544,6 @@ static void __sched_fork(struct task_str
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	INIT_HLIST_HEAD(&p->preempt_notifiers);
- #endif
+@@ -2018,22 +2018,15 @@ static inline void check_class_changed(s
+  */
+ void kthread_bind(struct task_struct *p, unsigned int cpu)
+ {
+-	struct rq *rq = cpu_rq(cpu);
+-	unsigned long flags;
 -
--	/*
--	 * We mark the process as running here, but have not actually
--	 * inserted it onto the runqueue yet. This guarantees that
--	 * nobody will actually run it, and a signal or other external
--	 * event cannot wake it up and insert it on the runqueue either.
--	 */
--	p->state = TASK_RUNNING;
+ 	/* Must have done schedule() in kthread() before we set_task_cpu */
+ 	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
+ 		WARN_ON(1);
+ 		return;
+ 	}
+ 
+-	raw_spin_lock_irqsave(&rq->lock, flags);
+-	update_rq_clock(rq);
+-	set_task_cpu(p, cpu);
+ 	p->cpus_allowed = cpumask_of_cpu(cpu);
+ 	p->rt.nr_cpus_allowed = 1;
+ 	p->flags |= PF_THREAD_BOUND;
+-	raw_spin_unlock_irqrestore(&rq->lock, flags);
  }
+ EXPORT_SYMBOL(kthread_bind);
  
- /*
-@@ -2562,6 +2554,12 @@ void sched_fork(struct task_struct *p, i
- 	int cpu = get_cpu();
+@@ -2074,6 +2067,14 @@ void set_task_cpu(struct task_struct *p,
+ 	struct cfs_rq *old_cfsrq = task_cfs_rq(p),
+ 		      *new_cfsrq = cpu_cfs_rq(old_cfsrq, new_cpu);
  
- 	__sched_fork(p);
++#ifdef CONFIG_SCHED_DEBUG
 +	/*
-+	 * We mark the process as waking here. This guarantees that
-+	 * nobody will actually run it, and a signal or other external
-+	 * event cannot wake it up and insert it on the runqueue either.
++	 * We should never call set_task_cpu() on a blocked task,
++	 * ttwu() will sort out the placement.
 +	 */
-+	p->state = TASK_WAKING;
++	WARN_ON(p->state != TASK_RUNNING && p->state != TASK_WAKING);
++#endif
++
+ 	trace_sched_migrate_task(p, new_cpu);
+ 
+ 	if (old_cpu != new_cpu) {
+@@ -2107,13 +2108,10 @@ migrate_task(struct task_struct *p, int 
  
  	/*
- 	 * Revert to default priority/policy on fork if requested.
-@@ -2630,7 +2628,8 @@ void wake_up_new_task(struct task_struct
+ 	 * If the task is not on a runqueue (and not running), then
+-	 * it is sufficient to simply update the task's cpu field.
++	 * the next wake-up will properly place the task.
+ 	 */
+-	if (!p->se.on_rq && !task_running(rq, p)) {
+-		update_rq_clock(rq);
+-		set_task_cpu(p, dest_cpu);
++	if (!p->se.on_rq && !task_running(rq, p))
+ 		return 0;
+-	}
+ 
+ 	init_completion(&req->done);
+ 	req->task = p;
+@@ -2319,10 +2317,42 @@ void task_oncpu_function_call(struct tas
+ }
+ 
+ #ifdef CONFIG_SMP
++/*
++ * Called from:
++ *
++ *  - fork, @p is stable because it isn't on the tasklist yet
++ *
++ *  - exec, @p is unstable XXX
++ *
++ *  - wake-up, we serialize ->cpus_allowed against TASK_WAKING so
++ *             we should be good.
++ */
+ static inline
+ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
+ {
+-	return p->sched_class->select_task_rq(p, sd_flags, wake_flags);
++	int cpu = p->sched_class->select_task_rq(p, sd_flags, wake_flags);
++
++	/*
++	 * In order not to call set_task_cpu() on a blocking task we need
++	 * to rely on ttwu() to place the task on a valid ->cpus_allowed
++	 * cpu.
++	 *
++	 * Since this is common to all placement strategies, this lives here.
++	 *
++	 * [ this allows ->select_task() to simply return task_cpu(p) and
++	 *   not worry about this generic constraint ]
++	 */
++	if (unlikely(!cpumask_test_cpu(cpu, &p->cpus_allowed) ||
++		     !cpu_active(cpu))) {
++
++		cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
++		/*
++		 * XXX: race against hot-plug modifying cpu_active_mask
++		 */
++		BUG_ON(cpu >= nr_cpu_ids);
++	}
++
++	return cpu;
+ }
+ #endif
+ 
+@@ -7102,7 +7132,23 @@ int set_cpus_allowed_ptr(struct task_str
  	struct rq *rq;
+ 	int ret = 0;
  
++	/*
++	 * Since we rely on wake-ups to migrate sleeping tasks, don't change
++	 * the ->cpus_allowed mask from under waking tasks, which would be
++	 * possible when we change rq->lock in ttwu(), so synchronize against
++	 * TASK_WAKING to avoid that.
++	 */
++again:
++	while (p->state == TASK_WAKING)
++		cpu_relax();
++
  	rq = task_rq_lock(p, &flags);
--	BUG_ON(p->state != TASK_RUNNING);
-+	BUG_ON(p->state != TASK_WAKING);
-+	p->state = TASK_RUNNING;
- 	update_rq_clock(rq);
- 	activate_task(rq, p, 0);
- 	trace_sched_wakeup_new(rq, p, 1);
-@@ -6992,6 +6991,7 @@ void __cpuinit init_idle(struct task_str
- 	raw_spin_lock_irqsave(&rq->lock, flags);
++
++	if (p->state == TASK_WAKING) {
++		task_rq_unlock(rq, &flags);
++		goto again;
++	}
++
+ 	if (!cpumask_intersects(new_mask, cpu_active_mask)) {
+ 		ret = -EINVAL;
+ 		goto out;
+@@ -7158,7 +7204,7 @@ EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
+ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
+ {
+ 	struct rq *rq_dest, *rq_src;
+-	int ret = 0, on_rq;
++	int ret = 0;
  
- 	__sched_fork(idle);
-+	idle->state = TASK_RUNNING;
- 	idle->se.exec_start = sched_clock();
+ 	if (unlikely(!cpu_active(dest_cpu)))
+ 		return ret;
+@@ -7174,12 +7220,13 @@ static int __migrate_task(struct task_st
+ 	if (!cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
+ 		goto fail;
  
- 	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
+-	on_rq = p->se.on_rq;
+-	if (on_rq)
++	/*
++	 * If we're not on a rq, the next wake-up will ensure we're
++	 * placed properly.
++	 */
++	if (p->se.on_rq) {
+ 		deactivate_task(rq_src, p, 0);
+-
+-	set_task_cpu(p, dest_cpu);
+-	if (on_rq) {
++		set_task_cpu(p, dest_cpu);
+ 		activate_task(rq_dest, p, 0);
+ 		check_preempt_curr(rq_dest, p, 0);
+ 	}
 
 -- 
 
