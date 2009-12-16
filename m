@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934810AbZLPIUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934804AbZLPIV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934810AbZLPIUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934760AbZLPIUd
+	id S934804AbZLPIV3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:21:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934776AbZLPIVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:20:33 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:53023 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934787AbZLPIUZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:20:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Au7FBXcUWEFNygqHwG5h5MrxookB5GUI1Kkf4DtnteQ6Qm5xPikTCyqU6pxRPQjBfn
-         Nftu3+u1G1cM4VDwmylsNc6BXG8U3F/mAhGNkfkvN81OVZSE7Y5ooI2dm7HAWpDLWKqn
-         eLdzbUT2oa8eT/YMTMDtCjGwoW229Vvh/uHeM=
-Date: Wed, 16 Dec 2009 00:20:20 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Alex Chiang <achiang@hp.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: synaptics touchpad doesn't click
-Message-ID: <20091216082020.GG2699@core.coreip.homeip.net>
-References: <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com> <20091216025934.GA2699@core.coreip.homeip.net> <20091216065200.GC20352@ldl.fc.hp.com> <20091216070343.GF2699@core.coreip.homeip.net> <s5hfx7b5r7a.wl%tiwai@suse.de>
+	Wed, 16 Dec 2009 03:21:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60348 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934791AbZLPIVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 03:21:09 -0500
+Date: Wed, 16 Dec 2009 08:20:20 GMT
+From: tip-bot for Sheng Yang <sheng@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       mtosatti@redhat.com, tglx@linutronix.de, sheng@linux.intel.com,
+       avi@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, tglx@linutronix.de, sheng@linux.intel.com,
+       avi@redhat.com, mingo@elte.hu
+In-Reply-To: <1260942485-19156-4-git-send-email-sheng@linux.intel.com>
+References: <1260942485-19156-4-git-send-email-sheng@linux.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Add IA32_TSC_AUX MSR and use it
+Message-ID: <tip-5df974009fe513c664303de24725ea0f8b47f12e@git.kernel.org>
+Git-Commit-ID: 5df974009fe513c664303de24725ea0f8b47f12e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <s5hfx7b5r7a.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 08:11:05AM +0100, Takashi Iwai wrote:
-> At Tue, 15 Dec 2009 23:03:43 -0800,
-> Dmitry Torokhov wrote:
-> > 
-> > On Tue, Dec 15, 2009 at 11:52:00PM -0700, Alex Chiang wrote:
-> > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > > > On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
-> > > > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > > > > >
-> > > > > > The updated patch is below.
-> > > > > > 
-> > > > > > -- 
-> > > > > > Dmitry
-> > > > > 
-> > > > > Should I test this one or wait one more iteration to address
-> > > > > Takashi's last comments?
-> > > > > 
-> > > > 
-> > > > Actually I think we took the wrong direction with the original patch and
-> > > > we should do what other buttonless devices (bcm5974) do: report touchpad
-> > > > click as left button and have Synaptics X driver provide enhanced
-> > > > support. This way we can have both modes (ClickZones and ClickButtons)
-> > > > and users will get to chose (provided that someone takes time to add
-> > > > that support to Synaptics driver of course ;) ).
-> > > > 
-> > > > Could you tell me if the below works for you?
-> > > 
-> > > Left clicks work. Right/middle do not (as expected, I guess).
-> > > 
-> > > I liked the behaviour of Takashi's patch a little better wrt what
-> > > happens when you try to click/drag, because he disabled movement
-> > > in the click area.
-> > 
-> > Are the clicks register only in that special area? Reading Synaptics
-> > product description it sounds like entire surface should be clickable.
-> 
-> In the case of ClickZone, the click in the button area is taken as
-> clicks, if I understand correctly.
-> 
-> The problem is, however, not about where to click.  It's about the
-> precision.  When you click a pad, your finger slips a little bit in
-> millimeter.  This already corresponds to a few pixels, and the pointer
-> moves away from the point you wanted to click.
->
+Commit-ID:  5df974009fe513c664303de24725ea0f8b47f12e
+Gitweb:     http://git.kernel.org/tip/5df974009fe513c664303de24725ea0f8b47f12e
+Author:     Sheng Yang <sheng@linux.intel.com>
+AuthorDate: Wed, 16 Dec 2009 13:48:04 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 16 Dec 2009 09:02:42 +0100
 
-Right, this will have to be dealt with in X driver.
+x86: Add IA32_TSC_AUX MSR and use it
 
-> In my original patch, I disabled the pointer movement in the button
-> area before click for avoiding this problem.
->
+Clean up write_tsc() and write_tscp_aux() by replacing
+hardcoded values.
 
-However it will not work if you want to do 'ClickButtons' mode where
-you don't assign secific areas for clicking.
+No change in functionality.
 
--- 
-Dmitry
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+LKML-Reference: <1260942485-19156-4-git-send-email-sheng@linux.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/msr-index.h |    1 +
+ arch/x86/include/asm/msr.h       |    4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 4ffe09b..ac98d29 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -12,6 +12,7 @@
+ #define MSR_FS_BASE		0xc0000100 /* 64bit FS base */
+ #define MSR_GS_BASE		0xc0000101 /* 64bit GS base */
+ #define MSR_KERNEL_GS_BASE	0xc0000102 /* SwapGS GS shadow */
++#define MSR_TSC_AUX		0xc0000103 /* Auxiliary TSC */
+ 
+ /* EFER bits: */
+ #define _EFER_SCE		0  /* SYSCALL/SYSRET */
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 2d228fc..cf985aa 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -240,9 +240,9 @@ do {                                                            \
+ #define checking_wrmsrl(msr, val) wrmsr_safe((msr), (u32)(val),		\
+ 					     (u32)((val) >> 32))
+ 
+-#define write_tsc(val1, val2) wrmsr(0x10, (val1), (val2))
++#define write_tsc(val1, val2) wrmsr(MSR_IA32_TSC, (val1), (val2))
+ 
+-#define write_rdtscp_aux(val) wrmsr(0xc0000103, (val), 0)
++#define write_rdtscp_aux(val) wrmsr(MSR_TSC_AUX, (val), 0)
+ 
+ struct msr *msrs_alloc(void);
+ void msrs_free(struct msr *msrs);
