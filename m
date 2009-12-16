@@ -1,138 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935065AbZLPQkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbZLPQmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935065AbZLPQkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 11:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935031AbZLPQkS
+	id S1757182AbZLPQmG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 11:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbZLPQmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 11:40:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28139 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935025AbZLPQkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 11:40:14 -0500
-Date: Wed, 16 Dec 2009 11:39:42 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Corrado Zoccolo <czoccolo@gmail.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq: Remove useless css reference get
-Message-ID: <20091216163941.GA2807@redhat.com>
-References: <4B289C93.3070603@cn.fujitsu.com>
+	Wed, 16 Dec 2009 11:42:04 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:11191 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbZLPQmA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 11:42:00 -0500
+X-SpamScore: -58
+X-BigFish: VPS-58(z21eWz1432R98dN936eM148cM179dNzz1202hzz5eeeTz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KUR7PJ-02-AXP-02
+X-M-MSG: 
+Date: Wed, 16 Dec 2009 17:41:56 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+CC: linux-kernel@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error
+ with linux-2.6.32)
+Message-ID: <20091216164156.GF11618@aftab>
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
+ <200912152300.46325.johannes.hirte@fem.tu-ilmenau.de>
+ <20091216071443.GA18814@aftab>
+ <200912161558.30819.johannes.hirte@fem.tu-ilmenau.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <4B289C93.3070603@cn.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200912161558.30819.johannes.hirte@fem.tu-ilmenau.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Dec 2009 16:41:43.0370 (UTC) FILETIME=[A63872A0:01CA7E6E]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 04:38:43PM +0800, Gui Jianfeng wrote:
-> There's no need to take css reference here, for the caller
-> has already called rcu_read_lock() to prevent cgroup from 
-> being removed.
+On Wed, Dec 16, 2009 at 03:58:30PM +0100, Johannes Hirte wrote:
+> Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
+> > On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
+> > > This patch (as the BIOS option) will only disable the error reports. The
+> > > error itself will still occur, right? So necessary to find out why the
+> > > radeon driver trigger this error.
+> > 
+> > Because the graphics driver does aperture accesses with no
+> > matching GART translation, and the hw generates mchecks for
+> > that. The whole story on GART table walk errors is in section
+> > "13.10.1 GART Table Walk Error Reporting" in the document here:
+> > http://support.amd.com/us/Processor_TechDocs/32559.pdf
+> > 
+> > I can't say for sure about your BIOS, but if it is done as described in
+> > the abovementioned section, the BIOS option should disable logging of
+> > the error, which implies reporting too.
+> > 
+> > The patch is still needed for machines that do not have that BIOS
+> > option.
 > 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> Disabling in BIOS doesn't made any difference. The errors were still reported. 
 
-Hi Gui,
+Hmm. It would be interesting to know what the BIOS does exactly
+on your machine. We could easily find that out by installing the
+x86info tool (either prepackaged for your distro or from here:
+git://git.choralone.org/git/x86info) and doing as root:
 
-How would an rcu lock protect against the possibility that blkiocg_destroy()
-has not already been called on another cpu? rcu lock will make sure that
-cgroup and blkio_cgroup object should still be around as long as I am
-holding rcu lock but will not protect against deletion path being executed
-on another cpu? So I don't want to end up in following situation.
+lsmsr MC4 -V3
 
-     cpu1                      cpu2
+and sending me the output. Make sure the amd64_edac module is not loaded.
 
-rcu_read_lock()
-			      blkiocg_destroy()
+> Your patch disabled it.
 
-blkiocg_add_blkio_group()
-rcu_read_unlock()
+Thanks for testing.
 
-I don't want to add blkg object on a potentially dead blkio_cgroup object
-which will go away. Does this protection is provided by generic cgroup
-code where blkiocg_destroy() will not be called if I have got cgroup
-pointer under rcu lock?
+> But I think this will make work harder for driver developers as
+> they won't get this error anymore. Could this be made changeable on
+> runtime/boottime?
 
-Currently we are deriving cgroup information from task context so task is
-still inside cgroup, so cgroup can't be deleted anyway. What if I was 
-deriving cgroup information from bio, will taking css object reference be
-necessary in that case or just cgroup pointer under rcu lock is sufficient
-to preclude the race against cgroup deletion path?
+yep, we have that. You have to set 'report_gart_errors' module parameter
+to 1 when loading amd64_edac and GART TLB errors will be reported.
 
-Thanks
-Vivek
+-- 
+Regards/Gruss,
+Boris.
 
-> ---
->  block/blk-cgroup.c  |   14 --------------
->  block/blk-cgroup.h  |    3 ---
->  block/cfq-iosched.c |    5 -----
->  3 files changed, 0 insertions(+), 22 deletions(-)
-> 
-> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-> index 1fa2654..cba28f4 100644
-> --- a/block/blk-cgroup.c
-> +++ b/block/blk-cgroup.c
-> @@ -23,20 +23,6 @@ static LIST_HEAD(blkio_list);
->  struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
->  EXPORT_SYMBOL_GPL(blkio_root_cgroup);
->  
-> -bool blkiocg_css_tryget(struct blkio_cgroup *blkcg)
-> -{
-> -	if (!css_tryget(&blkcg->css))
-> -		return false;
-> -	return true;
-> -}
-> -EXPORT_SYMBOL_GPL(blkiocg_css_tryget);
-> -
-> -void blkiocg_css_put(struct blkio_cgroup *blkcg)
-> -{
-> -	css_put(&blkcg->css);
-> -}
-> -EXPORT_SYMBOL_GPL(blkiocg_css_put);
-> -
->  struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
->  {
->  	return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
-> diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-> index 4d316df..84bf745 100644
-> --- a/block/blk-cgroup.h
-> +++ b/block/blk-cgroup.h
-> @@ -43,9 +43,6 @@ struct blkio_group {
->  	unsigned long sectors;
->  };
->  
-> -extern bool blkiocg_css_tryget(struct blkio_cgroup *blkcg);
-> -extern void blkiocg_css_put(struct blkio_cgroup *blkcg);
-> -
->  typedef void (blkio_unlink_group_fn) (void *key, struct blkio_group *blkg);
->  typedef void (blkio_update_group_weight_fn) (struct blkio_group *blkg,
->  						unsigned int weight);
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index e2f8046..5d6b427 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -958,10 +958,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
->  	struct backing_dev_info *bdi = &cfqd->queue->backing_dev_info;
->  	unsigned int major, minor;
->  
-> -	/* Do we need to take this reference */
-> -	if (!blkiocg_css_tryget(blkcg))
-> -		return NULL;;
-> -
->  	cfqg = cfqg_of_blkg(blkiocg_lookup_group(blkcg, key));
->  	if (cfqg || !create)
->  		goto done;
-> @@ -992,7 +988,6 @@ cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
->  	hlist_add_head(&cfqg->cfqd_node, &cfqd->cfqg_list);
->  
->  done:
-> -	blkiocg_css_put(blkcg);
->  	return cfqg;
->  }
->  
-> -- 
-> 1.5.4.rc3
-> 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
