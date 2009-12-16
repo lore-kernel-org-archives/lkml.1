@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762344AbZLPRGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762360AbZLPRGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762344AbZLPRGj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762374AbZLPRGf
+	id S1762360AbZLPRGZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762342AbZLPRGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:06:35 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53828 "EHLO
+	Wed, 16 Dec 2009 12:06:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53826 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762331AbZLPRGd (ORCPT
+	with ESMTP id S1762285AbZLPRGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:06:33 -0500
-Message-Id: <20091216170517.500272612@chello.nl>
+	Wed, 16 Dec 2009 12:06:17 -0500
+Message-Id: <20091216170517.577998058@chello.nl>
 References: <20091216170430.073353839@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Dec 2009 18:04:32 +0100
+Date: Wed, 16 Dec 2009 18:04:33 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Xiaotian Feng <dfeng@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 02/12] sched: Fix set_cpu_active() in cpu_down()
-Content-Disposition: inline; filename=foo13.patch
+Subject: [PATCH 03/12] sched: Fix task_hot() test order
+Content-Disposition: inline; filename=foo10.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sachin found cpu hotplug test failures on powerpc, which made the
-kernel hang on his POWER box. 
+Make sure not to access sched_fair fields before verifying it is
+indeed a sched_fair task.
 
-The problem is that we fail to re-activate a cpu when a hot-unplug
-fails. Fix this by moving the de-activation into _cpu_down after doing
-the initial checks.
-
-Remove the synchronize_sched() calls and rely on those implied by
-rebuilding the sched domains using the new mask.
-
-Reported-by: Sachin Sant <sachinp@in.ibm.com>
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Tested-by: Sachin Sant <sachinp@in.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: stable@kernel.org
 ---
- kernel/cpu.c |   24 +++---------------------
- 1 file changed, 3 insertions(+), 21 deletions(-)
+ kernel/sched.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/kernel/cpu.c
+Index: linux-2.6/kernel/sched.c
 ===================================================================
---- linux-2.6.orig/kernel/cpu.c
-+++ linux-2.6/kernel/cpu.c
-@@ -209,6 +209,7 @@ static int __ref _cpu_down(unsigned int 
- 		return -ENOMEM;
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -2044,6 +2044,9 @@ task_hot(struct task_struct *p, u64 now,
+ {
+ 	s64 delta;
  
- 	cpu_hotplug_begin();
-+	set_cpu_active(cpu, false);
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
- 	if (err == NOTIFY_BAD) {
-@@ -280,18 +281,6 @@ int __ref cpu_down(unsigned int cpu)
- 		goto out;
- 	}
- 
--	set_cpu_active(cpu, false);
--
--	/*
--	 * Make sure the all cpus did the reschedule and are not
--	 * using stale version of the cpu_active_mask.
--	 * This is not strictly necessary becuase stop_machine()
--	 * that we run down the line already provides the required
--	 * synchronization. But it's really a side effect and we do not
--	 * want to depend on the innards of the stop_machine here.
--	 */
--	synchronize_sched();
--
- 	err = _cpu_down(cpu, 0);
- 
- out:
-@@ -382,19 +371,12 @@ int disable_nonboot_cpus(void)
- 		return error;
- 	cpu_maps_update_begin();
- 	first_cpu = cpumask_first(cpu_online_mask);
--	/* We take down all of the non-boot CPUs in one shot to avoid races
-+	/*
-+	 * We take down all of the non-boot CPUs in one shot to avoid races
- 	 * with the userspace trying to use the CPU hotplug at the same time
++	if (p->sched_class != &fair_sched_class)
++		return 0;
++
+ 	/*
+ 	 * Buddy candidates are cache hot:
  	 */
- 	cpumask_clear(frozen_cpus);
+@@ -2052,9 +2055,6 @@ task_hot(struct task_struct *p, u64 now,
+ 			 &p->se == cfs_rq_of(&p->se)->last))
+ 		return 1;
  
--	for_each_online_cpu(cpu) {
--		if (cpu == first_cpu)
--			continue;
--		set_cpu_active(cpu, false);
--	}
+-	if (p->sched_class != &fair_sched_class)
+-		return 0;
 -
--	synchronize_sched();
--
- 	printk("Disabling non-boot CPUs ...\n");
- 	for_each_online_cpu(cpu) {
- 		if (cpu == first_cpu)
+ 	if (sysctl_sched_migration_cost == -1)
+ 		return 1;
+ 	if (sysctl_sched_migration_cost == 0)
 
 -- 
 
