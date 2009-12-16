@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762413AbZLPRMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbZLPRPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762413AbZLPRMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762255AbZLPRMN
+	id S1762498AbZLPRPQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:15:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762279AbZLPRPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:12:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40155 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756364AbZLPRML (ORCPT
+	Wed, 16 Dec 2009 12:15:14 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:47047 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761494AbZLPRPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:12:11 -0500
-Message-ID: <4B29148A.70805@zytor.com>
-Date: Wed, 16 Dec 2009 09:10:34 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 16 Dec 2009 12:15:12 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAJ6kKEurR7Hu/2dsb2JhbADAEpcFhCsEgWM
+X-IronPort-AV: E=Sophos;i="4.47,407,1257120000"; 
+   d="scan'208";a="450694335"
+From: Roland Dreier <rdreier@cisco.com>
+To: Tziporet Koren <tziporet@mellanox.co.il>
+Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
+       Yevgeny Petrilin <yevgenyp@mellanox.co.il>
+Subject: Re: InfiniBand/RDMA merge plans for 2.6.33
+References: <adaocm1csgb.fsf@roland-alpha.cisco.com>
+	<4B28A259.3040909@mellanox.co.il>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Dec 2009 09:15:09 -0800
+In-Reply-To: <4B28A259.3040909@mellanox.co.il> (Tziporet Koren's message of
+	"Wed, 16 Dec 2009 11:03:21 +0200")
+Message-ID: <ada1viualia.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: David Teigland <teigland@redhat.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       linux-kernel@vger.kernel.org, rubini@gnudd.com, gregkh@suse.de
-Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
- allocation
-References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com> <1257813017-28598-2-git-send-email-cascardo@holoscopio.com> <1257813017-28598-3-git-send-email-cascardo@holoscopio.com> <4AF8B4FF.9050405@zytor.com> <20091111153632.944a255c.akpm@linux-foundation.org> <20091215143446.8b6a7e57.akpm@linux-foundation.org> <20091215233738.26188500@lxorguk.ukuu.org.uk> <20091216180155.GA23117@redhat.com>
-In-Reply-To: <20091216180155.GA23117@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Dec 2009 17:15:10.0195 (UTC) FILETIME=[5261A430:01CA7E73]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/16/2009 10:01 AM, David Teigland wrote:
-> 
-> I explained here http://lkml.org/lkml/2009/11/9/379 that the dlm does not
-> use as many misc devices as has been implied.  It starts with 3, and adds
-> one for each *userspace* lockspace.  There are very few applications (I
-> know of 3) that create userspace lockspaces, and they each create about
-> one each.
-> 
-> That said, I still intend to rework the dlm to use a single device for all
-> lockspaces.
-> 
 
-Still seems to make more sense to simply move it to a major and/or a
-dynamic allocation.  misc devices were always meant to be *one of a
-kind* devices, which simply didn't need anything but a single allocation.
+ > >   - mlx4 SR-IOV support.  Again, main problem was my lack of time.  I
+ > >     agree in principle with this stuff, just want to be careful that we
+ > >     don't turn the mlx4 driver into an unmaintainable mess of "if
+ > >     (sriov) something; else something_else" all over.
 
-	-hpa
+ > Roland,
+ > You have not sent any comments to our patches that were sent few weeks
+ > ago on time for 2.6.32 inclusion,
+ > and now I am surprised you do not accept them for 2.6.32.
+ > I think we still have time to work together and fix your concerns on
+ > mlx4 driver.
+ > Can you send more concrete comments so we can fix them?
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+As I said (in the text you quoted), the main problem is my lack of
+time.  I want to read the patches over again, and I suspect we will have
+one more iteration before they are ready to go.  There does seem to be a
+lot of changing from
 
+	/* pv code */
+
+to
+
+	if (sriov) {
+		/* sriov code */
+	} else {
+		/* completely different pv code */
+	}
+
+which is to say the least not beautiful.
+
+More broadly there is a problem that I am doing 99% of the code review
+for RDMA kernel patches.  Occasionally people get interested in isolated
+things, but for the most part the expectation seems to be that I will
+review everything, which doesn't scale.
+
+ > Since we have a HW that supports SRIOV and many people are interested
+ > in this new technology for KVM thus it is important that we drive it
+ > now
+
+If you send a 25-patch series after -rc6, you should expect that there
+is a good chance of missing the next merge window.  Sorry -- with the
+current process of expecting me to be the only reviewer for nearly
+everything, I simply am not going to be able to get through things in time.
+
+ - R.
