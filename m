@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934574AbZLPC1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934589AbZLPC3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934574AbZLPC1v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 21:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934557AbZLPC1v
+	id S934589AbZLPC3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 21:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbZLPC27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 21:27:51 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48439 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934556AbZLPC1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 21:27:50 -0500
-Date: Wed, 16 Dec 2009 11:27:39 +0900 (JST)
-Message-Id: <20091216.112739.104046780.d.hatayama@jp.fujitsu.com>
-To: andi@firstfloor.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jdike@addtoit.com,
-       tony.luck@intel.com, mhiramat@redhat.com
-Subject: Re: [RFC, PATCH 3/4] elf_core_dump(): make offset calculation and
- writing processes explicit
-From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-In-Reply-To: <87ocm0wct8.fsf@basil.nowhere.org>
-References: <20091215.114137.104035145.d.hatayama@jp.fujitsu.com>
-	<87ocm0wct8.fsf@basil.nowhere.org>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Tue, 15 Dec 2009 21:28:59 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40572 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934558AbZLPC26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 21:28:58 -0500
+Date: Wed, 16 Dec 2009 13:28:47 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: acpi tree build failure
+Message-Id: <20091216132847.c32ab30e.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0912151736290.6885@localhost.localdomain>
+References: <20091214122013.a869739e.sfr@canb.auug.org.au>
+	<1260853054.21292.10.camel@dc7800.home>
+	<alpine.LFD.2.00.0912151736290.6885@localhost.localdomain>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com> writes:
-> >
-> > However, the clause 1. is not always possible, since one
-> > cannot assume that dump_seek() function always supports
-> > the seek in the minus direction. Consider no_llseek.
-> 
-> Not even forward seek is always supported, consider core dumping
-> to a pipe.
-> 
-> -Andi
+--Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I may need to use backward seeking here, not forward. So, I stressed
-here for the backward one.
+Hi Len,
 
-Thanks.
+On Tue, 15 Dec 2009 17:37:21 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
+>
+> i merged bjorn's fix into the original offending patch in acpi-test
+
+That didn't seem to be in what I fetched for linux-next today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksoRd8ACgkQjjKRsyhoI8xEcACZAV+Kv119iFV1zbOlJNSXOdF2
+MsMAn1urkpPQ9kWZ0/D96bNGgucX2zEY
+=NvgX
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P--
