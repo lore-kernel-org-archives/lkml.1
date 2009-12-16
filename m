@@ -1,86 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935894AbZLPXBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965213AbZLPXC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935894AbZLPXBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:01:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935330AbZLPXB3
+	id S965213AbZLPXC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965209AbZLPXCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:01:29 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:46098 "EHLO mail.vyatta.com"
+	Wed, 16 Dec 2009 18:02:05 -0500
+Received: from mail-out2.uio.no ([129.240.10.58]:35213 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935408AbZLPXBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:01:20 -0500
-Date: Wed, 16 Dec 2009 15:00:51 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: Chetan Loke <chetanloke@gmail.com>, Chris Friesen <cfriesen@nortel.com>,
-       netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: Re: Irq architecture for multi-core network driver.
-Message-ID: <20091216150051.63b6e31c@nehalam>
-In-Reply-To: <4B295F8C.4050905@caviumnetworks.com>
-References: <4AE0D14B.1070307@caviumnetworks.com>
-	<4AE0D72A.4090607@nortel.com>
-	<4AE0DB98.1000101@caviumnetworks.com>
-	<b2f3590f0912161408u73947f6fx6902ebef927caf94@mail.gmail.com>
-	<4B295F8C.4050905@caviumnetworks.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	id S964884AbZLPXBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:01:48 -0500
+Subject: Re: [PATCH -next] nfs: fix ISO C90 warning
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0912162355350.2755@localhost.localdomain>
+References: <20091215165309.58e98eea.sfr@canb.auug.org.au>
+	 <20091216142334.6a0ba115.randy.dunlap@oracle.com>
+	 <1261003219.13878.6.camel@localhost>
+	 <20091216144700.34b80b4b.randy.dunlap@oracle.com>
+	 <alpine.LFD.2.00.0912162355350.2755@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 18:01:37 -0500
+Message-Id: <1261004497.13878.9.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 9 sum msgs/h 1 total rcpts 2066 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 3A66BDFA17C72F7D4633D13A547A3C44D02419AD
+X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 49 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009 14:30:36 -0800
-David Daney <ddaney@caviumnetworks.com> wrote:
-
-> Chetan Loke wrote:
-> >>> Does your hardware do flow-based queues?  In this model you have
-> >>> multiple rx queues and the hardware hashes incoming packets to a single
-> >>> queue based on the addresses, ports, etc. This ensures that all the
-> >>> packets of a single connection always get processed in the order they
-> >>> arrived at the net device.
-> >>>
-> >> Indeed, this is exactly what we have.
-> >>
-> >>
-> >>> Typically in this model you have as many interrupts as queues
-> >>> (presumably 16 in your case).  Each queue is assigned an interrupt and
-> >>> that interrupt is affined to a single core.
+On Wed, 2009-12-16 at 23:58 +0100, Thomas Gleixner wrote: 
+> On Wed, 16 Dec 2009, Randy Dunlap wrote:
+> > On Wed, 16 Dec 2009 17:40:19 -0500 Trond Myklebust wrote:
 > > 
-> >> Certainly this is one mode of operation that should be supported, but I
-> >> would also like to be able to go for raw throughput and have as many cores
-> >> as possible reading from a single queue (like I currently have).
-> >>
-> > Well, you could let the NIC firmware(f/w) handle this. The f/w would
-> > know which interrupt was just injected recently.In other words it
-> > would have a history of which CPU's would be available. So if some
-> > previously interrupted CPU isn't making good progress then the
-> > firmware should route the incoming response packets to a different
-> > queue. This way some other CPU will pick it up.
+> > > On Wed, 2009-12-16 at 14:23 -0800, Randy Dunlap wrote: 
+> > > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > > 
+> > > > Fix gcc ISO C90 warning:
+> > > > 
+> > > > fs/nfs/callback.c:356: warning: ISO C90 forbids mixed declarations and code
+> > > > 
+> > > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > > > ---
+> > > >  fs/nfs/callback.c |    2 +-
+> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > 
+> > > > --- linux-next-20091215.orig/fs/nfs/callback.c
+> > > > +++ linux-next-20091215/fs/nfs/callback.c
+> > > > @@ -352,8 +352,8 @@ static int check_gss_callback_principal(
+> > > >  static int nfs_callback_authenticate(struct svc_rqst *rqstp)
+> > > >  {
+> > > >  	struct nfs_client *clp;
+> > > > -	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
+> > > >  	int ret = SVC_OK;
+> > > > +	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
+> > > >  
+> > > 
+> > > What version of gcc is giving rise to this warning?
 > > 
+> > > gcc --version
+> > gcc (GCC) 4.2.1 (SUSE Linux)
+> > 
+> > > RPC_IFDEBUG is a macro that either evaluates to its argument, or to
+> > > nothing, depending on whether or not RPC_DEBUG is defined or not. In
+> > > neither case should it evaluate to anything illegal under C90 rules
+> > > afaics.
+> > 
+> > Yep.  Odd warning.
 > 
+> Not really. If the debug macro evaluates to nothing then you have:
 > 
-> It isn's a NIC.  There is no firmware.  The system interrupt hardware is 
-> what it is and cannot be changed.
+>     struct nfs_client *clp;
+>     ;
+>     int ret = SVC_OK;
 > 
-> My current implementation still has a single input queue configured and 
-> I get a maskable interrupt on a single CPU when packets are available. 
-> If the queue depth increases above a given threshold, I optionally send 
-> an IPI to another CPU to enable NAPI polling on that CPU.
+> So you have a stray semicolon, which is interpreted as an empty code
+> line. That qualifies for the mixed declaration and code case :)
 > 
-> Currently I have a module parameter that controls the maximum number of 
-> CPUs that will have NAPI polling enabled.
-> 
-> This allows me to get multiple CPUs doing receive processing without 
-> having to hack into the lower levels of the system's interrupt 
-> processing code to try to do interrupt steering.  Since all the 
-> interrupt service routine was doing was call netif_rx_schedule(), I can 
-> simply do this via smp_call_function_single().
+> I know it's nitpicking, but ...
 
-Better to look into receive packet steering patches that are still
-under review (rather than reinventing it just for your driver)
+Ah... I see what you mean.
 
--- 
+So really what we should do is just move that semicolon inside the
+macro. That would change the !RPC_DEBUG case to
+
+    struct nfs_client *clp;
+
+    int ret = SVC_OK;
+
+which is 100% legal...
+
+Cheers
+  Trond
+
