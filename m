@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761535AbZLPE1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761529AbZLPEdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761535AbZLPE1r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 23:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761058AbZLPE1p
+	id S1761529AbZLPEdN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 23:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760308AbZLPEdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 23:27:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47280 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760999AbZLPE1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 23:27:43 -0500
-Date: Wed, 16 Dec 2009 04:27:38 +0000
-From: Kyle McMartin <kyle@hera.kernel.org>
-To: torvalds@linux-foundation.org
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [git patches] parisc pull request for 2.6.33
-Message-ID: <20091216042738.GA9104@hera.kernel.org>
-Reply-To: kyle@mcmartin.ca
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 15 Dec 2009 23:33:10 -0500
+Received: from vms173005pub.verizon.net ([206.46.173.5]:46861 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755447AbZLPEdJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 23:33:09 -0500
+Date: Tue, 15 Dec 2009 23:32:16 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Huang Ying <ying.huang@intel.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5 -v2] acpi, apei, Document for APEI
+In-reply-to: <1260780295.12561.118.camel@yhuang-dev.sh.intel.com>
+Message-id: <alpine.LFD.2.00.0912152322110.6885@localhost.localdomain>
+References: <1260429424.15264.397.camel@yhuang-dev.sh.intel.com>
+ <200912110958.29319.bjorn.helgaas@hp.com>
+ <1260780295.12561.118.camel@yhuang-dev.sh.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 14 Dec 2009, Huang Ying wrote:
 
-Mostly just compile and bug fixes this release, with a clean up from
-Alexey to use seq_file, plus some ftrace stuff from Helge.
+> On Sat, 2009-12-12 at 00:58 +0800, Bjorn Helgaas wrote: 
+> > On Thursday 10 December 2009 12:17:04 am Huang Ying wrote:
+> > > Add document for APEI, including kernel parameters and EINJ debug file
+> > > sytem interface.
+> > 
+> > From a stylistic point of view, I think it's better if the
+> > documentation is added by the same patch that adds the functionality.
+> > Having them in separate patches means there's a point in time where
+> > the tree contains the functionality but not the documentation, or
+> > vice versa.
+> 
+> Sounds reasonable, I will change this.
 
-Thanks!
-	Kyle
+I don't mind if the documentation preceeds or follows the code
+in a patch series.  Personally, I'd probably put it in its own
+patch like you did just as a lazy way to keep the patches small.
+Anybody looking at this code will be looking at the whole series
+and it isn't as if documentation is going to break bisect...
 
-The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
-  Stephen Rothwell (1):
-        mfd: compile fix for twl4030 renaming
+What I do mind from a patch submitting style point of view
+is to start a series with [PATCH 2/5 -v2].
 
-are available in the git repository at:
+Please start with 0/5 explaining the difference between v1 and v2;
+and then number staring with 1, not 2; else at first glance,
+everybody thinks that the most important patch is missing...
 
-  /pub/scm/linux/kernel/git/kyle/parisc-2.6.git next
+That said, all this code is under its own config option,
+making it relatively low risk.  The question is if there
+would be a significant benefit to merging this code upstream
+while we know there is still going to be some significant
+movement in this area before it is fully baked...
 
-Alexey Dobriyan (1):
-      parisc: convert /proc/pdc/{lcd,led} to seq_file
+(that would be another thing to describe in 0/5...)
 
-David Daney (1):
-      parisc: Convert BUG() to use unreachable()
-
-Helge Deller (3):
-      parisc: remove unused IRQSTAT_SIRQ_PEND and IRQSTAT_SZ defines
-      parisc: add CALLER_ADDR{0-6} macros
-      parisc: use sort() instead of home-made implementation (v2)
-
-Huang Weiyi (1):
-      parisc: remove duplicated #include
-
-Thomas Gleixner (2):
-      parisc: Replace old style lock init in smp.c
-      parisc: Fixup last users of irq_chip->typename
-
- arch/parisc/include/asm/bug.h    |    4 +-
- arch/parisc/include/asm/ftrace.h |   14 +++++++++
- arch/parisc/kernel/asm-offsets.c |    3 --
- arch/parisc/kernel/irq.c         |    4 +-
- arch/parisc/kernel/signal.c      |    1 -
- arch/parisc/kernel/smp.c         |    9 ++++--
- arch/parisc/kernel/unwind.c      |   50 +++++++++++++++++++++++---------
- drivers/parisc/dino.c            |    2 +-
- drivers/parisc/eisa.c            |    2 +-
- drivers/parisc/gsc.c             |    2 +-
- drivers/parisc/iosapic.c         |    2 +-
- drivers/parisc/led.c             |   59 ++++++++++++++++++-------------------
- drivers/parisc/superio.c         |    2 +-
- 13 files changed, 94 insertions(+), 60 deletions(-)
+thanks,
+-Len Brown, Intel Open Source Technology Center
