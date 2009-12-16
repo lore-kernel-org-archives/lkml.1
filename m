@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbZLPGpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbZLPGq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbZLPGpc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 01:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZLPGpa
+	id S1758786AbZLPGq2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 01:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZLPGqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 01:45:30 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:43934 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752192AbZLPGp3 (ORCPT
+	Wed, 16 Dec 2009 01:46:24 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:59017 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbZLPGqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 01:45:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=KEI3tbfYbLmGV72KsoSMSvwzENmPaA5h6d4H7VwL25Ek58HkKBFV8nYlgKPaWIx4In
-         UgT/lbNL+VzXy+EF+UAGscpIBhy0fWiAClE6IxTrFvyXdDGpI3/2n9ns5PI4CpqGYOq3
-         Nlhmm2FVXtfHnJ45fWNhXYRn5OaxiBY3uQ6bo=
+	Wed, 16 Dec 2009 01:46:23 -0500
+Message-ID: <4B288232.4060901@canonical.com>
+Date: Wed, 16 Dec 2009 14:46:10 +0800
+From: Ike Panhc <ike.pan@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <4B288131.2050306@in.ibm.com>
-References: <4B2224C7.1020908@in.ibm.com>
-	 <7b6bb4a50912152225p4f5dde13re83c439407c16eaf@mail.gmail.com>
-	 <4B288131.2050306@in.ibm.com>
-Date: Wed, 16 Dec 2009 14:45:28 +0800
-Message-ID: <7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-From: Xiaotian Feng <xtfeng@gmail.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-next@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+CC: reinette chatre <reinette.chatre@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com> <1260848710-5650-1-git-send-email-ike.pan@canonical.com> <20091215041500.GB31200@kroah.com> <4B273479.6050502@canonical.com> <20091215134943.GA11667@kroah.com> <20091215163100.GC8097@tuxdriver.com> <1260906168.9623.4.camel@rc-desk> <20091215194938.GA13297@kroah.com>
+In-Reply-To: <20091215194938.GA13297@kroah.com>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 2:41 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
-> Xiaotian Feng wrote:
->>
->> Does this testcase hotplug cpu 0 off?
->>
->
-> No, i don't think so. It skips cpu0 during online/offline
-> process.
+Greg KH wrote:
+> On Tue, Dec 15, 2009 at 11:42:48AM -0800, reinette chatre wrote:
+>> On Tue, 2009-12-15 at 08:31 -0800, John W. Linville wrote:
+>>> On Tue, Dec 15, 2009 at 05:49:43AM -0800, Greg KH wrote:
+>>>> On Tue, Dec 15, 2009 at 03:02:17PM +0800, Ike Panhc wrote:
+>>>>> Please consider applying to linux-2.6.31.y
+>>>> I need the subsystem maintainer to agree with this, have they?
+>>> It seems fine to me.  You may want to let Intel comment too.
+>>>
+>> No objection here. Even so, I find it strange that this patch fixes a
+>> problem since it really should not have any functional changes. 
+> 
+> Ok, if there is no functional change, why is this needed?
+> 
+> Ike?
+> 
+> thanks,
+> 
+> greg k-h
+I review the patch again. Yes, it is no functional change. Sorry I have
+misunderstanding about the patch. Please do not put the second patch into
+stable.
 
-Then how could this happen ? Looks like cpu 0 is offline ....
-0:mon> <4>IRQ 17 affinity broken off cpu 0
-<4>IRQ 18 affinity broken off cpu 0
-<4>IRQ 19 affinity broken off cpu 0
-<4>IRQ 264 affinity broken off cpu 0
-<4>cpu 0 (hwid 0) Ready to die...
-<7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
-
-
->
-> thanks
-> -Sachin
->
-> --
->
-> ---------------------------------
-> Sachin Sant
-> IBM Linux Technology Center
-> India Systems and Technology Labs
-> Bangalore, India
-> ---------------------------------
->
->
+But Please consider applying the first patch (change IWL6000_UCODE_API_MAX
+to v4) to 2.6.31-stable tree. It will be good to use v4 firmware on iwl6000.
