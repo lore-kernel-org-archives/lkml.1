@@ -1,333 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935895AbZLPXBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763033AbZLPWvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935895AbZLPXBj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964866AbZLPXB1
+	id S1763033AbZLPWvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZLPWvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:01:27 -0500
-Received: from static.88-198-15-165.clients.your-server.de ([88.198.15.165]:57152
-	"EHLO merzeus.obrandt.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935375AbZLPXBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:01:19 -0500
-X-Greylist: delayed 636 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Dec 2009 18:01:18 EST
-Date: Wed, 16 Dec 2009 23:50:32 +0100
-From: Torsten Landschoff <torsten@debian.org>
-To: linux-kernel@vger.kernel.org
-Cc: torsten@debian.org
-Subject: Allocating huge physically continuous memory from kernel module
-Message-ID: <20091216225032.GA10005@merzeus.obrandt.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="KsGdsel6WgEHnImy"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 16 Dec 2009 17:51:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:48524 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbZLPWvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:51:47 -0500
+Subject: [GIT PULL] final set of SCSI updates for the merge window
+From: James Bottomley <James.Bottomley@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 23:51:36 +0100
+Message-Id: <1261003896.14435.157.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It contains the new cciss scsi driver (hpsa) and an assortment of driver
+updates and bug fixes.
 
---KsGdsel6WgEHnImy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The patch is available from
 
-Hi kernel developers,
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-I need to allocate huge continuous DMA buffers for a PCI DMA device. I know
-that the right way to do large DMA transfers is using scatter gather.
+It's been well tested and integrated in linux-next, so there should be
+no merge surprises.
 
-Anyway, given that I don't want to change too much and I wanted to get the
-driver out of the kernel (so we can use the official distribution kernels),
-I tried to make this possible from a module by just allocating blocks of
-maximum buddy order and coalescing these into clusters. After all, most of the
-time my systems /proc/buddyinfo tells me I have plenty of large blocks
-available.
+The short changelog is:
 
-I am posting my code here in the hope that
-a) it may be helpful to somebody fighting the same problem
-b) you tell me why this is a bad thing to do
-I know there are border cases with this approach sucking all usable memory,
-but I think the memory should be freed again soon enough to keep the system
-running. Please note that the module is only loaded at boot time.
+Abhijeet Joglekar (1):
+      libfc: remote port gets stuck in restart state without really restarting
 
-As an aside, on my new development box, I can easily allocate 2 GB of
-continuous memory with this hack.
+Adam Radford (1):
+      3w-9xxx fix bug in sgl loading
 
+Anil Ravindranath (1):
+      pmcraid: support SMI-S object model of storage pool
 
-Flame away ;-)
+Anil Veerabhadrappa (5):
+      bnx2i: minor code cleanup and update driver version
+      bnx2i: Task management ABORT TASK fixes
+      bnx2i: update CQ arming algorith for 5771x chipsets
+      bnx2i: Adjust sq_size module parametr to power of 2 only if a non-zero value is specified
+      bnx2i: Add 5771E device support to bnx2i driver
 
-Friendly, Torsten
+Anirban Chakraborty (1):
+      qla2xxx: fix for multiqueue in MISX disabled case
 
---KsGdsel6WgEHnImy
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="bigalloc.c"
+Boaz Harrosh (1):
+      libosd: Fix blk_put_request locking again
 
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/list.h>
-#include <linux/mm.h>
-#include <asm/io.h>
+Chris Leech (1):
+      libfc: reduce hold time on SCSI host lock
 
-MODULE_LICENSE("Dual BSD/GPL");
+FUJITA Tomonori (1):
+      st: fix mdata->page_order handling
 
-#ifdef DEBUG
-#define TRACEF(fmt, args...)	printk(KERN_DEBUG fmt, ## args)
-#else
-#define TRACEF(fmt, args...)
-#endif
+Giridhar Malavali (2):
+      qla2xxx: Update version number to 8.03.01-k8.
+      qla2xxx: Queue depth ramp up/down modification changes.
 
-/* Chapter: basic allocation unit retrieved via the buddy allocator */
+James Bottomley (1):
+      enclosure: fix oops while iterating enclosure_status array
 
-#define CHAPTER_ORDER (MAX_ORDER - 1)		  /* page order of chapter */
-#define CHAPTER_PAGES (1 << CHAPTER_ORDER)	  /* pages in a chapter */
-#define CHAPTER_SIZE  (PAGE_SIZE * CHAPTER_PAGES) /* chapter size in bytes */
+Jayamohan Kallickal (1):
+      be2iscsi: Adding support for various Async messages from chip
 
+Kashyap, Desai (1):
+      mpt2sas: add missing initialization of scsih_cmds
 
-/*
- *  We join adjacent chapters into clusters, keeping track of allocations
- *  as an ordered set of clusters.
- *
- *  Note that the physical page frame number (pfn) is stored in the hopes
- *  that continuous pfn's represent continuous memory. Should we merge
- *  clusters via dma_addr_t physical addresses?
- */
+Kleber Sacilotto de Souza (1):
+      ipr: fix EEH recovery
 
-struct cluster {
-	struct list_head head;	/* ordered list of clusters */
-	ulong page_first;	/* first page in cluster */
-	ulong page_count;	/* number of pages */
-};
+Martin K. Petersen (2):
+      Correctly handle thin provisioning write error
+      sd: WRITE SAME(16) / UNMAP support
 
-struct cluster_set {
-	struct list_head clusters;	/* allocated clusters */
-};
+Michael Reed (2):
+      qla2xxx: dpc thread can execute before scsi host has been added
+      lpfc: fix hang on SGI ia64 platform
 
-/* Declare and initialize a cluster set. */
-#define CLUSTER_SET(name) \
-        struct cluster_set name = { clusters: LIST_HEAD_INIT(name.clusters) }
+Mike Christie (1):
+      fc class: fix fc_transport_init error handling
 
-/* Retrieve the cluster from it's list head. */
-static struct cluster *get_cluster(struct list_head *node)
-{
-	return list_entry(node, struct cluster, head);
-}
+Moger, Babu (1):
+      scsi_dh_rdac: Add two new IBM devices to rdac_dev_list
 
-static inline dma_addr_t phys_start(const struct cluster *cl)
-{
-	return page_to_phys(pfn_to_page(cl->page_first));
-}
+Noriyuki Fujii (1):
+      megaraid_sas: make driver PCI legacy I/O port free driver
 
-static inline dma_addr_t phys_end(const struct cluster *cl)
-{
-	return page_to_phys(nth_page(pfn_to_page(cl->page_first), cl->page_count));
-}
+Pravin Bathija (1):
+      mpt fusion: Fix 32 bit platforms with 64 bit resources.
 
-/* Return node after target location for new chapter (passed as pfn). */
-static struct list_head *find_insert_location(
-	struct cluster_set *set, ulong chapter_start)
-{
-	struct list_head *p;
-	list_for_each (p, &set->clusters) {
-		if (get_cluster(p)->page_first > chapter_start)
-			return p;
-	}
-	return &set->clusters;
-}
+Srinivas (1):
+      mvsas: add support for Adaptec ASC-1045/1405 SAS/SATA HBA
 
-/* Try to merge a new chapter by prepending it to the cluster at pos.
-   Return true on success, false if unable to merge. */
-static bool try_prepend(
-	struct cluster_set *set, struct list_head *pos, ulong chapter_start)
-{
-	if (pos != &set->clusters) {
-		struct cluster *cl = get_cluster(pos);
-		if (chapter_start + CHAPTER_PAGES == cl->page_first) {
-			cl->page_first = chapter_start;
-			cl->page_count += CHAPTER_PAGES;
-			return true;
-		}
-	}
-	return false;
-}
+Stephen M. Cameron (1):
+      hpsa: add driver for HP Smart Array controllers.
 
-/* Try to merge a new chapter by appending it to cluster at pos.
-   Return true on success, false if unable to merge. */
-static bool try_append(
-	struct cluster_set *set, struct list_head *pos, ulong chapter_start)
-{
-	if (pos != &set->clusters) {
-		struct cluster *cl = get_cluster(pos);
-		if (cl->page_first + cl->page_count == chapter_start) {
-			cl->page_count += CHAPTER_PAGES;
-			return true;
-		}
-	}
-	return false;
-}
+Vasu Dev (1):
+      fcoe, libfc: adds enable/disable for fcoe interface
 
-/* Tries to merge the cluster previous to pos into it.
-   Returns true on success (invalidates previous cluster, pos stays valid). */
-static void try_merge_prev(struct cluster_set *set, struct cluster *pos)
-{
-	struct list_head *prev_head = pos->head.prev;
+Yi Zou (1):
+      fcoe: Use LLD's WWPN and WWNN for lport if LLD supports ndo_fcoe_get_wwn
 
-	if (prev_head != &set->clusters) {
-		struct cluster *prev = get_cluster(prev_head);
-		if (prev->page_first + prev->page_count == pos->page_first) {
-			pos->page_first  = prev->page_first;
-			pos->page_count += prev->page_count;
-			list_del(prev_head);
-			kfree(prev);
-		}
-	}
-}
+jack wang (9):
+      pm8001: misc code cleanup
+      pm8001: enable read HBA SAS address from VPD
+      pm8001: do not reset local sata as it will not be found if reset
+      pm8001: bit set pm8001_ha->flags
+      pm8001:fix potential NULL pointer dereference
+      pm8001: set SSC down-spreading only to get less errors on some 6G device.
+      pm8001: fix endian issues with SAS address
+      pm8001: enhance error handle for IO patch
+      pm8001: Fix for sata io circular lock dependency.
 
-/* Account for another chapter allocation, returning the cluster it became
-   part of. Returns NULL on error (out of memory). */
-static struct cluster *add_alloc(struct cluster_set *set,
-				 struct page *new_chapter)
-{
-	ulong chapter_start = page_to_pfn(new_chapter);
+kxie@chelsio.com (1):
+      cxgb3i: always use negative errno in case of error
 
-	struct list_head *insert_loc = find_insert_location(set, chapter_start);
-	if (try_prepend(set, insert_loc, chapter_start)) {
-		struct cluster *cl = get_cluster(insert_loc);
-		try_merge_prev(set, cl);
-		return cl;
-	} else if (try_append(set, insert_loc->prev, chapter_start)) {
-		return get_cluster(insert_loc->prev);
-	} else {
-		struct cluster *new_cluster = kmalloc(GFP_KERNEL, sizeof(*new_cluster));
-		if (new_cluster) {
-			new_cluster->page_first = chapter_start;
-			new_cluster->page_count = CHAPTER_PAGES;
-			list_add_tail(&new_cluster->head, insert_loc);
-		}
-		return new_cluster;
-	}
-}
+and the diffstat:
 
-/* Give up count chapters starting at start. */
-static void free_chapters(struct page *start, unsigned long count)
-{
-	unsigned long i;
-	TRACEF("Freeing %lu chapters @ 0x%lx.\n", count, (ulong) page_to_phys(start));
-	for (i = 0; i < count; i++, start = nth_page(start, CHAPTER_PAGES)) {
-		__free_pages(start, CHAPTER_ORDER);
-	}
-}
+ drivers/message/fusion/mptbase.c           |    6 
+ drivers/misc/enclosure.c                   |    1 
+ drivers/scsi/3w-9xxx.c                     |   11 
+ drivers/scsi/Kconfig                       |   10 
+ drivers/scsi/Makefile                      |    1 
+ drivers/scsi/be2iscsi/be_cmds.c            |   12 
+ drivers/scsi/bnx2i/bnx2i.h                 |    1 
+ drivers/scsi/bnx2i/bnx2i_hwi.c             |   51 
+ drivers/scsi/bnx2i/bnx2i_init.c            |   16 
+ drivers/scsi/bnx2i/bnx2i_iscsi.c           |    2 
+ drivers/scsi/cxgb3i/cxgb3i_offload.c       |   24 
+ drivers/scsi/cxgb3i/cxgb3i_pdu.c           |    4 
+ drivers/scsi/device_handler/scsi_dh_rdac.c |    2 
+ drivers/scsi/fcoe/fcoe.c                   |  135 +
+ drivers/scsi/hpsa.c                        | 3531 +++++++++++++++++++++++++++++
+ drivers/scsi/hpsa.h                        |  273 ++
+ drivers/scsi/hpsa_cmd.h                    |  326 ++
+ drivers/scsi/ipr.c                         |    1 
+ drivers/scsi/libfc/fc_fcp.c                |   65 
+ drivers/scsi/libfc/fc_lport.c              |    7 
+ drivers/scsi/libfc/fc_rport.c              |    1 
+ drivers/scsi/lpfc/lpfc_init.c              |   16 
+ drivers/scsi/megaraid/megaraid_sas.c       |   14 
+ drivers/scsi/mpt2sas/mpt2sas_base.c        |    5 
+ drivers/scsi/mvsas/mv_init.c               |    1 
+ drivers/scsi/osd/osd_initiator.c           |   88 
+ drivers/scsi/pm8001/pm8001_ctl.h           |   10 
+ drivers/scsi/pm8001/pm8001_hwi.c           |  149 -
+ drivers/scsi/pm8001/pm8001_hwi.h           |    3 
+ drivers/scsi/pm8001/pm8001_init.c          |   19 
+ drivers/scsi/pm8001/pm8001_sas.c           |   57 
+ drivers/scsi/pm8001/pm8001_sas.h           |   32 
+ drivers/scsi/pmcraid.c                     |   34 
+ drivers/scsi/pmcraid.h                     |    5 
+ drivers/scsi/qla2xxx/qla_def.h             |    5 
+ drivers/scsi/qla2xxx/qla_gbl.h             |    2 
+ drivers/scsi/qla2xxx/qla_init.c            |   12 
+ drivers/scsi/qla2xxx/qla_isr.c             |  103 
+ drivers/scsi/qla2xxx/qla_mid.c             |    4 
+ drivers/scsi/qla2xxx/qla_os.c              |   75 
+ drivers/scsi/qla2xxx/qla_version.h         |    2 
+ drivers/scsi/scsi_lib.c                    |    1 
+ drivers/scsi/scsi_transport_fc.c           |   17 
+ drivers/scsi/sd.c                          |  107 
+ drivers/scsi/sd.h                          |    2 
+ drivers/scsi/st.c                          |   23 
+ drivers/scsi/st.h                          |    1 
+ include/linux/enclosure.h                  |    2 
+ include/scsi/osd_initiator.h               |    5 
+ 49 files changed, 4914 insertions(+), 360 deletions(-)
 
-/* Free the set and all clusters allocated to it. */
-static void free_set(struct cluster_set *set)
-{
-	struct cluster *pos, *t;
-	TRACEF("Freeing clusters.\n");
-	list_for_each_entry_safe(pos, t, &set->clusters, head) {
-		free_chapters(pfn_to_page(pos->page_first), pos->page_count / CHAPTER_PAGES);
-		kfree(pos);
-	}
-}
-
-/* Lists the allocations in the given cluster set. */
-static void list_allocs(struct cluster_set *set)
-{
-	struct cluster *cluster;
-	TRACEF("Allocations in ascending order:\n");
-
-	list_for_each_entry(cluster, &set->clusters, head) {
-		TRACEF("Cluster from 0x%08lx .. 0x%08lx (%lu pages).\n",
-				(ulong) phys_start(cluster),
-				(ulong) phys_end(cluster),
-				cluster->page_count);
-	}
-}
-
-/* Remove the given cluster from the set, keeping the allocation. */
-static void unlink_cluster(struct cluster_set *set, struct cluster *cl)
-{
-	list_del_init(&cl->head);
-}
-
-/* Allocate a big buffer of given size [bytes]. flags as in alloc_pages. */
-struct page *bigbuf_alloc(unsigned int flags, ulong size)
-{
-	int order = size ? get_order(size) : 0;
-
-	if (order <= CHAPTER_ORDER) {
-		return alloc_pages(flags, order);
-	} else {
-		struct page *result;
-
-		int chapters = (size + CHAPTER_SIZE - 1) / CHAPTER_SIZE;
-		CLUSTER_SET(allocation_set);
-		struct cluster *merged;
-
-		TRACEF("Allocate huge block of size %lu (%i chapters).\n", size, chapters);
-
-		do {
-			struct page *chapter = alloc_pages(flags, CHAPTER_ORDER);
-			if (!chapter)
-				goto fail;
-			TRACEF("Allocated chapter @ %lx.\n",
-				(ulong) page_to_phys(chapter));
-			merged = add_alloc(&allocation_set, chapter);
-			if (!merged)
-				goto fail;
-			list_allocs(&allocation_set);
-		} while (merged->page_count < chapters * CHAPTER_PAGES);
-
-		unlink_cluster(&allocation_set, merged);
-		TRACEF("After taking result:\n");
-		list_allocs(&allocation_set);
-		free_set(&allocation_set);
-		result = pfn_to_page(merged->page_first);
-		kfree(merged);
-		return result;
-fail:
-		free_set(&allocation_set);
-		TRACEF("Allocation failed.\n");
-		return NULL;
-	}
-}
-
-/* Free a buffer allocates by bigbuf_alloc. */
-void bigbuf_free(struct page *start, ulong size)
-{
-	int size_order = size ? get_order(size) : 0;
-	if (size_order < CHAPTER_ORDER) {
-		__free_pages(start, size_order);
-	} else {
-		free_chapters(start, (size + CHAPTER_SIZE - 1) / CHAPTER_SIZE);
-	}
-}
+James
 
 
-ulong size = 16 * 1024 * 1024;
-module_param(size, ulong, S_IRUGO);
-
-struct page *huge_block = 0;
-
-static int my_init(void)
-{
-	huge_block = bigbuf_alloc(GFP_KERNEL | __GFP_HIGHMEM, size);
-	if (huge_block)
-		printk(KERN_INFO "Allocated block at 0x%lx.\n",
-			(ulong) page_to_phys(huge_block));
-	else
-		printk(KERN_ERR "Allocation of size %lu failed.\n", size);
-	return 0;
-}
-
-static void my_exit(void)
-{
-	if (huge_block) {
-		printk(KERN_INFO "Freeing block at 0x%lx.\n",
-			(ulong) page_to_phys(huge_block));
-		bigbuf_free(huge_block, size);
-	}
-}
-
-module_init(my_init);
-module_exit(my_exit);
-
---KsGdsel6WgEHnImy--
