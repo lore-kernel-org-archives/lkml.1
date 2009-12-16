@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935319AbZLPUqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbZLPUrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935319AbZLPUqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 15:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbZLPUq2
+	id S1759268AbZLPUrn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 15:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZLPUr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 15:46:28 -0500
-Received: from smtp4-g21.free.fr ([212.27.42.4]:58064 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965047AbZLPUq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 15:46:27 -0500
-To: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Cc: "kernel list" <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH] pxa27x_udc.c: use resource_size()
-References: <BD79186B4FD85F4B8E60E381CAEE19090200EA9E@mi8nycmail19.Mi8.com>
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-X-URL: http://belgarath.falguerolles.org/
-Date: Wed, 16 Dec 2009 21:46:15 +0100
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200EA9E@mi8nycmail19.Mi8.com> (H. Hartley Sweeten's message of "Mon\, 14 Dec 2009 18\:05\:02 -0500")
-Message-ID: <87oclytzoo.fsf@free.fr>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 16 Dec 2009 15:47:28 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41449 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbZLPUr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 15:47:27 -0500
+From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: e100 REGRESSION in 2.6.32
+Date: Wed, 16 Dec 2009 22:46:49 +0200
+User-Agent: KMail/1.12.4 (Linux/2.6.32-ironman-1; KDE/4.3.4; i686; ; )
+Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+References: <Pine.LNX.4.44L0.0912161447260.2643-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912161447260.2643-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200912162246.49611.roger.oksanen@cs.helsinki.fi>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H Hartley Sweeten" <hartleys@visionengravers.com> writes:
+On Wednesday 16 December 2009 21:50:38 Alan Stern wrote:
+> On Wed, 16 Dec 2009, Brandeburg, Jesse wrote:
+> >  Alan thanks for the report, I wonder if 
+> > you can revert 98468efddb101f8a29af974101c17ba513b07be1 and see if that 
+> > fixes it?
+> 
+> It does indeed.  Thanks for the quick response.
+> 
+> > Roger on the To: line made that change, which may have broken e100 for 
+> > your system.
+> 
+> It looks simple enough, but obviously something is wrong with it.
 
-> Use resource_size().
->
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Cc: Robert Jarzmik <robert.jarzmik@free.fr>
->
-> ---
->
-> diff --git a/drivers/usb/gadget/pxa27x_udc.c b/drivers/usb/gadget/pxa27x_udc.c
-> index adda120..72c89d9 100644
-> --- a/drivers/usb/gadget/pxa27x_udc.c
-> +++ b/drivers/usb/gadget/pxa27x_udc.c
-> @@ -2439,7 +2439,7 @@ static int __init pxa_udc_probe(struct platform_device *pdev)
->  	}
->  
->  	retval = -ENOMEM;
-> -	udc->regs = ioremap(regs->start, regs->end - regs->start + 1);
-> +	udc->regs = ioremap(regs->start, resource_size(regs));
->  	if (!udc->regs) {
->  		dev_err(&pdev->dev, "Unable to map UDC I/O memory\n");
->  		goto err_map; 
+I'm looking into this. Quite a baffling problem though. I have no idea what
+causes the last 4 bytes  to change slightly (6c 6b 6b a3). Perhaps the patch 
+only changed the timings to uncloak a lurking bug.. 
+struct sk_buff has users as it's last member, so perhaps there is a preempt
+point in dmapool that triggers a race with the rx path.
 
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+I'll try to reproduce this..
 
 -- 
-Robert
+Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+http://www.cs.helsinki.fi/u/raoksane
++358 50 355 1990
