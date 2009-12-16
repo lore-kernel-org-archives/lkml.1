@@ -1,121 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762503AbZLPRJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbZLPRGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762503AbZLPRJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762322AbZLPRGV
+	id S1762280AbZLPRGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762286AbZLPRGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:06:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36120 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762279AbZLPRGR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 12:06:17 -0500
-Message-Id: <20091216170517.884743662@chello.nl>
+Received: from casper.infradead.org ([85.118.1.10]:53815 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755985AbZLPRGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 12:06:16 -0500
+Message-Id: <20091216170517.961475466@chello.nl>
 References: <20091216170430.073353839@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 16 Dec 2009 18:04:37 +0100
+Date: Wed, 16 Dec 2009 18:04:38 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 07/12] sched: Fix sched_exec() balancing
-Content-Disposition: inline; filename=foo6.patch
+Subject: [PATCH 08/12] sched: Fix select_task_rq() vs hotplug issues
+Content-Disposition: inline; filename=foo8.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we access ->cpus_allowed without holding rq->lock we need a
-retry loop to validate the result, this comes for near free when we
-merge sched_migrate_task() into sched_exec() since that already does
-the needed check.
+Since select_task_rq() is now responsible for guaranteeing
+->cpus_allowed and cpu_active_mask, we need to verify this.
+
+select_task_rq_rt() can blindly return smp_processor_id()/task_cpu()
+without checking the valid masks, select_task_rq_fair() can do the
+same in the rare case that all SD_flags are disabled.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c |   45 +++++++++++++++++++++++----------------------
- 1 file changed, 23 insertions(+), 22 deletions(-)
+ kernel/sched.c |   75 ++++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 40 insertions(+), 35 deletions(-)
 
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -2322,7 +2322,7 @@ void task_oncpu_function_call(struct tas
-  *
-  *  - fork, @p is stable because it isn't on the tasklist yet
-  *
-- *  - exec, @p is unstable XXX
-+ *  - exec, @p is unstable, retry loop
-  *
-  *  - wake-up, we serialize ->cpus_allowed against TASK_WAKING so
-  *             we should be good.
-@@ -3132,21 +3132,36 @@ static void double_rq_unlock(struct rq *
+@@ -2317,6 +2317,43 @@ void task_oncpu_function_call(struct tas
  }
  
- /*
-- * If dest_cpu is allowed for this process, migrate the task to it.
-- * This is accomplished by forcing the cpu_allowed mask to only
-- * allow dest_cpu, which will force the cpu onto dest_cpu. Then
-- * the cpu_allowed mask is restored.
-+ * sched_exec - execve() is a valuable balancing opportunity, because at
-+ * this point the task has the smallest effective memory and cache footprint.
-  */
--static void sched_migrate_task(struct task_struct *p, int dest_cpu)
-+void sched_exec(void)
- {
-+	struct task_struct *p = current;
- 	struct migration_req req;
-+	int dest_cpu, this_cpu;
- 	unsigned long flags;
- 	struct rq *rq;
- 
-+again:
-+	this_cpu = get_cpu();
-+	dest_cpu = select_task_rq(p, SD_BALANCE_EXEC, 0);
-+	if (dest_cpu == this_cpu) {
-+		put_cpu();
-+		return;
+ #ifdef CONFIG_SMP
++static int select_fallback_rq(int cpu, struct task_struct *p)
++{
++	int dest_cpu;
++	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(cpu));
++
++	/* Look for allowed, online CPU in same node. */
++	for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
++		if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
++			return dest_cpu;
++
++	/* Any allowed, online CPU? */
++	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
++	if (dest_cpu < nr_cpu_ids)
++		return dest_cpu;
++
++	/* No more Mr. Nice Guy. */
++	if (dest_cpu >= nr_cpu_ids) {
++		rcu_read_lock();
++		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
++		rcu_read_unlock();
++		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
++
++		/*
++		 * Don't tell them about moving exiting tasks or
++		 * kernel threads (both mm NULL), since they never
++		 * leave kernel.
++		 */
++		if (p->mm && printk_ratelimit()) {
++			printk(KERN_INFO "process %d (%s) no "
++			       "longer affine to cpu%d\n",
++			       task_pid_nr(p), p->comm, cpu);
++		}
 +	}
 +
- 	rq = task_rq_lock(p, &flags);
-+	put_cpu();
++	return dest_cpu;
++}
 +
-+	/*
-+	 * select_task_rq() can race against ->cpus_allowed
-+	 */
- 	if (!cpumask_test_cpu(dest_cpu, &p->cpus_allowed)
--	    || unlikely(!cpu_active(dest_cpu)))
--		goto out;
-+	    || unlikely(!cpu_active(dest_cpu))) {
-+		task_rq_unlock(rq, &flags);
-+		goto again;
-+	}
- 
- 	/* force the process onto the specified CPU */
- 	if (migrate_task(p, dest_cpu, &req)) {
-@@ -3161,24 +3176,10 @@ static void sched_migrate_task(struct ta
- 
- 		return;
- 	}
--out:
- 	task_rq_unlock(rq, &flags);
- }
- 
  /*
-- * sched_exec - execve() is a valuable balancing opportunity, because at
-- * this point the task has the smallest effective memory and cache footprint.
-- */
--void sched_exec(void)
--{
--	int new_cpu, this_cpu = get_cpu();
--	new_cpu = select_task_rq(current, SD_BALANCE_EXEC, 0);
--	put_cpu();
--	if (new_cpu != this_cpu)
--		sched_migrate_task(current, new_cpu);
--}
+  * Called from:
+  *
+@@ -2343,14 +2380,8 @@ int select_task_rq(struct task_struct *p
+ 	 *   not worry about this generic constraint ]
+ 	 */
+ 	if (unlikely(!cpumask_test_cpu(cpu, &p->cpus_allowed) ||
+-		     !cpu_active(cpu))) {
 -
--/*
-  * pull_task - move a task from a remote runqueue to the local runqueue.
-  * Both runqueues must be locked.
-  */
+-		cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
+-		/*
+-		 * XXX: race against hot-plug modifying cpu_active_mask
+-		 */
+-		BUG_ON(cpu >= nr_cpu_ids);
+-	}
++		     !cpu_active(cpu)))
++		cpu = select_fallback_rq(task_cpu(p), p);
+ 
+ 	return cpu;
+ }
+@@ -7319,36 +7350,10 @@ static int __migrate_task_irq(struct tas
+ static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+ {
+ 	int dest_cpu;
+-	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
+ 
+ again:
+-	/* Look for allowed, online CPU in same node. */
+-	for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
+-		if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
+-			goto move;
+-
+-	/* Any allowed, online CPU? */
+-	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
+-	if (dest_cpu < nr_cpu_ids)
+-		goto move;
+-
+-	/* No more Mr. Nice Guy. */
+-	if (dest_cpu >= nr_cpu_ids) {
+-		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
+-		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
+-
+-		/*
+-		 * Don't tell them about moving exiting tasks or
+-		 * kernel threads (both mm NULL), since they never
+-		 * leave kernel.
+-		 */
+-		if (p->mm && printk_ratelimit()) {
+-			pr_info("process %d (%s) no longer affine to cpu%d\n",
+-				task_pid_nr(p), p->comm, dead_cpu);
+-		}
+-	}
++	dest_cpu = select_fallback_rq(dead_cpu, p);
+ 
+-move:
+ 	/* It can have affinity changed while we were choosing. */
+ 	if (unlikely(!__migrate_task_irq(p, dead_cpu, dest_cpu)))
+ 		goto again;
 
 -- 
 
