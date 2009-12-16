@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763378AbZLPX4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762756AbZLPX5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763378AbZLPX4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762928AbZLPX41
+	id S1762756AbZLPX5Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763392AbZLPX4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:56:27 -0500
-Received: from straum.hexapodia.org ([64.81.70.185]:48909 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762756AbZLPX4S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:56:18 -0500
-Date: Wed, 16 Dec 2009 15:56:17 -0800
-From: Andrew Isaacson <adi@vmware.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-kbuild@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       Rob Landley <rob@landley.net>
-Subject: CONFIG_KPROBES=y build requires gawk
-Message-ID: <20091216235617.GA12267@hexapodia.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Wed, 16 Dec 2009 18:56:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50245 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763388AbZLPX4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:56:49 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 5/6] NOMMU: Use copy_*_user_page() in access_process_vm()
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, vapier@gentoo.org, lethal@linux-sh.org,
+       linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
+       Jie Zhang <jie.zhang@analog.com>, Mike Frysinger <vapier@gentoo.org>,
+       David Howells <dhowells@redhat.com>,
+       David McCullough <david_mccullough@mcafee.com>,
+       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>
+Date: Wed, 16 Dec 2009 23:56:19 +0000
+Message-ID: <20091216235619.4310.96799.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
+References: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With CONFIG_KPROBES=y on Ubuntu 9.10 x86_64 default install, I get the
-following:
+From: Jie Zhang <jie.zhang@analog.com>
 
-Error: Your awk doesn't support charactor-class.
-Please try to use gawk.
-  CC      arch/x86/lib/inat.o
-arch/x86/lib/inat.c:24:25: error: inat-tables.c: No such file or directory
-arch/x86/lib/inat.c: In function "inat_get_opcode_attribute":
-arch/x86/lib/inat.c:29: error: "inat_primary_table" undeclared (first use in this function)
-arch/x86/lib/inat.c:29: error: (Each undeclared identifier is reported only once
-arch/x86/lib/inat.c:29: error: for each function it appears in.)
-arch/x86/lib/inat.c: In function "inat_get_escape_attribute":
-arch/x86/lib/inat.c:44: error: "inat_escape_tables" undeclared (first use in this function)
-arch/x86/lib/inat.c: In function "inat_get_group_attribute":
-arch/x86/lib/inat.c:67: error: "inat_group_tables" undeclared (first use in this function)
-arch/x86/lib/inat.c: In function "inat_get_avx_attribute":
-arch/x86/lib/inat.c:85: error: "inat_avx_tables" undeclared (first use in this function)
-make[1]: *** [arch/x86/lib/inat.o] Error 1
-make: *** [arch/x86/lib] Error 2
+The MMU code uses the copy_*_user_page() variants in access_process_vm()
+rather than copy_*_user() as the former includes an icache flush.  This is
+important when doing things like setting software breakpoints with gdb.
+So switch the NOMMU code over to do the same.
 
-Either CONFIG_KPROBES=n or 'apt-get install gawk' does the trick, but is
-this intentional?
+This patch makes the reasonable assumption that copy_from_user_page() won't
+fail - which is probably fine, as we've checked the VMA from which we're
+copying is usable, and the copy is not allowed to cross VMAs.  The one case
+where it might go wrong is if the VMA is a device rather than RAM, and that
+device returns an error which - in which case rubbish will be returned rather
+than EIO.
 
-If it is, the following documentation patch should be applied.
-
--andy
-
+Signed-off-by: Jie Zhang <jie.zhang@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: David McCullough <david_mccullough@mcafee.com>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 ---
-From: Andy Isaacson <adi@hexapodia.org>
-Date: Wed, 16 Dec 2009 15:51:30 -0800
-Subject: [PATCH] Document requirement for gawk.
 
-Signed-off-by: Andy Isaacson <adi@hexapodia.org>
----
- Documentation/Changes |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ mm/nommu.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/Changes b/Documentation/Changes
-index 6d0f1ef..8d55162 100644
---- a/Documentation/Changes
-+++ b/Documentation/Changes
-@@ -49,6 +49,7 @@ o  oprofile               0.9                     # oprofiled --version
- o  udev                   081                     # udevinfo -V
- o  grub                   0.93                    # grub --version
- o  mcelog		  0.6
-+o  gawk                   3.0                     # awk --version
+
+diff --git a/mm/nommu.c b/mm/nommu.c
+index db52886..1e1ecb2 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1896,9 +1896,11 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
  
- Kernel compilation
- ==================
--- 
-1.6.5.3
+ 		/* only read or write mappings where it is permitted */
+ 		if (write && vma->vm_flags & VM_MAYWRITE)
+-			len -= copy_to_user((void *) addr, buf, len);
++			copy_to_user_page(vma, NULL, addr,
++					 (void *) addr, buf, len);
+ 		else if (!write && vma->vm_flags & VM_MAYREAD)
+-			len -= copy_from_user(buf, (void *) addr, len);
++			copy_from_user_page(vma, NULL, addr,
++					    buf, (void *) addr, len);
+ 		else
+ 			len = 0;
+ 	} else {
 
