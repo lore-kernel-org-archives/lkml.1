@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933264AbZLPGwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933353AbZLPGyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933264AbZLPGwI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 01:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932550AbZLPGwF
+	id S933353AbZLPGyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 01:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932810AbZLPGyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 01:52:05 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:37894 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932426AbZLPGwB (ORCPT
+	Wed, 16 Dec 2009 01:54:16 -0500
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:36990 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932550AbZLPGyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 01:52:01 -0500
-Date: Tue, 15 Dec 2009 23:52:00 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: synaptics touchpad doesn't click
-Message-ID: <20091216065200.GC20352@ldl.fc.hp.com>
-References: <20091214014828.GA28402@ldl.fc.hp.com> <20091214173450.GB2373@core.coreip.homeip.net> <20091215034127.GC587@ldl.fc.hp.com> <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com> <20091216025934.GA2699@core.coreip.homeip.net>
+	Wed, 16 Dec 2009 01:54:15 -0500
+Message-ID: <4B288413.2070704@in.ibm.com>
+Date: Wed, 16 Dec 2009 12:24:11 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216025934.GA2699@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Xiaotian Feng <xtfeng@gmail.com>
+CC: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-next@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+References: <4B2224C7.1020908@in.ibm.com> <7b6bb4a50912152225p4f5dde13re83c439407c16eaf@mail.gmail.com> <4B288131.2050306@in.ibm.com> <7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
+In-Reply-To: <7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
-> > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > >
-> > > The updated patch is below.
-> > > 
-> > > -- 
-> > > Dmitry
-> > 
-> > Should I test this one or wait one more iteration to address
-> > Takashi's last comments?
-> > 
-> 
-> Actually I think we took the wrong direction with the original patch and
-> we should do what other buttonless devices (bcm5974) do: report touchpad
-> click as left button and have Synaptics X driver provide enhanced
-> support. This way we can have both modes (ClickZones and ClickButtons)
-> and users will get to chose (provided that someone takes time to add
-> that support to Synaptics driver of course ;) ).
-> 
-> Could you tell me if the below works for you?
+Xiaotian Feng wrote:
+> On Wed, Dec 16, 2009 at 2:41 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
+>   
+>> Xiaotian Feng wrote:
+>>     
+>>> Does this testcase hotplug cpu 0 off?
+>>>
+>>>       
+>> No, i don't think so. It skips cpu0 during online/offline
+>> process.
+>>     
+>
+> Then how could this happen ? Looks like cpu 0 is offline ....
+> 0:mon> <4>IRQ 17 affinity broken off cpu 0
+> <4>IRQ 18 affinity broken off cpu 0
+> <4>IRQ 19 affinity broken off cpu 0
+> <4>IRQ 264 affinity broken off cpu 0
+> <4>cpu 0 (hwid 0) Ready to die...
+> <7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
+>   
+Sorry i was looking at only one script. Looking more closely
+at the test there are 6 different sub tests. The rest of the
+tests do seem to hotplug CPU 0.
 
-Left clicks work. Right/middle do not (as expected, I guess).
+Thanks
+-Sachin
 
-I liked the behaviour of Takashi's patch a little better wrt what
-happens when you try to click/drag, because he disabled movement
-in the click area.
 
-My vodka consumption is minimal and I don't have the shakes, but
-I found it difficult to precisely hit the edge of a window and
-click / drag to resize...
+-- 
 
-/ac
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
