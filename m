@@ -1,58 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZLPEg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761556AbZLPEh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbZLPEg2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 23:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761014AbZLPEg1
+	id S1761556AbZLPEh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 23:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761514AbZLPEhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 23:36:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40703 "EHLO hera.kernel.org"
+	Tue, 15 Dec 2009 23:37:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59170 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756432AbZLPEg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 23:36:26 -0500
-Date: Wed, 16 Dec 2009 04:36:18 +0000
+	id S1756444AbZLPEhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 23:37:22 -0500
+Date: Wed, 16 Dec 2009 04:37:21 +0000
 From: Kyle McMartin <kyle@hera.kernel.org>
 To: torvalds@linux-foundation.org
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@suse.de, hch@infradead.org
-Subject: [git patches] xfs and block fixes for virtually indexed arches
-Message-ID: <20091216043618.GB9104@hera.kernel.org>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] parisc pull request for 2.6.33
+Message-ID: <20091216043721.GC9104@hera.kernel.org>
 Reply-To: kyle@mcmartin.ca
+References: <20091216042738.GA9104@hera.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091216042738.GA9104@hera.kernel.org>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As discussed on linux-arch@ recently, these fixes are necessary for
-XFS to work on virtually indexed architectures since otherwise vmalloc'd
-pages are not properly flushed from the cache.
+On Wed, Dec 16, 2009 at 04:27:38AM +0000, Kyle McMartin wrote:
+>   /pub/scm/linux/kernel/git/kyle/parisc-2.6.git next
+> 
 
-Thanks!
- Kyle
+Dreadfully sorry, meant to fix that up to be:
 
-The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
-  Stephen Rothwell (1):
-        mfd: compile fix for twl4030 renaming
+hera.kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git next
 
-are available in the git repository at:
+before I sent the email.
 
-  hera.kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git coherence
-
-James Bottomley (6):
-      mm: add coherence API for DMA to vmalloc/vmap areas
-      parisc: add mm API for DMA to vmalloc/vmap areas
-      arm: add mm API for DMA to vmalloc/vmap areas
-      sh: add mm API for DMA to vmalloc/vmap areas
-      block: permit I/O to vmalloc/vmap kernel pages
-      xfs: fix xfs to work with Virtually Indexed architectures
-
- Documentation/cachetlb.txt           |   24 ++++++++++++++++++++++++
- arch/arm/include/asm/cacheflush.h    |   10 ++++++++++
- arch/parisc/include/asm/cacheflush.h |    8 ++++++++
- arch/sh/include/asm/cacheflush.h     |    8 ++++++++
- fs/bio.c                             |   20 ++++++++++++++++++--
- fs/xfs/linux-2.6/xfs_buf.c           |   20 ++++++++++++++++++++
- include/linux/highmem.h              |    6 ++++++
- 7 files changed, 94 insertions(+), 2 deletions(-)
+regards, Kyle
