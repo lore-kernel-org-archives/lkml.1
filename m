@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934565AbZLPCYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934576AbZLPCYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934565AbZLPCYO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 21:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934533AbZLPCYN
+	id S934576AbZLPCYa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 21:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934570AbZLPCY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 21:24:13 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50193 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934556AbZLPCYL convert rfc822-to-8bit (ORCPT
+	Tue, 15 Dec 2009 21:24:26 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48168 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934568AbZLPCYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 21:24:11 -0500
-Date: Wed, 16 Dec 2009 11:24:02 +0900 (JST)
-Message-Id: <20091216.112402.226798335.d.hatayama@jp.fujitsu.com>
+	Tue, 15 Dec 2009 21:24:24 -0500
+Date: Wed, 16 Dec 2009 11:24:20 +0900 (JST)
+Message-Id: <20091216.112420.71092752.d.hatayama@jp.fujitsu.com>
 To: xiyou.wangcong@gmail.com
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jdike@addtoit.com,
        tony.luck@intel.com, mhiramat@redhat.com
-Subject: Re: [RFC, PATCH 4/4] elf_core_dump(): Add extended numbering
- support
+Subject: Re: [RFC, PATCH 2/4] elf_core_dump(): Remove DUMP_WRITE macro
 From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-In-Reply-To: <2375c9f90912150027h2435fad9yc35bc360f743d7a6@mail.gmail.com>
-References: <20091215.114149.189724375.d.hatayama@jp.fujitsu.com>
-	<2375c9f90912150027h2435fad9yc35bc360f743d7a6@mail.gmail.com>
+In-Reply-To: <2375c9f90912150029w6edafb17s6fb0bcf41798263a@mail.gmail.com>
+References: <20091215.114125.71090684.d.hatayama@jp.fujitsu.com>
+	<2375c9f90912150029w6edafb17s6fb0bcf41798263a@mail.gmail.com>
 X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I agree with two of three cleanup ideas, but the last.
-
-> > @@ -2079,11 +2139,19 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
-> >        if (!elf_core_write_extra_data(file, &size, limit))
-> >                goto end_coredump;
+> On Tue, Dec 15, 2009 at 10:41 AM, Daisuke HATAYAMA
+> <d.hatayama@jp.fujitsu.com> wrote:
+> > In DUMP_WRITE macro, some local variables and goto statement are used
+> > implicitly, which makes it confusing to understand how the dumping
+> > process behaves. So, clean up it by unfolding the macro body directly
+> > to the point where the original macro is used plus a bit of style
+> > change.
 > >
-> > +       if (e_phnum == PN_XNUM) {
-> > +               size += sizeof(*shdr4extnum);
-> > +               if (size > limit
-> > +                   || !dump_write(file, shdr4extnum, sizeof(*shdr4extnum)))
-> > +                       goto end_coredump;
-> > +       }
-> > +
-> >  end_coredump:
+> > Now that the previous patch replaced ELF_CORE_EXTRA_* macros in
+> > fs/binfmt_elf.c, there is no users for DUMP_WRITE macro in
+> > fs/binfmt_elf.c. Thus remove the definition of DUMP_WRITE macro.
+> >
+> > Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+> 
+> 
+> I assume you at least did a build test?
 
-There are two reasons I wrote like this.
+Oh..sorry. I have forgotten writting about test.
 
-First, the code like
+For IA64, i386 and UML-i386, I tested on the real machine.
+For s390, arm and xtensa, I only did a build test.
 
-if (size > limit || !dump_write(file, obj, sizeof(*obj)))
-   goto end_coredump;
+> I like this patch:
 
-is used as the common idiom in thourghout elf_core_dump().  Not
-writing goto only at the last use seems unnatural for me.
+Thanks.
 
-Second, there is a possibility that new writing operation for section
-header table will be added. If the goto is removed now, the patch
-writer must rewrite it again.
-
-Thanks for your comments.
