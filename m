@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935532AbZLPTFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762924AbZLPTGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935532AbZLPTFX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763032AbZLPTFS
+	id S1762924AbZLPTGL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964861AbZLPTF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:05:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61554 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763027AbZLPTFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:05:16 -0500
-Message-ID: <4B292F69.3000608@redhat.com>
-Date: Wed, 16 Dec 2009 14:05:13 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 16 Dec 2009 14:05:56 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:51937 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964873AbZLPTFy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:05:54 -0500
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: perf and libdwarf on debian
-References: <20091216135448.GD11618@aftab> <1260988340.21028.198.camel@laptop>
-In-Reply-To: <1260988340.21028.198.camel@laptop>
+In-Reply-To: <20091216182433.GA28134@ioremap.net>
+References: <1260716147-1569-1-git-send-email-a.beregalov@gmail.com>
+	 <20091216182433.GA28134@ioremap.net>
+Date: Wed, 16 Dec 2009 22:05:52 +0300
+Message-ID: <a4423d670912161105s124adcdci3ad09c1cb7900ba1@mail.gmail.com>
+Subject: Re: [PATCH] Staging: dst: fix 'Client is not allowed' on sparc
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       sparclinux@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/12/16 Evgeniy Polyakov <zbr@ioremap.net>:
+> Hi Alexander.
+>
+> Sorry for late response.
+> Your patch looks good, I will forward it to GregKH for inclusion.
 
+But how does inet_getname() set sa_data_len to 0.
+I can't imagine.
+My patch is a workaround, not a fix.
 
-Peter Zijlstra wrote:
-> On Wed, 2009-12-16 at 14:54 +0100, Borislav Petkov wrote:
->> Hi,
+Btw, it does not work on sparc anyway, it needs further digging.
+
+> Thank you.
+>
+> On Sun, Dec 13, 2009 at 05:55:47PM +0300, Alexander Beregalov (a.beregalov@gmail.com) wrote:
 >>
->> even after installing libdwarf-dev on my debian box here, make in tools/perf/
->> still complains that it cannot find libdwarf:
+>> Not for applying, only describe the problem.
 >>
->> Makefile:491: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
 >>
->> The problem is that the include path on debian is not
->> /usr/include/libdwarf/ but simply /usr/include because the debian
->> package libdwarf-dev puts the headers straight into /usr/include.
+>> There is a warning on sparc
+>>  Kernel unaligned access at TPC[6c0dec] inet_getname+0x4c/0xc0
+>> which goes from
+>>       net/ipv4/af_inet.c:
+>>       int inet_getname(
+>>               ...
+>>               *uaddr_len = sizeof(*sin);
 >>
->> Now, fixing this in the build system could get ugly and too much (see
->> below), IMHO, so how about adding a README file in <tools/perf/>
->> which explains that on Debian-like systems, one should mkdir
->> /usr/include/libdwarf/ and symlink libdwarf.h and dwarf.h into it?
+>> sizeof(*sin) is 16, but inet_getname sets sa_data_len to 0.
+>> That is why client is denied to access the device.
+>> inet_getname() does not read uaddr_len, only
+>> writes, so move initialization of sa_data_len after it.
+>> Make struct saddr aligned similar to
+>> struct __kernel_sockaddr_storage. This fixes the warning.
 >>
->> There could be a better solution though...?
-> 
-> Yeah, like file a bug with RH for placing them in such an utterly stupid
-> location.
-> 
-> Also, I'd not bother with testing debian, just do
-> 
-> #include <dwarf.h>
-> 
-> and simply add -I/usr/include/libdwarf to CPPFLAGS or something like
-> that.
-
-Ah, right, I was stupid!
-
-Masami Hiramatsu wrote:
-> e.g.
-> 
-> ifeq ($(shell sh -c "(test -d /usr/include/libdwarf/ && echo y)", y)
-> 	BASIC_CFLAGS += -I /usr/include/libdwarf 
-> endif
-
-So, it just need;
-
-BASIC_CFLAGS += -I/usr/include/libdwarf 
-
-And including just libdwarf.h and dwarf.h.
-
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+>> ---
+>>  drivers/staging/dst/export.c |    2 +-
+>>  include/linux/dst.h          |    4 ++--
+>>  2 files changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/staging/dst/export.c b/drivers/staging/dst/export.c
+>> index c324230..4644804 100644
+>> --- a/drivers/staging/dst/export.c
+>> +++ b/drivers/staging/dst/export.c
+>> @@ -166,12 +166,12 @@ static struct dst_state *dst_accept_client(struct dst_state *st)
+>>       }
+>>       new->socket = sock;
+>>
+>> -     new->ctl.addr.sa_data_len = sizeof(struct sockaddr);
+>>       err = kernel_getpeername(sock, (struct sockaddr *)&new->ctl.addr,
+>>                       (int *)&new->ctl.addr.sa_data_len);
+>>       if (err)
+>>               goto err_out_put;
+>>
+>> +     new->ctl.addr.sa_data_len = sizeof(struct sockaddr);
+>>       new->permissions = dst_check_permissions(st, new);
+>>       if (new->permissions == 0) {
+>>               err = -EPERM;
+>> diff --git a/include/linux/dst.h b/include/linux/dst.h
+>> index e26fed8..454b15a 100644
+>> --- a/include/linux/dst.h
+>> +++ b/include/linux/dst.h
+>> @@ -74,10 +74,10 @@ struct saddr {
+>>       /* address family, AF_xxx       */
+>>       unsigned short          sa_family;
+>>       /* 14 bytes of protocol address */
+>> -     char                    sa_data[SADDR_MAX_DATA];
+>> +     char                    sa_data[SADDR_MAX_DATA - sizeof(unsigned short)];
+>>       /* Number of bytes used in sa_data */
+>>       unsigned short          sa_data_len;
+>> -};
+>> +} __attribute__((aligned(16)));      /* sizeof(struct sockaddr) */
+>>
+>>  /* Address structure */
+>>  struct dst_network_ctl
+>> --
+>> 1.6.5.6
+>
+> --
+>        Evgeniy Polyakov
+>
