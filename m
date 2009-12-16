@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZLPDli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbZLPDwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbZLPDli (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 22:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZLPDlg
+	id S1754433AbZLPDwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 22:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZLPDwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 22:41:36 -0500
-Received: from vms173015pub.verizon.net ([206.46.173.15]:45989 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbZLPDlf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 22:41:35 -0500
-Date: Tue, 15 Dec 2009 22:41:19 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Matthew Garrett <mjg@redhat.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [REGRESSION] 9a884ab64a4d092b4c3bf24fd9a30f7fbd4591e7 causes boot
- hang
-In-reply-to: <1260925040.3834.69.camel@minggr.sh.intel.com>
-Message-id: <alpine.LFD.2.00.0912152240320.6885@localhost.localdomain>
-References: <20091215181538.GA28707@srcf.ucam.org>
- <1260925040.3834.69.camel@minggr.sh.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Dec 2009 22:52:47 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54581 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752108AbZLPDwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 22:52:47 -0500
+Date: Wed, 16 Dec 2009 14:52:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Bernhard Walle <bernhard@bwalle.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: linux-next: origin tree build warning
+Message-Id: <20091216145241.0d5ef378.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__16_Dec_2009_14_52_41_+1100_wIq=V.CjyYoWA4h9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew,
+--Signature=_Wed__16_Dec_2009_14_52_41_+1100_wIq=V.CjyYoWA4h9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Alternatively, you can pick up the latest ACPICA code from
-the acpica or release branches of the acpi tree.
+Hi all,
 
-Please let me know as soon as you can check if it helps.
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+usr/include/linux/vt.h:89: userspace cannot call function or variable defin=
+ed in the kernel
 
-On Wed, 16 Dec 2009, Lin Ming wrote:
+Introduced by commit 5ada918b82399eef3afd6a71e3637697d6bd719f ("vt:
+introduce and use vt_kmsg_redirect() function").
 
-> On Wed, 2009-12-16 at 02:15 +0800, Matthew Garrett wrote:
-> > Commit 9a884ab64a4d092b4c3bf24fd9a30f7fbd4591e7 (ACPICA: Add additional 
-> > module-level code support) results in one of my test machines hanging at 
-> > boot. The last line output is:
-> > 
-> > bio: create slab <bio-0> at 0
-> > 
-> > which would normally be followed by
-> > 
-> > ACPI: EC: Look up EC in DSDT
-> > 
-> > but instead the machine hangs without printing this line. Reverting the 
-> > commit results in the machine booting. acpidump output attached.
-> > 
-> 
-> Hi, Matthew
-> 
-> Could you try the attached ACPICA latest release (20091214) patch
-> series? There are module level code and _REG method fixes included in
-> it.
-> 
-> Checkout Linus' tree.
-> git am acpica-v20091214.patch
-> 
-> Thanks,
-> Lin Ming
-> 
-> 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__16_Dec_2009_14_52_41_+1100_wIq=V.CjyYoWA4h9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksoWYkACgkQjjKRsyhoI8yahACfSiCgTAi11obOm2PrAdackgI2
+fdgAoJeN+uVRJTGSVXfUS+IVFafEAt/b
+=QEG3
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__16_Dec_2009_14_52_41_+1100_wIq=V.CjyYoWA4h9--
