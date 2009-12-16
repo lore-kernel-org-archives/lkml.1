@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762116AbZLPLab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbZLPLcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762116AbZLPLab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 06:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbZLPLaa
+	id S1762120AbZLPLcG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 06:32:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZLPLcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 06:30:30 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:45236 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430AbZLPLa3 (ORCPT
+	Wed, 16 Dec 2009 06:32:01 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44003 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbZLPLcA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 06:30:29 -0500
-Date: Wed, 16 Dec 2009 12:30:18 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-11-24-16-47 uploaded (gpio_max7301)
-Message-ID: <20091216113018.GA4283@pengutronix.de>
-References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org> <4B0DDDFE.5060600@xenotime.net> <20091215144306.2d3aeeff.akpm@linux-foundation.org> <20091215144643.30756c30.randy.dunlap@oracle.com> <20091215151045.0b9fdb4d.akpm@linux-foundation.org>
+	Wed, 16 Dec 2009 06:32:00 -0500
+Date: Wed, 16 Dec 2009 12:31:58 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+Message-ID: <20091216113158.GE15031@basil.fritz.box>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com> <20091216101107.GA15031@basil.fritz.box> <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com> <20091216104951.GD15031@basil.fritz.box> <20091216201218.42ff7f05.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091215151045.0b9fdb4d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <20091216201218.42ff7f05.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 16, 2009 at 08:12:18PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 16 Dec 2009 11:49:51 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > On Wed, Dec 16, 2009 at 07:31:09PM +0900, KAMEZAWA Hiroyuki wrote:
+> > > On Wed, 16 Dec 2009 11:28:06 +0100
+> > > Andi Kleen <andi@firstfloor.org> wrote:
+> > > 
+> > > > > > Also the patches didn't fare too well in testing unfortunately.
+> > > > > > 
+> > > > > > I suspect we'll rather need multiple locks split per address
+> > > > > > space range.
+> > > > > 
+> > > > > This set doesn't include any changes of the logic. Just replace all mmap_sem.
+> > > > > I think this is good start point (for introducing another logic etc..)
+> > > > 
+> > > > The problem is that for range locking simple wrapping the locks
+> > > > in macros is not enough. You need more changes.
+> > > > 
+> > > maybe. but removing scatterred mmap_sem from codes is the first thing to do.
+> > > I think this removing itself will take 3 month or a half year.
+> > > (So, I didn't remove mmap_sem and leave it as it is.)
+> > 
+> > I suspect you would just need to change them again then.
+> > 
+> Do you have alternative recommendation rather than wrapping all accesses by
+> special functions ?
 
---Q68bSM7Ycu6FN28Q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Work out what changes need to be done for ranged mmap locks and do them all
+in one pass.
 
-> > Wolfram sent a large replacement patch on Sun Dec. 13:
-> > Subject: [PATCH V4] gpio: add driver for MAX7300 I2C GPIO extender
->=20
-> So he did, thanks.
->=20
-> Wolfram, the V4 patch doesn't have a usable changelog.  Please send one
-> along sometime?
+Unfortunately I don't know yet either how exactly these changes look 
+like, figuring that out is the hard work part in it.
 
-Sure, will do. I am just not entirely sure what you mean with "changelog"? =
-The
-changelog for V4? The whole changelog from V1 to V4? The patch description?=
- All
-of them? :)
+I suspect it would need changing of the common vma list walk loop
+pattern.
 
-Regards,
+-Andi
 
-  Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---Q68bSM7Ycu6FN28Q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksoxMoACgkQD27XaX1/VRvP8gCgyi0D5p3r682qXwwbymLb9IdM
-hXoAoKVgkYXQxXmoUDrlUaHI7/KfPe2i
-=j3VK
------END PGP SIGNATURE-----
-
---Q68bSM7Ycu6FN28Q--
+-- 
+ak@linux.intel.com -- Speaking for myself only.
