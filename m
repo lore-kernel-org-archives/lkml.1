@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbZLPAtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZLPAue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757695AbZLPAtI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 19:49:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZLPAs7
+	id S1758650AbZLPAue (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 19:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbZLPAud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 19:48:59 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41847 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZLPAs5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 19:48:57 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 4/8] Use prepare_to_wait_exclusive() instead prepare_to_wait()
-Cc: kosaki.motohiro@jp.fujitsu.com, Mike Galbraith <efault@gmx.de>,
-       lwoodman@redhat.com, akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
-In-Reply-To: <4B27A417.3040206@redhat.com>
-References: <1260855146.6126.30.camel@marge.simson.net> <4B27A417.3040206@redhat.com>
-Message-Id: <20091216093533.CDF1.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 15 Dec 2009 19:50:33 -0500
+Received: from tex.lwn.net ([70.33.254.29]:53535 "EHLO tex.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754371AbZLPAuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 19:50:32 -0500
+Date: Tue, 15 Dec 2009 17:50:29 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Keith Mannthey <kmannth@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
+Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
+Message-ID: <20091215175029.1062f139@bike.lwn.net>
+In-Reply-To: <1260923885.6521.41.camel@keith-laptop>
+References: <1260907788.6521.10.camel@keith-laptop>
+	<20091215164950.1fd41caf@bike.lwn.net>
+	<1260923885.6521.41.camel@keith-laptop>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.19.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 16 Dec 2009 09:48:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 12/15/2009 12:32 AM, Mike Galbraith wrote:
-> > On Tue, 2009-12-15 at 09:45 +0900, KOSAKI Motohiro wrote:
-> >>> On 12/14/2009 07:30 AM, KOSAKI Motohiro wrote:
-> >>>> if we don't use exclusive queue, wake_up() function wake _all_ waited
-> >>>> task. This is simply cpu wasting.
-> >>>>
-> >>>> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> >>>
-> >>>>    		if (zone_watermark_ok(zone, sc->order, low_wmark_pages(zone),
-> >>>>    					0, 0)) {
-> >>>> -			wake_up(wq);
-> >>>> +			wake_up_all(wq);
-> >>>>    			finish_wait(wq,&wait);
-> >>>>    			sc->nr_reclaimed += sc->nr_to_reclaim;
-> >>>>    			return -ERESTARTSYS;
-> >>>
-> >>> I believe we want to wake the processes up one at a time
-> >>> here.
+On Tue, 15 Dec 2009 16:38:05 -0800
+Keith Mannthey <kmannth@us.ibm.com> wrote:
+
+> > Do you need to create a new directory for a single .c file?
 > 
-> >> Actually, wake_up() and wake_up_all() aren't different so much.
-> >> Although we use wake_up(), the task wake up next task before
-> >> try to alloate memory. then, it's similar to wake_up_all().
+> Perhaps not. I have a single .h and a single .c file. 
+> Do you think I should move them right into misc (with maybe a better
+> name the rtl.h)? 
+
+That's what I would do, but this is a detail.
+
+> > For a driver which is intended to help reduce latencies, a 10ms delay with
+> > a spinlock held seems a little harsh.  It seems like maybe you could drop
+> > the lock and use msleep()?
 > 
-> That is a good point.  Maybe processes need to wait a little
-> in this if() condition, before the wake_up().  That would give
-> the previous process a chance to allocate memory and we can
-> avoid waking up too many processes.
-
-if we really need wait a bit, Mike's wake_up_batch is best, I think.
-It mean
- - if another CPU is idle, wake up one process soon. iow, it don't
-   make meaningless idle.
- - if another CPU is busy, woken process don't start to run awhile.
-   then, zone_watermark_ok() can calculate correct value.
-
-
-> > What happens to waiters should running tasks not allocate for a while?
+> Irony is that doing this special write actually triggers an SMI. 
 > 
-> When a waiter is woken up, it will either:
-> 1) see that there is enough free memory and wake up the next guy, or
-> 2) run shrink_zone and wake up the next guy
+> Well I really don't want any other possible action to happen until after
+> the command finishes.  I can definitely shorten the amount of time of
+> the mdelay but I don't want any possible way to start another write
+> until the command finishes.  
+
+Why not protect it with a mutex and use msleep()?  I see no reason why you
+need a spinlock there.
+
+> > > +			if (count++ > 10000) {
+> > 
+> > ...that's 100 seconds total - a *long* time...
 > 
-> Either way, the processes that just got woken up will ensure that
-> the sleepers behind them in the queue will get woken up.
+> The is a "possible" error condition that I have given a large window
+> too. More than happy to shorten it up to say a small human amount of
+> time maybe 2 seconds?
+
+Whatever makes sense for the hardware.  Certainly there comes a point where
+you can conclude it's not going to get back to you.  If you get rid of the
+busy wait, you can delay a lot longer here without creating trouble.
+
+> > Again, you should use ioread32() here.
 > 
-> -- 
-> All rights reversed.
+> I should never directly access the ioremap region? 
 
+No, you really shouldn't.  Probably, on any machine where this driver is
+relevant you get away with it just fine, but it's not the way to write
+portable code.
 
-
+jon
