@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965213AbZLPXC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbZLPXCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965213AbZLPXC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965209AbZLPXCF
+	id S1763130AbZLPXCt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763179AbZLPXCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:02:05 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:35213 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964884AbZLPXBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:01:48 -0500
-Subject: Re: [PATCH -next] nfs: fix ISO C90 warning
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0912162355350.2755@localhost.localdomain>
-References: <20091215165309.58e98eea.sfr@canb.auug.org.au>
-	 <20091216142334.6a0ba115.randy.dunlap@oracle.com>
-	 <1261003219.13878.6.camel@localhost>
-	 <20091216144700.34b80b4b.randy.dunlap@oracle.com>
-	 <alpine.LFD.2.00.0912162355350.2755@localhost.localdomain>
+	Wed, 16 Dec 2009 18:02:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41369 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964874AbZLPXC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:02:26 -0500
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+In-Reply-To: <alpine.DEB.2.00.0912161025290.8572@router.home>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091216101107.GA15031@basil.fritz.box>
+	 <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091216102806.GC15031@basil.fritz.box>
+	 <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091216104951.GD15031@basil.fritz.box>
+	 <20091216201218.42ff7f05.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091216113158.GE15031@basil.fritz.box>
+	 <alpine.DEB.2.00.0912161025290.8572@router.home>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 18:01:37 -0500
-Message-Id: <1261004497.13878.9.camel@localhost>
+Date: Thu, 17 Dec 2009 00:01:55 +0100
+Message-ID: <1261004515.21028.510.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 9 sum msgs/h 1 total rcpts 2066 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 3A66BDFA17C72F7D4633D13A547A3C44D02419AD
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 49 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 23:58 +0100, Thomas Gleixner wrote: 
-> On Wed, 16 Dec 2009, Randy Dunlap wrote:
-> > On Wed, 16 Dec 2009 17:40:19 -0500 Trond Myklebust wrote:
-> > 
-> > > On Wed, 2009-12-16 at 14:23 -0800, Randy Dunlap wrote: 
-> > > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > > 
-> > > > Fix gcc ISO C90 warning:
-> > > > 
-> > > > fs/nfs/callback.c:356: warning: ISO C90 forbids mixed declarations and code
-> > > > 
-> > > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > > > ---
-> > > >  fs/nfs/callback.c |    2 +-
-> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > 
-> > > > --- linux-next-20091215.orig/fs/nfs/callback.c
-> > > > +++ linux-next-20091215/fs/nfs/callback.c
-> > > > @@ -352,8 +352,8 @@ static int check_gss_callback_principal(
-> > > >  static int nfs_callback_authenticate(struct svc_rqst *rqstp)
-> > > >  {
-> > > >  	struct nfs_client *clp;
-> > > > -	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
-> > > >  	int ret = SVC_OK;
-> > > > +	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
-> > > >  
-> > > 
-> > > What version of gcc is giving rise to this warning?
-> > 
-> > > gcc --version
-> > gcc (GCC) 4.2.1 (SUSE Linux)
-> > 
-> > > RPC_IFDEBUG is a macro that either evaluates to its argument, or to
-> > > nothing, depending on whether or not RPC_DEBUG is defined or not. In
-> > > neither case should it evaluate to anything illegal under C90 rules
-> > > afaics.
-> > 
-> > Yep.  Odd warning.
+On Wed, 2009-12-16 at 10:27 -0600, Christoph Lameter wrote:
+> On Wed, 16 Dec 2009, Andi Kleen wrote:
 > 
-> Not really. If the debug macro evaluates to nothing then you have:
+> > > Do you have alternative recommendation rather than wrapping all accesses by
+> > > special functions ?
+> >
+> > Work out what changes need to be done for ranged mmap locks and do them all
+> > in one pass.
 > 
->     struct nfs_client *clp;
->     ;
->     int ret = SVC_OK;
+> Locking ranges is already possible through the split ptlock and
+> could be enhanced through placing locks in the vma structures.
 > 
-> So you have a stray semicolon, which is interpreted as an empty code
-> line. That qualifies for the mixed declaration and code case :)
-> 
-> I know it's nitpicking, but ...
+> That does nothing solve the basic locking issues of mmap_sem. We need
+> Kame-sans abstraction layer. A vma based lock or a ptlock still needs to
+> ensure that the mm struct does not vanish while the lock is held.
 
-Ah... I see what you mean.
+It should, you shouldn't be able to remove a mm while there's still
+vma's around, and you shouldn't be able to remove a vma when there's
+still pagetables around. And if you rcu-free all of them you're stable
+enough for lots of speculative behaviour.
 
-So really what we should do is just move that semicolon inside the
-macro. That would change the !RPC_DEBUG case to
+No need to retain mmap_sem for any of that.
 
-    struct nfs_client *clp;
-
-    int ret = SVC_OK;
-
-which is 100% legal...
-
-Cheers
-  Trond
+As for per-vma locks, those are pretty much useless too, there's plenty
+applications doing lots of work on a few very large vmas.
 
