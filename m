@@ -1,142 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbZLPGFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbZLPGHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbZLPGFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 01:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761578AbZLPGFa
+	id S1761625AbZLPGHM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 01:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761578AbZLPGHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 01:05:30 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42252 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761574AbZLPGF3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 01:05:29 -0500
-Date: Wed, 16 Dec 2009 15:05:25 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.33-rc1, part 2.
-Message-ID: <20091216060525.GE31265@linux-sh.org>
+	Wed, 16 Dec 2009 01:07:09 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:42233 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756594AbZLPGHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 01:07:07 -0500
+Date: Wed, 16 Dec 2009 06:06:59 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: [git pull] drm fixes + hdmi audio
+Message-ID: <alpine.DEB.2.00.0912160603160.25055@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-403237146-1260943620=:25055"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+--29444707-403237146-1260943620=:25055
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
 
-Which contains:
 
-Francesco VIRLINZI (1):
-      sh: intc: Fixed resume from hibernation
+Hi Linus,
 
-Kuninori Morimoto (6):
-      sh: mach-ap325rxa: Add SOCAM_DATA_ACTIVE_HIGH flags for soc-camera
-      sh: mach-ecovec24: MEMORY_SIZE fixup
-      sh: ms7724se: Add ak4642 support
-      sh: mach-ecovec24: Add tw9910 support
-      sh: mach-ecovec24: Add mt9t112 camera support
-      sh: mach-ecovec24: Add FSI sound support
+Please pull the 'drm-linus' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
 
-Magnus Damm (14):
-      sh: fix size calculation for NUMA node 0
-      sh: NUMA lmb fixes
-      sh: add a start_transfer() callback to the LCDC driver
-      sh: LCDC start_transfer() for the KFR2R09 board
-      sh-sci: Extend sh-sci driver with early console V2
-      sh: sh2 scif pdata (sh7616)
-      sh: sh2a scif pdata (sh7201/sh7203/sh7206/mxg)
-      sh: sh3 scif pdata (sh7705/sh770x/sh7710/sh7720)
-      sh: sh4 scif pdata (sh7750/sh7760/sh4-202)
-      sh: sh4a scif pdata (sh7343/sh7366/sh7722/sh7723/sh7724)
-      sh: sh4a scif pdata (sh7757/sh7763/sh7770/sh7780/sh7785/sh7786/x3)
-      sh: sh5 scif pdata (sh5-101/sh5-103)
-      sh: Remove old early serial console code V2
-      sh: MSIOF/mmc_spi platform data for the Ecovec24 board
+This contains radeon HDMI audio support, along with fixes to nouveau for 
+powerpc from Ben H, some build fixes for nouveau, some TTM fixes,
+and some radeon regression fixes we've found since the merge.
 
-Matt Fleming (3):
-      sh: Can't compare physical and virtual addresses for aliases
-      sh: Couple kernel and user write page perm bits for CONFIG_X2TLB
-      sh: Fix up FPU build for SH5
+I still have an outstanding pull request for the vmware KMS driver at:
+Please pull the 'drm-vmware-staging' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-vmware-staging
 
-Nicolas Palix (1):
-      sh: Replace an explicit computation by the use of the container_of macro
+Though that shouldn't affect this pull at all.
 
-Paul Mundt (7):
-      sh: intc: Fixup compile breakage.
-      sh: pfc: Fixup type mismatch in debug printks.
-      sh: ftrace: Fix up syscall tracing build.
-      sh: Wire up recvmmsg syscall.
-      sh: Make the unaligned trap handler always obey notification levels.
-      sh: wire up vmallocinfo support in ioremap() implementations.
-      sh: Stub in P3 ioremap support for nommu parts.
+Dave.
 
-Roel Kluin (1):
-      sh: Fix test of unsigned in se7722_irq_demux()
+ drivers/gpu/drm/nouveau/Kconfig          |    5 +-
+ drivers/gpu/drm/nouveau/nouveau_bo.c     |    2 +
+ drivers/gpu/drm/nouveau/nouveau_fence.c  |    2 +-
+ drivers/gpu/drm/nouveau/nouveau_gem.c    |    7 -
+ drivers/gpu/drm/nouveau/nouveau_mem.c    |    4 +
+ drivers/gpu/drm/nouveau/nv40_graph.c     |   20 +-
+ drivers/gpu/drm/radeon/Makefile          |    2 +-
+ drivers/gpu/drm/radeon/r100.c            |    2 +
+ drivers/gpu/drm/radeon/r300.c            |    2 +
+ drivers/gpu/drm/radeon/r600.c            |   19 +-
+ drivers/gpu/drm/radeon/r600_audio.c      |  267 ++++++++++++++++
+ drivers/gpu/drm/radeon/r600_hdmi.c       |  506 ++++++++++++++++++++++++++++++
+ drivers/gpu/drm/radeon/r600_reg.h        |   74 +++++
+ drivers/gpu/drm/radeon/radeon.h          |   25 ++
+ drivers/gpu/drm/radeon/radeon_drv.c      |    4 +
+ drivers/gpu/drm/radeon/radeon_encoders.c |   16 +-
+ drivers/gpu/drm/radeon/radeon_gem.c      |    8 +-
+ drivers/gpu/drm/radeon/radeon_mode.h     |    3 +
+ drivers/gpu/drm/radeon/radeon_object.c   |   21 +-
+ drivers/gpu/drm/radeon/radeon_object.h   |   16 +-
+ drivers/gpu/drm/radeon/radeon_pm.c       |    7 +-
+ drivers/gpu/drm/radeon/radeon_ttm.c      |   14 +-
+ drivers/gpu/drm/radeon/rs400.c           |    2 +
+ drivers/gpu/drm/radeon/rv770.c           |   14 +-
+ drivers/gpu/drm/ttm/ttm_bo.c             |   77 +++--
+ drivers/gpu/drm/ttm/ttm_bo_vm.c          |    2 +-
+ 26 files changed, 1039 insertions(+), 82 deletions(-)
+ create mode 100644 drivers/gpu/drm/radeon/r600_audio.c
+ create mode 100644 drivers/gpu/drm/radeon/r600_hdmi.c
 
- arch/sh/Kconfig.debug                       |   44 ----
- arch/sh/boards/mach-ap325rxa/setup.c        |    3 +-
- arch/sh/boards/mach-ecovec24/setup.c        |  322 ++++++++++++++++++++++++++-
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |    6 +
- arch/sh/boards/mach-kfr2r09/setup.c         |    1 +
- arch/sh/boards/mach-se/7722/irq.c           |    7 +-
- arch/sh/boards/mach-se/7724/setup.c         |   17 ++
- arch/sh/configs/ecovec24-romimage_defconfig |    2 +-
- arch/sh/configs/ecovec24_defconfig          |    2 +-
- arch/sh/configs/rts7751r2d1_defconfig       |    2 +-
- arch/sh/configs/rts7751r2dplus_defconfig    |    2 +-
- arch/sh/include/asm/io.h                    |   11 +-
- arch/sh/include/asm/pgtable_32.h            |    5 +-
- arch/sh/include/asm/unistd_32.h             |    3 +-
- arch/sh/include/asm/unistd_64.h             |    3 +-
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |    6 +
- arch/sh/kernel/Makefile                     |    3 +-
- arch/sh/kernel/cpu/irq/ipr.c                |    7 +-
- arch/sh/kernel/cpu/sh2/setup-sh7619.c       |   71 ++++--
- arch/sh/kernel/cpu/sh2a/setup-mxg.c         |   23 +-
- arch/sh/kernel/cpu/sh2a/setup-sh7201.c      |  181 +++++++++++----
- arch/sh/kernel/cpu/sh2a/setup-sh7203.c      |   89 +++++---
- arch/sh/kernel/cpu/sh2a/setup-sh7206.c      |   89 +++++---
- arch/sh/kernel/cpu/sh3/setup-sh7705.c       |   49 +++--
- arch/sh/kernel/cpu/sh3/setup-sh770x.c       |   80 +++++--
- arch/sh/kernel/cpu/sh3/setup-sh7710.c       |   50 +++--
- arch/sh/kernel/cpu/sh3/setup-sh7720.c       |   50 +++--
- arch/sh/kernel/cpu/sh4/setup-sh4-202.c      |   23 +-
- arch/sh/kernel/cpu/sh4/setup-sh7750.c       |   47 +++--
- arch/sh/kernel/cpu/sh4/setup-sh7760.c       |   89 +++++---
- arch/sh/kernel/cpu/sh4a/setup-sh7343.c      |  112 ++++++----
- arch/sh/kernel/cpu/sh4a/setup-sh7366.c      |   39 ++--
- arch/sh/kernel/cpu/sh4a/setup-sh7722.c      |   91 +++++---
- arch/sh/kernel/cpu/sh4a/setup-sh7723.c      |  160 +++++++++-----
- arch/sh/kernel/cpu/sh4a/setup-sh7724.c      |  149 +++++++++----
- arch/sh/kernel/cpu/sh4a/setup-sh7757.c      |   92 +++++---
- arch/sh/kernel/cpu/sh4a/setup-sh7763.c      |   81 +++++---
- arch/sh/kernel/cpu/sh4a/setup-sh7770.c      |  225 ++++++++++++++-----
- arch/sh/kernel/cpu/sh4a/setup-sh7780.c      |   60 +++---
- arch/sh/kernel/cpu/sh4a/setup-sh7785.c      |  159 +++++++++-----
- arch/sh/kernel/cpu/sh4a/setup-sh7786.c      |  138 ++++++++----
- arch/sh/kernel/cpu/sh4a/setup-shx3.c        |   76 ++++---
- arch/sh/kernel/cpu/sh5/fpu.c                |    4 +-
- arch/sh/kernel/cpu/sh5/setup-sh5.c          |   22 +-
- arch/sh/kernel/early_printk.c               |  157 +-------------
- arch/sh/kernel/ftrace.c                     |   76 +------
- arch/sh/kernel/process_64.c                 |    4 +-
- arch/sh/kernel/ptrace_64.c                  |    4 +-
- arch/sh/kernel/setup.c                      |    3 +
- arch/sh/kernel/signal_64.c                  |    2 +-
- arch/sh/kernel/syscalls_32.S                |    1 +
- arch/sh/kernel/traps_32.c                   |   18 +-
- arch/sh/kernel/traps_64.c                   |    4 +-
- arch/sh/mm/cache-sh4.c                      |    3 +-
- arch/sh/mm/ioremap_32.c                     |   10 +-
- arch/sh/mm/ioremap_64.c                     |    6 +-
- arch/sh/mm/numa.c                           |   15 +-
- drivers/serial/sh-sci.c                     |   54 ++++-
- drivers/sh/intc.c                           |    2 +
- drivers/sh/pfc.c                            |    2 +-
- drivers/video/sh_mobile_lcdcfb.c            |   10 +-
- include/video/sh_mobile_lcdc.h              |    2 +
- 62 files changed, 1961 insertions(+), 1107 deletions(-)
+commit a3922105319120a48b97ebb42cb43acb5a7e4e73
+Merge: ece84e0 6234077
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Dec 16 15:58:36 2009 +1000
+
+    Merge remote branch 'korg/drm-radeon-next' into drm-linus
+    
+    * korg/drm-radeon-next:
+      drm/radeon/kms: init pm on all chipsets
+
+commit 6234077d6bad4db25d516743b6723c1b26505341
+Author: Rafa³ Mi³ecki <zajec5@gmail.com>
+Date:   Tue Dec 15 21:46:58 2009 +0100
+
+    drm/radeon/kms: init pm on all chipsets
+    
+    Signed-off-by: Rafa³ Mi³ecki <zajec5@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit ece84e04e99ff015fbf5071545ff2e643c9aea7f
+Merge: dafc3bd 9ddc8c5
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Dec 16 15:52:21 2009 +1000
+
+    Merge remote branch 'nouveau/for-airlied' of /ssd/git/drm-nouveau-next into drm-linus
+    
+    * 'nouveau/for-airlied' of /ssd/git/drm-nouveau-next:
+      drm/nouveau: remove use of -ERESTART
+      nouveau: Fix endianness with new context program loader
+      drm/nouveau: fix build with CONFIG_AGP=n
+      drm/nouveau: fix ch7006 build
+
+commit dafc3bd515d6079406986f7748b48adb3c7170f2
+Author: Christian Koenig <deathsimple@vodafone.de>
+Date:   Sun Oct 11 23:49:13 2009 +0200
+
+    drm/radeon/kms: HDMI support for R600 KMS
+    
+    Adding basic HDMI support for R600 KMS, ported from radeonhd ddx.
+    
+    [airlied:- checkpatch cleanups]
+    Signed-off-by: Christian Koenig <deathsimple@vodafone.de>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 7923c615b811945a9d9f456c92a7a32c34167458
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Tue Dec 15 17:15:07 2009 -0500
+
+    drm/radeon/kms: make sure mc is initialized before mapping blit bo
+    
+    We need to make sure the the MC is intialized before we map the
+    blit shader object on r6xx+.
+    
+    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit f89551bfe953a144f7d4918ca4c12e11de1e455d
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Tue Dec 15 18:23:23 2009 +0100
+
+    drm/radeon/kms: Return to userspace on ERESTARTSYS
+    
+    radeon_object.h wasn't converted to ERESTARTSYS change. No
+    each time we got an ERESTARTSYS we return to userspace (ie
+    we were interrupted by a signal and we let the userspace
+    reschedule the ioctl).
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 51f07b7ebce15c1848743a2ba43a0005375d8243
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Dec 16 13:10:43 2009 +1000
+
+    drm/radeon/gem: don't leak a gem object if reserve fails on get tiling (v2)
+    
+    Not sure it ever happens in practice, spotted during code review.
+    
+    spare brace snuck in
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit ecabd32a623eaf3e4c853ff73f200c8079028000
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Tue Dec 15 10:39:48 2009 +1000
+
+    drm/radeon/kms: don't report allocate failure on ERESTARTSYS
+    
+    if we fail with ERESTARTSYS during alloc, we'll get a retry from
+    userspace so don't report it in dmesg.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit d03d858970a158fa82d9ba0d502bdea0bdb3ad33
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Mon Dec 14 21:02:09 2009 +0100
+
+    drm/radeon/kms: Check if bo we got from ttm are radeon object or not
+    
+    If they are not radeon object don't do anythings special for them,
+    this avoid rare oops than can happen in a complex use case.
+    
+    [airlied: additional fixups]
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 9fb03e63511cc20d413c2896396ba77df3db8411
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Fri Dec 11 15:13:22 2009 +0100
+
+    drm/radeon/kms: If no placement is supplied fallback to system
+    
+    Do as we did before rework, if no placement is supplied at bo
+    creation time, fallback to allocating bo from system ram. This
+    will fix most of the creation failed issue report we got since
+    the rework get merged.
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 5012f5063f41ca01240e5983c3b2cceb9aafc7a4
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Thu Dec 10 18:07:26 2009 +0100
+
+    drm/ttm: Fix memory type manager debug information printing
+    
+    System memory type doesn't have a drm_mm manager associated to
+    it. This patch avoid trying to call drm_mm_debug on unitialized
+    drm_mm when printing debug info on the system memory manager.
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit eb6d2c39dbe46ea1c4f3da4eac5728c73f109ea1
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Thu Dec 10 16:15:52 2009 +0100
+
+    drm/ttm: Fix printk format & compute bo->mem.size at bo initialization
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 9c51ba1db37cab780f38b2210913959f22d7b830
+Author: Thomas Hellstrom <thellstrom@vmware.com>
+Date:   Wed Dec 2 18:33:46 2009 +0100
+
+    drm/ttm: Fix potential ttm_mem_evict_first races.
+    
+    1) The function was previously called with a potentially empty
+    LRU list which would have lead to an OOPS or servere corruption.
+    2) In rare cases, after reservation has succeeded, another process may
+    already have evicted it or even pinned it. We must revalidate the
+    buffer status after releasing the lru lock.
+    
+    Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit aaa207369436d04bb85382ddbb688a5b9461fd21
+Author: Thomas Hellstrom <thellstrom@vmware.com>
+Date:   Wed Dec 2 18:33:45 2009 +0100
+
+    drm/ttm: Delayed delete fixes.
+    
+    1) Remove from lru before reserving so we avoid competing with
+    evicting processes.
+    2) Avoid calling kref_put() on bo::list_kref while spinlocked.
+    3) Additional refcounting bug-checking.
+    
+    Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit b663752627e7c6b4bc414684d71c6adce5719fce
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Mon Dec 14 14:51:35 2009 +1000
+
+    drm/ttm: fix two bugs in new placement routines.
+    
+    a) the loops were going to <= not <, leading to illegal memory access
+    b) the busy placement checks were using the placement arrays not the
+       busy placement ones.
+    
+    Acked-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit b8ff7357da45e025c446fe0479612215fe56a249
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Tue Dec 15 08:07:12 2009 +1000
+
+    drm/ttm: fix incorrect logic in ttm_bo_io path
+    
+    This path isn't used by radeon yet, but future drivers will want it,
+    so fix it right.
+    
+    Reported-by: Luca Barbieri <luca@luca-barbieri.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 9ddc8c52f58338ddc278fc82e540d9eaf4489dc7
+Author: Ben Skeggs <bskeggs@redhat.com>
+Date:   Tue Dec 15 11:04:25 2009 +1000
+
+    drm/nouveau: remove use of -ERESTART
+    
+    Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+
+commit 81a5487756573b43458073969bc36b1e19124c24
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Mon Dec 14 14:31:40 2009 +1100
+
+    nouveau: Fix endianness with new context program loader
+    
+    When switching to request_firmware() to load the context programs,
+    some endian fixes need to be applied. This makes it work again on
+    my quad g5 nvidia 6600.
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+
+commit b694dfb25a8de4ffbc14c9092ab8f88344ca86b1
+Author: Ben Skeggs <bskeggs@redhat.com>
+Date:   Tue Dec 15 10:38:32 2009 +1000
+
+    drm/nouveau: fix build with CONFIG_AGP=n
+    
+    Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+
+commit 61c2bb45697a56e96313a5f85f609b0c12ae26ff
+Author: Randy Dunlap <randy.dunlap@oracle.com>
+Date:   Mon Dec 14 11:51:40 2009 -0800
+
+    drm/nouveau: fix ch7006 build
+    
+    The ch7006 driver could be built even when nouveau was not enabled,
+    but the build fails in that case, so make it depend on DRM_NOUVEUA.
+    
+    Also make the I2c encoder/helper chips menu depend on I2C (no build
+    error, just visual inspection).
+    
+    ERROR: "drm_helper_probe_single_connector_modes" [drivers/gpu/drm/i2c/ch7006.ko] undefined!
+    
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+--29444707-403237146-1260943620=:25055--
