@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935243AbZLPSkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935210AbZLPSkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935243AbZLPSkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935233AbZLPSkB
+	id S935210AbZLPSkp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935253AbZLPSkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:40:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53540 "EHLO hera.kernel.org"
+	Wed, 16 Dec 2009 13:40:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59199 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935209AbZLPSj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:39:58 -0500
-Date: Wed, 16 Dec 2009 18:39:25 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091216170518.269101883@chello.nl>
-References: <20091216170518.269101883@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Simplify set_task_cpu()
-Message-ID: <tip-738d2be4301007f054541c5c4bf7fb6a361c9b3a@git.kernel.org>
-Git-Commit-ID: 738d2be4301007f054541c5c4bf7fb6a361c9b3a
-X-Mailer: tip-git-log-daemon
+	id S935244AbZLPSkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 13:40:31 -0500
+Message-ID: <4B29299B.5080704@redhat.com>
+Date: Wed, 16 Dec 2009 19:40:27 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Greg KH <greg@kroah.com>
+CC: Zdenek Kabelac <zkabelac@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [dm-devel] Re: dm: sysfs add empty release function to avoid
+ debug	warning
+References: <200912151735.nBFHZ8XP018683@hera.kernel.org> <20091216004739.GB4898@kroah.com> <4B28AC09.2000302@redhat.com> <20091216134538.GA20857@kroah.com> <4B290B95.10306@redhat.com> <20091216174632.GA12473@kroah.com>
+In-Reply-To: <20091216174632.GA12473@kroah.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  738d2be4301007f054541c5c4bf7fb6a361c9b3a
-Gitweb:     http://git.kernel.org/tip/738d2be4301007f054541c5c4bf7fb6a361c9b3a
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 16 Dec 2009 18:04:42 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 16 Dec 2009 19:01:59 +0100
+On 12/16/2009 06:46 PM, Greg KH wrote:
+> You will find that all of these are modules, right?  That's being worked
+> on still.
 
-sched: Simplify set_task_cpu()
+probably. I see that this implementation is in kernel since import to git...
 
-Rearrange code a bit now that its a simpler function.
+What's the right solution in this particular case?
+It is exactly the same situation (using embedded kobj like module handle does).
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <20091216170518.269101883@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+In DM, the whole problem here is that kobject is used for attribute representation
+of mapped device, mapped device struct is using its own reference counting
+and can dissappear before the kobject. So it must properly solve this situation.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index f92ce63..8a2bfd3 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2034,11 +2034,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 	return delta < (s64)sysctl_sched_migration_cost;
- }
- 
--
- void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- {
--	int old_cpu = task_cpu(p);
--
- #ifdef CONFIG_SCHED_DEBUG
- 	/*
- 	 * We should never call set_task_cpu() on a blocked task,
-@@ -2049,11 +2046,11 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- 
- 	trace_sched_migrate_task(p, new_cpu);
- 
--	if (old_cpu != new_cpu) {
--		p->se.nr_migrations++;
--		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS,
--				     1, 1, NULL, 0);
--	}
-+	if (task_cpu(p) == new_cpu)
-+		return;
-+
-+	p->se.nr_migrations++;
-+	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
- 
- 	__set_task_cpu(p, new_cpu);
- }
+> Again, please fix your code not to have an empty release function.  Will
+> you revert this change and fix it properly?
+
+Sure, working on it. Proper fix will replace this when ready.
+
+Milan
