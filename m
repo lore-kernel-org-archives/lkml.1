@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934925AbZLPQMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932721AbZLPQMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934925AbZLPQMc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 11:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbZLPQLy
+	id S932721AbZLPQMB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 11:12:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934942AbZLPQLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 11:11:54 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:41224 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934909AbZLPQKY (ORCPT
+	Wed, 16 Dec 2009 11:11:48 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40804 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934911AbZLPQLp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 11:10:24 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: David Vrabel <dvrabel@arcom.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
-       Paul Mundt <lethal@linux-sh.org>, alsa-devel@alsa-project.org
-Subject: [PATCH 7/7] ASoC: sh: FSI:: don't check platform_get_irq's return value against zero
-Date: Wed, 16 Dec 2009 17:10:09 +0100
-Message-Id: <1260979809-24811-7-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-5-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
+	Wed, 16 Dec 2009 11:11:45 -0500
+Date: Wed, 16 Dec 2009 10:10:30 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V7 7/8] Module handling: Use this_cpu_xx to
+ dynamically allocate counters
+In-Reply-To: <200912160911.43201.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.2.00.0912160900470.8572@router.home>
+References: <20091214220320.665065925@quilx.com> <20091214220342.473600725@quilx.com> <4B270AA6.3050307@kernel.org> <200912160911.43201.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-platform_get_irq returns -ENXIO on failure, so !irq was probably
-always true.  Better use (int)irq <= 0.  Note that a return value of
-zero is still handled as error even though this could mean irq0.
+Fixup patch:
 
-This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
-changed the return value of platform_get_irq from 0 to -ENXIO on error.
+Subject: Extend preempt_disable section around module_is_live()
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David Vrabel <dvrabel@arcom.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: alsa-devel@alsa-project.org
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
 ---
- sound/soc/sh/fsi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/module.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/sh/fsi.c b/sound/soc/sh/fsi.c
-index 9c49c11..42813b8 100644
---- a/sound/soc/sh/fsi.c
-+++ b/sound/soc/sh/fsi.c
-@@ -876,7 +876,7 @@ static int fsi_probe(struct platform_device *pdev)
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	irq = platform_get_irq(pdev, 0);
--	if (!res || !irq) {
-+	if (!res || (int)irq <= 0) {
- 		dev_err(&pdev->dev, "Not enough FSI platform resources.\n");
- 		ret = -ENODEV;
- 		goto exit;
--- 
-1.6.5.2
+Index: linux-2.6/include/linux/module.h
+===================================================================
+--- linux-2.6.orig/include/linux/module.h	2009-12-16 08:57:37.000000000 -0600
++++ linux-2.6/include/linux/module.h	2009-12-16 08:58:09.000000000 -0600
+@@ -467,15 +467,17 @@ static inline int try_module_get(struct
+ 	int ret = 1;
 
+ 	if (module) {
++		preempt_disable();
++
+ 		if (likely(module_is_live(module))) {
+-			preempt_disable();
+ 			__this_cpu_inc(module->refptr->count);
+ 			trace_module_get(module, _THIS_IP_,
+ 				__this_cpu_read(module->refptr->count));
+-			preempt_enable();
+ 		}
+ 		else
+ 			ret = 0;
++
++		preempt_enable();
+ 	}
+ 	return ret;
+ }
