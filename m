@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbZLPILL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934769AbZLPIRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761776AbZLPILL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934694AbZLPIKp
+	id S934769AbZLPIRR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934710AbZLPIRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:10:45 -0500
-Received: from mail.perches.com ([173.55.12.10]:1211 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761769AbZLPIJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:09:17 -0500
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 14/14] kernel/exit.c and kernel/panic.c: Remove unused NORET_TYPE
-Date: Wed, 16 Dec 2009 00:09:13 -0800
-Message-Id: <29e53e769a3f0b38ea8347b95c8947d3f50ab4c6.1260949674.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <cover.1260949674.git.joe@perches.com>
-References: <cover.1260949674.git.joe@perches.com>
+	Wed, 16 Dec 2009 03:17:15 -0500
+Received: from mx51.mymxserver.com ([85.199.173.110]:61141 "EHLO
+	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934679AbZLPIRO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 03:17:14 -0500
+X-Greylist: delayed 78287 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Dec 2009 03:17:14 EST
+From: Holger Schurig <holgerschurig@gmail.com>
+To: Daniel Mack <daniel@caiaq.de>
+Subject: Re: [PATCH] Libertas: fix buffer overflow in lbs_get_essid()
+Date: Wed, 16 Dec 2009 09:15:35 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, Dan Williams <dcbw@redhat.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Maithili Hinge <maithili@marvell.com>,
+       Kiran Divekar <dkiran@marvell.com>,
+       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, linux-wireless@lists.infradead.org,
+       stable@kernel.org
+References: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
+In-Reply-To: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912160915.35540.holgerschurig@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the functions match the prototypes in <linux/kernel.h>
-It's defined to nothing and useless
+As Dan didn't answer:
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- kernel/exit.c  |    4 ++--
- kernel/panic.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Acked-by: Holger Schurig <holgerschurig@gmail.com>
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 5962d7c..ebb485c 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -886,7 +886,7 @@ static void check_stack_usage(void)
- static inline void check_stack_usage(void) {}
- #endif
- 
--NORET_TYPE void do_exit(long code)
-+void do_exit(long code)
- {
- 	struct task_struct *tsk = current;
- 	int group_dead;
-@@ -1029,7 +1029,7 @@ NORET_TYPE void do_exit(long code)
- 
- EXPORT_SYMBOL_GPL(do_exit);
- 
--NORET_TYPE void complete_and_exit(struct completion *comp, long code)
-+void complete_and_exit(struct completion *comp, long code)
- {
- 	if (comp)
- 		complete(comp);
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 96b45d0..08d24b2 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -52,7 +52,7 @@ EXPORT_SYMBOL(panic_blink);
-  *
-  *	This function never returns.
-  */
--NORET_TYPE void panic(const char * fmt, ...)
-+void panic(const char * fmt, ...)
- {
- 	static char buf[1024];
- 	va_list args;
 -- 
-1.6.6.rc0.57.gad7a
-
+http://www.holgerschurig.de
