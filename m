@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764061AbZLQHjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbZLPPco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764061AbZLQHjL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 02:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764047AbZLQHjJ
+	id S1756941AbZLPPco (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 10:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932673AbZLPPch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 02:39:09 -0500
-Received: from up-mx1.det.nsw.edu.au ([153.107.41.147]:50696 "EHLO
-	up-mx1.det.nsw.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbZLQHjI convert rfc822-to-8bit (ORCPT
+	Wed, 16 Dec 2009 10:32:37 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:45513 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932283AbZLPPcc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 02:39:08 -0500
-X-Greylist: delayed 56370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 02:39:07 EST
-From: "Martyn, Janice" <Janice.Martyn@det.nsw.edu.au>
-To: "info@notice.com" <info@notice.com>
-Date: Thu, 17 Dec 2009 02:31:01 +1100
-Subject: Confirmation ReferenceNumber:UK/2551256008/07
-Thread-Topic: Confirmation ReferenceNumber:UK/2551256008/07
-Thread-Index: AQHKfmTGrrUhE3Pnx0GW1iLp/zCNSQ==
-Message-ID: <1EF0F6032BEFAB4192D16F8E08611676D1C3E2@SLUGPEXMC04.central.det.win>
-Accept-Language: en-US, en-AU
-Content-Language: en-AU
+	Wed, 16 Dec 2009 10:32:32 -0500
+From: "Chumbalkar, Nagananda" <Nagananda.Chumbalkar@hp.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+CC: "davej@redhat.com" <davej@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "mjg@redhat.com" <mjg@redhat.com>, "trenn@suse.de" <trenn@suse.de>,
+       "lenb@kernel.org" <lenb@kernel.org>
+Date: Wed, 16 Dec 2009 15:31:48 +0000
+Subject: RE: [PATCH] cpufreq: Processor Clocking Control interface driver
+Thread-Topic: [PATCH] cpufreq: Processor Clocking Control interface driver
+Thread-Index: Acp9tSH9dGXHhXujRbKA2pu2bwabHwABo3DA
+Message-ID: <66D9D2F0CDB5C9428E6166B01EC85EE161DEEE4166@GVW0676EXC.americas.hpqcorp.net>
+References: <20091128034424.6796.75673.sendpatchset@localhost.localdomain>
+ <20091211231233.GA4291@isilmar.linta.de>
+ <66D9D2F0CDB5C9428E6166B01EC85EE161DEEE3CB7@GVW0676EXC.americas.hpqcorp.net>
+ <20091215183331.GA5560@comet.dominikbrodowski.net>
+In-Reply-To: <20091215183331.GA5560@comet.dominikbrodowski.net>
+Accept-Language: en-US
+Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-acceptlanguage: en-US, en-AU
-Content-Type: text/plain; charset="iso-8859-1"
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Confirmation ReferenceNumber:UK/2551256008/07
-You have won £850,000.00 in free lotto email program held 9th
-December 2009 in In Liverpool.
-Email Ticket Number X-3007893284-Z ReferenceNumber:UK/2551256008/07
-Draw Lucky Number:09-22-37-39-41-49-2-7
-BatchNumber:JPK14/0115/IP,Serial Number: HMML3214-07
-Please note that the validity period of the winning is 24th of
-December 2009.
-Contact: Mr. Frank Arthur with your Full Name, Home Address, Age,Gender,
-Occupation,Country Of Residence,Nationality & Telephone Number.
-Email: claims-office@nl.rogers.com<mailto:claims-office@nl.rogers.com>
-Tel: +4470111 83202+, 4470111 83206
-+447031994752, +447031978650
-NB Please Note do mail back through the alert email contact Mr. Frank Arthur
-via email:claims-office@nl.rogers.com
-Sincerely,
-Brooks, Ken
-For The British National Lottery
-**********************************************************************
-This message is intended for the addressee named and may contain
-privileged information or confidential information or both. If you
-are not the intended recipient please delete it and notify the sender.
-**********************************************************************
+
+>> >> +	if (target_freq <= 
+>> >(ioread32(&pcch_hdr->minimum_frequency) * 1000)) {
+>> >> +		target_freq = 
+>> >ioread32(&pcch_hdr->minimum_frequency) * 1000;
+>> >> +		dprintk("target: target_freq for cpu %d was 
+>> >below limit, "
+>> >> +			"converted it to %d\n", cpu, target_freq);
+>> >> +	}
+>> >
+>> >why not do this in the _verify() step? Does 
+>pcch_hdr->minimum_frequency
+>> >even change "on the fly"?
+>> 
+>> pcch_hdr->minimum_frequency does not change "on the fly". 
+>Also, there is no
+>> need for those IO accesses:
+>
+>target_freq cannot be below policy->min or above policy->max. 
+>If it were,
+>the whole cpufreq subsystem is broken. So there's no need for 
+>these checks,
+>AFAICS.
+>
+
+I think the "ondemand" governor can ask for a target frequency that is
+below policy->min.
+
+Let's say that at a given snapshot, the frequency of a CPU is policy->cur.
+At the next sampling, if the "load" on the CPU drops to a level that 
+satisifies the equation below, then freq_next requested by "ondemand" 
+will be below policy->min:
+
+	load < (threshold - differential) * policy->min / policy->cur
+
+A patch such as below may be needed to sanitize the target frequency 
+requested by "ondemand". The "conservative" governor already has this check: 
+
+# diff -bur ./drivers/cpufreq/cpufreq_ondemand.c.orig ./drivers/cpufreq/cpufreq_ondemand.c
+--- ./drivers/cpufreq/cpufreq_ondemand.c.orig   2009-12-11 15:06:02.000000000 -0600
++++ ./drivers/cpufreq/cpufreq_ondemand.c        2009-12-15 20:27:57.000000000 -0600
+@@ -554,6 +554,9 @@
+                                (dbs_tuners_ins.up_threshold -
+                                 dbs_tuners_ins.down_differential);
+
++               if (freq_next < policy->min)
++                       freq_next = policy->min;
++
+                if (!dbs_tuners_ins.powersave_bias) {
+                        __cpufreq_driver_target(policy, freq_next,
+                                        CPUFREQ_RELATION_L);
+
+- naga -
+
