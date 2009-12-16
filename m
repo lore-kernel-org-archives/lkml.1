@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935847AbZLPWow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbZLPWs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935847AbZLPWow (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934286AbZLPWot
+	id S1759501AbZLPWs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZLPWsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:44:49 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:38587 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935343AbZLPWos (ORCPT
+	Wed, 16 Dec 2009 17:48:53 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:18448 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759355AbZLPWsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:44:48 -0500
-Date: Wed, 16 Dec 2009 15:44:45 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 0/9] pci: update pci bridge resource to get more big
-	range for devices under it - v13
-Message-ID: <20091216224445.GA24763@ldl.fc.hp.com>
-References: <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit!su.com> <4B0C69AD.3030106@kernel.org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D286.4020607@kernel.org> <20091216125458.42bf222e@jbarnes-piketon> <20091216211158.GF26757@ldl.fc.hp.com> <4B295ED1.3010607@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B295ED1.3010607@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 16 Dec 2009 17:48:52 -0500
+Date: Wed, 16 Dec 2009 14:47:00 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH -next] nfs: fix ISO C90 warning
+Message-Id: <20091216144700.34b80b4b.randy.dunlap@oracle.com>
+In-Reply-To: <1261003219.13878.6.camel@localhost>
+References: <20091215165309.58e98eea.sfr@canb.auug.org.au>
+	<20091216142334.6a0ba115.randy.dunlap@oracle.com>
+	<1261003219.13878.6.camel@localhost>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B2963C0.005C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yinghai@kernel.org>:
-> Alex Chiang wrote:
-> > * Jesse Barnes <jbarnes@virtuousgeek.org>:
-> >>
-> >> Patches 7-9 seem like they've recieved some review from Alex
-> >> and Kenji-san, but I don't see acks or reviewed-bys on them.
-> >>
-> >> Alex and Kenji-san, are you ok with them assuming the
-> >> previous patches or something like them go upstream?
+On Wed, 16 Dec 2009 17:40:19 -0500 Trond Myklebust wrote:
+
+> On Wed, 2009-12-16 at 14:23 -0800, Randy Dunlap wrote: 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
 > > 
-> > Can you please repost your next revision (after taking
-> > Jesse's review comments) in a new thread?
+> > Fix gcc ISO C90 warning:
 > > 
+> > fs/nfs/callback.c:356: warning: ISO C90 forbids mixed declarations and code
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > ---
+> >  fs/nfs/callback.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > --- linux-next-20091215.orig/fs/nfs/callback.c
+> > +++ linux-next-20091215/fs/nfs/callback.c
+> > @@ -352,8 +352,8 @@ static int check_gss_callback_principal(
+> >  static int nfs_callback_authenticate(struct svc_rqst *rqstp)
+> >  {
+> >  	struct nfs_client *clp;
+> > -	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
+> >  	int ret = SVC_OK;
+> > +	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
+> >  
 > 
-> can you check
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git
-> >> master
-> 
-> http://git.kernel.org/?p=linux/kernel/git/yinghai/linux-2.6-yinghai.git;a=shortlog;h=refs/heads/master
-> 
-> i rebased them to linus tree 12-12-2009.
+> What version of gcc is giving rise to this warning?
 
-Well, yes, I can read those, but now I have to try and guess 
-which patches are 7-9 that Jesse asked me to review.
+> gcc --version
+gcc (GCC) 4.2.1 (SUSE Linux)
 
-One reason that it's hard to review your patches is because there 
-are many revisions, buried deep within threads. It's not easy for 
-reviewers to a) keep track of all them or b) keep track of how 
-they inter-relate.
+> RPC_IFDEBUG is a macro that either evaluates to its argument, or to
+> nothing, depending on whether or not RPC_DEBUG is defined or not. In
+> neither case should it evaluate to anything illegal under C90 rules
+> afaics.
 
-I might be following one subthread, see N revisions for patch x/y 
-as replies in there, keep track of the changes mentally, and then 
-keep all that state in my mind as I navigate around in the thread 
-to try and review patch x+1/y.
+Yep.  Odd warning.
 
-Then, trying to figure out how x, x+1, x+2 are all related into 
-one coherent change is difficult.
 
-In the future, for PCI patch series, when you have to make 
-revisions, please repost as a new thread every time. This will 
-make life much easier for reviewers.
-
-Thanks,
-/ac
-
+---
+~Randy
