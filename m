@@ -1,57 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbZLPUst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbZLPUtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbZLPUst (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 15:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZLPUss
+	id S1757061AbZLPUtp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 15:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZLPUtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 15:48:48 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:2212 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750926AbZLPUsq (ORCPT
+	Wed, 16 Dec 2009 15:49:41 -0500
+Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:42145 "HELO
+	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752212AbZLPUtj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 15:48:46 -0500
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAA7XKEurR7Hu/2dsb2JhbAC/U5cMhCsE
-X-IronPort-AV: E=Sophos;i="4.47,408,1257120000"; 
-   d="scan'208";a="450840439"
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-Subject: alloc_file(): simplify handling of mnt_clone_write() errors
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 16 Dec 2009 12:48:44 -0800
-Message-ID: <ada7hsm8x1v.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Dec 2009 20:48:45.0000 (UTC) FILETIME=[2899B480:01CA7E91]
+	Wed, 16 Dec 2009 15:49:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=MSOkpK2jNw3T5aRadvgK1AAmlYROY1KUQMQOIuWesRYXy8uYxuUTXvYBnOI3omNdWLr6RGOa+Usmld6SGYDuB4Le0nn6/kaU6uIDDEgCJ1z7lQPsOwqav5urkuqCNdwu;
+Date: Wed, 16 Dec 2009 12:49:15 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 2/9] pci: add pci_bridge_release_unused_res and
+ pci_bus_release_unused_bridge_res
+Message-ID: <20091216124915.7732712d@jbarnes-piketon>
+In-Reply-To: <4B10D2B2.4000604@kernel.org>
+References: <4ADEB601.8020200@kernel.org>
+	<4AE5EFDB.2060908@kernel.org>
+	<4AE80170.6030402@jp.fujitsu.com>
+	<4AE88305.8020207@kernel.org>
+	<m1ljivibrt.fsf@fess.ebiederm.org>
+	<4AE899A0.3020006@kernel.org>
+	<4AE95247.8080401@jp.fujitsu.com>
+	<4AE952B9.1010603@kernel.org>
+	<4AE9588E.90708@jp.fujitsu.com>
+	<4AE9657F.7010302@kernel.org>
+	<4AE965D9.9040702@kernel.org>
+	<20091104093044.17ab628a@jbarnes-piketon>
+	<4AF1CD79.4010602@kernel.org>
+	<4AF22CF1.1020508@kernel.org>
+	<4AF22D26.4070500@kernel.org>
+	<4AF508F0.9060105@kernel.org>
+	<4AF91F54.10507@jp.fujitsu.com>
+	<4AF936DB.1030309@kernel.org>
+	<4AFCF7D8.1090207@jp.fujitsu.com>
+	<4AFCFC0D.4030002@kernel.org>
+	<4AFD19DA.7010602@jp.fujitsu.com>
+	<4AFE6F39.5080505@kernel.org>
+	<4B0B321E.4010103@jp.fujitsu.com>
+	<4B0B335E.1070809@kernel.org>
+	<4B0B3C13.9030502@jp.fujit! su.com>
+	<4B0C69AD.3030106@kernel. org>
+	<4B0D13EB.9010403@jp.fujitsu.com>
+	<4B10D084.8070608@kerne!
+ l.org>
+	<4B10D2B2.4000604@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When alloc_file() and init_file() were combined, the error handling of
-mnt_clone_write() was taken into alloc_file() in a somewhat obfuscated
-way.  Since we don't use the error code for anything except warning,
-we might as well warn directly without an extra variable.
+On Fri, 27 Nov 2009 23:35:14 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- fs/file_table.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+> 
+> so later we could use it to release small resource before pci assign
+> unassign res
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/setup-bus.c |  114
+> +++++++++++++++++++++++++++++++++++++++++++++++- 1 file changed, 113
+> insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/pci/setup-bus.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/setup-bus.c
+> +++ linux-2.6/drivers/pci/setup-bus.c
+> @@ -609,6 +609,118 @@ void __ref pci_bus_assign_resources(cons
+>  }
+>  EXPORT_SYMBOL(pci_bus_assign_resources);
+>  
+> +static void release_children_resource(struct resource *r)
 
-diff --git a/fs/file_table.c b/fs/file_table.c
-index 17a55b8..25fe294 100644
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -186,10 +186,8 @@ struct file *alloc_file(struct path *path, fmode_t mode,
- 	 * that we can do debugging checks at __fput()
- 	 */
- 	if ((mode & FMODE_WRITE) && !special_file(path->dentry->d_inode->i_mode)) {
--		int error = 0;
- 		file_take_write(file);
--		error = mnt_clone_write(path->mnt);
--		WARN_ON(error);
-+		WARN_ON(mnt_clone_write(path->mnt));
- 	}
- 	ima_counts_get(file);
- 	return file;
+release_child_resources?
+
+> +{
+> +	struct resource *p;
+> +	resource_size_t size;
+> +
+> +	p = r->child;
+> +	while (p) {
+> +		release_children_resource(p);
+> +		release_resource(p);
+> +		printk(KERN_DEBUG "PCI: release child resource
+> %pRt\n", p);
+> +		/* need to restore size, and keep flags */
+> +		size = resource_size(p);
+> +		p->start = 0;
+> +		p->end = size - 1;
+> +		p = r->child;
+> +	}
+> +}
+
+Also seems like it should go into resource.c instead?
+
+> +
+> +static void pci_bridge_release_unused_res(struct pci_bus *bus,
+> +					  unsigned long type)
+> +{
+> +	int idx;
+> +	bool changed = false;
+> +	struct pci_dev *dev;
+> +	struct resource *r;
+> +	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
+> +				  IORESOURCE_PREFETCH;
+> +
+> +	/* for pci bridges res only */
+> +	dev = bus->self;
+> +	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES
+> + 3;
+> +	    idx++) {
+> +		r = &dev->resource[idx];
+> +		if ((r->flags & type_mask) != type)
+> +			continue;
+> +		if (!r->parent)
+> +			continue;
+> +		/*
+> +		 * if there are children under that, we should
+> release them
+> +		 *  all
+> +		 */
+> +		release_children_resource(r);
+> +		if (!release_resource(r)) {
+> +			dev_printk(KERN_DEBUG, &dev->dev,
+> +				 "resource %d %pRt released\n", idx,
+> r);
+> +			/* keep the old size */
+> +			r->end = resource_size(r) - 1;
+> +			r->start = 0;
+> +			r->flags = 0;
+> +			changed = true;
+> +		}
+> +	}
+> +
+> +	if (changed) {
+> +		if (type & IORESOURCE_PREFETCH) {
+> +			/* avoiding touch the one without PREF */
+> +			type = IORESOURCE_PREFETCH;
+> +		}
+> +		__pci_setup_bridge(bus, type);
+> +	}
+> +}
+> +
+> +/*
+> + * try to release pci bridge resources that is from leaf bridge,
+> + * so we can allocate big new one later
+> + * check:
+> + *    0: only release the bridge and only the bridge is leaf
+> + *    1: release all down side bridge for third shoot
+> + */
+> +static void __ref pci_bus_release_unused_bridge_res(struct pci_bus
+> *bus,
+> +						    unsigned long
+> type,
+> +						    int check_leaf)
+> +{
+> +	struct pci_dev *dev;
+> +	bool is_leaf_bridge = true;
+> +
+> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+> +		struct pci_bus *b = dev->subordinate;
+> +		if (!b)
+> +			continue;
+> +
+> +		switch (dev->class >> 8) {
+> +		case PCI_CLASS_BRIDGE_CARDBUS:
+> +			is_leaf_bridge = false;
+> +			break;
+> +
+> +		case PCI_CLASS_BRIDGE_PCI:
+> +		default:
+> +			is_leaf_bridge = false;
+> +			if (!check_leaf)
+> +				pci_bus_release_unused_bridge_res(b,
+> type,
+> +							 check_leaf);
+> +			break;
+> +		}
+> +	}
+> +
+> +	/* The root bus? */
+> +	if (!bus->self)
+> +		return;
+> +
+> +	switch (bus->self->class >> 8) {
+> +	case PCI_CLASS_BRIDGE_CARDBUS:
+> +		break;
+> +
+> +	case PCI_CLASS_BRIDGE_PCI:
+> +	default:
+> +		if ((check_leaf && is_leaf_bridge) || !check_leaf)
+> +			pci_bridge_release_unused_res(bus, type);
+> +		break;
+> +	}
+> +}
+> +
+>  static void pci_bus_dump_res(struct pci_bus *bus)
+>  {
+
+The idea here seems good, of allowing reallocation of bridge windows
+when the space is insufficient.  Would be good if Linus could check out
+this series though.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
