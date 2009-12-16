@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbZLOX63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934205AbZLPAB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934140AbZLOX63 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 18:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbZLOX60
+	id S934205AbZLPAB3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 19:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934117AbZLPAB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:58:26 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:39891 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756042AbZLOX6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:58:24 -0500
-Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
-From: Keith Mannthey <kmannth@us.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
+	Tue, 15 Dec 2009 19:01:28 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50373 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934110AbZLPAB1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 19:01:27 -0500
+Date: Wed, 16 Dec 2009 00:02:58 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Keith Mannthey <kmannth@us.ibm.com>
 Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <20091215151213.8b357858.randy.dunlap@oracle.com>
+Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
+Message-ID: <20091216000258.4c294d90@lxorguk.ukuu.org.uk>
+In-Reply-To: <1260907788.6521.10.camel@keith-laptop>
 References: <1260907788.6521.10.camel@keith-laptop>
-	 <20091215151213.8b357858.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Tue, 15 Dec 2009 15:58:22 -0800
-Message-Id: <1260921502.6521.14.camel@keith-laptop>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 15:12 -0800, Randy Dunlap wrote:
-> On Tue, 15 Dec 2009 12:09:48 -0800 Keith Mannthey wrote:
-> 
-> > diff -urN linux-2.6.32/drivers/misc/ibmrtl/rtl.h linux-2.6.32-rtl/drivers/misc/ibmrtl/rtl.h
-> > --- linux-2.6.32/drivers/misc/ibmrtl/rtl.h	1969-12-31 16:00:00.000000000 -0800
-> > +++ linux-2.6.32-rtl/drivers/misc/ibmrtl/rtl.h	2009-12-11 10:24:23.000000000 -0800
-> > @@ -0,0 +1,27 @@
-> > +#include <linux/io.h>
-> > +
-> > +/* The RTL table looks something like
-> 
-> Is this documented somewhere?  (besides here ;)
+> --- linux-2.6.32/drivers/misc/ibmrtl/ibm_rtl.c	1969-12-31 16:00:00.000000000 -0800
+> +++ linux-2.6.32-rtl/drivers/misc/ibmrtl/ibm_rtl.c	2009-12-14 16:37:19.000000000 -0800
 
-Sorry not at this time to my knowledge. 
+Probably belongs in drivers/firmware as its not a misc_* interface user.
 
-Thanks for the review and the comment suggestions. I will integrate
-them. 
+> +	/* Get the address for the Extende Biso Data Area */
+> +	ebda_addr = *(u16 *) phys_to_virt(EDBA_ADDR);
+> +	ebda_addr <<= 4;
+> +	edba_map = ioremap(ebda_addr, 4);
+> +	if (!edba_map)
+> +		return -ENOMEM;
 
-Thanks, 
-  Keith Mannthey
-  LTC Real-Time 
+This is wrong. I wish we had a single proper EBDA handling function
+because this keeps coming up.
 
+The rules for the EBDA on PC class hardware as that the EBDA address
+provides a real segment offset for the EBDA *if one is present*. Lots of
+machines including quite a few suprisingly modern boxes (eg AMD76x
+systems without a PS/2 mouse plugged in) don't have an EBDA so you need
+to check if the word you read is zero before doing an ioremap.
+
+> +	for (table = (u32 *) edba_map ; \
+> +			table < (u32 *) edba_map + ebda_size/4; table++)
+
+You need to check the table is valid and has a correct signature. Not
+doing so is completely unsafe.
+
+The rest of the code looks pretty sane to me.
+
+Alan
