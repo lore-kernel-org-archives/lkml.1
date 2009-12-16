@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935360AbZLPTUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763156AbZLPTZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935360AbZLPTUQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:20:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935336AbZLPTT6
+	id S1763156AbZLPTZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762876AbZLPTZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:19:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42899 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763136AbZLPTTz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:19:55 -0500
-Subject: Re: perf and libdwarf on debian
-From: Peter Zijlstra <peterz@infradead.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4B292F69.3000608@redhat.com>
-References: <20091216135448.GD11618@aftab>
-	 <1260988340.21028.198.camel@laptop>  <4B292F69.3000608@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 20:19:15 +0100
-Message-ID: <1260991155.21028.261.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Dec 2009 14:25:18 -0500
+Received: from kroah.org ([198.145.64.141]:46136 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761062AbZLPTZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:25:15 -0500
+Date: Wed, 16 Dec 2009 11:19:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Keng-Yu Lin <keng-yu.lin@canonical.com>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [2.6.31.stable] Input: atkbd - add force relese key
+ quirk for Samsung R59P/R60P/R61P
+Message-ID: <20091216191938.GB16321@kroah.com>
+References: <1260178014-16741-1-git-send-email-keng-yu.lin@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260178014-16741-1-git-send-email-keng-yu.lin@canonical.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 14:05 -0500, Masami Hiramatsu wrote:
+I don't see the git commit id for the patch below, which is needed if it
+is to be accepted into the -stable kernel tree.
 
-> > and simply add -I/usr/include/libdwarf to CPPFLAGS or something like
-> > that.
-> 
-> Ah, right, I was stupid!
-> 
-> Masami Hiramatsu wrote:
-> > e.g.
-> > 
-> > ifeq ($(shell sh -c "(test -d /usr/include/libdwarf/ && echo y)", y)
-> > 	BASIC_CFLAGS += -I /usr/include/libdwarf 
-> > endif
-> 
-> So, it just need;
-> 
-> BASIC_CFLAGS += -I/usr/include/libdwarf 
-> 
-> And including just libdwarf.h and dwarf.h.
+Do you have it?
 
-Well, I'm not 100% sure -I/foo will actually work if foo doesn't exist,
-but I'd sure try it first since its less typing :-)
+thanks,
 
-If it doesn't your suggestion is a good alternative.
+greg k-h
 
+On Mon, Dec 07, 2009 at 05:26:54PM +0800, Keng-Yu Lin wrote:
+> OriginalAuthor:
+>     Moiseev Vladimir <cdb@linkycat.com>
+>     Alexander Huhlaev <sancheolz@gmail.com>
+> 
+> BugLink: http://bugs.launchpad.net/bugs/253874
+> 
+> Signed-off-by: Keng-Yu Lin <keng-yu.lin@canonical.com>
+> ---
+>  drivers/input/keyboard/atkbd.c |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+> index 6c6a09b..abc314f 100644
+> --- a/drivers/input/keyboard/atkbd.c
+> +++ b/drivers/input/keyboard/atkbd.c
+> @@ -1608,6 +1608,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+>  		.driver_data = atkbd_samsung_forced_release_keys,
+>  	},
+>  	{
+> +		.ident = "Samsung R59P/R60P/R61P",
+> +		.matches = {
+> +			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "R59P/R60P/R61P"),
+> +		},
+> +		.callback = atkbd_setup_forced_release,
+> +		.driver_data = atkbd_samsung_forced_release_keys,
+> +	},
+> +	{
+>  		.ident = "Fujitsu Amilo PA 1510",
+>  		.matches = {
+>  			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
+> -- 
+> 1.6.3.3
+> 
+> _______________________________________________
+> stable mailing list
+> stable@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable
