@@ -1,118 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935864AbZLPWmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935847AbZLPWow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935864AbZLPWmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935863AbZLPWmK
+	id S935847AbZLPWow (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934286AbZLPWot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:42:10 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:35999 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935853AbZLPWl5 convert rfc822-to-8bit (ORCPT
+	Wed, 16 Dec 2009 17:44:49 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:38587 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935343AbZLPWos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:41:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CcohqoIUHaNXzFPt7zJFnxC34pyRFhZlohp7E7/LxtcRe1EDUXME2MF8RRsPt67+H8
-         DP0JA4GQY9H+pFdq6AEMAeoFUUlVXSOSJmm0mkz69Up2GfHEqfJPgimQ/4B9CtNoPaLw
-         y491a6NAjw093dlxdQXsK0gEKGySkOfpTFZfo=
+	Wed, 16 Dec 2009 17:44:48 -0500
+Date: Wed, 16 Dec 2009 15:44:45 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 0/9] pci: update pci bridge resource to get more big
+	range for devices under it - v13
+Message-ID: <20091216224445.GA24763@ldl.fc.hp.com>
+References: <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit!su.com> <4B0C69AD.3030106@kernel.org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D286.4020607@kernel.org> <20091216125458.42bf222e@jbarnes-piketon> <20091216211158.GF26757@ldl.fc.hp.com> <4B295ED1.3010607@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20091216185157.GL14381@ZenIV.linux.org.uk>
-References: <20091216185157.GL14381@ZenIV.linux.org.uk>
-Date: Thu, 17 Dec 2009 01:41:48 +0300
-Message-ID: <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com>
-Subject: Re: [git pull] VFS stuff, part 1
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B295ED1.3010607@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/16 Al Viro <viro@zeniv.linux.org.uk>:
-> This ought to get rid of the bulk of namei.c patches affecting the
-> areas where my and Nick's series step on the same code.  There's
-> also some struct file work, plus a bunch of fixes all over the place
-> (in particular, Eric's series dealing with IMA horrors, partially
-> modified to merge), but most of that stuff is fighting the call
-> graph in fs/namei.c and massaging things into more or less sane shape
-> there.
->
-> Please, pull from
-> git.kernel.org//pub/scm/linux/kernel/git/viro/vfs-2.6.git/
+* Yinghai Lu <yinghai@kernel.org>:
+> Alex Chiang wrote:
+> > * Jesse Barnes <jbarnes@virtuousgeek.org>:
+> >>
+> >> Patches 7-9 seem like they've recieved some review from Alex
+> >> and Kenji-san, but I don't see acks or reviewed-bys on them.
+> >>
+> >> Alex and Kenji-san, are you ok with them assuming the
+> >> previous patches or something like them go upstream?
+> > 
+> > Can you please repost your next revision (after taking
+> > Jesse's review comments) in a new thread?
+> > 
+> 
+> can you check
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git
+> >> master
+> 
+> http://git.kernel.org/?p=linux/kernel/git/yinghai/linux-2.6-yinghai.git;a=shortlog;h=refs/heads/master
+> 
+> i rebased them to linus tree 12-12-2009.
 
-Hi
+Well, yes, I can read those, but now I have to try and guess 
+which patches are 7-9 that Jesse asked me to review.
 
-Here is a regression between
-5ac4d63 (Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block)
-and
-bac5e54 (Merge branch 'master' of
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6)
+One reason that it's hard to review your patches is because there 
+are many revisions, buried deep within threads. It's not easy for 
+reviewers to a) keep track of all them or b) keep track of how 
+they inter-relate.
 
+I might be following one subthread, see N revisions for patch x/y 
+as replies in there, keep track of the changes mentally, and then 
+keep all that state in my mind as I navigate around in the thread 
+to try and review patch x+1/y.
 
-[   17.462212] REISERFS (device sda1): found reiserfs format "3.6"
-with standard journal
-[   17.470199] REISERFS (device sda1): using ordered data mode
-[   17.480645] REISERFS (device sda1): journal params: device sda1,
-size 8192, journal first block 18, max trans len 1024, max batch 900,
-max commit age 30, max trans age 30
-[   17.497079] REISERFS (device sda1): checking transaction log (sda1)
-[   17.503457] REISERFS debug (device sda1): journal-1153: found in
-header: first_unflushed_offset 6839, last_flushed_trans_id 2074215
-[   17.521242] REISERFS debug (device sda1): journal-1206: Starting
-replay from offset 8908689884846775, trans_id 4161904640
-[   17.532296] REISERFS debug (device sda1): journal-1299: Setting
-newest_mount_id to 315
-[   17.573874] REISERFS (device sda1): Using r5 hash to sort names
-[   17.603715] VFS: Mounted root (reiserfs filesystem) readonly on device 8:1.
-[   17.610972] Freeing unused kernel memory: 280k freed
-[   17.790027] ohci_hcd 0000:00:02.0: auto-stop root hub
-INIT: version 2.87 booting
-[   18.290029] ohci_hcd 0000:00:02.1: auto-stop root hub
-[   18.595537] kbd_mode used greatest stack depth: 6028 bytes left
-Loading /lib/rc/console/keymap
-[   18.648845] loadkeys used greatest stack depth: 5764 bytes left
-[   18.655619] init-early.sh used greatest stack depth: 5276 bytes left
+Then, trying to figure out how x, x+1, x+2 are all related into 
+one coherent change is difficult.
 
-   OpenRC 0.5.3 is starting up Gentoo Linux (i686)
+In the future, for PCI patch series, when you have to make 
+revisions, please repost as a new thread every time. This will 
+make life much easier for reviewers.
 
-* Mounting /proc...
-[   18.819236] mount used greatest stack depth: 5260 bytes left
- [ ok ]
-mkdir `/lib/rc/init.d/starting': Operation not supported
-mkdir `/lib/rc/init.d/started': Operation not supported
-mkdir `/lib/rc/init.d/stopping': Operation not supported
-mkdir `/lib/rc/init.d/inactive': Operation not supported
-mkdir `/lib/rc/init.d/wasinactive': Operation not supported
-mkdir `/lib/rc/init.d/failed': Operation not supported
-mkdir `/lib/rc/init.d/hotplugged': Operation not supported
-mkdir `/lib/rc/init.d/daemons': Operation not supported
-mkdir `/lib/rc/init.d/options': Operation not supported
-mkdir `/lib/rc/init.d/exclusive': Operation not supported
-mkdir `/lib/rc/init.d/scheduled': Operation not supported
-mkdir `/lib/rc/init.d/tmp': Operation not supported
-* Caching service dependencies...
-[   20.203989] gendepends.sh used greatest stack depth: 5176 bytes left
- [ ok ]
-* rc: failed to cr* rc: failed to crINIT: Entering runlevel: 3
-* rc: failed to create stopping dir `/lib/rc/init.d/rc.stopping':
-Operation not supported
-[   21.075265] device: 'vcs6': device_add
-[   21.078101] device: 'vcsa6': device_add
-[   21.086896] device: 'vcs4': device_add
-[   21.087221] device: 'vcsa4': device_add
-[   21.095348] device: 'vcs2': device_add
-[   21.095696] device: 'vcsa2': device_add
-[   21.103825] device: 'vcs3': device_add
-[   21.104151] device: 'vcsa3': device_add
-[   21.112285] device: 'vcs5': device_add
-[   21.112604] device: 'vcsa5': device_add
-INIT: Id "s0" respawni
-INIT: Id "s0" respawni
+Thanks,
+/ac
 
-
-Is it obvious for you or do I need to bisect ?
