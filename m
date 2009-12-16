@@ -1,185 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763033AbZLPWvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763135AbZLPWwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763033AbZLPWvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZLPWvs
+	id S1763135AbZLPWwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763115AbZLPWwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:51:48 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48524 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbZLPWvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:51:47 -0500
-Subject: [GIT PULL] final set of SCSI updates for the merge window
-From: James Bottomley <James.Bottomley@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 23:51:36 +0100
-Message-Id: <1261003896.14435.157.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Dec 2009 17:52:09 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:53173 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763107AbZLPWwC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:52:02 -0500
+Date: Wed, 16 Dec 2009 20:51:50 -0200
+From: cascardo@holoscopio.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rubini@gnudd.com, gregkh@suse.de
+Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
+ allocation
+Message-ID: <20091216225128.GA7791@holoscopio.com>
+References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
+ <1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
+ <1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
+ <4AF8B4FF.9050405@zytor.com>
+ <20091111153632.944a255c.akpm@linux-foundation.org>
+ <20091215143446.8b6a7e57.akpm@linux-foundation.org>
+ <4B2810D6.9030309@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2810D6.9030309@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It contains the new cciss scsi driver (hpsa) and an assortment of driver
-updates and bug fixes.
+On Tue, Dec 15, 2009 at 02:42:30PM -0800, H. Peter Anvin wrote:
+> On 12/15/2009 02:34 PM, Andrew Morton wrote:
+> >>>>
+> >>>> The proposed solution uses the not yet reserved range from 64 to 127. If
+> >>>> more devices are needed, we may push 64 to 16.
+> >>>>
+> >>>
+> >>> Again, why not push these up above 256?
+> >>>
+> >>
+> >> I merged this patch, but made a note-to-self that there are remaining
+> >> open issues..
+> > 
+> > And nothing else happened.  Can we revisit this please?
+> > 
+> 
+> There seem to be people still worried about breaking userspace with
+> majors/minors >= 256.  I'm starting to think it is time to actually
+> break userspace, and dynamic majors/minors seem as good as any place to
+> start, especially since they by definition has to be managed by
+> something like udev.  We have had large dev_t for something like six
+> years now, and most pieces of software isn't affected at all -- only the
+> stuff that manages /dev.
+> 
+> 	-hpa
 
-The patch is available from
+I see no problem in this. Can we make this configurable like the random
+minor for block devices was done? Or, perhaps, before making a decision,
+we can check what kind of devices are using misc dynamic minor, which
+was what I did before writing this patch to count the number of current
+in-tree users.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+I am currently downloading source code from git since I've lost my disk
+recently. That's why I'm late replying. I may send a list of current
+users if that's interesting for a better analysis.
 
-It's been well tested and integrated in linux-next, so there should be
-no merge surprises.
-
-The short changelog is:
-
-Abhijeet Joglekar (1):
-      libfc: remote port gets stuck in restart state without really restarting
-
-Adam Radford (1):
-      3w-9xxx fix bug in sgl loading
-
-Anil Ravindranath (1):
-      pmcraid: support SMI-S object model of storage pool
-
-Anil Veerabhadrappa (5):
-      bnx2i: minor code cleanup and update driver version
-      bnx2i: Task management ABORT TASK fixes
-      bnx2i: update CQ arming algorith for 5771x chipsets
-      bnx2i: Adjust sq_size module parametr to power of 2 only if a non-zero value is specified
-      bnx2i: Add 5771E device support to bnx2i driver
-
-Anirban Chakraborty (1):
-      qla2xxx: fix for multiqueue in MISX disabled case
-
-Boaz Harrosh (1):
-      libosd: Fix blk_put_request locking again
-
-Chris Leech (1):
-      libfc: reduce hold time on SCSI host lock
-
-FUJITA Tomonori (1):
-      st: fix mdata->page_order handling
-
-Giridhar Malavali (2):
-      qla2xxx: Update version number to 8.03.01-k8.
-      qla2xxx: Queue depth ramp up/down modification changes.
-
-James Bottomley (1):
-      enclosure: fix oops while iterating enclosure_status array
-
-Jayamohan Kallickal (1):
-      be2iscsi: Adding support for various Async messages from chip
-
-Kashyap, Desai (1):
-      mpt2sas: add missing initialization of scsih_cmds
-
-Kleber Sacilotto de Souza (1):
-      ipr: fix EEH recovery
-
-Martin K. Petersen (2):
-      Correctly handle thin provisioning write error
-      sd: WRITE SAME(16) / UNMAP support
-
-Michael Reed (2):
-      qla2xxx: dpc thread can execute before scsi host has been added
-      lpfc: fix hang on SGI ia64 platform
-
-Mike Christie (1):
-      fc class: fix fc_transport_init error handling
-
-Moger, Babu (1):
-      scsi_dh_rdac: Add two new IBM devices to rdac_dev_list
-
-Noriyuki Fujii (1):
-      megaraid_sas: make driver PCI legacy I/O port free driver
-
-Pravin Bathija (1):
-      mpt fusion: Fix 32 bit platforms with 64 bit resources.
-
-Srinivas (1):
-      mvsas: add support for Adaptec ASC-1045/1405 SAS/SATA HBA
-
-Stephen M. Cameron (1):
-      hpsa: add driver for HP Smart Array controllers.
-
-Vasu Dev (1):
-      fcoe, libfc: adds enable/disable for fcoe interface
-
-Yi Zou (1):
-      fcoe: Use LLD's WWPN and WWNN for lport if LLD supports ndo_fcoe_get_wwn
-
-jack wang (9):
-      pm8001: misc code cleanup
-      pm8001: enable read HBA SAS address from VPD
-      pm8001: do not reset local sata as it will not be found if reset
-      pm8001: bit set pm8001_ha->flags
-      pm8001:fix potential NULL pointer dereference
-      pm8001: set SSC down-spreading only to get less errors on some 6G device.
-      pm8001: fix endian issues with SAS address
-      pm8001: enhance error handle for IO patch
-      pm8001: Fix for sata io circular lock dependency.
-
-kxie@chelsio.com (1):
-      cxgb3i: always use negative errno in case of error
-
-and the diffstat:
-
- drivers/message/fusion/mptbase.c           |    6 
- drivers/misc/enclosure.c                   |    1 
- drivers/scsi/3w-9xxx.c                     |   11 
- drivers/scsi/Kconfig                       |   10 
- drivers/scsi/Makefile                      |    1 
- drivers/scsi/be2iscsi/be_cmds.c            |   12 
- drivers/scsi/bnx2i/bnx2i.h                 |    1 
- drivers/scsi/bnx2i/bnx2i_hwi.c             |   51 
- drivers/scsi/bnx2i/bnx2i_init.c            |   16 
- drivers/scsi/bnx2i/bnx2i_iscsi.c           |    2 
- drivers/scsi/cxgb3i/cxgb3i_offload.c       |   24 
- drivers/scsi/cxgb3i/cxgb3i_pdu.c           |    4 
- drivers/scsi/device_handler/scsi_dh_rdac.c |    2 
- drivers/scsi/fcoe/fcoe.c                   |  135 +
- drivers/scsi/hpsa.c                        | 3531 +++++++++++++++++++++++++++++
- drivers/scsi/hpsa.h                        |  273 ++
- drivers/scsi/hpsa_cmd.h                    |  326 ++
- drivers/scsi/ipr.c                         |    1 
- drivers/scsi/libfc/fc_fcp.c                |   65 
- drivers/scsi/libfc/fc_lport.c              |    7 
- drivers/scsi/libfc/fc_rport.c              |    1 
- drivers/scsi/lpfc/lpfc_init.c              |   16 
- drivers/scsi/megaraid/megaraid_sas.c       |   14 
- drivers/scsi/mpt2sas/mpt2sas_base.c        |    5 
- drivers/scsi/mvsas/mv_init.c               |    1 
- drivers/scsi/osd/osd_initiator.c           |   88 
- drivers/scsi/pm8001/pm8001_ctl.h           |   10 
- drivers/scsi/pm8001/pm8001_hwi.c           |  149 -
- drivers/scsi/pm8001/pm8001_hwi.h           |    3 
- drivers/scsi/pm8001/pm8001_init.c          |   19 
- drivers/scsi/pm8001/pm8001_sas.c           |   57 
- drivers/scsi/pm8001/pm8001_sas.h           |   32 
- drivers/scsi/pmcraid.c                     |   34 
- drivers/scsi/pmcraid.h                     |    5 
- drivers/scsi/qla2xxx/qla_def.h             |    5 
- drivers/scsi/qla2xxx/qla_gbl.h             |    2 
- drivers/scsi/qla2xxx/qla_init.c            |   12 
- drivers/scsi/qla2xxx/qla_isr.c             |  103 
- drivers/scsi/qla2xxx/qla_mid.c             |    4 
- drivers/scsi/qla2xxx/qla_os.c              |   75 
- drivers/scsi/qla2xxx/qla_version.h         |    2 
- drivers/scsi/scsi_lib.c                    |    1 
- drivers/scsi/scsi_transport_fc.c           |   17 
- drivers/scsi/sd.c                          |  107 
- drivers/scsi/sd.h                          |    2 
- drivers/scsi/st.c                          |   23 
- drivers/scsi/st.h                          |    1 
- include/linux/enclosure.h                  |    2 
- include/scsi/osd_initiator.h               |    5 
- 49 files changed, 4914 insertions(+), 360 deletions(-)
-
-James
-
-
+Regards,
+Cascardo.
