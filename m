@@ -1,106 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935905AbZLPXZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935509AbZLPXhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935905AbZLPXZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935245AbZLPXZc
+	id S935509AbZLPXhI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757718AbZLPXhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:25:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18292 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935236AbZLPXZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:25:31 -0500
-Message-ID: <4B296C67.7040804@redhat.com>
-Date: Thu, 17 Dec 2009 00:25:27 +0100
-From: Zdenek Kabelac <zkabelac@redhat.com>
-Organization: Red Hat
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc13 Thunderbird/3.0
+	Wed, 16 Dec 2009 18:37:01 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:17504 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757326AbZLPXg7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:36:59 -0500
+Message-ID: <4B296C8A.6000900@caviumnetworks.com>
+Date: Wed, 16 Dec 2009 15:26:02 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: device-mapper development <dm-devel@redhat.com>
-CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Alasdair G Kergon <agk@redhat.com>, Milan Broz <mbroz@redhat.com>
-Subject: Re: [dm-devel] Re: dm: sysfs add empty release function to avoid
- debug	warning
-References: <200912151735.nBFHZ8XP018683@hera.kernel.org>	<20091216004739.GB4898@kroah.com> <4B28AC09.2000302@redhat.com>	<20091216134538.GA20857@kroah.com> <4B290B95.10306@redhat.com> <20091216174632.GA12473@kroah.com>
-In-Reply-To: <20091216174632.GA12473@kroah.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Chetan Loke <chetanloke@gmail.com>, Chris Friesen <cfriesen@nortel.com>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: Irq architecture for multi-core network driver.
+References: <4AE0D14B.1070307@caviumnetworks.com>	<4AE0D72A.4090607@nortel.com>	<4AE0DB98.1000101@caviumnetworks.com>	<b2f3590f0912161408u73947f6fx6902ebef927caf94@mail.gmail.com>	<4B295F8C.4050905@caviumnetworks.com> <20091216150051.63b6e31c@nehalam>
+In-Reply-To: <20091216150051.63b6e31c@nehalam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Dec 2009 23:26:02.0443 (UTC) FILETIME=[21C139B0:01CA7EA7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne 16.12.2009 18:46, Greg KH napsal(a):
-> On Wed, Dec 16, 2009 at 05:32:21PM +0100, Zdenek Kabelac wrote:
->> Dne 16.12.2009 14:45, Greg KH napsal(a):
->>> On Wed, Dec 16, 2009 at 10:44:41AM +0100, Milan Broz wrote:
->>>> On 12/16/2009 01:47 AM, Greg KH wrote:
->>>>> On Tue, Dec 15, 2009 at 05:35:08PM +0000, James Bottomley wrote:
->>>>>> commit: d2bb7df8cac647b92f51fb84ae735771e7adbfa7
->>>>>> From: Milan Broz <mbroz@redhat.com>
->>>>>> Date: Thu, 10 Dec 2009 23:51:53 +0000
->>>>>> Subject: [PATCH] dm: sysfs add empty release function to avoid debug warning
->>>>>>
->>>>>> This patch just removes an unnecessary warning:
->>>>>>  kobject: 'dm': does not have a release() function,
->>>>>>  it is broken and must be fixed.
->>>>>>
->>>>>> The kobject is embedded in mapped device struct, so
->>>>>> code does not need to release memory explicitly here.
+Stephen Hemminger wrote:
+> On Wed, 16 Dec 2009 14:30:36 -0800
+> David Daney <ddaney@caviumnetworks.com> wrote:
+> 
+>> Chetan Loke wrote:
+>>>>> Does your hardware do flow-based queues?  In this model you have
+>>>>> multiple rx queues and the hardware hashes incoming packets to a single
+>>>>> queue based on the addresses, ports, etc. This ensures that all the
+>>>>> packets of a single connection always get processed in the order they
+>>>>> arrived at the net device.
 >>>>>
+>>>> Indeed, this is exactly what we have.
 >>>>
->>>>> Please, this is totally and completly wrong.  And if you feel that it is
->>>>> needed, then your design is wrong and it needs to be fixed.
 >>>>
->>>> There are several places in kernel, where kobject have not defined release
->>>> method. Yes, something is wrong here.
->>>
->>> Where are those instances, becides the use of static kobjects, which is
->>> being worked on?
->>>
->>> That still does not make this change acceptable, it is incorrect.
->>>
->>>> So quietly ignoring warning is ok? Why is not there BUG_ON(!release) then?
->>>
->>> I was trying to be nice and not crash your machine and give you the
->>> opportunity to fix it easily.
->>>
->>>> The sysfs attributes here just represents attributes of block device object,
->>>> this device is always removed before release here is called.
->>>
->>> Then why use a kobject at all?  Your reference counting will be all
->>> wrong if you use it incorrectly like this.
->>>
->>>> So if there is preferred to do another alloc/free, no problem.
->>>
->>> Please do.
->>>
->>> Also, with the addition of this patch, your comments for the kobject are
->>> now incorrect as well.
+>>>>> Typically in this model you have as many interrupts as queues
+>>>>> (presumably 16 in your case).  Each queue is assigned an interrupt and
+>>>>> that interrupt is affined to a single core.
+>>>> Certainly this is one mode of operation that should be supported, but I
+>>>> would also like to be able to go for raw throughput and have as many cores
+>>>> as possible reading from a single queue (like I currently have).
+>>>>
+>>> Well, you could let the NIC firmware(f/w) handle this. The f/w would
+>>> know which interrupt was just injected recently.In other words it
+>>> would have a history of which CPU's would be available. So if some
+>>> previously interrupted CPU isn't making good progress then the
+>>> firmware should route the incoming response packets to a different
+>>> queue. This way some other CPU will pick it up.
 >>>
 >>
->> Here is list of just some errors I get on my 2.6.32 linux kernel.
->> (error message itself is removed)
->> Messages are printed during module removal/reboot.
+>> It isn's a NIC.  There is no firmware.  The system interrupt hardware is 
+>> what it is and cannot be changed.
 >>
->> 'aead' (ffffffffa017c050): does not have a release() function, it is broken
->> and must be fixed.
->> 'bridge'
->> 'cdrom'
+>> My current implementation still has a single input queue configured and 
+>> I get a maskable interrupt on a single CPU when packets are available. 
+>> If the queue depth increases above a given threshold, I optionally send 
+>> an IPI to another CPU to enable NAPI polling on that CPU.
+>>
+>> Currently I have a module parameter that controls the maximum number of 
+>> CPUs that will have NAPI polling enabled.
+>>
+>> This allows me to get multiple CPUs doing receive processing without 
+>> having to hack into the lower levels of the system's interrupt 
+>> processing code to try to do interrupt steering.  Since all the 
+>> interrupt service routine was doing was call netif_rx_schedule(), I can 
+>> simply do this via smp_call_function_single().
 > 
-> <snip>
-> 
-> You will find that all of these are modules, right?  That's being worked
-> on still.
+> Better to look into receive packet steering patches that are still
+> under review (rather than reinventing it just for your driver)
 > 
 
-Yes - true in most cases - here are exceptions:
+Indeed.  Although it turns out that I can do packet steering in hardware 
+  across up to 16 queues each with their own irq and thus dedicated CPU. 
+  So it is unclear to me if the receive packet steering patches offer 
+much benefit to this hardware.
 
-fill_kobj_path: path = '/devices/system/kvm/kvm0'
-fill_kobj_path: path = '/devices/system/kvm'
-fill_kobj_path: path = '/bus/sdio'
-fill_kobj_path: path = '/bus/mmc'
+One concern is the ability to forward as many packets as possible from a 
+very low number of flows (between 1 and 4).  Since it is an artificial 
+benchmark, we can arbitrarily say that packet reordering is allowed. 
+The simple hack to do NAPI polling on all CPUs from a single queue gives 
+good results.  There is no need to remind me that packet reordering 
+should be avoided, I already know this.
 
-Please note, these are only modules in use on my system in use - so there is
-probably more of them...
-
-Zdenek
+David Daney
