@@ -1,88 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965233AbZLPXPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbZLPXQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965233AbZLPXPY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:15:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935295AbZLPXPT
+	id S965239AbZLPXQb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935291AbZLPXQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:15:19 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:40760 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935282AbZLPXPQ (ORCPT
+	Wed, 16 Dec 2009 18:16:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58499 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935275AbZLPXQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:15:16 -0500
-Date: Thu, 17 Dec 2009 07:15:08 +0800
-From: Daniel Mack <daniel@caiaq.de>
-To: Dan Williams <dcbw@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Holger Schurig <holgerschurig@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Maithili Hinge <maithili@marvell.com>,
-       Kiran Divekar <dkiran@marvell.com>,
-       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
-       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] Libertas: fix buffer overflow in lbs_get_essid()
-Message-ID: <20091216231508.GX28375@buzzloop.caiaq.de>
-References: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
- <1260982667.2179.9.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260982667.2179.9.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 16 Dec 2009 18:16:26 -0500
+Date: Wed, 16 Dec 2009 15:16:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] final set of SCSI updates for the merge window
+Message-Id: <20091216151622.f74b2b97.akpm@linux-foundation.org>
+In-Reply-To: <1261003896.14435.157.camel@mulgrave.site>
+References: <1261003896.14435.157.camel@mulgrave.site>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 08:57:47AM -0800, Dan Williams wrote:
-> On Wed, 2009-12-16 at 05:12 +0100, Daniel Mack wrote:
-> > The libertas driver copies the SSID buffer back to the wireless core and
-> > appends a trailing NULL character for termination. This is
-> > 
-> > a) unnecessary because the buffer is allocated with kzalloc and is hence
-> >    already NULLed when this function is called, and
-> > 
-> > b) for priv->curbssparams.ssid_len == 32, it writes back one byte too
-> >    much which causes memory corruptions.
-> > 
-> > Fix this by removing the extra write.
-> 
-> Acked-by: Dan Williams <dcbw@redhat.com>
 
-Thanks, everyone. Who will care to pick an queue this one?
+scsi-add-__init-__exit-macros-to-ibmvstgtc.patch
+drivers-scsi-fnic-fnic_scsic-clean-up.patch
+ibmmca-buffer-overflow.patch
+scsi-eata-fix-buffer-overflow.patch
+drivers-scsi-gdthc-fix-buffer-overflow.patch
+drivers-scsi-u14-34fc-fix-uffer-overflow.patch
+drivers-scsi-lpfc-lpfc_vportc-fix-read-buffer-overflow.patch
+osst-fix-read-buffer-overflow.patch
+gdth-unmap-ccb_phys-when-scsi_add_host-fails-in-gdth_eisa_probe_one.patch
+zfcp-test-kmalloc-failure-in-scsi_get_vpd_page.patch
+drivers-scsi-libsas-use-sam_good.patch
+ncr5380-bit-mr_dma_mode-set-twice-in-ncr5380_transfer_dma.patch
+drivers-scsi-remove-unnecessary-null-test.patch
+drivers-message-move-dereference-after-null-test.patch
+scsi-pmcraid-redundant-check-in-pmcraid_check_ioctl_buffer.patch
+mpt-fusion-convert-to-seq_file.patch
+scsi-aacraid-fix-memory-leak.patch
+scsi-aacraid-fix-memory-leak-checkpatch-fixes.patch
+scsi-remove-unnecessary-null-test.patch
+scsi-lpfc-fix-memory-leak.patch
 
-Daniel
+I've been sitting on some of these since June.
 
-
-> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> > Cc: Dan Williams <dcbw@redhat.com>
-> > Cc: Holger Schurig <holgerschurig@gmail.com>
-> > Cc: John W. Linville <linville@tuxdriver.com>
-> > Cc: Stephen Hemminger <shemminger@vyatta.com>
-> > Cc: Maithili Hinge <maithili@marvell.com>
-> > Cc: Kiran Divekar <dkiran@marvell.com>
-> > Cc: Michael Hirsch <m.hirsch@raumfeld.com>
-> > Cc: netdev@vger.kernel.org
-> > Cc: libertas-dev@lists.infradead.org
-> > Cc: linux-wireless@lists.infradead.org
-> > Cc: stable@kernel.org
-> > ---
-> >  drivers/net/wireless/libertas/wext.c |    2 --
-> >  1 files changed, 0 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/net/wireless/libertas/wext.c b/drivers/net/wireless/libertas/wext.c
-> > index be837a0..01c738b 100644
-> > --- a/drivers/net/wireless/libertas/wext.c
-> > +++ b/drivers/net/wireless/libertas/wext.c
-> > @@ -1953,10 +1953,8 @@ static int lbs_get_essid(struct net_device *dev, struct iw_request_info *info,
-> >  	if (priv->connect_status == LBS_CONNECTED) {
-> >  		memcpy(extra, priv->curbssparams.ssid,
-> >  		       priv->curbssparams.ssid_len);
-> > -		extra[priv->curbssparams.ssid_len] = '\0';
-> >  	} else {
-> >  		memset(extra, 0, 32);
-> > -		extra[priv->curbssparams.ssid_len] = '\0';
-> >  	}
-> >  	/*
-> >  	 * If none, we may want to get the one that was set
-> 
+This is just broken.  How do I fix it?
