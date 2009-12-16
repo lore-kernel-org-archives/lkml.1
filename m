@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935805AbZLPWAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935537AbZLPVcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935805AbZLPWAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935651AbZLPWAa
+	id S935537AbZLPVcQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 16:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757997AbZLPVcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:00:30 -0500
-Received: from www.tglx.de ([62.245.132.106]:52771 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932602AbZLPWA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:00:27 -0500
-Message-Id: <20091216212730.308081108@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Wed, 16 Dec 2009 21:31:33 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 1/1] devtmpfs: Convert dirlock to a mutex
-Content-Disposition: inline; filename=devfs-fix-locking-madness.patch
+	Wed, 16 Dec 2009 16:32:14 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:50803 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753660AbZLPVcN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 16:32:13 -0500
+Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEACbgKEurR7H+/2dsb2JhbAC/KZcNhCsE
+X-IronPort-AV: E=Sophos;i="4.47,408,1257120000"; 
+   d="scan'208";a="280630720"
+From: Roland Dreier <rdreier@cisco.com>
+To: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+       kexec@lists.infradead.org
+Subject: kexec reboot broken with ioatdma?
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Dec 2009 13:32:11 -0800
+Message-ID: <ada3a3a8v1g.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Dec 2009 21:32:12.0057 (UTC) FILETIME=[3A870890:01CA7E97]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devtmpfs has a rw_lock dirlock which serializes delete_path and
-create_path.
+I have a system with IOAT hardware, and rebooting with kexec fails with
+the latest 2.6.32-git kernel.  I haven't really tried earlier kernels,
+but I suspect the issue comes from the ioatdma driver being autoloaded now.
 
-This code was obviously never tested with the usual set of debugging
-facilities enabled. In the dirlock held sections the code calls:
+The reboot gets stuck at:
 
- - vfs functions which take mutexes
- - kmalloc(, GFP_KERNEL)
+  ioatdma 0000:00:16.0: Self-test copy timed out, disabling
+  ioatdma 0000:00:16.0: Freeing 2 in use descriptors!
+  ioatdma 0000:00:16.0: Intel(R) I/OAT DMA Engine init failed
 
-In both code pathes the might sleep warning triggers and spams dmesg.
+so presumably the IOAT hardware is left in a bad state that the ioatdma
+driver in the kexec'ed new kernel can't handle.
 
-Convert the rw_lock to a mutex. There is no reason why this needs to
-be a rwlock.
+I notice that long ago, there was a commit 428ed602 ("I/OAT: fix I/OAT
+for kexec") that added a shutdown method to clean things up so kexec
+worked, and then more recently there was 4fac7fa5 ("ioat: do not perform
+removal actions at shutdown") that got rid of the shutdown hook.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/base/devtmpfs.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+I'm not sure what the correct fix is here: fix the shutdown order so
+everyone drops all references to IOAT stuff before IOAT is shutdown, or
+add some code to the ioatdma driver so it resets the hardware on startup
+so the new kernel can deal with an unspecified state.
 
-Index: linux-2.6/drivers/base/devtmpfs.c
-===================================================================
---- linux-2.6.orig/drivers/base/devtmpfs.c
-+++ linux-2.6/drivers/base/devtmpfs.c
-@@ -32,7 +32,7 @@ static int dev_mount = 1;
- static int dev_mount;
- #endif
- 
--static rwlock_t dirlock;
-+static DEFINE_MUTEX(dirlock);
- 
- static int __init mount_param(char *str)
- {
-@@ -93,7 +93,7 @@ static int create_path(const char *nodep
- {
- 	int err;
- 
--	read_lock(&dirlock);
-+	mutex_lock(&dirlock);
- 	err = dev_mkdir(nodepath, 0755);
- 	if (err == -ENOENT) {
- 		char *path;
-@@ -117,7 +117,7 @@ static int create_path(const char *nodep
- 		}
- 		kfree(path);
- 	}
--	read_unlock(&dirlock);
-+	mutex_unlock(&dirlock);
- 	return err;
- }
- 
-@@ -229,7 +229,7 @@ static int delete_path(const char *nodep
- 	if (!path)
- 		return -ENOMEM;
- 
--	write_lock(&dirlock);
-+	mutex_lock(&dirlock);
- 	for (;;) {
- 		char *base;
- 
-@@ -241,7 +241,7 @@ static int delete_path(const char *nodep
- 		if (err)
- 			break;
- 	}
--	write_unlock(&dirlock);
-+	mutex_unlock(&dirlock);
- 
- 	kfree(path);
- 	return err;
-@@ -352,8 +352,6 @@ int __init devtmpfs_init(void)
- 	int err;
- 	struct vfsmount *mnt;
- 
--	rwlock_init(&dirlock);
--
- 	err = register_filesystem(&dev_fs_type);
- 	if (err) {
- 		printk(KERN_ERR "devtmpfs: unable to register devtmpfs "
+This is on a system with the following hardware:
 
+00:16.0 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Devic
+e [8086:3430] (rev 20)
+00:16.1 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Devic
+e [8086:3431] (rev 20)
+00:16.2 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Devic
+e [8086:3432] (rev 20)
+00:16.3 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Devic
+e [8086:3433] (rev 20)
+00:16.4 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Devic
+e [8086:3429] (rev 20)
+00:16.5 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Devic
+e [8086:342a] (rev 20)
+00:16.6 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:342b] (rev 20)
+00:16.7 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:342c] (rev 20)
+80:16.0 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:3430] (rev 20)
+80:16.1 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:3431] (rev 20)
+80:16.2 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:3432] (rev 20)
+80:16.3 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:3433] (rev 20)
+80:16.4 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:3429] (rev 20)
+80:16.5 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:342a] (rev 20)
+80:16.6 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:342b] (rev 20)
+80:16.7 System peripheral [0880]: Intel Corporation 5520/5500/X58 Chipset QuickData Technology Device [8086:342c] (rev 20)
 
+Thanks,
+  Roland
