@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934005AbZLPPeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbZLPPsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934005AbZLPPeJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 10:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932670AbZLPPeH
+	id S1758530AbZLPPsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 10:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756294AbZLPPsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 10:34:07 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:52959 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932400AbZLPPeF (ORCPT
+	Wed, 16 Dec 2009 10:48:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57788 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755064AbZLPPsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 10:34:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kt9ga14KDGZrYpRO4TLJvjtplckxFN193nCyKlDWKzVQmmMxIji0R9c5nAgb1kv6S6
-         qOnDGv13xJiHLrXsCT9XFBmgMs742MudOs6ArdSQ77eonnlxORUqSqi6GDruLqg2rH7V
-         KyRraa5tVMLPOg6SUakBJiJWenjKOR7tFjnVA=
-Date: Wed, 16 Dec 2009 23:35:13 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Alex Chiang <achiang@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Li, Haicheng" <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: introduce dump_page() and print symbolic flag names
-Message-ID: <20091216153513.GC2804@hack>
-References: <20091216122640.GA13817@localhost> <20091216123310.GA17522@localhost>
+	Wed, 16 Dec 2009 10:48:37 -0500
+Date: Wed, 16 Dec 2009 07:47:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <200912160311.05915.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0912160737350.7454@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912151203.22916.rjw@sisk.pl> <alpine.LFD.2.00.0912150722310.14385@localhost.localdomain> <200912160311.05915.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216123310.GA17522@localhost>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 08:33:10PM +0800, Wu Fengguang wrote:
->On Wed, Dec 16, 2009 at 08:26:40PM +0800, Wu Fengguang wrote:
->> - introduce dump_page() to print the page info for debugging some error condition.
->> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
->> - print an extra field: the symbolic names of page->flags
->> 
->> Example dump_page() output:
->> 
->> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1
->> mapping:ffff88001c901791 index:147
->                                 ~~~ this is in fact 0x147
->
->The index value may sometimes be misread as decimal number, shall this
->be fixed by adding a "0x" prefix?
 
 
-Using '%#x' will do.
+On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> The summarized data are below (the "big" numbers are averages and the +/-
+> numbers are standard deviations, all in milliseconds):
+> 
+> 			HP nx6325		MSI Wind U100
+> 
+> sync suspend		1482 (+/- 40)	1180 (+/- 24)
+> sync resume		2955 (+/- 2)	3597 (+/- 25)
+> 
+> async suspend		1553 (+/- 49)	1177 (+/- 32)
+> async resume		2692 (+/- 326)	3556  (+/- 33)
+> 
+> async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+> async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+> 
+> async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+> async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+> 
+> So, in my opinion, with the above set of "async" devices, it doesn't
+> make sense to do async suspend at all, because the sync suspend is actually
+> the fastest on both machines.
 
-Thanks.
+Hmm. I certainly agree - your numbers do not seem to support any async at 
+all.
 
+However, I do note that for the "extra patch" makes a big difference at 
+resume time. That implies that the resume serializes on some slow device 
+that wasn't marked async - and starting the async ones early avoids that. 
 
->
->> [  157.525570] page flags: 100000000100068(uptodate|lru|active|swapbacked)
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+But without the per-device timings, it's hard to even guess what device 
+that was.
 
--- 
-Live like a child, think like the god.
- 
+But even that doesn't really help the suspend cases, only resume.
+
+Do you have any sample timing output with devices listed?
+
+			Linus
