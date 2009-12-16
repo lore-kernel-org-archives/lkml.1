@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934947AbZLPQLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934969AbZLPQL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934947AbZLPQLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 11:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934953AbZLPQKo
+	id S934969AbZLPQL1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 11:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934927AbZLPQLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 11:10:44 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:41249 "EHLO
+	Wed, 16 Dec 2009 11:11:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:41241 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934911AbZLPQKm (ORCPT
+	with ESMTP id S934948AbZLPQKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 11:10:42 -0500
+	Wed, 16 Dec 2009 11:10:36 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Vrabel <dvrabel@arcom.com>, Greg Kroah-Hartman <gregkh@suse.de>,
        Mauro Carvalho Chehab <mchehab@infradead.org>,
        Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Antonio Ospite <ospite@studenti.unina.it>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       linux-media@vger.kernel.org
-Subject: [PATCH 2/7] V4L/DVB mx1_camera: don't check platform_get_irq's return value against zero
-Date: Wed, 16 Dec 2009 17:10:04 +0100
-Message-Id: <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
+       Magnus Damm <damm@igel.co.jp>,
+       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
+       Paul Mundt <lethal@linux-sh.org>, linux-media@vger.kernel.org
+Subject: [PATCH 3/7] V4L/DVB sh_mobile_ceu: don't check platform_get_irq's return value against zero
+Date: Wed, 16 Dec 2009 17:10:05 +0100
+Message-Id: <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -48,26 +49,27 @@ Cc: David Vrabel <dvrabel@arcom.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Antonio Ospite <ospite@studenti.unina.it>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Cc: Magnus Damm <damm@igel.co.jp>
+Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
 Cc: linux-media@vger.kernel.org
 ---
- drivers/media/video/mx1_camera.c |    2 +-
+ drivers/media/video/sh_mobile_ceu_camera.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
-index 7280229..f7a472f 100644
---- a/drivers/media/video/mx1_camera.c
-+++ b/drivers/media/video/mx1_camera.c
-@@ -650,7 +650,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
+diff --git a/drivers/media/video/sh_mobile_ceu_camera.c b/drivers/media/video/sh_mobile_ceu_camera.c
+index 961e448..f18e674 100644
+--- a/drivers/media/video/sh_mobile_ceu_camera.c
++++ b/drivers/media/video/sh_mobile_ceu_camera.c
+@@ -1709,7 +1709,7 @@ static int __devinit sh_mobile_ceu_probe(struct platform_device *pdev)
  
  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
  	irq = platform_get_irq(pdev, 0);
 -	if (!res || !irq) {
 +	if (!res || (int)irq <= 0) {
+ 		dev_err(&pdev->dev, "Not enough CEU platform resources.\n");
  		err = -ENODEV;
  		goto exit;
- 	}
 -- 
 1.6.5.2
 
