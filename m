@@ -1,86 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbZLPJGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbZLPJHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761904AbZLPJGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 04:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761868AbZLPJGA
+	id S1761915AbZLPJHd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 04:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761886AbZLPJHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 04:06:00 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:34312 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761840AbZLPJFy (ORCPT
+	Wed, 16 Dec 2009 04:07:23 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:54178 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760538AbZLPJHN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 04:05:54 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>, Joe Perches <joe@perches.com>,
-       Jens Rosenboom <jens@mcbone.net>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] lib/vsprintf.c: document more vsnprintf extensions
-Date: Wed, 16 Dec 2009 10:05:46 +0100
-Message-Id: <1260954346-14369-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
+	Wed, 16 Dec 2009 04:07:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OCxPitGtRbbg19ItuYiMPbV+0kZs5sELXSy5VxawpD00WBsA3Ifa4XY2evHrLLH35W
+         SS847NJaxPuZ2xjuhw0iwPjpYKbN14eEYxG2xUIf3abzuuajk5zPM6VhUoEblDsBG0vJ
+         1xDETM1Kjx4MLA+owx2S04AZgmVMhYhsnZLUk=
 MIME-Version: 1.0
+In-Reply-To: <4B289955.2010705@in.ibm.com>
+References: <4B2224C7.1020908@in.ibm.com>
+	 <7b6bb4a50912152225p4f5dde13re83c439407c16eaf@mail.gmail.com>
+	 <4B288131.2050306@in.ibm.com>
+	 <7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
+	 <4B288413.2070704@in.ibm.com> <1260947890.8023.1281.camel@laptop>
+	 <7b6bb4a50912152357m75aea5dfl6fe063d716517baf@mail.gmail.com>
+	 <4B289955.2010705@in.ibm.com>
+Date: Wed, 16 Dec 2009 17:07:11 +0800
+Message-ID: <7b6bb4a50912160107j1c8348b6p235844193e3ee977@mail.gmail.com>
+Subject: Re: [Next] CPU Hotplug test failures on powerpc
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These were added in
+On Wed, Dec 16, 2009 at 4:24 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
+> Xiaotian Feng wrote:
+>>
+>> Could follow be possible?  We know there's cpu 0 and cpu 1,
+>>
+>> offline cpu1 > done
+>> offline cpu0 > false
+>>
+>> consider this in cpu_down code,
+>>
+>>
+>> int __ref cpu_down(unsigned int cpu)
+>> {
+>> <snip>
+>>        set_cpu_active(cpu, false); // here, we set cpu 0 to inactive
+>>
+>>        synchronize_sched();
+>>
+>>        err = _cpu_down(cpu, 0);
+>> out:
+>> <snip>
+>> }
+>>
+>> Then in _cpu_down code:
+>>
+>> static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+>> {
+>> <snip>
+>>        if (num_online_cpus() == 1)        // if we're trying to
+>> offline cpu0, num_online_cpus will be 1
+>>                return -EBUSY;                    // after return back
+>> to cpu_down, we didn't change cpu 0 back to active
+>>
+>>        if (!cpu_online(cpu))
+>>                return -EINVAL;
+>>
+>>        if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
+>>                return -ENOMEM;
+>> <snip>
+>> }
+>>
+>> Then cpu 0 is not active, but online, then we try to offline cpu1, .......
+>> This can not be exposed because x86 does not have
+>> /sys/devices/system/cpu0/online.
+>> I guess following patch fixes this bug.
+>>
+>
+> Just tested this one on the POWER box and the test passed.
+> I did not observe the hang.
 
-9ac6e44 (lib/vsprintf.c: add %pU to print UUID/GUIDs)
-c7dabef (vsprintf: use %pR, %pr instead of %pRt, %pRf)
-8a27f7c (lib/vsprintf.c: Add "%pI6c" - print pointer as compressed ipv6 address)
-4aa9960 (printk: add %I4, %I6, %i4, %i6 format specifiers)
-dd45c9c (printk: add %pM format specifier for MAC addresses)
+Thanks for confirm, I will send formatted patch to upstream then:-)
 
-but only added comments to pointer() not vsnprintf() that is refered to
-by printk's comments.
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Joe Perches <joe@perches.com>
-Cc: Jens Rosenboom <jens@mcbone.net>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- lib/vsprintf.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 735343f..d4996cf 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -1179,7 +1179,18 @@ qualifier:
-  * %ps output the name of a text symbol without offset
-  * %pF output the name of a function pointer with its offset
-  * %pf output the name of a function pointer without its offset
-- * %pR output the address range in a struct resource
-+ * %pR output the address range in a struct resource with decoded flags
-+ * %pr output the address range in a struct resource with raw flags
-+ * %pM output a 6-byte MAC address with colons
-+ * %pm output a 6-byte MAC address without colons
-+ * %pI4 print an IPv4 address without leading zeros
-+ * %pi4 print an IPv4 address with leading zeros
-+ * %pI6 print an IPv6 address with colons
-+ * %pi6 print an IPv6 address without colons
-+ * %pI6c print an IPv6 address as specified by
-+ *   http://www.ietf.org/id/draft-kawamura-ipv6-text-representation-03.txt
-+ * %pU[bBlL] print a UUID/GUID in big or little endian using lower or upper
-+ *   case.
-  * %n is ignored
-  *
-  * The return value is the number of characters which would
--- 
-1.6.5.2
-
+>
+> Thanks
+> -Sachin
+>
+>> ---
+>> diff --git a/kernel/cpu.c b/kernel/cpu.c
+>> index 291ac58..21ddace 100644
+>> --- a/kernel/cpu.c
+>> +++ b/kernel/cpu.c
+>> @@ -199,14 +199,18 @@ static int __ref _cpu_down(unsigned int cpu, int
+>> tasks_frozen)
+>>                .hcpu = hcpu,
+>>        };
+>>
+>> -       if (num_online_cpus() == 1)
+>> +       if (num_online_cpus() == 1) {
+>> +               set_cpu_active(cpu, true);
+>>                return -EBUSY;
+>> +       }
+>>
+>>        if (!cpu_online(cpu))
+>>                return -EINVAL;
+>>
+>> -       if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
+>> +       if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL)) {
+>> +               set_cpu_active(cpu, true);
+>>                return -ENOMEM;
+>> +       }
+>>
+>>        cpu_hotplug_begin();
+>>        err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+>>
+>>
+>>
+>>>
+>>> Unless of course, I messed up, which appears to be rather likely given
+>>> these problems ;-)
+>>>
+>>>
+>>>
+>>
+>>
+>
+>
+> --
+>
+> ---------------------------------
+> Sachin Sant
+> IBM Linux Technology Center
+> India Systems and Technology Labs
+> Bangalore, India
+> ---------------------------------
+>
+>
