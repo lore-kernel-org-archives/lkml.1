@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLPSxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbZLPSxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZLPSxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZLPSxV
+	id S1760098AbZLPSxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZLPSxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:53:21 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60672 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbZLPSxU (ORCPT
+	Wed, 16 Dec 2009 13:53:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57090 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756851AbZLPSxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:53:20 -0500
-Date: Wed, 16 Dec 2009 18:53:19 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] VFS stuff, part 1
-Message-ID: <20091216185319.GM14381@ZenIV.linux.org.uk>
-References: <20091216185157.GL14381@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216185157.GL14381@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 16 Dec 2009 13:53:36 -0500
+Subject: Re: [PATCH 14/14] kernel/exit.c and kernel/panic.c: Remove unused
+ NORET_TYPE
+From: Peter Zijlstra <peterz@infradead.org>
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1260989515.21028.228.camel@laptop>
+References: <cover.1260949674.git.joe@perches.com>
+	 <29e53e769a3f0b38ea8347b95c8947d3f50ab4c6.1260949674.git.joe@perches.com>
+	 <1260989515.21028.228.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 19:53:31 +0100
+Message-ID: <1260989611.21028.232.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 06:51:57PM +0000, Al Viro wrote:
-> This ought to get rid of the bulk of namei.c patches affecting the
-> areas where my and Nick's series step on the same code.  There's
-> also some struct file work, plus a bunch of fixes all over the place
-> (in particular, Eric's series dealing with IMA horrors, partially
-> modified to merge), but most of that stuff is fighting the call
-> graph in fs/namei.c and massaging things into more or less sane shape
-> there.
+On Wed, 2009-12-16 at 19:51 +0100, Peter Zijlstra wrote:
+> On Wed, 2009-12-16 at 00:09 -0800, Joe Perches wrote:
+> > Make the functions match the prototypes in <linux/kernel.h>
+> > It's defined to nothing and useless
 > 
-> Please, pull from
-> git.kernel.org//pub/scm/linux/kernel/git/viro/vfs-2.6.git/
+> Uhm, why not make it useful again and define it to something like:
+> 
+> #define NORET_TYPE __attribute__((noreturn))
+> 
+> except I guess that should come after the function name, not before.
+> 
+> Annotations that tell a particular function is not supposed to exit
+> seems useful to me..
 
-gyah...  
+Ah, that got hidden in the header and was done in a different patch.
 
-git.kernel.org//pub/scm/linux/kernel/git/viro/vfs-2.6.git/ master
