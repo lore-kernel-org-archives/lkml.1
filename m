@@ -1,126 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbZLPS2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762820AbZLPScG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762804AbZLPS2q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762775AbZLPS2p
+	id S1762820AbZLPScG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:32:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762784AbZLPScF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:28:45 -0500
-Received: from mga09.intel.com ([134.134.136.24]:47491 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758844AbZLPS2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:28:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,407,1257148800"; 
-   d="scan'208";a="579570616"
-Subject: Re: [GIT PULL] dmaengine update for 2.6.33
-From: Dan Williams <dan.j.williams@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-raid <linux-raid@vger.kernel.org>
-In-Reply-To: <1260941624.29274.44.camel@dwillia2-linux.ch.intel.com>
-References: <1260941624.29274.44.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 11:28:20 -0700
-Message-Id: <1260988100.31256.4.camel@dwillia2-linux.ch.intel.com>
+	Wed, 16 Dec 2009 13:32:05 -0500
+Received: from fw.wantstofly.org ([80.101.37.227]:45130 "EHLO
+	mail.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756623AbZLPScE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 13:32:04 -0500
+Date: Wed, 16 Dec 2009 19:32:00 +0100
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] ep93xx_eth.c: general cleanup
+Message-ID: <20091216183200.GN1819@mail.wantstofly.org>
+References: <BD79186B4FD85F4B8E60E381CAEE19090200ECE7@mi8nycmail19.Mi8.com> <20091216180132.GL1819@mail.wantstofly.org> <BD79186B4FD85F4B8E60E381CAEE19090200ED01@mi8nycmail19.Mi8.com> <20091216180849.GM1819@mail.wantstofly.org> <BD79186B4FD85F4B8E60E381CAEE19090200ED0C@mi8nycmail19.Mi8.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200ED0C@mi8nycmail19.Mi8.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 22:33 -0700, Williams, Dan J wrote:
-> Hi Linus, please pull from:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
-> 
-> ...to receive a couple new drivers, coh and ppc440spe-adma (raid offload
-> engine), and a collection of fixes from Guennadi.  There are a few more
-> shdma fixes pending from Guennadi, but the original driver author wanted
-> a bit more time to review / test, so I'm obliging.  These have been in
-> linux-next for a few releases.
-> 
-> Thanks,
-> Dan
+On Wed, Dec 16, 2009 at 01:18:13PM -0500, H Hartley Sweeten wrote:
 
-Looks like you haven't pulled yet, so I am appending one more
-straightforward fix from Nicolas:
+> V3 - Change pr_fmt() as suggested by Joe Perches
+>      Don't remove DRV_MODULE_NAME and DRV_MODULE_VERSION
+>      Don't remove the message in ep93xx_eth_init_module()
 
----
-dma: at_hdmac: correct incompatible type for argument 1 of 'spin_lock_bh'
-
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-
-Correct a typo error in locking calls.
-
-Cc: <stable@kernel.org>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
-
- drivers/dma/at_hdmac.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-index 7585c41..c558fa1 100644
---- a/drivers/dma/at_hdmac.c
-+++ b/drivers/dma/at_hdmac.c
-@@ -815,7 +815,7 @@ atc_is_tx_complete(struct dma_chan *chan,
- 	dev_vdbg(chan2dev(chan), "is_tx_complete: %d (d%d, u%d)\n",
- 			cookie, done ? *done : 0, used ? *used : 0);
- 
--	spin_lock_bh(atchan->lock);
-+	spin_lock_bh(&atchan->lock);
- 
- 	last_complete = atchan->completed_cookie;
- 	last_used = chan->cookie;
-@@ -830,7 +830,7 @@ atc_is_tx_complete(struct dma_chan *chan,
- 		ret = dma_async_is_complete(cookie, last_complete, last_used);
- 	}
- 
--	spin_unlock_bh(atchan->lock);
-+	spin_unlock_bh(&atchan->lock);
- 
- 	if (done)
- 		*done = last_complete;
-
----
-New combined diffstat is:
-
- .../powerpc/dts-bindings/4xx/ppc440spe-adma.txt    |   93 +
- arch/arm/mach-u300/include/mach/coh901318.h        |  281 ++
- arch/powerpc/include/asm/async_tx.h                |   47 +
- arch/powerpc/include/asm/dcr-regs.h                |   23 +
- drivers/dma/Kconfig                                |   18 +
- drivers/dma/Makefile                               |    2 +
- drivers/dma/at_hdmac.c                             |    4 +-
- drivers/dma/coh901318.c                            | 1325 ++++++
- drivers/dma/coh901318_lli.c                        |  318 ++
- drivers/dma/coh901318_lli.h                        |  124 +
- drivers/dma/dmatest.c                              |   16 +-
- drivers/dma/iop-adma.c                             |    4 +-
- drivers/dma/ppc4xx/Makefile                        |    1 +
- drivers/dma/ppc4xx/adma.c                          | 5027 ++++++++++++++++++++
- drivers/dma/ppc4xx/adma.h                          |  195 +
- drivers/dma/ppc4xx/dma.h                           |  223 +
- drivers/dma/ppc4xx/xor.h                           |  110 +
- drivers/dma/shdma.c                                |   36 +-
- drivers/dma/shdma.h                                |   14 +-
- include/linux/dmaengine.h                          |    2 +-
- 20 files changed, 7830 insertions(+), 33 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/4xx/ppc440spe-adma.txt
- create mode 100644 arch/arm/mach-u300/include/mach/coh901318.h
- create mode 100644 arch/powerpc/include/asm/async_tx.h
- create mode 100644 drivers/dma/coh901318.c
- create mode 100644 drivers/dma/coh901318_lli.c
- create mode 100644 drivers/dma/coh901318_lli.h
- create mode 100644 drivers/dma/ppc4xx/Makefile
- create mode 100644 drivers/dma/ppc4xx/adma.c
- create mode 100644 drivers/dma/ppc4xx/adma.h
- create mode 100644 drivers/dma/ppc4xx/dma.h
- create mode 100644 drivers/dma/ppc4xx/xor.h
-
-
-
+That's not what I meant, but alright, as you prefer.
