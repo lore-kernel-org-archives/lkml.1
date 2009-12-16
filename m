@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbZLPO73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759331AbZLPO5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761106AbZLPO73 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 09:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbZLPO7Z
+	id S1759331AbZLPO5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 09:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbZLPO5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 09:59:25 -0500
-Received: from kroah.org ([198.145.64.141]:39474 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756831AbZLPO7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 09:59:24 -0500
-Date: Wed, 16 Dec 2009 06:55:52 -0800
-From: Greg KH <greg@kroah.com>
-To: Ike Panhc <ike.pan@canonical.com>
-Cc: reinette chatre <reinette.chatre@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Winkler, Tomas" <tomas.winkler@intel.com>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>
-Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
-Message-ID: <20091216145552.GA25983@kroah.com>
-References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>
- <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
- <20091215041500.GB31200@kroah.com>
- <4B273479.6050502@canonical.com>
- <20091215134943.GA11667@kroah.com>
- <20091215163100.GC8097@tuxdriver.com>
- <1260906168.9623.4.camel@rc-desk>
- <20091215194938.GA13297@kroah.com>
- <4B288232.4060901@canonical.com>
+	Wed, 16 Dec 2009 09:57:17 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:46887 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758361AbZLPO5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 09:57:12 -0500
+Date: Wed, 16 Dec 2009 09:56:47 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Kyle McMartin <kyle@mcmartin.ca>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: anyone including <linux/perf_counter.h>?
+In-Reply-To: <20091216145120.GL28962@bombadil.infradead.org>
+Message-ID: <alpine.LFD.2.00.0912160955420.7853@localhost>
+References: <alpine.LFD.2.00.0912160939510.7588@localhost> <20091216145120.GL28962@bombadil.infradead.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B288232.4060901@canonical.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 02:46:10PM +0800, Ike Panhc wrote:
-> Greg KH wrote:
-> > On Tue, Dec 15, 2009 at 11:42:48AM -0800, reinette chatre wrote:
-> >> On Tue, 2009-12-15 at 08:31 -0800, John W. Linville wrote:
-> >>> On Tue, Dec 15, 2009 at 05:49:43AM -0800, Greg KH wrote:
-> >>>> On Tue, Dec 15, 2009 at 03:02:17PM +0800, Ike Panhc wrote:
-> >>>>> Please consider applying to linux-2.6.31.y
-> >>>> I need the subsystem maintainer to agree with this, have they?
-> >>> It seems fine to me.  You may want to let Intel comment too.
-> >>>
-> >> No objection here. Even so, I find it strange that this patch fixes a
-> >> problem since it really should not have any functional changes. 
-> > 
-> > Ok, if there is no functional change, why is this needed?
-> > 
-> > Ike?
-> > 
-> > thanks,
-> > 
-> > greg k-h
-> I review the patch again. Yes, it is no functional change. Sorry I have
-> misunderstanding about the patch. Please do not put the second patch into
-> stable.
+On Wed, 16 Dec 2009, Kyle McMartin wrote:
 
-Ok, will do.
+> On Wed, Dec 16, 2009 at 09:42:50AM -0500, Robert P. J. Day wrote:
+> >
+> >   just prepping to run my cleanup suggestion scripts after the merge
+> > window closes, quick test run on some scripts and ran across the fact
+> > that no one appears to be including <linux/perf_counter.h>.
+> >
+> >   any value to that file?  just curious.  much more pedantry after the
+> > merge window, of course.
+>
+> See the comment at the top, it's being provided to provide the old
+> names to userspace for a short time, now that the functionality has
+> been renamed to perf_events.
 
-> But Please consider applying the first patch (change IWL6000_UCODE_API_MAX
-> to v4) to 2.6.31-stable tree. It will be good to use v4 firmware on iwl6000.
+  but if it's supposed to be providing info to user-space, shouldn't
+it be *exported* to user space?  it's not listed in
+include/linux/Kbuild.  or am i misunderstanding?
 
-Why, what bug does it fix?  Will it require users to update their
-firmware versions on their system as well?
+rday
+--
 
-thanks,
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-greg k-h
+            Linux Consulting, Training and Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
