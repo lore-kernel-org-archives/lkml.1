@@ -1,67 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759074AbZLPHmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934656AbZLPHlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759074AbZLPHmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 02:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZLPHmn
+	id S934656AbZLPHlu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 02:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZLPHlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 02:42:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61520 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752822AbZLPHmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 02:42:42 -0500
-Message-ID: <4B288F04.5080108@cn.fujitsu.com>
-Date: Wed, 16 Dec 2009 15:40:52 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 16 Dec 2009 02:41:47 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:9639 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756387AbZLPHln (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 02:41:43 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANodKEurR7Ht/2dsb2JhbAC9YZcfgjuBcASBYoEz
+X-IronPort-AV: E=Sophos;i="4.47,405,1257120000"; 
+   d="scan'208";a="450385107"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 15 Dec 2009 23:41:41 -0800
+Message-ID: <ada8wd39xhm.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] perf_event: introduce 'perf timer' to analyze	timer's
- behavior
-References: <4B27702F.1080507@cn.fujitsu.com> <20091215141533.GB5833@nowhere> <4B283596.2010801@cn.fujitsu.com> <20091216073248.GA32713@elte.hu>
-In-Reply-To: <20091216073248.GA32713@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Dec 2009 07:41:41.0896 (UTC) FILETIME=[356FE080:01CA7E23]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from
 
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Ingo Molnar wrote:
+This tree is also available from kernel.org mirrors at:
 
->>>
->> Yeah, it has different unit and looks ugly :-(
->>
->> but, the problem is we can't get HZ in userspace now, i'll export HZ by proc 
->> or other way and rectify 'perf timer' output in my next work
-> 
-> We could export HZ as part of the ftrace event format file, in 
-> /debug/tracing/events/timers/ or so. Not sure what the best way would be to do 
-> it (without causing runtime overhead in event processing), but we should 
-> reduce our reliance on /proc and export such instrumentation information via a 
-> single, coherent interface.
-> 
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Hi ingo,
+This will get all my pending 2.6.33 merge window stuff.  Sorry for
+being so late, but I'm just now out from under my flu-induced
+backlog.  None of the stuff here is in any way controversial: it's
+pretty much all small fixes scattered around, with no major changes
+included (we're saving those for 2.6.34).
 
-Um, if we export this value in tracepoint format, it should add for every timer's
-tracepoint.
+Akinobu Mita (1):
+      IB/ipath: Use bitmap_weight()
 
-> There's a couple of other 'system settings' values that would be useful to 
-> expose in such a way - for example the number of online CPUs. (in fact that 
-> could be exposed as a set of online/offline events plus a way to read the 
-> current count as well)
-> 
+Alexander Schmidt (1):
+      IB/ehca: Rework destroy_eq()
 
+Bart Van Assche (2):
+      IB: Clarify the documentation of ib_post_send()
+      IB: Fix typo in ipoib.txt
 
-How about export those values in debugfs/tracing/*? perf tracepoint self depend on
-this filesystem. 
+Chien Tung (7):
+      RDMA/nes: Add support for IB_WR_*INV
+      RDMA/nes: Correct fast memory registration implementation
+      RDMA/nes: Add additional SFP+ PHY uC status check and PHY reset
+      RDMA/nes: Implement IB_SIGNAL_ALL_WR as an iWARP extension
+      RDMA/nes: Clean up struct nes_qp
+      RDMA/nes: Add max_cqe check to nes_create_cq()
+      RDMA/nes: Update copyright and branding string
 
-Thanks,
-Xiao
+David J. Wilder (1):
+      IPoIB: Clear ipoib_neigh.dgid in ipoib_neigh_alloc()
+
+Eli Cohen (2):
+      IB/mlx4: Remove unneeded code
+      IB/mlx4: Remove limitation on LSO header size
+
+Eric Dumazet (1):
+      RDMA/addr: Use appropriate locking with for_each_netdev()
+
+Faisal Latif (11):
+      RDMA/nes: Fix MAX_CM_BUFFER define
+      RDMA/nes: Fix query of ORD values
+      RDMA/nes: MPA request/response error checking
+      RDMA/nes: Resource not freed for REJECTed connections
+      RDMA/nes: Fix crash in nes_accept()
+      RDMA/nes: Abnormal listener exit causes loopback node crash
+      RDMA/nes: Fix Xansation test crash on cm_node ref_count
+      RDMA/nes: Check for zero STag
+      RDMA/nes: Free kmap() resources
+      RDMA/nes: FIN during MPA startup causes timeout
+      RDMA/nes: Fix stale ARP issue
+
+Frank Zago (5):
+      RDMA/nes: In nes_post_send() always set bad_wr on error
+      RDMA/nes: In nes_post_recv() always set bad_wr on error
+      RDMA/amso1100: Fix error paths in post_send and post_recv
+      IB/ehca: Fix error paths in post_send and post_recv
+      RDMA/cxgb3: Fix error paths in post_send and post_recv
+
+Jason Gunthorpe (2):
+      RDMA/cma: Correct detection of SA Created MGID
+      RDMA/cma: Fix AF_INET6 support in multicast joining
+
+Julia Lawall (1):
+      RDMA/nes: Pass correct size to ioremap_nocache()
+
+Or Gerlitz (1):
+      IB/iser: Rewrite SG handling for RDMA logic
+
+Roel Kluin (1):
+      IB/uverbs: Fix return of PTR_ERR() of wrong pointer in ib_uverbs_get_context()
+
+Roland Dreier (1):
+      Merge branches 'amso1100', 'cma', 'cxgb3', 'ehca', 'ipath', 'ipoib', 'iser', 'misc', 'mlx4' and 'nes' into for-next
+
+Sean Hefty (7):
+      RDMA/ucma: Add option to manually set IB path
+      RDMA/cma: Replace net_device pointer with index
+      IB/addr: Verify source and destination address families match
+      IB/addr: Store net_device type instead of translating to RDMA transport
+      RDMA/cm: fix loopback address support
+      IB/addr: Simplify resolving IPv4 addresses
+      IB/addr: Fix IPv6 routing lookup
+
+Steve Wise (1):
+      RDMA/cxgb3: Remove BUG_ON() on CQ rearm failure
+
+Yevgeny Petrilin (1):
+      mlx4_core: Fix parsing of reserved EQ cap
+
+ Documentation/infiniband/ipoib.txt         |   10 +-
+ drivers/infiniband/core/addr.c             |  275 ++++------
+ drivers/infiniband/core/cma.c              |  133 +++--
+ drivers/infiniband/core/sa_query.c         |    6 +
+ drivers/infiniband/core/ucma.c             |   57 ++-
+ drivers/infiniband/core/uverbs_cmd.c       |    2 +-
+ drivers/infiniband/hw/amso1100/c2_qp.c     |   14 +-
+ drivers/infiniband/hw/cxgb3/iwch_qp.c      |   32 +-
+ drivers/infiniband/hw/ehca/ehca_classes.h  |    1 +
+ drivers/infiniband/hw/ehca/ehca_eq.c       |    9 +-
+ drivers/infiniband/hw/ehca/ehca_main.c     |    2 +-
+ drivers/infiniband/hw/ehca/ehca_reqs.c     |   67 +--
+ drivers/infiniband/hw/ipath/ipath_driver.c |   10 +-
+ drivers/infiniband/hw/mlx4/main.c          |    2 +-
+ drivers/infiniband/hw/mlx4/qp.c            |   25 +-
+ drivers/infiniband/hw/nes/Kconfig          |    9 +-
+ drivers/infiniband/hw/nes/nes.c            |    5 +-
+ drivers/infiniband/hw/nes/nes.h            |    2 +-
+ drivers/infiniband/hw/nes/nes_cm.c         |  201 +++++--
+ drivers/infiniband/hw/nes/nes_cm.h         |    7 +-
+ drivers/infiniband/hw/nes/nes_context.h    |    2 +-
+ drivers/infiniband/hw/nes/nes_hw.c         |   40 +-
+ drivers/infiniband/hw/nes/nes_hw.h         |   29 +-
+ drivers/infiniband/hw/nes/nes_nic.c        |    2 +-
+ drivers/infiniband/hw/nes/nes_user.h       |    3 +-
+ drivers/infiniband/hw/nes/nes_utils.c      |    2 +-
+ drivers/infiniband/hw/nes/nes_verbs.c      |  817 ++++++++++++++--------------
+ drivers/infiniband/hw/nes/nes_verbs.h      |   23 +-
+ drivers/infiniband/ulp/ipoib/ipoib_main.c  |    1 +
+ drivers/infiniband/ulp/iser/iser_memory.c  |  122 ++---
+ drivers/net/mlx4/fw.c                      |    3 +-
+ include/linux/mlx4/device.h                |    1 +
+ include/rdma/ib_addr.h                     |   36 +-
+ include/rdma/ib_sa.h                       |    6 +
+ include/rdma/ib_user_sa.h                  |   16 +
+ include/rdma/ib_verbs.h                    |    5 +
+ include/rdma/rdma_user_cm.h                |    6 +-
+ net/rds/ib.c                               |    4 +-
+ net/rds/iw.c                               |    4 +-
+ 39 files changed, 1084 insertions(+), 907 deletions(-)
