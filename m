@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbZLPRmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762684AbZLPRoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbZLPRmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762652AbZLPRmj
+	id S1762684AbZLPRoN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762658AbZLPRoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:42:39 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:45877 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762641AbZLPRmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:42:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rM1g+mZqPdj0zz0m2hQsNHglgJLuCcJkeiAPgks2DATS/xSffkXJomPx5EFBf3q5Xa
-         //6w4RxZsonjvzV9736AUPLUtdw2gIrwkf7xomDR4QUrmzjoS7rCI9HCsSP3Ob3eaSsh
-         +oKjTl4c0K4a7dCCO0DDAWCWA43LnXqXTTmak=
-Date: Wed, 16 Dec 2009 09:42:19 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: synaptics touchpad doesn't click
-Message-ID: <20091216174218.GC6800@core.coreip.homeip.net>
-References: <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com> <20091216025934.GA2699@core.coreip.homeip.net> <20091216065200.GC20352@ldl.fc.hp.com> <20091216070343.GF2699@core.coreip.homeip.net> <20091216173159.GA26757@ldl.fc.hp.com>
+	Wed, 16 Dec 2009 12:44:12 -0500
+Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:53503 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1762654AbZLPRoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 12:44:10 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216173159.GA26757@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [PATCH] ep93xx_eth.c: general cleanup
+Date: Wed, 16 Dec 2009 12:44:05 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200ECF5@mi8nycmail19.Mi8.com>
+In-Reply-To: <1260984721.30093.23.camel@Joe-Laptop.home>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ep93xx_eth.c: general cleanup
+Thread-Index: Acp+da610jNxN5cnTVmHWExYpv5hUAAACj0g
+References: <BD79186B4FD85F4B8E60E381CAEE19090200ECDE@mi8nycmail19.Mi8.com> <1260984721.30093.23.camel@Joe-Laptop.home>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Joe Perches" <joe@perches.com>
+Cc: "kernel list" <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "Lennert Buytenhek" <kernel@wantstofly.org>,
+       "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 16 Dec 2009 17:44:06.0145 (UTC) FILETIME=[5D169710:01CA7E77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nBGHiu16031287
 
-On Wed, Dec 16, 2009 at 10:31:59AM -0700, Alex Chiang wrote:
-> * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > On Tue, Dec 15, 2009 at 11:52:00PM -0700, Alex Chiang wrote:
-> > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > > > On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
-> > > > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > > > > >
-> > > > > > The updated patch is below.
-> > > > > > 
-> > > > > > -- 
-> > > > > > Dmitry
-> > > > > 
-> > > > > Should I test this one or wait one more iteration to address
-> > > > > Takashi's last comments?
-> > > > > 
-> > > > 
-> > > > Actually I think we took the wrong direction with the original patch and
-> > > > we should do what other buttonless devices (bcm5974) do: report touchpad
-> > > > click as left button and have Synaptics X driver provide enhanced
-> > > > support. This way we can have both modes (ClickZones and ClickButtons)
-> > > > and users will get to chose (provided that someone takes time to add
-> > > > that support to Synaptics driver of course ;) ).
-> > > > 
-> > > > Could you tell me if the below works for you?
-> > > 
-> > > Left clicks work. Right/middle do not (as expected, I guess).
-> > > 
-> > > I liked the behaviour of Takashi's patch a little better wrt what
-> > > happens when you try to click/drag, because he disabled movement
-> > > in the click area.
-> > 
-> > Are the clicks register only in that special area? Reading Synaptics
-> > product description it sounds like entire surface should be clickable.
-> 
-> Well, maybe in theory the entire surface is clickable.
-> 
-> My observation is that the physical design resembles a lever on a
-> fulcrum though, with the fulcrum at the edge near the keyboard.
-> 
-> Pressing the click zone is mechanically nice, since you are away
-> from the fulcrum. Moving "up" towards the keyboard, there seems
-> to be much less mechanical advantage, and the surface doesn't
-> seem so clicky.
-> 
+On Wednesday, December 16, 2009 10:32 AM, Joe Perches wrote:
 
-I am going off the following:
+Added netdev to the Cc: list, and removed Nick M. (unintended)
 
-	http://www.synaptics.com/solutions/products/clickpad
+> On Wed, 2009-12-16 at 12:09 -0500, H Hartley Sweeten wrote:
+>> +#define pr_fmt(fmt) KBUILD_MODNAME ": %s: " fmt, __func__
+>
+> I think KBUILD_MODNAME ":%s: " fmt, __func__
+> or its equivalent direct use is more common.
+> It's possibly useful to standardize.
 
-I am no sure whether there are 2 different flavors or if they are all
-the same and the only difference is whether the buttons are marked or
-not.
+I wasn't sure about that and could not find anything "standard" in mainline.
+The biggest user of pr_fmt that I could find is in drivers/s390 and that
+uses a local KMSG_COMPONENT define instead of KBUILD_MODNAME.
 
-> But really, I was talking about what Takashi mentioned in a later
-> mail, namely that trying to actually click with the click zone in
-> a precise manner is difficult because as you press the surface
-> down, the touch pad registers some movement, and moves the
-> pointer away from the area you're trying to click.
-> 
-> Fitts would have a fit. ;)
+>> -#define DRV_MODULE_NAME		"ep93xx-eth"
+>> -#define DRV_MODULE_VERSION	"0.1"
+>> +#include <mach/hardware.h>
+>
+> I think these sorts of defines are common and useful.
 
-That will have to be handled in synaptics X driver.
+I can add those back if needed.  Just seemed a waste to have the two defines
+and only use them in one place.
 
--- 
-Dmitry
+>>  static int __init ep93xx_eth_init_module(void)
+>>  {
+>> -	printk(KERN_INFO DRV_MODULE_NAME " version " DRV_MODULE_VERSION " loading\n");
+>
+> Why remove this printk completely?
+
+In my dmesg is just looks like noise.
+
+ep93xx-eth version 0.1 loading
+eth0: ep93xx on-chip ethernet, IRQ 39, 00:21:f5:00:00:17
+
+If the drive loads correctly you will get the second line.  If it error's for
+some reason you will get one of the dev_err messages.
+
+But, if the defines go back in I can also add this message back.
+
+Regards,
+Hartley
+
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
