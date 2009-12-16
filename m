@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbZLPBUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934399AbZLPBW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757044AbZLPBUe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 20:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZLPBUd
+	id S934399AbZLPBW2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 20:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbZLPBW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 20:20:33 -0500
-Received: from mailout1.samsung.com ([203.254.224.24]:64404 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754591AbZLPBUc (ORCPT
+	Tue, 15 Dec 2009 20:22:27 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:9151 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756116AbZLPBWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 20:20:32 -0500
-Date: Wed, 16 Dec 2009 10:20:30 +0900
-From: Kyungmin Park <kyungmin.park@samsung.com>
-Subject: RE: [PATCH] OneNAND: Fix test of unsigned in onenand_otp_walk()
-In-reply-to: <4B282BBD.4050106@gmail.com>
-To: "'Roel Kluin'" <roel.kluin@gmail.com>, linux-mtd@lists.infradead.org,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'LKML'" <linux-kernel@vger.kernel.org>
-Reply-to: kyungmin.park@samsung.com
-Message-id: <003301ca7ded$f50a8930$df1f9b90$%park@samsung.com>
-MIME-version: 1.0
-X-Mailer: Microsoft Office Outlook 12.0
-Content-type: text/plain; charset=us-ascii
-Content-language: ko
-Content-transfer-encoding: 7BIT
-Thread-index: Acp956rNhxFvjG+zRT2Uz18h1rCaGQABkE0Q
-References: <4B282BBD.4050106@gmail.com>
-X-OriginalArrivalTime: 16 Dec 2009 01:20:30.0559 (UTC)
- FILETIME=[F50ECEF0:01CA7DED]
+	Tue, 15 Dec 2009 20:22:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Gn74RPw9JeaxGmZJKZEsOab6/o8lmKBK+ZfGL/u9ooQbczS2bR/gBDZqRyWRzRa9/b
+         qd3kCERMrHtqHGnterr2kfT9vaemTUbYVJf9iGybNy9FPfIwSt5AXz94gifHwQ2UpwgQ
+         TX2RIXpOCLGSHOFi41Fn5YPCbtb2v073wsIpg=
+Date: Wed, 16 Dec 2009 02:22:21 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] perf_event: fix getting point
+Message-ID: <20091216012219.GD8423@nowhere>
+References: <4B27702F.1080507@cn.fujitsu.com> <4B2770AD.90005@cn.fujitsu.com> <4B2770FA.7090803@cn.fujitsu.com> <20091215135855.GA5833@nowhere> <4B2831F3.1040001@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2831F3.1040001@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+On Wed, Dec 16, 2009 at 09:03:47AM +0800, Xiao Guangrong wrote:
+> >> @@ -1919,13 +1919,32 @@ raw_field_value(struct event *event, const char *name, void *data)
+> >>  
+> >>  void *raw_field_ptr(struct event *event, const char *name, void *data)
+> >>  {
+> >> +	void *ptr;
+> >> +	unsigned long long value;
+> >> +
+> >> +	value = raw_field_value(event, name, data);
+> >> +
+> >> +	if (!value)
+> >> +		return NULL;
+> >> +
+> >> +	memcpy(&ptr, &value, sizeof(ptr));
+> > 
+> > 
+> > 
+> > Could you perhaps just do
+> > 
+> > ptr = (void *)value; ?
+> > 
+> 
+> We can't do it in x86_32:
+> error: cast to pointer from integer of different size
 
-> -----Original Message-----
-> From: Roel Kluin [mailto:roel.kluin@gmail.com]
-> Sent: Wednesday, December 16, 2009 9:37 AM
-> To: Kyungmin Park; linux-mtd@lists.infradead.org; Andrew Morton; LKML
-> Subject: [PATCH] OneNAND: Fix test of unsigned in onenand_otp_walk()
-> 
-> mtd->writesize and len are unsigned so the test does not work.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> you can test this with:
-> 
-> #include <stdio.h>
-> 
-> int main()
-> {
->         int c = 1, d = 1;
->         unsigned a = 30;
->         unsigned b = 10;
-> 
->         if ((b * c) - (d + a) < 0)
->                 printf("good\n");
->         else
->                 printf("bad\n");
->         return 0;
-> }
-> 
-> 
-> diff --git a/drivers/mtd/onenand/onenand_base.c
-> b/drivers/mtd/onenand/onenand_base.c
-> index ff66e43..cbe2711 100644
-> --- a/drivers/mtd/onenand/onenand_base.c
-> +++ b/drivers/mtd/onenand/onenand_base.c
-> @@ -2725,7 +2725,7 @@ static int onenand_otp_walk(struct mtd_info *mtd,
-> loff_t from, size_t len,
->  	}
-> 
->  	/* Check User/Factory boundary */
-> -	if (((mtd->writesize * otp_pages) - (from + len)) < 0)
-> +	if (mtd->writesize * otp_pages < from + len)
->  		return 0;
-> 
->  	onenand_get_device(mtd, FL_OTPING);
+
+You can just do:
+
+ptr = (void *)(unsigned long)value;
 
