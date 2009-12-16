@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbZLPP3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764061AbZLQHjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762259AbZLPP3Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 10:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbZLPP3O
+	id S1764061AbZLQHjL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 02:39:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764047AbZLQHjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 10:29:14 -0500
-Received: from lists.laptop.org ([18.85.2.145]:49224 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758716AbZLPP3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 10:29:13 -0500
-From: Michael Stone <michael@laptop.org>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       "Andi Kleen" <andi@firstfloor.org>, "David Lang" <david@lang.hm>,
-       "Oliver Hartkopp" <socketcan@hartkopp.net>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Valdis Kletnieks" <Valdis.Kletnieks@vt.edu>,
-       "Bryan Donlan" <bdonlan@gmail.com>,
-       "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       "James Morris" <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Bernie Innocenti" <bernie@codewiz.org>,
-       "Mark Seaborn" <mrs@mythic-beasts.com>
-Subject: Re: setrlimit(RLIMIT_NETWORK) vs. prctl(???)
-Date: Wed, 16 Dec 2009 10:30:49 -0500
-Message-Id: <1260977452-2334-1-git-send-email-michael@laptop.org>
-X-Mailer: git-send-email 1.6.6.rc1
-In-Reply-To: <20091215053307.GA6837@heat>
-References: <20091215053307.GA6837@heat>
-In-reply-to: <20091215053307.GA6837@heat>
-To: Ulrich Drepper <drepper@gmail.com>
+	Thu, 17 Dec 2009 02:39:09 -0500
+Received: from up-mx1.det.nsw.edu.au ([153.107.41.147]:50696 "EHLO
+	up-mx1.det.nsw.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbZLQHjI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 02:39:08 -0500
+X-Greylist: delayed 56370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 02:39:07 EST
+From: "Martyn, Janice" <Janice.Martyn@det.nsw.edu.au>
+To: "info@notice.com" <info@notice.com>
+Date: Thu, 17 Dec 2009 02:31:01 +1100
+Subject: Confirmation ReferenceNumber:UK/2551256008/07
+Thread-Topic: Confirmation ReferenceNumber:UK/2551256008/07
+Thread-Index: AQHKfmTGrrUhE3Pnx0GW1iLp/zCNSQ==
+Message-ID: <1EF0F6032BEFAB4192D16F8E08611676D1C3E2@SLUGPEXMC04.central.det.win>
+Accept-Language: en-US, en-AU
+Content-Language: en-AU
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, en-AU
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich,
-
-As promised, here's a draft based on prctl() for comparison with the
-rlimit()-based approach presented in the first attempt.
-
-It behaves as I expect in simple testing with busybox "nc" and I'll do a more
-thorough test shortly. I'm sending it now because I think that it's good enough
-to give a decent overview of what the end result of this implementation
-strategy might look like.
-
-Regards,
-
-Michael
-
-------
-
-Michael Stone (3):
-  Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
-  Security: Implement prctl(PR_SET_NETWORK, PR_NETWORK_OFF) semantics.
-  Security: Document prctl(PR_{GET,SET}_NETWORK).
-
- Documentation/prctl_network.txt |   69 +++++++++++++++++++++++++++++++++++++++
- include/linux/prctl.h           |    7 ++++
- include/linux/prctl_network.h   |    7 ++++
- include/linux/sched.h           |    2 +
- kernel/Makefile                 |    2 +-
- kernel/fork.c                   |    2 +
- kernel/prctl_network.c          |   37 +++++++++++++++++++++
- kernel/ptrace.c                 |    2 +
- kernel/sys.c                    |    7 ++++
- net/socket.c                    |   51 +++++++++++++++++++++-------
- net/unix/af_unix.c              |   19 +++++++++++
- 11 files changed, 191 insertions(+), 14 deletions(-)
- create mode 100644 Documentation/prctl_network.txt
- create mode 100644 include/linux/prctl_network.h
- create mode 100644 kernel/prctl_network.c
-
+Confirmation ReferenceNumber:UK/2551256008/07
+You have won £850,000.00 in free lotto email program held 9th
+December 2009 in In Liverpool.
+Email Ticket Number X-3007893284-Z ReferenceNumber:UK/2551256008/07
+Draw Lucky Number:09-22-37-39-41-49-2-7
+BatchNumber:JPK14/0115/IP,Serial Number: HMML3214-07
+Please note that the validity period of the winning is 24th of
+December 2009.
+Contact: Mr. Frank Arthur with your Full Name, Home Address, Age,Gender,
+Occupation,Country Of Residence,Nationality & Telephone Number.
+Email: claims-office@nl.rogers.com<mailto:claims-office@nl.rogers.com>
+Tel: +4470111 83202+, 4470111 83206
++447031994752, +447031978650
+NB Please Note do mail back through the alert email contact Mr. Frank Arthur
+via email:claims-office@nl.rogers.com
+Sincerely,
+Brooks, Ken
+For The British National Lottery
+**********************************************************************
+This message is intended for the addressee named and may contain
+privileged information or confidential information or both. If you
+are not the intended recipient please delete it and notify the sender.
+**********************************************************************
