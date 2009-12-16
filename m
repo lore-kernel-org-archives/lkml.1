@@ -1,152 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933961AbZLPH57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761741AbZLPIDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933961AbZLPH57 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 02:57:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbZLPH55
+	id S1761741AbZLPIDJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759133AbZLPIDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 02:57:57 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:52748 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbZLPH54 (ORCPT
+	Wed, 16 Dec 2009 03:03:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38827
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759037AbZLPIDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 02:57:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=HuQpgnKR6zz+z/J/BgMlOxqnjj1akZfKg9hBswdjixOSavJ5kZRGqiLGZo0q5LnfFs
-         AK6XBuX/jc3/ntC4Z7y8vl3M95RKGfkEVMwqFdMbQAT2gdf1itk2b3FWI6XTQVd0I8de
-         meBwWbGU27Boz9WBGfyNSGkZEE4r9k2hvAe60=
-MIME-Version: 1.0
-In-Reply-To: <1260947890.8023.1281.camel@laptop>
-References: <4B2224C7.1020908@in.ibm.com>
-	 <7b6bb4a50912152225p4f5dde13re83c439407c16eaf@mail.gmail.com>
-	 <4B288131.2050306@in.ibm.com>
-	 <7b6bb4a50912152245v61a7f1ebgb41f4857134f3476@mail.gmail.com>
-	 <4B288413.2070704@in.ibm.com> <1260947890.8023.1281.camel@laptop>
-Date: Wed, 16 Dec 2009 15:57:56 +0800
-Message-ID: <7b6bb4a50912152357m75aea5dfl6fe063d716517baf@mail.gmail.com>
-Subject: Re: [Next] CPU Hotplug test failures on powerpc
-From: Xiaotian Feng <xtfeng@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Sachin Sant <sachinp@in.ibm.com>,
-       "Linux/PPC Development" <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 16 Dec 2009 03:03:02 -0500
+Date: Wed, 16 Dec 2009 00:03:02 -0800 (PST)
+Message-Id: <20091216.000302.140787020.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 3:18 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2009-12-16 at 12:24 +0530, Sachin Sant wrote:
->> Xiaotian Feng wrote:
->> > On Wed, Dec 16, 2009 at 2:41 PM, Sachin Sant <sachinp@in.ibm.com> wrote:
->> >
->> >> Xiaotian Feng wrote:
->> >>
->> >>> Does this testcase hotplug cpu 0 off?
->> >>>
->> >>>
->> >> No, i don't think so. It skips cpu0 during online/offline
->> >> process.
->> >>
->> >
->> > Then how could this happen ? Looks like cpu 0 is offline ....
->> > 0:mon> <4>IRQ 17 affinity broken off cpu 0
->> > <4>IRQ 18 affinity broken off cpu 0
->> > <4>IRQ 19 affinity broken off cpu 0
->> > <4>IRQ 264 affinity broken off cpu 0
->> > <4>cpu 0 (hwid 0) Ready to die...
->> > <7>clockevent: decrementer mult[83126e97] shift[32] cpu[0]
->> >
->> Sorry i was looking at only one script. Looking more closely
->> at the test there are 6 different sub tests. The rest of the
->> tests do seem to hotplug CPU 0.
->
-> Ooh, cute, so you can actually hotplug cpu 0.. no wonder that didn't get
-> exposed on x86.
->
-> Still, the only time cpu_active_mask should not be equal to
-> cpu_online_mask is when we're in the middle of a hotplug, we clear
-> active early and set it late, but its all done under the hotplug mutex,
-> so we can at most have 1 cpu differences with online mask.
->
 
-Could follow be possible?  We know there's cpu 0 and cpu 1,
+Revert a set of TCP changes which were not fully cooked.
+The kernel log message signature for this regression is:
 
-offline cpu1 > done
-offline cpu0 > false
+	Badness at net/ipv4/inet_connection_sock.c:293
 
-consider this in cpu_down code,
+Julia Lawall found and fixed several instances of sizeof(pointer) that
+were definitely not intended.
 
+Dynamic sizing of the UDP hash table introduced a subtle bug, fixed
+by Eric Dumazet.
 
-int __ref cpu_down(unsigned int cpu)
-{
-<snip>
-        set_cpu_active(cpu, false); // here, we set cpu 0 to inactive
+A couple netfilter bug fixes via Patrick McHardy, including a nasty
+one involving a conflict between the defragmentation done by
+the core stack and those done by various parts of netfilter.
 
-        synchronize_sched();
+Update x25 maintainer.
 
-        err = _cpu_down(cpu, 0);
-out:
-<snip>
-}
+And a few small driver bug fixes to round things out.
 
-Then in _cpu_down code:
+Please pull, thanks a lot.
 
-static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
-{
-<snip>
-        if (num_online_cpus() == 1)        // if we're trying to
-offline cpu0, num_online_cpus will be 1
-                return -EBUSY;                    // after return back
-to cpu_down, we didn't change cpu 0 back to active
+The following changes since commit 3ea6b3d0e6d0ffd91c0f8cadeb69b7133c038b32:
+  Linus Torvalds (1):
+        Merge branch 'for_linus' of git://git.kernel.org/.../jack/linux-udf-2.6
 
-        if (!cpu_online(cpu))
-                return -EINVAL;
+are available in the git repository at:
 
-        if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
-                return -ENOMEM;
-<snip>
-}
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
-Then cpu 0 is not active, but online, then we try to offline cpu1, .......
-This can not be exposed because x86 does not have
-/sys/devices/system/cpu0/online.
-I guess following patch fixes this bug.
+Arnd Bergmann (1):
+      x25: Update maintainer.
 
----
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 291ac58..21ddace 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -199,14 +199,18 @@ static int __ref _cpu_down(unsigned int cpu, int
-tasks_frozen)
-                .hcpu = hcpu,
-        };
+David S. Miller (2):
+      tcp: Revert per-route SACK/DSACK/TIMESTAMP changes.
+      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
 
--       if (num_online_cpus() == 1)
-+       if (num_online_cpus() == 1) {
-+               set_cpu_active(cpu, true);
-                return -EBUSY;
-+       }
+Eric Dumazet (2):
+      udp: udp_lib_get_port() fix
+      packet: dont call sleeping functions while holding rcu_read_lock()
 
-        if (!cpu_online(cpu))
-                return -EINVAL;
+Eric W. Biederman (1):
+      net: Fix userspace RTM_NEWLINK notifications.
 
--       if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
-+       if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL)) {
-+               set_cpu_active(cpu, true);
-                return -ENOMEM;
-+       }
+Florian Fainelli (1):
+      bcm63xx_enet: fix compilation failure after get_stats_count removal
 
-        cpu_hotplug_begin();
-        err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+Geert Uytterhoeven (1):
+      can: CAN_MCP251X should depend on HAS_DMA
 
+Gurucharan Shetty (1):
+      ixgbe: allow tx of pre-formatted vlan tagged packets
 
-> Unless of course, I messed up, which appears to be rather likely given
-> these problems ;-)
->
->
+Jan Engelhardt (1):
+      netfilter: xtables: document minimal required version
+
+Joe Perches (1):
+      drivers/net/bonding/: : use pr_fmt
+
+Julia Lawall (4):
+      drivers/atm: Correct code taking the size of a pointer
+      drivers/net/sfc: Correct code taking the size of a pointer
+      drivers/net/cpmac.c: Correct code taking the size of a pointer
+      drivers/net/usb: Correct code taking the size of a pointer
+
+Ken Kawasaki (1):
+      3c574_cs: disable irq before calling el3_interrupt
+
+Magnus Damm (1):
+      net: sh_eth alignment fix for sh7724 using NET_IP_ALIGN V2
+
+Mallikarjuna R Chilakala (2):
+      ixgbe: Fix tx_restart_queue/non_eop_desc statistics counters
+      ixgbe: Fix 82598 premature copper PHY link indicatation
+
+Oliver Hartkopp (1):
+      can: Fix data length code handling in rx path
+
+Patrick McHardy (2):
+      ipv6: reassembly: use seperate reassembly queues for conntrack and local delivery
+      netfilter: fix crashes in bridge netfilter caused by fragment jumps
+
+Simon Horman (1):
+      ipvs: zero usvc and udest
+
+Xiaotian Feng (1):
+      ipvs: fix synchronization on connection close
+
+roel kluin (1):
+      mlx4_core: return a negative error value
+
+stephen hemminger (2):
+      sky2: print Optima chip name
+      sky2: leave PCI config space writeable
+
+ Documentation/Changes                          |    2 +
+ MAINTAINERS                                    |    4 +-
+ drivers/atm/iphase.c                           |    2 +-
+ drivers/net/bcm63xx_enet.c                     |   12 +-
+ drivers/net/bonding/bond_3ad.c                 |  171 ++++---
+ drivers/net/bonding/bond_alb.c                 |   38 +-
+ drivers/net/bonding/bond_ipv6.c                |   12 +-
+ drivers/net/bonding/bond_main.c                |  607 +++++++++---------------
+ drivers/net/bonding/bond_sysfs.c               |  327 +++++--------
+ drivers/net/can/Kconfig                        |    2 +-
+ drivers/net/can/at91_can.c                     |    2 +-
+ drivers/net/can/bfin_can.c                     |    2 +-
+ drivers/net/can/mcp251x.c                      |   13 +-
+ drivers/net/can/mscan/mscan.c                  |    3 +-
+ drivers/net/can/sja1000/sja1000.c              |   18 +-
+ drivers/net/can/ti_hecc.c                      |    2 +-
+ drivers/net/can/usb/ems_usb.c                  |    2 +-
+ drivers/net/cpmac.c                            |    2 +-
+ drivers/net/ixgbe/ixgbe_82598.c                |   38 ++
+ drivers/net/ixgbe/ixgbe_main.c                 |   20 +-
+ drivers/net/ixgbe/ixgbe_type.h                 |    2 +
+ drivers/net/mlx4/sense.c                       |    2 +-
+ drivers/net/pcmcia/3c574_cs.c                  |    4 +
+ drivers/net/pcmcia/3c589_cs.c                  |    4 +
+ drivers/net/sfc/selftest.c                     |    2 +-
+ drivers/net/sh_eth.c                           |    7 +-
+ drivers/net/sky2.c                             |   15 +-
+ drivers/net/usb/rtl8150.c                      |    2 +-
+ include/linux/can/dev.h                        |    9 +
+ include/linux/rtnetlink.h                      |    6 +-
+ include/net/dst.h                              |    2 +-
+ include/net/ip.h                               |    1 +
+ include/net/ipv6.h                             |    8 +
+ include/net/netfilter/ipv6/nf_conntrack_ipv6.h |    2 +-
+ include/net/tcp.h                              |    3 +-
+ net/core/dev.c                                 |   11 +
+ net/core/rtnetlink.c                           |    6 +-
+ net/ipv4/netfilter/nf_defrag_ipv4.c            |   21 +-
+ net/ipv4/syncookies.c                          |   27 +-
+ net/ipv4/tcp_input.c                           |   24 +-
+ net/ipv4/tcp_ipv4.c                            |   21 +-
+ net/ipv4/tcp_minisocks.c                       |   10 +-
+ net/ipv4/tcp_output.c                          |   18 +-
+ net/ipv4/udp.c                                 |    7 +-
+ net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |   19 +-
+ net/ipv6/netfilter/nf_conntrack_reasm.c        |    7 +-
+ net/ipv6/reassembly.c                          |    5 +-
+ net/ipv6/syncookies.c                          |   28 +-
+ net/ipv6/tcp_ipv6.c                            |    3 +-
+ net/netfilter/ipvs/ip_vs_core.c                |    1 +
+ net/netfilter/ipvs/ip_vs_ctl.c                 |    4 +
+ net/packet/af_packet.c                         |   71 ++--
+ 52 files changed, 745 insertions(+), 886 deletions(-)
