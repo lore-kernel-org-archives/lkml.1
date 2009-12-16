@@ -1,157 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZLPBXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934447AbZLPBYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbZLPBXX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 20:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbZLPBXV
+	id S934447AbZLPBYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 20:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934382AbZLPBYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 20:23:21 -0500
-Received: from mga02.intel.com ([134.134.136.20]:37032 "EHLO mga02.intel.com"
+	Tue, 15 Dec 2009 20:24:17 -0500
+Received: from www.tglx.de ([62.245.132.106]:36656 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756534AbZLPBXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 20:23:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,402,1257148800"; 
-   d="scan'208";a="476488161"
-Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
-From: Huang Ying <ying.huang@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200912151047.14196.bjorn.helgaas@hp.com>
-References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com>
-	 <200912111036.15063.bjorn.helgaas@hp.com>
-	 <1260839053.12561.1098.camel@yhuang-dev.sh.intel.com>
-	 <200912151047.14196.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 09:23:15 +0800
-Message-ID: <1260926595.12561.1188.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1756120AbZLPBYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 20:24:15 -0500
+Date: Wed, 16 Dec 2009 02:23:49 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Earl Chew <earl_chew@agilent.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de,
+       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+Message-ID: <20091216012347.GD2432@local>
+References: <1228379942.5092.14.camel@twins>
+ <4B22DD89.2020901@agilent.com>
+ <20091214192322.GA3245@bluebox.local>
+ <4B27905B.4080006@agilent.com>
+ <20091215210002.GA2432@local>
+ <4B2803D8.10704@agilent.com>
+ <20091215222811.GC2432@local>
+ <4B2827E8.60602@agilent.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2827E8.60602@agilent.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 01:47 +0800, Bjorn Helgaas wrote: 
-> On Monday 14 December 2009 06:04:13 pm Huang Ying wrote:
-> > On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
-> > > I think your code would be simpler if acpi_pre_map_gar() returned a
-> > > struct acpi_iomap pointer (from the caller's point of view, this would
-> > > be an opaque cookie).  Then you could just supply that cookie to
-> > > acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
-> > > you could even get rid of the list and all the fancy RCU & kref stuff
-> > > then, too.
-> > 
-> > The interface chosen is based on usage model, which is:
-> > 
-> > 1. In init function, all GARs needed are pre-mapped
-> > 2. In atomic context, pre-mapped GARs are accessed
-> > 3. In exit function, all GARs are post-unmapped
-> > 
-> > In 3), if struct acpi_iomap* is used as parameter for post-unmap
-> > function, we need to record that pointer in another list. In 2), we need
-> > find mapped address from GAR.
+On Tue, Dec 15, 2009 at 04:20:56PM -0800, Earl Chew wrote:
+> Hans J. Koch wrote:
+> > One example: An A/D converter has an on-chip 32k buffer. It causes an
+> > interrupt as soon as the buffer is filled up to a certain high-water mark.
+> > Such cases would easily fit into the current UIO system. The UIO core could
+> > simply DMA the data to one of the mappings. A new flag for that mapping and
+> > a few other changes are all it takes. After the DMA transfer is complete, the
+> > interrupt is passed on to userspace, which would find the buffer already
+> > filled with the desired data. Just a thought, unfortunately I haven't got
+> > such hardware to try it.
 > 
-> I understand that my proposal would require a slight change in your
-> usage model.  I am suggesting that you make it follow the same pattern
-> as pci_iomap(), e.g.:
+> Hans,
 > 
-> 	void *pci_iomap(struct pci_dev *, int bar, unsigned long len);
-> 	unsigned int ioread32(void *);
-> 	void pci_iounmap(struct pci_dev *, void *);
+> Is this case already covered by the pre-existing UIO_MEM_LOGICAL
+> option ?
 > 
-> 	void *acpi_map_generic_address(struct acpi_generic_address *);
-> 	u64 acpi_read_atomic(void *);
-> 	void acpi_unmap_generic_address(void *);
+> I'm thinking that since the memory is statically defined, it can be
+> described using one of the existing struct uio_mem mem[] slots in
+> struct uio_info and marked as UIO_MEM_LOGICAL.
 > 
-> acpi_map_generic_address() would validate the GAR and do the ioremap().
-> If the validation or ioremap() failed, it would return a NULL pointer.
+> The userspace program can map that into its process space using the
+> existing mmap() interface.
 > 
-> This would require the caller of acpi_map_generic_address() to hang onto
-> the pointer returned (just as callers of pci_iomap() must hang onto the
-> pointer it returns).
-> 
-> The pointer would be supplied to acpi_read_atomic(), so it would not
-> need to do acpi_check_gar() because we know it was done successfully
-> in acpi_map_generic_address().  It wouldn't need to look up the GAR
-> in the list because the list entry was passed in.  Since all the
-> possible failure conditions were checked in acpi_map_generic_address(),
-> acpi_read_atomic() doesn't need to return status and could simply
-> return the u64 directly.
+> What am I missing?
 
-The usage model is different. Please take a look at
-__apei_exec_read_register(). We need to get virtual address from
-physical address in GAR. And many small-size GARs in ERST or EINJ may
-share same page, so some kind of virtual space optimization is
-necessary.
+Nothing. The UIO core can map all kinds of memory. I thought about a generic
+DMA routine that does the transfer if a flag like UIO_DMA_FROM_DEVICE_PRE_USER
+is set.
 
-> > > > +/* In NMI handler, should set silent = 1 */
-> > > > +static int acpi_check_gar(struct acpi_generic_address *reg,
-> > > > +			  u64 *paddr, int silent)
-> > > > +{
-> > > > +	u32 width;
-> > > > +
-> > > > +	/* Handle possible alignment issues */
-> > > > +	memcpy(paddr, &reg->address, sizeof(*paddr));
-> > > > +	if (!*paddr) {
-> > > > +		if (!silent)
-> > > > +			pr_info(
-> > > > +			"Invalid physical address in GAR, firmware bug?\n");
-> > > > +		return -EINVAL;
-> > > > +	}
-> > > > +
-> > > > +	width = reg->bit_width;
-> > > > +	if ((width != 8) && (width != 16) && (width != 32) && (width != 64)) {
-> > > > +		if (!silent)
-> > > > +			pr_info(
-> > > > +			"Invalid bit width in GAR, firmware bug?\n");
-> > > > +		return -EINVAL;
-> > > > +	}
-> > > > +
-> > > > +	if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
-> > > > +	    reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO) {
-> > > > +		if (!silent)
-> > > > +			pr_info(
-> > > > +			"Invalid address space type in GAR, firmware bug?\n");
-> > > 
-> > > Error messages with constant text are nearly useless because they
-> > > don't give much of a clue about where to look for a problem.
-> > > Personally, for something this, I would just return failure and
-> > > never print anything.  If a map fails, the caller should notice
-> > > and you then have a good idea of where to look.
-> > 
-> > The checking here is for bug in firmware not software. I think it is
-> > necessary for the user to know where the bugs may come from, and it is
-> > hard to express the bug in return code.
 > 
-> Yes, I understand that this is checking for firmware bugs.  My point
-> is that when a user sees this in his dmesg log:
+> > When it comes to dynamically allocated DMA buffers, it might well be possible
+> > to add a new directory in sysfs besides the "mem" directory, e.g. something
+> > like /sys/class/uio/uioN/dma-mem/. This would save us the trouble of creating
+> > a new device. Maybe the example above would better fit in here, too. Who knows.
 > 
-> 	Invalid bit width in GAR, firmware bug?
+> I looked at the 2.6.32 source at
 > 
-> we have no context, and even a kernel developer can't figure out what
-> to do.  We could ask for a copy of the FADT and DSDT, but even then,
-> we don't know *which* GAR structure to look at, so we'll probably have
-> to add some instrumentation and ask the user to reproduce the problem.
+> http://lxr.linux.no/#linux+v2.6.32/drivers/uio/uio.c
 > 
-> If the check were in the caller, it could at least say something like:
-> 
-> 	ACPI: couldn't map generic address [io 0xcf8] for PCI config access
-> 
-> which would give us more useful information.
+> and didn't see any reference to /sys/class/uio/uioN/mem .  Perhaps
+> you're referring to something new.
 
-En... Yes, some information about the invalid GAR is helpful. But the
-GAR information is available in acpi_check_gar too, so we can output
-something as follow in acpi_check_gar:
+Just look at the sysfs files you get when creating a UIO device, then look at
+uio.c to see how it is done.
 
-    Invalid bit width in GAR [mem 0x8029ff8 24], firmware bug?
+> 
+> In any case, I think you're describing adding
+> 
+> /sys/class/uio/uioN/dma-mem
+> 
+> as a means to control /dev/uioN .  Presumably writing to
+> /sys/class/uio/uioN/dma-mem would create additional dynamic
+> DMA buffers.
 
-Your message looks like a software issue instead of firmware bug. This
-may confuse the user and developer.
+No, dma-mem would be a directory containing some more attributes. Maybe one
+called "create" that allocates a new buffer.
 
-Best Regards,
-Huang Ying
+> 
+> I can't yet see a way to make this request-response. When requesting
+> a dynamic buffer I need to indicate the size that I want, and in
+> return I need to obtain a handle to the buffer (either its mapping
+> number, address, etc). Once I have that, I can query other
+> interesting information (eg its bus address).
 
+Writing the size to that supposed "create" attribute could allocate the
+buffer and and create more attributes that contain the information you need.
+
+Thanks,
+Hans
 
