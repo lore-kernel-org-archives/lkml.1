@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbZLPXKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763342AbZLPXLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763304AbZLPXKN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761569AbZLPXKG
+	id S1763342AbZLPXLs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762813AbZLPXLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:10:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34010 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761507AbZLPXKE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:10:04 -0500
-Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Keith Mannthey <kmannth@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <1260907788.6521.10.camel@keith-laptop>
-References: <1260907788.6521.10.camel@keith-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 00:09:24 +0100
-Message-ID: <1261004964.21028.521.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 16 Dec 2009 18:11:46 -0500
+Received: from mga02.intel.com ([134.134.136.20]:59047 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761569AbZLPXLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:11:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,408,1257148800"; 
+   d="scan'208";a="476848542"
+Message-ID: <4B296930.9020704@intel.com>
+Date: Wed, 16 Dec 2009 16:11:44 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Simon Horman <horms@verge.net.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
+Subject: Re: kexec reboot broken with ioatdma?
+References: <ada3a3a8v1g.fsf@roland-alpha.cisco.com>	<20091216224912.GC16219@verge.net.au> <aday6l27c7w.fsf@roland-alpha.cisco.com>
+In-Reply-To: <aday6l27c7w.fsf@roland-alpha.cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-15 at 12:09 -0800, Keith Mannthey wrote:
-> This driver supports the Real-Time Linux (RTL) BIOS feature.  The RTL
-> feature allows non-fatal System Management Interrupts (SMIs) to be
-> disabled on supported IBM platforms. 
+Roland Dreier wrote:
+>  > from a kexec point of view I believe that the preferred option is the
+>  > former - shutdown the device so it can be initialised using standard paths
+>  > in the second kernel.
 > 
-> 
-> The Device is presented as a special "_rtl_" table to the OS in the
-> Extended BIOS Data Area.  There is a simple protocol for entering and
-> exiting the mode at runtime.  This driver creates a simple sysfs
-> interface to allow a simple entry and exit from RTL mode in the
-> UFI/BIOS. 
+> OK... however I'm not suggesting a separate kexec initialization path,
+> simply adding a reset of the device in the standard initialization.
+> This would be fairly normal for other types of device; for example, the
+> BIOS may have left a NIC in an undefined state due to network boot.  Of
+> course BIOS is unlikely to use an IOAT DMA engine but the principle of
+> limiting assumptions about platform state still stands I think.
 
-Why not simply always run with these non-fatal SMIs disabled and provide
-their function through the OS proper?
+I agree that is more robust if the init path copes with hardware 
+arriving in an unknown state.  I'll look into adding a channel reset in 
+the init path (something that should probably have been there since the 
+beginning).
 
-That way you don't need no silly switches and gain consistent platform
-behaviour.
+> From a quick look, it seems tricky to get a clean shutdown of IOAT stuff
+> since there doesn't seem to be a clean ordering that makes sure the
+> ioatdma stuff is shutdown after everything using it.
+
+The engines may be in use by multiple subsytems (net, raid) so 
+coordinating shutdown ordering would indeed be a pain.
+
+--
+Dan
 
