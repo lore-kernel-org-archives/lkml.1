@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbZLPS5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbZLPS6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762601AbZLPS5v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZLPS5u
+	id S1762862AbZLPS6s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762858AbZLPS6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:57:50 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:47222 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZLPS5t (ORCPT
+	Wed, 16 Dec 2009 13:58:44 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:50030 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762844AbZLPS6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:57:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LoYSkEvUmVtfqjTQpFsErHQG65y3LBg4wPm+lDRsw7pbBxdxMGXm52q7D3/EoEpV1l
-         Vsa3htWlal1Cuf6vBGlxyB97rQ48Db3XAkYEPV2/sRuDI7kocCXi/edB522sAKuJZXlx
-         LbN8T+bWwzuFLCgOLnAttcpCai0tYUfOSjvlE=
-Date: Wed, 16 Dec 2009 19:57:32 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-tip-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, tglx@linutronix.de
-Subject: Re: [tip:sched/urgent] sched: Teach might_sleep() about
-	preemptible RCU
-Message-ID: <20091216185723.GA5211@nowhere>
-References: <1260830672-7166-1-git-send-regression-fweisbec@gmail.com> <tip-ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd@git.kernel.org> <20091216142536.GA18091@elte.hu> <20091216153020.GD6744@linux.vnet.ibm.com>
+	Wed, 16 Dec 2009 13:58:41 -0500
+X-Auth-Info: 6NI7T/87PvIwzMgFUvtJ4jP+E1YBAMNvmOIhmDb02RU=
+Message-ID: <4B292DA9.8040009@grandegger.com>
+Date: Wed, 16 Dec 2009 19:57:45 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216153020.GD6744@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Kurt Van Dijck <kurt.van.dijck@eia.be>, netdev@vger.kernel.org
+Subject: Re: [PATCH 4/7] can/at91: don't check platform_get_irq's return	value
+ against zero
+References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de> <4B290A57.3010705@grandegger.com> <20091216170802.GA26325@pengutronix.de>
+In-Reply-To: <20091216170802.GA26325@pengutronix.de>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 07:30:20AM -0800, Paul E. McKenney wrote:
-> On Wed, Dec 16, 2009 at 03:25:36PM +0100, Ingo Molnar wrote:
-> > 
-> > * tip-bot for Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > Commit-ID:  ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd
-> > > Gitweb:     http://git.kernel.org/tip/ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd
-> > > Author:     Frederic Weisbecker <fweisbec@gmail.com>
-> > > AuthorDate: Mon, 14 Dec 2009 23:44:32 +0100
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Wed, 16 Dec 2009 08:43:16 +0100
-> > > 
-> > > sched: Teach might_sleep() about preemptible RCU
-> > 
-> > Causes a build failure, so skipped this patch for now:
-> > 
-> > kernel/sched.c:9661: error: implicit declaration of function 'rcu_preempt_depth'
+Uwe Kleine-König wrote:
+> On Wed, Dec 16, 2009 at 05:27:03PM +0100, Wolfgang Grandegger wrote:
+>> Uwe Kleine-König wrote:
+>>> platform_get_irq returns -ENXIO on failure, so !irq was probably
+>>> always true.  Better use (int)irq <= 0.  Note that a return value of
+>>> zero is still handled as error even though this could mean irq0.
+>> But only on ARM, which is the only platform still using the infamous
+>> NO_IRQ (=-1). As this is a driver for ARM hardware, using irq == NO_IRQ
+>> would make sense, though.
 > 
-> I guess my testing missed something.  :-/  Could you please send the
-> .config file that caused this?
+> This has nothing to do with NO_IRQ.  You could do:
+
+Right, sorry for the noise.
+
+> -       if (!res || !irq) {
+> +       if (!res || irq <= (int)NO_IRQ) {
 > 
-> 							Thanx, Paul
+> but this looks too ugly.  (IMHO using NO_IRQ is already ugly.)
+> 
+> Still, before my patch platform_get_irq return 0 was an error and if
+> this should be handled as irq0 this is a separate issue that should be
+> fixed in a separate patch.
 
+"irq <= 0" seems then the best solution. Will add my signed-off-by to
+the patch.
 
-Looks like the problem is here:
+Thanks,
 
-rcupdate.h:
-
-	#if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
-	#include <linux/rcutree.h>
-	#elif defined(CONFIG_TINY_RCU)
-	#include <linux/rcutiny.h>
-
-I guess it barfs in rcutiny configs.
-
-I should define these helpers in rcupdate.
-
+Wolfgang.
