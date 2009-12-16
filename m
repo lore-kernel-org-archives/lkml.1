@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZLPKgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbZLPKek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbZLPKgZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 05:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZLPKgX
+	id S1761365AbZLPKek (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 05:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbZLPKef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 05:36:23 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42330 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755345AbZLPKgW (ORCPT
+	Wed, 16 Dec 2009 05:34:35 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35457 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759739AbZLPKed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 05:36:22 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 16 Dec 2009 19:33:15 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-Message-Id: <20091216193315.14a508d5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <28c262360912160231r18db8478sf41349362360cab8@mail.gmail.com>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091216101107.GA15031@basil.fritz.box>
-	<20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091216102806.GC15031@basil.fritz.box>
-	<28c262360912160231r18db8478sf41349362360cab8@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Dec 2009 05:34:33 -0500
+Date: Wed, 16 Dec 2009 11:34:23 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, krzysztof.h1@wp.pl,
+       akpm@linux-foundation.org, linux-usb@vger.kernel.org, oliver@neukum.org,
+       linux-input@vger.kernel.org, jkosina@suse.cz
+Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
+Message-ID: <20091216103423.GE1377@ucw.cz>
+References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009 19:31:40 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+Hi!
 
-> On Wed, Dec 16, 2009 at 7:28 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> >> > Also the patches didn't fare too well in testing unfortunately.
-> >> >
-> >> > I suspect we'll rather need multiple locks split per address
-> >> > space range.
-> >>
-> >> This set doesn't include any changes of the logic. Just replace all mmap_sem.
-> >> I think this is good start point (for introducing another logic etc..)
-> >
-> > The problem is that for range locking simple wrapping the locks
-> > in macros is not enough. You need more changes.
+> This is a driver for the Logitech G13 gamepad, and contains three
+> key parts. In the USB reports the device identifies itself as a
+> HID, and as a result this driver is under the HID framework.
 > 
-> I agree.
+> There are two primary sub-components to this driver; an input
+> device and a framebuffer device.
 > 
-> We can't justify to merge as only this patch series although this
-> doesn't change
-> any behavior.
+> Although identified as a HID, the device does not support standard
+> HID input messages. As a result, a sub-input device is allocated and
+> registered separately in g13_probe(). The raw events are monitored 
+> and key presses/joystick activity is reported through the input device 
+> after referencing an indexed keymap.
 > 
-
-> After we see the further works, let us discuss this patch's value.
+> Additionally, this device contains a 160x43 monochrome LCD display.
+> A registered framebuffer device manages this display. The design
+> of this portion of the driver was based on the design of the
+> hecubafb driver with deferred framebuffer I/O since there is
+> no real memory to map.
 > 
-Ok, I'll show new version of speculative page fault.
+> This patch is against the torvalds/linux-2.6.git tree.
 
+Should this use auxdisplay framework and be located there?
 
-> Nitpick:
-> In case of big patch series, it would be better to provide separate
-> all-at-once patch
-> with convenience for easy patch and testing. :)
-> 
-Sure, keep it in my mind.
+> --- /dev/null
+> +++ b/drivers/hid/hid-g13-logo.xbm
+> @@ -0,0 +1,75 @@
+> +#define g13_lcd_width 160
+> +#define g13_lcd_height 43
+> +static unsigned char g13_lcd_bits[] = {
+> +   0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x28, 0x03, 0x00, 0x40, 0x01, 0x00, 0xc0, 0x3f, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa1,
+> +   0x08, 0x00, 0x08, 0x00, 0x00, 0xe0, 0x7f, 0x00, 0x00, 0x00,
+> 0x00, 0x00,
 
-Thanks,
--Kame
+I'd prefer to go without another logo. Just make sure default penguin gets
+there or something.
 
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
