@@ -1,115 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZLPRtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbZLPRyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbZLPRtS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZLPRtQ
+	id S1754151AbZLPRyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZLPRyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:49:16 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56480 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbZLPRtP (ORCPT
+	Wed, 16 Dec 2009 12:54:23 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:33901 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751872AbZLPRyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:49:15 -0500
-Date: Wed, 16 Dec 2009 18:49:04 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org, David Vrabel <david.vrabel@csr.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 6/7] spi/mpc8xxx: don't check platform_get_irq's return
-	value against zero
-Message-ID: <20091216174904.GB26325@pengutronix.de>
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-5-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de> <20091216163229.GA26350@oksana.dev.rtsoft.ru>
+	Wed, 16 Dec 2009 12:54:22 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
+Date: Wed, 16 Dec 2009 10:54:18 -0700
+User-Agent: KMail/1.9.10
+Cc: "lenb@kernel.org" <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com> <200912151047.14196.bjorn.helgaas@hp.com> <1260926595.12561.1188.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1260926595.12561.1188.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091216163229.GA26350@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Message-Id: <200912161054.19951.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-[Note the email address used for David Vrabel isn't valid any more,
-this mail uses his last used address.]
-
-On Wed, Dec 16, 2009 at 07:32:29PM +0300, Anton Vorontsov wrote:
-> On Wed, Dec 16, 2009 at 05:10:08PM +0100, Uwe Kleine-König wrote:
-> > platform_get_irq returns -ENXIO on failure, so !irq was probably
-> > always true.  Better use (int)irq <= 0.  Note that a return value of
-> > zero is still handled as error even though this could mean irq0.
+On Tuesday 15 December 2009 06:23:15 pm Huang Ying wrote:
+> On Wed, 2009-12-16 at 01:47 +0800, Bjorn Helgaas wrote: 
+> > On Monday 14 December 2009 06:04:13 pm Huang Ying wrote:
+> > > On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
+> > > > I think your code would be simpler if acpi_pre_map_gar() returned a
+> > > > struct acpi_iomap pointer (from the caller's point of view, this would
+> > > > be an opaque cookie).  Then you could just supply that cookie to
+> > > > acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
+> > > > you could even get rid of the list and all the fancy RCU & kref stuff
+> > > > then, too.
+> > > 
+> > > The interface chosen is based on usage model, which is:
+> > > 
+> > > 1. In init function, all GARs needed are pre-mapped
+> > > 2. In atomic context, pre-mapped GARs are accessed
+> > > 3. In exit function, all GARs are post-unmapped
+> > > 
+> > > In 3), if struct acpi_iomap* is used as parameter for post-unmap
+> > > function, we need to record that pointer in another list. In 2), we need
+> > > find mapped address from GAR.
 > > 
-> > This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
-> > changed the return value of platform_get_irq from 0 to -ENXIO on error.
+> > I understand that my proposal would require a slight change in your
+> > usage model.  I am suggesting that you make it follow the same pattern
+> > as pci_iomap(), e.g.:
 > > 
-> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > ---
+> > 	void *pci_iomap(struct pci_dev *, int bar, unsigned long len);
+> > 	unsigned int ioread32(void *);
+> > 	void pci_iounmap(struct pci_dev *, void *);
+> > 
+> > 	void *acpi_map_generic_address(struct acpi_generic_address *);
+> > 	u64 acpi_read_atomic(void *);
+> > 	void acpi_unmap_generic_address(void *);
+> > 
+> > acpi_map_generic_address() would validate the GAR and do the ioremap().
+> > If the validation or ioremap() failed, it would return a NULL pointer.
+> > 
+> > This would require the caller of acpi_map_generic_address() to hang onto
+> > the pointer returned (just as callers of pci_iomap() must hang onto the
+> > pointer it returns).
+> > 
+> > The pointer would be supplied to acpi_read_atomic(), so it would not
+> > need to do acpi_check_gar() because we know it was done successfully
+> > in acpi_map_generic_address().  It wouldn't need to look up the GAR
+> > in the list because the list entry was passed in.  Since all the
+> > possible failure conditions were checked in acpi_map_generic_address(),
+> > acpi_read_atomic() doesn't need to return status and could simply
+> > return the u64 directly.
 > 
-> Noooooo... :-(
-> 
-> Please revert 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 instead,
-> and fix platforms to remap HWIRQ0 to something that is not VIRQ0.
-> 
-> IRQ0 is invalid for everything that is outside of arch/*.
-> 
-> http://lkml.org/lkml/2005/11/22/159
-> http://lkml.org/lkml/2005/11/22/213
-> http://lkml.org/lkml/2005/11/22/227
-First note that my check is safe with both variants (e.g. it does the
-right thing independent of the error being signaled by 0 or
--ESOMETHING.)
+> The usage model is different. Please take a look at
+> __apei_exec_read_register(). We need to get virtual address from
+> physical address in GAR. And many small-size GARs in ERST or EINJ may
+> share same page, so some kind of virtual space optimization is
+> necessary.
 
-Then arch/arm/mach-pxa/devices.c has:
+The sharing could be done with a reference count in the map/unmap
+path.
 
-static struct resource pxa27x_resource_ssp3[] = {
-	...
-	[1] = {
-		.start  = IRQ_SSP3,
-		.end    = IRQ_SSP3,
-		.flags  = IORESOURCE_IRQ,
-	},
-	...
-}
+I don't have time to fully understand your patch series, but I suspect
+the issue is that you're interpreting opcodes, and those contain or
+reference generic_address structures, and you think it's easier just
+pass around the GAR pointer than it is to remember a (GAR, mapped-GAR)
+association made by pre_map_gar() and use the mapped-GAR when executing
+the "read" opcode.
 
-with IRQ_SSP3 being zero (sometimes).  The driver is implemented in
-arch/arm/mach-pxa/ssp.c and uses platform_get_irq.  So according to your
-definition it's allowed (arch/* only).  Still this would break if you
-revert 305b3228f9.
-
-Actually I don't care much, but as platform_get_irq returns an int I
-think it's fine for it to signal an error using a value < 0 as irqs are
-not negative.
-
-My position regarding irq0 is:  If a variable holds either a valid irq
-or a value indicating "no irq", then feel free to use 0 as "no irq" and
-a value > 0 for a valid irq (without offset).  If you want irq0 here,
-you're out of luck.  But if you have a variable holding a valid irq only
-(that is, there is no doubt if the value is valid or not) I see no
-reason to dogmatically prohibit irq0.
-
-I'm a bit annoyed as this is the third time[1] this month this irq0
-discussion pops up for me.  I think people see that irq0 is involved
-somehow, start wailing and stop seeing the issues being fixed.
-
-Best regards
-Uwe
-
-[1] one is:
-	http://thread.gmane.org/gmane.linux.kernel/924739
-    the other wasn't on lkml, only mm-commits.  Cannot find it on the
-    net now.
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Bjorn
