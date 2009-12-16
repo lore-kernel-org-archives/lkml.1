@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZLPPwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZLPP5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbZLPPwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 10:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZLPPww
+	id S1755788AbZLPP5Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 10:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZLPP5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 10:52:52 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39503 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbZLPPwu (ORCPT
+	Wed, 16 Dec 2009 10:57:15 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37230 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbZLPP5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 10:52:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=SeRI425mM/0Hs6SCKUOYKj1+LcbKqUnXQqe/XDej7UucAa05MlwV+c1+Axd6WD/MVr
-         N632iQ4V09Yr2PcESovVHFCOYLzqnSGkuwqfvWst+6aVx03dIZAS+FVoag+tNZoN0lil
-         7cLt9izDM81vQlVcEfcdCp3EdzFP8RJ6wXI/Y=
-Message-ID: <4B2902C3.3080606@gmail.com>
-Date: Wed, 16 Dec 2009 16:54:43 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
+	Wed, 16 Dec 2009 10:57:14 -0500
+Subject: Re: [PATCH] regulator: wm831x_reg_read() failure unnoticed in
+ wm831x_aldo_get_mode()
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sound/oss/pss: Fix test of unsigned in pss_reset_dsp()
- and pss_download_boot()
-References: <4B28085A.6020101@gmail.com> <s5hr5qvf7rt.wl%tiwai@suse.de>
-In-Reply-To: <s5hr5qvf7rt.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <4B27DE73.6060909@gmail.com>
+References: <4B27DE73.6060909@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 15:57:11 +0000
+Message-ID: <1260979031.3525.307.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-limit and jiffies are unsigned so the test did not work.
+On Tue, 2009-12-15 at 20:07 +0100, Roel Kluin wrote:
+> ret should be signed to notice a failure in wm831x_reg_read().
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Found using coccinelle: http://coccinelle.lip6.fr/
+> 
+> diff --git a/drivers/regulator/wm831x-ldo.c b/drivers/regulator/wm831x-ldo.c
+> index 902db56..61e02ac 100644
+> --- a/drivers/regulator/wm831x-ldo.c
+> +++ b/drivers/regulator/wm831x-ldo.c
+> @@ -470,7 +470,7 @@ static unsigned int wm831x_aldo_get_mode(struct regulator_dev *rdev)
+>  	struct wm831x_ldo *ldo = rdev_get_drvdata(rdev);
+>  	struct wm831x *wm831x = ldo->wm831x;
+>  	int on_reg = ldo->base + WM831X_LDO_ON_CONTROL;
+> -	unsigned int ret;
+> +	int ret;
+>  
+>  	ret = wm831x_reg_read(wm831x, on_reg);
+>  	if (ret < 0)
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Found using coccinelle: http://coccinelle.lip6.fr/
+Applied.
 
->> -	for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
->> +	for (i = 0; i < 32768 && (limit >= jiffies); i++)
-> 
-> No, it should use time_after_eq(limit, jiffies) instead.
-> 
-> 
-> thanks,
-> 
-> Takashi
-> 
+Thanks
 
-Ok,
+Liam
 
-diff --git a/sound/oss/pss.c b/sound/oss/pss.c
-index 83f5ee2..e19dd5d 100644
---- a/sound/oss/pss.c
-+++ b/sound/oss/pss.c
-@@ -269,7 +269,7 @@ static int pss_reset_dsp(pss_confdata * devc)
- 	unsigned long   i, limit = jiffies + HZ/10;
- 
- 	outw(0x2000, REG(PSS_CONTROL));
--	for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
-+	for (i = 0; i < 32768 && time_after_eq(limit, jiffies); i++)
- 		inw(REG(PSS_CONTROL));
- 	outw(0x0000, REG(PSS_CONTROL));
- 	return 1;
-@@ -369,11 +369,11 @@ static int pss_download_boot(pss_confdata * devc, unsigned char *block, int size
- 		outw(0, REG(PSS_DATA));
- 
- 		limit = jiffies + HZ/10;
--		for (i = 0; i < 32768 && (limit - jiffies >= 0); i++)
-+		for (i = 0; i < 32768 && time_after_eq(limit, jiffies); i++)
- 			val = inw(REG(PSS_STATUS));
- 
- 		limit = jiffies + HZ/10;
--		for (i = 0; i < 32768 && (limit-jiffies >= 0); i++)
-+		for (i = 0; i < 32768 && time_after_eq(limit, jiffies); i++)
- 		{
- 			val = inw(REG(PSS_STATUS));
- 			if (val & 0x4000)
