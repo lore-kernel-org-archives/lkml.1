@@ -1,86 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935620AbZLPTb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964928AbZLPTdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935620AbZLPTb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935203AbZLPTbz
+	id S964928AbZLPTdJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935483AbZLPTdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:31:55 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:47085 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935492AbZLPTby (ORCPT
+	Wed, 16 Dec 2009 14:33:08 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:34452 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935203AbZLPTdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:31:54 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: Jerome Glisse <glisse@freedesktop.org>
-Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error with linux-2.6.32)
-Date: Wed, 16 Dec 2009 20:31:48 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32-fglrx; KDE/4.3.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net
-References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de> <200912161558.30819.johannes.hirte@fem.tu-ilmenau.de> <20091216184148.GB22703@localhost.localdomain>
-In-Reply-To: <20091216184148.GB22703@localhost.localdomain>
+	Wed, 16 Dec 2009 14:33:04 -0500
+Date: Wed, 16 Dec 2009 11:32:42 -0800
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Ray Copeland <ray.copeland@aprius.com>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Arvind Vasudev <arvind.vasudev@aprius.com>
+Subject: Re: [PATCH 2/2] Need ADT7462_PIN29_SHIFT for pin_cfg[3]
+	linux-2.6.30 adt7462 hwmon driver
+Message-ID: <20091216193242.GD10356@tux1.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA313@EXVBE012-13.exch012.intermedia.net> <AFEAE911EE22F64BACAB05ED86B4D4FC018DA31C@EXVBE012-13.exch012.intermedia.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912162031.48983.johannes.hirte@fem.tu-ilmenau.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA31C@EXVBE012-13.exch012.intermedia.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 16 Dezember 2009 19:41:48 schrieb Jerome Glisse:
-> On Wed, Dec 16, 2009 at 03:58:30PM +0100, Johannes Hirte wrote:
-> > Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
-> > > On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
-> > > > This patch (as the BIOS option) will only disable the error reports.
-> > > > The error itself will still occur, right? So necessary to find out
-> > > > why the radeon driver trigger this error.
-> > >
-> > > Because the graphics driver does aperture accesses with no
-> > > matching GART translation, and the hw generates mchecks for
-> > > that. The whole story on GART table walk errors is in section
-> > > "13.10.1 GART Table Walk Error Reporting" in the document here:
-> > > http://support.amd.com/us/Processor_TechDocs/32559.pdf
-> > >
-> > > I can't say for sure about your BIOS, but if it is done as described in
-> > > the abovementioned section, the BIOS option should disable logging of
-> > > the error, which implies reporting too.
-> > >
-> > > The patch is still needed for machines that do not have that BIOS
-> > > option.
-> >
-> > Disabling in BIOS doesn't made any difference. The errors were still
-> > reported. Your patch disabled it. But I think this will make work harder
-> > for driver developers as they won't get this error anymore. Could this be
-> > made changeable on runtime/boottime?
-> >
-> > I've added drm people to CC as they're responsible for this error.
-> >
-> >
-> > regards,
-> >   Johannes
+On Wed, Dec 16, 2009 at 10:08:51AM -0800, Ray Copeland wrote:
+> From: Ray Copeland <ray.copeland@aprius.com>
+> Date: Wed, 16 Dec 2009
+> Subject: [PATCH 2/2] Need ADT7462_PIN29_SHIFT for pin_cfg[3] linux-2.6.30 adt7462 hwmon driver
 > 
-> More context would be usefull. Are you using KMS ? If so is your userspace
-> KMS capable ? Does this GART error happen all the time or only after
->  sometimes or when doing somethings specific ?
+> Description:
+> 
+> The driver uses the following expression (parentheses added for clarity) 
+> to test if the +1.5V ICH/3GPIO voltages are configured:
+> 
+> if (((data->pin_cfg[3] >> ADT7462_PIN28_SHIFT) == ADT7462_PIN28_VOLT) &&
+> !(data->pin_cfg[0] & ADT7462_VID_INPUT))
+> 
+> With "#define ADT7462_PIN28_SHIFT 6" this will never equate to "#define
+> ADT7462_PIN28_VOLT 5" because that shifts in only the PIN28 +1.5V ICH value 
+> and misses the PIN29 +1.5V 3GPIO value.  It is the combination of both these 
+> values that equates to 5 if the voltages are configured. 
+> 
+> Note the logic is essentially correct in that both these voltages must
+> be configured together, meaning you can't set one to +1.5V and have the 
+> other be something else.  Also, I think the logic just got a little confused 
+> thinking that pin 28 comes first (bit-position wise) in the pin_cfg[3], but 
+> actually the order of bits from ms to ls is pin28/29 not pin 29/28.
+> 
+> Signed-off-by: Ray Copeland <ray.copeland@aprius.com>
+> 
+> Diff with changes vs. original adt7462.c 2.6.30 version:
+> 
+> --- adt7462.c	2009-12-15 15:57:47.000000000 -0800
+> +++ adt7462.c.orig	2009-12-15 15:51:05.000000000 -0800
+> @@ -97,7 +97,6 @@
+>  #define		ADT7462_PIN24_SHIFT		6
+>  #define		ADT7462_PIN26_VOLT_INPUT	0x08
+>  #define		ADT7462_PIN25_VOLT_INPUT	0x20
+> -#define		ADT7462_PIN29_SHIFT		4	/* cfg3 */
+>  #define		ADT7462_PIN28_SHIFT		6	/* cfg3 */
+>  #define		ADT7462_PIN28_VOLT		0x5
+>  
+> @@ -183,7 +182,7 @@
+>   *
+>   * Some, but not all, of these voltages have low/high limits.
+>   */
+> -#define ADT7462_VOLT_COUNT	13
+> +#define ADT7462_VOLT_COUNT	12
 
-Yes I'm using KMS when this error occours.
-Hardware:
-- Tyan Tiger K8W S8875 (AMD8151 Northbridge)
-- Radeon HD3650 AGP (RV635)
+I think this VOLT_COUNT adjustment only belongs in the first patch, and the
+PIN29_SHIFT changes belong only in this second patch.
 
-Software:
-- linux-2.6.32
-- libdrm-2.4.16
-- mesa-7.7_rc2
-- xf86-video-ati-9999 (latest git everytime)
-- KDE-4.3.4 with compositing enabled (OpenGL)
+Also, I think this patch has been reversed accidentally as well.
 
-The errors occours after a while of normal desktop work. I haven't tested 
-without KMS or compisiting. Will do this as well.
-
-regards,
-  Johannes
-
-
-
+--D
