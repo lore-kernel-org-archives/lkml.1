@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbZLPWWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbZLPWWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763054AbZLPWWH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762668AbZLPWV6
+	id S1763114AbZLPWWt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763095AbZLPWWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:21:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59424 "EHLO hera.kernel.org"
+	Wed, 16 Dec 2009 17:22:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59450 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754584AbZLPWV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:21:56 -0500
-Message-ID: <4B295D47.6000403@kernel.org>
-Date: Wed, 16 Dec 2009 14:20:55 -0800
+	id S1763072AbZLPWWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:22:41 -0500
+Message-ID: <4B295D70.6000109@kernel.org>
+Date: Wed, 16 Dec 2009 14:21:36 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+To: Alex Chiang <achiang@hp.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 3/9] pci: don't dump it when bus resource flags is not
- used
-References: <4ADEB601.8020200@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org>	<20091104093044.17ab628a@jbarnes-piketon>	<4AF1CD79.4010602@kernel.org>	<4AF22CF1.1020508@kernel.org>	<4AF22D26.4070500@kernel.org>	<4AF508F0.9060105@kernel.org>	<4AF91F54.10507@jp.fujitsu.com>	<4AF936DB.1030309@kernel.org>	<4AFCF7D8.1090207@jp.fujitsu.com>	<4AFCFC0D.4030002@kernel.org>	<4AFD19DA.7010602@jp.fujitsu.com>	<4AFE6F39.5080505@kernel.org>	<4B0B321E.4010103@jp.fujitsu.com>	<4B0B335E.1070809@kernel.org>	<4B0B3C13.9030502@jp.fujit! su.com>	<4B0C69AD.3030106@kernel. org>	<4B0D13EB.9010403@jp.fujitsu.com>	<4B10D084.8070608@kerne! l.org>	<4B10D2C0.60104@kernel.org> <20091216125002.07117860@jbarnes-piketon>
-In-Reply-To: <20091216125002.07117860@jbarnes-piketon>
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 0/9] pci: update pci bridge resource to get more big	range
+ for devices under it - v13
+References: <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit!su.com> <4B0C69AD.3030106@kernel.org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D286.4020607@kernel.org> <20091216125458.42bf222e@jbarnes-piketon> <20091216211158.GF26757@ldl.fc.hp.com>
+In-Reply-To: <20091216211158.GF26757@ldl.fc.hp.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Fri, 27 Nov 2009 23:35:28 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
+Alex Chiang wrote:
+> Hi Yinghai,
 > 
->>
->> mean it is not used, so skip it.
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> ---
->>  drivers/pci/setup-bus.c |    3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6/drivers/pci/setup-bus.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/pci/setup-bus.c
->> +++ linux-2.6/drivers/pci/setup-bus.c
->> @@ -727,7 +727,8 @@ static void pci_bus_dump_res(struct pci_
->>  
->>          for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
->>                  struct resource *res = bus->resource[i];
->> -                if (!res || !res->end)
->> +
->> +		if (!res || !res->end || !res->flags)
->>                          continue;
->>  
->>  		dev_printk(KERN_DEBUG, &bus->dev, "resource %d
->> %pR\n", i, res);
+> * Jesse Barnes <jbarnes@virtuousgeek.org>:
+>>> -v13: change resource_list to resource_list_x, to save size and flags
+>>> aside, otherwise grandchild res will get confused with son's res as
+>>> could be used
 > 
-> Seems fine apart from whitespace (looks like the if (...) isn't tabbed
-> in properly?).
+> One difficulty that I have in reviewing is the multiple patch
+> revisions buried deep within a thread.
 > 
+> Blame my small brain for not being able to keep track of all
+> the revision-as-mail-responses in one coherent body of work.
+> 
+>> Patches 4-6 make me the most nervous, since they have the potential of
+>> really changing our resource allocation (hopefully for the better) on
+>> many platforms.
+>>
+>> Linus, can you check them out and see if you're ok with the direction?
+>>
+>> Patches 7-9 seem like they've recieved some review from Alex and
+>> Kenji-san, but I don't see acks or reviewed-bys on them.
+>>
+>> Alex and Kenji-san, are you ok with them assuming the previous patches
+>> or something like them go upstream?
+> 
+> Can you please repost your next revision (after taking Jesse's
+> review comments) in a new thread?
 
-old one have space instead of tab
+ok.
+
+YH
