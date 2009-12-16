@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763342AbZLPXLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964885AbZLPXNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763342AbZLPXLs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762813AbZLPXLq
+	id S964885AbZLPXNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763134AbZLPXNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:11:46 -0500
-Received: from mga02.intel.com ([134.134.136.20]:59047 "EHLO mga02.intel.com"
+	Wed, 16 Dec 2009 18:13:13 -0500
+Received: from kroah.org ([198.145.64.141]:60127 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761569AbZLPXLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:11:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,408,1257148800"; 
-   d="scan'208";a="476848542"
-Message-ID: <4B296930.9020704@intel.com>
-Date: Wed, 16 Dec 2009 16:11:44 -0700
-From: Dan Williams <dan.j.williams@intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1762914AbZLPXNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:13:11 -0500
+Date: Wed, 16 Dec 2009 15:12:10 -0800
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <teheo@novell.com>
+Cc: stable@kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
+       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [stable] [PATCH -stable] vmalloc: conditionalize build of
+ pcpu_get_vm_areas()
+Message-ID: <20091216231210.GB9421@kroah.com>
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com>
+ <20091207153552.0fadf335.akpm@linux-foundation.org>
+ <4B1E1B1B0200007800024345@vpn.id2.novell.com>
+ <4B1E0E56.8020003@kernel.org>
+ <4B1E1EE60200007800024364@vpn.id2.novell.com>
+ <4B1E1513.3020000@kernel.org>
+ <4B203614.1010907@novell.com>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Simon Horman <horms@verge.net.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
-Subject: Re: kexec reboot broken with ioatdma?
-References: <ada3a3a8v1g.fsf@roland-alpha.cisco.com>	<20091216224912.GC16219@verge.net.au> <aday6l27c7w.fsf@roland-alpha.cisco.com>
-In-Reply-To: <aday6l27c7w.fsf@roland-alpha.cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B203614.1010907@novell.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > from a kexec point of view I believe that the preferred option is the
->  > former - shutdown the device so it can be initialised using standard paths
->  > in the second kernel.
+On Thu, Dec 10, 2009 at 08:43:16AM +0900, Tejun Heo wrote:
+> pcpu_get_vm_areas() is used only when dynamic percpu allocator is used
+> by the architecture.  In 2.6.32, ia64 doesn't use dynamic percpu
+> allocator and has a macro which makes pcpu_get_vm_areas() buggy via
+> local/global variable aliasing and triggers compile warning.
 > 
-> OK... however I'm not suggesting a separate kexec initialization path,
-> simply adding a reset of the device in the standard initialization.
-> This would be fairly normal for other types of device; for example, the
-> BIOS may have left a NIC in an undefined state due to network boot.  Of
-> course BIOS is unlikely to use an IOAT DMA engine but the principle of
-> limiting assumptions about platform state still stands I think.
+> The problem is fixed in upstream and ia64 uses dynamic percpu
+> allocators, so the only left issue is inclusion of unnecessary code
+> and compile warning on ia64 on 2.6.32.
+> 
+> Don't build pcpu_get_vm_areas() if legacy percpu allocator is in use.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Jan Beulich <JBeulich@novell.com>
+> Cc: stable@kernel.org
+> ---
+> Please note that this commit won't appear on upstream.
 
-I agree that is more robust if the init path copes with hardware 
-arriving in an unknown state.  I'll look into adding a channel reset in 
-the init path (something that should probably have been there since the 
-beginning).
+So this is only needed for the .32 kernel stable tree?  Not .31?  And
+it's not upstream as it was solved differently there?
 
-> From a quick look, it seems tricky to get a clean shutdown of IOAT stuff
-> since there doesn't seem to be a clean ordering that makes sure the
-> ioatdma stuff is shutdown after everything using it.
+thanks,
 
-The engines may be in use by multiple subsytems (net, raid) so 
-coordinating shutdown ordering would indeed be a pain.
-
---
-Dan
-
+greg k-h
