@@ -1,323 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbZLPSSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762724AbZLPSUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762302AbZLPSSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759550AbZLPSSR
+	id S1762724AbZLPSUK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbZLPSUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:18:17 -0500
-Received: from exprod6ob111.obsmtp.com ([64.18.1.26]:56933 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754973AbZLPSSQ convert rfc822-to-8bit (ORCPT
+	Wed, 16 Dec 2009 13:20:08 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:55820 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759550AbZLPSUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:18:16 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] ep93xx_eth.c: general cleanup
-Date: Wed, 16 Dec 2009 13:18:13 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200ED0C@mi8nycmail19.Mi8.com>
-In-Reply-To: <20091216180849.GM1819@mail.wantstofly.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ep93xx_eth.c: general cleanup
-Thread-Index: Acp+etMI6sh+mdhaS5mQGzzto+3mOQAAHnng
-References: <BD79186B4FD85F4B8E60E381CAEE19090200ECE7@mi8nycmail19.Mi8.com> <20091216180132.GL1819@mail.wantstofly.org> <BD79186B4FD85F4B8E60E381CAEE19090200ED01@mi8nycmail19.Mi8.com> <20091216180849.GM1819@mail.wantstofly.org>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Lennert Buytenhek" <buytenh@wantstofly.org>
-Cc: "kernel list" <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>, "Joe Perches" <joe@perches.com>
-X-OriginalArrivalTime: 16 Dec 2009 18:18:13.0893 (UTC) FILETIME=[21A42350:01CA7E7C]
+	Wed, 16 Dec 2009 13:20:06 -0500
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Balaji T K <balajitk@ti.com>, Rajendra Nayak <rnayak@ti.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org
+Subject: [PATCH] mfd: twl4030-irq: irq_desc->lock converted to raw_spinlock_t
+Date: Wed, 16 Dec 2009 20:18:50 +0200
+Message-Id: <1260987530-20221-1-git-send-email-felipe.balbi@nokia.com>
+X-Mailer: git-send-email 1.6.6.rc0
+X-OriginalArrivalTime: 16 Dec 2009 18:19:25.0213 (UTC) FILETIME=[4C26B4D0:01CA7E7C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-General cleanup of the ep93xx_eth driver.
+commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
+the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
+was left aside on the conversion.
 
-1) Use pr_fmt() to prefix the module name and __func__ to the error 
-   messages.
-2) <linux/io.h> instead of <asm/io.h>
-3) <mach/hardware.h> instead of <mach/ep93xx-regs.h> and <mach/platform.h>
-4) Move the ep93xx_mdio_read (and ep93xx_mdio_write) function to eliminate
-   the function prototype.
-5) Change all the printk(<level> messages to pr_<level> and remove the 
-   __func__ argument.
-6) Use platform_get_{resource/irq} to get the platform resources and add
-   an error check.
-7) Use resource_size() for request_mem_region() and ioremap().
-8) Use %pM to print the MAC address at the end of the probe.
-9) Use dev->dev_addr not data->dev_addr for the MAC argument because a
-   random address could be used if the platform does not supply one.
-
-The message at the end of the probe is left as a printk since it displays
-cleaner without the function name that would be displayed with pr_info().
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Lennert Buytenhek <kernel@wantstofly.org>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Joe Perches <joe@perches.com>
-
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tony Lindgre <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 ---
 
-V2 - Missed the resource check and resource_size()
-V3 - Change pr_fmt() as suggested by Joe Perches
-     Don't remove DRV_MODULE_NAME and DRV_MODULE_VERSION
-     Don't remove the message in ep93xx_eth_init_module()
-     platform_get_irq returns an int not a resource *
+I'm not sure this is the expected fix since twl4030-irq handler
+should be running in thread context. Currently mask/unmask/set_type
+are deferred to a workqueue. Thomas, should this be done ? How
+do you expect irq chips on slow busses to implement mask/unmask/set_type ?
 
-diff --git a/drivers/net/arm/ep93xx_eth.c b/drivers/net/arm/ep93xx_eth.c
-index b25467a..bf72d57 100644
---- a/drivers/net/arm/ep93xx_eth.c
-+++ b/drivers/net/arm/ep93xx_eth.c
-@@ -9,6 +9,8 @@
-  * (at your option) any later version.
-  */
+ drivers/mfd/twl4030-irq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
+index 20d29ba..9df9a5a 100644
+--- a/drivers/mfd/twl4030-irq.c
++++ b/drivers/mfd/twl4030-irq.c
+@@ -568,12 +568,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
  
-+#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
-+
- #include <linux/dma-mapping.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-@@ -20,9 +22,9 @@
- #include <linux/moduleparam.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
--#include <mach/ep93xx-regs.h>
--#include <mach/platform.h>
--#include <asm/io.h>
-+#include <linux/io.h>
-+
-+#include <mach/hardware.h>
+ 		bytes[byte] &= ~(0x03 << off);
  
- #define DRV_MODULE_NAME		"ep93xx-eth"
- #define DRV_MODULE_VERSION	"0.1"
-@@ -185,7 +187,47 @@ struct ep93xx_priv
- #define wrw(ep, off, val)	__raw_writew((val), (ep)->base_addr + (off))
- #define wrl(ep, off, val)	__raw_writel((val), (ep)->base_addr + (off))
+-		spin_lock_irq(&d->lock);
++		raw_spin_lock_irq(&d->lock);
+ 		if (d->status & IRQ_TYPE_EDGE_RISING)
+ 			bytes[byte] |= BIT(off + 1);
+ 		if (d->status & IRQ_TYPE_EDGE_FALLING)
+ 			bytes[byte] |= BIT(off + 0);
+-		spin_unlock_irq(&d->lock);
++		raw_spin_unlock_irq(&d->lock);
  
--static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg);
-+static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg)
-+{
-+	struct ep93xx_priv *ep = netdev_priv(dev);
-+	int data;
-+	int i;
-+
-+	wrl(ep, REG_MIICMD, REG_MIICMD_READ | (phy_id << 5) | reg);
-+
-+	for (i = 0; i < 10; i++) {
-+		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
-+			break;
-+		msleep(1);
-+	}
-+
-+	if (i == 10) {
-+		pr_info("mdio read timed out\n");
-+		data = 0xffff;
-+	} else {
-+		data = rdl(ep, REG_MIIDATA);
-+	}
-+
-+	return data;
-+}
-+
-+static void ep93xx_mdio_write(struct net_device *dev, int phy_id, int reg, int data)
-+{
-+	struct ep93xx_priv *ep = netdev_priv(dev);
-+	int i;
-+
-+	wrl(ep, REG_MIIDATA, data);
-+	wrl(ep, REG_MIICMD, REG_MIICMD_WRITE | (phy_id << 5) | reg);
-+
-+	for (i = 0; i < 10; i++) {
-+		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
-+			break;
-+		msleep(1);
-+	}
-+
-+	if (i == 10)
-+		pr_info("mdio write timed out\n");
-+}
- 
- static struct net_device_stats *ep93xx_get_stats(struct net_device *dev)
- {
-@@ -217,14 +259,11 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
- 		rstat->rstat1 = 0;
- 
- 		if (!(rstat0 & RSTAT0_EOF))
--			printk(KERN_CRIT "ep93xx_rx: not end-of-frame "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("not end-of-frame %.8x %.8x\n", rstat0, rstat1);
- 		if (!(rstat0 & RSTAT0_EOB))
--			printk(KERN_CRIT "ep93xx_rx: not end-of-buffer "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("not end-of-buffer %.8x %.8x\n", rstat0, rstat1);
- 		if ((rstat1 & RSTAT1_BUFFER_INDEX) >> 16 != entry)
--			printk(KERN_CRIT "ep93xx_rx: entry mismatch "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("entry mismatch %.8x %.8x\n", rstat0, rstat1);
- 
- 		if (!(rstat0 & RSTAT0_RWE)) {
- 			ep->stats.rx_errors++;
-@@ -241,8 +280,7 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
- 
- 		length = rstat1 & RSTAT1_FRAME_LENGTH;
- 		if (length > MAX_PKT_SIZE) {
--			printk(KERN_NOTICE "ep93xx_rx: invalid length "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_notice("invalid length %.8x %.8x\n", rstat0, rstat1);
- 			goto err;
- 		}
- 
-@@ -371,11 +409,9 @@ static void ep93xx_tx_complete(struct net_device *dev)
- 		tstat->tstat0 = 0;
- 
- 		if (tstat0 & TSTAT0_FA)
--			printk(KERN_CRIT "ep93xx_tx_complete: frame aborted "
--					 " %.8x\n", tstat0);
-+			pr_crit("frame aborted %.8x\n", tstat0);
- 		if ((tstat0 & TSTAT0_BUFFER_INDEX) != entry)
--			printk(KERN_CRIT "ep93xx_tx_complete: entry mismatch "
--					 " %.8x\n", tstat0);
-+			pr_crit("entry mismatch %.8x\n", tstat0);
- 
- 		if (tstat0 & TSTAT0_TXWE) {
- 			int length = ep->descs->tdesc[entry].tdesc1 & 0xfff;
-@@ -536,7 +572,7 @@ static int ep93xx_start_hw(struct net_device *dev)
+ 		edge_change &= ~BIT(i);
  	}
- 
- 	if (i == 10) {
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to reset\n");
-+		pr_crit("hw failed to reset\n");
- 		return 1;
- 	}
- 
-@@ -581,7 +617,7 @@ static int ep93xx_start_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10) {
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to start\n");
-+		pr_crit("hw failed to start\n");
- 		return 1;
- 	}
- 
-@@ -617,7 +653,7 @@ static void ep93xx_stop_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10)
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to reset\n");
-+		pr_crit("hw failed to reset\n");
- }
- 
- static int ep93xx_open(struct net_device *dev)
-@@ -681,48 +717,6 @@ static int ep93xx_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 	return generic_mii_ioctl(&ep->mii, data, cmd, NULL);
- }
- 
--static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg)
--{
--	struct ep93xx_priv *ep = netdev_priv(dev);
--	int data;
--	int i;
--
--	wrl(ep, REG_MIICMD, REG_MIICMD_READ | (phy_id << 5) | reg);
--
--	for (i = 0; i < 10; i++) {
--		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
--			break;
--		msleep(1);
--	}
--
--	if (i == 10) {
--		printk(KERN_INFO DRV_MODULE_NAME ": mdio read timed out\n");
--		data = 0xffff;
--	} else {
--		data = rdl(ep, REG_MIIDATA);
--	}
--
--	return data;
--}
--
--static void ep93xx_mdio_write(struct net_device *dev, int phy_id, int reg, int data)
--{
--	struct ep93xx_priv *ep = netdev_priv(dev);
--	int i;
--
--	wrl(ep, REG_MIIDATA, data);
--	wrl(ep, REG_MIICMD, REG_MIICMD_WRITE | (phy_id << 5) | reg);
--
--	for (i = 0; i < 10; i++) {
--		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
--			break;
--		msleep(1);
--	}
--
--	if (i == 10)
--		printk(KERN_INFO DRV_MODULE_NAME ": mdio write timed out\n");
--}
--
- static void ep93xx_get_drvinfo(struct net_device *dev, struct ethtool_drvinfo *info)
- {
- 	strcpy(info->driver, DRV_MODULE_NAME);
-@@ -825,12 +819,19 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 	struct ep93xx_eth_data *data;
- 	struct net_device *dev;
- 	struct ep93xx_priv *ep;
-+	struct resource *mem;
-+	int irq;
- 	int err;
- 
- 	if (pdev == NULL)
- 		return -ENODEV;
- 	data = pdev->dev.platform_data;
- 
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	irq = platform_get_irq(pdev, 0);
-+	if (!mem || irq < 0)
-+		return -ENXIO;
-+
- 	dev = ep93xx_dev_alloc(data);
- 	if (dev == NULL) {
- 		err = -ENOMEM;
-@@ -842,23 +843,21 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, dev);
- 
--	ep->res = request_mem_region(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start + 1,
--			dev_name(&pdev->dev));
-+	ep->res = request_mem_region(mem->start, resource_size(mem),
-+				     dev_name(&pdev->dev));
- 	if (ep->res == NULL) {
- 		dev_err(&pdev->dev, "Could not reserve memory region\n");
- 		err = -ENOMEM;
- 		goto err_out;
- 	}
- 
--	ep->base_addr = ioremap(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start);
-+	ep->base_addr = ioremap(mem->start, resource_size(mem));
- 	if (ep->base_addr == NULL) {
- 		dev_err(&pdev->dev, "Failed to ioremap ethernet registers\n");
- 		err = -EIO;
- 		goto err_out;
- 	}
--	ep->irq = pdev->resource[1].start;
-+	ep->irq = irq;
- 
- 	ep->mii.phy_id = data->phy_id;
- 	ep->mii.phy_id_mask = 0x1f;
-@@ -877,11 +876,8 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 		goto err_out;
- 	}
- 
--	printk(KERN_INFO "%s: ep93xx on-chip ethernet, IRQ %d, "
--			 "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x.\n", dev->name,
--			ep->irq, data->dev_addr[0], data->dev_addr[1],
--			data->dev_addr[2], data->dev_addr[3],
--			data->dev_addr[4], data->dev_addr[5]);
-+	printk(KERN_INFO "%s: ep93xx on-chip ethernet, IRQ %d, %pM\n",
-+			dev->name, ep->irq, dev->dev_addr);
- 
- 	return 0;
-  
+-- 
+1.6.6.rc0
+
