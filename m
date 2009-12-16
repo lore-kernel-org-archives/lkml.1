@@ -1,30 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbZLPUh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbZLPUmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964821AbZLPUh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 15:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935495AbZLPUh2
+	id S965054AbZLPUmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 15:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbZLPUmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 15:37:28 -0500
-Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:36042 "HELO
-	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S935492AbZLPUh1 (ORCPT
+	Wed, 16 Dec 2009 15:42:12 -0500
+Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:60907 "HELO
+	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755882AbZLPUmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 15:37:27 -0500
+	Wed, 16 Dec 2009 15:42:09 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=tVxMfC7yVkaT7pKxcjjpAE9Wqt+KLRhL6w+fBdRsKf9bDJDq8PVCgV9HvT0Mq2+9dMYsSJsRL4k2jpK4IV+mmJgdbHZI/Atxfs5kXYbOHjvf+x6/kNvlro5kkhPELRxX;
-Date: Wed, 16 Dec 2009 12:37:06 -0800
+	b=jXsCZy2JliiJaW0FfIRxISUFPyFLVmTwrrO03UaHzeioCgd2m6FZmiBXVCn8aI5l0nleGUiuvQrWUHjvkCRxGQeE7C0WDR2hd5nvXsD1PJtmAPy2ofhN9ZnCFE/QV0zD;
+Date: Wed, 16 Dec 2009 12:41:47 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 1/7] x86: move range related operation to one file
-Message-ID: <20091216123706.571bc92d@jbarnes-piketon>
-In-Reply-To: <4B22D71E.3010309@kernel.org>
-References: <4B22D71E.3010309@kernel.org>
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/9] pci: separate pci_setup_bridge to small functions
+Message-ID: <20091216124147.4163cd10@jbarnes-piketon>
+In-Reply-To: <4B10D29F.2000800@kernel.org>
+References: <4ADEB601.8020200@kernel.org>
+	<4AE5EFDB.2060908@kernel.org>
+	<4AE80170.6030402@jp.fujitsu.com>
+	<4AE88305.8020207@kernel.org>
+	<m1ljivibrt.fsf@fess.ebiederm.org>
+	<4AE899A0.3020006@kernel.org>
+	<4AE95247.8080401@jp.fujitsu.com>
+	<4AE952B9.1010603@kernel.org>
+	<4AE9588E.90708@jp.fujitsu.com>
+	<4AE9657F.7010302@kernel.org>
+	<4AE965D9.9040702@kernel.org>
+	<20091104093044.17ab628a@jbarnes-piketon>
+	<4AF1CD79.4010602@kernel.org>
+	<4AF22CF1.1020508@kernel.org>
+	<4AF22D26.4070500@kernel.org>
+	<4AF508F0.9060105@kernel.org>
+	<4AF91F54.10507@jp.fujitsu.com>
+	<4AF936DB.1030309@kernel.org>
+	<4AFCF7D8.1090207@jp.fujitsu.com>
+	<4AFCFC0D.4030002@kernel.org>
+	<4AFD19DA.7010602@jp.fujitsu.com>
+	<4AFE6F39.5080505@kernel.org>
+	<4B0B321E.4010103@jp.fujitsu.com>
+	<4B0B335E.1070809@kernel.org>
+	<4B0B3C13.9030502@jp.fujit! su.com>
+	<4B0C69AD.3030106@kernel. org>
+	<4B0D13EB.9010403@jp.fujitsu.com>
+	<4B10D084.8070608@kerne!
+ l.org>
+	<4B10D29F.2000800@kernel.org>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,13 +65,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can you describe this series?  Something about merging the x86_64 and
-i386 code it looks like?  And going through the same paths to read out
-the root bridge info on both architectures?
+On Fri, 27 Nov 2009 23:34:55 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-I'm still nervous about the bridge and hotplug changes, I'll go through
-them again.
+> 
+> prepare to use those small functions according to resource type later
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  drivers/pci/setup-bus.c |   54
+> +++++++++++++++++++++++++++++++++++++++--------- 1 file changed, 44
+> insertions(+), 10 deletions(-)
 
-Thanks,
+Seems like a reasonable cleanup, anyone have objections?
+
 -- 
 Jesse Barnes, Intel Open Source Technology Center
