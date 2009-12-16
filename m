@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935079AbZLPScn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935122AbZLPSe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935079AbZLPScn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:32:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762784AbZLPScm
+	id S935122AbZLPSe7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932263AbZLPSe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:32:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34420 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762750AbZLPScl (ORCPT
+	Wed, 16 Dec 2009 13:34:58 -0500
+Received: from exprod6og112.obsmtp.com ([64.18.1.29]:48689 "HELO
+	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932205AbZLPSe5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:32:41 -0500
-Subject: Re: perf and libdwarf on debian
-From: Peter Zijlstra <peterz@infradead.org>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091216135448.GD11618@aftab>
-References: <20091216135448.GD11618@aftab>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 19:32:20 +0100
-Message-ID: <1260988340.21028.198.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Dec 2009 13:34:57 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] ep93xx_eth.c: general cleanup
+Date: Wed, 16 Dec 2009 13:34:55 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200ED18@mi8nycmail19.Mi8.com>
+In-Reply-To: <20091216183200.GN1819@mail.wantstofly.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ep93xx_eth.c: general cleanup
+Thread-Index: Acp+fg/IX2m/SiWtRu29eqwgMlZ6vQAAEFVg
+References: <BD79186B4FD85F4B8E60E381CAEE19090200ECE7@mi8nycmail19.Mi8.com> <20091216180132.GL1819@mail.wantstofly.org> <BD79186B4FD85F4B8E60E381CAEE19090200ED01@mi8nycmail19.Mi8.com> <20091216180849.GM1819@mail.wantstofly.org> <BD79186B4FD85F4B8E60E381CAEE19090200ED0C@mi8nycmail19.Mi8.com> <20091216183200.GN1819@mail.wantstofly.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Lennert Buytenhek" <buytenh@wantstofly.org>
+Cc: "kernel list" <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>, "Joe Perches" <joe@perches.com>
+X-OriginalArrivalTime: 16 Dec 2009 18:34:55.0165 (UTC) FILETIME=[76721ED0:01CA7E7E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 14:54 +0100, Borislav Petkov wrote:
-> Hi,
-> 
-> even after installing libdwarf-dev on my debian box here, make in tools/perf/
-> still complains that it cannot find libdwarf:
-> 
-> Makefile:491: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-> 
-> The problem is that the include path on debian is not
-> /usr/include/libdwarf/ but simply /usr/include because the debian
-> package libdwarf-dev puts the headers straight into /usr/include.
-> 
-> Now, fixing this in the build system could get ugly and too much (see
-> below), IMHO, so how about adding a README file in <tools/perf/>
-> which explains that on Debian-like systems, one should mkdir
-> /usr/include/libdwarf/ and symlink libdwarf.h and dwarf.h into it?
-> 
-> There could be a better solution though...?
+Wednesday, December 16, 2009 11:32 AM, Lennert Buytenhek wrote:
+> On Wed, Dec 16, 2009 at 01:18:13PM -0500, H Hartley Sweeten wrote:
+>
+>> V3 - Change pr_fmt() as suggested by Joe Perches
+>>      Don't remove DRV_MODULE_NAME and DRV_MODULE_VERSION
+>>      Don't remove the message in ep93xx_eth_init_module()
+>
+> That's not what I meant, but alright, as you prefer.
 
-Yeah, like file a bug with RH for placing them in such an utterly stupid
-location.
+Guess my parser is off line today.... ;-)
 
-Also, I'd not bother with testing debian, just do
+What did you mean?
 
-#include <dwarf.h>
-
-and simply add -I/usr/include/libdwarf to CPPFLAGS or something like
-that.
-
-Then again, its not like debian would ever ship something recent enough
-to actually build perf with, even my karmic machine comes with
-libdwarf-20080409 which to me reads like ancient and not befitting a
-distro released a month or so ago.
-
+Regards,
+Hartley
 
 
