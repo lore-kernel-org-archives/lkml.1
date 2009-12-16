@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbZLPWOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763086AbZLPWV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762584AbZLPWOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760802AbZLPWOm
+	id S1763086AbZLPWV3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:21:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763067AbZLPWVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:14:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50170 "EHLO mx1.redhat.com"
+	Wed, 16 Dec 2009 17:21:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57308 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758986AbZLPWOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:14:42 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip] x86: Fix a typo in gen-insn-attr-x86.awk
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Date: Wed, 16 Dec 2009 17:18:53 -0500
-Message-ID: <20091216221853.14071.61224.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
+	id S1763046AbZLPWVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:21:04 -0500
+Message-ID: <4B295D0F.7000805@kernel.org>
+Date: Wed, 16 Dec 2009 14:19:59 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 2/9] pci: add pci_bridge_release_unused_res and pci_bus_release_unused_bridge_res
+References: <4ADEB601.8020200@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org>	<20091104093044.17ab628a@jbarnes-piketon>	<4AF1CD79.4010602@kernel.org>	<4AF22CF1.1020508@kernel.org>	<4AF22D26.4070500@kernel.org>	<4AF508F0.9060105@kernel.org>	<4AF91F54.10507@jp.fujitsu.com>	<4AF936DB.1030309@kernel.org>	<4AFCF7D8.1090207@jp.fujitsu.com>	<4AFCFC0D.4030002@kernel.org>	<4AFD19DA.7010602@jp.fujitsu.com>	<4AFE6F39.5080505@kernel.org>	<4B0B321E.4010103@jp.fujitsu.com>	<4B0B335E.1070809@kernel.org>	<4B0B3C13.9030502@jp.fujit! su.com>	<4B0C69AD.3030106@kernel. org>	<4B0D13EB.9010403@jp.fujitsu.com>	<4B10D084.8070608@kerne! l.org>	<4B10D2B2.4000604@kernel.org> <20091216124915.7732712d@jbarnes-piketon>
+In-Reply-To: <20091216124915.7732712d@jbarnes-piketon>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a typo of "character" in gen-insn-attr-x86.awk.
+Jesse Barnes wrote:
+> On Fri, 27 Nov 2009 23:35:14 -0800
+> Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> so later we could use it to release small resource before pci assign
+>> unassign res
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> ---
+>>  drivers/pci/setup-bus.c |  114
+>> +++++++++++++++++++++++++++++++++++++++++++++++- 1 file changed, 113
+>> insertions(+), 1 deletion(-)
+>>
+>> Index: linux-2.6/drivers/pci/setup-bus.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/pci/setup-bus.c
+>> +++ linux-2.6/drivers/pci/setup-bus.c
+>> @@ -609,6 +609,118 @@ void __ref pci_bus_assign_resources(cons
+>>  }
+>>  EXPORT_SYMBOL(pci_bus_assign_resources);
+>>  
+>> +static void release_children_resource(struct resource *r)
+> 
+> release_child_resources?
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
----
+ok
 
- arch/x86/tools/gen-insn-attr-x86.awk |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+>> +{
+>> +	struct resource *p;
+>> +	resource_size_t size;
+>> +
+>> +	p = r->child;
+>> +	while (p) {
+>> +		release_children_resource(p);
+>> +		release_resource(p);
+>> +		printk(KERN_DEBUG "PCI: release child resource
+>> %pRt\n", p);
+>> +		/* need to restore size, and keep flags */
+>> +		size = resource_size(p);
+>> +		p->start = 0;
+>> +		p->end = size - 1;
+>> +		p = r->child;
+>> +	}
+>> +}
+> 
+> Also seems like it should go into resource.c instead?
 
-diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
-index 7a68506..6d1dc09 100644
---- a/arch/x86/tools/gen-insn-attr-x86.awk
-+++ b/arch/x86/tools/gen-insn-attr-x86.awk
-@@ -7,7 +7,7 @@
- # Awk implementation sanity check
- function check_awk_implement() {
- 	if (!match("abc", "[[:lower:]]+"))
--		return "Your awk doesn't support charactor-class."
-+		return "Your awk doesn't support character-class."
- 	if (sprintf("%x", 0) != "0")
- 		return "Your awk has a printf-format problem."
- 	return ""
+only one user, may move that later...
 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+YH
