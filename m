@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbZLPX5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbZLPX4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763368AbZLPX5F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763377AbZLPX4m
+	id S1761642AbZLPX4b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:56:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762936AbZLPX4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:56:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24143 "EHLO mx1.redhat.com"
+	Wed, 16 Dec 2009 18:56:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:52446 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761723AbZLPX4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:56:38 -0500
+	id S1762928AbZLPX4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:56:22 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/6] NOMMU: Provide per-task stack usage through /proc for
-	NOMMU
+Subject: [PATCH 3/6] FDPIC: Respect PT_GNU_STACK exec protection markings when
+	creating NOMMU stack
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: dhowells@redhat.com, vapier@gentoo.org, lethal@linux-sh.org,
        linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
-       David Howells <dhowells@redhat.com>, Mike Frysinger <vapier@gentoo.org>,
-       Stefani Seibold <stefani@seibold.net>, Paul Mundt <lethal@linux-sh.org>,
-       Robin Getz <rgetz@blackfin.uclinux.org>
-Date: Wed, 16 Dec 2009 23:56:03 +0000
-Message-ID: <20091216235603.4310.71243.stgit@warthog.procyon.org.uk>
+       Mike Frysinger <vapier@gentoo.org>, David Howells <dhowells@redhat.com>
+Date: Wed, 16 Dec 2009 23:56:08 +0000
+Message-ID: <20091216235608.4310.82221.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
 References: <20091216235558.4310.19365.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -34,71 +32,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make it possible to get the per-task stack usage through /proc on a NOMMU
-system.  The MMU-mode routine can't be used because walk_page_range() doesn't
-work on NOMMU.
+From: Mike Frysinger <vapier@gentoo.org>
 
-It can be tested to show the stack usages of non-kernel-thread processes:
+The current code will load the stack size and protection markings, but then
+only use the markings in the MMU code path.  The NOMMU code path always passes
+PROT_EXEC to the mmap() call.  While this doesn't matter to most people whilst
+the code is running, it will cause a pointless icache flush when starting every
+FDPIC application.  Typically this icache flush will be of a region on the
+order of 128KB in size, or may be the entire icache, depending on the
+facilities available on the CPU.
 
-	# grep "Stack usage:" /proc/*/status | grep -v "0 kB"
-	/proc/1/status:Stack usage:     2 kB
-	/proc/57/status:Stack usage:    3 kB
-	/proc/58/status:Stack usage:    1 kB
-	/proc/59/status:Stack usage:    3 kB
-	/proc/60/status:Stack usage:    5 kB
-	/proc/self/status:Stack usage:  1 kB
+In the case where the arch default behaviour seems to be desired
+(EXSTACK_DEFAULT), we probe VM_STACK_FLAGS for VM_EXEC to determine whether we
+should be setting PROT_EXEC or not.
 
-I've only tested it with ELF-FDPIC, though it should work with FLAT too.
+For arches that support an MPU (Memory Protection Unit - an MMU without the
+virtual mapping capability), setting PROT_EXEC or not will make an important
+difference.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+It should be noted that this change also affects the executability of the brk
+region, since ELF-FDPIC has that share with the stack.  However, this is
+probably irrelevant as NOMMU programs aren't likely to use the brk region,
+preferring instead allocation via mmap().
+
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Cc: Stefani Seibold <stefani@seibold.net>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/proc/array.c |   20 +++++++++++++++++---
- 1 files changed, 17 insertions(+), 3 deletions(-)
+ arch/blackfin/include/asm/page.h |    5 +++++
+ arch/frv/include/asm/page.h      |    2 --
+ fs/binfmt_elf_fdpic.c            |   13 +++++++++++--
+ 3 files changed, 16 insertions(+), 4 deletions(-)
 
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 4badde1..c67251e 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -387,8 +387,7 @@ static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
- 	return ss.usage;
- }
+diff --git a/arch/blackfin/include/asm/page.h b/arch/blackfin/include/asm/page.h
+index 944a07c..1d04e40 100644
+--- a/arch/blackfin/include/asm/page.h
++++ b/arch/blackfin/include/asm/page.h
+@@ -10,4 +10,9 @@
+ #include <asm-generic/page.h>
+ #define MAP_NR(addr) (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
  
--static inline void task_show_stack_usage(struct seq_file *m,
--						struct task_struct *task)
-+static void task_show_stack_usage(struct seq_file *m, struct task_struct *task)
- {
- 	struct vm_area_struct	*vma;
- 	struct mm_struct	*mm = get_task_mm(task);
-@@ -404,9 +403,24 @@ static inline void task_show_stack_usage(struct seq_file *m,
- 		mmput(mm);
- 	}
- }
--#else
-+#else /* CONFIG_MMU */
-+/*
-+ * Calculate the size of a NOMMU process's stack
-+ */
- static void task_show_stack_usage(struct seq_file *m, struct task_struct *task)
- {
-+	unsigned long sp, base, usage;
++#define VM_DATA_DEFAULT_FLAGS \
++	(VM_READ | VM_WRITE | \
++	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
++		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 +
-+	base = task->stack_start;
-+	sp = KSTK_ESP(task);
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+	usage = sp - base;
-+#else
-+	usage = base - sp;
+ #endif
+diff --git a/arch/frv/include/asm/page.h b/arch/frv/include/asm/page.h
+index 25c6a50..8c97068 100644
+--- a/arch/frv/include/asm/page.h
++++ b/arch/frv/include/asm/page.h
+@@ -63,12 +63,10 @@ extern unsigned long max_pfn;
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+ 
+ 
+-#ifdef CONFIG_MMU
+ #define VM_DATA_DEFAULT_FLAGS \
+ 	(VM_READ | VM_WRITE | \
+ 	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
+ 		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+-#endif
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 7b05538..5a3ec95 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -171,6 +171,9 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ #ifdef ELF_FDPIC_PLAT_INIT
+ 	unsigned long dynaddr;
+ #endif
++#ifndef CONFIG_MMU
++	unsigned long stack_prot;
 +#endif
-+
-+	seq_printf(m, "Stack usage:\t%lu kB\n", (usage + 1023) >> 10);
- }
- #endif		/* CONFIG_MMU */
+ 	struct file *interpreter = NULL; /* to shut gcc up */
+ 	char *interpreter_name = NULL;
+ 	int executable_stack;
+@@ -316,6 +319,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	 * defunct, deceased, etc. after this point we have to exit via
+ 	 * error_kill */
+ 	set_personality(PER_LINUX_FDPIC);
++	if (elf_read_implies_exec(&exec_params.hdr, executable_stack))
++		current->personality |= READ_IMPLIES_EXEC;
+ 	set_binfmt(&elf_fdpic_format);
  
+ 	current->mm->start_code = 0;
+@@ -377,9 +382,13 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	if (stack_size < PAGE_SIZE * 2)
+ 		stack_size = PAGE_SIZE * 2;
+ 
++	stack_prot = PROT_READ | PROT_WRITE;
++	if (executable_stack == EXSTACK_ENABLE_X ||
++	    (executable_stack == EXSTACK_DEFAULT && VM_STACK_FLAGS & VM_EXEC))
++		stack_prot |= PROT_EXEC;
++
+ 	down_write(&current->mm->mmap_sem);
+-	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+-					 PROT_READ | PROT_WRITE | PROT_EXEC,
++	current->mm->start_brk = do_mmap(NULL, 0, stack_size, stack_prot,
+ 					 MAP_PRIVATE | MAP_ANONYMOUS |
+ 					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
+ 					 0);
 
