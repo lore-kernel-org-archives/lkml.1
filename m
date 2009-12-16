@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932988AbZLPS7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935329AbZLPTAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932988AbZLPS7p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759949AbZLPS7h
+	id S935329AbZLPTAi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935287AbZLPTAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:59:37 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:60083 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762882AbZLPS73 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:59:29 -0500
-X-Auth-Info: Zwp9ph72Tv1+lIV8f3Pmy4FBhXrjBoRNqVV8UFWu4W0=
-Message-ID: <4B292DDE.6080906@grandegger.com>
-Date: Wed, 16 Dec 2009 19:58:38 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Wed, 16 Dec 2009 14:00:32 -0500
+Received: from d112.x-mailer.de ([212.162.53.3]:59462 "EHLO d112a3.x-mailer.de"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S935273AbZLPTA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:00:26 -0500
+From: Karsten Keil <keil@b1-systems.de>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: [PATCH 4/5] mISDN: use DECLARE_COMPLETION_ONSTACK for non-constant completion
+Date: Wed, 16 Dec 2009 20:00:20 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.27.37-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Andreas Eversberg <andreas@eversberg.eu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+References: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com> <1260974161-6934-4-git-send-email-yong.zhang0@gmail.com> <1260974161-6934-5-git-send-email-yong.zhang0@gmail.com>
+In-Reply-To: <1260974161-6934-5-git-send-email-yong.zhang0@gmail.com>
+Organization: B1-systems
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-CC: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Urs Thuermann <urs.thuermann@volkswagen.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Kurt Van Dijck <kurt.van.dijck@eia.be>, netdev@vger.kernel.org
-Subject: Re: [PATCH 4/7] can/at91: don't check platform_get_irq's return value
- against zero
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912162000.20642.keil@b1-systems.de>
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Kleine-König wrote:
-> platform_get_irq returns -ENXIO on failure, so !irq was probably
-> always true.  Better use (int)irq <= 0.  Note that a return value of
-> zero is still handled as error even though this could mean irq0.
-> 
-> This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
-> changed the return value of platform_get_irq from 0 to -ENXIO on error.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: David Vrabel <dvrabel@arcom.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Urs Thuermann <urs.thuermann@volkswagen.de>
-> Cc: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-> Cc: David S. Miller <davem@davemloft.net>
-> Cc: Wolfgang Grandegger <wg@grandegger.com>
-> Cc: Kurt Van Dijck <kurt.van.dijck@eia.be>
-> Cc: netdev@vger.kernel.org
+The _ONSTACK variant should be used for on-stack completion,
+otherwise it will break lockdep.
+ 
+Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+Acked-by: Karsten Keil <keil@b1-systems.de>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Andreas Eversberg <andreas@eversberg.eu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ drivers/isdn/mISDN/l1oip_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+ 
+diff --git a/drivers/isdn/mISDN/l1oip_core.c b/drivers/isdn/mISDN/l1oip_core.c 
+index 7e5f30d..f1e8af5 100644
+--- a/drivers/isdn/mISDN/l1oip_core.c
++++ b/drivers/isdn/mISDN/l1oip_core.c
+@@ -661,7 +661,7 @@ l1oip_socket_thread(void *data)
+ 	size_t recvbuf_size = 1500;
+ 	int recvlen;
+ 	struct socket *socket = NULL;
+-	DECLARE_COMPLETION(wait);
++	DECLARE_COMPLETION_ONSTACK(wait);
 
-Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+ 	/* allocate buffer memory */
+ 	recvbuf = kmalloc(recvbuf_size, GFP_KERNEL);
 
-> ---
->  drivers/net/can/at91_can.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/can/at91_can.c b/drivers/net/can/at91_can.c
-> index cbe3fce..631d404 100644
-> --- a/drivers/net/can/at91_can.c
-> +++ b/drivers/net/can/at91_can.c
-> @@ -1037,7 +1037,7 @@ static int __init at91_can_probe(struct platform_device *pdev)
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	irq = platform_get_irq(pdev, 0);
-> -	if (!res || !irq) {
-> +	if (!res || irq <= 0) {
->  		err = -ENODEV;
->  		goto exit_put;
->  	}
-
-Thanks,
-
-Wolfgang.
