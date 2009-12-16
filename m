@@ -1,86 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934513AbZLPCJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934519AbZLPCKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934513AbZLPCJG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 21:09:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934489AbZLPCI7
+	id S934519AbZLPCKj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 21:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934495AbZLPCKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 21:08:59 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:43236 "EHLO e7.ny.us.ibm.com"
+	Tue, 15 Dec 2009 21:10:37 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54872 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934483AbZLPCI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 21:08:58 -0500
-Date: Tue, 15 Dec 2009 18:08:55 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH RFC tip/core/rcu 18/18] rcu: add primitives to check
-	for RCU read-side critical sections
-Message-ID: <20091216020855.GI6783@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091215230213.GA9093@linux.vnet.ibm.com> <20091216010439.GD2408@feather>
+	id S934489AbZLPCKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 21:10:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Wed, 16 Dec 2009 03:11:05 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912151203.22916.rjw@sisk.pl> <alpine.LFD.2.00.0912150722310.14385@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912150722310.14385@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216010439.GD2408@feather>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912160311.05915.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 05:04:39PM -0800, Josh Triplett wrote:
-> On Tue, Dec 15, 2009 at 03:02:41PM -0800, Paul E. McKenney wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > Proposed for 2.6.34, not for inclusion.
-> > 
-> > Create rcu_read_lock_held(), rcu_read_lock_bh_held(),
-> > rcu_read_lock_sched_held(), and srcu_read_lock_held() primitives that
-> > return non-zero if there might be the corresponding type of RCU read-side
-> > critical section in effect at the time that they are invoked.  If there is
-> > doubt, they report being in the critical section.  They give exact
-> > answers if CONFIG_PROVE_LOCKING.
-> > 
-> > Also create rcu_dereference_check(), which takes a second boolean argument
-> > into which one puts rcu_read_lock_held() or similar.  For example:
-> > 
-> > 	rcu_dereference_check(gp, rcu_read_lock_held() ||
-> > 				  lockdep_is_held(my_lock));
+On Tuesday 15 December 2009, Linus Torvalds wrote:
 > 
-> Useful for the case where you do have an additional lock, but it seems
-> like it would help to have variants for the most common cases;
-> specifically:
-> rcu_dereference_check(thing, rcu_read_lock_held())
-> rcu_dereference_check(thing, rcu_read_lock_bh_held())
-> and so on.
+> On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > Give a real example that matters.
+> > 
+> > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
+> > like this:
+> 
+> No. 
+> 
+> I mean something real - something like
+> 
+>  - if you run on a non-PC with two USB buses behind non-PCI controllers.
+> 
+>  - device xyz.
+> 
+> > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
+> > show that serio devices take much more time to suspend than USB.
+> 
+> I mean in general - something where you actually have hard data that some 
+> device really needs anythign more than my one-liner, and really _needs_ 
+> some complex infrastructure.
+> 
+> Not "let's imagine a case like xyz".
 
-I figured that I would try applying rcu_dereference_check() to a few
-places and see what the most common variants really are.  I briefly
-considered defining the set, but choked on the possibility of code
-that might be executed from within several different variants of RCU,
-so decided to start with the single general-purpose variant.
+As I said I would, I made some measurements.
 
-> Even then, it seems painful to have to annotate each rcu_dereference.
-> Ideally, I'd propose the reverse: annotate any rcu_dereference which
-> *can* occur outside an RCU read-side critical section.  (Variants of RCU
-> notwithstanding...)
+I measured the total time of suspending and resuming devices as shown by the
+code added by this patch:
+http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
+on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
+different and the HP was running 64-bit kernel and user space).
 
-I was completely with you to start with, but...
+I took four cases into consideration:
+(1) synchronous suspend and resume (/sys/power/pm_async = 0)
+(2) asynchronous suspend and resume as introduced by the async branch at:
+    http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
+(3) asynchronous suspend and resume like in (2), but with your one-liner setting
+    the power.async_suspend flag for PCI bridges on top
+(4) asynchronous suspend and resume like in (2), but with an extra patch that
+    is appended on top
 
-Peter Zijlstra reminded me that his earlier foray into this space turned
-up a number of situations where the code containing rcu_dereference()
-simply cannot know which combinations of locks and/or RCU flavors should
-be in effect.  One example of this is the RCU-protected trie, which -can-
-be RCU-protected on read, but -also- can be used with locks.  And each
-caller of course would supply a different lock.
+For those tests I set power.async_suspend for all USB devices, all serio input
+devices, the ACPI battery and the USB PCI controllers (to see the impact of the
+one-liner, if any).
 
-I would not be surprised to find that we end up wanting a shorthand
-for rcu_dereference_check(thing, rcu_read_lock_held()), but am less sure
-about the others.
+I carried out 5 consecutive suspend-resume cycles (started from under X) on
+each box in each case, and the raw data are here (all times in milliseconds):
+http://www.sisk.pl/kernel/data/async-suspend.pdf
 
-							Thanx, Paul
+The summarized data are below (the "big" numbers are averages and the +/-
+numbers are standard deviations, all in milliseconds):
 
-PS. And thank you for looking these over!
+			HP nx6325		MSI Wind U100
+
+sync suspend		1482 (+/- 40)	1180 (+/- 24)
+sync resume		2955 (+/- 2)	3597 (+/- 25)
+
+async suspend		1553 (+/- 49)	1177 (+/- 32)
+async resume		2692 (+/- 326)	3556  (+/- 33)
+
+async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+
+async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+
+So, in my opinion, with the above set of "async" devices, it doesn't
+make sense to do async suspend at all, because the sync suspend is actually
+the fastest on both machines.
+
+However, it surely is worth doing async _resume_ with the extra patch appended
+below, because that allows us to save 1 second or more on both machines with
+respect to the sync case.  The other variants of async resume also produce some
+time savings, but (on the nx6325) at the expense of huge fluctuations from one
+cycle to another (so they can actually be slower than the sync resume).  Only
+the async resume with the extra patch is consistently better than the sync one.
+The impact of the one-liner is either negligible or slightly negative.
+
+Now, what does the extra patch do?  Exactly the thing I was talking about, it
+starts all async suspends and resumes upfront.
+
+So, it looks like we both were wrong.  I was wrong, because I thought the
+extra patch would help suspend, but not resume, while in fact it appears to
+help resume big time.  You were wrong, because you thought that the one-liner
+would have positive impact, while in fact it doesn't.
+
+Concluding, at this point I'd opt for implementing asynchronous resume alone,
+_without_ asynchronous suspend, which is more complicated and doesn't really
+give us any time savings.  At the same time, I'd implement the asynchronous
+resume in such a way that all of the async resume threads would be started
+before the synchronous suspend thread, because that would give us the best
+results.
+
+Rafael
+
+---
+ drivers/base/power/main.c |   48 +++++++++++++++++++++++++++++-----------------
+ 1 file changed, 31 insertions(+), 17 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -523,14 +523,9 @@ static void async_resume(void *data, asy
+ 
+ static int device_resume(struct device *dev)
+ {
+-	INIT_COMPLETION(dev->power.completion);
+-
+-	if (pm_async_enabled && dev->power.async_suspend
+-	    && !pm_trace_is_enabled()) {
+-		get_device(dev);
+-		async_schedule(async_resume, dev);
++	if (dev->power.async_suspend && pm_async_enabled
++	    && !pm_trace_is_enabled())
+ 		return 0;
+-	}
+ 
+ 	return __device_resume(dev, pm_transition, false);
+ }
+@@ -545,14 +540,28 @@ static int device_resume(struct device *
+ static void dpm_resume(pm_message_t state)
+ {
+ 	struct list_head list;
++	struct device *dev;
+ 	ktime_t starttime = ktime_get();
+ 
+ 	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+-	while (!list_empty(&dpm_list)) {
+-		struct device *dev = to_device(dpm_list.next);
+ 
++	list_for_each_entry(dev, &dpm_list, power.entry) {
++		if (dev->power.status < DPM_OFF)
++			continue;
++
++		INIT_COMPLETION(dev->power.completion);
++
++		if (dev->power.async_suspend && pm_async_enabled
++		    && !pm_trace_is_enabled()) {
++			get_device(dev);
++			async_schedule(async_resume, dev);
++		}
++	}
++
++	while (!list_empty(&dpm_list)) {
++		dev = to_device(dpm_list.next);
+ 		get_device(dev);
+ 		if (dev->power.status >= DPM_OFF) {
+ 			int error;
+@@ -809,13 +818,8 @@ static void async_suspend(void *data, as
+ 
+ static int device_suspend(struct device *dev)
+ {
+-	INIT_COMPLETION(dev->power.completion);
+-
+-	if (pm_async_enabled && dev->power.async_suspend) {
+-		get_device(dev);
+-		async_schedule(async_suspend, dev);
++	if (pm_async_enabled && dev->power.async_suspend)
+ 		return 0;
+-	}
+ 
+ 	return __device_suspend(dev, pm_transition, false);
+ }
+@@ -827,6 +831,7 @@ static int device_suspend(struct device 
+ static int dpm_suspend(pm_message_t state)
+ {
+ 	struct list_head list;
++	struct device *dev;
+ 	ktime_t starttime = ktime_get();
+ 	int error = 0;
+ 
+@@ -834,9 +839,18 @@ static int dpm_suspend(pm_message_t stat
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+ 	async_error = 0;
+-	while (!list_empty(&dpm_list)) {
+-		struct device *dev = to_device(dpm_list.prev);
+ 
++	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
++		INIT_COMPLETION(dev->power.completion);
++
++		if (pm_async_enabled && dev->power.async_suspend) {
++			get_device(dev);
++			async_schedule(async_suspend, dev);
++		}
++	}
++
++	while (!list_empty(&dpm_list)) {
++		dev = to_device(dpm_list.prev);
+ 		get_device(dev);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
