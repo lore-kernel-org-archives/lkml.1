@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935387AbZLPXTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935300AbZLPXWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935387AbZLPXTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbZLPXTx
+	id S935300AbZLPXWM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbZLPXWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:19:53 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56043 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757156AbZLPXTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:19:52 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Dave Airlie <airlied@linux.ie>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Jean Delvare <jdelvare@suse.de>,
-       Jeff Mahoney <jeffm@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fb/intelfb: Do not depend on EMBEDDED
-References: <aa541tsbrtanvarunansa3uh.1260654940760@email.android.com>
-	<200912131250.13797.jdelvare@suse.de>
-	<alpine.DEB.2.00.0912132148550.24123@skynet.skynet.ie>
-	<200912161437.32134.jdelvare@suse.de>
-	<20091216100005.2c7e6d69@jbarnes-piketon>
-	<m34onq1r4q.fsf@intrepid.localdomain>
-	<alpine.DEB.2.00.0912162255501.25055@skynet.skynet.ie>
-Date: Thu, 17 Dec 2009 00:19:49 +0100
-In-Reply-To: <alpine.DEB.2.00.0912162255501.25055@skynet.skynet.ie> (Dave
-	Airlie's message of "Wed, 16 Dec 2009 22:57:29 +0000 (GMT)")
-Message-ID: <m3vdg6zeui.fsf@intrepid.localdomain>
+	Wed, 16 Dec 2009 18:22:06 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:39256 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932068AbZLPXWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:22:01 -0500
+Date: Wed, 16 Dec 2009 21:21:55 -0200
+From: cascardo@holoscopio.com
+To: David Teigland <teigland@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       rubini@gnudd.com, gregkh@suse.de
+Subject: Re: [PATCH 3/3] misc: use a proper range for minor number dynamic
+ allocation
+Message-ID: <20091216232155.GD7791@holoscopio.com>
+References: <1257813017-28598-1-git-send-email-cascardo@holoscopio.com>
+ <1257813017-28598-2-git-send-email-cascardo@holoscopio.com>
+ <1257813017-28598-3-git-send-email-cascardo@holoscopio.com>
+ <4AF8B4FF.9050405@zytor.com>
+ <20091111153632.944a255c.akpm@linux-foundation.org>
+ <20091215143446.8b6a7e57.akpm@linux-foundation.org>
+ <20091215233738.26188500@lxorguk.ukuu.org.uk>
+ <20091216180155.GA23117@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091216180155.GA23117@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie <airlied@linux.ie> writes:
+On Wed, Dec 16, 2009 at 12:01:56PM -0600, David Teigland wrote:
+> On Tue, Dec 15, 2009 at 11:37:38PM +0000, Alan Cox wrote:
+> > > > I merged this patch, but made a note-to-self that there are remaining
+> > > > open issues..
+> > > 
+> > > And nothing else happened.  Can we revisit this please?
+> > 
+> > The last I saw was a request for an explanation of the users
+> > configuration and how he was getting so many misc devices. Its a bug in
+> > dlm if the dlm is doing that but I didn't see any follow up to the DLM
+> > folks on the subject from the reporter, so it stays NACKed and conflicts
+> > with the device registry.
+> 
+> I never saw an indication that the dlm ate up all of someone's misc
+> devices.  Can we ask the reporter what they were running?
+> 
 
-> Currently with the command line video=, this isn't optimal but still
-> nobody has come up with a way to make fbset useful since it can't deal
-> with multiple heads.
+That was not such ocurrence. I don't use DLM. Sorry for all the fuss.
+I've simply noticed that DLM was using misc devices to create devices
+dynamically after an ioctl. I consider that that ioctl can be called as
+many times as I want my userspace program to call, am I right?
 
-Ahh, now I can see it.
+> > We need to know from the DLM folks/Thaddeu what is actually going on with
+> > that system, especially as it seems to be producing multiple
+> > registrations of the same misc device name which is completely broken and
+> > should probably be made to error anyway.
+> 
+> I don't believe the dlm will ever register multiple devices with the same
+> name.
+> 
 
-> also the old intelfb didn't deal with analog rgb tv at all.
+No. That was another issue, not related to DLM at all. Again, sorry for
+any confusion.
 
-Well... actually, it did: intelfb works very well if a correct mode is
-set (a trivial patch adjusting the clock lower limit to 13.5 MHz may be
-needed, or one can use the double clock and resolution, or maybe 1:1
-pixel aspect ratio etc). It's not about the CH7xxx encoder, the TV is
-connected directly to VGA output.
+> > Whatever is going on this is the wrong "fix". If DLM should only register
+> > it once (as seems the intent) then DLM needs fixing or the users config
+> > or both. If it can register many then DLM needs fixing to not eat misc
+> > devices.
+> 
+> I explained here http://lkml.org/lkml/2009/11/9/379 that the dlm does not
+> use as many misc devices as has been implied.  It starts with 3, and adds
+> one for each *userspace* lockspace.  There are very few applications (I
+> know of 3) that create userspace lockspaces, and they each create about
+> one each.
+> 
 
-E.g.
+The raised issue was that of the device for *each* lock. An application
+could request as many as it wanted. If there's no such usecase, I don't
+think that's a problem as long as that call is privileged (which may be
+easily achieved with the simple chown/chmod).
 
-# PAL 720x576, 50 Hz, Interlaced (13.5 MHz dotclock)
-#
-#                               Horizontal      Vertical
-#       Resolution              720             576
-#       Scan Frequency          15.625 kHz      50 Hz (I)
-#       Sync Width              4.296 us        1.280 ms
-#       Front Porch             1.000 us        0.256 ms
-#       Back Porch              5.370 us        1.600 ms
-#       Active Time             53.333 us       36.864 ms
-#       Blank Time              10.667 us       3.136 ms
-#       Polarity                Negative        Negative
-#
-#       H:      720 + 14 +  58 + 72 = 864
-#       V:      576 +  4 +  20 + 25 = 625
+> That said, I still intend to rework the dlm to use a single device for all
+> lockspaces.
 
-mode "PAL"
-        # D: 13.5 MHz, H: 15.625 kHz, V: 50 Hz
-        geometry 720 576 720 576 32
-        timings 74074 72 14 25 4 58 20
-        laced true
-        hsync low
-        vsync low
-endmode
+That would break current userspace implementations. Or do you have any
+idea on solving this without this breakage?
 
-"fbset PAL" is all one needs to use it.
+> 
+> Dave
+> 
 
-(I know i915 doesn't have interlaced mode support for analog VGA out,
-not a problem).
--- 
-Krzysztof Halasa
+Regards and sorry for anything,
+Cascardo.
