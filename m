@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935865AbZLPWqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935846AbZLPWlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935865AbZLPWqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935408AbZLPWqN
+	id S935846AbZLPWlc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935343AbZLPWl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:46:13 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:55112 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934286AbZLPWqI (ORCPT
+	Wed, 16 Dec 2009 17:41:26 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38464 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934361AbZLPWlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:46:08 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtsEANvvKEuuWOl3/2dsb2JhbACBS5pguUuEKwSBYw
-Date: Wed, 16 Dec 2009 17:41:00 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: leonid.moiseichuk@nokia.com, Viktor.Rosendahl@nokia.com, tony@atomide.com,
-       eero.tamminen@nokia.com
-Cc: Felipe Balbi <felipe.balbi@nokia.com>,
-       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [RELEASE] LTTV 0.12.25
-Message-ID: <20091216224100.GA12533@Krystal>
-References: <20091204160633.GA29864@Krystal> <20091213194210.GA3149@nokia.com> <20091216213546.GA5609@Krystal> <20091216222916.GA11101@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 Dec 2009 17:41:25 -0500
+Message-ID: <4B296209.2010902@zytor.com>
+Date: Wed, 16 Dec 2009 14:41:13 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Borislav Petkov <borislav.petkov@amd.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] x86 msrs: alloc/free for CONFIG_SMP=n
+References: <20091216183212.118c5e14.sfr@canb.auug.org.au> <20091216092424.5f87214c.randy.dunlap@oracle.com> <4B2919BD.40001@zytor.com> <20091216174524.GH11618@aftab> <4B2928AC.3020807@zytor.com> <20091216135119.e283e525.randy.dunlap@oracle.com> <20091216215808.GB27228@liondog.tnic>
+In-Reply-To: <20091216215808.GB27228@liondog.tnic>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091216222916.GA11101@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 17:39:03 up  6:57,  4 users,  load average: 0.16, 0.11, 0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LTTV 0.12.25 can be useful to view traces taken from an ARM omap3 board.
-This release works around a problem with irq tables experienced with IRQ
-IDs > 256, which I have seen on the ARM omap3.
+On 12/16/2009 01:58 PM, Borislav Petkov wrote:
+> 
+>>
+>> --- linux-next-20091216.orig/arch/x86/lib/Makefile
+>> +++ linux-next-20091216/arch/x86/lib/Makefile
+>> @@ -14,7 +14,7 @@ $(obj)/inat.o: $(obj)/inat-tables.c
+>>  
+>>  clean-files := inat-tables.c
+>>  
+>> -obj-$(CONFIG_SMP) := msr.o
+>> +obj-$(CONFIG_X86_MSR) := msr.o
+> 
+> however, CONFIG_X86_MSR is the x86 MSR access module and the <lib/msr.c>
+> is the library of MSR accessing functions which is always in. So this
+> should be unconditional as in my version or Peter might have a better
+> idea...?
+> 
 
-Available at http://lttng.org
+Both are wrong.
 
-Thanks,
+CONFIG_X86_MSR has nothing at all to do with this and is a complete red
+herring.  Involving CONFIG_X86_MSR is just totally bogus.
 
-Mathieu
+Including msr.o unconditionally is also wrong, but for a more subtle
+reason: msr.c is written to contain functions that apply to SMP only;
+with UP replacement stubs written as inlines in
+arch/x86/include/asm/msr.h.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Putting most of the file inside a big #ifdef of course works, but is a
+pretty bad case of beating it with the ugly stick.  My preference would
+be to move the SMP-specific functions to a new file, call it msr-smp.c,
+and then leave only the functions that should be included
+unconditionally in msr.c (I believe it is cleaner to do it that way than
+the opposite.)
+
+	-hpa
