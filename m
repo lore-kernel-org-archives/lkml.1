@@ -1,92 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbZLPWxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763271AbZLPWx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763133AbZLPWxm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:53:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762891AbZLPWxl
+	id S1763271AbZLPWx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763209AbZLPWxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:53:41 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52942 "EHLO
+	Wed, 16 Dec 2009 17:53:52 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52960 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZLPWxj (ORCPT
+	with ESMTP id S1763185AbZLPWxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:53:39 -0500
-Date: Wed, 16 Dec 2009 23:53:28 +0100
+	Wed, 16 Dec 2009 17:53:49 -0500
+Date: Wed, 16 Dec 2009 23:53:42 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>, cbou@mail.ru,
-       dwmw2@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-embedded@vger.kernel.org, Brian Swetland <swetland@google.com>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
-Subject: Re: [POWER] battery calibration parameters from sysfs
-Message-ID: <20091216225328.GG21102@elf.ucw.cz>
-References: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
- <20091204104930.GA28625@sirena.org.uk>
- <A6D19A13FE030A409EC4362C172E091F0E071EB9@eseldmw101.eemea.ericsson.se>
- <20091207114825.GA26965@rakim.wolfsonmicro.main>
- <A6D19A13FE030A409EC4362C172E091F0E0A1FA1@eseldmw101.eemea.ericsson.se>
- <20091207165628.GA24981@rakim.wolfsonmicro.main>
- <20091213132413.GB1437@ucw.cz>
- <20091214121247.GB22388@rakim.wolfsonmicro.main>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: Arve Hj?nnev?g <arve@android.com>, Ryan Mallon <ryan@bluewatersys.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>,
+       Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: GPIO support for HTC Dream
+Message-ID: <20091216225342.GH21102@elf.ucw.cz>
+References: <4B1EB57D.6070408@bluewatersys.com>
+ <20091208214658.GC4164@elf.ucw.cz>
+ <4B1ECEEE.3000209@bluewatersys.com>
+ <4B203575.6050407@bluewatersys.com>
+ <20091210172458.GJ19454@elf.ucw.cz>
+ <4B2150B7.3040207@bluewatersys.com>
+ <BD79186B4FD85F4B8E60E381CAEE190901FB0F92@mi8nycmail19.Mi8.com>
+ <20091211221015.GB24456@elf.ucw.cz>
+ <d6200be20912111440k427c5013j2b17191bcbae2d52@mail.gmail.com>
+ <BD79186B4FD85F4B8E60E381CAEE190901FB10EB@mi8nycmail19.Mi8.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091214121247.GB22388@rakim.wolfsonmicro.main>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB10EB@mi8nycmail19.Mi8.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-12-14 12:12:47, Mark Brown wrote:
-> On Sun, Dec 13, 2009 at 02:24:14PM +0100, Pavel Machek wrote:
+On Fri 2009-12-11 18:12:35, H Hartley Sweeten wrote:
+> On Friday, December 11, 2009 3:41 PM, Arve Hj?nnev?g wrote:
 > 
-> > > actual charger hardware.  My main concern here is that battery
-> > > performance monitoring has no pressing need to be in kernel and that
-> > > pushing it into the kernel creates a barrier to implementing more
-> > > advanced schemes in userspace, which is especially serious given how
-> > > involved this needs to be in order to be accurate.  
+> <snip>
 > 
-> > Well, kernel provides /proc/apm emulation and many systems still rely
-> > on it. So it would be nice to provide something halfway-decent there.
+> >> Now, it will still need some cleanups -- I'm not sure if gpios are
+> >> dream-specific or generic for whole msm.... I kind of assume they
+> >> should be generic for msm. Google people, can you help?
+> >
+> > I'm not exactly sure what you are asking. Gpios in general are not
+> > dream specific, the code in board-dream-gpio.c is. Some gpios (e.g.
+> > DREAM_4_BALL_UP_0) are used for a dream specific function, but point
+> > to a gpio that is generic to the msm architecture.
 > 
-> Unfortunately that's really painful in kernel since you really need to
-> do state tracking over reboots, and even if you do that it's really
-> not trivial.
-
-No, I do not want to get _that_ advanced. But I'd really like to get
-beyond "battery %age is linear function of measured battery voltage".
-
-> > Plus you need to shutdown/suspend machine on battery critical. That
-> > has to be in kernel and already needs those tricky parts.
+> <snip>
 > 
-> Power failure detection based on voltage drop is much more reasonable
-> but it's a very different thing to general battery capacity
-> estimation.
 
-Not sure...
+> >> +++ b/arch/arm/Kconfig
+> >> +       select GENERIC_GPIO
+> >> +       select ARCH_REQUIRE_GPIOLIB
+> >
+> > Please do not do this in a board specific change. You have not changed
+> > the msm generic gpio support to use gpiolib.
+> 
+> Where is the msm tree located?  mach-msm in mainline doesn't appea to
+> have _any_ gpio support.  
 
-> Normally you'd want to do the power failure detection separately anyway,
-> monitoring the system supply voltage rather than the battery voltage.
+Right.
 
-Well, that way you'll discharge batteries too much and kill them
-rather quickly, no? What is "system supply voltage" for PDA class
-system, anyway? I don't think zaurus has ADCs on anything else than
-thermistor, AC in voltage, battery voltage...
+> Is Pavel's implementation generic enough to
+> work with any msm based board?
 
-> Something like "Measure Battery Capacity Precisely in Medical Design"
-> by Bernd Krafthoefer in Power Electronics Technology Jan 2005 might be
-> useful here.
-
-Thanks, it looks interesting. I'm not sure if it will be possible to
-apply on zaurus, but... (While measuring voltage my underestimate the
-old battery, I'm afraid they may overestimate it in bad conditions;
-energy left is battery is useless if battery can't supply enough
-current to keep CPU happy, because its too cold).
+I think so but I'm not sure; thats what I wanted google to
+clarify. Lets keep it dream-specific for now...
 									Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
