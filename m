@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761966AbZLPKLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbZLPKNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761966AbZLPKLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 05:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761940AbZLPKLR
+	id S1761266AbZLPKNO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 05:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbZLPKNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 05:11:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58521 "EHLO
+	Wed, 16 Dec 2009 05:13:12 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:40091 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761948AbZLPKLN (ORCPT
+	with ESMTP id S1761240AbZLPKNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 05:11:13 -0500
-Date: Wed, 16 Dec 2009 11:11:07 +0100
+	Wed, 16 Dec 2009 05:13:10 -0500
+Date: Wed, 16 Dec 2009 11:13:09 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, andi@firstfloor.org,
-       minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-Message-ID: <20091216101107.GA15031@basil.fritz.box>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: hwpoison tree build failure
+Message-ID: <20091216101308.GB15031@basil.fritz.box>
+References: <20091216172633.93c361ee.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091216172633.93c361ee.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 12:00:11PM +0900, KAMEZAWA Hiroyuki wrote:
-> This is from Christoph Lameter's mm_accessor patch posted 5/Nov.
+On Wed, Dec 16, 2009 at 05:26:33PM +1100, Stephen Rothwell wrote:
+> Hi Andi,
 > 
-> Replacing all access to mm->mmap_sem with mm-accessor functions as
->  mm_read_lock,
->  mm_write_lock,
->  etc...
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> This kind of function allows us to improve page fault performance etc..
-> For example, skil down_read(mmap_sem) in some situation.
-> (as: http://marc.info/?l=linux-mm&m=125809791306459&w=2)
+> mm/memory-failure.c: In function 'soft_offline_page':
+> mm/memory-failure.c:1266: error: too few arguments to function 'migrate_pages'
+> 
+> Caused by commit c71d409184af558ddac0fd0167061d6282428872 ("HWPOISON: Add
+> soft page offline support") from the hwpoison tree interacting with
+> commit 62b61f611eb5e20f7e9f8619bfd03bdfe8af6348 ("ksm: memory hotremove
+> migration only") from Linus' tree.
+> 
+> I added the following merge fix for today (I don't know if it is correct)
+> and can carry it for a while:
 
-The problem is that it also slows down the writers, and we have
-some workloads where writing is the bottleneck.
+Yes I am already aware of this, but I haven't pushed out a new tree yet
+(mostly because there was no uptodate -git* snapshot for this yesterday, lame
+excuse I know) 
 
-I don't think this is the right trade off at this time.
-
-Also the patches didn't fare too well in testing unfortunately.
-
-I suspect we'll rather need multiple locks split per address
-space range.
+Your fix is the same as I have.
 
 -Andi
 
