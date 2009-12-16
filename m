@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbZLPLXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbZLPL2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbZLPLXM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 06:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762099AbZLPLXD
+	id S1762099AbZLPL2u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 06:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762068AbZLPL2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 06:23:03 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:47263 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762098AbZLPLW7 (ORCPT
+	Wed, 16 Dec 2009 06:28:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43995 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755007AbZLPL2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 06:22:59 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-Date: Wed, 16 Dec 2009 12:23:16 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Josua Dietze <digidietze@draisberghof.de>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <20091215180300.GF16426@one-eyed-alien.net> <20091216114932.4bede511@strolchi.home.s3e.de>
-In-Reply-To: <20091216114932.4bede511@strolchi.home.s3e.de>
+	Wed, 16 Dec 2009 06:28:48 -0500
+Date: Wed, 16 Dec 2009 12:28:44 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: ebiederm@xmission.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] SYSCTL: Fix sysctl breakage on systems with older glibc
+Message-ID: <20091216112844.GA31705@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912161223.16403.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 16. Dezember 2009 11:49:32 schrieb Stefan Seyfried:
-> On Tue, 15 Dec 2009 10:03:00 -0800
-> Matthew Dharm <mdharm-kernel@one-eyed-alien.net> wrote:
-> > The right answer here is neither to move the eject code nor to introduce
-> > more of it.  New devices should be supported via userspace.
-> 
-> Can somebody point me to the "userspace" that is meant here?
-> Preferably some code that can be built actually?
+SYSCTL: Fix breakage on systems with older glibc
 
-Sure:
-http://www.draisberghof.de/usb_modeswitch/
+As predicted during code review, the sysctl(2) changes made systems
+with old glibc nearly unusable. About every command gives a:
 
-	HTH
-		Oliver
+warning: process `ls' used the deprecated sysctl s ystem call with 1.4
+
+warning in the log.
+
+I see this on a SUSE 10.0 system with glibc 2.3.5.
+Don't warn for this common case.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+diff -u linux-2.6.32-git12/kernel/sysctl_binary.c-o linux-2.6.32-git12/kernel/sysctl_binary.c
+--- linux-2.6.32-git12/kernel/sysctl_binary.c-o	2009-12-16 12:15:52.000000000 +0100
++++ linux-2.6.32-git12/kernel/sysctl_binary.c	2009-12-16 12:14:58.000000000 +0100
+@@ -1399,6 +1399,13 @@
+ {
+ 	int i;
+ 
++	/* 
++	 * CTL_KERN/KERN_VERSION is used by older glibc and cannot 
++	 * ever go away.
++	 */
++	if (name[0] == CTL_KERN && name[1] == KERN_VERSION)
++		return;
++
+ 	if (printk_ratelimit()) {
+ 		printk(KERN_INFO
+ 			"warning: process `%s' used the deprecated sysctl "
