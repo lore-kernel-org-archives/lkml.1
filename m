@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934265AbZLPAJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbZLPAJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934265AbZLPAJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 19:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934233AbZLPAJX
+	id S934270AbZLPAJl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 19:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934279AbZLPAJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 19:09:23 -0500
-Received: from www.tglx.de ([62.245.132.106]:50260 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934136AbZLPAJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 19:09:21 -0500
-Date: Wed, 16 Dec 2009 01:09:03 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Keith Mannthey <kmannth@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
-In-Reply-To: <20091215164950.1fd41caf@bike.lwn.net>
-Message-ID: <alpine.LFD.2.00.0912160105510.2755@localhost.localdomain>
-References: <1260907788.6521.10.camel@keith-laptop> <20091215164950.1fd41caf@bike.lwn.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 15 Dec 2009 19:09:33 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45187 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934270AbZLPAJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 19:09:30 -0500
+Date: Wed, 16 Dec 2009 00:09:24 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: NFS lockdep lock misordering mmap_sem<->i_mutex_key with
+	2.6.32-git1
+Message-ID: <20091216000924.GZ14381@ZenIV.linux.org.uk>
+References: <20091207115949.GA7610@basil.fritz.box> <20091207211216.E95E.A69D9226@jp.fujitsu.com> <20091207132009.GI18989@one.firstfloor.org> <20091215222134.GA27892@ZenIV.linux.org.uk> <20091215233841.GE22392@basil.fritz.box> <1260921277.3219.18.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260921277.3219.18.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009, Jonathan Corbet wrote:
-> On Tue, 15 Dec 2009 12:09:48 -0800
-> Keith Mannthey <kmannth@us.ibm.com> wrote:
->
-> > +#include <linux/sysdev.h>
-> > +#include <asm/byteorder.h>
-> > +#include "rtl.h"
-> > +
-> > +static spinlock_t rtl_lock;
+On Tue, Dec 15, 2009 at 06:54:37PM -0500, Trond Myklebust wrote:
+
+> > nfs_revalidate_mapping takes i_mutex, but mmap already has mmap_sem
+> > hold and taking i_mutex inside mmap_sem is not allowed by the VFS.
+
+VM, actually...
+
+> If you want to work around the problem rather than going for something
+> like Peter's split up of the mmap() callback, then I'd suggest changing
+> to using nfs_revalidate_mapping_nolock() instead. The fact that we are
+> seeing these lock misordering warnings is proof that the call to
+> nfs_revalidate_mapping() is not always a no-op.
 > 
-> You should probably include <linux/spinlock.h> for this.
+> By not taking the i_mutex your call to invalidate_inode_pages2() can
+> potentially end up racing with another process that is writing to the
+> file, but that should be a rare occurrence. The effect will be that the
+> two processes can end up fighting to alternatively dirty and then clean
+> the pages...
 
-And use:
+Um...  The really interesting question is whether it's a false positive;
+*can* we hit the deadlock here?  getdents() is a red herring; write() and
+truncate() are real candidates.
 
-DEFINE_SPINLOCK(rtl_lock);
-
-because the lock is uninitialized otherwise. Running that code with
-lockdep would have warned about that.
-
-Thanks,
-
-	tglx
+What happens if we have one thread do mmap() while another (sharing the
+address space with it) does write() or truncate() on the same file?
