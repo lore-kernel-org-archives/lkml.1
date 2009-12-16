@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935879AbZLPXAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935894AbZLPXBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935879AbZLPXAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964880AbZLPXAe
+	id S935894AbZLPXBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935330AbZLPXB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:00:34 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:54397 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964869AbZLPXA0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:00:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=uqSryKAQ+ev9l2mke4nc/5XkzveSKGSQ5gnBlaMMijb0rWvYpnq56FT5rxCZUfb2z2
-         85lFdLh3YZ9zfQPVjQy2C4AEFSr3cT4PoBC7aucbjuLKgBQUV83L9Vvgv1jUR6Pov8I6
-         kxvupCWyuZfgDBQNDE1Pfnqx0Rgcr3rRo1yV4=
-MIME-Version: 1.0
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200ED81@mi8nycmail19.Mi8.com>
-References: <1253224997-7422-1-git-send-email-vapier@gentoo.org> 
-	<BD79186B4FD85F4B8E60E381CAEE19090200ED81@mi8nycmail19.Mi8.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 16 Dec 2009 18:00:04 -0500
-Message-ID: <8bd0f97a0912161500h1dd95f1cr7a978b67ab6278b4@mail.gmail.com>
-Subject: Re: [spi-devel-general] [PATCH 1/2] spi: new SPI bus 
-	lock/unlockfunctions
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Yi Li <yi.li@analog.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 16 Dec 2009 18:01:29 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:46098 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935408AbZLPXBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:01:20 -0500
+Date: Wed, 16 Dec 2009 15:00:51 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: Chetan Loke <chetanloke@gmail.com>, Chris Friesen <cfriesen@nortel.com>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: Irq architecture for multi-core network driver.
+Message-ID: <20091216150051.63b6e31c@nehalam>
+In-Reply-To: <4B295F8C.4050905@caviumnetworks.com>
+References: <4AE0D14B.1070307@caviumnetworks.com>
+	<4AE0D72A.4090607@nortel.com>
+	<4AE0DB98.1000101@caviumnetworks.com>
+	<b2f3590f0912161408u73947f6fx6902ebef927caf94@mail.gmail.com>
+	<4B295F8C.4050905@caviumnetworks.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 17:49, H Hartley Sweeten wrote:
-> On Thursday, September 17, 2009 3:03 PM, Mike Frysinger wrote:
->>
->> From: Yi Li <yi.li@analog.com>
->>
->> For some MMC cards over SPI bus, it needs to lock the SPI bus for its own
->> use.  The SPI transfer must not be interrupted by other SPI devices that
->> share the SPI bus with SPI MMC card.
->>
->> This patch introduces 2 APIs for SPI bus locking operation.
->
-> Has any additional work be done on this patchset?
+On Wed, 16 Dec 2009 14:30:36 -0800
+David Daney <ddaney@caviumnetworks.com> wrote:
 
-nope
+> Chetan Loke wrote:
+> >>> Does your hardware do flow-based queues?  In this model you have
+> >>> multiple rx queues and the hardware hashes incoming packets to a single
+> >>> queue based on the addresses, ports, etc. This ensures that all the
+> >>> packets of a single connection always get processed in the order they
+> >>> arrived at the net device.
+> >>>
+> >> Indeed, this is exactly what we have.
+> >>
+> >>
+> >>> Typically in this model you have as many interrupts as queues
+> >>> (presumably 16 in your case).  Each queue is assigned an interrupt and
+> >>> that interrupt is affined to a single core.
+> > 
+> >> Certainly this is one mode of operation that should be supported, but I
+> >> would also like to be able to go for raw throughput and have as many cores
+> >> as possible reading from a single queue (like I currently have).
+> >>
+> > Well, you could let the NIC firmware(f/w) handle this. The f/w would
+> > know which interrupt was just injected recently.In other words it
+> > would have a history of which CPU's would be available. So if some
+> > previously interrupted CPU isn't making good progress then the
+> > firmware should route the incoming response packets to a different
+> > queue. This way some other CPU will pick it up.
+> > 
+> 
+> 
+> It isn's a NIC.  There is no firmware.  The system interrupt hardware is 
+> what it is and cannot be changed.
+> 
+> My current implementation still has a single input queue configured and 
+> I get a maskable interrupt on a single CPU when packets are available. 
+> If the queue depth increases above a given threshold, I optionally send 
+> an IPI to another CPU to enable NAPI polling on that CPU.
+> 
+> Currently I have a module parameter that controls the maximum number of 
+> CPUs that will have NAPI polling enabled.
+> 
+> This allows me to get multiple CPUs doing receive processing without 
+> having to hack into the lower levels of the system's interrupt 
+> processing code to try to do interrupt steering.  Since all the 
+> interrupt service routine was doing was call netif_rx_schedule(), I can 
+> simply do this via smp_call_function_single().
 
-> It would be nice to finally have a solution that lets the mmc_spi driver
-> work on a shared spi bus.
+Better to look into receive packet steering patches that are still
+under review (rather than reinventing it just for your driver)
 
-the latest patch is on the list for _anyone_ to contribute their fixes
-to address the posted issues
--mike
+-- 
