@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935451AbZLPWdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbZLPWf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935451AbZLPWdj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:33:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935393AbZLPWde
+	id S1759901AbZLPWf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbZLPWfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:33:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59427 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935250AbZLPWdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:33:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Wed, 16 Dec 2009 17:35:25 -0500
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:54520 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbZLPWfY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:35:24 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19SlUqWs+FaWRGD13ajPaKS
+Date: Wed, 16 Dec 2009 14:35:20 -0800
+From: Tony Lindgren <tony@atomide.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Wed, 16 Dec 2009 23:33:57 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912162257.00771.rjw@sisk.pl> <alpine.LFD.2.00.0912161410120.3556@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912161410120.3556@localhost.localdomain>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       linux-omap@vger.kernel.org
+Subject: [GIT PULL] omap build fixes
+Message-ID: <20091216223520.GV4575@atomide.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912162333.57245.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 December 2009, Linus Torvalds wrote:
-> 
-> Btw, what are the timings if you just force everything async? I think that 
-> worked on yur laptops, no?
+Hi Linus,
 
-No, it didn't.  I could make all PCI async, provided that the ACPI subtree was
-resumed before any PCI devices.  [Theoretically I can make that happen by
-moving ACPI resume to the _noirq phase (just for testing of course).  So I can
-try to make PCI async in addition to serio and USB, plus i8042 perhaps, which
-should be sfficient for the nx6325 I think.]
+Please pull omap build fixes from:
 
-Making all async always hanged the boxes on resume.
+git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
 
-Rafael
+In addition to the three build fixes, there's also a suspend fix
+for omap serial init.
+
+Regards,
+
+Tony
+
+
+The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
+  Stephen Rothwell (1):
+        mfd: compile fix for twl4030 renaming
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
+
+Balaji T K (1):
+      mfd: twl: fix twl4030 rename for remaining driver, board files
+
+Mika Westerberg (1):
+      OMAP3: serial - fix bug introduced in
+
+Olof Johansson (1):
+      omap3: Allow EHCI to be built on OMAP3
+
+Thomas Weber (1):
+      USB ehci: replace mach header with plat
+
+ arch/arm/mach-omap2/Kconfig                  |    1 +
+ arch/arm/mach-omap2/board-cm-t35.c           |    2 +-
+ arch/arm/mach-omap2/board-igep0020.c         |    2 +-
+ arch/arm/mach-omap2/board-omap3evm.c         |    2 +-
+ arch/arm/mach-omap2/board-omap3touchbook.c   |    2 +-
+ arch/arm/mach-omap2/board-rx51-peripherals.c |    2 +-
+ arch/arm/mach-omap2/board-zoom-peripherals.c |    2 +-
+ arch/arm/mach-omap2/serial.c                 |    7 ++++---
+ drivers/usb/host/ehci-omap.c                 |    2 +-
+ drivers/video/omap/lcd_ldp.c                 |    4 ++--
+ drivers/video/omap/lcd_omap2evm.c            |   10 +++++-----
+ drivers/video/omap/lcd_omap3beagle.c         |    2 +-
+ drivers/video/omap/lcd_omap3evm.c            |   10 +++++-----
+ drivers/video/omap/lcd_overo.c               |    2 +-
+ sound/soc/omap/sdp3430.c                     |    6 +++---
+ 15 files changed, 29 insertions(+), 27 deletions(-)
