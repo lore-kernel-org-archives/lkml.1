@@ -1,33 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762624AbZLPVhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbZLPVgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762624AbZLPVhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 16:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbZLPVhr
+	id S1759094AbZLPVgz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 16:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758016AbZLPVgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 16:37:47 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:54389 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbZLPVhr (ORCPT
+	Wed, 16 Dec 2009 16:36:53 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:53474 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757998AbZLPVgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 16:37:47 -0500
-Date: Wed, 16 Dec 2009 15:36:32 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V7 0/8] Per cpu atomics in core allocators and
- cleanup
-In-Reply-To: <alpine.DEB.2.00.0912160844440.8572@router.home>
-Message-ID: <alpine.DEB.2.00.0912161536070.16113@router.home>
-References: <20091214220320.665065925@quilx.com> <20091215170622.GA24739@csn.ul.ie> <alpine.DEB.2.00.0912160844440.8572@router.home>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 16 Dec 2009 16:36:52 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes when ..."
+Date: Wed, 16 Dec 2009 21:36:36 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.32-07500-g8bea867-dirty; KDE/4.3.2; x86_64; ; )
+Cc: Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
+       Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
+       Daniel Vetter <daniel.vetter@ffwll.ch>
+References: <200912071830.14697.arnd@arndb.de> <200912162120.34163.arnd@arndb.de> <20091216133005.0e822950@jbarnes-piketon>
+In-Reply-To: <20091216133005.0e822950@jbarnes-piketon>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912162136.36458.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18nzZ19DA/4AP7VcgNUqQkN/RN8t/eykmsNCXg
+ hzHnAozXRUAKhfMaFHpVdMxJ7p7WXFJ8zyuVaBmYoHCou7s5dV
+ VPYPz/GzQvmIFKka9TQTQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With todays git tree I get a reject. Will rediff when rc1 is out.
+On Wednesday 16 December 2009 21:30:05 Jesse Barnes wrote:
+> But you're sure powersave=0 was solid?  Hmm...
 
+It's hard to be sure when it sometimes takes a day before a
+broken version crashes. I can keep running this kernel with and
+without powersave=0 some more and tell you if it stays reproducible.
+
+	Arnd
