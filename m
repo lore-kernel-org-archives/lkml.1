@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935016AbZLPQ17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935028AbZLPQ2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935016AbZLPQ17 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 11:27:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933662AbZLPQ16
+	id S935028AbZLPQ2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 11:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935021AbZLPQ2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 11:27:58 -0500
-Received: from mail-out.m-online.net ([212.18.0.10]:38894 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934980AbZLPQ15 (ORCPT
+	Wed, 16 Dec 2009 11:28:14 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:60664 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935020AbZLPQ2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 11:27:57 -0500
-X-Auth-Info: ww43sSrtF33wNy1N7Sm71SXckOlYf+z7PlTgfWRbhqI=
-Message-ID: <4B290A57.3010705@grandegger.com>
-Date: Wed, 16 Dec 2009 17:27:03 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Wed, 16 Dec 2009 11:28:12 -0500
+Date: Wed, 16 Dec 2009 10:27:39 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Andi Kleen <andi@firstfloor.org>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+In-Reply-To: <20091216113158.GE15031@basil.fritz.box>
+Message-ID: <alpine.DEB.2.00.0912161025290.8572@router.home>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com> <20091216101107.GA15031@basil.fritz.box> <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091216104951.GD15031@basil.fritz.box> <20091216201218.42ff7f05.kamezawa.hiroyu@jp.fujitsu.com> <20091216113158.GE15031@basil.fritz.box>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-CC: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Urs Thuermann <urs.thuermann@volkswagen.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Kurt Van Dijck <kurt.van.dijck@eia.be>, netdev@vger.kernel.org
-Subject: Re: [PATCH 4/7] can/at91: don't check platform_get_irq's return value
- against zero
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Kleine-König wrote:
-> platform_get_irq returns -ENXIO on failure, so !irq was probably
-> always true.  Better use (int)irq <= 0.  Note that a return value of
-> zero is still handled as error even though this could mean irq0.
+On Wed, 16 Dec 2009, Andi Kleen wrote:
 
-But only on ARM, which is the only platform still using the infamous
-NO_IRQ (=-1). As this is a driver for ARM hardware, using irq == NO_IRQ
-would make sense, though.
+> > Do you have alternative recommendation rather than wrapping all accesses by
+> > special functions ?
+>
+> Work out what changes need to be done for ranged mmap locks and do them all
+> in one pass.
 
-Wolfgang.
+Locking ranges is already possible through the split ptlock and
+could be enhanced through placing locks in the vma structures.
+
+That does nothing solve the basic locking issues of mmap_sem. We need
+Kame-sans abstraction layer. A vma based lock or a ptlock still needs to
+ensure that the mm struct does not vanish while the lock is held.
+
