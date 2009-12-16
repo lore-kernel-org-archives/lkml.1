@@ -1,103 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbZLPRSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbZLPRUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbZLPRSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762329AbZLPRSM
+	id S1762450AbZLPRUK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbZLPRUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:18:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37840 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762255AbZLPRSI (ORCPT
+	Wed, 16 Dec 2009 12:20:07 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:40073 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755163AbZLPRUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:18:08 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf diff: Use fabs instead of, ugh, casting to u64
-Date: Wed, 16 Dec 2009 15:17:58 -0200
-Message-Id: <1260983878-3430-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
+	Wed, 16 Dec 2009 12:20:05 -0500
+Authentication-Results: sj-iport-2.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMulKEurRN+K/2dsb2JhbADAEZcFhCsEgWM
+X-IronPort-AV: E=Sophos;i="4.47,407,1257120000"; 
+   d="scan'208";a="229139105"
+From: Roland Dreier <rdreier@cisco.com>
+To: Ralph Campbell <ralph.campbell@qlogic.com>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-rdma\@vger.kernel.org" <linux-rdma@vger.kernel.org>
+Subject: Re: InfiniBand/RDMA merge plans for 2.6.33
+References: <adaocm1csgb.fsf@roland-alpha.cisco.com>
+	<1260821358.19688.296.camel@chromite.mv.qlogic.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Dec 2009 09:20:01 -0800
+In-Reply-To: <1260821358.19688.296.camel@chromite.mv.qlogic.com> (Ralph
+	Campbell's message of "Mon, 14 Dec 2009 12:09:18 -0800")
+Message-ID: <adaws0m96pq.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Dec 2009 17:20:02.0017 (UTC) FILETIME=[00522510:01CA7E74]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-To check which deltas should be printed. Things looks more believable now, I
-guess:
+ > I understand your frustration in having to deal with a large amount
+ > of code. If you included all the Mellanox firmware in the mlx4
+ > driver, it would be huge too. I'm limited in what I can do given
+ > the complexity of the IBTA spec.
 
-$ perf report -i perf.data.old --sort dso,symbol | head -13
-     9.02%  libc-2.10.1.so               [.] _IO_vfprintf_internal
-     4.88%  find                         [.] 0x00000000014af0
-     2.91%  [kernel]                     [k] __kmalloc
-     2.85%  [kernel]                     [k] ext4_htree_store_dirent
-     2.50%  libc-2.10.1.so               [.] __GI_memmove
-     2.44%  [kernel]                     [k] half_md4_transform
-     2.43%  [kernel]                     [k] _spin_lock
-     2.33%  [kernel]                     [k] system_call
-$ perf report -i perf.data --sort dso,symbol | head -13
-     8.55%  libc-2.10.1.so               [.] _IO_vfprintf_internal
-     3.11%  [kernel]                     [k] __kmalloc
-     3.07%  [kernel]                     [k] ext4_htree_store_dirent
-     2.66%  find                         [.] 0x00000000016bcf
-     2.61%  [kernel]                     [k] _atomic_dec_and_lock
-     2.46%  [kernel]                     [k] half_md4_transform
-     2.41%  libc-2.10.1.so               [.] __GI_memmove
-     2.30%  find                         [.] 0x00000000009219
-$ perf diff | head -13
-     9.02%     -0.47%  libc-2.10.1.so               [.] _IO_vfprintf_internal
-     2.91%     +0.20%  [kernel]                     [k] __kmalloc
-     2.85%     +0.23%  [kernel]                     [k] ext4_htree_store_dirent
-     1.99%     +0.62%  [kernel]                     [k] _atomic_dec_and_lock
-     2.44%     +0.02%  [kernel]                     [k] half_md4_transform
-     2.50%     -0.09%  libc-2.10.1.so               [.] __GI_memmove
-     1.88%     +0.01%  [kernel]                     [k] __d_lookup
-     2.43%     -0.75%  [kernel]                     [k] _spin_lock
-     0.97%     +0.62%  [kernel]                     [k] path_get
-     1.99%     -0.42%  libc-2.10.1.so               [.] _int_malloc
-$
+Sure, I understand that your driver is going to be pretty big.  However,
+ipath was ~38 KLoC, which qib is ~54 KLoC (after the latest cleanup --
+it started over 60K if I recall correctly).  That's 40% bigger, 16 KLoC
+in absolute terms -- and you dropped support for HT HCAs!
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/hist.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ > QLogic is not "abandoning the ipath driver as unmaintainable".
+ > The thought was that trying to incrementally patch in all the changes
+ > needed to support dual ports, QDR, chip register addresses, etc.
+ > would result in larger patches than renaming the driver. It was a
+ > chicken-and-egg problem because until the new code was fully
+ > written and debugged, we couldn't post it and we couldn't patch
+ > ipath until we knew all the places that needed to be changed.
 
-diff --git a/tools/perf/util/hist.c b/tools/perf/util/hist.c
-index 1bf8658..e8daf5c 100644
---- a/tools/perf/util/hist.c
-+++ b/tools/perf/util/hist.c
-@@ -1,6 +1,7 @@
- #include "hist.h"
- #include "session.h"
- #include "sort.h"
-+#include <math.h>
- 
- struct callchain_param	callchain_param = {
- 	.mode	= CHAIN_GRAPH_REL,
-@@ -498,9 +499,9 @@ static size_t hist_entry__fprintf(struct hist_entry *self,
- 		if (session->events_stats.total > 0)
- 			new_percent = (self->count * 100.0) / session->events_stats.total;
- 
--		diff = old_percent - new_percent;
-+		diff = new_percent - old_percent;
- 
--		if ((u64)diff != 0)
-+		if (fabs(diff) >= 0.01)
- 			snprintf(bf, sizeof(bf), "%+4.2F%%", diff);
- 		else
- 			snprintf(bf, sizeof(bf), " ");
--- 
-1.6.2.5
+We can quibble about the reason, but the end effect is that ipath is
+abandonded, right?  Maybe a better approach would have been to write a
+new driver for the new chip and not try to move the old devices out of
+ipath.  But of course it's way too late to start over.
 
+Anyway, we'll get qib in eventually -- but it may take some work.
+
+ - R.
