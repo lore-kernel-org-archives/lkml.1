@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762881AbZLPWU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbZLPWWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762881AbZLPWU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:20:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763035AbZLPWUg
+	id S1763054AbZLPWWH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762668AbZLPWV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:20:36 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:49652 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762957AbZLPWUc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:20:32 -0500
-Date: Thu, 17 Dec 2009 09:20:28 +1100
-From: Simon Horman <horms@verge.net.au>
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Subject: [RFC] timers: Remove duplicate setting of new_base in __mod_timer()
-Message-ID: <20091216222028.GA15841@verge.net.au>
+	Wed, 16 Dec 2009 17:21:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59424 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754584AbZLPWV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:21:56 -0500
+Message-ID: <4B295D47.6000403@kernel.org>
+Date: Wed, 16 Dec 2009 14:20:55 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 3/9] pci: don't dump it when bus resource flags is not
+ used
+References: <4ADEB601.8020200@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org>	<20091104093044.17ab628a@jbarnes-piketon>	<4AF1CD79.4010602@kernel.org>	<4AF22CF1.1020508@kernel.org>	<4AF22D26.4070500@kernel.org>	<4AF508F0.9060105@kernel.org>	<4AF91F54.10507@jp.fujitsu.com>	<4AF936DB.1030309@kernel.org>	<4AFCF7D8.1090207@jp.fujitsu.com>	<4AFCFC0D.4030002@kernel.org>	<4AFD19DA.7010602@jp.fujitsu.com>	<4AFE6F39.5080505@kernel.org>	<4B0B321E.4010103@jp.fujitsu.com>	<4B0B335E.1070809@kernel.org>	<4B0B3C13.9030502@jp.fujit! su.com>	<4B0C69AD.3030106@kernel. org>	<4B0D13EB.9010403@jp.fujitsu.com>	<4B10D084.8070608@kerne! l.org>	<4B10D2C0.60104@kernel.org> <20091216125002.07117860@jbarnes-piketon>
+In-Reply-To: <20091216125002.07117860@jbarnes-piketon>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jesse Barnes wrote:
+> On Fri, 27 Nov 2009 23:35:28 -0800
+> Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>>
+>> mean it is not used, so skip it.
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> ---
+>>  drivers/pci/setup-bus.c |    3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> Index: linux-2.6/drivers/pci/setup-bus.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/pci/setup-bus.c
+>> +++ linux-2.6/drivers/pci/setup-bus.c
+>> @@ -727,7 +727,8 @@ static void pci_bus_dump_res(struct pci_
+>>  
+>>          for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+>>                  struct resource *res = bus->resource[i];
+>> -                if (!res || !res->end)
+>> +
+>> +		if (!res || !res->end || !res->flags)
+>>                          continue;
+>>  
+>>  		dev_printk(KERN_DEBUG, &bus->dev, "resource %d
+>> %pR\n", i, res);
+> 
+> Seems fine apart from whitespace (looks like the if (...) isn't tabbed
+> in properly?).
+> 
 
-I am wondering if the first line of the following snippet of
-__mod_timer() can be removed as new_base always seems to be reset.
-
-Alternatively perhaps smp_processor_id() and  per_cpu() could
-be moved to inside the #if and the call to __get_cpu_var() moved to
-inside #else ?
-
-        new_base = __get_cpu_var(tvec_bases);
-
-        cpu = smp_processor_id();
-        
-#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
-        if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
-                int preferred_cpu = get_nohz_load_balancer();
-                        
-                if (preferred_cpu >= 0)
-                        cpu = preferred_cpu;
-        }
-#endif
-        new_base = per_cpu(tvec_bases, cpu);
-
-Signed-off-by: Simon Horman <horms@verge.net.au>
-
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c	2009-12-17 07:02:57.000000000 +0900
-+++ linux-2.6/kernel/timer.c	2009-12-17 07:03:17.000000000 +0900
-@@ -656,8 +656,6 @@ __mod_timer(struct timer_list *timer, un
- 
- 	debug_activate(timer, expires);
- 
--	new_base = __get_cpu_var(tvec_bases);
--
- 	cpu = smp_processor_id();
- 
- #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
+old one have space instead of tab
