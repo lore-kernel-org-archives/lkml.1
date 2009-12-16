@@ -1,284 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbZLPF6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbZLPGBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761595AbZLPF6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 00:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761189AbZLPF6V
+	id S1761605AbZLPGBh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 01:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761574AbZLPGBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 00:58:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59993 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1761085AbZLPF6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 00:58:19 -0500
-Message-ID: <4B287690.4000305@cn.fujitsu.com>
-Date: Wed, 16 Dec 2009 13:56:32 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 16 Dec 2009 01:01:36 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33765 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756562AbZLPGBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 01:01:35 -0500
+Date: Wed, 16 Dec 2009 15:01:30 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: John Linn <John.Linn@xilinx.com>, Grant Likely <grant.likely@secretlab.ca>
+Cc: richard.rojfors@mocean-labs.com, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] spi: xilinx_spi: Fix up I/O routine wrapping bogosity.
+Message-ID: <20091216060130.GD31265@linux-sh.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/4] perf/timer: 'perf timer' core code
-References: <4B27702F.1080507@cn.fujitsu.com> <4B2770AD.90005@cn.fujitsu.com> <4B2770FA.7090803@cn.fujitsu.com> <4B277143.9070909@cn.fujitsu.com> <4B277191.6020500@cn.fujitsu.com> <alpine.LFD.2.00.0912151539420.2755@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912151539420.2755@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+xilinx_spi presently makes some fairly questionable assumptions about I/O
+routines, and attempts to assign ioread32/iowrite32 and friends directly
+to its own internal function pointers. On many platforms these I/O
+routines are macros or wrappers and not actual functions on their own,
+resulting in things like:
 
-Sorry for many mistakes(typos and bad ideas) in this patch, i'll cook it
-more and be careful later. Thanks very much.
+ERROR: "ioread32be" [drivers/spi/xilinx_spi.ko] undefined!
+ERROR: "iowrite32be" [drivers/spi/xilinx_spi.ko] undefined!
+ERROR: "iowrite32" [drivers/spi/xilinx_spi.ko] undefined!
+ERROR: "ioread32" [drivers/spi/xilinx_spi.ko] undefined!
 
-Thomas Gleixner wrote:
-> The output is confusing in several aspects:
-> 
->   1) Different time units:
-> 
->      Please use consistent time units for everything. micro seconds
->      are fine and we definitely do not care about nanosecond
->      fractions.
+If xilinx_spi wants to do this sort of casting, it needs to provide its
+own wrappers for these, or change how it does accesses completely.
 
-OK, i'll change ns to ms, and for timer, the unit is HZ, do we have the
-way to read kernel HZ in userspace? if not, i'll export HZ by proc/debugfs
-or other way
+I've opted for the first approach, and the attached silly patch does
+that. If someone with the hardware available wants to give the second
+option a try that's ok too. In any event, the current code is broken for
+at least: arm, avr32, blackfin, microblaze, mn10300, and sh.
 
-> 
->   2) Timer description:
->      
->      Why do we have hex addresses and process names intermingled ? Why
->      don't we print the process/thread name which owns the timer
->      always ? [PROF/VIRTUAL] is not a property of the Timer, it
->      belongs into type.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-Um, but not every timer has it's owner task, for example, if we start
-a timer in interrupt handle function, this timer in not owns any tasks.
-And itimer is started by userspace task so we can get it's owner, that
-why i print hex address for timer/hrtimer, and print task name for itimer.
+---
 
->
->   3) Max-lat-at-Task:
-> 
->      What does this field tell ?
+ drivers/spi/xilinx_spi.c |   28 ++++++++++++++++++++++++----
+ 1 file changed, 24 insertions(+), 4 deletions(-)
 
-It means that which task in running when the maximum latency occurs.
-but, as you noticed, this is useless, i'll remove it in next version
-patch.
-
->    
->   4) *handle:
-> 
->      That should be a more descriptive name, e.g. function runtime
-> 
-
-OK, will fix
-
->   5) Max-lat-at-func:
-> 
->      Is this the callback function which ran the longest time ? Why
->      is it named latency ? Why is it not decoded into a symbol ?
-
-it's my typo, i'll export it using right/better way
-
-> 
-> Btw, fitting the output into 80chars allows to use the tool on a non
-> graphical terminal as well.
-> 
-
-OK, will fix
-
-> Also there are other metrics of timers which are interesting and
-> should be retrieved by such a tool:
-> 
->      number of activated timers
->      number of canceled timers
->      number of expired timers
-> 
-> in the form of simple statistics.
-> 
-
-OK. will support it
-
-> The canceled timers are interesting also in a list, so we can see
-> which timers are canceled after which time and how long before the
-> expiry.
-> 
-
-Um, i'll cook timer tracepoints to get the time when timer canceled,
-and support this function.
-
->> +static const char * const timer_usage[] = {
->> +	"perf timer [<options>] {record|latency}",
->> +	NULL
->> +};
-> 
-> Your example above uses "perf timer lat". What's correct ?
-> 
-
-Actually, we only compare frontal 3 characters:
-	strncmp(argv[0], "lat", 3)
-
-And 'perf sched' and other commands also use this way.
-
->> +static const struct option latency_options[] = {
->> +	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
->> +		   "sort by key(s): "SORT_KEY),
-> 
-> Do we really need a sort order ? A single sort key should be
-> sufficient.
-> 
-
-i think it's necessary.
-
-for example, if we interest in timer's max latency, then we can
-use '-s max-timer-latency' to sort it.
-
-And, if it has many timer with the some max latency, then we can
-use '-s max-timer-latency,avg-timer-latency' to sort
-
-> I'd prefer to have a selector instead which lets me filter timer
-> types. If I debug hrtimers then I have no interest in itimers or timer
-> list timers.
-> 
-
-OK, will support this filter
-
->> +static LIST_HEAD(sort_list);
->> +
->> +static void setup_sorting(void)
->> +{
->> +	char *tmp, *tok, *str = strdup(sort_order);
-> 
->   Please hand sort_order in as an argument.
-> 
-
-Sorry for my stupid question:
-'sort_order' is a global variable and setup_sorting() only called
-one time, why need hand sort_order in as an argument?
-
->> +static struct timer_info *
->> +__timer_search(struct rb_root *root, struct timer_info *timer,
->> +	       struct list_head *_sort_list)
->> +{
->> +	struct rb_node *node = root->rb_node;
->> +
->> +	while (node) {
->> +		struct timer_info *timer_info;
->> +		int cmp;
->> +
->> +		timer_info = container_of(node, struct timer_info, node);
->> +
->> +		cmp = timer_key_cmp(_sort_list, timer, timer_info);
->> +		if (cmp > 0)
->> +			node = node->rb_left;
->> +		else if (cmp < 0)
->> +			node = node->rb_right;
->> +		else
->> +			return timer_info;
-> 
->   This looks more than odd. You search for a timer in the list by
->   using the compare functions which are used for sorting ?
-> 
->   How should that work ?
-> 
-
-We put/get timer in a rb-tree base on the specify order, for example:
-we default use this order:
-
-sort_dimension__add("timer", &default_cmp);
-sort_dimension__add("itimer-type", &default_cmp);
-
-if timer_info->timer is bigger, we put it to left child, littler to right
-child, if the timer_info->timer is the same, then we compare
-timer_info->itimer_type.
-
->> +{
->> +	struct timer_info *find = NULL;
->> +	struct timer_info timer_info = {
->> +			.timer = timer,
->> +			.itimer_type = itimer_type,
->> +		};
->> +
->> +	find = timer_search(&timer_info);
->> +	if (find && find->type != type) {
->> +
->> +		dprintf("find timer[%p], but type[%s] is not we expect[%s],"
->> +			"set to initializtion state.\n", find->timer,
->> +			timer_type_string[find->type], timer_type_string[type]);
->> +
->> +		find->type = type;
->> +		find->bug++;
->> +		find->state = TIMER_INIT;
-> 
->   Why does a timer_search fail ? And why is fixing up the type if it
->   is not matching a good idea ?
-> 
-
-We search timer base on timer_info->timer and timer_info->itimer_type(not timer_info->type),
-if we find the timer's type is changed(for example, the timer is "ITIMER" before, and change
-to "HRTIMER" later), is should a bug. this case is hardly to happen but should catch it.
-
->> +static void *get_timer(enum timer_type type, struct event *event, void *data)
->> +{
->> +	if (type == HRTIMER) {
->> +		void *hrtimer = NULL;
->> +
->> +		FILL_RAM_FIELD_PTR(event, hrtimer, data);
->> +		return hrtimer;
-> 
->   Shudder.
-> 
-> 	return raw_field_ptr(event, "hrtimer", data);
-> 
-
-Yeah, it's a clear way.
-
->> +static void
->> +itimer_state_handler(void *data, struct event *event, int this_cpu __used,
->> +		     u64 timestamp __used, struct thread *thread)
->> +{
->> +	u64 value_sec, value_usec, expires;
->> +	struct timer_info *timer_info;
->> +	void *timer = NULL;
->> +	int which;
->> +
->> +	FILLL_RAW_FIELD_VALUE(event, value_sec, data);
->> +	FILLL_RAW_FIELD_VALUE(event, value_usec, data);
->> +	FILLL_RAW_FIELD_VALUE(event, expires, data);
->> +	FILLL_RAW_FIELD_VALUE(event, which, data);
->> +	FILL_RAM_FIELD_PTR(event, timer, data);
-> 
->   This is complete obfuscated, while
-> 
->   value_sec = get_value(data, event, "value_sec");
-> 
->   is obvious.
-> 
-
-Sorry, i cannot get this. As i understand:
-
-#define FILL_RAW_FIELD_VALUE(event, field, data)		\
-	field = (typeof(field))raw_field_value(event, #field, data)
-
-After FILL_RAW_FIELD_VALUE(event, value_sec, data) expanded, it's:
-  value_sec = raw_field_value(event, "value_sec", data)
-
-Why it's wrong? :-(
-
->> +	timer_info = timer_findnew(thread, ITIMER, which);
->> +
->> +	/* itimer canceled, we skip this event */
->> +	if (!value_sec && !value_usec)
->> +		return ;
-> 
->   You throw away valuable information here about canceled timers.
-> 
-
-We are not catch *_cancel event in this patch, i'll catch it to support
-'number of canceled timers' in the next version.
-
-Thanks,
-Xiao
+diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+index 9f38637..154e908 100644
+--- a/drivers/spi/xilinx_spi.c
++++ b/drivers/spi/xilinx_spi.c
+@@ -93,6 +93,26 @@ struct xilinx_spi {
+ 	void (*rx_fn) (struct xilinx_spi *);
+ };
+ 
++static void xspi_write32(u32 val, void __iomem *addr)
++{
++	iowrite32(val, addr);
++}
++
++static unsigned int xspi_read32(void __iomem *addr)
++{
++	return ioread32(addr);
++}
++
++static void xspi_write32_be(u32 val, void __iomem *addr)
++{
++	iowrite32be(val, addr);
++}
++
++static unsigned int xspi_read32_be(void __iomem *addr)
++{
++	return ioread32be(addr);
++}
++
+ static void xspi_tx8(struct xilinx_spi *xspi)
+ {
+ 	xspi->write_fn(*xspi->tx_ptr, xspi->regs + XSPI_TXD_OFFSET);
+@@ -374,11 +394,11 @@ struct spi_master *xilinx_spi_init(struct device *dev, struct resource *mem,
+ 	xspi->mem = *mem;
+ 	xspi->irq = irq;
+ 	if (pdata->little_endian) {
+-		xspi->read_fn = ioread32;
+-		xspi->write_fn = iowrite32;
++		xspi->read_fn = xspi_read32;
++		xspi->write_fn = xspi_write32;
+ 	} else {
+-		xspi->read_fn = ioread32be;
+-		xspi->write_fn = iowrite32be;
++		xspi->read_fn = xspi_read32_be;
++		xspi->write_fn = xspi_write32_be;
+ 	}
+ 	xspi->bits_per_word = pdata->bits_per_word;
+ 	if (xspi->bits_per_word == 8) {
