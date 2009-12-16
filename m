@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbZLPUtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760361AbZLPUua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757061AbZLPUtp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 15:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZLPUtl
+	id S1760361AbZLPUua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 15:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZLPUuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 15:49:41 -0500
-Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:42145 "HELO
-	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752212AbZLPUtj (ORCPT
+	Wed, 16 Dec 2009 15:50:24 -0500
+Received: from outbound-mail-307.bluehost.com ([67.222.53.253]:38129 "HELO
+	outbound-mail-307.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752777AbZLPUuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 15:49:39 -0500
+	Wed, 16 Dec 2009 15:50:23 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=MSOkpK2jNw3T5aRadvgK1AAmlYROY1KUQMQOIuWesRYXy8uYxuUTXvYBnOI3omNdWLr6RGOa+Usmld6SGYDuB4Le0nn6/kaU6uIDDEgCJ1z7lQPsOwqav5urkuqCNdwu;
-Date: Wed, 16 Dec 2009 12:49:15 -0800
+	b=UU/Qk3bd3MtgCJMEHLPKlIOLo4wzrSSb99HS6oC3G1n/41vBbbnhAbkR48YHtPou3QqJeI6ts+KH+NaHdFHRLHMwpf90Qe9sZjx4w87BxQ3JjUWoW+o5JjdWsfPE1ZT/;
+Date: Wed, 16 Dec 2009 12:50:02 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
@@ -22,12 +22,11 @@ Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
        Ingo Molnar <mingo@elte.hu>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 2/9] pci: add pci_bridge_release_unused_res and
- pci_bus_release_unused_bridge_res
-Message-ID: <20091216124915.7732712d@jbarnes-piketon>
-In-Reply-To: <4B10D2B2.4000604@kernel.org>
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 3/9] pci: don't dump it when bus resource flags is not
+ used
+Message-ID: <20091216125002.07117860@jbarnes-piketon>
+In-Reply-To: <4B10D2C0.60104@kernel.org>
 References: <4ADEB601.8020200@kernel.org>
 	<4AE5EFDB.2060908@kernel.org>
 	<4AE80170.6030402@jp.fujitsu.com>
@@ -57,7 +56,7 @@ References: <4ADEB601.8020200@kernel.org>
 	<4B0D13EB.9010403@jp.fujitsu.com>
 	<4B10D084.8070608@kerne!
  l.org>
-	<4B10D2B2.4000604@kernel.org>
+	<4B10D2C0.60104@kernel.org>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -67,159 +66,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Nov 2009 23:35:14 -0800
+On Fri, 27 Nov 2009 23:35:28 -0800
 Yinghai Lu <yinghai@kernel.org> wrote:
 
 > 
-> so later we could use it to release small resource before pci assign
-> unassign res
+> 
+> mean it is not used, so skip it.
 > 
 > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
 > ---
->  drivers/pci/setup-bus.c |  114
-> +++++++++++++++++++++++++++++++++++++++++++++++- 1 file changed, 113
-> insertions(+), 1 deletion(-)
+>  drivers/pci/setup-bus.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
 > Index: linux-2.6/drivers/pci/setup-bus.c
 > ===================================================================
 > --- linux-2.6.orig/drivers/pci/setup-bus.c
 > +++ linux-2.6/drivers/pci/setup-bus.c
-> @@ -609,6 +609,118 @@ void __ref pci_bus_assign_resources(cons
->  }
->  EXPORT_SYMBOL(pci_bus_assign_resources);
+> @@ -727,7 +727,8 @@ static void pci_bus_dump_res(struct pci_
 >  
-> +static void release_children_resource(struct resource *r)
+>          for (i = 0; i < PCI_BUS_NUM_RESOURCES; i++) {
+>                  struct resource *res = bus->resource[i];
+> -                if (!res || !res->end)
+> +
+> +		if (!res || !res->end || !res->flags)
+>                          continue;
+>  
+>  		dev_printk(KERN_DEBUG, &bus->dev, "resource %d
+> %pR\n", i, res);
 
-release_child_resources?
-
-> +{
-> +	struct resource *p;
-> +	resource_size_t size;
-> +
-> +	p = r->child;
-> +	while (p) {
-> +		release_children_resource(p);
-> +		release_resource(p);
-> +		printk(KERN_DEBUG "PCI: release child resource
-> %pRt\n", p);
-> +		/* need to restore size, and keep flags */
-> +		size = resource_size(p);
-> +		p->start = 0;
-> +		p->end = size - 1;
-> +		p = r->child;
-> +	}
-> +}
-
-Also seems like it should go into resource.c instead?
-
-> +
-> +static void pci_bridge_release_unused_res(struct pci_bus *bus,
-> +					  unsigned long type)
-> +{
-> +	int idx;
-> +	bool changed = false;
-> +	struct pci_dev *dev;
-> +	struct resource *r;
-> +	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-> +				  IORESOURCE_PREFETCH;
-> +
-> +	/* for pci bridges res only */
-> +	dev = bus->self;
-> +	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES
-> + 3;
-> +	    idx++) {
-> +		r = &dev->resource[idx];
-> +		if ((r->flags & type_mask) != type)
-> +			continue;
-> +		if (!r->parent)
-> +			continue;
-> +		/*
-> +		 * if there are children under that, we should
-> release them
-> +		 *  all
-> +		 */
-> +		release_children_resource(r);
-> +		if (!release_resource(r)) {
-> +			dev_printk(KERN_DEBUG, &dev->dev,
-> +				 "resource %d %pRt released\n", idx,
-> r);
-> +			/* keep the old size */
-> +			r->end = resource_size(r) - 1;
-> +			r->start = 0;
-> +			r->flags = 0;
-> +			changed = true;
-> +		}
-> +	}
-> +
-> +	if (changed) {
-> +		if (type & IORESOURCE_PREFETCH) {
-> +			/* avoiding touch the one without PREF */
-> +			type = IORESOURCE_PREFETCH;
-> +		}
-> +		__pci_setup_bridge(bus, type);
-> +	}
-> +}
-> +
-> +/*
-> + * try to release pci bridge resources that is from leaf bridge,
-> + * so we can allocate big new one later
-> + * check:
-> + *    0: only release the bridge and only the bridge is leaf
-> + *    1: release all down side bridge for third shoot
-> + */
-> +static void __ref pci_bus_release_unused_bridge_res(struct pci_bus
-> *bus,
-> +						    unsigned long
-> type,
-> +						    int check_leaf)
-> +{
-> +	struct pci_dev *dev;
-> +	bool is_leaf_bridge = true;
-> +
-> +	list_for_each_entry(dev, &bus->devices, bus_list) {
-> +		struct pci_bus *b = dev->subordinate;
-> +		if (!b)
-> +			continue;
-> +
-> +		switch (dev->class >> 8) {
-> +		case PCI_CLASS_BRIDGE_CARDBUS:
-> +			is_leaf_bridge = false;
-> +			break;
-> +
-> +		case PCI_CLASS_BRIDGE_PCI:
-> +		default:
-> +			is_leaf_bridge = false;
-> +			if (!check_leaf)
-> +				pci_bus_release_unused_bridge_res(b,
-> type,
-> +							 check_leaf);
-> +			break;
-> +		}
-> +	}
-> +
-> +	/* The root bus? */
-> +	if (!bus->self)
-> +		return;
-> +
-> +	switch (bus->self->class >> 8) {
-> +	case PCI_CLASS_BRIDGE_CARDBUS:
-> +		break;
-> +
-> +	case PCI_CLASS_BRIDGE_PCI:
-> +	default:
-> +		if ((check_leaf && is_leaf_bridge) || !check_leaf)
-> +			pci_bridge_release_unused_res(bus, type);
-> +		break;
-> +	}
-> +}
-> +
->  static void pci_bus_dump_res(struct pci_bus *bus)
->  {
-
-The idea here seems good, of allowing reallocation of bridge windows
-when the space is insufficient.  Would be good if Linus could check out
-this series though.
+Seems fine apart from whitespace (looks like the if (...) isn't tabbed
+in properly?).
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
