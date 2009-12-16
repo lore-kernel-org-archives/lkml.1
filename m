@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935005AbZLPQZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935016AbZLPQ17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935005AbZLPQZH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 11:25:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934973AbZLPQZF
+	id S935016AbZLPQ17 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 11:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933662AbZLPQ16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 11:25:05 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:41614 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934910AbZLPQZD (ORCPT
+	Wed, 16 Dec 2009 11:27:58 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:38894 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934980AbZLPQ15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 11:25:03 -0500
-Date: Wed, 16 Dec 2009 10:24:32 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Andi Kleen <andi@firstfloor.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-In-Reply-To: <20091216101107.GA15031@basil.fritz.box>
-Message-ID: <alpine.DEB.2.00.0912161023300.8572@router.home>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com> <20091216101107.GA15031@basil.fritz.box>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 16 Dec 2009 11:27:57 -0500
+X-Auth-Info: ww43sSrtF33wNy1N7Sm71SXckOlYf+z7PlTgfWRbhqI=
+Message-ID: <4B290A57.3010705@grandegger.com>
+Date: Wed, 16 Dec 2009 17:27:03 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Kurt Van Dijck <kurt.van.dijck@eia.be>, netdev@vger.kernel.org
+Subject: Re: [PATCH 4/7] can/at91: don't check platform_get_irq's return value
+ against zero
+References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009, Andi Kleen wrote:
+Uwe Kleine-König wrote:
+> platform_get_irq returns -ENXIO on failure, so !irq was probably
+> always true.  Better use (int)irq <= 0.  Note that a return value of
+> zero is still handled as error even though this could mean irq0.
 
-> The problem is that it also slows down the writers, and we have
-> some workloads where writing is the bottleneck.
+But only on ARM, which is the only platform still using the infamous
+NO_IRQ (=-1). As this is a driver for ARM hardware, using irq == NO_IRQ
+would make sense, though.
 
-There is no code change here. This is just a way to make it possible to
-change mmap_sem in the future.
-
+Wolfgang.
