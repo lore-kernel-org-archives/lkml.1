@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbZLPEKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZLPENf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbZLPEKE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 23:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZLPEKA
+	id S1759827AbZLPENf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 23:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZLPENe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 23:10:00 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:54947 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755707AbZLPEJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 23:09:59 -0500
-Date: Wed, 16 Dec 2009 15:09:53 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: suspend tree build warning
-Message-Id: <20091216150953.efd4f7f5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__16_Dec_2009_15_09_53_+1100_Q2Hvo354Uv7DYgnf"
+	Tue, 15 Dec 2009 23:13:34 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:60166 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752272AbZLPENd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 23:13:33 -0500
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Dan Williams <dcbw@redhat.com>,
+       Holger Schurig <holgerschurig@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Maithili Hinge <maithili@marvell.com>,
+       Kiran Divekar <dkiran@marvell.com>,
+       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, linux-wireless@lists.infradead.org,
+       stable@kernel.org
+Subject: [PATCH] Libertas: fix buffer overflow in lbs_get_essid()
+Date: Wed, 16 Dec 2009 05:12:58 +0100
+Message-Id: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__16_Dec_2009_15_09_53_+1100_Q2Hvo354Uv7DYgnf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The libertas driver copies the SSID buffer back to the wireless core and
+appends a trailing NULL character for termination. This is
 
-Hi Rafael,
+a) unnecessary because the buffer is allocated with kzalloc and is hence
+   already NULLed when this function is called, and
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+b) for priv->curbssparams.ssid_len == 32, it writes back one byte too
+   much which causes memory corruptions.
 
-drivers/base/power/main.c: In function 'dpm_show_time':
-drivers/base/power/main.c:398: warning: format '%Lu' expects type 'long lon=
-g unsigned int', but argument 5 has type 'long int'
-drivers/base/power/main.c:398: warning: format '%03Lu' expects type 'long l=
-ong unsigned int', but argument 6 has type 'long int'
+Fix this by removing the extra write.
 
-Introduced by commit 1858acb45d95224d14f741ebd961788c80ba340a ("PM:
-Measure device suspend and resume times").
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Dan Williams <dcbw@redhat.com>
+Cc: Holger Schurig <holgerschurig@gmail.com>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Maithili Hinge <maithili@marvell.com>
+Cc: Kiran Divekar <dkiran@marvell.com>
+Cc: Michael Hirsch <m.hirsch@raumfeld.com>
+Cc: netdev@vger.kernel.org
+Cc: libertas-dev@lists.infradead.org
+Cc: linux-wireless@lists.infradead.org
+Cc: stable@kernel.org
+---
+ drivers/net/wireless/libertas/wext.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+diff --git a/drivers/net/wireless/libertas/wext.c b/drivers/net/wireless/libertas/wext.c
+index be837a0..01c738b 100644
+--- a/drivers/net/wireless/libertas/wext.c
++++ b/drivers/net/wireless/libertas/wext.c
+@@ -1953,10 +1953,8 @@ static int lbs_get_essid(struct net_device *dev, struct iw_request_info *info,
+ 	if (priv->connect_status == LBS_CONNECTED) {
+ 		memcpy(extra, priv->curbssparams.ssid,
+ 		       priv->curbssparams.ssid_len);
+-		extra[priv->curbssparams.ssid_len] = '\0';
+ 	} else {
+ 		memset(extra, 0, 32);
+-		extra[priv->curbssparams.ssid_len] = '\0';
+ 	}
+ 	/*
+ 	 * If none, we may want to get the one that was set
+-- 
+1.6.3.3
 
---Signature=_Wed__16_Dec_2009_15_09_53_+1100_Q2Hvo354Uv7DYgnf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksoXZEACgkQjjKRsyhoI8yIOgCfaX96wbEsmH1kIt2Hbn0DuYlQ
-i74An2ZS3MsihLnEWf+nkLwadg30vRof
-=iXpn
------END PGP SIGNATURE-----
-
---Signature=_Wed__16_Dec_2009_15_09_53_+1100_Q2Hvo354Uv7DYgnf--
