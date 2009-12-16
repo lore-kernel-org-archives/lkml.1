@@ -1,161 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934786AbZLPIUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934797AbZLPIUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934786AbZLPIUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761803AbZLPITw
+	id S934797AbZLPIUi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:20:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934779AbZLPIUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:19:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60265 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761798AbZLPITr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:19:47 -0500
-Date: Wed, 16 Dec 2009 08:19:08 GMT
-From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, mitake@dcl.info.waseda.ac.jp,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/lock] perf lock: Fix output of tracing lock events
-Message-ID: <tip-e87379ce0da06a63dc5bf7f1a9ed5c38b56e9726@git.kernel.org>
-Git-Commit-ID: e87379ce0da06a63dc5bf7f1a9ed5c38b56e9726
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Wed, 16 Dec 2009 03:20:16 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:39459 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761814AbZLPIUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 03:20:12 -0500
+Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
+ for 32byte SSIDs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: Holger Schurig <holgerschurig@gmail.com>, m.hirsch@raumfeld.com,
+       libertas-dev@lists.infradead.org, dcbw@redhat.com,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org, daniel@caiaq.de,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <787b0d920912152254r4bd3e1e2l14fbe7c1fdf42e60@mail.gmail.com>
+References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+	 <1260871411.3692.4.camel@johannes.local>
+	 <1260871634.3692.6.camel@johannes.local>
+	 <200912151130.59103.holgerschurig@gmail.com>
+	 <1260873307.3692.10.camel@johannes.local>
+	 <787b0d920912152254r4bd3e1e2l14fbe7c1fdf42e60@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-AWs3j+QQv84YxKojPtJP"
+Date: Wed, 16 Dec 2009 09:19:37 +0100
+Message-ID: <1260951577.10356.60.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e87379ce0da06a63dc5bf7f1a9ed5c38b56e9726
-Gitweb:     http://git.kernel.org/tip/e87379ce0da06a63dc5bf7f1a9ed5c38b56e9726
-Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Wed, 16 Dec 2009 12:28:25 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 16 Dec 2009 08:48:58 +0100
 
-perf lock: Fix output of tracing lock events
+--=-AWs3j+QQv84YxKojPtJP
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This patch adds address of lockdep_map to each lock events.
-perf lock uses these addresses as IDs of lock instances.
+On Wed, 2009-12-16 at 01:54 -0500, Albert Cahalan wrote:
 
-And this removes waittime from output of lock_acquired event.
-The value will be caliculated in userspace based on timestamp.
+> >> You therefore can't connect to the otherwise legitimate SSID of
+> >> TEST\0\0\0.
+> >
+> > Ick! I guess your cfg80211 IBSS join handler needs to check for that
+> > then and refuse such an SSID.
+>=20
+> No, pad the SSID out to 32 bytes and let the firmware try.
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/trace/events/lock.h |   27 ++++++++++++++++++---------
- kernel/lockdep.c            |    2 +-
- 2 files changed, 19 insertions(+), 10 deletions(-)
+No, if we _know_ the firmware will try to connect to "TEST" instead of
+"TEST\0\0\0" then refusing it is the right thing to do.
 
-diff --git a/include/trace/events/lock.h b/include/trace/events/lock.h
-index a870ba1..2f94e25 100644
---- a/include/trace/events/lock.h
-+++ b/include/trace/events/lock.h
-@@ -18,16 +18,19 @@ TRACE_EVENT(lock_acquire,
- 	TP_ARGS(lock, subclass, trylock, read, check, next_lock, ip),
- 
- 	TP_STRUCT__entry(
-+		__field(struct lockdep_map *, lockdep_addr)
- 		__field(unsigned int, flags)
- 		__string(name, lock->name)
- 	),
- 
- 	TP_fast_assign(
-+		__entry->lockdep_addr = lock;
- 		__entry->flags = (trylock ? 1 : 0) | (read ? 2 : 0);
- 		__assign_str(name, lock->name);
- 	),
- 
--	TP_printk("%s%s%s", (__entry->flags & 1) ? "try " : "",
-+	TP_printk("%p %s%s%s", __entry->lockdep_addr,
-+		  (__entry->flags & 1) ? "try " : "",
- 		  (__entry->flags & 2) ? "read " : "",
- 		  __get_str(name))
- );
-@@ -39,14 +42,16 @@ TRACE_EVENT(lock_release,
- 	TP_ARGS(lock, nested, ip),
- 
- 	TP_STRUCT__entry(
-+		__field(struct lockdep_map *, lockdep_addr)
- 		__string(name, lock->name)
- 	),
- 
- 	TP_fast_assign(
-+		__entry->lockdep_addr = lock;
- 		__assign_str(name, lock->name);
- 	),
- 
--	TP_printk("%s", __get_str(name))
-+	TP_printk("%p %s", __entry->lockdep_addr, __get_str(name))
- );
- 
- #ifdef CONFIG_LOCK_STAT
-@@ -58,33 +63,37 @@ TRACE_EVENT(lock_contended,
- 	TP_ARGS(lock, ip),
- 
- 	TP_STRUCT__entry(
-+		__field(struct lockdep_map *, lockdep_addr)
- 		__string(name, lock->name)
- 	),
- 
- 	TP_fast_assign(
-+		__entry->lockdep_addr = lock;
- 		__assign_str(name, lock->name);
- 	),
- 
--	TP_printk("%s", __get_str(name))
-+	TP_printk("%p %s", __entry->lockdep_addr, __get_str(name))
- );
- 
- TRACE_EVENT(lock_acquired,
--	TP_PROTO(struct lockdep_map *lock, unsigned long ip, s64 waittime),
-+	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
- 
--	TP_ARGS(lock, ip, waittime),
-+	TP_ARGS(lock, ip),
- 
- 	TP_STRUCT__entry(
-+		__field(struct lockdep_map *, lockdep_addr)
- 		__string(name, lock->name)
- 		__field(unsigned long, wait_usec)
- 		__field(unsigned long, wait_nsec_rem)
- 	),
-+
- 	TP_fast_assign(
-+		__entry->lockdep_addr = lock;
- 		__assign_str(name, lock->name);
--		__entry->wait_nsec_rem = do_div(waittime, NSEC_PER_USEC);
--		__entry->wait_usec = (unsigned long) waittime;
- 	),
--	TP_printk("%s (%lu.%03lu us)", __get_str(name), __entry->wait_usec,
--				       __entry->wait_nsec_rem)
-+
-+	TP_printk("%p %s", __entry->lockdep_addr,
-+		  __get_str(name))
- );
- 
- #endif
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index f5dcd36..d6c30a9 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3383,7 +3383,7 @@ found_it:
- 		hlock->holdtime_stamp = now;
- 	}
- 
--	trace_lock_acquired(lock, ip, waittime);
-+	trace_lock_acquired(lock, ip);
- 
- 	stats = get_lock_stats(hlock_class(hlock));
- 	if (waittime) {
+> First of all, isn't TEST\0\0\0 simply the wrong length anyway?
+> (that is, a length other than 32 is nonsense AFAIK)
+
+No.
+
+> Second of all, even if that is valid, the firmware probably handles
+> at least one SSID that starts with TEST and has some number
+> of NUL bytes on the end. Since you can't tell what that would be
+> with a particular firmware version, you might as well just let the
+> firmware try. The worst case failure here is that there is more than
+> one SSID of this form and you connect to the wrong one. If you
+> have a problem with this kind of trouble then you need ethernet.
+
+No. An SSID is a uniquely defined, 1-32 byte long byte bit pattern. It
+doesn't treat \0 special in any way as your comments suggest. If the
+firmware stops matching at \0, the firmware is broken and shouldn't be
+given a choice.
+
+johannes
+
+--=-AWs3j+QQv84YxKojPtJP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLKJgVAAoJEODzc/N7+Qma3M0P/2NCMTTZEzeTn2WlVgS22Pde
+GeiyL5P00X5pTOeKMFYWz8dZ27w+VeBRUrKFiFDgfNLqo8KqH0PIvFK0sIbkltls
+tc9rXE8GJF6egxB3gVmiaH3iO9YSESStfTrZGVcSzuWa7ugA06TSxf4oOMZRa2as
+r2+TCLEJg4eG8fD5OZJ417/j7jZiiI3oI69haE82EGcwtHTMDpsmWdHDxzzEZLDy
+VES+vzKQDKW7+W3xmhylrNCxQekGOa94PJcdUSUvviH8ILtgIBH1vRI367hAO24W
+gimMQBd/TQ5adI3vYuOoxiXWVOxzyUvdkmAwCTHV6xiYtS8/f8h6xc842Ws6E1lQ
+rpta4peQ8B2IP0Ligz6RByXfnjKaPMS0Ud4Ucd74ThxPfmZ4hhcP96yhJu23+oHV
+XbuLqchIY2sSUx7Xm+cJMDO6Zf9kXCwoi0qI5mSMzWt/fXTP6r/zIP8SI82OOsna
+VVfKgnK9COSBUWUqhW4GP/MDfGqAfppjMcNJbebegJ1agiaZ3TNUdhyuF6fcNTV/
+LcM4dvbaHEua42KtKmmoZfQ7z4yQ0awgXTaCGWfSEpbIcGN7UzteKMEtzWG74QfA
+0zQGLPpYV987mt2ELCTI4UelM75IeBux/dvdnA9BG+fEEl0dGWZTptRFDeO1wy1p
+jhiSayHpbXcpBf/2Zgv3
+=CQvN
+-----END PGP SIGNATURE-----
+
+--=-AWs3j+QQv84YxKojPtJP--
+
