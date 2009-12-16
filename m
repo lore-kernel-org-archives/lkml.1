@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbZLPWs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbZLPWr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759501AbZLPWs6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZLPWsx
+	id S1759270AbZLPWr7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZLPWrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:48:53 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:18448 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759355AbZLPWsw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:48:52 -0500
-Date: Wed, 16 Dec 2009 14:47:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-Subject: Re: [PATCH -next] nfs: fix ISO C90 warning
-Message-Id: <20091216144700.34b80b4b.randy.dunlap@oracle.com>
-In-Reply-To: <1261003219.13878.6.camel@localhost>
-References: <20091215165309.58e98eea.sfr@canb.auug.org.au>
-	<20091216142334.6a0ba115.randy.dunlap@oracle.com>
-	<1261003219.13878.6.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Dec 2009 17:47:52 -0500
+Received: from mga02.intel.com ([134.134.136.20]:47754 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbZLPWru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:47:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,408,1257148800"; 
+   d="scan'208";a="579656747"
+Message-ID: <4B296394.9010709@intel.com>
+Date: Wed, 16 Dec 2009 15:47:48 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Kim Phillips <Kim.Phillips@freescale.com>,
+       Vishnu Suresh <Vishnu@freescale.com>,
+       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       "B04825@freescale.com" <B04825@freescale.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
+       Maneesh Gupta <Maneesh.Gupta@freescale.com>,
+       "R58472@freescale.com" <R58472@freescale.com>
+Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com> <20091216164144.daff5468.kim.phillips@freescale.com> <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+In-Reply-To: <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B2963C0.005C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009 17:40:19 -0500 Trond Myklebust wrote:
-
-> On Wed, 2009-12-16 at 14:23 -0800, Randy Dunlap wrote: 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix gcc ISO C90 warning:
-> > 
-> > fs/nfs/callback.c:356: warning: ISO C90 forbids mixed declarations and code
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > ---
-> >  fs/nfs/callback.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- linux-next-20091215.orig/fs/nfs/callback.c
-> > +++ linux-next-20091215/fs/nfs/callback.c
-> > @@ -352,8 +352,8 @@ static int check_gss_callback_principal(
-> >  static int nfs_callback_authenticate(struct svc_rqst *rqstp)
-> >  {
-> >  	struct nfs_client *clp;
-> > -	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
-> >  	int ret = SVC_OK;
-> > +	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
-> >  
+Kumar Gala wrote:
+>>> Changes with respect to v1 as per comments received
+>>> o. Rebased to linux-next as of 20091216
+>>> o. The selection is based exclusive of fsldma
+>>> o. Intoduced a new Kernel Configuration variable
+>>>   *. This enables selecting the Cryptographic functionality
+>>>      of Talitos along with fsldma.
+>>>   *. Disables the XOR parity calculation offload, if fsldma enabled
+>>>      either as kernel in-built or as a module
+>>>   *. Once the inter-operability with fsldma is resolved, this option
+>>>      can be removed
+>> wait, why can't the interoperability bug be fixed in the first place?
 > 
-> What version of gcc is giving rise to this warning?
+> I agree w/Kim.  We need to better understand what the bug is and how to reproduce it so we can get to the root cause.
+> 
+> Paper taping over it by disabling fsldma is not the right solution.
 
-> gcc --version
-gcc (GCC) 4.2.1 (SUSE Linux)
+Hopefully this prompts fsldma authors to get involved because the 
+interoperability issue has been out there without comment*, just 
+band-aids, since October.
 
-> RPC_IFDEBUG is a macro that either evaluates to its argument, or to
-> nothing, depending on whether or not RPC_DEBUG is defined or not. In
-> neither case should it evaluate to anything illegal under C90 rules
-> afaics.
+--
+Dan
 
-Yep.  Odd warning.
-
-
----
-~Randy
+* well one comment from Ira saying the interrupt functionality worked 
+for him.
