@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZLPAue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759800AbZLPAxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758650AbZLPAue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 19:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbZLPAud
+	id S1759800AbZLPAxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 19:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZLPAxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 19:50:33 -0500
-Received: from tex.lwn.net ([70.33.254.29]:53535 "EHLO tex.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754371AbZLPAuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 19:50:32 -0500
-Date: Tue, 15 Dec 2009 17:50:29 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Keith Mannthey <kmannth@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
-Message-ID: <20091215175029.1062f139@bike.lwn.net>
-In-Reply-To: <1260923885.6521.41.camel@keith-laptop>
-References: <1260907788.6521.10.camel@keith-laptop>
-	<20091215164950.1fd41caf@bike.lwn.net>
-	<1260923885.6521.41.camel@keith-laptop>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.19.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Tue, 15 Dec 2009 19:53:15 -0500
+Received: from relay3-v.mail.gandi.net ([217.70.178.77]:57431 "EHLO
+	relay3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756799AbZLPAxO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 19:53:14 -0500
+Date: Tue, 15 Dec 2009 16:53:01 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu 12/18] rcu: make MAINTAINERS file
+ match new RCU reality
+Message-ID: <20091216005300.GB2408@feather>
+References: <20091215230213.GA9093@linux.vnet.ibm.com>
+ <12609181613187-git-send-email->
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12609181613187-git-send-email->
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009 16:38:05 -0800
-Keith Mannthey <kmannth@us.ibm.com> wrote:
-
-> > Do you need to create a new directory for a single .c file?
+On Tue, Dec 15, 2009 at 03:02:35PM -0800, Paul E. McKenney wrote:
+> Proposed for 2.6.34, not for inclusion.
 > 
-> Perhaps not. I have a single .h and a single .c file. 
-> Do you think I should move them right into misc (with maybe a better
-> name the rtl.h)? 
-
-That's what I would do, but this is a detail.
-
-> > For a driver which is intended to help reduce latencies, a 10ms delay with
-> > a spinlock held seems a little harsh.  It seems like maybe you could drop
-> > the lock and use msleep()?
+> Both rcutorture and RCU are supported.  Also, update the files
+> to match the new layout.
 > 
-> Irony is that doing this special write actually triggers an SMI. 
-> 
-> Well I really don't want any other possible action to happen until after
-> the command finishes.  I can definitely shorten the amount of time of
-> the mdelay but I don't want any possible way to start another write
-> until the command finishes.  
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Why not protect it with a mutex and use msleep()?  I see no reason why you
-need a spinlock there.
+At this point, I think it would make sense to just merge the rcutorture
+entry into the main RCU entry; no real point keeping them separate.
 
-> > > +			if (count++ > 10000) {
-> > 
-> > ...that's 100 seconds total - a *long* time...
-> 
-> The is a "possible" error condition that I have given a large window
-> too. More than happy to shorten it up to say a small human amount of
-> time maybe 2 seconds?
-
-Whatever makes sense for the hardware.  Certainly there comes a point where
-you can conclude it's not going to get back to you.  If you get rid of the
-busy wait, you can delay a lot longer here without creating trouble.
-
-> > Again, you should use ioread32() here.
-> 
-> I should never directly access the ioremap region? 
-
-No, you really shouldn't.  Probably, on any machine where this driver is
-relevant you get away with it just fine, but it's not the way to write
-portable code.
-
-jon
+- Josh Triplett
