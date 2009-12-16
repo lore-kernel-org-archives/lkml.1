@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934804AbZLPIV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZLPI4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934804AbZLPIV3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934776AbZLPIVR
+	id S1757712AbZLPI4N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZLPI4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:21:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60348 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934791AbZLPIVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:21:09 -0500
-Date: Wed, 16 Dec 2009 08:20:20 GMT
-From: tip-bot for Sheng Yang <sheng@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       mtosatti@redhat.com, tglx@linutronix.de, sheng@linux.intel.com,
-       avi@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mtosatti@redhat.com, tglx@linutronix.de, sheng@linux.intel.com,
-       avi@redhat.com, mingo@elte.hu
-In-Reply-To: <1260942485-19156-4-git-send-email-sheng@linux.intel.com>
-References: <1260942485-19156-4-git-send-email-sheng@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Add IA32_TSC_AUX MSR and use it
-Message-ID: <tip-5df974009fe513c664303de24725ea0f8b47f12e@git.kernel.org>
-Git-Commit-ID: 5df974009fe513c664303de24725ea0f8b47f12e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Wed, 16 Dec 2009 03:56:11 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:45382 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752069AbZLPI4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 03:56:05 -0500
+Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination
+ for 32byte SSIDs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       dcbw@redhat.com, m.hirsch@raumfeld.com, netdev@vger.kernel.org,
+       libertas-dev@lists.infradead.org, stable@kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091216035844.GN28375@buzzloop.caiaq.de>
+References: <1260650850-16163-1-git-send-email-daniel@caiaq.de>
+	 <20091215.014308.77044043.davem@davemloft.net>
+	 <1260871411.3692.4.camel@johannes.local>
+	 <20091216035844.GN28375@buzzloop.caiaq.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-L/Dl6eEgTCZxlb0x32KY"
+Date: Wed, 16 Dec 2009 09:20:33 +0100
+Message-ID: <1260951633.10356.61.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5df974009fe513c664303de24725ea0f8b47f12e
-Gitweb:     http://git.kernel.org/tip/5df974009fe513c664303de24725ea0f8b47f12e
-Author:     Sheng Yang <sheng@linux.intel.com>
-AuthorDate: Wed, 16 Dec 2009 13:48:04 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 16 Dec 2009 09:02:42 +0100
 
-x86: Add IA32_TSC_AUX MSR and use it
+--=-L/Dl6eEgTCZxlb0x32KY
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Clean up write_tsc() and write_tscp_aux() by replacing
-hardcoded values.
+On Wed, 2009-12-16 at 11:58 +0800, Daniel Mack wrote:
 
-No change in functionality.
+> > If this is used in a GET, then it will be filled up to 32 bytes by the
+> > get handler, and the trailing \0 your patch reserves will never be
+> > copied into userspace.
+>=20
+> The problem is the GET case. The libertas driver copies ssid_len
+> characters here and appends a trailing \0, which my patch caught now and
+> which caused memory corruption in before.
+>=20
+> From what I've seen, libertas _does_ treat the extra data correctly
+> at all places, I checked it several times now. (Btw, the %s format
+> string you pointed out all use print_ssid() to properly escape all
+> non-printable characters, so they're rules out, too).
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-LKML-Reference: <1260942485-19156-4-git-send-email-sheng@linux.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/msr-index.h |    1 +
- arch/x86/include/asm/msr.h       |    4 ++--
- 2 files changed, 3 insertions(+), 2 deletions(-)
+Oh, ok, print_ssid() is correct of course, it gets the length.
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 4ffe09b..ac98d29 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -12,6 +12,7 @@
- #define MSR_FS_BASE		0xc0000100 /* 64bit FS base */
- #define MSR_GS_BASE		0xc0000101 /* 64bit GS base */
- #define MSR_KERNEL_GS_BASE	0xc0000102 /* SwapGS GS shadow */
-+#define MSR_TSC_AUX		0xc0000103 /* Auxiliary TSC */
- 
- /* EFER bits: */
- #define _EFER_SCE		0  /* SYSCALL/SYSRET */
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index 2d228fc..cf985aa 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -240,9 +240,9 @@ do {                                                            \
- #define checking_wrmsrl(msr, val) wrmsr_safe((msr), (u32)(val),		\
- 					     (u32)((val) >> 32))
- 
--#define write_tsc(val1, val2) wrmsr(0x10, (val1), (val2))
-+#define write_tsc(val1, val2) wrmsr(MSR_IA32_TSC, (val1), (val2))
- 
--#define write_rdtscp_aux(val) wrmsr(0xc0000103, (val), 0)
-+#define write_rdtscp_aux(val) wrmsr(MSR_TSC_AUX, (val), 0)
- 
- struct msr *msrs_alloc(void);
- void msrs_free(struct msr *msrs);
+> I'll send a patch to fix the flaw in libertas.
+
+Thanks.
+
+johannes
+
+--=-L/Dl6eEgTCZxlb0x32KY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLKJhNAAoJEODzc/N7+QmahVwP/jMVe1Xgd0dEbJLXx/u1bOVA
+rBEUz7YVaCaS9DSS7jhb1l3FmPmnQJ1vtryfOikdSCBAVOUyOH2AQAQkkCyZvxPm
+Fvf7nNqsQ+mKiazZT8I/q8TG8Ht3BMmTsw08IW2qrY6L6FtGvKa7u6hVYxwuYTmW
+hzasJKwAhh6y5bpMATQGeByVPWU5VHSOXdmTCEHUJvwx5va4pIJtCiEfoxmJbH62
+4Qkz3dN0TxjvROHg2ADaHTSuD4IMOUtLB9/o2yJ0OQRFWCSoexq942zFRk87m3rv
+hCyXdjuMZGUH01F4CdRLarpIJU9KdScM38yeMt8DiuR2kQYEqaMl12plQElc1RoV
+CNNQorYfNPyOuzS9yGlwx71bIiO/U8aaeXE7ncq60/yE49BzGN61kPJRUvdVkBCO
+4mV54R+KdoRXKwW38FGc3yWIDfKDRjImKVvGCzexEW9CXoyPQj//a3Afd7U8CzxN
+XBeT2OrmEf1qpkbsJc/amYlQWZeQSKSOy+lD+MA2CtClhIzt+MCm6f3OnPpHjSoy
+g9cQAWqyzygZslxcZiidTmYoymRMoTls91uOr++bd2hAXA5G09M5fWdmPE1YQgl9
+lM/PfLN+NQo1g/osG29e7xliRqOhrXsTCzeKaMsGWPgYeEGGokXK0fnrph+4bquE
+v/CC73TaeITP7aiYuYAH
+=SGfL
+-----END PGP SIGNATURE-----
+
+--=-L/Dl6eEgTCZxlb0x32KY--
+
