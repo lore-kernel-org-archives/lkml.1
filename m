@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935835AbZLPWkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935865AbZLPWqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935835AbZLPWkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934361AbZLPWkb
+	id S935865AbZLPWqQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935408AbZLPWqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:40:31 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:50310 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935165AbZLPWka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:40:30 -0500
-Subject: Re: [PATCH -next] nfs: fix ISO C90 warning
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <20091216142334.6a0ba115.randy.dunlap@oracle.com>
-References: <20091215165309.58e98eea.sfr@canb.auug.org.au>
-	 <20091216142334.6a0ba115.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 17:40:19 -0500
-Message-Id: <1261003219.13878.6.camel@localhost>
+	Wed, 16 Dec 2009 17:46:13 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:55112 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934286AbZLPWqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:46:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtsEANvvKEuuWOl3/2dsb2JhbACBS5pguUuEKwSBYw
+Date: Wed, 16 Dec 2009 17:41:00 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: leonid.moiseichuk@nokia.com, Viktor.Rosendahl@nokia.com, tony@atomide.com,
+       eero.tamminen@nokia.com
+Cc: Felipe Balbi <felipe.balbi@nokia.com>,
+       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RELEASE] LTTV 0.12.25
+Message-ID: <20091216224100.GA12533@Krystal>
+References: <20091204160633.GA29864@Krystal> <20091213194210.GA3149@nokia.com> <20091216213546.GA5609@Krystal> <20091216222916.GA11101@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 2060 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 979212F0FBAB6397314FECFE88D9E86093EA063D
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 48 max/h 3 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+In-Reply-To: <20091216222916.GA11101@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 17:39:03 up  6:57,  4 users,  load average: 0.16, 0.11, 0.10
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 14:23 -0800, Randy Dunlap wrote: 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix gcc ISO C90 warning:
-> 
-> fs/nfs/callback.c:356: warning: ISO C90 forbids mixed declarations and code
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  fs/nfs/callback.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-next-20091215.orig/fs/nfs/callback.c
-> +++ linux-next-20091215/fs/nfs/callback.c
-> @@ -352,8 +352,8 @@ static int check_gss_callback_principal(
->  static int nfs_callback_authenticate(struct svc_rqst *rqstp)
->  {
->  	struct nfs_client *clp;
-> -	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
->  	int ret = SVC_OK;
-> +	RPC_IFDEBUG(char buf[RPC_MAX_ADDRBUFLEN]);
->  
+LTTV 0.12.25 can be useful to view traces taken from an ARM omap3 board.
+This release works around a problem with irq tables experienced with IRQ
+IDs > 256, which I have seen on the ARM omap3.
 
-What version of gcc is giving rise to this warning?
+Available at http://lttng.org
 
-RPC_IFDEBUG is a macro that either evaluates to its argument, or to
-nothing, depending on whether or not RPC_DEBUG is defined or not. In
-neither case should it evaluate to anything illegal under C90 rules
-afaics.
+Thanks,
 
-Trond
+Mathieu
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
