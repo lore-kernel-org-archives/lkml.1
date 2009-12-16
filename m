@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbZLPOhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZLPOmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbZLPOhY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 09:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762176AbZLPOhB
+	id S1762154AbZLPOmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 09:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758001AbZLPOmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 09:37:01 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:59843 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762170AbZLPOgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 09:36:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=vfN/RS1h1D9RyVZFMx+7rgKdEvF3rxuix0GS32MmBLzclOkZbit0VkN1JuVB8oxXh+
-         Kz7sReLlBJveCpS84auaZdHn0pS9b7aN4mqoll1+rrlZ/enarVItqpo8yjcn/vJaH4NK
-         4UG7Pu53J7VohP4P3cfFFMVh22+o24mkCqr68=
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Juergen E. Fischer" <fischer@norbit.de>,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org
-Subject: [PATCH 5/5] aha152x: use DECLARE_COMPLETION_ONSTACK for non-constant completion
-Date: Wed, 16 Dec 2009 22:36:01 +0800
-Message-Id: <1260974161-6934-6-git-send-email-yong.zhang0@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1260974161-6934-5-git-send-email-yong.zhang0@gmail.com>
-References: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
- <1260974161-6934-2-git-send-email-yong.zhang0@gmail.com>
- <1260974161-6934-3-git-send-email-yong.zhang0@gmail.com>
- <1260974161-6934-4-git-send-email-yong.zhang0@gmail.com>
- <1260974161-6934-5-git-send-email-yong.zhang0@gmail.com>
+	Wed, 16 Dec 2009 09:42:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:4995 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756812AbZLPOmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 09:42:11 -0500
+Date: Wed, 16 Dec 2009 12:41:45 -0200
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Zachary Amsden <zamsden@redhat.com>
+Cc: kvm@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, linux-kernel@vger.kernel.org,
+       Dor Laor <dlaor@redhat.com>
+Subject: Re: [PATCH RFC: kvm tsc virtualization 15/20] Fix longstanding races
+Message-ID: <20091216144145.GA21466@amt.cnet>
+References: <1260850127-9766-9-git-send-email-zamsden@redhat.com> <1260850127-9766-10-git-send-email-zamsden@redhat.com> <1260850127-9766-11-git-send-email-zamsden@redhat.com> <1260850127-9766-12-git-send-email-zamsden@redhat.com> <1260850127-9766-13-git-send-email-zamsden@redhat.com> <1260850127-9766-14-git-send-email-zamsden@redhat.com> <1260850127-9766-15-git-send-email-zamsden@redhat.com> <1260850127-9766-16-git-send-email-zamsden@redhat.com> <20091215182139.GA14005@amt.cnet> <4B27FF23.2030706@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B27FF23.2030706@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The _ONSTACK variant should be used for on-stack completion,
-otherwise it will break lockdep.
+On Tue, Dec 15, 2009 at 11:26:59AM -1000, Zachary Amsden wrote:
+> On 12/15/2009 08:21 AM, Marcelo Tosatti wrote:
+>> On Mon, Dec 14, 2009 at 06:08:42PM -1000, Zachary Amsden wrote:
+>>
+>> <snip>
+>>
+>> +               atomic_set(&per_cpu(cpu_tsc_synchronized, freq->cpu),
+>> 0);
+>> +               spin_lock(&kvm_lock);
+>> +               list_for_each_entry(kvm,&vm_list, vm_list) {
+>> +                       kvm_for_each_vcpu(i, vcpu, kvm) {
+>> +                               if (vcpu->cpu != freq->cpu)
+>> +                                       continue;
+>> +                               if (vcpu->cpu != smp_processor_id())
+>> +                                       send_ipi++;
+>> +                               kvm_request_guest_time_update(vcpu);
+>>
+>> There is some overlap here between KVM_REQ_KVMCLOCK_UPDATE and
+>> cpu_tsc_synchronized. Its the same information (frequency for a CPU has
+>> changed) stored in two places.
+>>
+>> Later you do:
+>>
+>>                  spin_lock(&kvm_lock);
+>>                  list_for_each_entry(kvm,&vm_list, vm_list) {
+>>                          kvm_for_each_vcpu(i, vcpu, kvm) {
+>>                                  if (vcpu->cpu != freq->cpu)
+>>                                          continue;
+>>                                  if (vcpu->cpu != smp_processor_id())
+>>                                         send_ipi++;
+>>                                  kvm_request_guest_time_update(vcpu);
+>>                          }
+>>                  }
+>>                  spin_unlock(&kvm_lock);
+>>                  <--- a remote CPU could have updated kvmclock information
+>>                       with stale cpu_tsc_khz, clearing the
+>>                       KVM_REQ_KVMCLOCK_UPDATE bit.
+>>                  smp_call_function(evict) (which sets cpu_tsc_synchronized
+>>                                            to zero)
+>>
+>> Maybe worthwhile to unify it. Perhaps use the per cpu tsc generation in
+>> addition to vcpu_load to update kvmclock info (on arch vcpu_load update
+>> kvmclock store generation, update again on generation change).
+>>    
+>
+> Yes, that is an excellent point.  The generation counter, the  
+> tsc_synchronized variable and the per-vcpu clock counter all have some  
+> amount of redundancy of information.
+>
+> Perhaps instead of overlapping, they should be layered?
+>
+> A rule for kvmclock: can't update kvmclock info until cpu is synchronized?
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Juergen E. Fischer <fischer@norbit.de>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
-Cc: linux-scsi@vger.kernel.org
----
- drivers/scsi/aha152x.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+How about update kvmclock on:
 
-diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-index 1e5478a..44e43b5 100644
---- a/drivers/scsi/aha152x.c
-+++ b/drivers/scsi/aha152x.c
-@@ -1143,7 +1143,7 @@ static int aha152x_abort(Scsi_Cmnd *SCpnt)
- static int aha152x_device_reset(Scsi_Cmnd * SCpnt)
- {
- 	struct Scsi_Host *shpnt = SCpnt->device->host;
--	DECLARE_COMPLETION(done);
-+	DECLARE_COMPLETION_ONSTACK(done);
- 	int ret, issued, disconnected;
- 	unsigned char old_cmd_len = SCpnt->cmd_len;
- 	unsigned long flags;
--- 
-1.6.3.3
+- cpu switch (kvm_arch_vcpu_load). Then store cpu tsc generation in
+  vcpu->arch.
+- on vcpu_enter_guest, if tsc generation changes.
+
+If kvm_arch_vcpu_load stored stale cpu_khz into kvmclock, the tsc
+generation will have changed by the time guest entry succeeds.
+
+Then you can kill KVM_REQ_KVMCLOCK_UPDATE and the kvm_for_each_vcpu()
+loop in the cpufreq callback. 
 
