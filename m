@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbZLPT0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935607AbZLPT1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964932AbZLPT0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 14:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763151AbZLPT00
+	id S935607AbZLPT1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 14:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935447AbZLPT1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 14:26:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58984 "EHLO ogre.sisk.pl"
+	Wed, 16 Dec 2009 14:27:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59002 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763143AbZLPT0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 14:26:24 -0500
+	id S935446AbZLPT12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 14:27:28 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Wed, 16 Dec 2009 20:27:16 +0100
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [RFC][PATCH 3/12] PCI / PM: Propagate wake-up enable for PCIe devices too
+Date: Wed, 16 Dec 2009 20:28:21 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912160311.05915.rjw@sisk.pl> <alpine.LFD.2.00.0912160737350.7454@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912160737350.7454@localhost.localdomain>
+       Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
+References: <200911160047.46299.rjw@sisk.pl> <200911291635.54352.rjw@sisk.pl> <20091216111939.1a756377@jbarnes-piketon>
+In-Reply-To: <20091216111939.1a756377@jbarnes-piketon>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912162027.16574.rjw@sisk.pl>
+Message-Id: <200912162028.21775.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 December 2009, Linus Torvalds wrote:
+On Wednesday 16 December 2009, Jesse Barnes wrote:
+> On Sun, 29 Nov 2009 16:35:54 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > The summarized data are below (the "big" numbers are averages and the +/-
-> > numbers are standard deviations, all in milliseconds):
+> > Having read the PM part of the PCIe 2.0 specification more carefully
+> > I think that it was a mistake to restrict the wake-up enable
+> > propagation to non-PCIe devices, because if we do not request
+> > control of the root ports' PME registers via OSC, PCIe PME is
+> > supposed to be handled by the platform, just like the non-PCIe PME.
+> > Even if we do that, the wake-up propagation is done to allow the
+> > devices to wake up the system from sleep states which involves the
+> > platform anyway, so it won't hurt.
 > > 
-> > 			HP nx6325		MSI Wind U100
-> > 
-> > sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> > sync resume		2955 (+/- 2)	3597 (+/- 25)
-> > 
-> > async suspend		1553 (+/- 49)	1177 (+/- 32)
-> > async resume		2692 (+/- 326)	3556  (+/- 33)
-> > 
-> > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> > 
-> > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> > 
-> > So, in my opinion, with the above set of "async" devices, it doesn't
-> > make sense to do async suspend at all, because the sync suspend is actually
-> > the fastest on both machines.
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pci/pci-acpi.c |   10 ++--------
+> >  1 file changed, 2 insertions(+), 8 deletions(-)
 > 
-> Hmm. I certainly agree - your numbers do not seem to support any async at 
-> all.
-> 
-> However, I do note that for the "extra patch" makes a big difference at 
-> resume time. That implies that the resume serializes on some slow device 
-> that wasn't marked async - and starting the async ones early avoids that. 
-> 
-> But without the per-device timings, it's hard to even guess what device 
-> that was.
-> 
-> But even that doesn't really help the suspend cases, only resume.
-> 
-> Do you have any sample timing output with devices listed?
+> Applied after fixing up conflicts related to dev->is_pcie.
 
-I'm going to generate one shortly.
-
-Rafael
+Thanks!
