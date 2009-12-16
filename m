@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933930AbZLPUSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762904AbZLPUdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933930AbZLPUSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 15:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZLPUSs
+	id S1762904AbZLPUdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 15:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZLPUdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 15:18:48 -0500
-Received: from outbound-mail-307.bluehost.com ([67.222.53.253]:39640 "HELO
-	outbound-mail-307.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751244AbZLPUSr (ORCPT
+	Wed, 16 Dec 2009 15:33:22 -0500
+Received: from smtprelay04.ispgateway.de ([80.67.31.38]:48096 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754050AbZLPUdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 15:18:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=DeBwTIsEksjaKw2ezD/T7I60HR2GsO4CGEx4Kh2ocfzBpMK8et1z6UbACucEMdOge7gk8Eg2ZCbeawdw8DwbZjXpMoEmH4Zidy30r6a92Uey3FMh3/7BFeWOfT0vu0lH;
-Date: Wed, 16 Dec 2009 12:18:23 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
-       Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
-       Daniel Vetter <daniel.vetter@ffwll.ch>
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
- when ..."
-Message-ID: <20091216121823.08b5f0a6@jbarnes-piketon>
-In-Reply-To: <200912161453.12100.arnd@arndb.de>
-References: <200912071830.14697.arnd@arndb.de>
-	<20091214125024.77601d7e@jbarnes-piketon>
-	<200912151051.44131.arnd@arndb.de>
-	<200912161453.12100.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 16 Dec 2009 15:33:21 -0500
+X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Dec 2009 15:33:21 EST
+From: Bernhard Walle <bernhard@bwalle.de>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       Bernhard Walle <bernhard@bwalle.de>
+Subject: [PATCH] Don't export vt_kmsg_redirect() to userspace
+Date: Wed, 16 Dec 2009 21:26:56 +0100
+Message-Id: <1260995216-25377-1-git-send-email-bernhard@bwalle.de>
+X-Mailer: git-send-email 1.6.4.2
+X-Df-Sender: 1227806
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009 14:53:11 +0100
-Arnd Bergmann <arnd@arndb.de> wrote:
+Fix following warning in linux-next by guarding the function definition (both
+the "extern" and the inline) with #ifdef __KERNEL__.
 
-> On Tuesday 15 December 2009, Arnd Bergmann wrote:
-> > On Monday 14 December 2009, Jesse Barnes wrote:
-> > > This patch removes the suspect portion of the dynamic clock
-> > > control code.  Hopefully it'll be as stable as powersave=0 in
-> > > your config (assuming powersave=0 works :).
-> > 
-> > Ok, great! The machine is still running  fine with powersave=0 so 
-> > far. I'll try your patch after some more uptime.
-> 
-> It's working fine so far, no more crashes, but I supposed this
-> effectively disables the power saving on my card again, right?
+------------------------- 8< ----------------------------------------------------
+usr/include/linux/vt.h:89: userspace cannot call function or variable defined in
+the kernel
 
-The patch just disables one (probably ineffective) power saving
-feature.  So if things are working well for you with it I'll queue up a
-revert patch.  I'm working on a better version of dynamic clock control
-anyway.
+Introduced by commit 5ada918b82399eef3afd6a71e3637697d6bd719f ("vt:
+introduce and use vt_kmsg_redirect() function").
+------------------------- >8 ----------------------------------------------------
 
+
+Signed-off-by: Bernhard Walle <bernhard@bwalle.de>
+---
+ include/linux/vt.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/vt.h b/include/linux/vt.h
+index 3fb9944..d5dd0bc 100644
+--- a/include/linux/vt.h
++++ b/include/linux/vt.h
+@@ -84,6 +84,8 @@ struct vt_setactivate {
+ 
+ #define VT_SETACTIVATE	0x560F	/* Activate and set the mode of a console */
+ 
++#ifdef __KERNEL__
++
+ #ifdef CONFIG_VT_CONSOLE
+ 
+ extern int vt_kmsg_redirect(int new);
+@@ -97,6 +99,8 @@ static inline int vt_kmsg_redirect(int new)
+ 
+ #endif
+ 
++#endif /* __KERNEL__ */
++
+ #define vt_get_kmsg_redirect() vt_kmsg_redirect(-1)
+ 
+ #endif /* _LINUX_VT_H */
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.4.2
+
