@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935442AbZLPWbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935451AbZLPWdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935442AbZLPWbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935246AbZLPWbp
+	id S935451AbZLPWdj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:33:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935393AbZLPWde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:31:45 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:15727 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932548AbZLPWbo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:31:44 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8 a=W0vUJOdyAAAA:8
- a=HHePs4sdYWm55w6rC0EA:9 a=wPNm1x4lOPhe_3MLUwUA:7
- a=xtDKKMtXRNqLNq4Z7fCvY7uliIgA:4 a=x8gzFH9gYPwA:10 a=sdOIwOD7nXcA:10
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: Re: perf and libdwarf on debian
-Date: Wed, 16 Dec 2009 15:31:41 -0700
-User-Agent: KMail/1.12.4 (Linux/2.6.31-1-amd64; KDE/4.3.4; x86_64; ; )
-Cc: Peter Zijlstra <peterz@infradead.org>, Gabor Gombas <gombasg@sztaki.hu>,
-       Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-References: <20091216135448.GD11618@aftab> <20091216183822.GA18410@boogie.lpds.sztaki.hu> <1260989893.21028.238.camel@laptop>
-In-Reply-To: <1260989893.21028.238.camel@laptop>
+	Wed, 16 Dec 2009 17:33:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59427 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935250AbZLPWdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:33:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Wed, 16 Dec 2009 23:33:57 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912162257.00771.rjw@sisk.pl> <alpine.LFD.2.00.0912161410120.3556@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912161410120.3556@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912161531.41957.tfjellstrom@shaw.ca>
+Message-Id: <200912162333.57245.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed December 16 2009, Peter Zijlstra wrote:
-> On Wed, 2009-12-16 at 19:38 +0100, Gabor Gombas wrote:
-> > On Wed, Dec 16, 2009 at 07:32:20PM +0100, Peter Zijlstra wrote:
-> > > Then again, its not like debian would ever ship something recent
-> > > enough to actually build perf with, even my karmic machine comes with
-> > > libdwarf-20080409 which to me reads like ancient and not befitting a
-> > > distro released a month or so ago.
-> >
-> > "karmic" sounds Ubuntu, not Debian. In Debian:
+On Wednesday 16 December 2009, Linus Torvalds wrote:
 > 
-> And here I thought ubuntu was generally a less ancient debian..
-> 
+> Btw, what are the timings if you just force everything async? I think that 
+> worked on yur laptops, no?
 
-Only at the moment they mirrored the Sid repo for the new release. After 
-that things freeze.
+No, it didn't.  I could make all PCI async, provided that the ACPI subtree was
+resumed before any PCI devices.  [Theoretically I can make that happen by
+moving ACPI resume to the _noirq phase (just for testing of course).  So I can
+try to make PCI async in addition to serio and USB, plus i8042 perhaps, which
+should be sfficient for the nx6325 I think.]
 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
->  in the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Making all async always hanged the boxes on resume.
 
-
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+Rafael
