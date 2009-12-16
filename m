@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934835AbZLPI15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762125AbZLPMGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934835AbZLPI15 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:27:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934795AbZLPI14
+	id S1762125AbZLPMGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 07:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760995AbZLPMGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:27:56 -0500
-Received: from mx51.mymxserver.com ([85.199.173.110]:37995 "EHLO
-	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934791AbZLPI1y (ORCPT
+	Wed, 16 Dec 2009 07:06:06 -0500
+Received: from vms173013pub.verizon.net ([206.46.173.13]:61722 "EHLO
+	vms173013pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760925AbZLPMGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:27:54 -0500
-From: Holger Schurig <holgerschurig@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: Re: [PATCH] wireless: wext: allocate space for NULL-termination for  32byte SSIDs
-Date: Wed, 16 Dec 2009 09:26:13 +0100
-User-Agent: KMail/1.9.7
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>, m.hirsch@raumfeld.com,
-       libertas-dev@lists.infradead.org, dcbw@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org,
-       daniel@caiaq.de, David Miller <davem@davemloft.net>
-References: <1260650850-16163-1-git-send-email-daniel@caiaq.de> <1260873307.3692.10.camel@johannes.local> <787b0d920912152254r4bd3e1e2l14fbe7c1fdf42e60@mail.gmail.com>
-In-Reply-To: <787b0d920912152254r4bd3e1e2l14fbe7c1fdf42e60@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912160926.14062.holgerschurig@gmail.com>
+	Wed, 16 Dec 2009 07:06:00 -0500
+From: Len Brown <lenb@kernel.org>
+To: linux-acpi@vger.kernel.org
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Subject: [PATCH 091/103] ACPI: Remove repeated registered as cooling_device
+ messages
+Date: Wed, 16 Dec 2009 03:36:42 -0500
+Message-id: <13c41157096f05d5037a99152b4cf9d68ef00ef7.1260952472.git.len.brown@intel.com>
+X-Mailer: git-send-email 1.6.6.rc2.5.g49666
+In-reply-to: <1260952614-3152-1-git-send-email-lenb@kernel.org>
+References: <1260952614-3152-1-git-send-email-lenb@kernel.org>
+In-reply-to: <5f46c2f25cfbb5faca7550738ac42c4d1491ddc8.1260952471.git.len.brown@intel.com>
+References: <5f46c2f25cfbb5faca7550738ac42c4d1491ddc8.1260952471.git.len.brown@intel.com>
+X-Patchwork-Hint: ignore
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First of all, isn't TEST\0\0\0 simply the wrong length anyway?
-> (that is, a length other than 32 is nonsense AFAIK)
+From: Mike Travis <travis@sgi.com>
 
-No, the SSID IE in a beacon encodes also a length. So the beacons 
-from SSID of TEST, TEST\0 and TEST\0\0\0 are different.
+This message shows up for each cpu.  Print as debug messages.
 
-This is because in the beacon, the SSID is *NOT* an u8[32], but 
-an IE, which is struct { u8 type, u8 length, u8 data[] };
+[   12.893967] processor ACPI0007:00: registered as cooling_device0
+[   12.907838] processor ACPI0007:01: registered as cooling_device1
 
+Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/acpi/fan.c            |    2 +-
+ drivers/acpi/processor_core.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
+index f419849..acf2ab2 100644
+--- a/drivers/acpi/fan.c
++++ b/drivers/acpi/fan.c
+@@ -267,7 +267,7 @@ static int acpi_fan_add(struct acpi_device *device)
+ 		goto end;
+ 	}
+ 
+-	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
++	dev_dbg(&device->dev, "registered as cooling_device%d\n", cdev->id);
+ 
+ 	device->driver_data = cdev;
+ 	result = sysfs_create_link(&device->dev.kobj,
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index ec742a4..ecb2c51 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -845,7 +845,7 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 		goto err_power_exit;
+ 	}
+ 
+-	dev_info(&device->dev, "registered as cooling_device%d\n",
++	dev_dbg(&device->dev, "registered as cooling_device%d\n",
+ 		 pr->cdev->id);
+ 
+ 	result = sysfs_create_link(&device->dev.kobj,
 -- 
-http://www.holgerschurig.de
+1.6.0.6
+
