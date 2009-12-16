@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935112AbZLPSit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935127AbZLPShQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935112AbZLPSit (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935195AbZLPSik
+	id S935127AbZLPShQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932220AbZLPShN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:38:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34730 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935190AbZLPSif (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:38:35 -0500
-Message-ID: <4B2928AC.3020807@zytor.com>
-Date: Wed, 16 Dec 2009 10:36:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Wed, 16 Dec 2009 13:37:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53394 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932263AbZLPShK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 13:37:10 -0500
+Date: Wed, 16 Dec 2009 18:36:34 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20091216170517.423469527@chello.nl>
+References: <20091216170517.423469527@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Mark boot-cpu active before smp_init()
+Message-ID: <tip-933b0618d8b2a59c7a0742e43836544e02f1e9bd@git.kernel.org>
+Git-Commit-ID: 933b0618d8b2a59c7a0742e43836544e02f1e9bd
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 16 (amd64_edac)
-References: <20091216183212.118c5e14.sfr@canb.auug.org.au> <20091216092424.5f87214c.randy.dunlap@oracle.com> <4B2919BD.40001@zytor.com> <20091216174524.GH11618@aftab>
-In-Reply-To: <20091216174524.GH11618@aftab>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/16/2009 09:45 AM, Borislav Petkov wrote:
->>>
->>> Should EDAC_AMD64 also depend on SMP?
->>
->> That seems absurd... more likely msrs_free/msrs_alloc should not be
->> SMP-specific, or stubs need to be provided.
-> 
-> see <arch/x86/lib/Makefile>:
-> 
-> obj-$(CONFIG_SMP) := msr.o
-> 
+Commit-ID:  933b0618d8b2a59c7a0742e43836544e02f1e9bd
+Gitweb:     http://git.kernel.org/tip/933b0618d8b2a59c7a0742e43836544e02f1e9bd
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 16 Dec 2009 18:04:31 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 16 Dec 2009 19:01:53 +0100
 
-Yes, because the stubs live as inlines in arch/x86/include/asm/msr.h.
+sched: Mark boot-cpu active before smp_init()
 
-This needs to be fixed ASAP.
+A UP machine has 1 active cpu, not having the boot-cpu in the
+active map when starting the scheduler confuses things.
 
-	-hpa
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <20091216170517.423469527@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ init/main.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
+
+diff --git a/init/main.c b/init/main.c
+index c3db4a9..dac44a9 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -369,12 +369,6 @@ static void __init smp_init(void)
+ {
+ 	unsigned int cpu;
+ 
+-	/*
+-	 * Set up the current CPU as possible to migrate to.
+-	 * The other ones will be done by cpu_up/cpu_down()
+-	 */
+-	set_cpu_active(smp_processor_id(), true);
+-
+ 	/* FIXME: This should be done in userspace --RR */
+ 	for_each_present_cpu(cpu) {
+ 		if (num_online_cpus() >= setup_max_cpus)
+@@ -486,6 +480,7 @@ static void __init boot_cpu_init(void)
+ 	int cpu = smp_processor_id();
+ 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
+ 	set_cpu_online(cpu, true);
++	set_cpu_active(cpu, true);
+ 	set_cpu_present(cpu, true);
+ 	set_cpu_possible(cpu, true);
+ }
