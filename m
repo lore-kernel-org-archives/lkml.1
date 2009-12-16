@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762232AbZLPPOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbZLPPSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762232AbZLPPOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 10:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbZLPPOW
+	id S1762230AbZLPPSz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 10:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758694AbZLPPSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 10:14:22 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:54681 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758632AbZLPPOV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 10:14:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oqUef4J90Sai8yTHzHgAK+UaS1kBCrMOebH5evVBGKgbkYUC+CwvwyN+T8nwnMm+pP
-         vEEG4HkmVaRGVrN1hKqfuYRzFoPSILx6mdc1lcELinTffBmIO9pwfEG60VFsCzOXQKe7
-         sT5ApisTgX5XCVCX7XULKh8kUVsAFNCBTHrOE=
-Date: Wed, 16 Dec 2009 23:14:50 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Yong Zhang <yong.zhang0@gmail.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [PATCH 0/5] use DECLARE_COMPLETION_ONSTACK for non-constant
-	completion
-Message-ID: <20091216151450.GA2804@hack>
-References: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
+	Wed, 16 Dec 2009 10:18:54 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42078 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756907AbZLPPSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 10:18:53 -0500
+Date: Wed, 16 Dec 2009 07:18:48 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu 18/18] rcu: add primitives to check
+	for RCU read-side critical sections
+Message-ID: <20091216151848.GC6744@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091215230213.GA9093@linux.vnet.ibm.com> <1260959494.17860.46.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1260959494.17860.46.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 10:35:56PM +0800, Yong Zhang wrote:
->The _ONSTACK variant should be used for on-stack completion,
->otherwise it will break lockdep.
->
->Yong Zhang (5):
-> aha152x: use DECLARE_COMPLETION_ONSTACK for non-constant completion
-> mISDN: use DECLARE_COMPLETION_ONSTACK for non-constant completion
-> USB: use DECLARE_COMPLETION_ONSTACK for non-constant completion
-> hwmon: use DECLARE_COMPLETION_ONSTACK for non-constant completion
-> powerpc/iseries: use DECLARE_COMPLETION_ONSTACK for non-constant completion
+On Wed, Dec 16, 2009 at 11:31:34AM +0100, Peter Zijlstra wrote:
+> On Tue, 2009-12-15 at 15:02 -0800, Paul E. McKenney wrote:
+> > 
+> > Also create rcu_dereference_check(), which takes a second boolean argument
+> > into which one puts rcu_read_lock_held() or similar.  For example:
+> > 
+> >         rcu_dereference_check(gp, rcu_read_lock_held() ||
+> >                                   lockdep_is_held(my_lock));
+> 
+> Ah, so you're going to tackle this the other way around, interesting :-)
 
-These all look fine for me.
+Still feeling my way around this one, but for the moment, yes.  ;-)
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+One potential issue is that for lockdep, avoiding false positives means
+erring on the side of the lock -not- being held, while for this approach
+to rcu_dereference() checking, avoiding false positives means erring on
+the side of the lock being held.
 
-For lockdep stuff, you should Cc Peter, adding him into Cc...
+I might need to create a CONFIG_PROVE_LOCKING_RCU to allow shutting off
+the more-detailed RCU checking when people want to do partial deadlock
+checking, but will see how it goes.
 
-Thanks.
-
-
->
-> arch/powerpc/platforms/iseries/viopath.c |    2 +-
-> drivers/hwmon/ams/ams-pmu.c              |    4 ++--
-> drivers/isdn/mISDN/l1oip_core.c          |    2 +-
-> drivers/scsi/aha152x.c                   |    2 +-
-> drivers/usb/gadget/fsl_qe_udc.c          |    2 +-
-> drivers/usb/gadget/fsl_udc_core.c        |    2 +-
-> drivers/usb/gadget/langwell_udc.c        |    2 +-
-> 7 files changed, 8 insertions(+), 8 deletions(-)
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Live like a child, think like the god.
- 
+							Thanx, Paul
