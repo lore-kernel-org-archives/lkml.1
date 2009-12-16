@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbZLPUmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965061AbZLPUnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965054AbZLPUmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 15:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbZLPUmM
+	id S965061AbZLPUnO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 15:43:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965046AbZLPUnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 15:42:12 -0500
-Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:60907 "HELO
-	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755882AbZLPUmJ (ORCPT
+	Wed, 16 Dec 2009 15:43:13 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:65083 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964845AbZLPUnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 15:42:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=jXsCZy2JliiJaW0FfIRxISUFPyFLVmTwrrO03UaHzeioCgd2m6FZmiBXVCn8aI5l0nleGUiuvQrWUHjvkCRxGQeE7C0WDR2hd5nvXsD1PJtmAPy2ofhN9ZnCFE/QV0zD;
-Date: Wed, 16 Dec 2009 12:41:47 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 1/9] pci: separate pci_setup_bridge to small functions
-Message-ID: <20091216124147.4163cd10@jbarnes-piketon>
-In-Reply-To: <4B10D29F.2000800@kernel.org>
-References: <4ADEB601.8020200@kernel.org>
-	<4AE5EFDB.2060908@kernel.org>
-	<4AE80170.6030402@jp.fujitsu.com>
-	<4AE88305.8020207@kernel.org>
-	<m1ljivibrt.fsf@fess.ebiederm.org>
-	<4AE899A0.3020006@kernel.org>
-	<4AE95247.8080401@jp.fujitsu.com>
-	<4AE952B9.1010603@kernel.org>
-	<4AE9588E.90708@jp.fujitsu.com>
-	<4AE9657F.7010302@kernel.org>
-	<4AE965D9.9040702@kernel.org>
-	<20091104093044.17ab628a@jbarnes-piketon>
-	<4AF1CD79.4010602@kernel.org>
-	<4AF22CF1.1020508@kernel.org>
-	<4AF22D26.4070500@kernel.org>
-	<4AF508F0.9060105@kernel.org>
-	<4AF91F54.10507@jp.fujitsu.com>
-	<4AF936DB.1030309@kernel.org>
-	<4AFCF7D8.1090207@jp.fujitsu.com>
-	<4AFCFC0D.4030002@kernel.org>
-	<4AFD19DA.7010602@jp.fujitsu.com>
-	<4AFE6F39.5080505@kernel.org>
-	<4B0B321E.4010103@jp.fujitsu.com>
-	<4B0B335E.1070809@kernel.org>
-	<4B0B3C13.9030502@jp.fujit! su.com>
-	<4B0C69AD.3030106@kernel. org>
-	<4B0D13EB.9010403@jp.fujitsu.com>
-	<4B10D084.8070608@kerne!
- l.org>
-	<4B10D29F.2000800@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 16 Dec 2009 15:43:12 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKrUKEurR7H+/2dsb2JhbAC/WpcNhCsE
+X-IronPort-AV: E=Sophos;i="4.47,408,1257120000"; 
+   d="scan'208";a="450836945"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Subject: re-export alloc_file()
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Dec 2009 12:43:11 -0800
+Message-ID: <adabphy8xb4.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Dec 2009 20:43:11.0604 (UTC) FILETIME=[61E18340:01CA7E90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Nov 2009 23:34:55 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Commit 3d1e4631 ("get rid of init_file()") removed the export of
+alloc_file() -- possibly inadvertently, since that commit mainly
+consisted of deleting the lines between the end of alloc_file() and
+the start of the code in init_file().
 
-> 
-> prepare to use those small functions according to resource type later
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  drivers/pci/setup-bus.c |   54
-> +++++++++++++++++++++++++++++++++++++++--------- 1 file changed, 44
-> insertions(+), 10 deletions(-)
+There is in fact one modular use of alloc_file() in the tree, in
+drivers/infiniband/core/uverbs_main.c, so re-add the export to fix:
 
-Seems like a reasonable cleanup, anyone have objections?
+    ERROR: "alloc_file" [drivers/infiniband/core/ib_uverbs.ko] undefined!
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+when CONFIG_INFINIBAND_USER_ACCESS=m.
+
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ fs/file_table.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/fs/file_table.c b/fs/file_table.c
+index 17a55b8..0afacf6 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -194,6 +194,7 @@ struct file *alloc_file(struct path *path, fmode_t mode,
+ 	ima_counts_get(file);
+ 	return file;
+ }
++EXPORT_SYMBOL(alloc_file);
+ 
+ void fput(struct file *file)
+ {
