@@ -1,236 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbZLPCzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbZLPC7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323AbZLPCzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 21:55:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbZLPCzq
+	id S1759303AbZLPC7n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 21:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbZLPC7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 21:55:46 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49901 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756200AbZLPCzn (ORCPT
+	Tue, 15 Dec 2009 21:59:41 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:54818 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756230AbZLPC7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 21:55:43 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B284C01.70307@jp.fujitsu.com>
-Date: Wed, 16 Dec 2009 11:54:57 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 15 Dec 2009 21:59:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oVXSXyUjnaxdE1b78sMlQUhpYstT3XmjrJjUGtYFuZK2r+DG+NEgSmIaD1rg1EbjXf
+         05jQp267Q8YITXIXYNdf3C1O7cDSqn3XFi39dNTAgQ3NZkwv74dV7kND+DYg4LDbWesF
+         AyphTFT9q6gs57fuRVwTCNCpnTTN8tnfn83dw=
+Date: Tue, 15 Dec 2009 18:59:34 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: synaptics touchpad doesn't click
+Message-ID: <20091216025934.GA2699@core.coreip.homeip.net>
+References: <20091214014828.GA28402@ldl.fc.hp.com> <20091214173450.GB2373@core.coreip.homeip.net> <20091215034127.GC587@ldl.fc.hp.com> <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org
-Subject: Re: [PATCH] x86, mce: rework output of MCE banks ownership information
-References: <4B26EBB0.3090507@jp.fujitsu.com> <4B27DFE9.2030308@sgi.com>
-In-Reply-To: <4B27DFE9.2030308@sgi.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091216010506.GA26367@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(2009/12/16 4:13), Mike Travis wrote:
+On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
+> * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> >
+> > The updated patch is below.
+> > 
+> > -- 
+> > Dmitry
 > 
-> Hidetoshi Seto wrote:
->> The output of MCE banks ownership information on boot tend
->> to be long on new processor which has many banks:
->>
->>   CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
->>
->> This message can fill up the console output when the number
->> of cpus is large.
->>
->> This patch suppress this info message on boot, and introduce
->> debug message in shorter format instead, like:
->>
->>   CPU 1 MCE banks map: ssCC PCss ssPP ssss ssss ss
->>
->>   where: s: shared, C: checked by cmci, P: checked by poll.
->>
->> This patch still keep the info when ownership is updated.
->> E.g. when a cpu take over the ownership from hot-removed cpu,
->> both message will be shown:
->>
->>   CPU 1 MCE banks map updated: CMCI:6 CMCI:7 CMCI:10 CMCI:11
->>   CPU 1 MCE banks map: ssCC PCCC ssPP ssCC ssss ss
->>
->> v2:
->>   - stop changing the level of message on update
->>   - change the number of banks message on boot to debug level
->>
->> v3:
->>   - avoid use of pr_cont with pr_debug in print_banks_map()
->>
->> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
->> Cc: Mike Travis <travis@sgi.com>
->> ---
->>  arch/x86/kernel/cpu/mcheck/mce.c       |    6 +++---
->>  arch/x86/kernel/cpu/mcheck/mce_intel.c |   30 ++++++++++++++++++++++++------
->>  2 files changed, 27 insertions(+), 9 deletions(-)
->>
->> diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
->> index a8aacd4..8d6afea 100644
->> --- a/arch/x86/kernel/cpu/mcheck/mce.c
->> +++ b/arch/x86/kernel/cpu/mcheck/mce.c
->> @@ -1229,11 +1229,11 @@ static int __cpuinit __mcheck_cpu_cap_init(void)
->>  
->>  	b = cap & MCG_BANKCNT_MASK;
->>  	if (!banks)
->> -		printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
->> +		pr_debug("mce: CPU supports %d MCE banks\n", b);
->>  
->>  	if (b > MAX_NR_BANKS) {
->> -		printk(KERN_WARNING
->> -		       "MCE: Using only %u machine check banks out of %u\n",
->> +		pr_warning(
->> +			"MCE: Using only %u machine check banks out of %u\n",
->>  			MAX_NR_BANKS, b);
->>  		b = MAX_NR_BANKS;
->>  	}
->> diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel.c b/arch/x86/kernel/cpu/mcheck/mce_intel.c
->> index 7c78563..234e473 100644
->> --- a/arch/x86/kernel/cpu/mcheck/mce_intel.c
->> +++ b/arch/x86/kernel/cpu/mcheck/mce_intel.c
->> @@ -64,12 +64,26 @@ static void intel_threshold_interrupt(void)
->>  	mce_notify_irq();
->>  }
->>  
->> +static void print_banks_map(int banks)
->> +{
->> +	char buf[32 + MAX_NR_BANKS * 5 / 4]; /* 72 if MAX_NR_BANKS == 32 */
->> +	int i, n, ln = sizeof(buf);
->> +
->> +	n = snprintf(buf, ln, "CPU %d MCE banks map:", smp_processor_id());
->> +	for (i = 0; i < banks; i++) {
->> +		n += snprintf(&buf[n], ln - n, "%s%s", (i % 4) ? "" : " ",
->> +			test_bit(i, __get_cpu_var(mce_banks_owned)) ? "C" :
->> +			test_bit(i, __get_cpu_var(mce_poll_banks)) ? "P" : "s");
->> +	}
->> +	pr_debug("%s\n", buf);
->> +}
->> +
->>  static void print_update(char *type, int *hdr, int num)
->>  {
->>  	if (*hdr == 0)
->> -		printk(KERN_INFO "CPU %d MCA banks", smp_processor_id());
->> +		pr_info("CPU %d MCE banks map updated:", smp_processor_id());
->>  	*hdr = 1;
->> -	printk(KERN_CONT " %s:%d", type, num);
->> +	pr_cont(" %s:%d", type, num);
+> Should I test this one or wait one more iteration to address
+> Takashi's last comments?
 > 
-> This pr_cont will cause problems.  If debug printout is not enabled then
-> the "%s:%d" will be interspersed with the output of the "Booting processors"
-> line.
 
-As I described in the patch description, my patch modified cmci_discover()
-not to call this print_update() while boot.  Now this print_update() is
-only called on hotplug events, never be called on boot.
+Actually I think we took the wrong direction with the original patch and
+we should do what other buttonless devices (bcm5974) do: report touchpad
+click as left button and have Synaptics X driver provide enhanced
+support. This way we can have both modes (ClickZones and ClickButtons)
+and users will get to chose (provided that someone takes time to add
+that support to Synaptics driver of course ;) ).
 
-And the level of message here is still info, so use of pr_cont with pr_info
-have no problem because it is not with pr_debug.
+Could you tell me if the below works for you?
 
-OTOH print_banks_map() is called on boot, but it does not use pr_cont().
-
-> Ideally the output looks like:
-> 
-> [    2.100837] Booting Node   0, Processors  #1 #2 #3 #4 #5 #6 #7 Ok.
-> [    2.614888] Booting Node   1, Processors  #8 #9 #10 #11 #12 #13 #14 #15 Ok.
-> [    3.196690] Booting Node   2, Processors  #16 #17 #18 #19 #20 #21 #22 #23 Ok.
-> [    3.777600] Booting Node   3, Processors  #24 #25 #26 #27 #28 #29 #30 #31 Ok.
-> [    4.359413] Booting Node   0, Processors  #32 #33 #34 #35 #36 #37 #38 #39 Ok.
-> [    4.940339] Booting Node   1, Processors  #40 #41 #42 #43 #44 #45 #46 #47 Ok.
-> [    5.522072] Booting Node   2, Processors  #48 #49 #50 #51 #52 #53 #54 #55 Ok.
-> [    6.106016] Booting Node   3, Processors  #56 #57 #58 #59 #60 #61 #62 #63 Ok.
-> 
-> Currently the output looks like:
-> 
-> 
-> [    0.722553] Booting Node   0, Processors  #1
-> [    0.811625] CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    0.812071]  #2
-> [    0.907468] CPU 2 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    0.907918]  #3
-> [    1.003311] CPU 3 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    1.003750]  #4
-> [    1.099154] CPU 4 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    1.099550]  #5
-> [    1.194995] CPU 5 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    1.195375]  #6
-> [    1.290837] CPU 6 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    1.291284]  #7
-> [    1.386680] CPU 7 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-> [    1.387162]  Ok.
-> [    1.404836] Booting Node   1, Processors  #8
-> [    1.490509] CPU 8 MCA banks CMCI:0 CMCI:1 CMCI:2 CMCI:3 CMCI:5 CMCI:6 CMCI:7 CMCI:8 CMCI:9 CMCI:12 CMCI:13 CMCI:14 CMCI:15 CMCI:16 CMCI:17 CMCI:18 CMCI:19 CMCI:20 CMCI:21
-> [    1.490942]  #9
-> [    1.590350] CPU 9 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
-
-What wrong happen if my patch applied?
-Why your change on print_update() is needed?
-
->>  }
->>  
->>  /*
->> @@ -85,6 +99,7 @@ static void cmci_discover(int banks, int boot)
->>  	int i;
->>  
->>  	spin_lock_irqsave(&cmci_discover_lock, flags);
->> +
->>  	for (i = 0; i < banks; i++) {
->>  		u64 val;
->>  
->> @@ -95,7 +110,7 @@ static void cmci_discover(int banks, int boot)
->>  
->>  		/* Already owned by someone else? */
->>  		if (val & CMCI_EN) {
->> -			if (test_and_clear_bit(i, owned) || boot)
->> +			if (test_and_clear_bit(i, owned) && !boot)
->>  				print_update("SHD", &hdr, i);
->>  			__clear_bit(i, __get_cpu_var(mce_poll_banks));
->>  			continue;
->> @@ -107,16 +122,19 @@ static void cmci_discover(int banks, int boot)
->>  
->>  		/* Did the enable bit stick? -- the bank supports CMCI */
->>  		if (val & CMCI_EN) {
->> -			if (!test_and_set_bit(i, owned) || boot)
->> +			if (!test_and_set_bit(i, owned) && !boot)
->>  				print_update("CMCI", &hdr, i);
->>  			__clear_bit(i, __get_cpu_var(mce_poll_banks));
->>  		} else {
->>  			WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
->>  		}
->>  	}
->> -	spin_unlock_irqrestore(&cmci_discover_lock, flags);
->>  	if (hdr)
->> -		printk(KERN_CONT "\n");
->> +		pr_cont("\n");
->> +	if (hdr || boot)
->> +		print_banks_map(banks);
->> +
->> +	spin_unlock_irqrestore(&cmci_discover_lock, flags);
->>  }
->>  
->>  /*
-> 
-> The real question to ask here is if this output really adds anything to
-> system bringup?  If it's informational only, then it should be available
-> online after the system is booted.  If it can be attached to an error,
-> then the information should only be printed in the case of that error.
-> Removing from the console log informational only ("chatty") type output
-> is the goal of this patch series.
-> 
-> Thanks,
-> Mike
-
-It will be hard for kernel to determine whether the status is error or
-not, without something like processor hardware specification catalog etc.
-
-Maybe we could have alternative way to access the information in future,
-e.g. sysfs.  And then we could get rid of the debug message.
+-- 
+Dmitry
 
 
-Thanks,
-H.Seto
+Input: synaptics - add support for ClickPad devices
 
+From: Takashi Iwai <tiwai@suse.de>
+
+The new device is a button-less "clickable" touchpad, it does not have
+physical left, right nor middle buttons. Instead the entire touchpad
+area can be "clicked" and such click is signalled the same way middle
+button state is signalled on touchpads that have SYN_CAP_MIDDLE_BUTTON
+capability.
+
+The driver will reporting touchpad clicks as primary button (BTN_LEFT)
+events, the same way driver for bcm5974 handles buttonless touchpads on
+MacBooks, allowing limited support for legacy software. Enhanced support,
+including "ClickButtons" and "ClickZone" modes to emulate right and
+middle nuttons, is left to userspace components.
+
+The device will not signal BTN_RIGHT event and will remove it from the
+capability list. Since all Synaptics devices up until now had both left
+and right buttons present the absence of BTN_RIGHT capability can be
+used to identify ClickPad devices.
+
+Due to the fact that there is no known capability bits for ClickPads we
+are forced to match on product ID.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/input/mouse/synaptics.c |   21 ++++++++++++++++-----
+ drivers/input/mouse/synaptics.h |    2 ++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
+
+
+diff --git a/drivers/input/mouse/synaptics.c b/drivers/input/mouse/synaptics.c
+index 7047558..633b975 100644
+--- a/drivers/input/mouse/synaptics.c
++++ b/drivers/input/mouse/synaptics.c
+@@ -338,12 +338,16 @@ static void synaptics_parse_new_hw(unsigned char buf[],
+ 		((buf[0] & 0x04) >> 1) |
+ 		((buf[3] & 0x04) >> 2);
+ 
+-	hw->left  = buf[0] & 0x01;
+-	hw->right = buf[0] & 0x02;
++	if (SYN_CAP_CLICKPAD(priv->ext_cap)) {
++		hw->left = (buf[0] ^ buf[3]) & 0x01;
++	} else {
++		hw->left  = buf[0] & 0x01;
++		hw->right = buf[0] & 0x02;
+ 
+-	if (SYN_CAP_MIDDLE_BUTTON(priv->capabilities)) {
+-		hw->middle = (buf[0] ^ buf[3]) & 0x01;
+-		hw->scroll = hw->w == 2 ? (signed char)buf[1] : 0;
++		if (SYN_CAP_MIDDLE_BUTTON(priv->capabilities)) {
++			hw->middle = (buf[0] ^ buf[3]) & 0x01;
++			hw->scroll = hw->w == 2 ? (signed char)buf[1] : 0;
++		}
+ 	}
+ 
+ 	if (SYN_CAP_FOUR_BUTTON(priv->capabilities)) {
+@@ -592,6 +596,13 @@ static void set_input_params(struct input_dev *dev, struct synaptics_data *priv)
+ 	__clear_bit(REL_X, dev->relbit);
+ 	__clear_bit(REL_Y, dev->relbit);
+ 
++	/*
++	 * ClickPads are buttonless devices. We report the touchpad clicks
++	 * as BTN_LEFT but there is no BTN_RIGHT or BTN_MIDDLE.
++	 */
++	if (SYN_CAP_CLICKPAD(priv->ext_cap))
++		__clear_bit(BTN_RIGHT, dev->keybit);
++
+ 	dev->absres[ABS_X] = priv->x_res;
+ 	dev->absres[ABS_Y] = priv->y_res;
+ }
+diff --git a/drivers/input/mouse/synaptics.h b/drivers/input/mouse/synaptics.h
+index 838e7f2..343dfc0 100644
+--- a/drivers/input/mouse/synaptics.h
++++ b/drivers/input/mouse/synaptics.h
+@@ -48,6 +48,8 @@
+ #define SYN_CAP_VALID(c)		((((c) & 0x00ff00) >> 8) == 0x47)
+ #define SYN_EXT_CAP_REQUESTS(c)		(((c) & 0x700000) >> 20)
+ #define SYN_CAP_MULTI_BUTTON_NO(ec)	(((ec) & 0x00f000) >> 12)
++#define SYN_CAP_PRODUCT_ID(ec)          (((ec) & 0xff0000) >> 16)
++#define SYN_CAP_CLICKPAD(ec)            (SYN_CAP_PRODUCT_ID(ec) == 0xe4)
+ 
+ /* synaptics modes query bits */
+ #define SYN_MODE_ABSOLUTE(m)		((m) & (1 << 7))
