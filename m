@@ -1,48 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZLPIyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbZLPI5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbZLPIyx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 03:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZLPIyw
+	id S1758766AbZLPI5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 03:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZLPI5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 03:54:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33056 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbZLPIyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 03:54:51 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1260921350-6539-1-git-send-email-vapier@gentoo.org>
-References: <1260921350-6539-1-git-send-email-vapier@gentoo.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: dhowells@redhat.com, uclinux-dev@uclinux.org,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NOMMU: add [stack] label to per-process maps output
-Date: Wed, 16 Dec 2009 08:54:22 +0000
-Message-ID: <22709.1260953662@redhat.com>
+	Wed, 16 Dec 2009 03:57:18 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:31771 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752224AbZLPI5R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 03:57:17 -0500
+X-Trace: 308550710/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgQBAG8vKEtPRRyw/2dsb2JhbAAI1GGEKwQ
+X-IronPort-AV: E=Sophos;i="4.47,405,1257120000"; 
+   d="scan'208";a="308550710"
+Date: Wed, 16 Dec 2009 08:56:57 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Steven King <sfking@fdwdc.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix ksm.h breakage of nommu build
+In-Reply-To: <Pine.LNX.4.64.0912160529440.5529@sister.anvils>
+Message-ID: <Pine.LNX.4.64.0912160851570.14564@sister.anvils>
+References: <200912151501.05552.sfking@fdwdc.com> <Pine.LNX.4.64.0912160529440.5529@sister.anvils>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier@gentoo.org> wrote:
+Commit 5ad6468801d28c4d4ac9f48ec19297817c915f6a "ksm: let shared pages
+be swappable" breaks the build on m68knommu and I suspect on any nommu:
 
-> it'd be cool if the global /proc/maps could display something like
-> [stack/<pid>], but i can't quite divine how to get a mm_struct out
-> of a vm_region without having to walk the entire process list.
+In file included from kernel/fork.c:52:
+include/linux/ksm.h:129: warning: 'enum ttu_flags' declared inside parameter 
+list
+include/linux/ksm.h:129: warning: its scope is only this definition or 
+declaration, which is probably not what you want
+include/linux/ksm.h:129: error: parameter 2 ('flags') has incomplete type
+make[1]: *** [kernel/fork.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
 
-Tricky.  vm_regions can be shared between multiple mm_structs, although in the
-case of the stack, they're probably not.  Furthermore, there's no interface to
-mmap() to say the region you're allocating belongs to a particular PID (and
-with userspace created threads, you have to create the stack _before_ calling
-clone()).
+Let's fix that with CONFIG_MMU around most of the !CONFIG_KSM declarations.
 
-That said, you could add a 'creator pid' to the vm_region.  This could be set
-firstly by mmap() to current->pid, and then overridden by clone() for the
-stack VMA.  It would be approximate, but probably a good approximation.  You
-probably don't actually need a back pointer, just an integer PID.
+Reported-by: Steven King <sfking@fdwdc.com>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Tested-by: Steven King <sfking@fdwdc.com>
+---
 
-David
+ include/linux/ksm.h |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+--- 2.6.32-git/include/linux/ksm.h.0	2009-12-16 04:59:25.000000000 +0000
++++ linux/include/linux/ksm.h	2009-12-16 05:14:40.000000000 +0000
+@@ -94,12 +94,6 @@ void ksm_migrate_page(struct page *newpa
+ 
+ #else  /* !CONFIG_KSM */
+ 
+-static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+-		unsigned long end, int advice, unsigned long *vm_flags)
+-{
+-	return 0;
+-}
+-
+ static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
+ {
+ 	return 0;
+@@ -114,6 +108,13 @@ static inline int PageKsm(struct page *p
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_MMU
++static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
++		unsigned long end, int advice, unsigned long *vm_flags)
++{
++	return 0;
++}
++
+ static inline struct page *ksm_might_need_to_copy(struct page *page,
+ 			struct vm_area_struct *vma, unsigned long address)
+ {
+@@ -140,6 +141,7 @@ static inline int rmap_walk_ksm(struct p
+ static inline void ksm_migrate_page(struct page *newpage, struct page *oldpage)
+ {
+ }
++#endif /* CONFIG_MMU */
+ #endif /* !CONFIG_KSM */
+ 
+ #endif /* __LINUX_KSM_H */
