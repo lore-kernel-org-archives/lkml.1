@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZLPAsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZLPAt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbZLPAsg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 19:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZLPAse
+	id S1758365AbZLPAt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 19:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196AbZLPAtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 19:48:34 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55191 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZLPAse (ORCPT
+	Tue, 15 Dec 2009 19:49:22 -0500
+Received: from mail.renesas.com ([202.234.163.13]:34795 "EHLO
+	mail03.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756613AbZLPAtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 19:48:34 -0500
-Date: Wed, 16 Dec 2009 01:48:26 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
-Subject: Re: NFS lockdep lock misordering mmap_sem<->i_mutex_key with
-	2.6.32-git1
-Message-ID: <20091216004826.GA3622@basil.fritz.box>
-References: <20091215222134.GA27892@ZenIV.linux.org.uk> <20091215233841.GE22392@basil.fritz.box> <20091216085051.CDE2.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216085051.CDE2.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 15 Dec 2009 19:49:15 -0500
+X-AuditID: ac140386-0000000600003037-3e-4b282e727188
+Date: Wed, 16 Dec 2009 09:48:49 +0900
+From: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
+Subject: Re: [PATCH] drivers/mtd/nand/sh_flctl.c: use resource_size()
+In-reply-to: <BD79186B4FD85F4B8E60E381CAEE19090200EA68@mi8nycmail19.Mi8.com>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org,
+       David Woodhouse <dwmw2@infradead.org>
+Message-id: <4B282E71.4010908@renesas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+References: <BD79186B4FD85F4B8E60E381CAEE19090200EA68@mi8nycmail19.Mi8.com>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> afaik, no revalidate mean "I don't mind the file was already removed
-> at server, I only care client handle".
+H Hartley Sweeten wrote:
+> Use resource_size().
 > 
-> What's happen if we mmap removed file? 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
 
-I thought NFS only provided consistency around open/close/msync, not around
-mmap? I've never been aware of mmap being a synchronization point.
+Thank you for your patch!
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Acked-by: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
+
+Thanks,
+Yoshihiro Shimoda
+
