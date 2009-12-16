@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934576AbZLPCYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934574AbZLPC1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934576AbZLPCYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 21:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934570AbZLPCY0
+	id S934574AbZLPC1v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 21:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934557AbZLPC1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 21:24:26 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48168 "EHLO
+	Tue, 15 Dec 2009 21:27:51 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48439 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934568AbZLPCYY (ORCPT
+	with ESMTP id S934556AbZLPC1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 21:24:24 -0500
-Date: Wed, 16 Dec 2009 11:24:20 +0900 (JST)
-Message-Id: <20091216.112420.71092752.d.hatayama@jp.fujitsu.com>
-To: xiyou.wangcong@gmail.com
+	Tue, 15 Dec 2009 21:27:50 -0500
+Date: Wed, 16 Dec 2009 11:27:39 +0900 (JST)
+Message-Id: <20091216.112739.104046780.d.hatayama@jp.fujitsu.com>
+To: andi@firstfloor.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jdike@addtoit.com,
        tony.luck@intel.com, mhiramat@redhat.com
-Subject: Re: [RFC, PATCH 2/4] elf_core_dump(): Remove DUMP_WRITE macro
+Subject: Re: [RFC, PATCH 3/4] elf_core_dump(): make offset calculation and
+ writing processes explicit
 From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-In-Reply-To: <2375c9f90912150029w6edafb17s6fb0bcf41798263a@mail.gmail.com>
-References: <20091215.114125.71090684.d.hatayama@jp.fujitsu.com>
-	<2375c9f90912150029w6edafb17s6fb0bcf41798263a@mail.gmail.com>
+In-Reply-To: <87ocm0wct8.fsf@basil.nowhere.org>
+References: <20091215.114137.104035145.d.hatayama@jp.fujitsu.com>
+	<87ocm0wct8.fsf@basil.nowhere.org>
 X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,30 +29,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> On Tue, Dec 15, 2009 at 10:41 AM, Daisuke HATAYAMA
-> <d.hatayama@jp.fujitsu.com> wrote:
-> > In DUMP_WRITE macro, some local variables and goto statement are used
-> > implicitly, which makes it confusing to understand how the dumping
-> > process behaves. So, clean up it by unfolding the macro body directly
-> > to the point where the original macro is used plus a bit of style
-> > change.
+> Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com> writes:
 > >
-> > Now that the previous patch replaced ELF_CORE_EXTRA_* macros in
-> > fs/binfmt_elf.c, there is no users for DUMP_WRITE macro in
-> > fs/binfmt_elf.c. Thus remove the definition of DUMP_WRITE macro.
-> >
-> > Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+> > However, the clause 1. is not always possible, since one
+> > cannot assume that dump_seek() function always supports
+> > the seek in the minus direction. Consider no_llseek.
 > 
+> Not even forward seek is always supported, consider core dumping
+> to a pipe.
 > 
-> I assume you at least did a build test?
+> -Andi
 
-Oh..sorry. I have forgotten writting about test.
-
-For IA64, i386 and UML-i386, I tested on the real machine.
-For s390, arm and xtensa, I only did a build test.
-
-> I like this patch:
+I may need to use backward seeking here, not forward. So, I stressed
+here for the backward one.
 
 Thanks.
-
