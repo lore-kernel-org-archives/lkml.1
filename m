@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934589AbZLPC3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934595AbZLPCcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934589AbZLPC3A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Dec 2009 21:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbZLPC27
+	id S934595AbZLPCcv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Dec 2009 21:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZLPCcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 21:28:59 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40572 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934558AbZLPC26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 21:28:58 -0500
-Date: Wed, 16 Dec 2009 13:28:47 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: acpi tree build failure
-Message-Id: <20091216132847.c32ab30e.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0912151736290.6885@localhost.localdomain>
-References: <20091214122013.a869739e.sfr@canb.auug.org.au>
-	<1260853054.21292.10.camel@dc7800.home>
-	<alpine.LFD.2.00.0912151736290.6885@localhost.localdomain>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Tue, 15 Dec 2009 21:32:50 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48742 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756097AbZLPCct (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Dec 2009 21:32:49 -0500
+Date: Wed, 16 Dec 2009 11:32:41 +0900 (JST)
+Message-Id: <20091216.113241.189722720.d.hatayama@jp.fujitsu.com>
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jdike@addtoit.com,
+       tony.luck@intel.com, mhiramat@redhat.com
+Subject: Re: [RFC, PATCH 4/4] elf_core_dump(): Add extended numbering
+ support
+From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+In-Reply-To: <87k4wowcp9.fsf@basil.nowhere.org>
+References: <20091215.114149.189724375.d.hatayama@jp.fujitsu.com>
+	<87k4wowcp9.fsf@basil.nowhere.org>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Len,
+> Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com> writes:
+> 
+> > diff --git a/arch/um/sys-i386/elfcore.c b/arch/um/sys-i386/elfcore.c
+> > index 4e320f0..4e34e47 100644
+> > --- a/arch/um/sys-i386/elfcore.c
+> > +++ b/arch/um/sys-i386/elfcore.c
+> 
+> Again you only seem to patch UML, not real x86 (arch/x86/*) ?
+> 
+> -Andi
 
-On Tue, 15 Dec 2009 17:37:21 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
->
-> i merged bjorn's fix into the original offending patch in acpi-test
+Thanks for your comment.
 
-That didn't seem to be in what I fetched for linux-next today.
+ELF_CORE_EXTRA_* macros writes vDSO data, but currently it is included
+in vmas part. See the commit f47aef55d9a18945fcdd7fd6bf01121ce973b91b.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On the other hand, for IA64 architecture, there is also unwiding
+information, so the macros cannot be removed.
 
---Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P
-Content-Type: application/pgp-signature
+For UML-i386, I don't know wheather ELF_CORE_EXTRA_* can be removed or
+not as i386 could.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksoRd8ACgkQjjKRsyhoI8xEcACZAV+Kv119iFV1zbOlJNSXOdF2
-MsMAn1urkpPQ9kWZ0/D96bNGgucX2zEY
-=NvgX
------END PGP SIGNATURE-----
-
---Signature=_Wed__16_Dec_2009_13_28_47_+1100_q0+2Oa0/UuW07Y6P--
+Thanks.
