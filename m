@@ -1,283 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762485AbZLPRJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762475AbZLPRKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762485AbZLPRJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 12:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762285AbZLPRJV
+	id S1762475AbZLPRKE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 12:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762324AbZLPRJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 12:09:21 -0500
-Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:54442 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1762324AbZLPRJQ convert rfc822-to-8bit (ORCPT
+	Wed, 16 Dec 2009 12:09:53 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:52651 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762286AbZLPRJo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 12:09:16 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 16 Dec 2009 12:09:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=JssW4Ba4TQ5cG4DcRcOnA0Xus8l/LzRZRIizPA5lrCc+RDajBjUIAeS+zHHno+L+Zz
+         OK0w6dFIfAAmG8ehqBRzX7tryro2iOqVdDkFvRMHAmUqFLGjhrJHWfkMYirqZHA8jtzf
+         vfrGkw9apI1Q8/7iTFBUCnWvANC/2abRFDwpQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] ep93xx_eth.c: general cleanup
-Date: Wed, 16 Dec 2009 12:09:11 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200ECDE@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ep93xx_eth.c: general cleanup
-Thread-Index: Acp+cnzdeL4ux2feQomJiiyvh7d0Gg==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>,
-       "Nick M." <nickm@visionengravers.com>
-Cc: "Lennert Buytenhek" <kernel@wantstofly.org>,
-       "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 16 Dec 2009 17:09:13.0126 (UTC) FILETIME=[7D8D3C60:01CA7E72]
+In-Reply-To: <1260910330-3409-1-git-send-email-jdm64@gawab.com>
+References: <1260910330-3409-1-git-send-email-jdm64@gawab.com>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Wed, 16 Dec 2009 09:09:23 -0800
+X-Google-Sender-Auth: 14c4db0233fd8a6f
+Message-ID: <2c0942db0912160909k1984f6b4w16c0503fed7d5d59@mail.gmail.com>
+Subject: Re: [PATCH] staging: s5k3e2fx.c: simplify complexity by factoring
+To: Justin Madru <jdm64@gawab.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, error27@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-General cleanup of the ep93xx_eth driver.
+On Tue, Dec 15, 2009 at 12:52 PM, Justin Madru <jdm64@gawab.com> wrote:
+> the code was looping, seting s_move[i] to the following calculations
+>
+> if (actual_step >= 0)
+>        s_move[i] = ((((i + 1) * gain + 0x200) - (i * gain + 0x200)) / 0x400);
+> else
+>        s_move[i] = ((((i + 1) * gain - 0x200) - (i * gain - 0x200)) / 0x400);
+>
+> but, this code redues to the expression
+>        s_move[i] = gain >> 10;
+>
+> The reason for the complexity was to generate a step function with
+> integer division and rounding to land on specific values. But these calculations
+> can be simplified to the following code:
+>
+>        gain = ((actual_step << 10) / 5) >> 10;
+>        for (i = 0; i <= 4; i++)
+>                s_move[i] = gain;
+> ---
+>  drivers/staging/dream/camera/s5k3e2fx.c |   10 +++-------
+>  1 files changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/staging/dream/camera/s5k3e2fx.c b/drivers/staging/dream/camera/s5k3e2fx.c
+> index edba198..66582af 100644
+> --- a/drivers/staging/dream/camera/s5k3e2fx.c
+> +++ b/drivers/staging/dream/camera/s5k3e2fx.c
+> @@ -1093,14 +1093,10 @@ static int32_t s5k3e2fx_move_focus(int direction, int32_t num_steps)
+>
+>        actual_step = step_direction * (int16_t)num_steps;
+>        pos_offset = init_code + s5k3e2fx_ctrl->curr_lens_pos;
+> -       gain = actual_step * 0x400 / 5;
+> +       gain = ((actual_step << 10) / 5) >> 10;
+>
+> -       for (i = 0; i <= 4; i++) {
+> -               if (actual_step >= 0)
+> -                       s_move[i] = ((((i+1)*gain+0x200) - (i*gain+0x200))/0x400);
+> -               else
+> -                       s_move[i] = ((((i+1)*gain-0x200) - (i*gain-0x200))/0x400);
+> -       }
+> +       for (i = 0; i <= 4; i++)
+> +               s_move[i] = gain;
+>
+>        /* Ring Damping Code */
+>        for (i = 0; i <= 4; i++) {
+> --
+> 1.6.5.6
 
-1) Use pr_fmt() to prefix the module name and __func__ to the error 
-   messages.
-2) <linux/io.h> instead of <asm/io.h>
-3) <mach/hardware.h> instead of <mach/ep93xx-regs.h> and <mach/platform.h>
-4) Remove the DRV_MODULE_NAME and DRV_MODULE_VERSION defines and just use
-   the raw string data in ep93xx_get_drvinfo().
-5) Move the ep93xx_mdio_read (and ep93xx_mdio_write) function to eliminate
-   the function prototype.
-6) Change all the printk(<level> messages to pr_<level> and remove the 
-   __func__ argument.
-7) Use %pM to print the MAC address at the end of the probe.
-8) Use dev->dev_addr not data->dev_addr for the MAC argument because a
-   random address could be used if the platform does not supply one.
-9) Remove unnecessary noise in ep93xx_eth_init_module().
+Okay, yes, that now generates the same numbers before and after.
 
-The message at the end of the probe is left as a printk since it displays
-cleaner without the function name that would be displayed with pr_info().
+More worryingly, however, it's now even more obvious that there's no
+need for a five-element array here to hold the steps. They're all the
+same size, so the array could have been removed along with the gain
+variable and the expression ((actual_step << 10) / 5) >> 10 can be
+used directly in at the top of the loop in the ring damping code
+directly below, the only place that uses the s_move[5] array.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Lennert Buytenhek <kernel@wantstofly.org>
-Cc: David S. Miller <davem@davemloft.net>
+(There's no point in having an array of move values unless the
+individual values differ, which makes the whole thing look like
+there's a bug in the code compared to the original intent of, perhaps,
+making large moves in the beginning and smaller toward the end. Dunno.
+This is one of those 'ask the author' sorts of things.)
 
----
+Regardless, that's not your fault, and not something that has to be
+rolled into this patch, so feel free to add my
 
-diff --git a/drivers/net/arm/ep93xx_eth.c b/drivers/net/arm/ep93xx_eth.c
-index b25467a..8955850 100644
---- a/drivers/net/arm/ep93xx_eth.c
-+++ b/drivers/net/arm/ep93xx_eth.c
-@@ -9,6 +9,8 @@
-  * (at your option) any later version.
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": %s: " fmt, __func__
-+
- #include <linux/dma-mapping.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-@@ -20,12 +22,9 @@
- #include <linux/moduleparam.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
--#include <mach/ep93xx-regs.h>
--#include <mach/platform.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- 
--#define DRV_MODULE_NAME		"ep93xx-eth"
--#define DRV_MODULE_VERSION	"0.1"
-+#include <mach/hardware.h>
- 
- #define RX_QUEUE_ENTRIES	64
- #define TX_QUEUE_ENTRIES	8
-@@ -185,7 +184,47 @@ struct ep93xx_priv
- #define wrw(ep, off, val)	__raw_writew((val), (ep)->base_addr + (off))
- #define wrl(ep, off, val)	__raw_writel((val), (ep)->base_addr + (off))
- 
--static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg);
-+static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg)
-+{
-+	struct ep93xx_priv *ep = netdev_priv(dev);
-+	int data;
-+	int i;
-+
-+	wrl(ep, REG_MIICMD, REG_MIICMD_READ | (phy_id << 5) | reg);
-+
-+	for (i = 0; i < 10; i++) {
-+		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
-+			break;
-+		msleep(1);
-+	}
-+
-+	if (i == 10) {
-+		pr_info("mdio read timed out\n");
-+		data = 0xffff;
-+	} else {
-+		data = rdl(ep, REG_MIIDATA);
-+	}
-+
-+	return data;
-+}
-+
-+static void ep93xx_mdio_write(struct net_device *dev, int phy_id, int reg, int data)
-+{
-+	struct ep93xx_priv *ep = netdev_priv(dev);
-+	int i;
-+
-+	wrl(ep, REG_MIIDATA, data);
-+	wrl(ep, REG_MIICMD, REG_MIICMD_WRITE | (phy_id << 5) | reg);
-+
-+	for (i = 0; i < 10; i++) {
-+		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
-+			break;
-+		msleep(1);
-+	}
-+
-+	if (i == 10)
-+		pr_info("mdio write timed out\n");
-+}
- 
- static struct net_device_stats *ep93xx_get_stats(struct net_device *dev)
- {
-@@ -217,14 +256,11 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
- 		rstat->rstat1 = 0;
- 
- 		if (!(rstat0 & RSTAT0_EOF))
--			printk(KERN_CRIT "ep93xx_rx: not end-of-frame "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("not end-of-frame %.8x %.8x\n", rstat0, rstat1);
- 		if (!(rstat0 & RSTAT0_EOB))
--			printk(KERN_CRIT "ep93xx_rx: not end-of-buffer "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("not end-of-buffer %.8x %.8x\n", rstat0, rstat1);
- 		if ((rstat1 & RSTAT1_BUFFER_INDEX) >> 16 != entry)
--			printk(KERN_CRIT "ep93xx_rx: entry mismatch "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("entry mismatch %.8x %.8x\n", rstat0, rstat1);
- 
- 		if (!(rstat0 & RSTAT0_RWE)) {
- 			ep->stats.rx_errors++;
-@@ -241,8 +277,7 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
- 
- 		length = rstat1 & RSTAT1_FRAME_LENGTH;
- 		if (length > MAX_PKT_SIZE) {
--			printk(KERN_NOTICE "ep93xx_rx: invalid length "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_notice("invalid length %.8x %.8x\n", rstat0, rstat1);
- 			goto err;
- 		}
- 
-@@ -371,11 +406,9 @@ static void ep93xx_tx_complete(struct net_device *dev)
- 		tstat->tstat0 = 0;
- 
- 		if (tstat0 & TSTAT0_FA)
--			printk(KERN_CRIT "ep93xx_tx_complete: frame aborted "
--					 " %.8x\n", tstat0);
-+			pr_crit("frame aborted %.8x\n", tstat0);
- 		if ((tstat0 & TSTAT0_BUFFER_INDEX) != entry)
--			printk(KERN_CRIT "ep93xx_tx_complete: entry mismatch "
--					 " %.8x\n", tstat0);
-+			pr_crit("entry mismatch %.8x\n", tstat0);
- 
- 		if (tstat0 & TSTAT0_TXWE) {
- 			int length = ep->descs->tdesc[entry].tdesc1 & 0xfff;
-@@ -536,7 +569,7 @@ static int ep93xx_start_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10) {
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to reset\n");
-+		pr_crit("hw failed to reset\n");
- 		return 1;
- 	}
- 
-@@ -581,7 +614,7 @@ static int ep93xx_start_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10) {
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to start\n");
-+		pr_crit("hw failed to start\n");
- 		return 1;
- 	}
- 
-@@ -617,7 +650,7 @@ static void ep93xx_stop_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10)
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to reset\n");
-+		pr_crit("hw failed to reset\n");
- }
- 
- static int ep93xx_open(struct net_device *dev)
-@@ -681,52 +714,10 @@ static int ep93xx_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 	return generic_mii_ioctl(&ep->mii, data, cmd, NULL);
- }
- 
--static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg)
--{
--	struct ep93xx_priv *ep = netdev_priv(dev);
--	int data;
--	int i;
--
--	wrl(ep, REG_MIICMD, REG_MIICMD_READ | (phy_id << 5) | reg);
--
--	for (i = 0; i < 10; i++) {
--		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
--			break;
--		msleep(1);
--	}
--
--	if (i == 10) {
--		printk(KERN_INFO DRV_MODULE_NAME ": mdio read timed out\n");
--		data = 0xffff;
--	} else {
--		data = rdl(ep, REG_MIIDATA);
--	}
--
--	return data;
--}
--
--static void ep93xx_mdio_write(struct net_device *dev, int phy_id, int reg, int data)
--{
--	struct ep93xx_priv *ep = netdev_priv(dev);
--	int i;
--
--	wrl(ep, REG_MIIDATA, data);
--	wrl(ep, REG_MIICMD, REG_MIICMD_WRITE | (phy_id << 5) | reg);
--
--	for (i = 0; i < 10; i++) {
--		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
--			break;
--		msleep(1);
--	}
--
--	if (i == 10)
--		printk(KERN_INFO DRV_MODULE_NAME ": mdio write timed out\n");
--}
--
- static void ep93xx_get_drvinfo(struct net_device *dev, struct ethtool_drvinfo *info)
- {
--	strcpy(info->driver, DRV_MODULE_NAME);
--	strcpy(info->version, DRV_MODULE_VERSION);
-+	strcpy(info->driver, "ep93xx-eth");
-+	strcpy(info->version, "0.1");
- }
- 
- static int ep93xx_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
-@@ -877,11 +868,8 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 		goto err_out;
- 	}
- 
--	printk(KERN_INFO "%s: ep93xx on-chip ethernet, IRQ %d, "
--			 "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x.\n", dev->name,
--			ep->irq, data->dev_addr[0], data->dev_addr[1],
--			data->dev_addr[2], data->dev_addr[3],
--			data->dev_addr[4], data->dev_addr[5]);
-+	printk(KERN_INFO "%s: ep93xx on-chip ethernet, IRQ %d, %pM\n",
-+			dev->name, ep->irq, dev->dev_addr);
- 
- 	return 0;
- 
-@@ -902,7 +890,6 @@ static struct platform_driver ep93xx_eth_driver = {
- 
- static int __init ep93xx_eth_init_module(void)
- {
--	printk(KERN_INFO DRV_MODULE_NAME " version " DRV_MODULE_VERSION " loading\n");
- 	return platform_driver_register(&ep93xx_eth_driver);
- }
-  
+Reviewed-by: Ray Lee <ray-lk@madrabbit.org>
