@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935127AbZLPShQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762831AbZLPShd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935127AbZLPShQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932220AbZLPShN
+	id S1762831AbZLPShd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759023AbZLPSh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:37:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53394 "EHLO hera.kernel.org"
+	Wed, 16 Dec 2009 13:37:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53403 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932263AbZLPShK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:37:10 -0500
-Date: Wed, 16 Dec 2009 18:36:34 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+	id S935132AbZLPShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 13:37:24 -0500
+Date: Wed, 16 Dec 2009 18:36:50 GMT
+From: tip-bot for Xiaotian Feng <dfeng@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
+       a.p.zijlstra@chello.nl, efault@gmx.de, sachinp@in.ibm.com,
+       tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20091216170517.423469527@chello.nl>
-References: <20091216170517.423469527@chello.nl>
+       a.p.zijlstra@chello.nl, efault@gmx.de, sachinp@in.ibm.com,
+       tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
+In-Reply-To: <20091216170517.500272612@chello.nl>
+References: <20091216170517.500272612@chello.nl>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Mark boot-cpu active before smp_init()
-Message-ID: <tip-933b0618d8b2a59c7a0742e43836544e02f1e9bd@git.kernel.org>
-Git-Commit-ID: 933b0618d8b2a59c7a0742e43836544e02f1e9bd
+Subject: [tip:sched/urgent] sched: Fix set_cpu_active() in cpu_down()
+Message-ID: <tip-9ee349ad6d326df3633d43f54202427295999c47@git.kernel.org>
+Git-Commit-ID: 9ee349ad6d326df3633d43f54202427295999c47
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,48 +31,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  933b0618d8b2a59c7a0742e43836544e02f1e9bd
-Gitweb:     http://git.kernel.org/tip/933b0618d8b2a59c7a0742e43836544e02f1e9bd
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 16 Dec 2009 18:04:31 +0100
+Commit-ID:  9ee349ad6d326df3633d43f54202427295999c47
+Gitweb:     http://git.kernel.org/tip/9ee349ad6d326df3633d43f54202427295999c47
+Author:     Xiaotian Feng <dfeng@redhat.com>
+AuthorDate: Wed, 16 Dec 2009 18:04:32 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 16 Dec 2009 19:01:53 +0100
 
-sched: Mark boot-cpu active before smp_init()
+sched: Fix set_cpu_active() in cpu_down()
 
-A UP machine has 1 active cpu, not having the boot-cpu in the
-active map when starting the scheduler confuses things.
+Sachin found cpu hotplug test failures on powerpc, which made
+the kernel hang on his POWER box.
 
+The problem is that we fail to re-activate a cpu when a
+hot-unplug fails. Fix this by moving the de-activation into
+_cpu_down after doing the initial checks.
+
+Remove the synchronize_sched() calls and rely on those implied
+by rebuilding the sched domains using the new mask.
+
+Reported-by: Sachin Sant <sachinp@in.ibm.com>
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Tested-by: Sachin Sant <sachinp@in.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <20091216170517.423469527@chello.nl>
+LKML-Reference: <20091216170517.500272612@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- init/main.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ kernel/cpu.c |   24 +++---------------------
+ 1 files changed, 3 insertions(+), 21 deletions(-)
 
-diff --git a/init/main.c b/init/main.c
-index c3db4a9..dac44a9 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -369,12 +369,6 @@ static void __init smp_init(void)
- {
- 	unsigned int cpu;
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 291ac58..1c8ddd6 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -209,6 +209,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+ 		return -ENOMEM;
  
--	/*
--	 * Set up the current CPU as possible to migrate to.
--	 * The other ones will be done by cpu_up/cpu_down()
--	 */
--	set_cpu_active(smp_processor_id(), true);
+ 	cpu_hotplug_begin();
++	set_cpu_active(cpu, false);
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+ 					hcpu, -1, &nr_calls);
+ 	if (err == NOTIFY_BAD) {
+@@ -280,18 +281,6 @@ int __ref cpu_down(unsigned int cpu)
+ 		goto out;
+ 	}
+ 
+-	set_cpu_active(cpu, false);
 -
- 	/* FIXME: This should be done in userspace --RR */
- 	for_each_present_cpu(cpu) {
- 		if (num_online_cpus() >= setup_max_cpus)
-@@ -486,6 +480,7 @@ static void __init boot_cpu_init(void)
- 	int cpu = smp_processor_id();
- 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
- 	set_cpu_online(cpu, true);
-+	set_cpu_active(cpu, true);
- 	set_cpu_present(cpu, true);
- 	set_cpu_possible(cpu, true);
- }
+-	/*
+-	 * Make sure the all cpus did the reschedule and are not
+-	 * using stale version of the cpu_active_mask.
+-	 * This is not strictly necessary becuase stop_machine()
+-	 * that we run down the line already provides the required
+-	 * synchronization. But it's really a side effect and we do not
+-	 * want to depend on the innards of the stop_machine here.
+-	 */
+-	synchronize_sched();
+-
+ 	err = _cpu_down(cpu, 0);
+ 
+ out:
+@@ -382,19 +371,12 @@ int disable_nonboot_cpus(void)
+ 		return error;
+ 	cpu_maps_update_begin();
+ 	first_cpu = cpumask_first(cpu_online_mask);
+-	/* We take down all of the non-boot CPUs in one shot to avoid races
++	/*
++	 * We take down all of the non-boot CPUs in one shot to avoid races
+ 	 * with the userspace trying to use the CPU hotplug at the same time
+ 	 */
+ 	cpumask_clear(frozen_cpus);
+ 
+-	for_each_online_cpu(cpu) {
+-		if (cpu == first_cpu)
+-			continue;
+-		set_cpu_active(cpu, false);
+-	}
+-
+-	synchronize_sched();
+-
+ 	printk("Disabling non-boot CPUs ...\n");
+ 	for_each_online_cpu(cpu) {
+ 		if (cpu == first_cpu)
