@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933452AbZLPHDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbZLPHIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933452AbZLPHDu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 02:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZLPHDt
+	id S933536AbZLPHIR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 02:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbZLPHIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 02:03:49 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:51296 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbZLPHDs (ORCPT
+	Wed, 16 Dec 2009 02:08:16 -0500
+Received: from smtp102.biz.mail.mud.yahoo.com ([68.142.200.237]:30880 "HELO
+	smtp102.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755174AbZLPHIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 02:03:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MSCUSeTXssJ66FIz0vKqhac9KXONJQ6EpCj2u4LiJDL40aWQNp26GCQ975IdTLBRPj
-         qci3Vcrq7uAwY9m6xfFFVVyu+mQUrgD5Sh2pCPf+Clx14jtr5Qfk+QVCgwT6nSNvU9CV
-         +Tf6DfpnS8vGdQuVZdYXlh68jJ/3NlNgfyhh8=
-Date: Tue, 15 Dec 2009 23:03:43 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: synaptics touchpad doesn't click
-Message-ID: <20091216070343.GF2699@core.coreip.homeip.net>
-References: <20091214173450.GB2373@core.coreip.homeip.net> <20091215034127.GC587@ldl.fc.hp.com> <20091215062628.GA12669@core.coreip.homeip.net> <s5h1viwn3ig.wl%tiwai@suse.de> <20091215073358.GC12669@core.coreip.homeip.net> <s5hvdg8lm5q.wl%tiwai@suse.de> <20091215082518.GD12669@core.coreip.homeip.net> <20091216010506.GA26367@ldl.fc.hp.com> <20091216025934.GA2699@core.coreip.homeip.net> <20091216065200.GC20352@ldl.fc.hp.com>
+	Wed, 16 Dec 2009 02:08:16 -0500
+X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
+X-YMail-OSG: 5FqcbKEVM1l5U3zLAJQbuivjPDliTg4R20OiVRIR.fKxXff2V9EDdb31XLRkwA3mzcQXqgsNBDZz.mtGRHc5yrarn8U0y.FoJF9oQfJVL_kIIXV1d5ERU6I7Fq.6AwSpsytG0By3_oD4YuIsqEDf7mbo8Glo4pmjbbvzpqEKRfLaY8WpnQLcUQuHcLSkZueOgUybLr7uWYndpxFQOQiZDcAMAmvjCmkZEd_s7IhrNGkBZoItbLUmQpUFWhPNGwoeLCHBtKBf8HTubvbfLzq9M8yV2ihrGBZ1LHEKyfvDZTTzfZ2xYmYpIdPe1tUd9yOKmo0X5Tqp2ES8GDQ8kXyi7fdAxpt3GLnX3BTwHPzwaqNJ0w--
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [current HEAD] commit 5ad6468801d28c4d4ac9f48ec19297817c915f6a breaks the build on m68knommu
+Date: Tue, 15 Dec 2009 23:08:13 -0800
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200912151501.05552.sfking@fdwdc.com> <Pine.LNX.4.64.0912160529440.5529@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0912160529440.5529@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091216065200.GC20352@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200912152308.13468.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 11:52:00PM -0700, Alex Chiang wrote:
-> * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > On Tue, Dec 15, 2009 at 06:05:06PM -0700, Alex Chiang wrote:
-> > > * Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> > > >
-> > > > The updated patch is below.
-> > > > 
-> > > > -- 
-> > > > Dmitry
-> > > 
-> > > Should I test this one or wait one more iteration to address
-> > > Takashi's last comments?
-> > > 
-> > 
-> > Actually I think we took the wrong direction with the original patch and
-> > we should do what other buttonless devices (bcm5974) do: report touchpad
-> > click as left button and have Synaptics X driver provide enhanced
-> > support. This way we can have both modes (ClickZones and ClickButtons)
-> > and users will get to chose (provided that someone takes time to add
-> > that support to Synaptics driver of course ;) ).
-> > 
-> > Could you tell me if the below works for you?
-> 
-> Left clicks work. Right/middle do not (as expected, I guess).
-> 
-> I liked the behaviour of Takashi's patch a little better wrt what
-> happens when you try to click/drag, because he disabled movement
-> in the click area.
+On Tuesday 15 December 2009 09:32:26 Hugh Dickins wrote:
+> On Tue, 14 Dec 2009, Steven King wrote:
+> > and I suspect on any nommu:
+> >
+> > In file included from kernel/fork.c:52:
+> > include/linux/ksm.h:129: warning: 'enum ttu_flags' declared inside
+> > parameter list
+> > include/linux/ksm.h:129: warning: its scope is only this definition or
+> > declaration, which is probably not what you want
+> > include/linux/ksm.h:129: error: parameter 2 ('flags') has incomplete type
+> > make[1]: *** [kernel/fork.o] Error 1
+> > make[1]: *** Waiting for unfinished jobs....
+>
+> Aargh, sorry about that: I've not built this on nommu, does it fix it?
 
-Are the clicks register only in that special area? Reading Synaptics
-product description it sounds like entire surface should be clickable.
+Yes,
 
-> My vodka consumption is minimal and I don't have the shakes, but
-> I found it difficult to precisely hit the edge of a window and
-> click / drag to resize...
-> 
+thanks.
+
 
 -- 
-Dmitry
+Steven King -- sfking at fdwdc dot com
