@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762957AbZLPWUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763080AbZLPWVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762957AbZLPWUi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762881AbZLPWU2
+	id S1763080AbZLPWVO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763044AbZLPWU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:20:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9902 "EHLO mx1.redhat.com"
+	Wed, 16 Dec 2009 17:20:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7536 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763009AbZLPWUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:20:25 -0500
+	id S1763012AbZLPWUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:20:52 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 2/3] kprobe-tracer: Check new event/group name
+Subject: [PATCH -tip 3/3] perf probe: Check new event name
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
@@ -27,8 +27,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Wed, 16 Dec 2009 17:24:08 -0500
-Message-ID: <20091216222408.14459.68790.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Wed, 16 Dec 2009 17:24:15 -0500
+Message-ID: <20091216222415.14459.71383.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091216222354.14459.82110.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091216222354.14459.82110.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -39,8 +39,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check new event/group name is same syntax as c symbol. In other
-words, checking the name is as like as other tracepoint events.
+Check new event name is same syntax as c symbol in perf command.
+In other words, checking the name is as like as other tracepoint
+events.
 This can prevent user to create an event with useless name (e.g.
 foo|bar, foo*bar).
 
@@ -60,88 +61,40 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
 
- kernel/trace/trace_kprobe.c |   30 ++++++++++++++++++++++++------
- 1 files changed, 24 insertions(+), 6 deletions(-)
+ tools/perf/util/probe-event.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 7ecab06..167c189 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -282,6 +282,17 @@ static int kprobe_dispatcher(struct kprobe *kp, struct pt_regs *regs);
- static int kretprobe_dispatcher(struct kretprobe_instance *ri,
- 				struct pt_regs *regs);
- 
-+/* Check the name is good for event/group */
-+static int good_event_name(const char *name)
-+{
-+	if (!isalpha(*name) && *name != '_')
-+		return 0;
-+	while (*++name != '\0')
-+		if (!isalpha(*name) && !isdigit(*name) && *name != '_')
-+			return 0;
-+	return 1;
-+}
-+
- /*
-  * Allocate new trace_probe and initialize it (including kprobes).
-  */
-@@ -293,10 +304,11 @@ static struct trace_probe *alloc_trace_probe(const char *group,
- 					     int nargs, int is_return)
- {
- 	struct trace_probe *tp;
-+	int ret = -ENOMEM;
- 
- 	tp = kzalloc(SIZEOF_TRACE_PROBE(nargs), GFP_KERNEL);
- 	if (!tp)
--		return ERR_PTR(-ENOMEM);
-+		return ERR_PTR(ret);
- 
- 	if (symbol) {
- 		tp->symbol = kstrdup(symbol, GFP_KERNEL);
-@@ -312,14 +324,20 @@ static struct trace_probe *alloc_trace_probe(const char *group,
- 	else
- 		tp->rp.kp.pre_handler = kprobe_dispatcher;
- 
--	if (!event)
-+	if (!event || !good_event_name(event)) {
-+		ret = -EINVAL;
- 		goto error;
-+	}
-+
- 	tp->call.name = kstrdup(event, GFP_KERNEL);
- 	if (!tp->call.name)
- 		goto error;
- 
--	if (!group)
-+	if (!group || !good_event_name(group)) {
-+		ret = -EINVAL;
- 		goto error;
-+	}
-+
- 	tp->call.system = kstrdup(group, GFP_KERNEL);
- 	if (!tp->call.system)
- 		goto error;
-@@ -330,7 +348,7 @@ error:
- 	kfree(tp->call.name);
- 	kfree(tp->symbol);
- 	kfree(tp);
--	return ERR_PTR(-ENOMEM);
-+	return ERR_PTR(ret);
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index 2ca6215..6fca3b6 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -62,6 +62,17 @@ static int e_snprintf(char *str, size_t size, const char *format, ...)
+ 	return ret;
  }
  
- static void free_probe_arg(struct probe_arg *arg)
-@@ -695,10 +713,10 @@ static int create_trace_probe(int argc, char **argv)
- 	if (!event) {
- 		/* Make a new event name */
- 		if (symbol)
--			snprintf(buf, MAX_EVENT_NAME_LEN, "%c@%s%+ld",
-+			snprintf(buf, MAX_EVENT_NAME_LEN, "%c_%s_%ld",
- 				 is_return ? 'r' : 'p', symbol, offset);
- 		else
--			snprintf(buf, MAX_EVENT_NAME_LEN, "%c@0x%p",
-+			snprintf(buf, MAX_EVENT_NAME_LEN, "%c_0x%p",
- 				 is_return ? 'r' : 'p', addr);
- 		event = buf;
++/* Check the name is good for event/group */
++static bool good_event_name(const char *name)
++{
++	if (!isalpha(*name) && *name != '_')
++		return false;
++	while (*++name != '\0')
++		if (!isalpha(*name) && !isdigit(*name) && *name != '_')
++			return false;
++	return true;
++}
++
+ /* Parse probepoint definition. */
+ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ {
+@@ -82,6 +93,9 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ 		ptr = strchr(arg, ':');
+ 		if (ptr)	/* Group name is not supported yet. */
+ 			semantic_error("Group name is not supported yet.");
++		if (!good_event_name(arg))
++			semantic_error("%s is bad for event name -it must "
++				       "follow C symbol-naming rule.", arg);
+ 		pp->event = strdup(arg);
+ 		arg = tmp;
  	}
 
 
