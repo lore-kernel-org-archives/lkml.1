@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbZLPWr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZLPWs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbZLPWr7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 17:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZLPWrw
+	id S1759463AbZLPWs3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 17:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762668AbZLPWsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 17:47:52 -0500
-Received: from mga02.intel.com ([134.134.136.20]:47754 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbZLPWru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 17:47:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,408,1257148800"; 
-   d="scan'208";a="579656747"
-Message-ID: <4B296394.9010709@intel.com>
-Date: Wed, 16 Dec 2009 15:47:48 -0700
-From: Dan Williams <dan.j.williams@intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 16 Dec 2009 17:48:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57005 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761616AbZLPWr7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 17:47:59 -0500
+Date: Wed, 16 Dec 2009 14:47:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alexander Beregalov <a.beregalov@gmail.com>
+cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] VFS stuff, part 1
+In-Reply-To: <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0912161444470.3556@localhost.localdomain>
+References: <20091216185157.GL14381@ZenIV.linux.org.uk> <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Kim Phillips <Kim.Phillips@freescale.com>,
-       Vishnu Suresh <Vishnu@freescale.com>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "B04825@freescale.com" <B04825@freescale.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-       Maneesh Gupta <Maneesh.Gupta@freescale.com>,
-       "R58472@freescale.com" <R58472@freescale.com>
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com> <20091216164144.daff5468.kim.phillips@freescale.com> <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-In-Reply-To: <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
->>> Changes with respect to v1 as per comments received
->>> o. Rebased to linux-next as of 20091216
->>> o. The selection is based exclusive of fsldma
->>> o. Intoduced a new Kernel Configuration variable
->>>   *. This enables selecting the Cryptographic functionality
->>>      of Talitos along with fsldma.
->>>   *. Disables the XOR parity calculation offload, if fsldma enabled
->>>      either as kernel in-built or as a module
->>>   *. Once the inter-operability with fsldma is resolved, this option
->>>      can be removed
->> wait, why can't the interoperability bug be fixed in the first place?
+
+
+On Thu, 17 Dec 2009, Alexander Beregalov wrote:
 > 
-> I agree w/Kim.  We need to better understand what the bug is and how to reproduce it so we can get to the root cause.
-> 
-> Paper taping over it by disabling fsldma is not the right solution.
+> Is it obvious for you or do I need to bisect ?
 
-Hopefully this prompts fsldma authors to get involved because the 
-interoperability issue has been out there without comment*, just 
-band-aids, since October.
+It might be obvious to Al, but it would be good to bisect it anyway, just 
+in case. Since you now have a fairly tight range of commits, it shouldn't 
+be _too_ bad.
 
---
-Dan
+[ My main desktop is running that bac5e54 kernel that you have as bad 
+  right noe, so it's not something totally obviously broken. Maybe it 
+  needs btrfs or something else specific to trigger. ]
 
-* well one comment from Ira saying the interrupt functionality worked 
-for him.
+		Linus
