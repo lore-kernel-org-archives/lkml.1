@@ -1,118 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZLPFcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZLPFeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbZLPFcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 00:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbZLPFcr
+	id S1753392AbZLPFeN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 00:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZLPFeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 00:32:47 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:1297 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753036AbZLPFcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 00:32:46 -0500
-X-Trace: 308008701/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgQBAJ7/J0tPRRyw/2dsb2JhbAAI1TeEKwQ
-X-IronPort-AV: E=Sophos;i="4.47,404,1257120000"; 
-   d="scan'208";a="308008701"
-Date: Wed, 16 Dec 2009 05:32:26 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Steven King <sfking@fdwdc.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [current HEAD] commit 5ad6468801d28c4d4ac9f48ec19297817c915f6a
- breaks the build on m68knommu
-In-Reply-To: <200912151501.05552.sfking@fdwdc.com>
-Message-ID: <Pine.LNX.4.64.0912160529440.5529@sister.anvils>
-References: <200912151501.05552.sfking@fdwdc.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Dec 2009 00:34:13 -0500
+Received: from mga09.intel.com ([134.134.136.24]:42318 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbZLPFeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 00:34:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,404,1257148800"; 
+   d="scan'208";a="579365817"
+Subject: [GIT PULL] dmaengine update for 2.6.33
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-raid <linux-raid@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Dec 2009 22:33:44 -0700
+Message-Id: <1260941624.29274.44.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Dec 2009, Steven King wrote:
+Hi Linus, please pull from:
 
-> and I suspect on any nommu:
-> 
-> In file included from kernel/fork.c:52:
-> include/linux/ksm.h:129: warning: 'enum ttu_flags' declared inside parameter 
-> list
-> include/linux/ksm.h:129: warning: its scope is only this definition or 
-> declaration, which is probably not what you want
-> include/linux/ksm.h:129: error: parameter 2 ('flags') has incomplete type
-> make[1]: *** [kernel/fork.o] Error 1
-> make[1]: *** Waiting for unfinished jobs....
+  git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
 
-Aargh, sorry about that: I've not built this on nommu, does it fix it?
+...to receive a couple new drivers, coh and ppc440spe-adma (raid offload
+engine), and a collection of fixes from Guennadi.  There are a few more
+shdma fixes pending from Guennadi, but the original driver author wanted
+a bit more time to review / test, so I'm obliging.  These have been in
+linux-next for a few releases.
+
+Thanks,
+Dan
 
 
-[PATCH] fix CONFIG_KSM broke nommu build
+Anatolij Gustschin (1):
+      ppc440spe-adma: adds updated ppc440spe adma driver
 
-Commit 5ad6468801d28c4d4ac9f48ec19297817c915f6a "ksm: let shared pages
-be swappable" breaks the build on m68knommu and I suspect on any nommu:
+Guennadi Liakhovetski (4):
+      sh: DMA driver has to specify its alignment requirements
+      dmaengine: fix dmatest to verify minimum transfer length and test buffer size
+      sh: stylistic improvements for the DMA driver
+      dmaengine: clarify the meaning of the DMA_CTRL_ACK flag
 
-In file included from kernel/fork.c:52:
-include/linux/ksm.h:129: warning: 'enum ttu_flags' declared inside parameter 
-list
-include/linux/ksm.h:129: warning: its scope is only this definition or 
-declaration, which is probably not what you want
-include/linux/ksm.h:129: error: parameter 2 ('flags') has incomplete type
-make[1]: *** [kernel/fork.o] Error 1
-make[1]: *** Waiting for unfinished jobs....
+H Hartley Sweeten (1):
+      iop-adma.c: use resource_size()
 
-Let's fix that with CONFIG_MMU around most of the !CONFIG_KSM declarations.
+Linus Walleij (1):
+      Add COH 901 318 DMA block driver v5
 
-Reported-by: Steven King <sfking@fdwdc.com>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
+ .../powerpc/dts-bindings/4xx/ppc440spe-adma.txt    |   93 +
+ arch/arm/mach-u300/include/mach/coh901318.h        |  281 ++
+ arch/powerpc/include/asm/async_tx.h                |   47 +
+ arch/powerpc/include/asm/dcr-regs.h                |   23 +
+ drivers/dma/Kconfig                                |   18 +
+ drivers/dma/Makefile                               |    2 +
+ drivers/dma/coh901318.c                            | 1325 ++++++
+ drivers/dma/coh901318_lli.c                        |  318 ++
+ drivers/dma/coh901318_lli.h                        |  124 +
+ drivers/dma/dmatest.c                              |   16 +-
+ drivers/dma/iop-adma.c                             |    4 +-
+ drivers/dma/ppc4xx/Makefile                        |    1 +
+ drivers/dma/ppc4xx/adma.c                          | 5027 ++++++++++++++++++++
+ drivers/dma/ppc4xx/adma.h                          |  195 +
+ drivers/dma/ppc4xx/dma.h                           |  223 +
+ drivers/dma/ppc4xx/xor.h                           |  110 +
+ drivers/dma/shdma.c                                |   36 +-
+ drivers/dma/shdma.h                                |   14 +-
+ include/linux/dmaengine.h                          |    2 +-
+ 19 files changed, 7828 insertions(+), 31 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/4xx/ppc440spe-adma.txt
+ create mode 100644 arch/arm/mach-u300/include/mach/coh901318.h
+ create mode 100644 arch/powerpc/include/asm/async_tx.h
+ create mode 100644 drivers/dma/coh901318.c
+ create mode 100644 drivers/dma/coh901318_lli.c
+ create mode 100644 drivers/dma/coh901318_lli.h
+ create mode 100644 drivers/dma/ppc4xx/Makefile
+ create mode 100644 drivers/dma/ppc4xx/adma.c
+ create mode 100644 drivers/dma/ppc4xx/adma.h
+ create mode 100644 drivers/dma/ppc4xx/dma.h
+ create mode 100644 drivers/dma/ppc4xx/xor.h
 
- include/linux/ksm.h |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- 2.6.32-git/include/linux/ksm.h.0	2009-12-16 04:59:25.000000000 +0000
-+++ linux/include/linux/ksm.h	2009-12-16 05:14:40.000000000 +0000
-@@ -94,12 +94,6 @@ void ksm_migrate_page(struct page *newpa
- 
- #else  /* !CONFIG_KSM */
- 
--static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
--		unsigned long end, int advice, unsigned long *vm_flags)
--{
--	return 0;
--}
--
- static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
- {
- 	return 0;
-@@ -114,6 +108,13 @@ static inline int PageKsm(struct page *p
- 	return 0;
- }
- 
-+#ifdef CONFIG_MMU
-+static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-+		unsigned long end, int advice, unsigned long *vm_flags)
-+{
-+	return 0;
-+}
-+
- static inline struct page *ksm_might_need_to_copy(struct page *page,
- 			struct vm_area_struct *vma, unsigned long address)
- {
-@@ -140,6 +141,7 @@ static inline int rmap_walk_ksm(struct p
- static inline void ksm_migrate_page(struct page *newpage, struct page *oldpage)
- {
- }
-+#endif /* CONFIG_MMU */
- #endif /* !CONFIG_KSM */
- 
- #endif /* __LINUX_KSM_H */
