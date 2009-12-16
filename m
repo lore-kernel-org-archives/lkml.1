@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762724AbZLPSUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762745AbZLPSUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762724AbZLPSUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbZLPSUI
+	id S1762745AbZLPSUW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762729AbZLPSUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:20:08 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:55820 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759550AbZLPSUG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:20:06 -0500
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Balaji T K <balajitk@ti.com>, Rajendra Nayak <rnayak@ti.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org
-Subject: [PATCH] mfd: twl4030-irq: irq_desc->lock converted to raw_spinlock_t
-Date: Wed, 16 Dec 2009 20:18:50 +0200
-Message-Id: <1260987530-20221-1-git-send-email-felipe.balbi@nokia.com>
-X-Mailer: git-send-email 1.6.6.rc0
-X-OriginalArrivalTime: 16 Dec 2009 18:19:25.0213 (UTC) FILETIME=[4C26B4D0:01CA7E7C]
-X-Nokia-AV: Clean
+	Wed, 16 Dec 2009 13:20:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21373 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760191AbZLPSUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 13:20:13 -0500
+Message-ID: <4B2924E0.9000301@redhat.com>
+Date: Wed, 16 Dec 2009 13:20:16 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: perf and libdwarf on debian
+References: <20091216135448.GD11618@aftab>
+In-Reply-To: <20091216135448.GD11618@aftab>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
-the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
-was left aside on the conversion.
+Hi Borislav,
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Lindgre <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
----
+Borislav Petkov wrote:
+> Hi,
+> 
+> even after installing libdwarf-dev on my debian box here, make in tools/perf/
+> still complains that it cannot find libdwarf:
+> 
+> Makefile:491: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
+> 
+> The problem is that the include path on debian is not
+> /usr/include/libdwarf/ but simply /usr/include because the debian
+> package libdwarf-dev puts the headers straight into /usr/include.
 
-I'm not sure this is the expected fix since twl4030-irq handler
-should be running in thread context. Currently mask/unmask/set_type
-are deferred to a workqueue. Thomas, should this be done ? How
-do you expect irq chips on slow busses to implement mask/unmask/set_type ?
+Thank you for reporting that :-)
 
- drivers/mfd/twl4030-irq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Now, fixing this in the build system could get ugly and too much (see
+> below), IMHO, so how about adding a README file in <tools/perf/>
+> which explains that on Debian-like systems, one should mkdir
+> /usr/include/libdwarf/ and symlink libdwarf.h and dwarf.h into it?
+> 
+> There could be a better solution though...?
 
-diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
-index 20d29ba..9df9a5a 100644
---- a/drivers/mfd/twl4030-irq.c
-+++ b/drivers/mfd/twl4030-irq.c
-@@ -568,12 +568,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
- 
- 		bytes[byte] &= ~(0x03 << off);
- 
--		spin_lock_irq(&d->lock);
-+		raw_spin_lock_irq(&d->lock);
- 		if (d->status & IRQ_TYPE_EDGE_RISING)
- 			bytes[byte] |= BIT(off + 1);
- 		if (d->status & IRQ_TYPE_EDGE_FALLING)
- 			bytes[byte] |= BIT(off + 0);
--		spin_unlock_irq(&d->lock);
-+		raw_spin_unlock_irq(&d->lock);
- 
- 		edge_change &= ~BIT(i);
- 	}
+Yeah, I'd like to update Makefile rather than updating document...
+
+> 
+> ---
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index 4069996..5b48ce2 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -161,6 +161,7 @@ uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
+>  uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+>  uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+>  uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+> +uname_D := $(shell sh -c "lsb_release -a 2>/dev/null | awk '/ID/ { print \$$3 }'")
+>  
+>  # CFLAGS and LDFLAGS are for the users to override from the command line.
+>  
+> @@ -475,6 +476,14 @@ ifeq ($(uname_S),Darwin)
+>  	PTHREAD_LIBS =
+>  endif
+>  
+> +ifeq ($(uname_D),Debian)
+> +	LIBDWARF_PREFIX =
+> +	BASIC_CFLAGS += -DDEBIAN
+> +else
+> +	LIBDWARF_PREFIX = libdwarf/
+> +endif
+
+Hmm, I think such Distro-checking code is ugly and very specific.
+Instead of that, it would be better to use -I option to search
+libdwarf.
+e.g.
+
+ifeq ($(shell sh -c "(test -d /usr/include/libdwarf/ && echo y)", y)
+	BASIC_CFLAGS += -I /usr/include/libdwarf 
+endif
+
+And including just libdwarf.h and dwarf.h.
+
+Thank you again,
+
+
 -- 
-1.6.6.rc0
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
