@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934872AbZLPOPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934338AbZLPOIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934872AbZLPOPb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 09:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934169AbZLPOP3
+	id S934338AbZLPOIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 09:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZLPOIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 09:15:29 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:55005 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934071AbZLPOP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 09:15:29 -0500
-Date: Wed, 16 Dec 2009 09:05:43 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: Josua Dietze <digidietze@draisberghof.de>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-Message-ID: <20091216140542.GB11793@tuxdriver.com>
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <4B278191.1010009@draisberghof.de> <200912151611.08576.oliver@neukum.org> <20091215180300.GF16426@one-eyed-alien.net> <20091216114932.4bede511@strolchi.home.s3e.de> <4B28C2F7.7040207@draisberghof.de> <20091216131452.49ad183b@strolchi.home.s3e.de>
+	Wed, 16 Dec 2009 09:08:18 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:56419 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934023AbZLPOIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 09:08:17 -0500
+Date: Wed, 16 Dec 2009 15:08:15 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, linux-kernel@vger.kernel.org,
+       krzysztof.h1@wp.pl, Andrew Morton <akpm@linux-foundation.org>,
+       linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
+In-Reply-To: <20091216103423.GE1377@ucw.cz>
+Message-ID: <alpine.LNX.2.00.0912161504360.3755@pobox.suse.cz>
+References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu> <20091216103423.GE1377@ucw.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216131452.49ad183b@strolchi.home.s3e.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 01:14:52PM +0100, Stefan Seyfried wrote:
-> On Wed, 16 Dec 2009 12:22:31 +0100
-> Josua Dietze <digidietze@draisberghof.de> wrote:
-> 
-> > Stefan Seyfried schrieb:
-> > > Preferably some code that can be built actually?
-> > 
-> > If the "eject" from SCSI tools does not work, "usb_modeswitch" can 
-> > send customized bulk messages to devices.
-> 
-> for my device, eject seems to be enough, so I'll be trying to get
-> this into udev.
+On Wed, 16 Dec 2009, Pavel Machek wrote:
 
-When you do that any chance you could account for zd1211rw too? :-)
+> > Although identified as a HID, the device does not support standard HID 
+> > input messages. As a result, a sub-input device is allocated and 
+> > registered separately in g13_probe(). The raw events are monitored and 
+> > key presses/joystick activity is reported through the input device 
+> > after referencing an indexed keymap.
+> > 
+> > Additionally, this device contains a 160x43 monochrome LCD display. A 
+> > registered framebuffer device manages this display. The design of this 
+> > portion of the driver was based on the design of the hecubafb driver 
+> > with deferred framebuffer I/O since there is no real memory to map.
+> > 
+> > This patch is against the torvalds/linux-2.6.git tree.
+> 
+> Should this use auxdisplay framework and be located there?
+
+Well, the device is still primarily HID device in its nature, so either 
+keeping the whole driver in drivers/hid, or separating it into two 
+drivers, one for the HID part and second for the framebuffer part should 
+be acceptable.
+
+> > --- /dev/null
+> > +++ b/drivers/hid/hid-g13-logo.xbm
+> > @@ -0,0 +1,75 @@
+> > +#define g13_lcd_width 160
+> > +#define g13_lcd_height 43
+> > +static unsigned char g13_lcd_bits[] = {
+> > +   0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> > +   0x00, 0x00, 0x00, 0x28, 0x03, 0x00, 0x40, 0x01, 0x00, 0xc0, 0x3f, 0x00,
+> > +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa1,
+> > +   0x08, 0x00, 0x08, 0x00, 0x00, 0xe0, 0x7f, 0x00, 0x00, 0x00,
+> > 0x00, 0x00,
+> 
+> I'd prefer to go without another logo. Just make sure default penguin gets
+> there or something.
+
+What logo is this, BTW? :)
+
+I will proceed with reviewing the driver soon, sorry for slightly higher 
+latencies these days.
+
+Thanks,
 
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Jiri Kosina
+SUSE Labs, Novell Inc.
