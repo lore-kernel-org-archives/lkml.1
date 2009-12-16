@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761742AbZLPOgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbZLPOge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761742AbZLPOgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 09:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760635AbZLPOgU
+	id S1762168AbZLPOge (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 09:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762152AbZLPOg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 09:36:20 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:59843 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759202AbZLPOgR (ORCPT
+	Wed, 16 Dec 2009 09:36:29 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:56827 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762023AbZLPOg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 09:36:17 -0500
+	Wed, 16 Dec 2009 09:36:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=c0SDvVkSWMjqyqq2Mkx9LeYWCkcvzI3aUdH8efPUz1bQpPzyFOSuJP6hc2+5pSlM+0
-         w6jHjztvMTdegZYsXigctmGArdHl5d1erxGgVuz13mTnOIAQzDUvmV6yxyXoqlYH5ogk
-         a5db5LnEowsNpmCP6Md/2dvCkxeaCOIjT0wa4=
+        b=pF4X80y2W0xnGQJij8IjaHNgqVGFRkkuNbJZzdSCpo58LFK93kwE7JP1h1mp4uoS9L
+         xJSzbJZr2kqSOB0IhWqRxn9A8sphAmTRdQUgv+NLkJIrz/UBJ8DnDT0zSTqPIHSNbXCx
+         UgD3RWr2wBeFBMqW6epp8fudVo5bVTUgobDjY=
 From: Yong Zhang <yong.zhang0@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/5] powerpc/iseries: use DECLARE_COMPLETION_ONSTACK for non-constant completion
-Date: Wed, 16 Dec 2009 22:35:57 +0800
-Message-Id: <1260974161-6934-2-git-send-email-yong.zhang0@gmail.com>
+Cc: Stelian Pop <stelian@popies.net>,
+       Michael Hanselmann <linux-kernel@hansmi.ch>
+Subject: [PATCH 2/5] hwmon: use DECLARE_COMPLETION_ONSTACK for non-constant completion
+Date: Wed, 16 Dec 2009 22:35:58 +0800
+Message-Id: <1260974161-6934-3-git-send-email-yong.zhang0@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
+In-Reply-To: <1260974161-6934-2-git-send-email-yong.zhang0@gmail.com>
 References: <1260974161-6934-1-git-send-email-yong.zhang0@gmail.com>
+ <1260974161-6934-2-git-send-email-yong.zhang0@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,26 +35,34 @@ The _ONSTACK variant should be used for on-stack completion,
 otherwise it will break lockdep.
 
 Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Stelian Pop <stelian@popies.net>
+Cc: Michael Hanselmann <linux-kernel@hansmi.ch>
 ---
- arch/powerpc/platforms/iseries/viopath.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/hwmon/ams/ams-pmu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/viopath.c b/arch/powerpc/platforms/iseries/viopath.c
-index 49ff4dc..5aea94f 100644
---- a/arch/powerpc/platforms/iseries/viopath.c
-+++ b/arch/powerpc/platforms/iseries/viopath.c
-@@ -116,7 +116,7 @@ static int proc_viopath_show(struct seq_file *m, void *v)
- 	u16 vlanMap;
- 	dma_addr_t handle;
- 	HvLpEvent_Rc hvrc;
--	DECLARE_COMPLETION(done);
-+	DECLARE_COMPLETION_ONSTACK(done);
- 	struct device_node *node;
- 	const char *sysid;
+diff --git a/drivers/hwmon/ams/ams-pmu.c b/drivers/hwmon/ams/ams-pmu.c
+index fb18b3d..2016629 100644
+--- a/drivers/hwmon/ams/ams-pmu.c
++++ b/drivers/hwmon/ams/ams-pmu.c
+@@ -52,7 +52,7 @@ static void ams_pmu_req_complete(struct adb_request *req)
+ static void ams_pmu_set_register(u8 reg, u8 value)
+ {
+ 	static struct adb_request req;
+-	DECLARE_COMPLETION(req_complete);
++	DECLARE_COMPLETION_ONSTACK(req_complete);
  
+ 	req.arg = &req_complete;
+ 	if (pmu_request(&req, ams_pmu_req_complete, 4, ams_pmu_cmd, 0x00, reg, value))
+@@ -65,7 +65,7 @@ static void ams_pmu_set_register(u8 reg, u8 value)
+ static u8 ams_pmu_get_register(u8 reg)
+ {
+ 	static struct adb_request req;
+-	DECLARE_COMPLETION(req_complete);
++	DECLARE_COMPLETION_ONSTACK(req_complete);
+ 
+ 	req.arg = &req_complete;
+ 	if (pmu_request(&req, ams_pmu_req_complete, 3, ams_pmu_cmd, 0x01, reg))
 -- 
 1.6.3.3
 
