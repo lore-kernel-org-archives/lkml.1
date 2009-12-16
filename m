@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934338AbZLPOIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZLPO0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934338AbZLPOIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 09:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZLPOIS
+	id S1757290AbZLPO0G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 09:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZLPO0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 09:08:18 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56419 "EHLO mx2.suse.de"
+	Wed, 16 Dec 2009 09:26:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57535 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934023AbZLPOIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 09:08:17 -0500
-Date: Wed, 16 Dec 2009 15:08:15 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, linux-kernel@vger.kernel.org,
-       krzysztof.h1@wp.pl, Andrew Morton <akpm@linux-foundation.org>,
-       linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
-In-Reply-To: <20091216103423.GE1377@ucw.cz>
-Message-ID: <alpine.LNX.2.00.0912161504360.3755@pobox.suse.cz>
-References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu> <20091216103423.GE1377@ucw.cz>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1756111AbZLPO0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 09:26:04 -0500
+Date: Wed, 16 Dec 2009 15:25:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, tglx@linutronix.de
+Subject: Re: [tip:sched/urgent] sched: Teach might_sleep() about preemptible
+ RCU
+Message-ID: <20091216142536.GA18091@elte.hu>
+References: <1260830672-7166-1-git-send-regression-fweisbec@gmail.com>
+ <tip-ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd@git.kernel.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009, Pavel Machek wrote:
 
-> > Although identified as a HID, the device does not support standard HID 
-> > input messages. As a result, a sub-input device is allocated and 
-> > registered separately in g13_probe(). The raw events are monitored and 
-> > key presses/joystick activity is reported through the input device 
-> > after referencing an indexed keymap.
-> > 
-> > Additionally, this device contains a 160x43 monochrome LCD display. A 
-> > registered framebuffer device manages this display. The design of this 
-> > portion of the driver was based on the design of the hecubafb driver 
-> > with deferred framebuffer I/O since there is no real memory to map.
-> > 
-> > This patch is against the torvalds/linux-2.6.git tree.
+* tip-bot for Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Commit-ID:  ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd
+> Gitweb:     http://git.kernel.org/tip/ba1b1cbcc9b458c4b9ebb28c9cf6a2ccf64ba1cd
+> Author:     Frederic Weisbecker <fweisbec@gmail.com>
+> AuthorDate: Mon, 14 Dec 2009 23:44:32 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 16 Dec 2009 08:43:16 +0100
 > 
-> Should this use auxdisplay framework and be located there?
+> sched: Teach might_sleep() about preemptible RCU
 
-Well, the device is still primarily HID device in its nature, so either 
-keeping the whole driver in drivers/hid, or separating it into two 
-drivers, one for the HID part and second for the framebuffer part should 
-be acceptable.
+Causes a build failure, so skipped this patch for now:
 
-> > --- /dev/null
-> > +++ b/drivers/hid/hid-g13-logo.xbm
-> > @@ -0,0 +1,75 @@
-> > +#define g13_lcd_width 160
-> > +#define g13_lcd_height 43
-> > +static unsigned char g13_lcd_bits[] = {
-> > +   0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-> > +   0x00, 0x00, 0x00, 0x28, 0x03, 0x00, 0x40, 0x01, 0x00, 0xc0, 0x3f, 0x00,
-> > +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa1,
-> > +   0x08, 0x00, 0x08, 0x00, 0x00, 0xe0, 0x7f, 0x00, 0x00, 0x00,
-> > 0x00, 0x00,
-> 
-> I'd prefer to go without another logo. Just make sure default penguin gets
-> there or something.
+kernel/sched.c:9661: error: implicit declaration of function 'rcu_preempt_depth'
 
-What logo is this, BTW? :)
-
-I will proceed with reviewing the driver soon, sorry for slightly higher 
-latencies these days.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+	Ingo
