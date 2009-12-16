@@ -1,99 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762704AbZLPSWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762754AbZLPSUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762704AbZLPSWP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 13:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762763AbZLPSWJ
+	id S1762754AbZLPSUp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 13:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762747AbZLPSUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 13:22:09 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:32744 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762762AbZLPSV5 (ORCPT
+	Wed, 16 Dec 2009 13:20:39 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:49464 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760443AbZLPSUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 13:21:57 -0500
-Date: Wed, 16 Dec 2009 20:20:22 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Balaji T K <balajitk@ti.com>, Rajendra Nayak <rnayak@ti.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] mfd: twl4030-irq: irq_desc->lock converted to
- raw_spinlock_t
-Message-ID: <20091216182022.GA20302@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1260987530-20221-1-git-send-email-felipe.balbi@nokia.com>
+	Wed, 16 Dec 2009 13:20:36 -0500
+Date: Wed, 16 Dec 2009 21:20:34 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, David Vrabel <david.vrabel@csr.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       spi-devel-general@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 6/7] spi/mpc8xxx: don't check platform_get_irq's return
+ value against zero
+Message-ID: <20091216182034.GA7590@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-5-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20091216163229.GA26350@oksana.dev.rtsoft.ru>
+ <20091216174904.GB26325@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1260987530-20221-1-git-send-email-felipe.balbi@nokia.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091216174904.GB26325@pengutronix.de>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 16 Dec 2009 18:20:56.0805 (UTC) FILETIME=[82BE8950:01CA7E7C]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 07:18:50PM +0100, Balbi Felipe (Nokia-D/Helsinki) wrote:
->commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
->the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
->was left aside on the conversion.
->
->Cc: Thomas Gleixner <tglx@linutronix.de>
->Cc: Tony Lindgre <tony@atomide.com>
+On Wed, Dec 16, 2009 at 06:49:04PM +0100, Uwe Kleine-König wrote:
+[...]
+> > Noooooo... :-(
+> > 
+> > Please revert 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 instead,
+> > and fix platforms to remap HWIRQ0 to something that is not VIRQ0.
+> > 
+> > IRQ0 is invalid for everything that is outside of arch/*.
+> > 
+> > http://lkml.org/lkml/2005/11/22/159
+> > http://lkml.org/lkml/2005/11/22/213
+> > http://lkml.org/lkml/2005/11/22/227
+> First note that my check is safe with both variants (e.g. it does the
+> right thing independent of the error being signaled by 0 or
+> -ESOMETHING.)
+> 
+> Then arch/arm/mach-pxa/devices.c has:
+> 
+> static struct resource pxa27x_resource_ssp3[] = {
+> 	...
+> 	[1] = {
+> 		.start  = IRQ_SSP3,
+> 		.end    = IRQ_SSP3,
+> 		.flags  = IORESOURCE_IRQ,
+> 	},
+> 	...
+> }
+> 
+> with IRQ_SSP3 being zero (sometimes).  The driver is implemented in
+> arch/arm/mach-pxa/ssp.c and uses platform_get_irq.
 
-oops, my n is failing.
+So fix this *one* driver? Implement arm-specific platform_get_irq() as
+a band-aid. Or better, implement virtual irqs <-> hardware irqs mapping
+for ARM.
 
-Tony Lindgren, below is better version:
+[...]
+> I'm a bit annoyed as this is the third time[1] this month this irq0
+> discussion pops up for me.  I think people see that irq0 is involved
+> somehow, start wailing and stop seeing the issues being fixed.
 
-========== cut here =================
+For this particular driver, there is NO issue whatsoever. It is
+only used for PowerPC, which has VIRQ0 == invalid IRQ. And note
+that there still could be HWIRQ0 on PowerPC, but it is *never*
+mapped to VIRQ0.
 
- From 17edd64d8e813713da6fb9fa018ab5f79d94d159 Mon Sep 17 00:00:00 2001
-From: Felipe Balbi <felipe.balbi@nokia.com>
-Date: Wed, 16 Dec 2009 20:11:22 +0200
-Subject: [PATCH] mfd: twl4030-irq: irq_desc->lock converted to raw_spinlock_t
+[...]
+> [1] one is:
+> 	http://thread.gmane.org/gmane.linux.kernel/924739
 
-commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
-the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
-was left aside on the conversion.
+No wonder the discussion popped up. You're adding some ugly
+#ifdef stuff that adds some arch-specific knowledge to a generic
+code.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
----
+Sure, there's a lot of ugly code even in the kernel/ directly, but
+you have to prepare for resistance when you add more of it.
 
-I'm not sure this is the expected fix since twl4030-irq handler
-should be running in thread context. Currently mask/unmask/set_type
-are deferred to a workqueue. Thomas, should this be done ? How
-do you expect irq chips on slow busses to implement mask/unmask/set_type ?
+So, if you want to fix the root cause of the issue: revert the
+305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0, and try to improve the
+ARM land, do not band-aid the whole kernel all over the place.
 
-  drivers/mfd/twl4030-irq.c |    4 ++--
-  1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
-index 20d29ba..9df9a5a 100644
---- a/drivers/mfd/twl4030-irq.c
-+++ b/drivers/mfd/twl4030-irq.c
-@@ -568,12 +568,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
-  
-  		bytes[byte] &= ~(0x03 << off);
-  
--		spin_lock_irq(&d->lock);
-+		raw_spin_lock_irq(&d->lock);
-  		if (d->status & IRQ_TYPE_EDGE_RISING)
-  			bytes[byte] |= BIT(off + 1);
-  		if (d->status & IRQ_TYPE_EDGE_FALLING)
-  			bytes[byte] |= BIT(off + 0);
--		spin_unlock_irq(&d->lock);
-+		raw_spin_unlock_irq(&d->lock);
-  
-  		edge_change &= ~BIT(i);
-  	}
 -- 
-1.6.6.rc0
-
-
--- 
-balbi
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
