@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936349AbZLQENW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936395AbZLQEQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936349AbZLQENW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936218AbZLQEMr
+	id S936395AbZLQEQH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:16:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936379AbZLQEPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:12:47 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33733
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936338AbZLQEMi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:12:38 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-Date: Wed, 16 Dec 2009 22:12:31 -0600
-User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Roland Dreier <rdreier@cisco.com>,
-       Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-References: <20091216235617.GA12267@hexapodia.org> <4B29A686.9070603@redhat.com> <4B29A93D.40207@zytor.com>
-In-Reply-To: <4B29A93D.40207@zytor.com>
+	Wed, 16 Dec 2009 23:15:41 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56294 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936374AbZLQEPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:15:35 -0500
+Date: Wed, 16 Dec 2009 20:15:34 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Csaba Henk <csaba@gluster.com>,
+       Miklos Szeredi <mszeredi@suse.cz>, Harshavardhana <harsha@gluster.com>
+Subject: Re: [04/18] fuse: reject O_DIRECT flag also in fuse_create
+Message-ID: <20091217041534.GA26509@suse.de>
+References: <20091217004707.472856791@mini.kroah.org> <4B298B2A.5010900@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200912162212.32631.rob@landley.net>
+In-Reply-To: <4B298B2A.5010900@caviumnetworks.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 December 2009 21:45:01 H. Peter Anvin wrote:
-> On 12/16/2009 07:33 PM, Masami Hiramatsu wrote:
-> > Roland Dreier wrote:
-> >> Is there any reason not to apply the patch below, to allow more awk
-> >> implementations to be used?  After all, it's not like we're going to put
-> >> non-ASCII characters into the map file...
-> >
-> > Actually, the reason why I decided to use character classes is
-> > [a-z] wasn't same as [[:lower:]] on some environment.
-> >
-> >        For  example,  before the POSIX standard, to match alphanumeric
-> > charac- ters, you would have had to write /[A-Za-z0-9]/.  If your
-> > character set had  other  alphabetic characters in it, this would not
-> > match them, and if your character set collated differently from ASCII,
-> > this  might  not even match the ASCII alphanumeric characters.  With the
-> > POSIX character classes, you can write /[[:alnum:]]/, and this matches 
-> > the  alphabetic and numeric characters in your character set, no matter
-> > what it is.
-> >
-> > It seems that "your character set" doesn't mean "what character set are
-> > used in the data", it means "what character set build env. is using".
-> >
-> > So, actually, my first released script had used [a-z], but I needed to
-> > move onto [[:lower:]].
+On Wed, Dec 16, 2009 at 05:36:42PM -0800, David Daney wrote:
+> Greg KH wrote:
+>> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+>>
+>> ------------------
+>> From: Csaba Henk <csaba@gluster.com>
+>>
+>> commit 1b7323965a8c6eee9dc4e345a7ae4bff1dc93149 upstream.
+>>
+>> The comment in fuse_open about O_DIRECT:
+>>
+>>   "VFS checks this, but only _after_ ->open()"
+>>
+>> also holds for fuse_create, however, the same kind of check was missing there.
+>>
+>> As an impact of this bug, open(newfile, O_RDWR|O_CREAT|O_DIRECT) fails, but a
+>> stub newfile will remain if the fuse server handled the implied FUSE_CREATE
+>> request appropriately.
+>>
+>> Other impact: in the above situation ima_file_free() will complain to open/free
+>> imbalance if CONFIG_IMA is set.
+>>
+>> Signed-off-by: Csaba Henk <csaba@gluster.com>
+>> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+>> Cc: Harshavardhana <harsha@gluster.com>
+>> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>>
+>> ---
+>>  fs/fuse/dir.c |    3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> --- a/fs/fuse/dir.c
+>> +++ b/fs/fuse/dir.c
+>> @@ -401,6 +401,9 @@ static int fuse_create_open(struct inode
+>>  	if (flags & O_DIRECT)
+>>  		return -EINVAL;
+>>  +	if (flags & O_DIRECT)
+>> +		return -EINVAL;
+>> +
 >
-> This is correct if you are not in the C locale, but I'm not sure if we
-> support building the kernel in a non-C locale in the first place.
+> I must be missing something.  The added part seems to be identical to the 
+> lines just above.
 >
-> Do you have a known failure case?  There is also the option of
-> explicitly setting LC_CTYPE=C.  Sigh.
+> Forgive me if I am totally misreading the diff.
 
-I remember first being surprised when Ubuntu "upgraded" to utf8 locale and 
-"sort" became case insensitive.  Took a while to track down why so much stuff 
-was breaking.
+Oops, you are right, this was already included in the last .27 release,
+my mistake.  I've now deleted it from the .27 queue.
 
-I've exported LC_ALL=C in all my build environments ever since.
+thanks,
 
-Rob
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+greg k-h
