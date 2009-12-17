@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764111AbZLQIal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbZLQIb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764111AbZLQIal (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 03:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbZLQIak
+	id S932995AbZLQIb5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 03:31:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764098AbZLQIbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 03:30:40 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:50592 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759289AbZLQIaj (ORCPT
+	Thu, 17 Dec 2009 03:31:55 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:49854 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764097AbZLQIby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 03:30:39 -0500
+	Thu, 17 Dec 2009 03:31:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=ofTDvzd1yy8C7KbhKWAh7+2ojbgTQ7nXRBxz5L+gZjiWoOikG8ZqvhlvBGb+l2j95w
-         lZnf4E5Y1nohF1Rjxp8HMJrIAX2iMSu7Lrnz0+JghMlZdUL11sMnFXqMrcpjyBZxv3Db
-         UUBIgbI8I3VVKT/xpZYH1rK0T5l2M6uluc86Q=
-Date: Thu, 17 Dec 2009 10:30:46 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Mark Hounschell <markh@compro.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Unable to format or use floppies since 2.6.28
-Message-ID: <20091217083046.GD2121@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Mark Hounschell <markh@compro.net>, linux-kernel@vger.kernel.org
-References: <4B215007.4030703@compro.net>
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=fI+9dR7Gr3QuSx10tTZo7ik1Mj2UwVxPqXv88VBTZeL/vd7U4WdQTPuajYGmXFhcII
+         n9R35WaHDCJvIGpQc4BDbpjnOcV4/uvCD+8TAfd6PvRmWc/6qLyZcIShgUDrMQbd/lrE
+         D0k4dNDTKA+UETlII4C8umLV1I1dffJFyDQeg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B215007.4030703@compro.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 17 Dec 2009 10:31:52 +0200
+Message-ID: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>
+Subject: revert "config FS_JOURNAL_INFO"
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       h-shimamoto@ct.jp.nec.com
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 02:46:15PM -0500, Mark Hounschell wrote:
-> I have many boxes. They all do the same thing. Running different 
-> versions of SuSE, 10.3-11.2. Any kernel at or above 2.6.28 fails to 
-> fdformat a floppy. These same machines, using the same floppies and 
-> drives, running kernels older than 2.6.28 work just fine. I googled 
-> and found other such reports but no solution. I know better than to 
-> just assume it's a kernel bug but it sure looks like it could be so 
-> I'm inquiring about it here. 
-> 
+Can we please revert commit e4c570c4cb7a95dbfafa3d016d2739bf3fdfe319
+"task_struct: make journal_info conditional"
 
-I don't know if this is related to your bug, but it's a weirdness in 
-floppy.c (from 2.6.32-rc8 sorry I suck for being up to date).
+I think I gave a good enough arguments to not merge it.
+To iterate:
+* patch makes impossible to start using ext3 on EXT3_FS=n kernels
+without reboot.
+* this is done only for one pointer on task_struct
 
-drivers/block/floppy.c 
-  2532          size = blk_rq_cur_bytes(current_req);
-  2533
-  2534          rq_for_each_segment(bv, current_req, iter) {
-  2535                  if (!remaining)
-  2536                          break;
-  2537
-  2538                  size = bv->bv_len;
- 
-We never use the first size = blk_rq_cur_bytes() assignment.
+None of config options which define task_struct are tristate directly
+or effectively.
 
-regards,
-dan carpenter
+There are other examples where we don't do this:
+* quota stuff on superblock aren't ifdeffed because of modular XFS
+with quota support.
+* exports operations and  s_anon for NFS
+and so on
