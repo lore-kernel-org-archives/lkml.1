@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936296AbZLQPPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936274AbZLQPQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936296AbZLQPPM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936193AbZLQPPJ
+	id S936274AbZLQPQz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936193AbZLQPQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:15:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50254 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935919AbZLQPPI (ORCPT
+	Thu, 17 Dec 2009 10:16:53 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41395 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936178AbZLQPQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:15:08 -0500
-Date: Thu, 17 Dec 2009 07:14:37 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-In-Reply-To: <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>  <200912152326.34728.bzolnier@gmail.com> <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 10:16:52 -0500
+From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [50/90] e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure
+Date: Thu, 17 Dec 2009 17:16:24 +0200
+User-Agent: KMail/1.12.4 (Linux/2.6.32-ironman-1; KDE/4.3.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+References: <20091217011604.483828174@mini.kroah.org> <200912171703.02902.roger.oksanen@cs.helsinki.fi> <20091217150933.GA2829@suse.de>
+In-Reply-To: <20091217150933.GA2829@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912171716.24254.roger.oksanen@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Dec 2009, Américo Wang wrote:
+On Thursday 17 December 2009 17:09:33 Greg KH wrote:
+> On Thu, Dec 17, 2009 at 05:03:02PM +0200, Roger Oksanen wrote:
+> > On Thursday 17 December 2009 03:15:01 Greg KH wrote:
+> > > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+> > 
+> > This commit has a problem, found in 
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0912.1/03887.html
+> > and while a fix is available at
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0912.2/01012.html
+> > it should probably be merged into this patch when pushing it to 31.x?
+> > Obviously the fix should first be reviewed and pushed to Linus' tree...
 > 
-> I like this patch, this is actually what I wanted to do.
+> Thanks for letting me know.  I'll drop this patch for now, until the fix
+> goes into Linus's tree, and then put both of them back in for a future
+> stable release.
+> 
+> Sound good?
 
-I have nothing against a switch, but it had better default to off.
+Yup, sounds like a plan.
 
-The whole 80-char limit is insane. It results in insane "fixes". Just 
-about every time somebody "improves" a patch due to the warning, the 
-result is worse than the original patch.
-
-		Linus
+-- 
+Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+http://www.cs.helsinki.fi/u/raoksane
++358 50 355 1990
