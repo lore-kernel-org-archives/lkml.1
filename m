@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935556AbZLQSVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936431AbZLQSZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935556AbZLQSVr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935356AbZLQSVp
+	id S936431AbZLQSZV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 13:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935588AbZLQSZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:21:45 -0500
-Received: from khc.piap.pl ([195.187.100.11]:37016 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935257AbZLQSVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:21:44 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alain Knaff <alain@knaff.lu>, markh@compro.net, fdutils@fdutils.linux.lu,
-       linux-kernel@vger.kernel.org
-Subject: Re: DMA cache consistency bug introduced in 2.6.28
-References: <4AFB3962.2020106@ntlworld.com> <4B27983F.5090600@compro.net>
-	<4B27EF18.7050101@knaff.lu> <4B28FDEB.3030800@compro.net>
-	<4B290029.90602@knaff.lu> <4B2901DB.8040403@compro.net>
-	<4B29052B.9070406@knaff.lu> <4B292D84.5040306@compro.net>
-	<4B29624F.2080109@knaff.lu> <4B2A3805.8040707@compro.net>
-	<4B2A3E3E.8060405@knaff.lu> <4B2A4975.8020809@compro.net>
-	<4B2A49F4.6070402@compro.net> <4B2A4B86.8060307@knaff.lu>
-	<4B2A4C78.10107@compro.net> <4B2A4CF7.6040000@knaff.lu>
-	<4B2A4EC9.2030902@compro.net> <4B2A4FA5.5000701@knaff.lu>
-	<4B2A5192.6090602@compro.net> <4B2A6394.3080705@knaff.lu>
-	<alpine.LFD.2.00.0912170916420.15740@localhost.localdomain>
-Date: Thu, 17 Dec 2009 19:21:40 +0100
-In-Reply-To: <alpine.LFD.2.00.0912170916420.15740@localhost.localdomain>
-	(Linus Torvalds's message of "Thu, 17 Dec 2009 09:27:56 -0800 (PST)")
-Message-ID: <m3aaxhjwaz.fsf@intrepid.localdomain>
+	Thu, 17 Dec 2009 13:25:15 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:5530 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935516AbZLQSZM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 13:25:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=T26ywqb8whtrFitny23sU+ee4m1Yv8qlvq1cKQ7fl30EyfAM0XsdRV61hmkDZXsvY+
+         thwboywbu38MtHut5OO5NEovAKnlsFJC+CqrktvYGNw4/FKejZjzM6nTBys+muT3ZWeY
+         i01Pnz/AbVMFYfj3JwXrPAX3gnmw2xil/iIp8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fb69ef3c0912170931l5cbf0e3dh81c88e6502651042@mail.gmail.com>
+References: <m1ljh7jijk.fsf@fess.ebiederm.org> <20091213142149.GB4777@heat> 
+	<fb69ef3c0912170931l5cbf0e3dh81c88e6502651042@mail.gmail.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Thu, 17 Dec 2009 13:24:50 -0500
+Message-ID: <3e8340490912171024n2120e88q569c69fe7d09140f@mail.gmail.com>
+Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
+To: Mark Seaborn <mrs@mythic-beasts.com>
+Cc: Michael Stone <michael@laptop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       =?ISO-8859-1?Q?R=E9mi_Denis=2DCourmont?= <rdenis@simphalempin.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Linux Containers <containers@lists.osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Thu, Dec 17, 2009 at 12:31 PM, Mark Seaborn <mrs@mythic-beasts.com> wrote:
 
-> On x86, where all caches are supposed to be totally coherent (except for 
-> I$ under very special circumstances),
+> Maybe we could fix (b) by making mount namespaces into first class objects
+> that can be named through a file descriptor, so that one process can
+> manipulate another process's namespace without itself being subject to the
+> namespace.
 
-BTW SWIOTLB is a non-coherent "cache" in some sense, though I'd be
-surprised if it's related. Anyway mentioning $CPU and $RAM at the very
-least would be a good idea in such cases.
--- 
-Krzysztof Halasa
+Can this be done using openat() and friends currently? It would seem
+the natural way to implement this; open /proc/(pid)/root, then
+openat() things from there (or even chdir to it and see the mounts
+that it sees from there...)
