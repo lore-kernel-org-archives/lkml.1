@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbZLQAaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763447AbZLQAat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763440AbZLQAaR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:30:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763137AbZLQAaO
+	id S1763447AbZLQAat (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:30:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763111AbZLQAaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:30:14 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:34239 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762942AbZLQAaL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:30:11 -0500
-Date: Thu, 17 Dec 2009 11:29:56 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-       linux-kernel@vger.kernel.org
-Cc: Sachin Sant <sachinp@in.ibm.com>,
-       ". Jan-Bernd Themann" <THEMANN@de.ibm.com>,
-       Thomas Q Klein <TKLEIN@de.ibm.com>
-Subject: Fix stupid bug in subpge protection handling
-Message-ID: <20091217002956.GQ9463@yookeroo>
-Mail-Followup-To: David Gibson <dwg@au1.ibm.com>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Sachin Sant <sachinp@in.ibm.com>,
-	". Jan-Bernd Themann" <THEMANN@de.ibm.com>,
-	Thomas Q Klein <TKLEIN@de.ibm.com>
+	Wed, 16 Dec 2009 19:30:46 -0500
+Received: from kroah.org ([198.145.64.141]:47233 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbZLQAao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:30:44 -0500
+Date: Wed, 16 Dec 2009 16:30:21 -0800
+From: Greg KH <greg@kroah.com>
+To: Milan Broz <mbroz@redhat.com>
+Cc: Zdenek Kabelac <zkabelac@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [dm-devel] Re: dm: sysfs add empty release function to avoid
+ debug	warning
+Message-ID: <20091217003021.GB3512@kroah.com>
+References: <200912151735.nBFHZ8XP018683@hera.kernel.org>
+ <20091216004739.GB4898@kroah.com>
+ <4B28AC09.2000302@redhat.com>
+ <20091216134538.GA20857@kroah.com>
+ <4B290B95.10306@redhat.com>
+ <20091216174632.GA12473@kroah.com>
+ <4B29299B.5080704@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4B29299B.5080704@redhat.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit d28513bc7f675d28b479db666d572e078ecf182d ("Fix bug in pagetable
-cache cleanup with CONFIG_PPC_SUBPAGE_PROT"), itself a fix for
-breakage caused by an earlier clean up patch of mine, contains a
-stupid bug.  I changed the parameters of the subpage_protection()
-function, but failed to update one of the callers.
+On Wed, Dec 16, 2009 at 07:40:27PM +0100, Milan Broz wrote:
+> On 12/16/2009 06:46 PM, Greg KH wrote:
+> > You will find that all of these are modules, right?  That's being worked
+> > on still.
+> 
+> probably. I see that this implementation is in kernel since import to git...
 
-This patch fixes it, and replaces a void * with a typed pointer so
-that the compiler will warn on such an error in future.
+And you will also note that I didn't paper over the issue by trying to
+provide an empty release function :)
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
+> What's the right solution in this particular case?
+> It is exactly the same situation (using embedded kobj like module handle does).
+> 
+> In DM, the whole problem here is that kobject is used for attribute representation
+> of mapped device, mapped device struct is using its own reference counting
+> and can dissappear before the kobject. So it must properly solve this situation.
 
-Index: working-2.6/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/hash_utils_64.c	2009-12-16 11:43:51.357324268 +1100
-+++ working-2.6/arch/powerpc/mm/hash_utils_64.c	2009-12-16 11:44:35.473351990 +1100
-@@ -879,7 +879,7 @@ static inline int subpage_protection(str
-  */
- int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
- {
--	void *pgdir;
-+	pgd_t *pgdir;
- 	unsigned long vsid;
- 	struct mm_struct *mm;
- 	pte_t *ptep;
-@@ -1025,7 +1025,7 @@ int hash_page(unsigned long ea, unsigned
- 	else
- #endif /* CONFIG_PPC_HAS_HASH_64K */
- 	{
--		int spp = subpage_protection(pgdir, ea);
-+		int spp = subpage_protection(mm, ea);
- 		if (access & spp)
- 			rc = -2;
- 		else
+Then dynamically create the kobject, as it obviously has a different
+lifespan.
 
+Or do something else, but as it is now, you can not have two reference
+counts with different lifespan rules, within the same object, and expect
+things to work properly.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+thanks,
+
+greg k-h
