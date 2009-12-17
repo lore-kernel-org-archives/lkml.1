@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZLQBif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935353AbZLQBj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbZLQBif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbZLQBhI
+	id S935353AbZLQBj3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:39:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936063AbZLQBiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:37:08 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57167 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936072AbZLQBhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:37:01 -0500
-Date: Wed, 16 Dec 2009 17:37:00 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] sched: Teach might_sleep() about preemptible RCU
-Message-ID: <20091217013700.GL6744@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091216142536.GA18091@elte.hu> <1260991265-8451-1-git-send-regression-fweisbec@gmail.com> <20091216192354.GC5211@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091216192354.GC5211@nowhere>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 16 Dec 2009 20:38:14 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:58404 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935126AbZLQBiA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:38:00 -0500
+Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
+From: john stultz <johnstul@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Keith Mannthey <kmannth@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1261004964.21028.521.camel@laptop>
+References: <1260907788.6521.10.camel@keith-laptop>
+	 <1261004964.21028.521.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Dec 2009 17:37:51 -0800
+Message-ID: <1261013871.7245.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 08:23:57PM +0100, Frederic Weisbecker wrote:
-> On Wed, Dec 16, 2009 at 08:21:05PM +0100, Frederic Weisbecker wrote:
-> > From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+On Thu, 2009-12-17 at 00:09 +0100, Peter Zijlstra wrote:
+> On Tue, 2009-12-15 at 12:09 -0800, Keith Mannthey wrote:
+> > This driver supports the Real-Time Linux (RTL) BIOS feature.  The RTL
+> > feature allows non-fatal System Management Interrupts (SMIs) to be
+> > disabled on supported IBM platforms. 
+> > 
+> > 
+> > The Device is presented as a special "_rtl_" table to the OS in the
+> > Extended BIOS Data Area.  There is a simple protocol for entering and
+> > exiting the mode at runtime.  This driver creates a simple sysfs
+> > interface to allow a simple entry and exit from RTL mode in the
+> > UFI/BIOS. 
 > 
-> Crap... I think I'm really becoming this cyborg...
+> Why not simply always run with these non-fatal SMIs disabled and provide
+> their function through the OS proper?
 > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Although I've happily put Paul's Reviewed-by tag in this v2,
-> I'd feel more comfortable if he could confirm it :)
+> That way you don't need no silly switches and gain consistent platform
+> behaviour.
 
-Given that I missed the TINY_RCU problem, I am not sure how much my
-Reviewed-by tag is worth, but I have no problem attaching it to this
-updated patch.  ;-)
+Keith can probably correct me here if I'm wrong, but my understanding is
+that the SMIs provide hardware error detection, that while non-fatal
+are still important to the management of the system. 
 
-						Thanx, Paul
+The hardware may be used with other OSes or older Linux distros that do
+not provide a replacement for the SMI functionality. Further, disabling
+the SMIs can limit other features like power-throttling by the hardware,
+so its not something that can be always disabled in the hardware.
+
+So this driver provides a switch to allow the System to notify the
+hardware that the OS is capable of providing the error detection and is
+taking that responsibility over.
+
+The second piece required, which uses this interface to notify the BIOS
+its taking over this responsibility, is the ibm-prtmd daemon. This is
+the userland app that monitors the edac driver and sends the ipmi
+messages to the management module.
+
+thanks
+-john
+
