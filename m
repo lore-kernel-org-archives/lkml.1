@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965403AbZLQTXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965418AbZLQTYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965403AbZLQTXR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbZLQTXM
+	id S965418AbZLQTYX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbZLQTYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:23:12 -0500
-Received: from trinity.develer.com ([83.149.158.210]:42407 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965394AbZLQTXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:23:10 -0500
-Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
-From: Bernie Innocenti <bernie@codewiz.org>
-To: Mark Seaborn <mrs@mythic-beasts.com>
-Cc: Michael Stone <michael@laptop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>,
-       =?ISO-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       Linux Containers <containers@lists.osdl.org>
-In-Reply-To: <fb69ef3c0912170931l5cbf0e3dh81c88e6502651042@mail.gmail.com>
-References: <m1ljh7jijk.fsf@fess.ebiederm.org> <20091213142149.GB4777@heat>
-	 <fb69ef3c0912170931l5cbf0e3dh81c88e6502651042@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Sugar Labs - http://www.sugarlabs.org/
-Date: Thu, 17 Dec 2009 14:23:02 -0500
-Message-ID: <1261077782.4073.20.camel@giskard.codewiz.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3 (2.29.3-1.fc13) 
+	Thu, 17 Dec 2009 14:24:20 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37499 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965392AbZLQTYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 14:24:19 -0500
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX1/mIe1fv/TmJezvazbLVLHmyLm3whEmeELr0QDu2s
+	CZ+NriESc79xBQ
+Message-ID: <4B2A855C.8080003@gmx.de>
+Date: Thu, 17 Dec 2009 20:24:12 +0100
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Julia Lawall <julia@diku.dk>, JosephChan@via.com.tw,
+       Scott Fang <ScottFang@viatech.com.cn>, linux-fbdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 7/9] drivers/video: Correct code taking the size of a
+ pointer
+References: <Pine.LNX.4.64.0912131242240.24267@ask.diku.dk>	<4B24E3AB.9040609@gmx.de> <20091213114343.a60828d3.akpm@linux-foundation.org>
+In-Reply-To: <20091213114343.a60828d3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 17:31 +0000, Mark Seaborn wrote:
+Hi Andrew,
 
+thanks for your comment (and for taking the patch).
+You can count it as Acked-by:me as it is technically correct. I also 
+tested it but as I don't know any program that uses this interface (and 
+not wanting to write my own as I do not want to encourage anyone to use 
+this interface) I can't say whether it now works as intended.
+However this patch is certainly a step in the right direction as writing 
+random numbers to hardware is rarely correct :-)
 
-> The reason chroot() and clone()/CLONE_NEWNS are privileged is that
-> they provide a way to violate the assumptions of setuid/setgid
-> executables.  If we add a per-process flag that prevents a process
-> from exec'ing setuid executables, we could allow chroot() and
-> CLONE_NEWNS when that flag is set.  That fixes (a).
-
-I think this would be great.
-
+Andrew Morton schrieb:
+> On Sun, 13 Dec 2009 13:52:59 +0100 Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 > 
-> Maybe we could fix (b) by making mount namespaces into first class
-> objects that can be named through a file descriptor, so that one
-> process can manipulate another process's namespace without itself
-> being subject to the namespace.
+>> Hi Julia, Andrew,
+>>
+>> Julia Lawall schrieb:
+>>> From: Julia Lawall <julia@diku.dk>
+>>>
+>>> sizeof(viafb_gamma_table) is just the size of the pointer.  This is changed
+>>> to the size used when calling kmalloc to initialize the pointer.
+>> this is the second patch addressing this issue ending up in my mailbox. 
+>> At least this one is technically correct so feel free to upstream it.
+>> However I vote for removing this ioctl hell from viafb as most of them 
+>> duplicate framebuffer functionality or have unknown (not clearly 
+>> defined) functionality or at least solve a generic problem with a custom 
+>> ioctl (which I consider bad). I had a patch ready to move this stuff to 
+>> an extra file and print a warning that it is subject to be removed. I 
+>> feel a bit uncomfortable about repairing broken stuff prior to removing it.
+>> Any comments on this subject?
+>>
+> 
+> I favour both repairing and removing broken stuff ;)
+> 
+> We may as well fix it if problems are known.  Perhaps someone is
+> hitting the problem at runtime in an older kernel and needs a patch to
+> backport.  Perhaps we later decide to revert the removal, thus
+> reinstating the known bug.
 
-I think Michael's problem with debugging is much more fundamental:
-application programmers get confused when some filesystem operations
-fail in the debugged process, while it works fine from the shell.
+You are right.
+I'll try to send a patch that at least labels these ioctls 
+unstable/depreciated as soon as time permits so that nobody will start 
+using them.
 
-It would help if the kernel provided a way for a process to switch to
-another process' namespace. Even better, it would be great if existing
-namespaces could be mounted at an arbitrary position within another
-namespace. Then one could use traditional shell tools to inspect it, or
-even chroot into it.
 
-</delirium>
+Regards,
 
--- 
-   // Bernie Innocenti - http://codewiz.org/
- \X/  Sugar Labs       - http://sugarlabs.org/
-
+Florian Tobias Schandinat
