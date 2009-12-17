@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765070AbZLQR2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765034AbZLQR0C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765070AbZLQR2m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765018AbZLQR2i
+	id S1765034AbZLQR0C (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:26:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764995AbZLQR0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:28:38 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:53641 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765016AbZLQR2f (ORCPT
+	Thu, 17 Dec 2009 12:26:01 -0500
+Received: from outbound-mail-317.bluehost.com ([67.222.54.10]:42242 "HELO
+	outbound-mail-317.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759518AbZLQR0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:28:35 -0500
-Date: Thu, 17 Dec 2009 09:25:20 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Michael Stone <michael@laptop.org>
-Cc: Ulrich Drepper <drepper@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       "Andi Kleen" <andi@firstfloor.org>, "David Lang" <david@lang.hm>,
-       "Oliver Hartkopp" <socketcan@hartkopp.net>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Valdis Kletnieks" <Valdis.Kletnieks@vt.edu>,
-       "Bryan Donlan" <bdonlan@gmail.com>,
-       "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       "James Morris" <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Bernie Innocenti" <bernie@codewiz.org>,
-       "Mark Seaborn" <mrs@mythic-beasts.com>
-Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
-Message-Id: <20091217092520.1f65d2dd.randy.dunlap@oracle.com>
-In-Reply-To: <20091217092326.484bb318.randy.dunlap@oracle.com>
-References: <1260977452-2334-1-git-send-email-michael@laptop.org>
-	<1260977565-2379-1-git-send-email-michael@laptop.org>
-	<20091217092326.484bb318.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 17 Dec 2009 12:26:00 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=sfP/ANrzyWEDnDASeIEGCCD2cioVtSLObWc+BRAZYFywmuH1lVaovpk3m2hr3+phX+RdzpEzfjJSAvLEglxLnXEKr0yRYF5utrqPVuhq7u0Z+PgVnepEc/3wB8NJHA2W;
+Date: Thu, 17 Dec 2009 09:25:23 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: keithp@keithp.com, Daniel Vetter <daniel.vetter@ffwll.ch>,
+       linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
+ when ..."
+Message-ID: <20091217092523.755ecf29@jbarnes-piketon>
+In-Reply-To: <200912162241.27591.arnd@arndb.de>
+References: <200912071830.14697.arnd@arndb.de>
+	<20091216133005.0e822950@jbarnes-piketon>
+	<200912162136.36458.arnd@arndb.de>
+	<200912162241.27591.arnd@arndb.de>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B2A69A8.0051:SCFMA4539814,ss=1,fgs=0
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009 09:23:26 -0800 Randy Dunlap wrote:
+On Wed, 16 Dec 2009 22:41:27 +0000
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> On Wed, 16 Dec 2009 10:32:43 -0500 Michael Stone wrote:
-> 
-> 
-> > ---
-> >  include/linux/prctl.h         |    7 +++++++
-> >  include/linux/prctl_network.h |    7 +++++++
-> >  include/linux/sched.h         |    2 ++
-> >  kernel/Makefile               |    2 +-
-> >  kernel/prctl_network.c        |   37 +++++++++++++++++++++++++++++++++++++
-> >  kernel/sys.c                  |    7 +++++++
-> >  6 files changed, 61 insertions(+), 1 deletions(-)
-> >  create mode 100644 include/linux/prctl_network.h
-> >  create mode 100644 kernel/prctl_network.c
+> On Wednesday 16 December 2009 21:36:36 Arnd Bergmann wrote:
+> > On Wednesday 16 December 2009 21:30:05 Jesse Barnes wrote:
+> > > But you're sure powersave=0 was solid?  Hmm...
 > > 
+> > It's hard to be sure when it sometimes takes a day before a
+> > broken version crashes. I can keep running this kernel with and
+> > without powersave=0 some more and tell you if it stays reproducible.
 > 
-> > diff --git a/kernel/prctl_network.c b/kernel/prctl_network.c
-> > new file mode 100644
-> > index 0000000..d173716
-> > --- /dev/null
-> > +++ b/kernel/prctl_network.c
-> > @@ -0,0 +1,37 @@
-> > +/*
-> > + * linux/kernel/prctl_network.c
-> > + *
-> > + * Copyright 2009  Michael Stone <michael@laptop.org>
-> > + *
-> > + * Turn off a process's ability to access new networks.
-> > + * See Documentation/prctl_network.txt for details.
-> > + */
-> 
-> Where is Documentation/prctl_network.txt ?
-> and it should probably be Documentation/prctl/network.txt .
+> Now it has crashed with i915.powersave=0 plus your patch as well
+> (latest 2.6.32 git), indicating that there is something else wrong
+> with the original 652c393a33 patch.
 
-gag, I see it.  Sorry about that.
-I think that the file name still needs to be changed.
+It does very little else that should affect things.  You're sure
+reverting the commit makes things ok?
 
----
-~Randy
+Other potential problems:
+  - clock gating (the call to intel_init_clock_gating)
+  - the actual mark_busy stuff itself (calls to intel_mark_busy)
+  - intel_idle_update (but powersave=0 should prevent that)
+
+If you want to keep testing you could try removing those calls...
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
