@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965220AbZLQUGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935508AbZLQUHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965220AbZLQUGO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 15:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbZLQUGM
+	id S935508AbZLQUHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbZLQUHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 15:06:12 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:38932 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757870AbZLQUGK (ORCPT
+	Thu, 17 Dec 2009 15:07:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56274 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759502AbZLQUHk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 15:06:10 -0500
-Date: Thu, 17 Dec 2009 15:06:06 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912170249.00676.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912171444040.2645-100000@iolanthe.rowland.org>
+	Thu, 17 Dec 2009 15:07:40 -0500
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Corey Minyard <minyard@acm.org>
+Subject: Re: [PATCH] IPMI: Add parameter to limit CPU usage in kipmid
+Date: Thu, 17 Dec 2009 21:07:45 +0100
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Wilck <martin.wilck@ts.fujitsu.com>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+References: <20091216212354.GA13097@minyard.local> <200912171136.48086.jdelvare@suse.de> <4B2A79B7.9040301@acm.org>
+In-Reply-To: <4B2A79B7.9040301@acm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200912172107.45393.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Rafael J. Wysocki wrote:
+Le jeudi 17 décembre 2009 19:34, Corey Minyard a écrit :
+> I agree, these should be inlines.  I should have caught that.  I can 
+> convert them and address adding comments as Andrew suggests.
 
-> That actually is correct.  On the nx6325 suspend is totally dominated by disk
-> spindown, almost everything else is negligible compared to it (well, except for
-> the audio), so we can't go down below 1 s during suspend on this box.
-> 
-> On the Wind, disk spindown time is comparable with serio suspend time,
-> so at least in principle we should be able to get .5 s suspend on this box - 
-> if the disk spindown in async.
-> 
-> In turn, the resume on the Wind is dominated by disk spinup, so we can't
-> go below 1.5 s on this box during resume (notice that the "async+extra"
-> approach brings us close to this limit, although we could save .5 s more in
-> principle by making more devices async).
-> 
-> Resume on the nx6325 is a different story, though, as it is dominated by USB
-> and PCI devices, so marking those as async would probably bring us close to
-> the limit.
+Yes please!
 
-The implications seem pretty clear.  If the following sorts of devices
-were async:
-
-	USB (devices and interfaces), PCI, serio, SCSI (hosts, targets,
-	devices)
-
-then we would reap close to the maximum benefit -- providing:
-
-	async threads are started in a first pass without waiting
-	for synchronous devices, and
-
-It's not clear that making all these types of devices async will really 
-work, but it's worth testing.
-
-Alan Stern
-
+Thanks,
+-- 
+Jean Delvare
+Suse L3
