@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765310AbZLQSIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965130AbZLQSO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765310AbZLQSIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765300AbZLQSIh
+	id S965130AbZLQSO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 13:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932187AbZLQSOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:08:37 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60679 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765298AbZLQSIg (ORCPT
+	Thu, 17 Dec 2009 13:14:09 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:36416 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935077AbZLQSN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:08:36 -0500
-Date: Thu, 17 Dec 2009 18:08:03 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, tytso@mit.edu,
-       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James.Bottomley@suse.de, linux-arch@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-Message-ID: <20091217180802.GA1546@flint.arm.linux.org.uk>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Christoph Hellwig <hch@infradead.org>, tytso@mit.edu,
-	Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	James.Bottomley@suse.de, linux-arch@vger.kernel.org,
-	Jens Axboe <jens.axboe@oracle.com>
-References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org> <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain> <20091217163036.GE2123@thunk.org> <alpine.LFD.2.00.0912170839550.15740@localhost.localdomain> <20091217170743.GA10431@infradead.org> <alpine.LFD.2.00.0912170928310.15740@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912170928310.15740@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Dec 2009 13:13:58 -0500
+From: Phil Carmody <ext-phil.2.carmody@nokia.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC 0/6] Driver core: Encourage use of const attributes
+Date: Thu, 17 Dec 2009 20:12:10 +0200
+Message-Id: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+X-OriginalArrivalTime: 17 Dec 2009 18:11:52.0781 (UTC) FILETIME=[68E4CFD0:01CA7F44]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 09:42:15AM -0800, Linus Torvalds wrote:
-> You both flush the virtual caches before 
-> the IO and invalidate after - when the real pattern should be that you 
-> flush it before a write, and invalidate it after a read.
+I know now's probably a bad time to be mentioning const issues
+but I recently a reviewed a patch where 'const' was being removed 
+from a device_attribute structure, and I enquired why. The reason
+was simply so that device_create_file() could be called, it taking
+a non-const attribute pointer. Looking inside, all that function 
+did was pass a pointer to sysfs_create_file, which itself took a
+const pointer. Non-constness was not required at all.
 
-That's not entirely true.  If you have write back caches which are not DMA
-coherent, you need to as a minimum:
+So here I offer a small patchset which I hope will permit and 
+encourage device and other attributes to be made const, and put 
+in read-only sections.
 
-- on write, clean the cache to ensure that the page is up to date with data
-  held in cache.
+1-3 address the three attribute types which seemed to be trivially 
+const-able, and are the important part of the set.
 
-- on read, you must ensure that there are no potential write-backs before
-  the read commenses and invalidate at some point.
+4 adds a new macro to encourage the use of Const ATTRibutes,
+and may need a better name. (I wanted to avoid RO, for example.)
 
-The point at which you invalidate depends on whether the CPU speculatively
-prefetches:
+5 and 6 are merely two quick examples of how easy it is to adopt 
+the new const convention. In reality, these structures have been
+constant and treated as constant by the driver core all along, it's
+just that one word was missing from a few important places.
 
-- If it doesn't, you can invalidate the cache before the read, thereby
-  destroying any potential writebacks, and the cache will remain
-  unallocated for that address range until explicitly accessed.
+I would hope to submit a patchset with 1-3 and a possibly modified 
+4. The migrations themselves will belong in different trees.
 
-- If you do have a CPU which does prefetch speculatively, then you do
-  need to clean the cache before DMA starts, and then you must invalidate
-  after the DMA completes.
+These have been compile/sparse tested against arm and x86_64 targets, 
+and through my usual suite of tests on the arm platform I use.
 
-Invalidating after DMA completes for the non-speculative prefetch just
-wastes performance, especially if you have to do so line by line over
-a region.
+Regards,
+Phil
 
-With ARM architecture version 7, we now have ARM CPUs which fall into
-both categories.
+Phil Carmody (6):
+  Driver core: device_attribute parameters can often be const*
+  Driver core: bin_attribute parameters can often be const*
+  Driver core: driver_attribute parameters can often be const*
+  Driver core: Easy macros to encourage const attributes
+  PM: Example of how easy it is to mark attributes const
+  gpio: Example of how easy it is to mark attributes const
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+ drivers/base/core.c      |   12 ++++++++----
+ drivers/base/driver.c    |    4 ++--
+ drivers/gpio/gpiolib.c   |   12 ++++++------
+ drivers/regulator/core.c |   38 +++++++++++++++++++-------------------
+ fs/sysfs/bin.c           |    6 ++++--
+ include/linux/device.h   |   20 ++++++++++++++------
+ include/linux/sysfs.h    |    9 +++++----
+ 7 files changed, 58 insertions(+), 43 deletions(-)
+
