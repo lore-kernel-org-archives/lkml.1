@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936274AbZLQPQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965116AbZLQPRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936274AbZLQPQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936193AbZLQPQx
+	id S965116AbZLQPRy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936342AbZLQPRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:16:53 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41395 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936178AbZLQPQw (ORCPT
+	Thu, 17 Dec 2009 10:17:48 -0500
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:53719 "EHLO
+	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936196AbZLQPRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:16:52 -0500
-From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [50/90] e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure
-Date: Thu, 17 Dec 2009 17:16:24 +0200
-User-Agent: KMail/1.12.4 (Linux/2.6.32-ironman-1; KDE/4.3.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-References: <20091217011604.483828174@mini.kroah.org> <200912171703.02902.roger.oksanen@cs.helsinki.fi> <20091217150933.GA2829@suse.de>
-In-Reply-To: <20091217150933.GA2829@suse.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 17 Dec 2009 10:17:46 -0500
+Subject: [PATCH] ext4: return correct wbc.nr_to_write in ext4_da_writepages
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: tytso@mit.edu, adilger@sun.com
+Cc: linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 17 Dec 2009 15:17:43 +0000
+Message-Id: <1261063063.4882.38.camel@castor>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912171716.24254.roger.oksanen@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 December 2009 17:09:33 Greg KH wrote:
-> On Thu, Dec 17, 2009 at 05:03:02PM +0200, Roger Oksanen wrote:
-> > On Thursday 17 December 2009 03:15:01 Greg KH wrote:
-> > > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > This commit has a problem, found in 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0912.1/03887.html
-> > and while a fix is available at
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0912.2/01012.html
-> > it should probably be merged into this patch when pushing it to 31.x?
-> > Obviously the fix should first be reviewed and pushed to Linus' tree...
-> 
-> Thanks for letting me know.  I'll drop this patch for now, until the fix
-> goes into Linus's tree, and then put both of them back in for a future
-> stable release.
-> 
-> Sound good?
+ext4: always re-base nr_to_write in ext4_da_writepages
 
-Yup, sounds like a plan.
+When ext4_da_writepages increases the nr_to_write in writeback_control
+then it must always re-base the return value.
 
--- 
-Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-http://www.cs.helsinki.fi/u/raoksane
-+358 50 355 1990
+Without this change, when wb_writeback calculates how many pages were
+actually written it can get a negative value and loop more times than
+necessary. In tests I have seen nearly all the dirty pages pushed out to
+writeback due to this issue.
+
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+
+----
+
+patch against 2.6.32
+tested on x86_64
+
+wb_writeback calculates (MAX_WRITE_PAGES - nr_to_write) & cannot know
+that the value got changed.
+
+I'm not sure what the test I removed was for.
+Perhaps 
+	if (nr_to_writebump)
+		wbc->nr_to_write -= nr_to_writebump;
+was intended?
+
+regards
+Richard
+
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 2c8caa5..52a573c 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2999,8 +2999,7 @@ retry:
+ out_writepages:
+ 	if (!no_nrwrite_index_update)
+ 		wbc->no_nrwrite_index_update = 0;
+-	if (wbc->nr_to_write > nr_to_writebump)
+-		wbc->nr_to_write -= nr_to_writebump;
++	wbc->nr_to_write -= nr_to_writebump;
+ 	wbc->range_start = range_start;
+ 	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
+ 	return ret;
+
+
