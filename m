@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935353AbZLQBj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936096AbZLQBlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935353AbZLQBj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936063AbZLQBiO
+	id S936096AbZLQBlM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:41:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758376AbZLQBkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:38:14 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:58404 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935126AbZLQBiA (ORCPT
+	Wed, 16 Dec 2009 20:40:49 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:32542 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763639AbZLQBjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:38:00 -0500
-Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
-From: john stultz <johnstul@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Keith Mannthey <kmannth@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1261004964.21028.521.camel@laptop>
-References: <1260907788.6521.10.camel@keith-laptop>
-	 <1261004964.21028.521.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 17:37:51 -0800
-Message-ID: <1261013871.7245.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Dec 2009 20:39:51 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAPoaKUurR7H+/2dsb2JhbAC+NpcChCsE
+X-IronPort-AV: E=Sophos;i="4.47,409,1257120000"; 
+   d="scan'208";a="451016770"
+From: Roland Dreier <rdreier@cisco.com>
+To: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Masami Hiramatsu <mhiramat@redhat.com>, Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Dec 2009 17:39:48 -0800
+In-Reply-To: <20091216235617.GA12267@hexapodia.org> (Andrew Isaacson's message
+	of "Wed, 16 Dec 2009 15:56:17 -0800")
+Message-ID: <adabphy750b.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Dec 2009 01:39:49.0063 (UTC) FILETIME=[D1FE3D70:01CA7EB9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 00:09 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-12-15 at 12:09 -0800, Keith Mannthey wrote:
-> > This driver supports the Real-Time Linux (RTL) BIOS feature.  The RTL
-> > feature allows non-fatal System Management Interrupts (SMIs) to be
-> > disabled on supported IBM platforms. 
-> > 
-> > 
-> > The Device is presented as a special "_rtl_" table to the OS in the
-> > Extended BIOS Data Area.  There is a simple protocol for entering and
-> > exiting the mode at runtime.  This driver creates a simple sysfs
-> > interface to allow a simple entry and exit from RTL mode in the
-> > UFI/BIOS. 
-> 
-> Why not simply always run with these non-fatal SMIs disabled and provide
-> their function through the OS proper?
-> 
-> That way you don't need no silly switches and gain consistent platform
-> behaviour.
+Is there any reason not to apply the patch below, to allow more awk
+implementations to be used?  After all, it's not like we're going to put
+non-ASCII characters into the map file...
 
-Keith can probably correct me here if I'm wrong, but my understanding is
-that the SMIs provide hardware error detection, that while non-fatal
-are still important to the management of the system. 
+===
 
-The hardware may be used with other OSes or older Linux distros that do
-not provide a replacement for the SMI functionality. Further, disabling
-the SMIs can limit other features like power-throttling by the hardware,
-so its not something that can be always disabled in the hardware.
+x86: Don't use POSIX character classes in gen-insn-attr-x86.awk
 
-So this driver provides a switch to allow the System to notify the
-hardware that the OS is capable of providing the error detection and is
-taking that responsibility over.
+Not all awk implementations (including the default awk in Ubuntu 9.10)
+support POSIX character classes.  Since x86-opcode-map.txt is plain
+ASCII, we can just use explicit ranges for lower case, alphabetic, and
+alphanumeric characters instead.
 
-The second piece required, which uses this interface to notify the BIOS
-its taking over this responsibility, is the ibm-prtmd daemon. This is
-the userland app that monitors the edac driver and sends the ipmi
-messages to the management module.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ arch/x86/tools/gen-insn-attr-x86.awk |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-thanks
--john
-
+diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
+index 7a68506..eaf11f5 100644
+--- a/arch/x86/tools/gen-insn-attr-x86.awk
++++ b/arch/x86/tools/gen-insn-attr-x86.awk
+@@ -6,8 +6,6 @@
+ 
+ # Awk implementation sanity check
+ function check_awk_implement() {
+-	if (!match("abc", "[[:lower:]]+"))
+-		return "Your awk doesn't support charactor-class."
+ 	if (sprintf("%x", 0) != "0")
+ 		return "Your awk has a printf-format problem."
+ 	return ""
+@@ -44,12 +42,12 @@ BEGIN {
+ 	delete gtable
+ 	delete atable
+ 
+-	opnd_expr = "^[[:alpha:]/]"
++	opnd_expr = "^[A-Za-z/]"
+ 	ext_expr = "^\\("
+ 	sep_expr = "^\\|$"
+-	group_expr = "^Grp[[:alnum:]]+"
++	group_expr = "^Grp[0-9A-Za-z]+"
+ 
+-	imm_expr = "^[IJAO][[:lower:]]"
++	imm_expr = "^[IJAO][a-z]"
+ 	imm_flag["Ib"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
+ 	imm_flag["Jb"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
+ 	imm_flag["Iw"] = "INAT_MAKE_IMM(INAT_IMM_WORD)"
+@@ -62,7 +60,7 @@ BEGIN {
+ 	imm_flag["Ob"] = "INAT_MOFFSET"
+ 	imm_flag["Ov"] = "INAT_MOFFSET"
+ 
+-	modrm_expr = "^([CDEGMNPQRSUVW/][[:lower:]]+|NTA|T[012])"
++	modrm_expr = "^([CDEGMNPQRSUVW/][a-z]+|NTA|T[012])"
+ 	force64_expr = "\\([df]64\\)"
+ 	rex_expr = "^REX(\\.[XRWB]+)*"
+ 	fpu_expr = "^ESC" # TODO
