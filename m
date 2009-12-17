@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZLQXdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZLQXhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbZLQXdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZLQXdW
+	id S1752627AbZLQXhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 18:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZLQXhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:33:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6504 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbZLQXdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:33:20 -0500
-Date: Thu, 17 Dec 2009 18:33:12 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Paul Mundt <lethal@linux-sh.org>
-cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-In-Reply-To: <20091217231240.GA1421@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0912171829340.21142@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
- <20091217061229.GD3946@linux-sh.org> <Pine.LNX.4.64.0912171725370.21142@hs20-bc2-1.build.redhat.com>
- <20091217231240.GA1421@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Dec 2009 18:37:18 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37191 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbZLQXhQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 18:37:16 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 18 Dec 2009 08:33:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
+ nodemask v4.2
+Message-Id: <20091218083348.c75dbb81.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0912171422290.4089@chino.kir.corp.google.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
+	<20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com>
+	<20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com>
+	<20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com>
+	<20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
+	<20091214171632.0b34d833.akpm@linux-foundation.org>
+	<20091215103202.eacfd64e.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0912142025090.29243@chino.kir.corp.google.com>
+	<20091215134327.6c46b586.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0912142054520.436@chino.kir.corp.google.com>
+	<20091215140913.e28f7674.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0912171422290.4089@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Dec 2009 14:23:39 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
+> On Tue, 15 Dec 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> > What I can't undestand is the technique to know whether a (unknown) process is
+> > leaking memory or not by checking vm_size.
+> 
+> Memory leaks are better identified via total_vm since leaked memory has a 
+> lower probability of staying resident in physical memory.
+> 
+Because malloc() writes header on newly allcoated memory, (vm_size - rss) cannot
+be far from a some important program  which wakes up once in a
+day or sleep in the day works in the night. 
 
-On Fri, 18 Dec 2009, Paul Mundt wrote:
+I hope user knows expected memory size of applications, but I know it can't.
+Sigh...
 
-> On Thu, Dec 17, 2009 at 05:37:57PM -0500, Mikulas Patocka wrote:
-> > On Thu, 17 Dec 2009, Paul Mundt wrote:
-> > > On Tue, Dec 15, 2009 at 04:57:49PM -0500, Mikulas Patocka wrote:
-> > > > (5) Wrapping makes long expressions harder to understand
-> > > > --------------------------------------------------------
-> > > > 
-> > > > If I have a complex expression, I do not try to wrap it at predefined
-> > > > 80-column boundaries, but at logical boundaries within the expression to make
-> > > > it more readable (the brain can't find matching parentheses fast, so we can
-> > > > help it by aligning the code according to topmost terms in the expression).
-> > > > 
-> > > > Example:
-> > > > 				if (unlikely(call_some_function(s, value) != RET
-> > > > _SUCCESS) ||
-> > > > 				    (var_1 == prev_var_1 && var_2 == prev_var_2)
-> > > >  ||
-> > > > 				    flags & (FLAG_1 | FLAG_2) ||
-> > > > 				    some_other_condition) {
-> > > > 				}
-> > > > 
-> > > > Now, if we impose 80-column limit, we get this. One may argue that is looks
-> > > > aesthetically better, but it is also less intelligible than the previous
-> > > > version:
-> > > > 				if (unlikely(call_some_function(s, value) !=
-> > > > 				    RET_SUCCESS) || (var_1 == prev_var_1 &&
-> > > > 				    var_2 == prev_var_2) || flags & (FLAG_1 |
-> > > > 				    FLAG_2) || some_other_condition) {
-> > > > 				}
-> > > > 
-> > > For starters, this is just crap. If you're writing code like this, then
-> > > line wrapping is really the least of your concerns. Take your function
-> > > return value and assign it to a variable before testing it in unlikely()
-> > > as per existing conventions and most of this goes away in this example.
-> > 
-> > I wouldn't say that this is better:
-> > 				int csf_failed, vars_equal, flags_12;
-> > 
-> > 				...
-> > 
-> > 				csf_failed = call_some_function(s, value) != RET_SUCCESS;
-> > 				vars_equal = var_1 == prev_var_1 && var_2 == prev_var_2;
-> > 				flags_12 = flags & (FLAG_1 | FLAG_2);
-> > 				if (unlikely(csf_failed) || vars_equal ||
-> > 				    flags_12 || some_other_conditions) {
-> > 				}
-> > 
-> > If you think that it is better, it's OK, just write your code like that. 
-> > And don't force it to everyone.
-> > 
-> No, I wouldn't say that that's better either, but that's also not how I
-> suggested cleaning reworking it. We have existing conventions for how
-> complex blocks are broken down in to more readable forms which you seem
-> to have issues grasping. My point is that you are purposely obfuscating
-> things, and therefore your entire rationale is suspect at best.
+Thanks,
+-Kame
 
-So, how would you clean this complex code block?
-
-Mikulas
