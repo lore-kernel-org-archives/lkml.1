@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936036AbZLQBeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763349AbZLQBTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936036AbZLQBeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763585AbZLQBUk
+	id S1763349AbZLQBTi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762693AbZLQBTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17006 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763603AbZLQBUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:31 -0500
-Subject: Re: [PATCH] Libertas: fix buffer overflow in lbs_get_essid()
-From: Dan Williams <dcbw@redhat.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Daniel Mack <daniel@caiaq.de>, linux-kernel@vger.kernel.org,
-       Holger Schurig <holgerschurig@gmail.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Maithili Hinge <maithili@marvell.com>,
-       Kiran Divekar <dkiran@marvell.com>,
-       Michael Hirsch <m.hirsch@raumfeld.com>, netdev@vger.kernel.org,
-       libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org,
-       stable@kernel.org
-In-Reply-To: <20091217010114.GA2913@tuxdriver.com>
-References: <1260936778-2096-1-git-send-email-daniel@caiaq.de>
-	 <1260982667.2179.9.camel@localhost.localdomain>
-	 <20091216231508.GX28375@buzzloop.caiaq.de>
-	 <20091217010114.GA2913@tuxdriver.com>
-Content-Type: text/plain
-Date: Wed, 16 Dec 2009 17:19:12 -0800
-Message-Id: <1261012752.17721.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 16 Dec 2009 20:19:35 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46650 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757178AbZLQBTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:19:35 -0500
+Date: Thu, 17 Dec 2009 01:19:32 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Andrew Isaacson <adi@vmware.com>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Masami Hiramatsu <mhiramat@redhat.com>, Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+Message-ID: <20091217011932.GT14381@ZenIV.linux.org.uk>
+References: <20091216235617.GA12267@hexapodia.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091216235617.GA12267@hexapodia.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 20:01 -0500, John W. Linville wrote:
-> On Thu, Dec 17, 2009 at 07:15:08AM +0800, Daniel Mack wrote:
-> > On Wed, Dec 16, 2009 at 08:57:47AM -0800, Dan Williams wrote:
-> > > On Wed, 2009-12-16 at 05:12 +0100, Daniel Mack wrote:
-> > > > The libertas driver copies the SSID buffer back to the wireless core and
-> > > > appends a trailing NULL character for termination. This is
-> > > > 
-> > > > a) unnecessary because the buffer is allocated with kzalloc and is hence
-> > > >    already NULLed when this function is called, and
-> > > > 
-> > > > b) for priv->curbssparams.ssid_len == 32, it writes back one byte too
-> > > >    much which causes memory corruptions.
-> > > > 
-> > > > Fix this by removing the extra write.
-> > > 
-> > > Acked-by: Dan Williams <dcbw@redhat.com>
-> > 
-> > Thanks, everyone. Who will care to pick an queue this one?
+On Wed, Dec 16, 2009 at 03:56:17PM -0800, Andrew Isaacson wrote:
+> With CONFIG_KPROBES=y on Ubuntu 9.10 x86_64 default install, I get the
+> following:
 > 
-> Is there some reason it wouldn't be me?
+> Error: Your awk doesn't support charactor-class.
+> Please try to use gawk.
 
-No, it should be you.  Please suck it into your 2.6.33 patchset and
-we'll cc to stable when it hits linus I guess.
-
-Dan
-
-
+Aside of the incorrect suggestion (you need not just gawk, you need that
+thing installed as awk), the use of GNUisms in there is actually pointless
+since encoding is bloody fixed.
