@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965039AbZLQPJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936150AbZLQPKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965039AbZLQPJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935020AbZLQPJS
+	id S936150AbZLQPKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935035AbZLQPKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:09:18 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59915 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935018AbZLQPJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:09:17 -0500
-Message-ID: <4B2A495D.6050605@zytor.com>
-Date: Thu, 17 Dec 2009 07:08:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 17 Dec 2009 10:10:00 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46263 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935020AbZLQPJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:09:59 -0500
+Date: Thu, 17 Dec 2009 07:09:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [50/90] e100: Use pci pool to work around GFP_ATOMIC order 5
+ memory allocation failure
+Message-ID: <20091217150933.GA2829@suse.de>
+References: <20091217011604.483828174@mini.kroah.org>
+ <200912171703.02902.roger.oksanen@cs.helsinki.fi>
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, mingo@redhat.com, x86@kernel.org
-Subject: Re: 2.6.32: x86_32: Destination address is too large.
-References: <a4423d670912170536m64e71c81v65b11fded21907fb@mail.gmail.com> <a4423d670912170649g57137b18n6bc1419b584c44c1@mail.gmail.com>
-In-Reply-To: <a4423d670912170649g57137b18n6bc1419b584c44c1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912171703.02902.roger.oksanen@cs.helsinki.fi>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/17/2009 06:49 AM, Alexander Beregalov wrote:
-> Config for 2.6.32 is attached
+On Thu, Dec 17, 2009 at 05:03:02PM +0200, Roger Oksanen wrote:
+> On Thursday 17 December 2009 03:15:01 Greg KH wrote:
+> > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+> 
+> This commit has a problem, found in 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0912.1/03887.html
+> and while a fix is available at
+> http://lkml.indiana.edu/hypermail/linux/kernel/0912.2/01012.html
+> it should probably be merged into this patch when pushing it to 31.x?
+> Obviously the fix should first be reviewed and pushed to Linus' tree...
 
-Actually, could you please send me you bzImage file?
+Thanks for letting me know.  I'll drop this patch for now, until the fix
+goes into Linus's tree, and then put both of them back in for a future
+stable release.
 
-	-hpa
+Sound good?
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+thanks,
 
+greg k-h
