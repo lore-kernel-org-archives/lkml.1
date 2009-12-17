@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763844AbZLQB1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934818AbZLQBYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763844AbZLQB1M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763856AbZLQB0y
+	id S934818AbZLQBYB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763739AbZLQBVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:26:54 -0500
-Received: from kroah.org ([198.145.64.141]:41482 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:21:15 -0500
+Received: from kroah.org ([198.145.64.141]:41487 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763705AbZLQBVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:21:00 -0500
+	id S1763682AbZLQBVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:21:01 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:08 2009
-Message-Id: <20091217011608.173172682@mini.kroah.org>
+Message-Id: <20091217011608.305374103@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:29 -0800
+Date: Wed, 16 Dec 2009 17:15:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
-Subject: [78/90] drm/i915: Fix LVDS stability issue on Ironlake
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       Stefan Bader <stefan.bader@canonical.com>
+Subject: [79/90] drm/i915: save/restore BLC histogram control reg across suspend/resume
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,146 +29,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-commit 1b3c7a47f993bf9ab6c4c7cc3bbf5588052b58f4 upstream.
+commit 0eb96d6ed38430b72897adde58f5477a6b71757a upstream.
 
-In disable sequence, all output ports on PCH have to be disabled
-before PCH transcoder, but LVDS port was left always enabled. This
-one fixes that by disable LVDS port properly during pipe disable
-process, and resolved stability issue seen on Ironlake. Also move
-panel fitting disable time just after pipe disable to align with
-the spec.
+Turns out some machines, like the ThinkPad X40 don't come back if you
+don't save/restore this register.
 
-Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Eric Anholt <eric@anholt.net>
+Cc: Stefan Bader <stefan.bader@canonical.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/intel_display.c |   60 +++++++++++++++++++++++------------
- 1 file changed, 41 insertions(+), 19 deletions(-)
+ drivers/gpu/drm/i915/i915_drv.h     |    1 +
+ drivers/gpu/drm/i915/i915_reg.h     |    2 ++
+ drivers/gpu/drm/i915/i915_suspend.c |    2 ++
+ 3 files changed, 5 insertions(+)
 
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1182,6 +1182,15 @@ static void igdng_crtc_dpms(struct drm_c
- 	case DRM_MODE_DPMS_STANDBY:
- 	case DRM_MODE_DPMS_SUSPEND:
- 		DRM_DEBUG("crtc %d dpms on\n", pipe);
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -264,6 +264,7 @@ typedef struct drm_i915_private {
+ 	u32 saveDSPASURF;
+ 	u32 saveDSPATILEOFF;
+ 	u32 savePFIT_PGM_RATIOS;
++	u32 saveBLC_HIST_CTL;
+ 	u32 saveBLC_PWM_CTL;
+ 	u32 saveBLC_PWM_CTL2;
+ 	u32 saveFPB0;
+--- a/drivers/gpu/drm/i915/i915_reg.h
++++ b/drivers/gpu/drm/i915/i915_reg.h
+@@ -915,6 +915,8 @@
+ #define   BACKLIGHT_DUTY_CYCLE_SHIFT		(0)
+ #define   BACKLIGHT_DUTY_CYCLE_MASK		(0xffff)
+ 
++#define BLC_HIST_CTL		0x61260
 +
-+		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS)) {
-+			temp = I915_READ(PCH_LVDS);
-+			if ((temp & LVDS_PORT_EN) == 0) {
-+				I915_WRITE(PCH_LVDS, temp | LVDS_PORT_EN);
-+				POSTING_READ(PCH_LVDS);
-+			}
-+		}
-+
- 		if (HAS_eDP) {
- 			/* enable eDP PLL */
- 			igdng_enable_pll_edp(crtc);
-@@ -1366,8 +1375,6 @@ static void igdng_crtc_dpms(struct drm_c
- 	case DRM_MODE_DPMS_OFF:
- 		DRM_DEBUG("crtc %d dpms off\n", pipe);
+ /* TV port control */
+ #define TV_CTL			0x68000
+ /** Enables the TV encoder */
+--- a/drivers/gpu/drm/i915/i915_suspend.c
++++ b/drivers/gpu/drm/i915/i915_suspend.c
+@@ -416,6 +416,7 @@ int i915_save_state(struct drm_device *d
+ 	dev_priv->savePP_CONTROL = I915_READ(PP_CONTROL);
+ 	dev_priv->savePFIT_PGM_RATIOS = I915_READ(PFIT_PGM_RATIOS);
+ 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
++	dev_priv->saveBLC_HIST_CTL = I915_READ(BLC_HIST_CTL);
+ 	if (IS_I965G(dev))
+ 		dev_priv->saveBLC_PWM_CTL2 = I915_READ(BLC_PWM_CTL2);
+ 	if (IS_MOBILE(dev) && !IS_I830(dev))
+@@ -560,6 +561,7 @@ int i915_restore_state(struct drm_device
  
--		i915_disable_vga(dev);
--
- 		/* Disable display plane */
- 		temp = I915_READ(dspcntr_reg);
- 		if ((temp & DISPLAY_PLANE_ENABLE) != 0) {
-@@ -1377,6 +1384,8 @@ static void igdng_crtc_dpms(struct drm_c
- 			I915_READ(dspbase_reg);
- 		}
- 
-+		i915_disable_vga(dev);
-+
- 		/* disable cpu pipe, disable after all planes disabled */
- 		temp = I915_READ(pipeconf_reg);
- 		if ((temp & PIPEACONF_ENABLE) != 0) {
-@@ -1397,9 +1406,15 @@ static void igdng_crtc_dpms(struct drm_c
- 		} else
- 			DRM_DEBUG("crtc %d is disabled\n", pipe);
- 
--		if (HAS_eDP) {
--			igdng_disable_pll_edp(crtc);
-+		udelay(100);
-+
-+		/* Disable PF */
-+		temp = I915_READ(pf_ctl_reg);
-+		if ((temp & PF_ENABLE) != 0) {
-+			I915_WRITE(pf_ctl_reg, temp & ~PF_ENABLE);
-+			I915_READ(pf_ctl_reg);
- 		}
-+		I915_WRITE(pf_win_size, 0);
- 
- 		/* disable CPU FDI tx and PCH FDI rx */
- 		temp = I915_READ(fdi_tx_reg);
-@@ -1425,6 +1440,13 @@ static void igdng_crtc_dpms(struct drm_c
- 
- 		udelay(100);
- 
-+		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS)) {
-+			temp = I915_READ(PCH_LVDS);
-+			I915_WRITE(PCH_LVDS, temp & ~LVDS_PORT_EN);
-+			I915_READ(PCH_LVDS);
-+			udelay(100);
-+		}
-+
- 		/* disable PCH transcoder */
- 		temp = I915_READ(transconf_reg);
- 		if ((temp & TRANS_ENABLE) != 0) {
-@@ -1444,6 +1466,8 @@ static void igdng_crtc_dpms(struct drm_c
- 			}
- 		}
- 
-+		udelay(100);
-+
- 		/* disable PCH DPLL */
- 		temp = I915_READ(pch_dpll_reg);
- 		if ((temp & DPLL_VCO_ENABLE) != 0) {
-@@ -1451,14 +1475,20 @@ static void igdng_crtc_dpms(struct drm_c
- 			I915_READ(pch_dpll_reg);
- 		}
- 
--		temp = I915_READ(fdi_rx_reg);
--		if ((temp & FDI_RX_PLL_ENABLE) != 0) {
--			temp &= ~FDI_SEL_PCDCLK;
--			temp &= ~FDI_RX_PLL_ENABLE;
--			I915_WRITE(fdi_rx_reg, temp);
--			I915_READ(fdi_rx_reg);
-+		if (HAS_eDP) {
-+			igdng_disable_pll_edp(crtc);
- 		}
- 
-+		temp = I915_READ(fdi_rx_reg);
-+		temp &= ~FDI_SEL_PCDCLK;
-+		I915_WRITE(fdi_rx_reg, temp);
-+		I915_READ(fdi_rx_reg);
-+
-+		temp = I915_READ(fdi_rx_reg);
-+		temp &= ~FDI_RX_PLL_ENABLE;
-+		I915_WRITE(fdi_rx_reg, temp);
-+		I915_READ(fdi_rx_reg);
-+
- 		/* Disable CPU FDI TX PLL */
- 		temp = I915_READ(fdi_tx_reg);
- 		if ((temp & FDI_TX_PLL_ENABLE) != 0) {
-@@ -1467,16 +1497,8 @@ static void igdng_crtc_dpms(struct drm_c
- 			udelay(100);
- 		}
- 
--		/* Disable PF */
--		temp = I915_READ(pf_ctl_reg);
--		if ((temp & PF_ENABLE) != 0) {
--			I915_WRITE(pf_ctl_reg, temp & ~PF_ENABLE);
--			I915_READ(pf_ctl_reg);
--		}
--		I915_WRITE(pf_win_size, 0);
--
- 		/* Wait for the clocks to turn off. */
--		udelay(150);
-+		udelay(100);
- 		break;
- 	}
- }
+ 	I915_WRITE(PFIT_PGM_RATIOS, dev_priv->savePFIT_PGM_RATIOS);
+ 	I915_WRITE(BLC_PWM_CTL, dev_priv->saveBLC_PWM_CTL);
++	I915_WRITE(BLC_HIST_CTL, dev_priv->saveBLC_HIST_CTL);
+ 	I915_WRITE(PP_ON_DELAYS, dev_priv->savePP_ON_DELAYS);
+ 	I915_WRITE(PP_OFF_DELAYS, dev_priv->savePP_OFF_DELAYS);
+ 	I915_WRITE(PP_DIVISOR, dev_priv->savePP_DIVISOR);
 
 
