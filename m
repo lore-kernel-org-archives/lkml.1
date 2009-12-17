@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764910AbZLQU1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbZLQUa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764910AbZLQU1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 15:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762723AbZLQU1H
+	id S1763029AbZLQUa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbZLQUax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 15:27:07 -0500
-Received: from mga14.intel.com ([143.182.124.37]:2749 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765133AbZLQU1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 15:27:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="224155614"
-Date: Thu, 17 Dec 2009 12:27:02 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, H Peter Anvin <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH] x86: Reenable TSC sync check at boot, even with NONSTOP_TSC
-Message-ID: <20091217202702.GA18015@linux-os.sc.intel.com>
-Mime-Version: 1.0
+	Thu, 17 Dec 2009 15:30:53 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:1478 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757543AbZLQUav (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 15:30:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=Do5xiydlmQjVj+VY1WqKDljxvg8avkzF6ON/QhHqDkDr/yB5uLmEmUlGs7Ib1Tx8+d
+         KALqpBtprxVybkwypUcXNrromWjRAGfJpi92I9Q+zfK0hmmfLmVTguEvs4aIyELlldBb
+         dzUFmF51XclYp8LgKi8Vx3tuZsMJLuneyy614=
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Peter Hutterer <peter.hutterer@redhat.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
+References: <20091203050810.GA26595@barra.bne.redhat.com>
+	<87zl60s17o.fsf@macbook.be.48ers.dk> <4B1836A6.405@redhat.com>
+	<871vjasxnm.fsf@macbook.be.48ers.dk> <4B190D88.4090102@redhat.com>
+	<87ws12rh5j.fsf@macbook.be.48ers.dk> <4B1C96C4.5080709@redhat.com>
+	<87hbs0mqju.fsf@macbook.be.48ers.dk>
+Date: Thu, 17 Dec 2009 21:30:46 +0100
+In-Reply-To: <87hbs0mqju.fsf@macbook.be.48ers.dk> (Peter Korsgaard's message
+	of "Wed, 09 Dec 2009 10:42:45 +0100")
+Message-ID: <87oclx4a2x.fsf@macbook.be.48ers.dk>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
 
-Commit 83ce4009 did the following change
-If the TSC is constant and non-stop, also set it reliable.
+ >>> It's probably offtopic here, but we can move the discussion to the X
+ >>> list if you prefer - Last time I asked there I didn't get any reply
+ >>> though:
+ >>> 
+ >>> http://article.gmane.org/gmane.comp.freedesktop.xorg/40071/
 
-But, there seems to be few systems that will end up with TSC warp across
-sockets, depending on how the cpus come out of reset. Skipping TSC sync
-test on such systems may result in time inconsistency later.
+ Peter> Ask louder :) I think I remember your email but it got flooded
+ Peter> out of my inbox. In general there should be some method to do
+ Peter> that though I need to check the implementation.
 
-So, reenable TSC sync test even on constant and non-stop TSC systems.
-Set, sched_clock_stable to 1 by default and reset it in
-mark_tsc_unstable, if TSC sync fails.
+ Peter> OK, great - Let me know what you find. I did hack something up
+ Peter> with evtouch, but would like to move to evdev instead.
 
-This change still gives perf benefit mentioned in 83ce4009 for systems
-where TSC is reliable.
+Did you find anything?
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
- arch/x86/kernel/cpu/intel.c |    1 -
- arch/x86/kernel/tsc.c       |    1 +
- 2 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index 9c31e8b..879666f 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -70,7 +70,6 @@ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
- 	if (c->x86_power & (1 << 8)) {
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
--		set_cpu_cap(c, X86_FEATURE_TSC_RELIABLE);
- 		sched_clock_stable = 1;
- 	}
- 
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index cd982f4..597683a 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -763,6 +763,7 @@ void mark_tsc_unstable(char *reason)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
-+		sched_clock_stable = 0;
- 		printk(KERN_INFO "Marking TSC unstable due to %s\n", reason);
- 		/* Change only the rating, when not registered */
- 		if (clocksource_tsc.mult)
 -- 
-1.6.0.6
-
+Bye, Peter Korsgaard
