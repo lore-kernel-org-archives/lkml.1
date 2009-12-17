@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760440AbZLQBoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbZLQBmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760440AbZLQBoP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbZLQBnb
+	id S1758618AbZLQBmK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:42:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762907AbZLQBUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:43:31 -0500
-Received: from kroah.org ([198.145.64.141]:47847 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:20:09 -0500
+Received: from kroah.org ([198.145.64.141]:47852 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763595AbZLQBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763597AbZLQBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 20:20:06 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:00 2009
-Message-Id: <20091217011600.862764776@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:01 2009
+Message-Id: <20091217011600.998528574@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:34 -0800
+Date: Wed, 16 Dec 2009 17:14:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhang Le <r0bertz@gentoo.org>
-Subject: [23/90] USB: option.c: add support for D-Link DWM-162-U5
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [24/90] USB: usb-storage: add BAD_SENSE flag
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,37 +28,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhang Le <r0bertz@gentoo.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 54a8e144acad6506920f385f4ef2779664f05b21 upstream.
+commit a0bb108112a872c0b0c4b3ef4974f95fb75b155d upstream.
 
-Add D-Link DWM-162-U5 device id 1e0e:ce16 into option driver.  The device
-has 4 interfaces, of which 1 is handled by storage and the other 3 by
-option driver.
+This patch (as1311) fixes a problem in usb-storage: Some devices are
+pretty broken when it comes to reporting sense data.  The information
+they send back indicates that they have more than 18 bytes of sense
+data available, but when the system asks for more than 18 they fail or
+hang.  The symptom is that probing fails with multiple resets.
 
-The device appears first as CD-only 05c6:2100 device and must be switched
-to 1e0e:ce16 mode either by using "eject CD" or usb_modeswitch.
+The patch adds a new BAD_SENSE flag to indicate that usb-storage
+should never ask for more than 18 bytes of sense data.  The flag can
+be set in an unusual_devs entry or via the "quirks=" module parameter,
+and it is set automatically whenever a REQUEST SENSE command for more
+than 18 bytes fails or times out.
 
-The MessageContent for usb_modeswitch.conf is:
-"55534243e0c26a85000000000000061b000000020000000000000000000000"
+An unusual_devs entry is added for the Agfa photo frame, which uses a
+Prolific chip having this bug.
 
-Signed-off-by: Zhang Le <r0bertz@gentoo.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Daniel Kukula <daniel.kuku@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/option.c |    1 +
- 1 file changed, 1 insertion(+)
+ Documentation/kernel-parameters.txt |    2 ++
+ drivers/usb/storage/transport.c     |   17 +++++++++++++----
+ drivers/usb/storage/unusual_devs.h  |    7 +++++++
+ drivers/usb/storage/usb.c           |    3 +++
+ include/linux/usb_usual.h           |    4 +++-
+ 5 files changed, 28 insertions(+), 5 deletions(-)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -632,6 +632,7 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(TOSHIBA_VENDOR_ID, TOSHIBA_PRODUCT_G450) },
- 	{ USB_DEVICE(TOSHIBA_VENDOR_ID, TOSHIBA_PRODUCT_HSDPA_MINICARD ) }, /* Toshiba 3G HSDPA == Novatel Expedite EU870D MiniCard */
- 	{ USB_DEVICE(ALINK_VENDOR_ID, 0x9000) },
-+	{ USB_DEVICE(ALINK_VENDOR_ID, 0xce16) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ALINK_VENDOR_ID, ALINK_PRODUCT_3GU, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE(ALCATEL_VENDOR_ID, ALCATEL_PRODUCT_X060S) },
- 	{ USB_DEVICE(AIRPLUS_VENDOR_ID, AIRPLUS_PRODUCT_MCD650) },
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2561,6 +2561,8 @@ and is between 256 and 4096 characters. 
+ 			to a common usb-storage quirk flag as follows:
+ 				a = SANE_SENSE (collect more than 18 bytes
+ 					of sense data);
++				b = BAD_SENSE (don't collect more than 18
++					bytes of sense data);
+ 				c = FIX_CAPACITY (decrease the reported
+ 					device capacity by one sector);
+ 				h = CAPACITY_HEURISTICS (decrease the
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -666,10 +666,11 @@ void usb_stor_invoke_transport(struct sc
+ 	 * to wait for at least one CHECK_CONDITION to determine
+ 	 * SANE_SENSE support
+ 	 */
+-	if ((srb->cmnd[0] == ATA_16 || srb->cmnd[0] == ATA_12) &&
++	if (unlikely((srb->cmnd[0] == ATA_16 || srb->cmnd[0] == ATA_12) &&
+ 	    result == USB_STOR_TRANSPORT_GOOD &&
+ 	    !(us->fflags & US_FL_SANE_SENSE) &&
+-	    !(srb->cmnd[2] & 0x20)) {
++	    !(us->fflags & US_FL_BAD_SENSE) &&
++	    !(srb->cmnd[2] & 0x20))) {
+ 		US_DEBUGP("-- SAT supported, increasing auto-sense\n");
+ 		us->fflags |= US_FL_SANE_SENSE;
+ 	}
+@@ -718,6 +719,12 @@ Retry_Sense:
+ 		if (test_bit(US_FLIDX_TIMED_OUT, &us->dflags)) {
+ 			US_DEBUGP("-- auto-sense aborted\n");
+ 			srb->result = DID_ABORT << 16;
++
++			/* If SANE_SENSE caused this problem, disable it */
++			if (sense_size != US_SENSE_SIZE) {
++				us->fflags &= ~US_FL_SANE_SENSE;
++				us->fflags |= US_FL_BAD_SENSE;
++			}
+ 			goto Handle_Errors;
+ 		}
+ 
+@@ -727,10 +734,11 @@ Retry_Sense:
+ 		 * (small) sense request. This fixes some USB GSM modems
+ 		 */
+ 		if (temp_result == USB_STOR_TRANSPORT_FAILED &&
+-		    (us->fflags & US_FL_SANE_SENSE) &&
+-		    sense_size != US_SENSE_SIZE) {
++				sense_size != US_SENSE_SIZE) {
+ 			US_DEBUGP("-- auto-sense failure, retry small sense\n");
+ 			sense_size = US_SENSE_SIZE;
++			us->fflags &= ~US_FL_SANE_SENSE;
++			us->fflags |= US_FL_BAD_SENSE;
+ 			goto Retry_Sense;
+ 		}
+ 
+@@ -754,6 +762,7 @@ Retry_Sense:
+ 		 */
+ 		if (srb->sense_buffer[7] > (US_SENSE_SIZE - 8) &&
+ 		    !(us->fflags & US_FL_SANE_SENSE) &&
++		    !(us->fflags & US_FL_BAD_SENSE) &&
+ 		    (srb->sense_buffer[0] & 0x7C) == 0x70) {
+ 			US_DEBUGP("-- SANE_SENSE support enabled\n");
+ 			us->fflags |= US_FL_SANE_SENSE;
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -838,6 +838,13 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY ),
+ 
++/* Reported by Daniel Kukula <daniel.kuku@gmail.com> */
++UNUSUAL_DEV( 0x067b, 0x1063, 0x0100, 0x0100,
++		"Prolific Technology, Inc.",
++		"Prolific Storage Gadget",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_BAD_SENSE ),
++
+ /* Reported by Rogerio Brito <rbrito@ime.usp.br> */
+ UNUSUAL_DEV( 0x067b, 0x2317, 0x0001, 0x001,
+ 		"Prolific Technology, Inc.",
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -460,6 +460,9 @@ static void adjust_quirks(struct us_data
+ 		case 'a':
+ 			f |= US_FL_SANE_SENSE;
+ 			break;
++		case 'b':
++			f |= US_FL_BAD_SENSE;
++			break;
+ 		case 'c':
+ 			f |= US_FL_FIX_CAPACITY;
+ 			break;
+--- a/include/linux/usb_usual.h
++++ b/include/linux/usb_usual.h
+@@ -56,7 +56,9 @@
+ 	US_FLAG(SANE_SENSE,     0x00008000)			\
+ 		/* Sane Sense (> 18 bytes) */			\
+ 	US_FLAG(CAPACITY_OK,	0x00010000)			\
+-		/* READ CAPACITY response is correct */
++		/* READ CAPACITY response is correct */		\
++	US_FLAG(BAD_SENSE,	0x00020000)			\
++		/* Bad Sense (never more than 18 bytes) */
+ 
+ #define US_FLAG(name, value)	US_FL_##name = value ,
+ enum { US_DO_ALL_FLAGS };
 
 
