@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbZLQGMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761662AbZLQGR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759934AbZLQGMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 01:12:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759093AbZLQGMi
+	id S1761662AbZLQGR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 01:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759991AbZLQGRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 01:12:38 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:59481 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759002AbZLQGMg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 01:12:36 -0500
-Date: Thu, 17 Dec 2009 15:12:30 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-Message-ID: <20091217061229.GD3946@linux-sh.org>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+	Thu, 17 Dec 2009 01:17:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53744 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759061AbZLQGRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 01:17:54 -0500
+Date: Thu, 17 Dec 2009 07:17:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Lorne Applebaum <lorne.applebaum@gmail.com>,
+       Matthew Garrett <mjg@redhat.com>
+Subject: -tip: origin tree build failure
+Message-ID: <20091217061725.GA26613@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 04:57:49PM -0500, Mikulas Patocka wrote:
-> (5) Wrapping makes long expressions harder to understand
-> --------------------------------------------------------
-> 
-> If I have a complex expression, I do not try to wrap it at predefined
-> 80-column boundaries, but at logical boundaries within the expression to make
-> it more readable (the brain can't find matching parentheses fast, so we can
-> help it by aligning the code according to topmost terms in the expression).
-> 
-> Example:
-> 				if (unlikely(call_some_function(s, value) != RET
-> _SUCCESS) ||
-> 				    (var_1 == prev_var_1 && var_2 == prev_var_2)
->  ||
-> 				    flags & (FLAG_1 | FLAG_2) ||
-> 				    some_other_condition) {
-> 				}
-> 
-> Now, if we impose 80-column limit, we get this. One may argue that is looks
-> aesthetically better, but it is also less intelligible than the previous
-> version:
-> 				if (unlikely(call_some_function(s, value) !=
-> 				    RET_SUCCESS) || (var_1 == prev_var_1 &&
-> 				    var_2 == prev_var_2) || flags & (FLAG_1 |
-> 				    FLAG_2) || some_other_condition) {
-> 				}
-> 
-For starters, this is just crap. If you're writing code like this, then
-line wrapping is really the least of your concerns. Take your function
-return value and assign it to a variable before testing it in unlikely()
-as per existing conventions and most of this goes away in this example.
-If you're testing an absurd amount of conditions in a single block with
-needlessly verbose variable names, then yes, you will go over 80
-characters. Consequently, your "clean" example doesn't look much better
-than your purposely obfuscated one.
 
-The 80 character limit isn't a hard limit, but it's still an excellent
-guideline largely because it stops people from writing code like in your
-above example. Some amount of common sense is necessary, and most
-people in a position of applying patches can work out when to ignore
-checkpatch and when not to. The exception that you also noted is that
-some people run checkpatch on inbound patches before applying them, so
-having a flag to ignore the line size (or at least make it non-fatal) is
-probably not the worst idea ever -- although I disagree with killing off
-any notice about the line size completely.
+Today's -tip failed to build because commit 
+0d204c34e85d1d63e5fdd3e3192747daf0ee7ec1 ("thinkpad-acpi: basic ALSA mixer 
+support (v2)") from today's upstream kernel causes the following build failure 
+on x86, for CONFIG_THINKPAD_ACPI=y && CONFIG_SOUND=m:
 
-Aiming to keep things around 80 characters has served us well over the
-years, so I don't quite agree with suddenly adopting an anything goes
-policy in checkpatch. People that don't care about the limit can disable
-it in their scripts while folks running their patches through prior to
-list submission are still better off being reminded that they should keep
-things reasonably close. One only has to take a look through some of the
-staging/ drivers pre-cleanup efforts for examples that clearly benefit
-from triggering these warnings rather than implicitly supporting insane
-tab depths.
+  drivers/built-in.o: In function `volume_alsa_notify_change':
+  thinkpad_acpi.c:(.text+0x2d5c2d): undefined reference to `snd_ctl_notify'
+  thinkpad_acpi.c:(.text+0x2d5c47): undefined reference to `snd_ctl_notify'
+
+I've applied the patch below to tip:out-of-tree.
+
+Thanks,
+
+	Ingo
+
+----------------->
+acpi: Build CONFIG_SOUND=m build failure in CONFIG_THINKPAD_ACPI=y
+
+Today's -tip failed to build because thinkpad_acpi.c uses sound facilities 
+unconditionally, without expressing its dependency on the sound subsystem:
+
+  drivers/built-in.o: In function `volume_alsa_notify_change':
+  thinkpad_acpi.c:(.text+0x2d5c2d): undefined reference to `snd_ctl_notify'
+  thinkpad_acpi.c:(.text+0x2d5c47): undefined reference to `snd_ctl_notify'
+
+Add a Kconfig dependency on SOUND to remedy this.
+
+Cc: Len Brown <len.brown@intel.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Lorne Applebaum <lorne.applebaum@gmail.com>
+Cc: Matthew Garrett <mjg@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/platform/x86/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index f8bec62..60083e9 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -216,6 +216,7 @@ config THINKPAD_ACPI
+ 	depends on ACPI
+ 	depends on INPUT
+ 	depends on RFKILL || RFKILL = n
++	depends on SOUND
+ 	select BACKLIGHT_LCD_SUPPORT
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	select HWMON
