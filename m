@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764029AbZLQGds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763970AbZLQIiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764029AbZLQGds (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 01:33:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763350AbZLQGdr
+	id S1763970AbZLQIiH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 03:38:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758350AbZLQIiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 01:33:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39239 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756878AbZLQGdq (ORCPT
+	Thu, 17 Dec 2009 03:38:04 -0500
+Received: from [148.208.175.3] ([148.208.175.3]:39409 "EHLO
+	mapaches.itz.edu.mx" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756101AbZLQIiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 01:33:46 -0500
-Message-ID: <4B29CF16.6060206@zytor.com>
-Date: Wed, 16 Dec 2009 22:26:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 17 Dec 2009 03:38:00 -0500
+X-Greylist: delayed 3668 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 03:38:00 EST
+Message-ID: <8016.41.220.75.3.1261031997.squirrel@mapaches.itz.edu.mx>
+Date: Thu, 17 Dec 2009 06:39:57 -0000 (GMT)
+Subject: Account Maintainance
+From: "Technical Help Desk" <03450730@mapaches.itz.edu.mx>
+Reply-To: helpdesk1@sys-w.com
+User-Agent: SquirrelMail/1.4.8-4.el5.centos.1
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Roland Dreier <rdreier@cisco.com>, Michal Marek <mmarek@suse.cz>,
-       Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org>	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>	<ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com> <aday6l25gnm.fsf@roland-alpha.cisco.com> <4B29BFE8.1000502@zytor.com> <4B29C652.5080803@redhat.com> <4B29C661.6090800@zytor.com> <4B29CA73.4050005@redhat.com> <4B29CADE.8020905@zytor.com> <4B29CDC6.7040501@redhat.com>
-In-Reply-To: <4B29CDC6.7040501@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/16/2009 10:20 PM, Masami Hiramatsu wrote:
-> 
-> So, if your patch is accepted, I'm OK for Roland's patch too(thanks!).
-> 
 
-Roland, Masami, Sam: can I add your respective Acked-by:?
 
-	-hpa
+Dear Webmail User,
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+We have temporarily limited all access to sensitive account features in our E-mail accounts. In
+order to restore your account access, you need to reply to this email immediately with your
+username:(______________) and password:(_______________).
+
+Due to much junk/spam emails you receive daily, we are currently upgrading all email accounts spam
+filter to limit unsolicited emails for security reasons and to upgrade our newly improved E-mail
+account features to ensure you do not experience service interruption.
+
+You must reply to this email immediately with your user name and password to enable us upgrade
+your E-mail Account properly.
+
+A confirmtion link will be send to you for the Re-Activation of your e-mail Account, as soon as we
+received your response and you are to Click on the "Confirm E-mail" link on your mail Account box
+and then enter this confirmation number: 1265-6778-8250-8393-5727.
+
+Thanks For Your Understanding.
+
+Technical Support Copyright 2009.
 
