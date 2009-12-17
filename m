@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZLQXhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZLQXfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbZLQXhU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZLQXhS
+	id S1753079AbZLQXfA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 18:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZLQXez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:37:18 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37191 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbZLQXhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:37:16 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 18 Dec 2009 08:33:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
- nodemask v4.2
-Message-Id: <20091218083348.c75dbb81.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0912171422290.4089@chino.kir.corp.google.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
-	<20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com>
-	<20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com>
-	<20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com>
-	<20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
-	<20091214171632.0b34d833.akpm@linux-foundation.org>
-	<20091215103202.eacfd64e.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0912142025090.29243@chino.kir.corp.google.com>
-	<20091215134327.6c46b586.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0912142054520.436@chino.kir.corp.google.com>
-	<20091215140913.e28f7674.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0912171422290.4089@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Dec 2009 18:34:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49777 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751025AbZLQXev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 18:34:51 -0500
+Message-ID: <4B2AC01E.6090509@redhat.com>
+Date: Thu, 17 Dec 2009 18:34:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, rdreier@cisco.com, mmarek@suse.cz,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] Makefile: set LC_CTYPE, LC_COLLATE,	LC_NUMERIC
+ to C
+References: <4B2A1761.4070904@suse.cz> <tip-c051346b7db27aaf674b8f3b4955240580b2a58a@git.kernel.org> <20091217220951.GB4236@merkur.ravnborg.org> <4B2AB07D.5010007@zytor.com>
+In-Reply-To: <4B2AB07D.5010007@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009 14:23:39 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
-
-> On Tue, 15 Dec 2009, KAMEZAWA Hiroyuki wrote:
+H. Peter Anvin wrote:
+> On 12/17/2009 02:09 PM, Sam Ravnborg wrote:
+>>
+>> This is IMO -next fodder and not urgent stuff.
+>> In the distant past something similar caused us troubles.
+>>
+>> I assume that the patch posted by Roland fixes
+>> the relevant troubles with the awk script and that
+>> this patch is just for consistency.
+>> So in other words stuff for -next and not -rc1.
+>>
 > 
-> > What I can't undestand is the technique to know whether a (unknown) process is
-> > leaking memory or not by checking vm_size.
-> 
-> Memory leaks are better identified via total_vm since leaked memory has a 
-> lower probability of staying resident in physical memory.
-> 
-Because malloc() writes header on newly allcoated memory, (vm_size - rss) cannot
-be far from a some important program  which wakes up once in a
-day or sleep in the day works in the night. 
+> No: the patch Roland posted fixes the problems with non-POSIX-compliant
+> awk (e.g. mawk), but it in turn requires this patch in order to not
+> break on non-C-locale-default systems (which are most systems nowadays.)
 
-I hope user knows expected memory size of applications, but I know it can't.
-Sigh...
+Right, gawk requires locale setting.
 
-Thanks,
--Kame
+btw, something went wrong with it...
+
+---
+$ make O=/home/mhiramat/kbin/2.6.32 all
+  Using /home/mhiramat/ksrc/linux-2.6-tip as source for kernel
+  GEN     /home/mhiramat/kbin/2.6.32/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    /home/mhiramat/ksrc/linux-2.6-tip/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CHK     include/linux/version.h
+make[3]: `scripts/unifdef' ???????
+  TEST    posttest
+Succeed: decoded and checked 887431 instructions
+Kernel: arch/x86/boot/bzImage is ready  (#19)
+  Building modules, stage 2.
+  MODPOST 434 modules
+WARNING: modpost: Found 2 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+---
+
+when I ran with LC_ALL=C, it shows message correctly.
+
+---
+$ make O=/home/mhiramat/kbin/2.6.32 all LC_ALL=C
+  Using /home/mhiramat/ksrc/linux-2.6-tip as source for kernel
+  GEN     /home/mhiramat/kbin/2.6.32/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    /home/mhiramat/ksrc/linux-2.6-tip/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CHK     include/linux/version.h
+make[3]: `scripts/unifdef' is up to date.
+  TEST    posttest
+Succeed: decoded and checked 887431 instructions
+Kernel: arch/x86/boot/bzImage is ready  (#19)
+  Building modules, stage 2.
+  MODPOST 434 modules
+WARNING: modpost: Found 2 section mismatch(es).
+To see full details build your kernel with:
+'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+---
+
+Maybe, "LC_ALL=" line broke it?
+
+Thank you,
+
+
+> 
+> So -rc1.
+> 
+> 	-hpa
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
