@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764596AbZLQQjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764752AbZLQQjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764596AbZLQQjq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 11:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764360AbZLQQjp
+	id S1764752AbZLQQjz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 11:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764360AbZLQQjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 11:39:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53365 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763312AbZLQQjo (ORCPT
+	Thu, 17 Dec 2009 11:39:49 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:33978 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1764425AbZLQQjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 11:39:44 -0500
-Date: Thu, 17 Dec 2009 08:39:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] vfs pile 2
-In-Reply-To: <20091217162454.GA18217@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0912170831030.15740@localhost.localdomain>
-References: <20091217162454.GA18217@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 11:39:46 -0500
+Date: Thu, 17 Dec 2009 19:39:44 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 6/7] spi/mpc8xxx: don't check platform_get_irq's return
+ value against zero
+Message-ID: <20091217163944.GA6453@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-5-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 16, 2009 at 05:10:08PM +0100, Uwe Kleine-König wrote:
+> platform_get_irq returns -ENXIO on failure, so !irq was probably
+> always true.  Better use (int)irq <= 0.  Note that a return value of
+> zero is still handled as error even though this could mean irq0.
+> 
+> This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
+> changed the return value of platform_get_irq from 0 to -ENXIO on error.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: David Vrabel <dvrabel@arcom.com>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: spi-devel-general@lists.sourceforge.net
+> ---
+>  drivers/spi/spi_mpc8xxx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
+> index e9390d7..b13501a 100644
+> --- a/drivers/spi/spi_mpc8xxx.c
+> +++ b/drivers/spi/spi_mpc8xxx.c
+> @@ -1339,7 +1339,7 @@ static int __devinit plat_mpc8xxx_spi_probe(struct platform_device *pdev)
+>  		return -EINVAL;
+>  
+>  	irq = platform_get_irq(pdev, 0);
+> -	if (!irq)
+> +	if ((int)irq <= 0)
 
+I tend to think that it's really hopeless to fix the
+platform_get_irq() in its current form, so can you get rid
+of this ugly cast and just make the irq signed?
 
-On Thu, 17 Dec 2009, Al Viro wrote:
->
-> Misc bits and pieces, cleaning the table for scaling stuff...
-> Please, pull from
-> git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ master
-> in a few minutes (or directly from hera)
+And I'll be fine with it. :-(
 
-Btw, would you mind cleaning that repo up?
-
-It has a few very annoying things, the first and foremost of which is that 
-HEAD points to some crazy branch (new-truncate). 
-
-So when you do "git pull" without mentioning the branch (which is the 
-normal behavior) and would expect to get your default thing (which was 
-also what you asked me to pull in your original pull request), you instead 
-get some totally inexplicable old random crud.
-
-That's really unexpected for a bare repository. I spent some time looking 
-at the odd conflicts the other day when I pulled originally.
-
-I suspect you just did a "scp -rp" or something to initially set it up, 
-which is why it contains some random branch - that just happened to be 
-your active branch at the time you did that setup.
-
-(It also has FETCH_HEAD, index, COMMIT_EDITMSG etc - all things that don't 
-make sense in a bare repository)
-
-			Linus
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
