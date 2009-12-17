@@ -1,38 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764819AbZLQO2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935795AbZLQOgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764819AbZLQO2z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 09:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764807AbZLQO2y
+	id S935795AbZLQOgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 09:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZLQOgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 09:28:54 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:46694 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764810AbZLQO2x (ORCPT
+	Thu, 17 Dec 2009 09:36:37 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:58985 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764811AbZLQOgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 09:28:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=fUXx8FUGwjaRmUHjNDm43gM7PPxjlwmTxz7llkQzmEtxv5AK3yM7edoOExAOJfll50
-         3zCl8cNWmTPlleFrZx4pPpUs/MrEPgNpbDcCsMQNdnoxfTs8zPr18NbZr38U+D/P0s+n
-         yL6YDko+gE6nlwZv3J8eOSfhCpKn+gkhSbZf8=
+	Thu, 17 Dec 2009 09:36:36 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Josua Dietze <digidietze@draisberghof.de>
+Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
+Date: Thu, 17 Dec 2009 15:36:44 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Dan Williams <dcbw@redhat.com>,
+       Stefan Seyfried <stefan.seyfried@googlemail.com>,
+       linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
+       Stefan Seyfried <seife@sphairon.com>
+References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <200912171402.42168.oliver@neukum.org> <4B2A3312.104@draisberghof.de>
+In-Reply-To: <4B2A3312.104@draisberghof.de>
 MIME-Version: 1.0
-Date: Thu, 17 Dec 2009 15:28:51 +0100
-Message-ID: <2d0a357f0912170628k4c9861b5j851fd6ce1f67c750@mail.gmail.com>
-Subject: Re: linux-next: Tree for December 17
-From: Sedat Dilek <sedat.dilek@googlemail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: sfr@canb.auug.org.au
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912171536.44220.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->There is a wiki covering stuff to do with linux-next at
->http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+Am Donnerstag, 17. Dezember 2009 14:33:06 schrieb Josua Dietze:
+> > Can storage tell the devices apart so that it knows which ones to leave
+> > to the kernel solution and which devices to accept so that udev can
+> > issue an eject command?
+> 
+> If you are thinking about the two specific devices at hand there is 
+> no need to tell them apart. Same IDs on plugin, same switching 
+> procedure, different IDs on return, different drivers take care.
 
-Just wanna let you know:
-Wiki is not reachable and domain is back to DENIC
-(registration/administration of German Internet domains).
+How do you issue an eject command without a /dev/sgX node?
 
-- Sedat -
+	Regards
+		Oliver
