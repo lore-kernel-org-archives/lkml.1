@@ -1,56 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764306AbZLQKJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965089AbZLQKRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764306AbZLQKJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:09:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761380AbZLQKJn
+	id S965089AbZLQKRj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbZLQKRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:09:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36520 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbZLQKJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:09:42 -0500
-Date: Thu, 17 Dec 2009 11:09:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/2] perf lock: Fix output of tracing lock events
-Message-ID: <20091217100922.GA23778@elte.hu>
-References: <1260934105-4472-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1261041885.27920.110.camel@laptop>
+	Thu, 17 Dec 2009 05:17:38 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:53375 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764303AbZLQKRh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 05:17:37 -0500
+Message-ID: <4B2A0539.3040401@us.ibm.com>
+Date: Thu, 17 Dec 2009 02:17:29 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261041885.27920.110.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Steven Rostedt <rostedt@goodmis.org>,
+       "lkml, " <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2 V2] tracecmd: Start of a tracecmd swig wrapper for python
+References: <4B297C79.2090004@us.ibm.com> <4B297CE3.6040600@us.ibm.com>
+In-Reply-To: <4B297CE3.6040600@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From bae09bb458b68d152c5fd353fa0797a52207c2b1 Mon Sep 17 00:00:00 2001
+From: Darren Hart <dvhltc@us.ibm.com>
+Date: Wed, 16 Dec 2009 15:25:30 -0800
+Subject: [PATCH 2/2 V2] tracecmd: Start of a tracecmd swig wrapper for python
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Introduce a python tracecmd module for use in rapidly prototyping
+tracing applications. The interface description is provided in
+tracecmd.i, it identifies which functions are available from within
+python. A test python script is provided as tracecmd-test.py.
 
-> >  	TP_STRUCT__entry(
-> > +		__field(struct lockdep_map *, lockdep_addr)
-> >  		__field(unsigned int, flags)
-> >  		__string(name, lock->name)
-> >  	),
-> 
-> I feel a bit awkward explicitly leaking kernel pointers like that. All this 
-> is accessible by root only (for now) so its not too harmfull, but sitll.
+These bindings are expected to change significantly. Eventually I
+would like to wrap this automated binding with more pythonic objects,
+most likely including Trace and Event objects which merge the
+functionality of tracecmd-input, pevent, record, and event structures.
+This will make development of python apps much more accessible to many
+application developers.
 
-What would you suggest as a 'natural lock class key'? The name? It might not 
-be unique enough.
+For now, this is mostly a proof of concept and is no where near
+complete. It can however open a trace file and read all the events from
+it, displaying them by CPU in chronological order.
 
-Other kernel objects like tasks, cpus, inodes, pages all have some natural key 
-that isnt a kernel pointer - but locks are a bit special.
+V2: simplified interface file with some SWIG ifdefs in the header files
 
-	Ingo
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+---
+ parse-events.h   |    9 +++++++++
+ swig.sh          |   19 +++++++++++++++++++
+ trace-cmd.h      |    2 ++
+ tracecmd-test.py |   38 ++++++++++++++++++++++++++++++++++++++
+ tracecmd.i       |   12 ++++++++++++
+ 5 files changed, 80 insertions(+), 0 deletions(-)
+ create mode 100755 swig.sh
+ create mode 100755 tracecmd-test.py
+ create mode 100644 tracecmd.i
+
+diff --git a/parse-events.h b/parse-events.h
+index e6f5806..0d68f23 100644
+--- a/parse-events.h
++++ b/parse-events.h
+@@ -42,6 +42,8 @@ trace_seq_init(struct trace_seq *s)
+ 	s->full = 0;
+ }
+ 
++/* SWIG doesn't like the __attribute__, don't export trace_seq to python */
++#ifndef SWIG
+ extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 	__attribute__ ((format (printf, 2, 3)));
+ extern int trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
+@@ -53,6 +55,7 @@ extern int trace_seq_putc(struct trace_seq *s, unsigned char c);
+ extern void trace_seq_terminate(struct trace_seq *s);
+ 
+ extern int trace_seq_do_printf(struct trace_seq *s);
++#endif
+ 
+ 
+ /* ----------------------- pevent ----------------------- */
+@@ -275,7 +278,10 @@ struct pevent {
+ 	struct format_field *bprint_buf_field;
+ };
+ 
++/* this doesn't appear to be defined anywhere... */
++#ifndef SWIG
+ void parse_set_info(struct pevent *pevent, int nr_cpus, int long_sz);
++#endif
+ 
+ void die(char *fmt, ...);
+ void *malloc_or_die(unsigned int size);
+@@ -374,8 +380,11 @@ struct event *pevent_find_event(struct pevent *pevent, int id);
+ struct event *
+ pevent_find_event_by_name(struct pevent *pevent, const char *sys, const char *name);
+ 
++/* SWIG doesn't like __unused */
++#ifndef SWIG
+ void pevent_data_lat_fmt(struct pevent *pevent,
+ 			 struct trace_seq *s, void *data, int size __unused);
++#endif
+ int pevent_data_type(struct pevent *pevent, struct record *rec);
+ struct event *pevent_data_event_from_type(struct pevent *pevent, int type);
+ int pevent_data_pid(struct pevent *pevent, struct record *rec);
+diff --git a/swig.sh b/swig.sh
+new file mode 100755
+index 0000000..9a77ec2
+--- /dev/null
++++ b/swig.sh
+@@ -0,0 +1,19 @@
++#!/bin/sh
++
++# Temporary hack of a build script, eventually we'll incoroporate this
++# into the Makefile. You may have to update the includes to point to your
++# python installation.
++
++rm tracecmd_wrap.c tracecmd_wrap.o _tracecmd.so &> /dev/null
++
++swig -Wall -python tracecmd.i
++
++gcc -fpic -c  -I/usr/include/python2.6/ -I/usr/lib/python2.6/config \
++    parse_events.c trace-read.c trace-output.c trace-cmd.c \
++    trace-record.c trace-input.c tracecmd_wrap.c
++
++gcc -shared trace-ftrace.o trace-seq.o trace-util.o \
++    parse-events.o trace-read.o trace-output.o trace-cmd.o \
++    trace-record.o trace-input.o tracecmd_wrap.o \
++    -o _tracecmd.so
++
+diff --git a/trace-cmd.h b/trace-cmd.h
+index 1c4d359..6f645c5 100644
+--- a/trace-cmd.h
++++ b/trace-cmd.h
+@@ -83,8 +83,10 @@ int tracecmd_set_cpu_to_timestamp(struct tracecmd_input *handle,
+ int tracecmd_ftrace_overrides(struct tracecmd_input *handle);
+ struct pevent *tracecmd_get_pevent(struct tracecmd_input *handle);
+ 
++#ifndef SWIG
+ /* hack for function graph work around */
+ extern __thread struct tracecmd_input *tracecmd_curr_thread_handle;
++#endif
+ 
+ 
+ /* --- Creating and Writing the trace.dat file --- */
+diff --git a/tracecmd-test.py b/tracecmd-test.py
+new file mode 100755
+index 0000000..dd0a583
+--- /dev/null
++++ b/tracecmd-test.py
+@@ -0,0 +1,38 @@
++#!/usr/bin/env python
++
++from tracecmd import *
++# import the struct_member_get() wrappers
++from _tracecmd import *
++
++# Let's move the following into a new Trace object constructor
++filename = "trace.dat"
++trace_file = open(filename)
++handle = tracecmd_open(trace_file.fileno())
++tracecmd_read_headers(handle)
++tracecmd_init_data(handle)
++
++# These should be members, i.e. Trace.cpus
++pe = tracecmd_get_pevent(handle)
++cpus = tracecmd_cpus(handle)
++print "Trace %s contains data for %d cpus" % (filename, cpus) 
++
++# FIXME: this doesn't print anything...
++tracecmd_print_events(handle)
++
++print "Cycling through the events for each CPU"
++for cpu in range(0,cpus):
++    print "CPU", cpu
++    rec = tracecmd_read_data(handle, cpu)
++    while True:
++        if rec:
++            # these should be members of a Record object
++            pid = pevent_data_pid(pe, rec)
++            comm = pevent_data_comm_from_pid(pe, pid)
++            type = pevent_data_type(pe, rec)
++            event = pevent_data_event_from_type(pe, type)
++            print "\t%f %s: pid=%d comm=%s type=%d" % \
++                  (record_ts_get(rec), event_name_get(event), pid, comm, type)
++
++            rec = tracecmd_read_data(handle, cpu)
++        else:
++            break
+diff --git a/tracecmd.i b/tracecmd.i
+new file mode 100644
+index 0000000..0245552
+--- /dev/null
++++ b/tracecmd.i
+@@ -0,0 +1,12 @@
++// tracecmd.i
++%module tracecmd
++
++%{
++#include "trace-cmd.h"
++%}
++
++%inline %{
++%}
++
++%include "trace-cmd.h"
++%include "parse-events.h"
+-- 
+1.6.3.3
+
+--
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
