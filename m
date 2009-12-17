@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbZLQVn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760402AbZLQVxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765426AbZLQVn0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 16:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765412AbZLQVnX
+	id S1760402AbZLQVxg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 16:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZLQVxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 16:43:23 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:57732 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765407AbZLQVnW (ORCPT
+	Thu, 17 Dec 2009 16:53:35 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:30105 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752233AbZLQVxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 16:43:22 -0500
-Date: Thu, 17 Dec 2009 21:43:20 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] vfs pile 2
-Message-ID: <20091217214320.GG18217@ZenIV.linux.org.uk>
-References: <20091217162454.GA18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912170831030.15740@localhost.localdomain> <20091217180319.GB18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912171008220.15740@localhost.localdomain> <20091217183952.GC18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912171316220.15740@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912171316220.15740@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Dec 2009 16:53:34 -0500
+Subject: Re: -tip: origin tree build failure
+From: Myron Stowe <myron.stowe@hp.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+In-Reply-To: <20091217075025.GA314@elte.hu>
+References: <20091217075025.GA314@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 14:53:11 -0700
+Message-ID: <1261086791.2505.13.camel@zim.stowe>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 01:22:12PM -0800, Linus Torvalds wrote:
+On Thu, 2009-12-17 at 08:50 +0100, Ingo Molnar wrote:
+> Today's -tip failed to build because commit 
+> 9e368fa011d4e0aa050db348d69514900520e40b ("ipmi: add PNP discovery (ACPI 
+> namespace via PNPACPI)") from today's upstream kernel causes the following 
+> build failure on x86, for CONFIG_ACPI=n && CONFIG_IPMI_SI=y:
 > 
+>  drivers/char/ipmi/ipmi_si_intf.c:3208: error: 'ipmi_pnp_driver' undeclared (first use in this function)
+>  drivers/char/ipmi/ipmi_si_intf.c:3208: error: (Each undeclared identifier is reported only once
+>  drivers/char/ipmi/ipmi_si_intf.c:3208: error: for each function it appears in.)
+>  drivers/char/ipmi/ipmi_si_intf.c:3334: error: 'ipmi_pnp_driver' undeclared (first use in this function)
 > 
-> On Thu, 17 Dec 2009, Al Viro wrote:
-> > 
-> > reflog had been pruned already; still no effect.  Moreover, after looking
-> > through the loose objects, I've found several commits that are definitely
-> > reachable from master and now from your tree as well.  E.g.
-> > objects/ea/ff8079d4f1016a12e34ab323737314f24127dd
-> > is one of those - it's a commit and it's both in mainline *and* happens
-> > to be tip of master.  No questions about being unreachable and AFAICS
-> > no reasons whatsoever to leave it as a loose object...
+> The reason is that the ipmi_pnp_driver depends on ACPI facilities and is only 
+> made available under ACPI - while the registration and unregistration is made 
+> dependent on CONFIG_PNP:
 > 
-> If you want a maximal pack, use "git repack -Adl"
+>  #ifdef CONFIG_PNP
+>  	pnp_register_driver(&ipmi_pnp_driver);
+>  #endif
+> 
+> The solution is to only register this driver under ACPI. (Also, the CONFIG_PNP 
+> dependency is not needed because pnp_register_driver() is stubbed out in the 
+> !CONFIG_PNP case.)
 
-Still leaves the same bunch.
+Yes, sorry we missed this case.
+> 
+> I've applied the patch below to tip:out-of-tree for now.
 
-> The default gc thing will stop when it hits stuff that has been packed 
-> already, which can leave _older_ unpacked objects unpacked. And since my 
-> own repo isn't always fully packed, and git will only remove local objects 
-> if they are available as _packed_ objects in the reference tree (ie my 
-> repo), you'll end up with that kind of situation.
+Looks good to us.  Thanks!
 
-Yeah, but why aren't they put into local pack?  They _are_ new and they
-definitely are referenced.  The newest in the repository, as the matter
-of fact.
+Myron
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+> index 679cd08..176f175 100644
+> --- a/drivers/char/ipmi/ipmi_si_intf.c
+> +++ b/drivers/char/ipmi/ipmi_si_intf.c
+> @@ -3204,7 +3204,7 @@ static __devinit int init_ipmi_si(void)
+>  #ifdef CONFIG_ACPI
+>  	spmi_find_bmc();
+>  #endif
+> -#ifdef CONFIG_PNP
+> +#ifdef CONFIG_ACPI
+>  	pnp_register_driver(&ipmi_pnp_driver);
+>  #endif
+>  
+> @@ -3330,7 +3330,7 @@ static __exit void cleanup_ipmi_si(void)
+>  #ifdef CONFIG_PCI
+>  	pci_unregister_driver(&ipmi_pci_driver);
+>  #endif
+> -#ifdef CONFIG_PNP
+> +#ifdef CONFIG_ACPI
+>  	pnp_unregister_driver(&ipmi_pnp_driver);
+>  #endif
+>  
+> 
 
-Odd...
+
+-- 
+Myron Stowe                             HP Open Source Linux Lab (OSLL)
+
