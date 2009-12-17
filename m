@@ -1,145 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934567AbZLQMUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764643AbZLQMWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934567AbZLQMUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 07:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764647AbZLQMTM
+	id S1764643AbZLQMWf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 07:22:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764634AbZLQMW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 07:19:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47321 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764643AbZLQMTJ (ORCPT
+	Thu, 17 Dec 2009 07:22:29 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:57345 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764606AbZLQMWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 07:19:09 -0500
-Message-Id: <20091217121830.215333434@chello.nl>
-References: <20091217121626.682772324@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Thu, 17 Dec 2009 13:16:32 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/6] perf: Dont report side-band events on each cpu for per-task-per-cpu events
-Content-Disposition: inline; filename=perf4.patch
+	Thu, 17 Dec 2009 07:22:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=DCb17SwcCDgv69ZrXaVAHGRUx782He0WwQhr2Awfc+qn7KA3xMrr2Yse1OvlO20N1i
+         YXrD6x54oVZlMwXKa0336ajHm1RNkK94u7+wjiRBTVOlwAqCojQQw9VcIDJd0CKPwjqm
+         nVXzseXSAHdttA4RBxz45P/UTpyQccQbVOskg=
+Message-ID: <4B2A227E.2010106@garzik.org>
+Date: Thu, 17 Dec 2009 07:22:22 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Romain Kubany <rkubany@ikoula.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Subject: Re: Possible regression of LBA48 support for piix
+References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com> <19241.63911.160765.909812@pilspetsen.it.uu.se> <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2C1@HMCEXMBX01CLUS.hmcikoula.com> <4B2A1008.9070202@garzik.org> <4B2A1E9E.30009@garzik.org> <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB31D@HMCEXMBX01CLUS.hmcikoula.com>
+In-Reply-To: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB31D@HMCEXMBX01CLUS.hmcikoula.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acme noticed that his FORK/MMAP numbers were inflated by about the
-same factor as his cpu-count.
+On 12/17/2009 07:07 AM, Romain Kubany wrote:
+> Here it is under the 2.6.28 :
+>
+> # hdparm -I /dev/sda
+>
+> /dev/sda:
+>
+> ATA device, with non-removable media
+>          Model Number:       Virtual HD
+>          Serial Number:
+>          Firmware Revision:  1.1.0
+> Standards:
+>          Likely used: 2
+> Configuration:
+>          Logical         max     current
+>          cylinders       16383   65535
+>          heads           16      16
+>          sectors/track   63      255
+>          --
+>          bytes/track: 65024      bytes/sector: 512
+>          CHS current addressable sectors:  267382800
+>          LBA    user addressable sectors:  267382800
+>          device size with M = 1024*1024:      130558 MBytes
+>          device size with M = 1000*1000:      136899 MBytes (136 GB)
 
-This led to the discovery of a few more sites that need to respect the
-event->cpu filter.
+Yeah, that info is straight from the virtual disk, without any sort of 
+massaging.  The disk is reporting 136GB max, so I would poke around 
+Windows to see if a setting changed somewhere...  maybe there is an "old 
+IDE compatible" setting that got turned on, for the virtual hd?
 
-Reported-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
----
- kernel/perf_event.c |   32 ++++++++++++++++++--------------
- 1 file changed, 18 insertions(+), 14 deletions(-)
+	Jeff
 
-Index: linux-2.6/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/kernel/perf_event.c
-+++ linux-2.6/kernel/perf_event.c
-@@ -1381,6 +1381,9 @@ static void perf_ctx_adjust_freq(struct 
- 		if (event->state != PERF_EVENT_STATE_ACTIVE)
- 			continue;
- 
-+		if (event->cpu != -1 && event->cpu != smp_processor_id())
-+			continue;
-+
- 		hwc = &event->hw;
- 
- 		interrupts = hwc->interrupts;
-@@ -3265,6 +3268,9 @@ static void perf_event_task_output(struc
- 
- static int perf_event_task_match(struct perf_event *event)
- {
-+	if (event->cpu != -1 && event->cpu != smp_processor_id())
-+		return 0;
-+
- 	if (event->attr.comm || event->attr.mmap || event->attr.task)
- 		return 1;
- 
-@@ -3290,12 +3296,11 @@ static void perf_event_task_event(struct
- 	rcu_read_lock();
- 	cpuctx = &get_cpu_var(perf_cpu_context);
- 	perf_event_task_ctx(&cpuctx->ctx, task_event);
--	put_cpu_var(perf_cpu_context);
--
- 	if (!ctx)
- 		ctx = rcu_dereference(task_event->task->perf_event_ctxp);
- 	if (ctx)
- 		perf_event_task_ctx(ctx, task_event);
-+	put_cpu_var(perf_cpu_context);
- 	rcu_read_unlock();
- }
- 
-@@ -3372,6 +3377,9 @@ static void perf_event_comm_output(struc
- 
- static int perf_event_comm_match(struct perf_event *event)
- {
-+	if (event->cpu != -1 && event->cpu != smp_processor_id())
-+		return 0;
-+
- 	if (event->attr.comm)
- 		return 1;
- 
-@@ -3408,15 +3416,10 @@ static void perf_event_comm_event(struct
- 	rcu_read_lock();
- 	cpuctx = &get_cpu_var(perf_cpu_context);
- 	perf_event_comm_ctx(&cpuctx->ctx, comm_event);
--	put_cpu_var(perf_cpu_context);
--
--	/*
--	 * doesn't really matter which of the child contexts the
--	 * events ends up in.
--	 */
- 	ctx = rcu_dereference(current->perf_event_ctxp);
- 	if (ctx)
- 		perf_event_comm_ctx(ctx, comm_event);
-+	put_cpu_var(perf_cpu_context);
- 	rcu_read_unlock();
- }
- 
-@@ -3491,6 +3494,9 @@ static void perf_event_mmap_output(struc
- static int perf_event_mmap_match(struct perf_event *event,
- 				   struct perf_mmap_event *mmap_event)
- {
-+	if (event->cpu != -1 && event->cpu != smp_processor_id())
-+		return 0;
-+
- 	if (event->attr.mmap)
- 		return 1;
- 
-@@ -3564,15 +3570,10 @@ got_name:
- 	rcu_read_lock();
- 	cpuctx = &get_cpu_var(perf_cpu_context);
- 	perf_event_mmap_ctx(&cpuctx->ctx, mmap_event);
--	put_cpu_var(perf_cpu_context);
--
--	/*
--	 * doesn't really matter which of the child contexts the
--	 * events ends up in.
--	 */
- 	ctx = rcu_dereference(current->perf_event_ctxp);
- 	if (ctx)
- 		perf_event_mmap_ctx(ctx, mmap_event);
-+	put_cpu_var(perf_cpu_context);
- 	rcu_read_unlock();
- 
- 	kfree(buf);
-@@ -3863,6 +3864,9 @@ static int perf_swevent_match(struct per
- 				struct perf_sample_data *data,
- 				struct pt_regs *regs)
- {
-+	if (event->cpu != -1 && event->cpu != smp_processor_id())
-+		return 0;
-+
- 	if (!perf_swevent_is_counting(event))
- 		return 0;
- 
 
--- 
 
