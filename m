@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935505AbZLQB2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934856AbZLQBVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935505AbZLQB2H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763675AbZLQBU4
+	id S934856AbZLQBVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763696AbZLQBU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:56 -0500
-Received: from kroah.org ([198.145.64.141]:48107 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:20:57 -0500
+Received: from kroah.org ([198.145.64.141]:48112 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763680AbZLQBUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:50 -0500
+	id S1763681AbZLQBUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:51 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:06 2009
-Message-Id: <20091217011606.755651686@mini.kroah.org>
+Message-Id: <20091217011606.867357237@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:18 -0800
+Date: Wed, 16 Dec 2009 17:15:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "David S. Miller" <davem@davemloft.net>
-Subject: [67/90] sparc64: Fix stack debugging IRQ stack regression.
+Subject: [68/90] sparc: Set UTS_MACHINE correctly.
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,43 +31,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit 166e553a575f09485f6d0df8a1ef3c5991f7d953 ]
+[ Upstream commit 7f5620a5fcd658f219e85831d3691908f1eccbde ]
 
-Commit 4f70f7a91bffdcc39f088748dc678953eb9a3fbd
-(sparc64: Implement IRQ stacks.) has two bugs.
+"ARCH" can be just about anything, so we shouldn't end up
+with UTS_MACHINE of "sparc" in a 64-bit kernel build just
+because someone set the personality using 'sparc32' or
+similar.  CONFIG_SPARC64 drives the compilation and
+therefore provides the definitive value, not "ARCH".
 
-First, the softirq range check forgets to subtract STACK_BIAS
-before comparing with %sp.  Next, on failure the wrong label
-is jumped to, resulting in a bogus stack being loaded.
+This mirrors commit 8c6531f7a99f29ba8817ffb12cc9ecf190049bd6
+(x86: correctly set UTS_MACHINE for "make ARCH=x86")
 
-Reported-by: Igor Kovalenko <igor.v.kovalenko@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/sparc/lib/mcount.S |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/sparc/Makefile |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/sparc/lib/mcount.S
-+++ b/arch/sparc/lib/mcount.S
-@@ -64,8 +64,9 @@ mcount:
- 2:	 sethi		%hi(softirq_stack), %g3
- 	or		%g3, %lo(softirq_stack), %g3
- 	ldx		[%g3 + %g1], %g7
-+	sub		%g7, STACK_BIAS, %g7
- 	cmp		%sp, %g7
--	bleu,pt		%xcc, 2f
-+	bleu,pt		%xcc, 3f
- 	 sethi		%hi(THREAD_SIZE), %g3
- 	add		%g7, %g3, %g7
- 	cmp		%sp, %g7
-@@ -75,7 +76,7 @@ mcount:
- 	 * again, we are already trying to output the stack overflow
- 	 * message.
- 	 */
--	sethi		%hi(ovstack), %g7		! cant move to panic stack fast enough
-+3:	sethi		%hi(ovstack), %g7		! cant move to panic stack fast enough
- 	 or		%g7, %lo(ovstack), %g7
- 	add		%g7, OVSTACKSIZE, %g3
- 	sub		%g3, STACK_BIAS + 192, %g3
+--- a/arch/sparc/Makefile
++++ b/arch/sparc/Makefile
+@@ -27,6 +27,7 @@ AS             := $(AS) -32
+ LDFLAGS        := -m elf32_sparc
+ CHECKFLAGS     += -D__sparc__
+ export BITS    := 32
++UTS_MACHINE    := sparc
+ 
+ #KBUILD_CFLAGS += -g -pipe -fcall-used-g5 -fcall-used-g7
+ KBUILD_CFLAGS += -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
+@@ -50,6 +51,7 @@ CHECKFLAGS      += -D__sparc__ -D__sparc
+ 
+ LDFLAGS              := -m elf64_sparc
+ export BITS          := 64
++UTS_MACHINE          := sparc64
+ 
+ KBUILD_CFLAGS += -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow   \
+                  -ffixed-g4 -ffixed-g5 -fcall-used-g7 -Wno-sign-compare \
 
 
