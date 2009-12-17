@@ -1,105 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZLQMgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935366AbZLQMgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764251AbZLQMgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 07:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932490AbZLQMgW
+	id S935366AbZLQMgj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 07:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932490AbZLQMge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 07:36:22 -0500
-Received: from comal.ext.ti.com ([198.47.26.152]:43282 "EHLO comal.ext.ti.com"
+	Thu, 17 Dec 2009 07:36:34 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:58057 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764179AbZLQMgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 07:36:20 -0500
+	id S1764130AbZLQMgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 07:36:32 -0500
 From: Chaithrika U S <chaithrika@ti.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com,
        khilman@deeprootsystems.com, Chaithrika U S <chaithrika@ti.com>
-Subject: [PATCH 1/2] davinci: MMC: Add a function to control reset state of the controller
-Date: Thu, 17 Dec 2009 17:44:51 +0530
-Message-Id: <1261052091-14379-1-git-send-email-chaithrika@ti.com>
+Subject: [PATCH 2/2] davinci: MMC: updates to suspend/resume implementation
+Date: Thu, 17 Dec 2009 17:45:01 +0530
+Message-Id: <1261052101-14409-1-git-send-email-chaithrika@ti.com>
 X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a helper function which will aid in changing the reset
-status of the controller.
+Improve the suspend and resume callbacks in DaVinci MMC
+host controller driver.
+
+Tested on DA850/OMAP-L138 EVM. This testing requires patches
+which add suspend-to-RAM support to DA850/OMAP-L138 SoC[1].
+
+[1]http://linux.davincidsp.com/pipermail/davinci-linux-open-source/
+2009-September/016118.html
 
 Signed-off-by: Chaithrika U S <chaithrika@ti.com>
 ---
 Applies to Linus' kernel tree.
 
- drivers/mmc/host/davinci_mmc.c |   37 ++++++++++++++++---------------------
- 1 files changed, 16 insertions(+), 21 deletions(-)
+ drivers/mmc/host/davinci_mmc.c |   31 +++++++++++++++++++++++++++++--
+ 1 files changed, 29 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
-index dd45e7c..25645bf 100644
+index 25645bf..7d05cc1 100644
 --- a/drivers/mmc/host/davinci_mmc.c
 +++ b/drivers/mmc/host/davinci_mmc.c
-@@ -884,19 +884,26 @@ static void mmc_davinci_cmd_done(struct mmc_davinci_host *host,
- 	}
- }
+@@ -170,6 +170,7 @@ struct mmc_davinci_host {
+ #define DAVINCI_MMC_DATADIR_READ	1
+ #define DAVINCI_MMC_DATADIR_WRITE	2
+ 	unsigned char data_dir;
++	unsigned char suspended;
  
--static void
--davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
-+static inline void mmc_davinci_reset_ctrl(struct mmc_davinci_host *host,
-+								int val)
+ 	/* buffer is used during PIO of one scatterlist segment, and
+ 	 * is updated along with buffer_bytes_left.  bytes_left applies
+@@ -1300,15 +1301,41 @@ static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
+ static int davinci_mmcsd_suspend(struct platform_device *pdev, pm_message_t msg)
  {
- 	u32 temp;
+ 	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++	int ret;
  
--	/* reset command and data state machines */
- 	temp = readl(host->base + DAVINCI_MMCCTL);
--	writel(temp | MMCCTL_CMDRST | MMCCTL_DATRST,
--		host->base + DAVINCI_MMCCTL);
-+	if (val)	/* reset */
-+		temp |= MMCCTL_CMDRST | MMCCTL_DATRST;
-+	else		/* enable */
-+		temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
- 
--	temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
--	udelay(10);
- 	writel(temp, host->base + DAVINCI_MMCCTL);
-+	udelay(10);
-+}
+-	return mmc_suspend_host(host->mmc, msg);
++	mmc_host_enable(host->mmc);
++	ret = mmc_suspend_host(host->mmc, msg);
++	if (!ret) {
++		writel(0, host->base + DAVINCI_MMCIM);
++		mmc_davinci_reset_ctrl(host, 1);
++		mmc_host_disable(host->mmc);
++		clk_disable(host->clk);
++		host->suspended = 1;
++	} else {
++		host->suspended = 0;
++		mmc_host_disable(host->mmc);
++	}
 +
-+static void
-+davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
-+{
-+	mmc_davinci_reset_ctrl(host, 1);
-+	mmc_davinci_reset_ctrl(host, 0);
++	return ret;
  }
  
- static irqreturn_t mmc_davinci_irq(int irq, void *dev_id)
-@@ -1100,15 +1107,8 @@ static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
- #endif
- static void __init init_mmcsd_host(struct mmc_davinci_host *host)
+ static int davinci_mmcsd_resume(struct platform_device *pdev)
  {
--	/* DAT line portion is diabled and in reset state */
--	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_DATRST,
--		host->base + DAVINCI_MMCCTL);
--
--	/* CMD line portion is diabled and in reset state */
--	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_CMDRST,
--		host->base + DAVINCI_MMCCTL);
+ 	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++	int ret;
  
--	udelay(10);
-+	mmc_davinci_reset_ctrl(host, 1);
- 
- 	writel(0, host->base + DAVINCI_MMCCLK);
- 	writel(MMCCLK_CLKEN, host->base + DAVINCI_MMCCLK);
-@@ -1116,12 +1116,7 @@ static void __init init_mmcsd_host(struct mmc_davinci_host *host)
- 	writel(0x1FFF, host->base + DAVINCI_MMCTOR);
- 	writel(0xFFFF, host->base + DAVINCI_MMCTOD);
- 
--	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_DATRST,
--		host->base + DAVINCI_MMCCTL);
--	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_CMDRST,
--		host->base + DAVINCI_MMCCTL);
--
--	udelay(10);
+-	return mmc_resume_host(host->mmc);
++	if (!host->suspended)
++		return 0;
++
++	clk_enable(host->clk);
++	mmc_host_enable(host->mmc);
++
 +	mmc_davinci_reset_ctrl(host, 0);
++	ret = mmc_resume_host(host->mmc);
++	if (!ret)
++		host->suspended = 0;
++
++	return ret;
  }
- 
- static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+ #else
+ #define davinci_mmcsd_suspend	NULL
 -- 
 1.5.6
 
