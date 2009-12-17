@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965179AbZLQPXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965195AbZLQPia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965179AbZLQPXO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965130AbZLQPXI
+	id S965195AbZLQPia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965186AbZLQPi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:23:08 -0500
-Received: from 007.netroom.de ([194.0.247.207]:23390 "EHLO 007.netroom.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965016AbZLQPXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:23:07 -0500
-Message-ID: <4B2A4CD1.1070004@draisberghof.de>
-Date: Thu, 17 Dec 2009 16:22:57 +0100
-From: Josua Dietze <digidietze@draisberghof.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 17 Dec 2009 10:38:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40621 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965183AbZLQPi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:38:26 -0500
+Date: Thu, 17 Dec 2009 07:37:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+In-Reply-To: <200912171618.32882.bzolnier@gmail.com>
+Message-ID: <alpine.LFD.2.00.0912170726230.17868@localhost.localdomain>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com> <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain> <200912171618.32882.bzolnier@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Dan Williams <dcbw@redhat.com>,
-       Stefan Seyfried <stefan.seyfried@googlemail.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net,
-       Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <200912171402.42168.oliver@neukum.org> <4B2A3312.104@draisberghof.de> <200912171536.44220.oliver@neukum.org>
-In-Reply-To: <200912171536.44220.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum schrieb:
 
-> Am Donnerstag, 17. Dezember 2009 14:33:06 schrieb Josua Dietze:
->> If you are thinking about the two specific devices at hand
->> there is no need to tell them apart. Same IDs on plugin, same
->> switching procedure, different IDs on return, different drivers
->> take care.
+
+On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
 > 
-> How do you issue an eject command without a /dev/sgX node?
+> Examples? :)
 
+They're typically things like this:
 
-You're thinking of handling one device in the kernel and the other 
-one (same ID, same switching procedure) on the outside?
+-			ret = sscanf (buf, "0x%lx - 0x%lx", &start_addr, &end_addr);
++			ret = sscanf(buf, "0x%lx - 0x%lx", &start_addr,
++				&end_addr);
 
-Well, as I said, you'd have to "filter" additional data (USB 
-model/manufacturer etc., SCSI_INQUIRY strings). But obviously you 
-would need to have the data of the two devices to note the differences.
+ie a line-break that is just annoying and makes the code harder to read 
+rather than easier. 
 
-BTW, usb_modeswitch does not need SCSI device nodes, because it 
-talks to the USB device directly via the bulk message layer once the 
-endpoints are up. Slight advantage over "eject".
-
-
-Cheers,
-Josua
-
+			Linus
