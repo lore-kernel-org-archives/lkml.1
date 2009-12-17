@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965204AbZLQWn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbZLQWt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965204AbZLQWn6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 17:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936766AbZLQWnw
+	id S1765453AbZLQWt1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 17:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbZLQWt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 17:43:52 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:10841 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936765AbZLQWnv (ORCPT
+	Thu, 17 Dec 2009 17:49:26 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:42553 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760108AbZLQWtZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 17:43:51 -0500
-Authentication-Results: sj-iport-4.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAMNCKkurR7H+/2dsb2JhbAC+YJcrhC0EgWM
-X-IronPort-AV: E=Sophos;i="4.47,415,1257120000"; 
-   d="scan'208";a="64390820"
-From: Roland Dreier <rdreier@cisco.com>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: No PCI-X / PCI-E cards ...
-References: <1260979057.23135.70.camel@skunk> <1261089592.8827.5.camel@bip>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 17 Dec 2009 14:43:48 -0800
-In-Reply-To: <1261089592.8827.5.camel@bip> (Xavier Bestel's message of "Thu,
-	17 Dec 2009 23:39:52 +0100")
-Message-ID: <adahbrp43x7.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Thu, 17 Dec 2009 17:49:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=lnooRw+DzTTeowhMfiQAWpRPi/uS6hGgIN3ilJ0RbhFfU50y4zoY+9N3WEVGasX262
+         ZabNkwwd3Sa9IVviMrlNCWr+DUdy06hiGNkfN+IXKq5PH2aCy2/bEaxj/B3tsihKAPbr
+         0V4Yp183ItGrSeBEad80RxrRqeAuFix6Wv7Jg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Dec 2009 22:43:49.0300 (UTC) FILETIME=[664C0740:01CA7F6A]
+In-Reply-To: <20419.1260982769@redhat.com>
+References: <1260921350-6539-1-git-send-email-vapier@gentoo.org> 
+	<20419.1260982769@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 17 Dec 2009 17:49:04 -0500
+Message-ID: <8bd0f97a0912171449x1b6cad88kd5a58c1d00c20d3c@mail.gmail.com>
+Subject: Re: [uClinux-dev] Re: [PATCH] NOMMU: add [stack] label to per-process 
+	maps output
+To: uClinux development list <uclinux-dev@uclinux.org>
+Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 16, 2009 at 11:59, David Howells wrote:
+> Mike Frysinger wrote:
+>> +             if (vma->vm_start <= mm->start_brk &&
+>> +                             vma->vm_end >= mm->brk) {
+>
+> Hmmm...  That ought to involve mm->start_stack somewhere...  (Or, more
+> probably, task->stack_start:-/)
 
- > [    0.184098] pci 0000:00:1c.0: BAR 13: can't allocate resource
+with MMU, the [heap] (i.e. brk) and [stack] are different mappings.
+under NOMMU, they're the same mapping, except that no one uses the brk
+and the "heap" is really all of dynamic kernel memory.  so we have to
+avoid the brk/[heap] check and simply copy over the [stack] one:
+    } else if (mm) {
+        if (vma->vm_start <= mm->start_stack &&
+                vma->vm_end >= mm->start_stack) {
+            pad_len_spaces(m, len);
+            seq_puts(m, "[stack]");
+        }
+    }
 
-When does this message appear?  Does it matter if the PCIe card is
-installed or not?  This 0000:00:1c.0 device is:
+the semi-annoying thing is that FLAT combines a whole lot of stuff
+(including the stack) into the same mapping giving us the output:
+root:/> cat /proc/155/maps
+029f0000-029f9000 rwxp 00000000 00:00 0          [stack]
 
-> 00:1c.0 PCI bridge: Intel Corporation 82801I (ICH9 Family) PCI Express Port 1 (rev 02)
-
-so it might be relevant.
-
-Did you try all the PCIe slots?
-
+but i guess this is no worse than the current ?
+-mike
