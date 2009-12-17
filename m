@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965348AbZLQTG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965339AbZLQTIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965348AbZLQTG4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965338AbZLQTGt
+	id S965339AbZLQTIO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:08:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965311AbZLQTIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:06:49 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34385 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965293AbZLQTGq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:06:46 -0500
-Date: Thu, 17 Dec 2009 19:06:13 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Joe Buck <Joe.Buck@synopsys.COM>
-Cc: Richard Guenther <richard.guenther@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
+	Thu, 17 Dec 2009 14:08:11 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43158 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965302AbZLQTII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 14:08:08 -0500
+Date: Thu, 17 Dec 2009 11:08:04 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-Message-ID: <20091217190613.GB4440@n2100.arm.linux.org.uk>
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com>
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+Message-ID: <20091217190804.GB6788@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091216101107.GA15031@basil.fritz.box> <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com> <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box> <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box> <20091217144551.GA6819@linux.vnet.ibm.com> <20091217175338.GL9804@basil.fritz.box>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091217183517.GC10707@synopsys.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091217175338.GL9804@basil.fritz.box>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 10:35:17AM -0800, Joe Buck wrote:
-> Besides, didn't I see a whole bunch of kernel security patches related
-> to null pointer dereferences lately?  If page 0 can be mapped, you
-> suddenly won't get your trap.
+On Thu, Dec 17, 2009 at 06:53:39PM +0100, Andi Kleen wrote:
+> > OK, I have to ask...
+> > 
+> > Why not just use the already-existing SRCU in this case?
+> 
+> You right, SRCU could work. 
+> 
+> Still needs a lot more work of course.
 
-Page 0 can not be mapped on ARM kernels since the late 1990s, and this
-protection is independent of the generic kernel.
+As discussed with Peter on IRC, I have been idly thinking about how I
+would implement SRCU if I were starting on it today.  If you would like
+to see some specific improvements to SRCU, telling me about them would
+greatly increase the probability of my doing something about them.  ;-)
 
-Milage may vary on other architectures, but that's not a concern here.
+							Thanx, Paul
