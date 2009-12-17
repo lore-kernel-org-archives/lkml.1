@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763883AbZLQB1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935957AbZLQB3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763883AbZLQB1b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:27:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763681AbZLQBU7
+	id S935957AbZLQB3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935216AbZLQB26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:59 -0500
-Received: from kroah.org ([198.145.64.141]:48117 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:28:58 -0500
+Received: from kroah.org ([198.145.64.141]:48122 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763682AbZLQBUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:53 -0500
+	id S1763683AbZLQBUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:54 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:07 2009
-Message-Id: <20091217011607.003608176@mini.kroah.org>
+Message-Id: <20091217011607.132146579@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:20 -0800
+Date: Wed, 16 Dec 2009 17:15:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Beulich <jbeulich@novell.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [69/90] x86/mce: Set up timer unconditionally
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [70/90] b43legacy: avoid PPC fault during resume
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,43 +29,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Beulich <jbeulich@novell.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit bc09effabf0c5c6c7021e5ef9af15a23579b32a8 upstream.
+commit 316a4d966cae3c2dec83ebb1ee1a3515f97b30ff upstream.
 
-mce_timer must be passed to setup_timer() in all cases, no
-matter whether it is going to be actually used. Otherwise, when
-the CPU gets brought down, its call to del_timer_sync() will
-never return, as the timer won't have a base associated, and
-hence lock_timer_base() will loop infinitely.
+For PPC architecture with PHY Revision < 3, a read of the register
+B43_MMIO_HWENABLED_LO will cause a CPU fault unless b43legacy_status()
+returns a value of 2 (B43legacy_STAT_STARTED); however, one finds that
+the driver is unable to associate after resuming from hibernation unless
+this routine returns 1. To satisfy both conditions, the routine is rewritten
+to return TRUE whenever b43legacy_status() returns a value < 2.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-LKML-Reference: <4B1DB831.2030801@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This patch fixes the second problem listed in the postings for Red Hat
+Bugzilla #538523.
+
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/cpu/mcheck/mce.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/wireless/b43legacy/rfkill.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1327,13 +1327,14 @@ static void mce_init_timer(void)
- 	struct timer_list *t = &__get_cpu_var(mce_timer);
- 	int *n = &__get_cpu_var(next_interval);
- 
-+	setup_timer(t, mcheck_timer, smp_processor_id());
-+
- 	if (mce_ignore_ce)
- 		return;
- 
- 	*n = check_interval * HZ;
- 	if (!*n)
- 		return;
--	setup_timer(t, mcheck_timer, smp_processor_id());
- 	t->expires = round_jiffies(jiffies + *n);
- 	add_timer_on(t, smp_processor_id());
- }
+--- a/drivers/net/wireless/b43legacy/rfkill.c
++++ b/drivers/net/wireless/b43legacy/rfkill.c
+@@ -34,6 +34,13 @@ bool b43legacy_is_hw_radio_enabled(struc
+ 		      & B43legacy_MMIO_RADIO_HWENABLED_HI_MASK))
+ 			return 1;
+ 	} else {
++		/* To prevent CPU fault on PPC, do not read a register
++		 * unless the interface is started; however, on resume
++		 * for hibernation, this routine is entered early. When
++		 * that happens, unconditionally return TRUE.
++		 */
++		if (b43legacy_status(dev) < B43legacy_STAT_STARTED)
++			return 1;
+ 		if (b43legacy_read16(dev, B43legacy_MMIO_RADIO_HWENABLED_LO)
+ 		    & B43legacy_MMIO_RADIO_HWENABLED_LO_MASK)
+ 			return 1;
 
 
