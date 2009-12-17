@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763474AbZLQA52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbZLQA6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763474AbZLQA52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbZLQA5N
+	id S1761552AbZLQA6I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:58:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761478AbZLQA5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:57:13 -0500
-Received: from kroah.org ([198.145.64.141]:44485 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 19:57:10 -0500
+Received: from kroah.org ([198.145.64.141]:44481 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759235AbZLQAyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:54:38 -0500
+	id S1759689AbZLQAyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:54:39 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 16:47:08 2009
-Message-Id: <20091217004707.899625984@mini.kroah.org>
+Message-Id: <20091217004708.059914148@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 16:45:58 -0800
+Date: Wed, 16 Dec 2009 16:45:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [07/18] ssb: Fix range check in sprom write
+       Roel Kluin <roel.kluin@gmail.com>, Michael Krufky <mkrufky@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [08/18] V4L/DVB: Fix test in copy_reg_bits()
 In-Reply-To: <20091217005306.GA6230@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,66 +28,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Michael Buesch <mb@bu3sch.de>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-commit e33761e6f23881de9f3ee77cc2204ab2e26f3d9a upstream.
+commit c95a419a5604ec8a23cd73f61e9bb151e8cbe89b upstream.
 
-The range check in the sprom image parser hex2sprom() is broken.
-One sprom word is 4 hex characters.
-This fixes the check and also adds much better sanity checks to the code.
-We better make sure the image is OK by doing some sanity checks to avoid
-bricking the device by accident.
+The reg_pair2[j].reg was tested twice.
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Acked-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ssb/sprom.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/media/common/tuners/mxl5007t.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ssb/sprom.c
-+++ b/drivers/ssb/sprom.c
-@@ -13,6 +13,8 @@
+--- a/drivers/media/common/tuners/mxl5007t.c
++++ b/drivers/media/common/tuners/mxl5007t.c
+@@ -207,7 +207,7 @@ static void copy_reg_bits(struct reg_pai
+ 	i = j = 0;
  
- #include "ssb_private.h"
- 
-+#include <linux/ctype.h>
-+
- 
- static int sprom2hex(const u16 *sprom, char *buf, size_t buf_len,
- 		     size_t sprom_size_words)
-@@ -30,17 +32,27 @@ static int sprom2hex(const u16 *sprom, c
- static int hex2sprom(u16 *sprom, const char *dump, size_t len,
- 		     size_t sprom_size_words)
- {
--	char tmp[5] = { 0 };
--	int cnt = 0;
-+	char c, tmp[5] = { 0 };
-+	int err, cnt = 0;
- 	unsigned long parsed;
- 
--	if (len < sprom_size_words * 2)
-+	/* Strip whitespace at the end. */
-+	while (len) {
-+		c = dump[len - 1];
-+		if (!isspace(c) && c != '\0')
-+			break;
-+		len--;
-+	}
-+	/* Length must match exactly. */
-+	if (len != sprom_size_words * 4)
- 		return -EINVAL;
- 
- 	while (cnt < sprom_size_words) {
- 		memcpy(tmp, dump, 4);
- 		dump += 4;
--		parsed = simple_strtoul(tmp, NULL, 16);
-+		err = strict_strtoul(tmp, 16, &parsed);
-+		if (err)
-+			return err;
- 		sprom[cnt++] = swab16((u16)parsed);
- 	}
- 
+ 	while (reg_pair1[i].reg || reg_pair1[i].val) {
+-		while (reg_pair2[j].reg || reg_pair2[j].reg) {
++		while (reg_pair2[j].reg || reg_pair2[j].val) {
+ 			if (reg_pair1[i].reg != reg_pair2[j].reg) {
+ 				j++;
+ 				continue;
 
 
