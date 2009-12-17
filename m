@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762015AbZLQBln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761573AbZLQBl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762015AbZLQBln (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763610AbZLQBUO
+	id S1761573AbZLQBl1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763614AbZLQBUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:14 -0500
-Received: from kroah.org ([198.145.64.141]:47852 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:20:18 -0500
+Received: from kroah.org ([198.145.64.141]:47847 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763606AbZLQBUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:10 -0500
+	id S1763607AbZLQBUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:11 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:01 2009
-Message-Id: <20091217011601.657714019@mini.kroah.org>
+Message-Id: <20091217011601.788409461@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:40 -0800
+Date: Wed, 16 Dec 2009 17:14:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [29/90] x86/amd-iommu: un__init iommu_setup_msi
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [30/90] x86, apic: Enable lapic nmi watchdog on AMD Family 11h
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,30 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Mikael Pettersson <mikpe@it.uu.se>
 
-commit 9f800de38b05d84809e89f16671d636a140eede7 upstream.
+commit 7d1849aff6687a135a8da3a75e32a00e3137a5e2 upstream.
 
-This function may be called on the resume path and can not
-be dropped after booting.
+The x86 lapic nmi watchdog does not recognize AMD Family 11h,
+resulting in:
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+  NMI watchdog: CPU not supported
+
+As far as I can see from available documentation (the BKDM),
+family 11h looks identical to family 10h as far as the PMU
+is concerned.
+
+Extending the check to accept family 11h results in:
+
+  Testing NMI watchdog ... OK.
+
+I've been running with this change on a Turion X2 Ultra ZM-82
+laptop for a couple of weeks now without problems.
+
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+LKML-Reference: <19223.53436.931768.278021@pilspetsen.it.uu.se>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/amd_iommu_init.c |    2 +-
+ arch/x86/kernel/cpu/perfctr-watchdog.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -915,7 +915,7 @@ static int __init init_iommu_all(struct 
-  *
-  ****************************************************************************/
- 
--static int __init iommu_setup_msi(struct amd_iommu *iommu)
-+static int iommu_setup_msi(struct amd_iommu *iommu)
- {
- 	int r;
- 
+--- a/arch/x86/kernel/cpu/perfctr-watchdog.c
++++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
+@@ -711,7 +711,7 @@ static void probe_nmi_watchdog(void)
+ 	switch (boot_cpu_data.x86_vendor) {
+ 	case X86_VENDOR_AMD:
+ 		if (boot_cpu_data.x86 != 6 && boot_cpu_data.x86 != 15 &&
+-		    boot_cpu_data.x86 != 16)
++		    boot_cpu_data.x86 != 16 && boot_cpu_data.x86 != 17)
+ 			return;
+ 		wd_ops = &k7_wd_ops;
+ 		break;
 
 
