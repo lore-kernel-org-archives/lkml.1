@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbZLQQRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764858AbZLQQTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762811AbZLQQRL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 11:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761729AbZLQQRF
+	id S1764858AbZLQQTZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 11:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763002AbZLQQTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 11:17:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59180 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761484AbZLQQRB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 11:17:01 -0500
-Date: Thu, 17 Dec 2009 08:16:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kyle McMartin <kyle@mcmartin.ca>
-cc: linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James.Bottomley@suse.de, hch@infradead.org, linux-arch@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-In-Reply-To: <20091217132256.GO28962@bombadil.infradead.org>
-Message-ID: <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain>
-References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 11:19:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54904 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761695AbZLQQTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 11:19:20 -0500
+Date: Thu, 17 Dec 2009 16:18:35 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       sam@ravnborg.org, rdreier@cisco.com, tglx@linutronix.de, mmarek@sues.cz,
+       mhiramat@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rdreier@cisco.com, sam@ravnborg.org, mmarek@sues.cz, tglx@linutronix.de,
+       mhiramat@redhat.com
+In-Reply-To: <4B2A1761.4070904@suse.cz>
+References: <4B2A1761.4070904@suse.cz>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] Makefile: set LC_CTYPE, LC_COLLATE, LC_NUMERIC to C
+Message-ID: <tip-c051346b7db27aaf674b8f3b4955240580b2a58a@git.kernel.org>
+Git-Commit-ID: c051346b7db27aaf674b8f3b4955240580b2a58a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  c051346b7db27aaf674b8f3b4955240580b2a58a
+Gitweb:     http://git.kernel.org/tip/c051346b7db27aaf674b8f3b4955240580b2a58a
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Thu, 17 Dec 2009 06:56:11 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Thu, 17 Dec 2009 07:03:21 -0800
 
+Makefile: set LC_CTYPE, LC_COLLATE, LC_NUMERIC to C
 
-On Thu, 17 Dec 2009, Kyle McMartin wrote:
->
-> Linus, any word on these? I'd really love to get jejb and hch off
-> my back. :)
+There are a number of common Unix constructs like character ranges in
+grep/sed/awk which don't work as expected with LC_COLLATE set to other
+than C.  Similarly, set LC_CTYPE and LC_NUMERIC to C to avoid other
+nasty surprises.
 
-I hate them.
+In order to make sure these actually take effect we also have to
+clear LC_ALL.
 
-I don't see what the point of allowing kernel virtual addresses in bio's 
-is. It's wrong. The fact that XFS does that sh*t is an XFS issue. Handle 
-it there.
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Acked-by: Michal Marek <mmarek@sues.cz>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Roland Dreier <rdreier@cisco.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+LKML-Reference: <4B2A1761.4070904@suse.cz>
+---
+ Makefile |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Fix XFS. Or convince me with some really good arguments, and make sure 
-that Jens signs off on the cr*p too.
-
-In other words, the thing I object to isn't even the new flushing thing, 
-it's this idiocy:
-
- - save off virtual address:
-	..
-	bio->bi_private = data;
-	..
-
- - do vmalloc_to_page:
-
-	+		if (is_vmalloc_addr(data)) {
-	+			flush_kernel_dcache_addr(data);
-	+			page = vmalloc_to_page(data);
-	+		} else
-	+			page = virt_to_page(data);
-
-WTF? Why the hell should the block layer support this kind of absolute 
-crap? When has "use random kernel virtual address" ever been a valid thing 
-to do for IO?
-
-Why aren't you doing this before you submit the vmalloc range for IO?
-
-So no. Not a way in hell do I pull this for 33. And preferably never.
-
-		Linus
+diff --git a/Makefile b/Makefile
+index 33d4732..6e39af1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,6 +16,13 @@ NAME = Man-Eating Seals of Antiquity
+ # o  print "Entering directory ...";
+ MAKEFLAGS += -rR --no-print-directory
+ 
++# Avoid funny character set dependencies
++LC_ALL=
++LC_CTYPE=C
++LC_COLLATE=C
++LC_NUMERIC=C
++export LC_ALL LC_CTYPE LC_COLLATE LC_NUMERIC
++
+ # We are using a recursive build, so we need to do a little thinking
+ # to get the ordering right.
+ #
