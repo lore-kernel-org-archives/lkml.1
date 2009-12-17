@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936355AbZLQENp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936183AbZLQEJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936355AbZLQENp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936322AbZLQELy
+	id S936183AbZLQEJv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935816AbZLQEFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:11:54 -0500
-Received: from kroah.org ([198.145.64.141]:56030 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:05:52 -0500
+Received: from kroah.org ([198.145.64.141]:56038 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936192AbZLQEFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:48 -0500
+	id S936183AbZLQEFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:49 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:57:00 2009
-Message-Id: <20091217035700.621604509@mini.kroah.org>
+Message-Id: <20091217035700.760145113@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:13 -0800
+Date: Wed, 16 Dec 2009 19:57:14 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Florian Fainelli <ffainelli@freebox.fr>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [136/151] bcm63xx_enet: fix compilation failure after get_stats_count removal
+       Yong Wang <yong.y.wang@intel.com>,
+       Borislav Petkov <borislav.petkov@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [137/151] x86: Under BIOS control, restore APs APIC_LVTTHMR to the BSP value
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,49 +30,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Florian Fainelli <ffainelli@freebox.fr>
+From: Yong Wang <yong.y.wang@linux.intel.com>
 
-commit a3f92eea04101d9a8e14d50f8048cc5b7bca07a8 upstream.
+Upstream commit a2202aa29289db64ca7988b12343158b67b27f10.
 
-This patch converts bcm63xx_enet to uset get_sset_count
-like the other drivers do.
+On platforms where bios handles the thermal monitor interrupt,
+APIC_LVTTHMR on each logical CPU is programmed to generate a SMI and OS
+can't touch it.
 
-Signed-off-by: Florian Fainelli <ffainelli@freebox.fr>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Unfortunately AP bringup sequence using INIT-SIPI-SIPI clear all
+the LVT entries except the mask bit. Essentially this results in
+all LVT entries including the thermal monitoring interrupt set to masked
+(clearing the bios programmed value for APIC_LVTTHMR).
+
+And this leads to kernel take over the thermal monitoring interrupt
+on AP's but not on BSP (leaving the bios programmed value only on BSP).
+
+As a result of this, we have seen system hangs when the thermal
+monitoring interrupt is generated.
+
+Fix this by reading the initial value of thermal LVT entry on BSP
+and if bios has taken over the control, then program the same value
+on all AP's and leave the thermal monitoring interrupt control
+on all the logical cpu's to the bios.
+
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Reviewed-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+LKML-Reference: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bcm63xx_enet.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/mce.h               |    6 ++++++
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |   29 ++++++++++++++++++++++++++++-
+ arch/x86/kernel/setup.c                  |    3 +++
+ 3 files changed, 37 insertions(+), 1 deletion(-)
 
---- a/drivers/net/bcm63xx_enet.c
-+++ b/drivers/net/bcm63xx_enet.c
-@@ -1248,9 +1248,15 @@ static void bcm_enet_get_drvinfo(struct 
- 	drvinfo->n_stats = BCM_ENET_STATS_LEN;
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -214,5 +214,11 @@ void intel_init_thermal(struct cpuinfo_x
+ 
+ void mce_log_therm_throt_event(__u64 status);
+ 
++#ifdef CONFIG_X86_THERMAL_VECTOR
++extern void mcheck_intel_therm_init(void);
++#else
++static inline void mcheck_intel_therm_init(void) { }
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_X86_MCE_H */
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_sta
+ 
+ static atomic_t therm_throt_en	= ATOMIC_INIT(0);
+ 
++static u32 lvtthmr_init __read_mostly;
++
+ #ifdef CONFIG_SYSFS
+ #define define_therm_throt_sysdev_one_ro(_name)				\
+ 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
+@@ -254,6 +256,18 @@ asmlinkage void smp_thermal_interrupt(st
+ 	ack_APIC_irq();
  }
  
--static int bcm_enet_get_stats_count(struct net_device *netdev)
-+static int bcm_enet_get_sset_count(struct net_device *netdev,
-+					int string_set)
++void __init mcheck_intel_therm_init(void)
++{
++	/*
++	 * This function is only called on boot CPU. Save the init thermal
++	 * LVT value on BSP and use that value to restore APs' thermal LVT
++	 * entry BIOS programmed later
++	 */
++	if (cpu_has(&boot_cpu_data, X86_FEATURE_ACPI) &&
++		cpu_has(&boot_cpu_data, X86_FEATURE_ACC))
++		lvtthmr_init = apic_read(APIC_LVTTHMR);
++}
++
+ void intel_init_thermal(struct cpuinfo_x86 *c)
  {
--	return BCM_ENET_STATS_LEN;
-+	switch (string_set) {
-+	case ETH_SS_STATS:
-+		return BCM_ENET_STATS_LEN;
-+	default:
-+		return -EINVAL;
-+	}
+ 	unsigned int cpu = smp_processor_id();
+@@ -270,7 +284,20 @@ void intel_init_thermal(struct cpuinfo_x
+ 	 * since it might be delivered via SMI already:
+ 	 */
+ 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-	h = apic_read(APIC_LVTTHMR);
++
++	/*
++	 * The initial value of thermal LVT entries on all APs always reads
++	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
++	 * sequence to them and LVT registers are reset to 0s except for
++	 * the mask bits which are set to 1s when APs receive INIT IPI.
++	 * Always restore the value that BIOS has programmed on AP based on
++	 * BSP's info we saved since BIOS is always setting the same value
++	 * for all threads/cores
++	 */
++	apic_write(APIC_LVTTHMR, lvtthmr_init);
++
++	h = lvtthmr_init;
++
+ 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
+ 		printk(KERN_DEBUG
+ 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -109,6 +109,7 @@
+ #ifdef CONFIG_X86_64
+ #include <asm/numa_64.h>
+ #endif
++#include <asm/mce.h>
+ 
+ /*
+  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
+@@ -1031,6 +1032,8 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ #endif
+ 	x86_init.oem.banner();
++
++	mcheck_intel_therm_init();
  }
  
- static void bcm_enet_get_strings(struct net_device *netdev,
-@@ -1476,7 +1482,7 @@ static int bcm_enet_set_pauseparam(struc
- 
- static struct ethtool_ops bcm_enet_ethtool_ops = {
- 	.get_strings		= bcm_enet_get_strings,
--	.get_stats_count	= bcm_enet_get_stats_count,
-+	.get_sset_count		= bcm_enet_get_sset_count,
- 	.get_ethtool_stats      = bcm_enet_get_ethtool_stats,
- 	.get_settings		= bcm_enet_get_settings,
- 	.set_settings		= bcm_enet_set_settings,
+ #ifdef CONFIG_X86_32
 
 
