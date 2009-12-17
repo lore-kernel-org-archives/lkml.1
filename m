@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765213AbZLQRwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764403AbZLQRwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765213AbZLQRwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:52:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764867AbZLQRwm
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1764403AbZLQRwm (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 17 Dec 2009 12:52:42 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:51052 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763022AbZLQRwk (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760455AbZLQRwi
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 17 Dec 2009 12:52:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60996 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbZLQRwf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:52:40 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes when ..."
-Date: Thu, 17 Dec 2009 18:52:02 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: keithp@keithp.com, Daniel Vetter <daniel.vetter@ffwll.ch>,
-       linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>,
-       dri-devel@lists.sourceforge.net
-References: <200912071830.14697.arnd@arndb.de> <200912162241.27591.arnd@arndb.de> <20091217092523.755ecf29@jbarnes-piketon>
-In-Reply-To: <20091217092523.755ecf29@jbarnes-piketon>
+	Thu, 17 Dec 2009 12:52:35 -0500
+Date: Thu, 17 Dec 2009 18:52:31 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       =?iso-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
+Message-ID: <20091217175230.GK9804@basil.fritz.box>
+References: <20091213034418.GA4416@heat> <m1ljh7jijk.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912171852.02906.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+ZbFDuYY8/gFze09NwK7LAvLMIPI4VKXleIaX
- 5donPI+TelekyOVVH2xwha9gu0Cd48UyeTA46gC5DMqOmZNuqx
- s9y+CH6ZpHFz20BAhxS9w==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ljh7jijk.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 December 2009, Jesse Barnes wrote:
-> It does very little else that should affect things.  You're sure
-> reverting the commit makes things ok?
+> Solve that with an unused uid.  That ptrace_may_access check is
+> completely non-intuitive, and a problem if we ever remove the current
+> == task security module bug avoidance.
 
-No, not sure. But I've been running the kernel before that commit
-for days without ever seeing a crash. 2.6.31 (also without that
-commit but otherwise pretty similar) has been stable for weeks
-weeks on the same box.
+I thought he wanted to do that without suid?
 
-Once any given kernel version crashes, which can take up to
-a day while I'm waiting for the bug to show up, it will typically
-crash on that same kernel again within seconds after boot,
-just to annoy me and prevent me from using that kernel for
-other things.
+If he can change uids he can as well just use full network namespaces.
 
-> Other potential problems:
->   - clock gating (the call to intel_init_clock_gating)
->   - the actual mark_busy stuff itself (calls to intel_mark_busy)
->   - intel_idle_update (but powersave=0 should prevent that)
-> 
-> If you want to keep testing you could try removing those calls...
+-Andi
 
-Ok, I'll try that. The problem is keeping me from doing any useful
-upstream kernel work on my main machine, so I'm rather motivated ;-)
-
-	Arnd
+-- 
+ak@linux.intel.com -- Speaking for myself only.
