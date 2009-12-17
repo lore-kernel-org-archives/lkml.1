@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764105AbZLQI0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764111AbZLQIal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764105AbZLQI0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 03:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759289AbZLQI0S
+	id S1764111AbZLQIal (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 03:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbZLQIak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 03:26:18 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:60056 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759269AbZLQI0P (ORCPT
+	Thu, 17 Dec 2009 03:30:40 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:50592 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759289AbZLQIaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 03:26:15 -0500
-Date: Thu, 17 Dec 2009 17:26:09 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Christoph Hellwig <hch@lst.de>
+	Thu, 17 Dec 2009 03:30:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=ofTDvzd1yy8C7KbhKWAh7+2ojbgTQ7nXRBxz5L+gZjiWoOikG8ZqvhlvBGb+l2j95w
+         lZnf4E5Y1nohF1Rjxp8HMJrIAX2iMSu7Lrnz0+JghMlZdUL11sMnFXqMrcpjyBZxv3Db
+         UUBIgbI8I3VVKT/xpZYH1rK0T5l2M6uluc86Q=
+Date: Thu, 17 Dec 2009 10:30:46 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: Mark Hounschell <markh@compro.net>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sh: convert to asm-generic/hardirq.h
-Message-ID: <20091217082609.GC20425@linux-sh.org>
-References: <20090804145529.GL20487@lst.de> <20090805071828.GA8415@linux-sh.org> <20091217081048.GB11571@lst.de> <20091217081554.GB20425@linux-sh.org> <20091217081916.GA11850@lst.de>
+Subject: Re: Unable to format or use floppies since 2.6.28
+Message-ID: <20091217083046.GD2121@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Mark Hounschell <markh@compro.net>, linux-kernel@vger.kernel.org
+References: <4B215007.4030703@compro.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091217081916.GA11850@lst.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B215007.4030703@compro.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 09:19:16AM +0100, Christoph Hellwig wrote:
-> On Thu, Dec 17, 2009 at 05:15:54PM +0900, Paul Mundt wrote:
-> > On Thu, Dec 17, 2009 at 09:10:48AM +0100, Christoph Hellwig wrote:
-> > > On Wed, Aug 05, 2009 at 04:18:28PM +0900, Paul Mundt wrote:
-> > > > On Tue, Aug 04, 2009 at 04:55:29PM +0200, Christoph Hellwig wrote:
-> > > > > 
-> > > > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> > > > > 
-> > > > Applied, thanks.
-> > > 
-> > > Did this cause problems in the end?  Still doesn't seem to be in Linus'
-> > > tree.
-> > 
-> > Nope, it was in Linus' tree for awhile, but then I needed to add an
-> > nmi_count and had to switch back to an arch-specific one.
+On Thu, Dec 10, 2009 at 02:46:15PM -0500, Mark Hounschell wrote:
+> I have many boxes. They all do the same thing. Running different 
+> versions of SuSE, 10.3-11.2. Any kernel at or above 2.6.28 fails to 
+> fdformat a floppy. These same machines, using the same floppies and 
+> drives, running kernels older than 2.6.28 work just fine. I googled 
+> and found other such reports but no solution. I know better than to 
+> just assume it's a kernel bug but it sure looks like it could be so 
+> I'm inquiring about it here. 
 > 
-> Is there a good reason to overload the irq_cpustat with that?  It seems
-> like a quite horrible way to duplicate per-cpu data in a less efficient
-> way.
 
-I suppose not, but there didn't seem like a lot of good alternatives
-either. Shoving it in irq_cpustat is what is presently done by at least
-mn10300, x86, and xtensa. sparc chose stashing it in its cpuinfo struct,
-but then also has a meaningful per-cpu storage area. If you have any
-better ideas I'll certainly consider moving it.
+I don't know if this is related to your bug, but it's a weirdness in 
+floppy.c (from 2.6.32-rc8 sorry I suck for being up to date).
+
+drivers/block/floppy.c 
+  2532          size = blk_rq_cur_bytes(current_req);
+  2533
+  2534          rq_for_each_segment(bv, current_req, iter) {
+  2535                  if (!remaining)
+  2536                          break;
+  2537
+  2538                  size = bv->bv_len;
+ 
+We never use the first size = blk_rq_cur_bytes() assignment.
+
+regards,
+dan carpenter
