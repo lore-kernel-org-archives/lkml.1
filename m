@@ -1,114 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965002AbZLQLa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965012AbZLQLeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965002AbZLQLa2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 06:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZLQLa1
+	id S965012AbZLQLeO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 06:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964995AbZLQLeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 06:30:27 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:50387 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754076AbZLQLa0 (ORCPT
+	Thu, 17 Dec 2009 06:34:14 -0500
+Received: from hmcexedge01.ikoula.com ([78.24.135.21]:33974 "EHLO
+	mail.hmc.ikoula.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964992AbZLQLeN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 06:30:26 -0500
-Message-ID: <4B2A1635.1080505@blueyonder.co.uk>
-Date: Thu, 17 Dec 2009 11:29:57 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0 ThunderBrowse/3.2.6.8
+	Thu, 17 Dec 2009 06:34:13 -0500
+From: Romain Kubany <rkubany@ikoula.com>
+To: Jeff Garzik <jeff@garzik.org>
+CC: Mikael Pettersson <mikpe@it.uu.se>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Date: Thu, 17 Dec 2009 12:34:08 +0100
+Subject: RE: Possible regression of LBA48 support for piix
+Thread-Topic: Possible regression of LBA48 support for piix
+Thread-Index: Acp/CMNKGQxR/gnCSu6dArPEsqSOowAA1cXg
+Message-ID: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB301@HMCEXMBX01CLUS.hmcikoula.com>
+References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com>
+ <19241.63911.160765.909812@pilspetsen.it.uu.se>
+ <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2C1@HMCEXMBX01CLUS.hmcikoula.com>
+ <4B2A1008.9070202@garzik.org>
+In-Reply-To: <4B2A1008.9070202@garzik.org>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: fr-FR, en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Tony Lindgren <tony@atomide.com>
-CC: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: Re: [GIT PULL] omap build fixes
-References: <20091216223520.GV4575@atomide.com>
-In-Reply-To: <20091216223520.GV4575@atomide.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/12/09 22:35, Tony Lindgren wrote:
-> Hi Linus,
-> 
-> Please pull omap build fixes from:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
-> 
-> In addition to the three build fixes, there's also a suspend fix
-> for omap serial init.
-> 
-> Regards,
-> 
-> Tony
-> 
-> 
-> The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
->   Stephen Rothwell (1):
->         mfd: compile fix for twl4030 renaming
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
-> 
-> Balaji T K (1):
->       mfd: twl: fix twl4030 rename for remaining driver, board files
-> 
-> Mika Westerberg (1):
->       OMAP3: serial - fix bug introduced in
-> 
-> Olof Johansson (1):
->       omap3: Allow EHCI to be built on OMAP3
-> 
-> Thomas Weber (1):
->       USB ehci: replace mach header with plat
-> 
->  arch/arm/mach-omap2/Kconfig                  |    1 +
->  arch/arm/mach-omap2/board-cm-t35.c           |    2 +-
->  arch/arm/mach-omap2/board-igep0020.c         |    2 +-
->  arch/arm/mach-omap2/board-omap3evm.c         |    2 +-
->  arch/arm/mach-omap2/board-omap3touchbook.c   |    2 +-
->  arch/arm/mach-omap2/board-rx51-peripherals.c |    2 +-
->  arch/arm/mach-omap2/board-zoom-peripherals.c |    2 +-
->  arch/arm/mach-omap2/serial.c                 |    7 ++++---
->  drivers/usb/host/ehci-omap.c                 |    2 +-
->  drivers/video/omap/lcd_ldp.c                 |    4 ++--
->  drivers/video/omap/lcd_omap2evm.c            |   10 +++++-----
->  drivers/video/omap/lcd_omap3beagle.c         |    2 +-
->  drivers/video/omap/lcd_omap3evm.c            |   10 +++++-----
->  drivers/video/omap/lcd_overo.c               |    2 +-
->  sound/soc/omap/sdp3430.c                     |    6 +++---
->  15 files changed, 29 insertions(+), 27 deletions(-)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+Thanks for your concern. :)
 
-uImage built, so EHCI build problem definitely fixed, just one error
-I've previously encountered when building modules.
-slipstream:/home/lancelot/ftp/dec09/OMAP/omap-fixes-for-linus # ARCH=arm
-make -j 4 CROSS_COMPILE=/opt/arm-2009q3/bin/arm-none-eabi- modules
-scripts/kconfig/conf -s arch/arm/Kconfig
-  CHK     include/linux/version.h
-  SYMLINK include/asm -> include/asm-arm
-make[1]: `include/asm-arm/mach-types.h' is up to date.
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-<stdin>:1523: warning: #warning syscall recvmmsg not implemented
-  Building modules, stage 2.
-  MODPOST 99 modules
-ERROR: "omap_ctrl_writel" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
-ERROR: "omap_ctrl_readl" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+Here is the full dmesg output : http://pastebin.com/f484004a5 (2.6.28 with same config as in my previous mail)
 
-Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+I'm going to test a 2.6.32.1 kernel and similar config
+
+-----Message d'origine-----
+De : linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] De la part de Jeff Garzik
+Envoyé : jeudi 17 décembre 2009 12:04
+À : Romain Kubany
+Cc : Mikael Pettersson; linux-kernel@vger.kernel.org; linux-ide@vger.kernel.org
+Objet : Re: Possible regression of LBA48 support for piix
+
+On 12/17/2009 05:04 AM, Romain Kubany wrote:
+> Ok, thanks for the prompt reply and the notice for the cc: :)
+> I'm using libata and ata_piix now.
+> My disk is seen as "sda" and a lshw is reporting the controler as using "ata_piix" :
+>
+> # lshw -c STORAGE
+>    *-ide
+>         description: IDE interface
+>         product: 82371AB/EB/MB PIIX4 IDE
+>         vendor: Intel Corporation
+>         physical id: 7.1
+>         bus info: pci@0000:00:07.1
+>         logical name: scsi0
+>         logical name: scsi1
+>         version: 01
+>         width: 32 bits
+>         clock: 33MHz
+>         capabilities: ide bus_master emulated
+>         configuration: driver=ata_piix latency=0
+>
+> But fdisk always recognize the disk as 136.8Gb :
+>
+> # fdisk -l
+>
+> Disk /dev/sda: 136.8 GB, 136899993600 bytes
+> 16 heads, 63 sectors/track, 265260 cylinders
+> Units = cylinders of 1008 * 512 = 516096 bytes
+> Disk identifier: 0xd7267427
+>
+>     Device Boot      Start         End      Blocks   Id  System
+> /dev/sda1   *           1         204      102815+  83  Linux
+> /dev/sda2             205        2236     1024128   82  Linux swap / Solaris
+> /dev/sda3            2237       20805     9358776   83  Linux
+>
+> Here is the new kernel config file : http://pastebin.com/f65fd472b
+
+I would definitely be interested in seeing the 'dmesg' output for 
+libata, and results from a more recent kernel.
+
+	Jeff
+
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
