@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765100AbZLQRa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765130AbZLQRcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765100AbZLQRa1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765038AbZLQRaV
+	id S1765130AbZLQRcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765091AbZLQRcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:30:21 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48573 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764977AbZLQRaS convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 12:32:39 -0500
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:33421 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765046AbZLQRci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:30:18 -0500
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-Mime-Version: 1.0 (Apple Message framework v1077)
+	Thu, 17 Dec 2009 12:32:38 -0500
+Date: Thu, 17 Dec 2009 23:02:32 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Richard Kennedy <richard@rsk.demon.co.uk>, tytso@mit.edu, adilger@sun.com,
+       linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext4: return correct wbc.nr_to_write in
+ ext4_da_writepages
+Message-ID: <20091217173232.GA2950@skywalker.linux.vnet.ibm.com>
+References: <1261063063.4882.38.camel@castor>
+ <4B2A50E9.4010806@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20091217170958.GE18271@ovro.caltech.edu>
-Date: Thu, 17 Dec 2009 11:29:26 -0600
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "B04825@freescale.com" <B04825@freescale.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       Vishnu Suresh <Vishnu@freescale.com>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-       Maneesh Gupta <Maneesh.Gupta@freescale.com>,
-       "R58472@freescale.com" <R58472@freescale.com>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <C0E3E9A1-7B65-4D57-8813-C2F4B4E2060B@kernel.crashing.org>
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com> <20091216164144.daff5468.kim.phillips@freescale.com> <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org> <4B296394.9010709@intel.com> <20091217170958.GE18271@ovro.caltech.edu>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-X-Mailer: Apple Mail (2.1077)
+Content-Disposition: inline
+In-Reply-To: <4B2A50E9.4010806@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Dec 17, 2009, at 11:09 AM, Ira W. Snyder wrote:
-
-> On Wed, Dec 16, 2009 at 03:47:48PM -0700, Dan Williams wrote:
->> Kumar Gala wrote:
->>>>> Changes with respect to v1 as per comments received
->>>>> o. Rebased to linux-next as of 20091216
->>>>> o. The selection is based exclusive of fsldma
->>>>> o. Intoduced a new Kernel Configuration variable
->>>>>  *. This enables selecting the Cryptographic functionality
->>>>>     of Talitos along with fsldma.
->>>>>  *. Disables the XOR parity calculation offload, if fsldma enabled
->>>>>     either as kernel in-built or as a module
->>>>>  *. Once the inter-operability with fsldma is resolved, this option
->>>>>     can be removed
->>>> wait, why can't the interoperability bug be fixed in the first place?
->>> 
->>> I agree w/Kim.  We need to better understand what the bug is and how to reproduce it so we can get to the root cause.
->>> 
->>> Paper taping over it by disabling fsldma is not the right solution.
->> 
->> Hopefully this prompts fsldma authors to get involved because the 
->> interoperability issue has been out there without comment*, just 
->> band-aids, since October.
->> 
->> --
->> Dan
->> 
->> * well one comment from Ira saying the interrupt functionality worked 
->> for him.
+On Thu, Dec 17, 2009 at 09:40:25AM -0600, Eric Sandeen wrote:
+> Richard Kennedy wrote:
+> > ext4: always re-base nr_to_write in ext4_da_writepages
+> > 
+> > When ext4_da_writepages increases the nr_to_write in writeback_control
+> > then it must always re-base the return value.
+> > 
+> > Without this change, when wb_writeback calculates how many pages were
+> > actually written it can get a negative value and loop more times than
+> > necessary. In tests I have seen nearly all the dirty pages pushed out to
+> > writeback due to this issue.
+> > 
+> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > 
+> > ----
+> > 
+> > patch against 2.6.32
+> > tested on x86_64
+> > 
+> > wb_writeback calculates (MAX_WRITE_PAGES - nr_to_write) & cannot know
+> > that the value got changed.
+> > 
+> > I'm not sure what the test I removed was for.
+> > Perhaps 
+> > 	if (nr_to_writebump)
+> > 		wbc->nr_to_write -= nr_to_writebump;
+> > was intended?
 > 
-> Yes, I have used the device_prep_dma_interrupt() functionality quite a
-> while back. However, I found it to be pretty much useless. Any
-> functionality I need is covered by adding a callback to the last DMA
-> memcpy() operation. Since the operations happen in-order, I can be sure
-> that the entire set of memcpy()s cas completed. I never needed the
-> capability to generate an interrupt without a memcpy().
+> Ted's commit 55138e0b added it (just part of the commit):
 > 
-> I agree that the fsldma driver could use some love. There are places
-> where I am still not confident in the locking. Perhaps I can find some
-> time over Christmas to work on it, but I need someone with 85xx/86xx
-> hardware to test the changes. I only have 83xx hardware.
+> @@ -2914,7 +2994,8 @@ retry:
+>  out_writepages:
+>         if (!no_nrwrite_index_update)
+>                 wbc->no_nrwrite_index_update = 0;
+> -       wbc->nr_to_write -= nr_to_writebump;
+> +       if (wbc->nr_to_write > nr_to_writebump)
+> +               wbc->nr_to_write -= nr_to_writebump;
+>         wbc->range_start = range_start;
+>         trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
+>         return ret;
+> 
+> so it looks like the intent there was to stop ->nr_to_write from
+> going negative ...
 
-I can test on 85xx/86xx if you work up some patches.
+I guess writeback code can handle nr_to_write going negative. If we are
+not updating wbc->nr_to_write then i guess writeback code will get a 
+wrong value for number of pages written and can end up doing wrong things
+We had it that way as a part of 22208dedbd7626e5fc4339c417f8d24cc21f79d7
+and i guess we didn't had any problems with that
 
-- k
+So for the patch
+
+Acked-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+-aneesh
