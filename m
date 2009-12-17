@@ -1,85 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934704AbZLQJpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764268AbZLQJrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934704AbZLQJpf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 04:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbZLQJpa
+	id S1764268AbZLQJrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 04:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764248AbZLQJra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 04:45:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51256 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764264AbZLQJp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 04:45:26 -0500
-Date: Thu, 17 Dec 2009 10:44:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Zach Brown <zach.brown@oracle.com>,
-       Alex Elder <aelder@sgi.com>, Mark Fasheh <mfasheh@suse.com>,
-       Joel Becker <joel.becker@oracle.com>
-Subject: Re: -tip: origin tree boot crash
-Message-ID: <20091217094448.GB12228@elte.hu>
-References: <20091217090250.GA4844@elte.hu>
- <20091217093216.GZ14381@ZenIV.linux.org.uk>
+	Thu, 17 Dec 2009 04:47:30 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:41472 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbZLQJr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 04:47:28 -0500
+Date: Thu, 17 Dec 2009 10:47:23 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+Cc: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       Paul Mundt <lethal@linux-sh.org>, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 7/7] ASoC: sh: FSI:: don't check platform_get_irq's
+	return value against zero
+Message-ID: <20091217094723.GB19548@pengutronix.de>
+References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-5-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de> <1260979809-24811-7-git-send-email-u.kleine-koenig@pengutronix.de> <uk4wmtlz2.wl%morimoto.kuninori@renesas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091217093216.GZ14381@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <uk4wmtlz2.wl%morimoto.kuninori@renesas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Al Viro <viro@ZenIV.linux.org.uk> wrote:
-
-> On Thu, Dec 17, 2009 at 10:02:50AM +0100, Ingo Molnar wrote:
-> > 
-> > Today's -tip crashes during bootup on one of my testsystems, and i've bisected 
-> > it back to this commit:
-> > 
-> > | 5fe878ae7f82fbf0830dbfaee4c5ca18f3aee442 is the first bad commit
-> > | commit 5fe878ae7f82fbf0830dbfaee4c5ca18f3aee442
-> > | Author: Christoph Hellwig <hch@lst.de>
-> > | Date:   Tue Dec 15 16:47:50 2009 -0800
-> > |
-> > |    direct-io: cleanup blockdev_direct_IO locking
-> > |
-> > |    Currently the locking in blockdev_direct_IO is a mess, we have three
-> > |    different locking types and very confusing checks for some of them.  The
-> > |    most complicated one is DIO_OWN_LOCKING for reads, which happens to not
-> > |    actually be used.
-> > 
-> > I have no bootlog available currently. The kernel config is attached.
-> > 
-> > I've reverted the patch from -tip for now.
+On Thu, Dec 17, 2009 at 10:42:25AM +0900, Kuninori Morimoto wrote:
 > 
-> How about this:
+> Dear Uwe
 > 
-> diff --git a/fs/direct-io.c b/fs/direct-io.c
-> index 4012885..e82adc2 100644
-> --- a/fs/direct-io.c
-> +++ b/fs/direct-io.c
-> @@ -1206,7 +1206,7 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
->  	 * NOTE: filesystems with their own locking have to handle this
->  	 * on their own.
->  	 */
-> -	if (dio->flags & DIO_LOCKING) {
-> +	if (flags & DIO_LOCKING) {
->  		if (unlikely((rw & WRITE) && retval < 0)) {
->  			loff_t isize = i_size_read(inode);
->  			if (end > isize)
+> > platform_get_irq returns -ENXIO on failure, so !irq was probably
+> > always true.  Better use (int)irq <= 0.  Note that a return value of
+> > zero is still handled as error even though this could mean irq0.
+> (snip)
+> > -	if (!res || !irq) {
+> > +	if (!res || (int)irq <= 0) {
+> 
+> Ohh..
+> Thank you for checking.
+> 
+> Hmm..  now I tried to check about platform_get_irq in Linux kernel.
+> In my easy check, I can find a lot of drivers which are...
+> 
+> o doesn't check irq value          ex) request_irq(platform_get_irq(...))
+This is probably worth fixing.
 
-thanks, will check this.
+> o checked irq but it have miss (?) ex) if (irq >= 0) OK
+>                                        if (irq) OK
+>                                        if (irq == -Exxx ) NG
+For some drivers if (irq >= 0) is OK.  if (irq) is wrong.  if (irq ==
+-Exxx ) IMHO isn't carefully enough.
 
-	Ingo
+> o checked irq but don't care zero  ex) if (irq < 0) NG
+Same as if (irq >= 0)
+
+> ---- it use !irq  ------------------------
+> 
+>  arch/avr32/mach-at32ap/extint.c :: 200
+>  drivers/media/video/mx1_camera.c :: 651
+>  drivers/media/video/sh_mobile_ceu_camera.c :: 1655
+>  drivers/misc/atmel-ssc.c :: 110
+>  drivers/net/can/at91_can.c :: 1071
+>  drivers/net/sni_82596.c :: 112
+>  drivers/pcmcia/bfin_cf_pcmcia.c :: 207
+>  drivers/spi/spi_imx.c :: 553
+>  drivers/spi/spi_mpc8xxx.c :: 885
+>  drivers/usb/gadget/fsl_udc_core.c :: 2303
+Most of these are fixed in this series.  I seem to have missed
+
+	drivers/misc/atmel-ssc.c
+	drivers/net/sni_82596.c
+	drivers/usb/gadget/fsl_udc_core.c
+
+and I found sound/soc/sh/fsi.c and drivers/spi/spi_imx.c should already
+be fixed in Linus' Tree.
+
+I wait to see the result for the already existing patches.  If they are
+taken I might look for the others, too.  If you want to prepare some
+more patches, feel free to do it.
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
