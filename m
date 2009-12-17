@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765230AbZLQRzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934692AbZLQR5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765230AbZLQRzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764867AbZLQRzu
+	id S934692AbZLQR5y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765251AbZLQR5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:55:50 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:35774 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757069AbZLQRzt (ORCPT
+	Thu, 17 Dec 2009 12:57:50 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:53564 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765234AbZLQR5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:55:49 -0500
-Date: Thu, 17 Dec 2009 09:55:06 -0800
+	Thu, 17 Dec 2009 12:57:49 -0500
+Date: Thu, 17 Dec 2009 09:57:25 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pci@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org
 Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 17 (pci/quirks)
-Message-Id: <20091217095506.64f0a43f.randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for December 17 (media/dvb)
+Message-Id: <20091217095725.d7109149.randy.dunlap@oracle.com>
 In-Reply-To: <20091217165840.e11fc719.sfr@canb.auug.org.au>
 References: <20091217165840.e11fc719.sfr@canb.auug.org.au>
 Organization: Oracle Linux Eng.
@@ -23,9 +23,9 @@ X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
 X-Auth-Type: Internal IP
-X-Source-IP: acsinet15.oracle.com [141.146.126.227]
-X-CT-RefId: str=0001.0A090203.4B2A70A1.018C:SCFMA922111,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090204.4B2A7117.0062:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -40,17 +40,15 @@ On Thu, 17 Dec 2009 16:58:40 +1100 Stephen Rothwell wrote:
 > Changes since 20091216:
 
 
-When CONFIG_PCI_QUIRKS=n:
+(repeating:)
 
-drivers/built-in.o: In function `pci_dev_reset':
-pci.c:(.text+0xdb0b): undefined reference to `pci_dev_reset_methods'
-pci.c:(.text+0xdb2b): undefined reference to `pci_dev_reset_methods'
-pci.c:(.text+0xdb85): undefined reference to `pci_dev_reset_methods'
+drivers/media/dvb/frontends/dib8000.h:104: error: expected expression before '}' token
+drivers/media/dvb/frontends/dib8000.h:104: warning: left-hand operand of comma expression has no effect
+
+    return CT_SHUTDOWN,
 
 
-pci_dev_reset() calls (inlined) pci_dev_specific_reset(),
-which references pci_dev_reset_methods, which does not exist.
-
+s/,/;/ and fix indentation.
 
 ---
 ~Randy
