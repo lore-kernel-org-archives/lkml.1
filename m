@@ -1,113 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764499AbZLQLPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764365AbZLQLAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764499AbZLQLPF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 06:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764482AbZLQLO6
+	id S1764365AbZLQLAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 06:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZLQLAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 06:14:58 -0500
-Received: from relay.bearnet.nu ([80.252.223.222]:1646 "EHLO relay.bearnet.nu"
+	Thu, 17 Dec 2009 06:00:14 -0500
+Received: from mga02.intel.com ([134.134.136.20]:43564 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764481AbZLQLOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 06:14:55 -0500
-X-Greylist: delayed 892 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 06:14:55 EST
-Message-ID: <4B2A0F27.8070906@mocean-labs.com>
-Date: Thu, 17 Dec 2009 11:59:51 +0100
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
-	<richard.rojfors@mocean-labs.com>
-Organization: Pelagicore AB
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+	id S1752486AbZLQLAM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 06:00:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,411,1257148800"; 
+   d="scan'208";a="579818192"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 17 Dec 2009 10:59:59 +0000
+Subject: RE: [PATCH] dma: at_hdmac: correct incompatible type for argument 1
+ of 'spin_lock_bh'
+Thread-Topic: [PATCH] dma: at_hdmac: correct incompatible type for argument
+ 1 of 'spin_lock_bh'
+Thread-Index: Acp+Z2oWA6FEZcbiRuKCqjyYkQSXSgAoAdzA
+Message-ID: <129600E5E5FB004392DDC3FB599660D7CB17BB92@irsmsx504.ger.corp.intel.com>
+References: <1260980883-30030-1-git-send-email-nicolas.ferre@atmel.com>
+In-Reply-To: <1260980883-30030-1-git-send-email-nicolas.ferre@atmel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>
-CC: John Linn <John.Linn@xilinx.com>, Grant Likely <grant.likely@secretlab.ca>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] spi: xilinx_spi: Fix up I/O routine wrapping bogosity.
-References: <20091216060130.GD31265@linux-sh.org>
-In-Reply-To: <20091216060130.GD31265@linux-sh.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> xilinx_spi presently makes some fairly questionable assumptions about I/O
-> routines, and attempts to assign ioread32/iowrite32 and friends directly
-> to its own internal function pointers. On many platforms these I/O
-> routines are macros or wrappers and not actual functions on their own,
-> resulting in things like:
+Nicolas Ferre wrote:
+> Correct a typo error in locking calls.
 > 
-> ERROR: "ioread32be" [drivers/spi/xilinx_spi.ko] undefined!
-> ERROR: "iowrite32be" [drivers/spi/xilinx_spi.ko] undefined!
-> ERROR: "iowrite32" [drivers/spi/xilinx_spi.ko] undefined!
-> ERROR: "ioread32" [drivers/spi/xilinx_spi.ko] undefined!
-> 
-> If xilinx_spi wants to do this sort of casting, it needs to provide its
-> own wrappers for these, or change how it does accesses completely.
-> 
-> I've opted for the first approach, and the attached silly patch does
-> that. If someone with the hardware available wants to give the second
-> option a try that's ok too. In any event, the current code is broken for
-> at least: arm, avr32, blackfin, microblaze, mn10300, and sh.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
-Looks good to me.
-
-Acked-by: Richard Röjfors <richard.rojfors@pelagicore.com>
-
-> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 > ---
-> 
->  drivers/spi/xilinx_spi.c |   28 ++++++++++++++++++++++++----
->  1 file changed, 24 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
-> index 9f38637..154e908 100644
-> --- a/drivers/spi/xilinx_spi.c
-> +++ b/drivers/spi/xilinx_spi.c
-> @@ -93,6 +93,26 @@ struct xilinx_spi {
->  	void (*rx_fn) (struct xilinx_spi *);
->  };
->  
-> +static void xspi_write32(u32 val, void __iomem *addr)
-> +{
-> +	iowrite32(val, addr);
-> +}
-> +
-> +static unsigned int xspi_read32(void __iomem *addr)
-> +{
-> +	return ioread32(addr);
-> +}
-> +
-> +static void xspi_write32_be(u32 val, void __iomem *addr)
-> +{
-> +	iowrite32be(val, addr);
-> +}
-> +
-> +static unsigned int xspi_read32_be(void __iomem *addr)
-> +{
-> +	return ioread32be(addr);
-> +}
-> +
->  static void xspi_tx8(struct xilinx_spi *xspi)
->  {
->  	xspi->write_fn(*xspi->tx_ptr, xspi->regs + XSPI_TXD_OFFSET);
-> @@ -374,11 +394,11 @@ struct spi_master *xilinx_spi_init(struct device *dev, struct resource *mem,
->  	xspi->mem = *mem;
->  	xspi->irq = irq;
->  	if (pdata->little_endian) {
-> -		xspi->read_fn = ioread32;
-> -		xspi->write_fn = iowrite32;
-> +		xspi->read_fn = xspi_read32;
-> +		xspi->write_fn = xspi_write32;
->  	} else {
-> -		xspi->read_fn = ioread32be;
-> -		xspi->write_fn = iowrite32be;
-> +		xspi->read_fn = xspi_read32_be;
-> +		xspi->write_fn = xspi_write32_be;
->  	}
->  	xspi->bits_per_word = pdata->bits_per_word;
->  	if (xspi->bits_per_word == 8) {
 
-
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
