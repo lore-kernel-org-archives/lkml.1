@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbZLQUa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763119AbZLQUgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763029AbZLQUa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 15:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbZLQUax
+	id S1763119AbZLQUgC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:36:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762781AbZLQUf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 15:30:53 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:1478 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757543AbZLQUav (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 15:30:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=Do5xiydlmQjVj+VY1WqKDljxvg8avkzF6ON/QhHqDkDr/yB5uLmEmUlGs7Ib1Tx8+d
-         KALqpBtprxVybkwypUcXNrromWjRAGfJpi92I9Q+zfK0hmmfLmVTguEvs4aIyELlldBb
-         dzUFmF51XclYp8LgKi8Vx3tuZsMJLuneyy614=
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Peter Hutterer <peter.hutterer@redhat.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
-References: <20091203050810.GA26595@barra.bne.redhat.com>
-	<87zl60s17o.fsf@macbook.be.48ers.dk> <4B1836A6.405@redhat.com>
-	<871vjasxnm.fsf@macbook.be.48ers.dk> <4B190D88.4090102@redhat.com>
-	<87ws12rh5j.fsf@macbook.be.48ers.dk> <4B1C96C4.5080709@redhat.com>
-	<87hbs0mqju.fsf@macbook.be.48ers.dk>
-Date: Thu, 17 Dec 2009 21:30:46 +0100
-In-Reply-To: <87hbs0mqju.fsf@macbook.be.48ers.dk> (Peter Korsgaard's message
-	of "Wed, 09 Dec 2009 10:42:45 +0100")
-Message-ID: <87oclx4a2x.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	Thu, 17 Dec 2009 15:35:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35491 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759915AbZLQUf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 15:35:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Thu, 17 Dec 2009 21:36:36 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912171444040.2645-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912171444040.2645-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912172136.36277.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Peter" == Peter Korsgaard <jacmet@sunsite.dk> writes:
+On Thursday 17 December 2009, Alan Stern wrote:
+> On Thu, 17 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > That actually is correct.  On the nx6325 suspend is totally dominated by disk
+> > spindown, almost everything else is negligible compared to it (well, except for
+> > the audio), so we can't go down below 1 s during suspend on this box.
+> > 
+> > On the Wind, disk spindown time is comparable with serio suspend time,
+> > so at least in principle we should be able to get .5 s suspend on this box - 
+> > if the disk spindown in async.
+> > 
+> > In turn, the resume on the Wind is dominated by disk spinup, so we can't
+> > go below 1.5 s on this box during resume (notice that the "async+extra"
+> > approach brings us close to this limit, although we could save .5 s more in
+> > principle by making more devices async).
+> > 
+> > Resume on the nx6325 is a different story, though, as it is dominated by USB
+> > and PCI devices, so marking those as async would probably bring us close to
+> > the limit.
+> 
+> The implications seem pretty clear.  If the following sorts of devices
+> were async:
+> 
+> 	USB (devices and interfaces), PCI, serio, SCSI (hosts, targets,
+> 	devices)
 
- >>> It's probably offtopic here, but we can move the discussion to the X
- >>> list if you prefer - Last time I asked there I didn't get any reply
- >>> though:
- >>> 
- >>> http://article.gmane.org/gmane.comp.freedesktop.xorg/40071/
+Plus ACPI battery.
 
- Peter> Ask louder :) I think I remember your email but it got flooded
- Peter> out of my inbox. In general there should be some method to do
- Peter> that though I need to check the implementation.
+> then we would reap close to the maximum benefit -- providing:
+> 
+> 	async threads are started in a first pass without waiting
+> 	for synchronous devices, and
 
- Peter> OK, great - Let me know what you find. I did hack something up
- Peter> with evtouch, but would like to move to evdev instead.
+Agreed.
+ 
+> It's not clear that making all these types of devices async will really 
+> work, but it's worth testing.
 
-Did you find anything?
+I'm working on it.
 
--- 
-Bye, Peter Korsgaard
+Rafael
