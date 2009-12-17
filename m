@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965466AbZLQTfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbZLQTgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965466AbZLQTfe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbZLQTfa
+	id S965475AbZLQTgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965448AbZLQTgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:35:30 -0500
-Received: from trinity.develer.com ([83.149.158.210]:48574 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965424AbZLQTf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:35:29 -0500
-Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
-From: Bernie Innocenti <bernie@codewiz.org>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: Mark Seaborn <mrs@mythic-beasts.com>, Michael Stone <michael@laptop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       =?ISO-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       Linux Containers <containers@lists.osdl.org>
-In-Reply-To: <3e8340490912171024n2120e88q569c69fe7d09140f@mail.gmail.com>
-References: <m1ljh7jijk.fsf@fess.ebiederm.org> <20091213142149.GB4777@heat>
-	 <fb69ef3c0912170931l5cbf0e3dh81c88e6502651042@mail.gmail.com>
-	 <3e8340490912171024n2120e88q569c69fe7d09140f@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Sugar Labs - http://www.sugarlabs.org/
-Date: Thu, 17 Dec 2009 14:35:17 -0500
-Message-ID: <1261078517.4073.32.camel@giskard.codewiz.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3 (2.29.3-1.fc13) 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 14:36:50 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:38897 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965440AbZLQTgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 14:36:49 -0500
+Date: Thu, 17 Dec 2009 20:36:48 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: tytso@mit.edu, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James.Bottomley@suse.de, hch@infradead.org, linux-arch@vger.kernel.org
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+Message-ID: <20091217193648.GI4489@kernel.dk>
+References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org> <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain> <20091217163036.GE2123@thunk.org> <alpine.LFD.2.00.0912170839550.15740@localhost.localdomain> <20091217173957.GG2123@thunk.org> <alpine.LFD.2.00.0912170950330.15740@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912170950330.15740@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 13:24 -0500, Bryan Donlan wrote:
-> Can this be done using openat() and friends currently? It would seem
-> the natural way to implement this; open /proc/(pid)/root, then
-> openat() things from there (or even chdir to it and see the mounts
-> that it sees from there...)
+On Thu, Dec 17 2009, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 17 Dec 2009, tytso@mit.edu wrote:
+> > 
+> > Sure, but there's some rumors/oral traditions going around that some
+> > block devices want bio address which are page aligned, because they
+> > want to play some kind of refcounting game,
+> 
+> Yeah, you might be right at that.
+> 
+> > And it's Weird Shit(tm) (aka iSCSI, AoE) type drivers, that most of us 
+> > don't have access to, so just because it works Just Fine on SATA doesn't 
+> > mean anything.
+> > 
+> > And none of this is documented anywhere, which is frustrating as hell.
+> > Just rumors that "if you do this, AoE/iSCSI will corrupt your file
+> > systems".
+> 
+> ACK. Jens? 
 
-Yeah, but /proc/<pid>/root is just a symlink. It's correct for chroots,
-but I doubt it can be meaningful for per-process namespaces.
+I've heard those rumours too, and I don't even know if they are true.
+Who has a pointer to such a bug report and/or issue? The block layer
+itself doesn't not have any such requirements, and the only places where
+we play page games is for bio's that were explicitly mapped with pages
+by itself (like mapping user data).o
 
-If we were to implement Mark Seaborn's idea of naming
-namespaces, /proc/<pid>/rootfd would be a file descriptor providing
-access to the namespace through some fancy ioctls.
-
-Or maybe not. Could such a file-descriptor be used as the source
-argument to mount(), perhaps along with a new MS_NS flag?
-
-Alternatively, perhaps one could come up with a userspace solution:
-read /proc/<pid>/mounts and repeat all mounts, perhaps with a prefix.
-The downsides are that it would require superuser privs and wouldn't
-automatically stay synchronized with the real namespace.
+We fix driver crap like that, we don't work around it. It's a BUG.
 
 -- 
-   // Bernie Innocenti - http://codewiz.org/
- \X/  Sugar Labs       - http://sugarlabs.org/
+Jens Axboe
 
