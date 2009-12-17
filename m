@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935940AbZLQB2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932722AbZLQBVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935940AbZLQB2g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934817AbZLQB1x
+	id S932722AbZLQBVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763690AbZLQBVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:27:53 -0500
-Received: from kroah.org ([198.145.64.141]:41422 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:21:07 -0500
+Received: from kroah.org ([198.145.64.141]:41429 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763687AbZLQBUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:54 -0500
+	id S1763691AbZLQBUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:55 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:07 2009
-Message-Id: <20091217011607.388210554@mini.kroah.org>
+Message-Id: <20091217011607.520619682@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:23 -0800
+Date: Wed, 16 Dec 2009 17:15:24 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yong Wang <yong.y.wang@intel.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [72/90] [PATCH .31-stable] x86: Under BIOS control, restore APs APIC_LVTTHMR to the BSP value
+       Zhao Yakui <yakui.zhao@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [73/90] ACPI: Use the ARB_DISABLE for the CPU which model id is less than 0x0f.
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,128 +30,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yong Wang <yong.y.wang@linux.intel.com>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-Upstream commit a2202aa29289db64ca7988b12343158b67b27f10.
+commit 03a05ed1152944000151d57b71000de287a1eb02 upstream.
 
-On platforms where bios handles the thermal monitor interrupt,
-APIC_LVTTHMR on each logical CPU is programmed to generate a SMI and OS
-can't touch it.
+Currently, ARB_DISABLE is a NOP on all of the recent Intel platforms.
+For such platforms, reduce contention on c3_lock by skipping the fake
+ARB_DISABLE.
 
-Unfortunately AP bringup sequence using INIT-SIPI-SIPI clear all
-the LVT entries except the mask bit. Essentially this results in
-all LVT entries including the thermal monitoring interrupt set to masked
-(clearing the bios programmed value for APIC_LVTTHMR).
+The cpu model id on one laptop is 14. If we disable ARB_DISABLE on this box,
+the box can't be booted correctly. But if we still enable ARB_DISABLE on this
+box, the box can be booted correctly.
 
-And this leads to kernel take over the thermal monitoring interrupt
-on AP's but not on BSP (leaving the bios programmed value only on BSP).
+So we still use the ARB_DISABLE for the cpu which mode id is less than 0x0f.
 
-As a result of this, we have seen system hangs when the thermal
-monitoring interrupt is generated.
+http://bugzilla.kernel.org/show_bug.cgi?id=14700
 
-Fix this by reading the initial value of thermal LVT entry on BSP
-and if bios has taken over the control, then program the same value
-on all AP's and leave the thermal monitoring interrupt control
-on all the logical cpu's to the bios.
-
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Reviewed-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Arjan van de Ven <arjan@infradead.org>
-LKML-Reference: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/mce.h               |    6 ++++++
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   29 ++++++++++++++++++++++++++++-
- arch/x86/kernel/setup.c                  |    3 +++
- 3 files changed, 37 insertions(+), 1 deletion(-)
+ arch/x86/kernel/acpi/cstate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -214,5 +214,11 @@ void mce_log_therm_throt_event(__u64 sta
- static inline void mce_log_therm_throt_event(__u64 status) {}
- #endif
- 
-+#ifdef CONFIG_X86_THERMAL_VECTOR
-+extern void mcheck_intel_therm_init(void);
-+#else
-+static inline void mcheck_intel_therm_init(void) { }
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_sta
- 
- static atomic_t therm_throt_en	= ATOMIC_INIT(0);
- 
-+static u32 lvtthmr_init __read_mostly;
-+
- #ifdef CONFIG_SYSFS
- #define define_therm_throt_sysdev_one_ro(_name)				\
- 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
-@@ -254,6 +256,18 @@ asmlinkage void smp_thermal_interrupt(st
- 	ack_APIC_irq();
- }
- 
-+void __init mcheck_intel_therm_init(void)
-+{
-+	/*
-+	 * This function is only called on boot CPU. Save the init thermal
-+	 * LVT value on BSP and use that value to restore APs' thermal LVT
-+	 * entry BIOS programmed later
-+	 */
-+	if (cpu_has(&boot_cpu_data, X86_FEATURE_ACPI) &&
-+		cpu_has(&boot_cpu_data, X86_FEATURE_ACC))
-+		lvtthmr_init = apic_read(APIC_LVTTHMR);
-+}
-+
- void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	unsigned int cpu = smp_processor_id();
-@@ -270,7 +284,20 @@ void intel_init_thermal(struct cpuinfo_x
- 	 * since it might be delivered via SMI already:
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -48,7 +48,7 @@ void acpi_processor_power_init_bm_check(
+ 	 * P4, Core and beyond CPUs
  	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * The initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 * Always restore the value that BIOS has programmed on AP based on
-+	 * BSP's info we saved since BIOS is always setting the same value
-+	 * for all threads/cores
-+	 */
-+	apic_write(APIC_LVTTHMR, lvtthmr_init);
-+
-+	h = lvtthmr_init;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -107,6 +107,7 @@
- #ifdef CONFIG_X86_64
- #include <asm/numa_64.h>
- #endif
-+#include <asm/mce.h>
- 
- #ifndef ARCH_SETUP
- #define ARCH_SETUP
-@@ -1030,6 +1031,8 @@ void __init setup_arch(char **cmdline_p)
- 	conswitchp = &dummy_con;
- #endif
- #endif
-+
-+	mcheck_intel_therm_init();
+ 	if (c->x86_vendor == X86_VENDOR_INTEL &&
+-	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 14)))
++	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
+ 			flags->bm_control = 0;
  }
- 
- #ifdef CONFIG_X86_32
+ EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
 
 
