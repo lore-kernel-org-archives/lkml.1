@@ -1,101 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763290AbZLQIni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764019AbZLQIn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763290AbZLQIni (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 03:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZLQInh
+	id S1764019AbZLQIn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 03:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZLQIny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 03:43:37 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49792 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751905AbZLQIng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 03:43:36 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18/0hMKhEE/4vJJxxGoCy9lAAteAYSzaFp19DCFiq
-	F1s9pjkEKfgwxE
-Date: Thu, 17 Dec 2009 09:43:36 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       Dan Williams <dan.j.williams@intel.com>, linux-sh@vger.kernel.org
-Subject: Re: [PATCH 2/3 v2] sh: fix DMA driver's descriptor chaining and 
- cookie assignment
-In-Reply-To: <29ab51dc0912170033s4185153emc1aaafdc83607532@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0912170940470.5991@axis700.grange>
-References: <Pine.LNX.4.64.0912101826010.4487@axis700.grange> 
- <Pine.LNX.4.64.0912101833170.4487@axis700.grange> <20091211080254.GB7625@linux-sh.org>
-  <29ab51dc0912111815s2095539cjc3d0450435725452@mail.gmail.com> 
- <29ab51dc0912161909r7a6e5397sc751a49a636d755d@mail.gmail.com> 
- <Pine.LNX.4.64.0912170831430.5991@axis700.grange>
- <29ab51dc0912170033s4185153emc1aaafdc83607532@mail.gmail.com>
+	Thu, 17 Dec 2009 03:43:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35701 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764121AbZLQInw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 03:43:52 -0500
+Date: Thu, 17 Dec 2009 09:43:50 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Youquan,Song" <youquan.song@linux.intel.com>
+Cc: jbarnes@virtuousgeek.org, andrew.patterson@hp.com, andi@firstfloor.org,
+       ying.huang@intel.com, kent.liu@intel.com, youquan.song@intel.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [Resend PATCH]PCIe AER: reject aer inject if hardware mask
+	error reporting
+Message-ID: <20091217084349.GD9804@basil.fritz.box>
+References: <20091211234855.GB7196@youquan-linux.bj.intel.com> <1260836954.19155.84.camel@bluto.andrew> <20091217132248.GC11466@youquan-linux.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091217132248.GC11466@youquan-linux.bj.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Nobuhiro Iwamatsu wrote:
-
-> HI,
+On Thu, Dec 17, 2009 at 08:22:48AM -0500, Youquan,Song wrote:
+> Correcteable/Uncorrectable Error Mask Register are used by PCIe AER driver 
+> which will controls the reporting of idividual errors to PCIe RC via PCIe
+> error messages. 
 > 
-> 2009/12/17 Guennadi Liakhovetski <g.liakhovetski@gmx.de>:
-> > Hello Iwamatsu-san
-> >
-> > On Thu, 17 Dec 2009, Nobuhiro Iwamatsu wrote:
-> >
-> >> Hi,
-> >>
-> >> 2009/12/12 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>:
-> >> > Hi,
-> >> >
-> >> > Oh, I was going to check an old patch.
-> >> >
-> >> > 2009/12/11 Paul Mundt <lethal@linux-sh.org>:
-> >> >> On Thu, Dec 10, 2009 at 06:35:11PM +0100, Guennadi Liakhovetski wrote:
-> >> >>> The SH DMA driver wrongly assigns negative cookies to transfer descriptors,
-> >> >>> also, its chaining of partial descriptors is broken. The latter problem is
-> >> >>> usually invisible, because maximum transfer size per chunk is 16M, but if you
-> >> >>> artificially set this limit lower, the driver fails. Since cookies are also
-> >> >>> used in chunk management, both these problems are fixed in one patch. As side
-> >> >>> effects a possible memory leak, when descriptors are prepared, but not
-> >> >>> submitted, and multiple races have also been fixed.
-> >> >>>
-> >> >>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> >> >>
-> >> >> Looks good to me.
-> >> > Me too.
-> >> >
-> >> > But I want to check other CPU of sh. I will do next week.
-> >> > Please wait "Acked-by".
-> >> >
-> >> >
-> >>
-> >> I tested this patch. But I can not apply to Paul's git/HEAD.
-> >> I re-create patch and I attached.
-> >> This version of patch work fine.
-> >> Guennadi, could you test this patch on sh7724?
-> >
-> > Thanks for testing. I looked at your version of my patch, and I don't
-> > agree with it. You needlessly changed indentation in it and also forgot to
-> > include a "From: " line in it to indicate its original authorship.
-> > Besides, I think, Dan will be applying this patch on top of current next
-> > or Linus' tree. Of course, it can be, that my version of the patch does
-> > not apply to those trees either now. So, Dan, if you cannot merge my
-> > version of this patch yourself, please, let me know, I'll rebase it, but
-> > please do not use this version.
+> If hardware masks special error reporting to RC, the aer_inject driver should
+>  not inject aer error.
 > 
-> Yes, you are right.
-> And sorry, I am not going to seize your patch by force.
+> Signed-off-by: Youquan, Song <youquan.song@intel.com>
+> Acked-by: Ying, Huang <ying.huang@intel.com>
 
-Sure, I never assumed the opposite, that's why I said "you forgot." Same 
-thing happened to me too recently, fortunately, I noticed it early enough 
-to push a correct version. The actual problem with your version was 
-white-space changes.
+Acked-by: Andi Kleen <ak@linux.intel.com>
 
-> I sent the patch which I revised at hand.
+-Andi
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+-- 
+ak@linux.intel.com -- Speaking for myself only.
