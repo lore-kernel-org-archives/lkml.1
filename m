@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965541AbZLQTtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbZLQTwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965541AbZLQTtm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965538AbZLQTti
+	id S1751901AbZLQTwu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbZLQTwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:49:38 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:45970 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965516AbZLQTte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:49:34 -0500
-Date: Thu, 17 Dec 2009 11:49:31 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] sched: Teach might_sleep() about preemptible RCU
-Message-ID: <20091217194931.GA13619@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091216142536.GA18091@elte.hu> <1260991265-8451-1-git-send-regression-fweisbec@gmail.com> <20091216192354.GC5211@nowhere> <20091217013700.GL6744@linux.vnet.ibm.com> <20091217084912.GB1901@elte.hu>
+	Thu, 17 Dec 2009 14:52:46 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:51929 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbZLQTwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 14:52:46 -0500
+Date: Thu, 17 Dec 2009 19:52:31 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Lukasz Sokol <el.es.cr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Rfkill buttons : bi-stable, mono-stable, tactile
+Message-ID: <20091217195231.GA11747@srcf.ucam.org>
+References: <loom.20091217T122606-341@post.gmane.org> <20091217150709.GA6375@srcf.ucam.org> <loom.20091217T161042-883@post.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091217084912.GB1901@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <loom.20091217T161042-883@post.gmane.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 09:49:12AM +0100, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > On Wed, Dec 16, 2009 at 08:23:57PM +0100, Frederic Weisbecker wrote:
-> > > On Wed, Dec 16, 2009 at 08:21:05PM +0100, Frederic Weisbecker wrote:
-> > > > From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-> > > 
-> > > Crap... I think I'm really becoming this cyborg...
-> > > 
-> > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > 
-> > > Although I've happily put Paul's Reviewed-by tag in this v2,
-> > > I'd feel more comfortable if he could confirm it :)
-> > 
-> > Given that I missed the TINY_RCU problem, I am not sure how much my 
-> > Reviewed-by tag is worth, but I have no problem attaching it to this updated 
-> > patch.  ;-)
-> 
-> Reviewed-by is valuable in terms of you both acking the patch and expressing 
-> that you thought it through and like it. It does not mean you have done a 
-> mental kernel build test of all 2^3000 kernel .config variants and have proven 
-> the patch correct under circumstances! :-)
-> 
-> So yes, i've added it - thanks Paul!
+(Please keep me Cc:ed - linux-kernel is high enough traffic that it's 
+easy to lose track otherwise)
 
-The one misgiving I have is that addition of threaded interrupts and
-sleeping spinlocks might break this, but those changes will be large
-enough that this is the least of the worries.  We might then need to
-split might_sleep() into might_sleep() and might_sleep_rt(), but hard
-to say before the fact.  And this check will be very worthwhile as-is
-in the meantime!  ;-)
+On Thu, Dec 17, 2009 at 03:17:51PM +0000, Lukasz Sokol wrote:
 
-							Thanx, Paul
+> I define "not working" in this case by "it switches hardware on/off without the
+> software knowing". 
+> 
+> i.e. the rfkill does not know, and the 'problem' is only noticed when the wifi
+> disassociates (but Network Manager tries on to reconnect). On the other hand,
+> invoking /sbin/rfkill [un]block wifi blocks/unblocks wifi comfortably.
+
+What does ls -l /sys/class/rfkill look like? What driver are you using 
+for your wireless card?
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
