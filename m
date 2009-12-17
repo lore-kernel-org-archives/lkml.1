@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964849AbZLQBns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763541AbZLQBoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964849AbZLQBns (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936112AbZLQBn2
+	id S1763541AbZLQBoy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763270AbZLQBol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:43:28 -0500
-Received: from kroah.org ([198.145.64.141]:47817 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:44:41 -0500
+Received: from kroah.org ([198.145.64.141]:47824 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763588AbZLQBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763594AbZLQBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 20:20:06 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:00 2009
-Message-Id: <20091217011600.604399403@mini.kroah.org>
+Message-Id: <20091217011600.734038780@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:32 -0800
+Date: Wed, 16 Dec 2009 17:14:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Russ Dill <Russ.Dill@gmail.com>
-Subject: [21/90] USB: Close usb_find_interface race v3
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Anand Gadiyar <gadiyar@ti.com>
+Subject: [22/90] USB: musb_gadget_ep0: fix unhandled endpoint 0 IRQs, again
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,103 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Russ Dill <Russ.Dill@gmail.com>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit c2d284ee04ab6f6718de2ddcf1b43160e046c41d upstream.
+commit 196f1b7a387546f425df2f1fad26772e3d513aea upstream.
 
-USB drivers that create character devices call usb_register_dev in their
-probe function. This associates the usb_interface device with that minor
-number and creates the character device and announces it to the world.
-However, the driver's probe function is called before the new
-usb_interface is added to the driver's klist_devices.
+Commit a5073b52833e4df8e16c93dc4cbb7e0c558c74a2 (musb_gadget: fix
+unhandled endpoint 0 IRQs) somehow missed its key change:
 
-This is a problem because userspace will respond to the character device
-creation announcement by opening the character device. The driver's open
-function will the call usb_find_interface to find the usb_interface
-associated with that minor number. usb_find_interface will walk the
-driver's list of devices and find the usb_interface with the matching
-minor number.
+"The gadget EP0 code routinely ignores an interrupt at end of
+the data phase because of musb_g_ep0_giveback() resetting the
+state machine to "idle, waiting for SETUP" phase prematurely."
 
-Because the announcement happens before the usb_interface is added to the
-driver's klist_devices, a race condition exists. A straightforward fix
-is to walk the list of devices on usb_bus_type instead since the device
-is added to that list before the announcement occurs.
+So, the majority of the cases of unhandled IRQs is still unfixed...
 
-bus_find_device calls get_device to bump the reference count on the found
-device. It is arguable that the reference count should be dropped by the
-caller of usb_find_interface instead of usb_find_interface, however,
-the current users of usb_find_interface do not expect this.
-
-The original version of this patch only matched against minor number
-instead of driver and minor number. This version matches against both.
-
-Signed-off-by: Russ Dill <Russ.Dill@gmail.com>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/usb.c |   31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ drivers/usb/musb/musb_gadget_ep0.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -132,7 +132,7 @@ EXPORT_SYMBOL_GPL(usb_altnum_to_altsetti
- 
- struct find_interface_arg {
- 	int minor;
--	struct usb_interface *interface;
-+	struct device_driver *drv;
- };
- 
- static int __find_interface(struct device *dev, void *data)
-@@ -143,12 +143,10 @@ static int __find_interface(struct devic
- 	if (!is_usb_interface(dev))
- 		return 0;
- 
-+	if (dev->driver != arg->drv)
-+		return 0;
- 	intf = to_usb_interface(dev);
--	if (intf->minor != -1 && intf->minor == arg->minor) {
--		arg->interface = intf;
--		return 1;
--	}
--	return 0;
-+	return intf->minor == arg->minor;
- }
- 
- /**
-@@ -156,21 +154,24 @@ static int __find_interface(struct devic
-  * @drv: the driver whose current configuration is considered
-  * @minor: the minor number of the desired device
-  *
-- * This walks the driver device list and returns a pointer to the interface
-- * with the matching minor.  Note, this only works for devices that share the
-- * USB major number.
-+ * This walks the bus device list and returns a pointer to the interface
-+ * with the matching minor and driver.  Note, this only works for devices
-+ * that share the USB major number.
-  */
- struct usb_interface *usb_find_interface(struct usb_driver *drv, int minor)
+--- a/drivers/usb/musb/musb_gadget_ep0.c
++++ b/drivers/usb/musb/musb_gadget_ep0.c
+@@ -199,7 +199,6 @@ service_in_request(struct musb *musb, co
+ static void musb_g_ep0_giveback(struct musb *musb, struct usb_request *req)
  {
- 	struct find_interface_arg argb;
--	int retval;
-+	struct device *dev;
- 
- 	argb.minor = minor;
--	argb.interface = NULL;
--	/* eat the error, it will be in argb.interface */
--	retval = driver_for_each_device(&drv->drvwrap.driver, NULL, &argb,
--					__find_interface);
--	return argb.interface;
-+	argb.drv = &drv->drvwrap.driver;
-+
-+	dev = bus_find_device(&usb_bus_type, NULL, &argb, __find_interface);
-+
-+	/* Drop reference count from bus_find_device */
-+	put_device(dev);
-+
-+	return dev ? to_usb_interface(dev) : NULL;
+ 	musb_g_giveback(&musb->endpoints[0].ep_in, req, 0);
+-	musb->ep0_state = MUSB_EP0_STAGE_SETUP;
  }
- EXPORT_SYMBOL_GPL(usb_find_interface);
  
+ /*
 
 
