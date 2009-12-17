@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764079AbZLQHrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbZLQHuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764079AbZLQHrM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 02:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764057AbZLQHrK
+	id S1754642AbZLQHuq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 02:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZLQHuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 02:47:10 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:54332 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830AbZLQHrJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 02:47:09 -0500
-Date: Thu, 17 Dec 2009 16:47:00 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>,
-       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org
-Subject: Re: [PATCH 5/5] sh: dmaengine support for sh7724
-Message-ID: <20091217074700.GA19805@linux-sh.org>
-References: <Pine.LNX.4.64.0912041936541.3981@axis700.grange> <Pine.LNX.4.64.0912041942330.3981@axis700.grange> <e9c3a7c20912071702h1aea2026kff22db99a221f6c4@mail.gmail.com> <20091208071302.GA23814@linux-sh.org> <29ab51dc0912161914w6967c9d1l79df27d670f01b6a@mail.gmail.com> <Pine.LNX.4.64.0912170841010.5991@axis700.grange>
+	Thu, 17 Dec 2009 02:50:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53371 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751528AbZLQHun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 02:50:43 -0500
+Date: Thu, 17 Dec 2009 08:50:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Myron Stowe <myron.stowe@hp.com>
+Subject: -tip: origin tree build failure
+Message-ID: <20091217075025.GA314@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0912170841010.5991@axis700.grange>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 08:42:39AM +0100, Guennadi Liakhovetski wrote:
-> On Thu, 17 Dec 2009, Nobuhiro Iwamatsu wrote:
-> > This patch can not apply Paul's git/HEAD too.
-> > I updated patch.
-> > 
-> > Acked-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-> 
-> Same comment applies as to the other my patch. Paul, I think, you 
-> indicated, that you've already merged my patch, or at least, that you have 
-> no problem merging it. Please, do use my original version and not this 
-> one.
-> 
-I applied it by hand, so your authorship was retained, and I fixed up the
-whitespace damage by hand (it looks like it was just line wrapping from
-the mailer, which I deal with often enough that I no longer particularly
-care for trivial patches). For the non-trivial patches, reposting those
-without whitespace damage would be preferable.
+Today's -tip failed to build because commit 
+9e368fa011d4e0aa050db348d69514900520e40b ("ipmi: add PNP discovery (ACPI 
+namespace via PNPACPI)") from today's upstream kernel causes the following 
+build failure on x86, for CONFIG_ACPI=n && CONFIG_IPMI_SI=y:
+
+ drivers/char/ipmi/ipmi_si_intf.c:3208: error: 'ipmi_pnp_driver' undeclared (first use in this function)
+ drivers/char/ipmi/ipmi_si_intf.c:3208: error: (Each undeclared identifier is reported only once
+ drivers/char/ipmi/ipmi_si_intf.c:3208: error: for each function it appears in.)
+ drivers/char/ipmi/ipmi_si_intf.c:3334: error: 'ipmi_pnp_driver' undeclared (first use in this function)
+
+The reason is that the ipmi_pnp_driver depends on ACPI facilities and is only 
+made available under ACPI - while the registration and unregistration is made 
+dependent on CONFIG_PNP:
+
+ #ifdef CONFIG_PNP
+ 	pnp_register_driver(&ipmi_pnp_driver);
+ #endif
+
+The solution is to only register this driver under ACPI. (Also, the CONFIG_PNP 
+dependency is not needed because pnp_register_driver() is stubbed out in the 
+!CONFIG_PNP case.)
+
+I've applied the patch below to tip:out-of-tree for now.
+
+Thanks,
+
+	Ingo
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 679cd08..176f175 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -3204,7 +3204,7 @@ static __devinit int init_ipmi_si(void)
+ #ifdef CONFIG_ACPI
+ 	spmi_find_bmc();
+ #endif
+-#ifdef CONFIG_PNP
++#ifdef CONFIG_ACPI
+ 	pnp_register_driver(&ipmi_pnp_driver);
+ #endif
+ 
+@@ -3330,7 +3330,7 @@ static __exit void cleanup_ipmi_si(void)
+ #ifdef CONFIG_PCI
+ 	pci_unregister_driver(&ipmi_pci_driver);
+ #endif
+-#ifdef CONFIG_PNP
++#ifdef CONFIG_ACPI
+ 	pnp_unregister_driver(&ipmi_pnp_driver);
+ #endif
+ 
