@@ -1,109 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765316AbZLQSMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935062AbZLQSNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765316AbZLQSMM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765301AbZLQSML
+	id S935062AbZLQSNx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 13:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932187AbZLQSNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:12:11 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:36268 "EHLO
+	Thu, 17 Dec 2009 13:13:49 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:36401 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759639AbZLQSMK (ORCPT
+	with ESMTP id S932178AbZLQSNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:12:10 -0500
+	Thu, 17 Dec 2009 13:13:47 -0500
 From: Phil Carmody <ext-phil.2.carmody@nokia.com>
 To: gregkh@suse.de
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC 3/6] Driver core: driver_attribute parameters can often be const*
-Date: Thu, 17 Dec 2009 20:12:13 +0200
-Message-Id: <1261073536-27396-4-git-send-email-ext-phil.2.carmody@nokia.com>
+Subject: [RFC 4/6] Driver core: Easy macros to encourage const attributes
+Date: Thu, 17 Dec 2009 20:12:14 +0200
+Message-Id: <1261073536-27396-5-git-send-email-ext-phil.2.carmody@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1261073536-27396-3-git-send-email-ext-phil.2.carmody@nokia.com>
+In-Reply-To: <1261073536-27396-4-git-send-email-ext-phil.2.carmody@nokia.com>
 References: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
  <1261073536-27396-2-git-send-email-ext-phil.2.carmody@nokia.com>
  <1261073536-27396-3-git-send-email-ext-phil.2.carmody@nokia.com>
-X-OriginalArrivalTime: 17 Dec 2009 18:11:57.0491 (UTC) FILETIME=[6BB38030:01CA7F44]
+ <1261073536-27396-4-git-send-email-ext-phil.2.carmody@nokia.com>
+X-OriginalArrivalTime: 17 Dec 2009 18:11:58.0678 (UTC) FILETIME=[6C689F60:01CA7F44]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many struct driver_attribute descriptors are purely read-only
-structures, and there's no need to change them. Therefore make
-the promise not to, which will let those descriptors be put in
-a ro section.
+It's too easy to type DEVICE_ATTR and not think of adding
+a 'const', make it just as easy to get const as part of the
+macro.
 
 Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
 ---
- Documentation/driver-model/driver.txt |    4 ++--
- Documentation/filesystems/sysfs.txt   |    4 ++--
- drivers/base/driver.c                 |    4 ++--
- include/linux/device.h                |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ include/linux/device.h |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/driver-model/driver.txt b/Documentation/driver-model/driver.txt
-index 60120fb..d2cd6fb 100644
---- a/Documentation/driver-model/driver.txt
-+++ b/Documentation/driver-model/driver.txt
-@@ -226,5 +226,5 @@ struct driver_attribute driver_attr_debug;
- This can then be used to add and remove the attribute from the
- driver's directory using:
- 
--int driver_create_file(struct device_driver *, struct driver_attribute *);
--void driver_remove_file(struct device_driver *, struct driver_attribute *);
-+int driver_create_file(struct device_driver *, const struct driver_attribute *);
-+void driver_remove_file(struct device_driver *, const struct driver_attribute *);
-diff --git a/Documentation/filesystems/sysfs.txt b/Documentation/filesystems/sysfs.txt
-index a4ac2b9..931c806 100644
---- a/Documentation/filesystems/sysfs.txt
-+++ b/Documentation/filesystems/sysfs.txt
-@@ -358,7 +358,7 @@ DRIVER_ATTR(_name, _mode, _show, _store)
- 
- Creation/Removal:
- 
--int driver_create_file(struct device_driver *, struct driver_attribute *);
--void driver_remove_file(struct device_driver *, struct driver_attribute *);
-+int driver_create_file(struct device_driver *, const struct driver_attribute *);
-+void driver_remove_file(struct device_driver *, const struct driver_attribute *);
- 
- 
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index f367885..90c9fff 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -98,7 +98,7 @@ EXPORT_SYMBOL_GPL(driver_find_device);
-  * @attr: driver attribute descriptor.
-  */
- int driver_create_file(struct device_driver *drv,
--		       struct driver_attribute *attr)
-+		       const struct driver_attribute *attr)
- {
- 	int error;
- 	if (drv)
-@@ -115,7 +115,7 @@ EXPORT_SYMBOL_GPL(driver_create_file);
-  * @attr: driver attribute descriptor.
-  */
- void driver_remove_file(struct device_driver *drv,
--			struct driver_attribute *attr)
-+			const struct driver_attribute *attr)
- {
- 	if (drv)
- 		sysfs_remove_file(&drv->p->kobj, &attr->attr);
 diff --git a/include/linux/device.h b/include/linux/device.h
-index 0823a29..d07f90f 100644
+index d07f90f..ea8ced6 100644
 --- a/include/linux/device.h
 +++ b/include/linux/device.h
-@@ -166,9 +166,9 @@ struct driver_attribute driver_attr_##_name =		\
+@@ -165,6 +165,10 @@ struct driver_attribute {
+ struct driver_attribute driver_attr_##_name =		\
  	__ATTR(_name, _mode, _show, _store)
  
++#define DRIVER_CATTR(_name, _mode, _show, _store)	\
++const struct driver_attribute driver_attr_##_name =	\
++	__ATTR(_name, _mode, _show, _store)
++
  extern int __must_check driver_create_file(struct device_driver *driver,
--					   struct driver_attribute *attr);
-+					const struct driver_attribute *attr);
+ 					const struct driver_attribute *attr);
  extern void driver_remove_file(struct device_driver *driver,
--			       struct driver_attribute *attr);
-+			       const struct driver_attribute *attr);
+@@ -318,6 +322,10 @@ struct device_attribute {
+ #define DEVICE_ATTR(_name, _mode, _show, _store) \
+ struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
  
- extern int __must_check driver_add_kobj(struct device_driver *drv,
- 					struct kobject *kobj,
++#define DEVICE_CATTR(_name, _mode, _show, _store) \
++const struct device_attribute dev_attr_##_name = \
++	__ATTR(_name, _mode, _show, _store)
++
+ extern int __must_check device_create_file(struct device *device,
+ 					const struct device_attribute *entry);
+ extern void device_remove_file(struct device *dev,
 -- 
 1.6.0.4
 
