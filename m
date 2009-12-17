@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936603AbZLQEfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936588AbZLQEdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936603AbZLQEfT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:35:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936581AbZLQEe7
+	id S936588AbZLQEdW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:33:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935621AbZLQEEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:34:59 -0500
-Received: from kroah.org ([198.145.64.141]:55555 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:04:31 -0500
+Received: from kroah.org ([198.145.64.141]:55560 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935316AbZLQEEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:04:24 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:50 2009
-Message-Id: <20091217035650.799599096@mini.kroah.org>
+	id S935512AbZLQEEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:04:25 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:51 2009
+Message-Id: <20091217035650.926077960@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:58 -0800
+Date: Wed, 16 Dec 2009 19:55:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [061/151] debugfs: fix create mutex racy fops and private data
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: [062/151] Driver core: fix race in dev_driver_string
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,169 +29,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit d3a3b0adad0865c12e39b712ca89efbd0a3a0dbc upstream.
+commit 3589972e51fac1e02d0aaa576fa47f568cb94d40 upstream.
 
-Setting fops and private data outside of the mutex at debugfs file
-creation introduces a race where the files can be opened with the wrong
-file operations and private data.  It is easy to trigger with a process
-waiting on file creation notification.
+This patch (as1310) works around a race in dev_driver_string().  If
+the device is unbound while the function is running, dev->driver might
+become NULL after we test it and before we dereference it.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/debugfs/inode.c |   55 ++++++++++++++++++++++++++++++-----------------------
- 1 file changed, 32 insertions(+), 23 deletions(-)
+ drivers/base/core.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -32,7 +32,9 @@ static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
- static bool debugfs_registered;
- 
--static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev)
-+static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev,
-+				       void *data, const struct file_operations *fops)
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -56,7 +56,14 @@ static inline int device_is_not_partitio
+  */
+ const char *dev_driver_string(const struct device *dev)
+ {
+-	return dev->driver ? dev->driver->name :
++	struct device_driver *drv;
 +
- {
- 	struct inode *inode = new_inode(sb);
- 
-@@ -44,14 +46,18 @@ static struct inode *debugfs_get_inode(s
- 			init_special_inode(inode, mode, dev);
- 			break;
- 		case S_IFREG:
--			inode->i_fop = &debugfs_file_operations;
-+			inode->i_fop = fops ? fops : &debugfs_file_operations;
-+			inode->i_private = data;
- 			break;
- 		case S_IFLNK:
- 			inode->i_op = &debugfs_link_operations;
-+			inode->i_fop = fops;
-+			inode->i_private = data;
- 			break;
- 		case S_IFDIR:
- 			inode->i_op = &simple_dir_inode_operations;
--			inode->i_fop = &simple_dir_operations;
-+			inode->i_fop = fops ? fops : &simple_dir_operations;
-+			inode->i_private = data;
- 
- 			/* directory inodes start off with i_nlink == 2
- 			 * (for "." entry) */
-@@ -64,7 +70,8 @@ static struct inode *debugfs_get_inode(s
- 
- /* SMP-safe */
- static int debugfs_mknod(struct inode *dir, struct dentry *dentry,
--			 int mode, dev_t dev)
-+			 int mode, dev_t dev, void *data,
-+			 const struct file_operations *fops)
- {
- 	struct inode *inode;
- 	int error = -EPERM;
-@@ -72,7 +79,7 @@ static int debugfs_mknod(struct inode *d
- 	if (dentry->d_inode)
- 		return -EEXIST;
- 
--	inode = debugfs_get_inode(dir->i_sb, mode, dev);
-+	inode = debugfs_get_inode(dir->i_sb, mode, dev, data, fops);
- 	if (inode) {
- 		d_instantiate(dentry, inode);
- 		dget(dentry);
-@@ -81,12 +88,13 @@ static int debugfs_mknod(struct inode *d
- 	return error;
- }
- 
--static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
-+			 void *data, const struct file_operations *fops)
- {
- 	int res;
- 
- 	mode = (mode & (S_IRWXUGO | S_ISVTX)) | S_IFDIR;
--	res = debugfs_mknod(dir, dentry, mode, 0);
-+	res = debugfs_mknod(dir, dentry, mode, 0, data, fops);
- 	if (!res) {
- 		inc_nlink(dir);
- 		fsnotify_mkdir(dir, dentry);
-@@ -94,18 +102,20 @@ static int debugfs_mkdir(struct inode *d
- 	return res;
- }
- 
--static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode)
-+static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode,
-+			void *data, const struct file_operations *fops)
- {
- 	mode = (mode & S_IALLUGO) | S_IFLNK;
--	return debugfs_mknod(dir, dentry, mode, 0);
-+	return debugfs_mknod(dir, dentry, mode, 0, data, fops);
- }
- 
--static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode)
-+static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode,
-+			  void *data, const struct file_operations *fops)
- {
- 	int res;
- 
- 	mode = (mode & S_IALLUGO) | S_IFREG;
--	res = debugfs_mknod(dir, dentry, mode, 0);
-+	res = debugfs_mknod(dir, dentry, mode, 0, data, fops);
- 	if (!res)
- 		fsnotify_create(dir, dentry);
- 	return res;
-@@ -139,7 +149,9 @@ static struct file_system_type debug_fs_
- 
- static int debugfs_create_by_name(const char *name, mode_t mode,
- 				  struct dentry *parent,
--				  struct dentry **dentry)
-+				  struct dentry **dentry,
-+				  void *data,
-+				  const struct file_operations *fops)
- {
- 	int error = 0;
- 
-@@ -164,13 +176,16 @@ static int debugfs_create_by_name(const 
- 	if (!IS_ERR(*dentry)) {
- 		switch (mode & S_IFMT) {
- 		case S_IFDIR:
--			error = debugfs_mkdir(parent->d_inode, *dentry, mode);
-+			error = debugfs_mkdir(parent->d_inode, *dentry, mode,
-+					      data, fops);
- 			break;
- 		case S_IFLNK:
--			error = debugfs_link(parent->d_inode, *dentry, mode);
-+			error = debugfs_link(parent->d_inode, *dentry, mode,
-+					     data, fops);
- 			break;
- 		default:
--			error = debugfs_create(parent->d_inode, *dentry, mode);
-+			error = debugfs_create(parent->d_inode, *dentry, mode,
-+					       data, fops);
- 			break;
- 		}
- 		dput(*dentry);
-@@ -221,19 +236,13 @@ struct dentry *debugfs_create_file(const
- 	if (error)
- 		goto exit;
- 
--	error = debugfs_create_by_name(name, mode, parent, &dentry);
-+	error = debugfs_create_by_name(name, mode, parent, &dentry,
-+				       data, fops);
- 	if (error) {
- 		dentry = NULL;
- 		simple_release_fs(&debugfs_mount, &debugfs_mount_count);
- 		goto exit;
- 	}
--
--	if (dentry->d_inode) {
--		if (data)
--			dentry->d_inode->i_private = data;
--		if (fops)
--			dentry->d_inode->i_fop = fops;
--	}
- exit:
- 	return dentry;
++	/* dev->driver can change to NULL underneath us because of unbinding,
++	 * so be careful about accessing it.  dev->bus and dev->class should
++	 * never change once they are set, so they don't need special care.
++	 */
++	drv = ACCESS_ONCE(dev->driver);
++	return drv ? drv->name :
+ 			(dev->bus ? dev->bus->name :
+ 			(dev->class ? dev->class->name : ""));
  }
 
 
