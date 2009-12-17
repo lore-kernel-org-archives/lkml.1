@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965272AbZLQPrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965261AbZLQPpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965272AbZLQPrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965201AbZLQPrh
+	id S965261AbZLQPpq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965199AbZLQPpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:47:37 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:55664 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965200AbZLQPrf (ORCPT
+	Thu, 17 Dec 2009 10:45:44 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45535 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965192AbZLQPpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:47:35 -0500
-Date: Thu, 17 Dec 2009 10:47:32 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: e100 REGRESSION in 2.6.32 (PATCH)
-In-Reply-To: <200912171414.16846.roger.oksanen@cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.44L0.0912171046070.2645-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Dec 2009 10:45:43 -0500
+Date: Thu, 17 Dec 2009 16:47:42 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Jason Garrett-Glaser <darkshikari@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x264 benchmarks BFS vs CFS
+Message-ID: <20091217164742.0c2e5ca1@infradead.org>
+In-Reply-To: <20091217120826.GA32125@elte.hu>
+References: <1261042383.14314.0.camel@localhost>
+	<28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
+	<20091217105316.GB26010@elte.hu>
+	<1261047618.14314.6.camel@localhost>
+	<20091217120826.GA32125@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Roger Oksanen wrote:
-
-> e100: Fix broken cbs accounting due to missing memset.
+On Thu, 17 Dec 2009 13:08:26 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > not to mention that bfs does this whilst not loosing interactivity, 
+> > something which cfs certainly cannot boast.
 > 
-> Alan Stern noticed that e100 caused slab corruption.
-> commit 98468efddb101f8a29af974101c17ba513b07be1 changed
-> the allocation of cbs to use dma pools that don't return zeroed memory,
-> especially the cb->status field used to track which cb to clean, causing
-> (the visible) double freeing of skbs and a wrong free cbs count.
+> What kind of latencies are those? Arent they just compiz induced due
+> to different weighting of workloads in BFS and in the upstream
+> scheduler? Would you be willing to help us out pinning them down?
 > 
-> Now the cbs are explicitly zeroed at allocation time.
-> 
-> Reported-by: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-> ---
->  drivers/net/e100.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> index d269a68..29a8840 100644
-> --- a/drivers/net/e100.c
-> +++ b/drivers/net/e100.c
-> @@ -1815,6 +1815,7 @@ static int e100_alloc_cbs(struct nic *nic)
->  
->  	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
->  				  &nic->cbs_dma_addr);
-> +	memset(nic->cbs, 0, count * sizeof(struct cb));
->  	if (!nic->cbs)
->  		return -ENOMEM;
->  
-> @@ -1825,7 +1826,6 @@ static int e100_alloc_cbs(struct nic *nic)
->  		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
->  		cb->link = cpu_to_le32(nic->cbs_dma_addr +
->  			((i+1) % count) * sizeof(struct cb));
-> -		cb->skb = NULL;
->  	}
->  
->  	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
+> To move the discussion to the numeric front please send the 'perf
+> sched latency' output of an affected workload.
 
-Clearly the memset() belongs after the "if" test, not before.  Apart 
-from that, I confirm that this patch fixes the problem in 2.6.32.
+CFS in .32 and before has one known, and now fixed latency issue.
+In .32, wake_up() (which is most causes for inter thread communication
+and lots of others) was trying to keep the waker and wakee on the same
+logical cpu at pretty much all cost. In .33-git, Mike fixed this to,
+if there's a free logical cpu sibling, or on a multicore cpu, another
+core which shares the cache, to just schedule the new task on that free
+cpu rather than on the current, guaranteed busy, cpu.
 
-Tested-by: Alan Stern <stern@rowland.harvard.edu>
+This change helps latency a lot, and as a result, performance for
+various latency sensitive workloads... 
 
-Alan Stern
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
