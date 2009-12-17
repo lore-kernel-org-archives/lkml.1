@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZLQX7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbZLQX62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbZLQX7H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:59:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZLQX65
+	id S1753738AbZLQX62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 18:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZLQX6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:58:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52561 "EHLO hera.kernel.org"
+	Thu, 17 Dec 2009 18:58:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52550 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbZLQX6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:58:54 -0500
-Date: Thu, 17 Dec 2009 23:57:53 GMT
-From: "tip-bot for akpm@linux-foundation.org" <akpm@linux-foundation.org>
+	id S1752684AbZLQX6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 18:58:20 -0500
+Date: Thu, 17 Dec 2009 23:58:07 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu
+       sam@ravnborg.org, rdreier@cisco.com, tglx@linutronix.de, mmarek@sues.cz,
+       mhiramat@redhat.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <200912172326.nBHNQaQl024796@imap1.linux-foundation.org>
-References: <200912172326.nBHNQaQl024796@imap1.linux-foundation.org>
+       rdreier@cisco.com, sam@ravnborg.org, mmarek@sues.cz, tglx@linutronix.de,
+       mhiramat@redhat.com
+In-Reply-To: <4B2AC394.4030108@redhat.com>
+References: <4B2AC394.4030108@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Fix objdump version check in arch/x86/tools/chkobjdump.awk
-Message-ID: <tip-8c63450718ea62ee3a70bffde170b4d15fc72d3c@git.kernel.org>
-Git-Commit-ID: 8c63450718ea62ee3a70bffde170b4d15fc72d3c
+Subject: [tip:x86/urgent] Makefile: Unexport LC_ALL instead of clearing it
+Message-ID: <tip-06b5dc646b9479b786d77749936f25910cd82a37@git.kernel.org>
+Git-Commit-ID: 06b5dc646b9479b786d77749936f25910cd82a37
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,48 +31,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8c63450718ea62ee3a70bffde170b4d15fc72d3c
-Gitweb:     http://git.kernel.org/tip/8c63450718ea62ee3a70bffde170b4d15fc72d3c
-Author:     akpm@linux-foundation.org <akpm@linux-foundation.org>
-AuthorDate: Thu, 17 Dec 2009 15:26:36 -0800
+Commit-ID:  06b5dc646b9479b786d77749936f25910cd82a37
+Gitweb:     http://git.kernel.org/tip/06b5dc646b9479b786d77749936f25910cd82a37
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Thu, 17 Dec 2009 15:51:37 -0800
 Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 17 Dec 2009 15:34:29 -0800
+CommitDate: Thu, 17 Dec 2009 15:51:37 -0800
 
-x86: Fix objdump version check in arch/x86/tools/chkobjdump.awk
+Makefile: Unexport LC_ALL instead of clearing it
 
-It says
+Apparently not all versions of glibc and utilities treat an empty
+LC_ALL as nonexistent, causing error messages to be garbled.  Instead,
+explicitly unexport it from the environment.
 
-Warning: objdump version  is older than 2.19
-Warning: Skipping posttest.
-
-because it used the wrong field from `objdump -v':
-
-akpm:/usr/src/25> /opt/crosstool/gcc-4.0.2-glibc-2.3.6/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-objdump -v
-GNU objdump 2.16.1
-Copyright 2005 Free Software Foundation, Inc.
-This program is free software; you may redistribute it under the terms of
-the GNU General Public License.  This program has absolutely no warranty.
-
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <200912172326.nBHNQaQl024796@imap1.linux-foundation.org>
+Reported-and-tested-by: Masami Hiramatsu <mhiramat@redhat.com>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
+LKML-Reference: <4B2AC394.4030108@redhat.com>
+Cc: Michal Marek <mmarek@sues.cz>
+Cc: Roland Dreier <rdreier@cisco.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/x86/tools/chkobjdump.awk |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/tools/chkobjdump.awk b/arch/x86/tools/chkobjdump.awk
-index 0d13cd9..5bbb5a3 100644
---- a/arch/x86/tools/chkobjdump.awk
-+++ b/arch/x86/tools/chkobjdump.awk
-@@ -9,7 +9,7 @@ BEGIN {
- }
+diff --git a/Makefile b/Makefile
+index 6e39af1..5e92ca5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -17,11 +17,11 @@ NAME = Man-Eating Seals of Antiquity
+ MAKEFLAGS += -rR --no-print-directory
  
- /^GNU/ {
--	split($4, ver, ".");
-+	split($3, ver, ".");
- 	if (ver[1] > od_ver ||
- 	    (ver[1] == od_ver && ver[2] >= od_sver)) {
- 		exit 1;
+ # Avoid funny character set dependencies
+-LC_ALL=
++unexport LC_ALL
+ LC_CTYPE=C
+ LC_COLLATE=C
+ LC_NUMERIC=C
+-export LC_ALL LC_CTYPE LC_COLLATE LC_NUMERIC
++export LC_CTYPE LC_COLLATE LC_NUMERIC
+ 
+ # We are using a recursive build, so we need to do a little thinking
+ # to get the ordering right.
