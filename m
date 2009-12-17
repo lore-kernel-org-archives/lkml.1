@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936005AbZLQBcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935970AbZLQBfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936005AbZLQBcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763575AbZLQBUn
+	id S935970AbZLQBfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936044AbZLQBei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:43 -0500
-Received: from kroah.org ([198.145.64.141]:48021 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:34:38 -0500
+Received: from kroah.org ([198.145.64.141]:48026 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763619AbZLQBUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:34 -0500
+	id S1763640AbZLQBUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:35 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:04 2009
-Message-Id: <20091217011604.483828174@mini.kroah.org>
+Message-Id: <20091217011604.615316659@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:01 -0800
+Date: Wed, 16 Dec 2009 17:15:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roger Oksanen <roger.oksanen@cs.helsinki.fi>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [50/90] e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure
+Subject: [51/90] gro: Fix illegal merging of trailer trash
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,82 +30,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 
 
-From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[ Upstream commit 98468efddb101f8a29af974101c17ba513b07be1 ]
+[ Upstream commit 69c0cab120a85471054614418b447349caba22d7 ]
 
-pci_alloc_consistent uses GFP_ATOMIC allocation that may fail on some systems
-with limited memory (Bug #14265). pci_pool_alloc allows waiting with
-GFP_KERNEL.
+When we've merged skb's with page frags, and subsequently receive
+a trailer skb (< MSS) that is not completely non-linear (this can
+occur on Intel NICs if the packet size falls below the threshold),
+GRO ends up producing an illegal GSO skb with a frag_list.
 
-Tested-by: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+This is harmless unless the skb is then forwarded through an
+interface that requires software GSO, whereupon the GSO code
+will BUG.
+
+This patch detects this case in GRO and avoids merging the
+trailer skb.
+
+Reported-by: Mark Wagner <mwagner@redhat.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/e100.c |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ net/core/skbuff.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -156,6 +156,7 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/dma-mapping.h>
-+#include <linux/dmapool.h>
- #include <linux/netdevice.h>
- #include <linux/etherdevice.h>
- #include <linux/mii.h>
-@@ -601,6 +602,7 @@ struct nic {
- 	struct mem *mem;
- 	dma_addr_t dma_addr;
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -2704,7 +2704,8 @@ int skb_gro_receive(struct sk_buff **hea
  
-+	struct pci_pool *cbs_pool;
- 	dma_addr_t cbs_dma_addr;
- 	u8 adaptive_ifs;
- 	u8 tx_threshold;
-@@ -1779,9 +1781,7 @@ static void e100_clean_cbs(struct nic *n
- 			nic->cb_to_clean = nic->cb_to_clean->next;
- 			nic->cbs_avail++;
- 		}
--		pci_free_consistent(nic->pdev,
--			sizeof(struct cb) * nic->params.cbs.count,
--			nic->cbs, nic->cbs_dma_addr);
-+		pci_pool_free(nic->cbs_pool, nic->cbs, nic->cbs_dma_addr);
- 		nic->cbs = NULL;
- 		nic->cbs_avail = 0;
- 	}
-@@ -1799,8 +1799,8 @@ static int e100_alloc_cbs(struct nic *ni
- 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = NULL;
- 	nic->cbs_avail = 0;
+ 		NAPI_GRO_CB(skb)->free = 1;
+ 		goto done;
+-	}
++	} else if (skb_gro_len(p) != pinfo->gso_size)
++		return -E2BIG;
  
--	nic->cbs = pci_alloc_consistent(nic->pdev,
--		sizeof(struct cb) * count, &nic->cbs_dma_addr);
-+	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
-+				  &nic->cbs_dma_addr);
- 	if (!nic->cbs)
- 		return -ENOMEM;
- 
-@@ -2827,7 +2827,11 @@ static int __devinit e100_probe(struct p
- 		DPRINTK(PROBE, ERR, "Cannot register net device, aborting.\n");
- 		goto err_out_free;
- 	}
--
-+	nic->cbs_pool = pci_pool_create(netdev->name,
-+			   nic->pdev,
-+			   nic->params.cbs.count * sizeof(struct cb),
-+			   sizeof(u32),
-+			   0);
- 	DPRINTK(PROBE, INFO, "addr 0x%llx, irq %d, MAC addr %pM\n",
- 		(unsigned long long)pci_resource_start(pdev, use_io ? 1 : 0),
- 		pdev->irq, netdev->dev_addr);
-@@ -2857,6 +2861,7 @@ static void __devexit e100_remove(struct
- 		unregister_netdev(netdev);
- 		e100_free(nic);
- 		pci_iounmap(pdev, nic->csr);
-+		pci_pool_destroy(nic->cbs_pool);
- 		free_netdev(netdev);
- 		pci_release_regions(pdev);
- 		pci_disable_device(pdev);
+ 	headroom = skb_headroom(p);
+ 	nskb = netdev_alloc_skb(p->dev, headroom + skb_gro_offset(p));
 
 
