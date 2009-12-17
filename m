@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965456AbZLQTei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965459AbZLQTeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965456AbZLQTei (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbZLQTeh
+	id S965459AbZLQTeG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965452AbZLQTeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:34:37 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:11508 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965432AbZLQTeg (ORCPT
+	Thu, 17 Dec 2009 14:34:00 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58524 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965449AbZLQTd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:34:36 -0500
-Message-ID: <4B2A877C.3000504@caviumnetworks.com>
-Date: Thu, 17 Dec 2009 11:33:16 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
+	Thu, 17 Dec 2009 14:33:58 -0500
+Date: Thu, 17 Dec 2009 19:33:17 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 To: Joe Buck <Joe.Buck@synopsys.COM>
-CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Richard Guenther <richard.guenther@gmail.com>,
+Cc: Richard Guenther <richard.guenther@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
        "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-arm-kernel@lists.infradead.org" 
 	<linux-arm-kernel@lists.infradead.org>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+Message-ID: <20091217193317.GC4440@n2100.arm.linux.org.uk>
 References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com> <20091217190613.GB4440@n2100.arm.linux.org.uk> <20091217191401.GD10707@synopsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20091217191401.GD10707@synopsys.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Dec 2009 19:33:16.0729 (UTC) FILETIME=[C7F42290:01CA7F4F]
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Buck wrote:
+On Thu, Dec 17, 2009 at 11:14:01AM -0800, Joe Buck wrote:
 > On Thu, Dec 17, 2009 at 11:06:13AM -0800, Russell King - ARM Linux wrote:
->> On Thu, Dec 17, 2009 at 10:35:17AM -0800, Joe Buck wrote:
->>> Besides, didn't I see a whole bunch of kernel security patches related
->>> to null pointer dereferences lately?  If page 0 can be mapped, you
->>> suddenly won't get your trap.
->> Page 0 can not be mapped on ARM kernels since the late 1990s, and this
->> protection is independent of the generic kernel.
->>
->> Milage may vary on other architectures, but that's not a concern here.
+> > On Thu, Dec 17, 2009 at 10:35:17AM -0800, Joe Buck wrote:
+> > > Besides, didn't I see a whole bunch of kernel security patches related
+> > > to null pointer dereferences lately?  If page 0 can be mapped, you
+> > > suddenly won't get your trap.
+> > 
+> > Page 0 can not be mapped on ARM kernels since the late 1990s, and this
+> > protection is independent of the generic kernel.
+> > 
+> > Milage may vary on other architectures, but that's not a concern here.
 > 
 > I don't understand, though, why you would want to implement a generally
 > useful facility (make the kernel trap so you can do a post-mortem
 > analysis) in a way that's only safe for the ARM port.
-> 
 
-Each Linux kernel architecture has in its architecture specific bug.h an 
-implementation that is deemed by the architecture maintainers to work. 
-As far as I know, few if any of these use __builtin_trap().
+The discussion at hand is about code contained in the ARM supporting
+files (arch/arm/kernel/traps.c), rather than the generic kernel.
 
-Some could be converted to __builtin_trap(), others cannot (x86 for 
-example).  If we enhanced __builtin_trap() to take an argument for the 
-trap code, MIPS could be converted.  But as it stands now 
-__builtin_trap() is not very useful.
-
-As more architectures start adding funky tables that get generated by 
-the inline asm (as in x86), __builtin_trap() becomes less useful.
-
-David Daney
+As such, it is not relevant to any architecture other than ARM.
