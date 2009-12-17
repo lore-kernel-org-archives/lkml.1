@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965445AbZLQTdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965456AbZLQTei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965445AbZLQTdt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965428AbZLQTds
+	id S965456AbZLQTei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbZLQTeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:33:48 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:43523 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965425AbZLQTdr (ORCPT
+	Thu, 17 Dec 2009 14:34:37 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:11508 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965432AbZLQTeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:33:47 -0500
-Date: Thu, 17 Dec 2009 13:33:01 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Andi Kleen <andi@firstfloor.org>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-In-Reply-To: <20091217084046.GA9804@basil.fritz.box>
-Message-ID: <alpine.DEB.2.00.0912171331300.3638@router.home>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com> <20091216101107.GA15031@basil.fritz.box> <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
- <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 17 Dec 2009 14:34:36 -0500
+Message-ID: <4B2A877C.3000504@caviumnetworks.com>
+Date: Thu, 17 Dec 2009 11:33:16 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joe Buck <Joe.Buck@synopsys.COM>
+CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com> <20091217190613.GB4440@n2100.arm.linux.org.uk> <20091217191401.GD10707@synopsys.com>
+In-Reply-To: <20091217191401.GD10707@synopsys.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Dec 2009 19:33:16.0729 (UTC) FILETIME=[C7F42290:01CA7F4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Andi Kleen wrote:
+Joe Buck wrote:
+> On Thu, Dec 17, 2009 at 11:06:13AM -0800, Russell King - ARM Linux wrote:
+>> On Thu, Dec 17, 2009 at 10:35:17AM -0800, Joe Buck wrote:
+>>> Besides, didn't I see a whole bunch of kernel security patches related
+>>> to null pointer dereferences lately?  If page 0 can be mapped, you
+>>> suddenly won't get your trap.
+>> Page 0 can not be mapped on ARM kernels since the late 1990s, and this
+>> protection is independent of the generic kernel.
+>>
+>> Milage may vary on other architectures, but that's not a concern here.
+> 
+> I don't understand, though, why you would want to implement a generally
+> useful facility (make the kernel trap so you can do a post-mortem
+> analysis) in a way that's only safe for the ARM port.
+> 
 
-> > There are a few interesting cases like stack extention and hugetlbfs,
-> > but I think we could start by falling back to mmap_sem locked behaviour
-> > if the speculative thing fails.
->
-> You mean fall back to mmap_sem if anything sleeps? Maybe. Would need
-> to check how many such points are really there.
+Each Linux kernel architecture has in its architecture specific bug.h an 
+implementation that is deemed by the architecture maintainers to work. 
+As far as I know, few if any of these use __builtin_trap().
 
-You always need some reference on the mm_struct (mm_read_lock) if you are
-going to sleep to ensure that mm_struct still exists after waking up (page
-fault, page allocation). RCU and other spin locks are not helping there.
+Some could be converted to __builtin_trap(), others cannot (x86 for 
+example).  If we enhanced __builtin_trap() to take an argument for the 
+trap code, MIPS could be converted.  But as it stands now 
+__builtin_trap() is not very useful.
 
+As more architectures start adding funky tables that get generated by 
+the inline asm (as in x86), __builtin_trap() becomes less useful.
+
+David Daney
