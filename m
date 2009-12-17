@@ -1,121 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936677AbZLQElp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763999AbZLQEzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936677AbZLQElp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936666AbZLQEkt
+	id S1763999AbZLQEzS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758955AbZLQEzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:40:49 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39695 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763989AbZLQEkp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:40:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=aAmzfaBzXAm8JG8NWukAGFt0+ilb61nPlny5ZWSZ8XHhIsl6EdmtOIFflmR95vLq/W
-         LyWlA0X8tJiyjSfm+Ov//MLMugypAZtBElwohRtS9LupiUOil5ibsswwLjELJIOHoIqB
-         ZsVMfeu07kG/f17SHWcdmP+wrt+tvuQap5nyo=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] x86/stacktrace: Provide a special frame pointer-only stack walker
-Date: Thu, 17 Dec 2009 05:40:34 +0100
-Message-Id: <1261024834-5336-2-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1261024834-5336-1-git-send-regression-fweisbec@gmail.com>
-References: <1261024834-5336-1-git-send-regression-fweisbec@gmail.com>
+	Wed, 16 Dec 2009 23:55:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53185 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758931AbZLQEzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:55:13 -0500
+Message-ID: <4B29BA13.7020502@redhat.com>
+Date: Wed, 16 Dec 2009 23:56:51 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org>	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com> <ada3a3a6xs6.fsf@roland-alpha.cisco.com>
+In-Reply-To: <ada3a3a6xs6.fsf@roland-alpha.cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Tested in x86-64 only)
+Roland Dreier wrote:
+> 
+>  >        For  example,  before the POSIX standard, to match alphanumeric charac-
+>  >        ters, you would have had to write /[A-Za-z0-9]/.  If your character set
+>  >        had  other  alphabetic characters in it, this would not match them, and
+>  >        if your character set collated differently from ASCII, this  might  not
+>  >        even match the ASCII alphanumeric characters.  With the POSIX character
+>  >        classes, you can write /[[:alnum:]]/, and this matches  the  alphabetic
+>  >        and numeric characters in your character set, no matter what it is.
+> 
+> I'm not sure I understand this, although I'm not a character set expert.
+> But is there really some possible locale + awk implementation where an
+> awk script, written in pure ASCII, operating on a pure ASCII input file,
+> will have [A-Za-z0-9] match a different set of ASCII characters than
+> [[:alnum:]] will match?
 
-It's just wasteful for stacktrace users like perf to walk through
-every entries on the stack whereas these only accept reliable ones,
-ie: that the frame pointer validates.
+I assume that in utf-8 locale(nowadays default in most of distro) alphabets
+may be sorted as aAbBcC...zZ(or AaBb...), and in this case a-z means
+aAbBcC...z.
 
-Since perf requires pure reliable stacktraces, it needs a stack
-walker based on frame pointers-only to optimize the stacktrace
-processing.
+As Al Viro said, if we run awk with LC_ALL=C, then the characters will be
+sorted as ASCII. So, your patch is OK if you can add LC_ALL=C just before
+$(AWK). (I'm not so sure whether Makefile can accept it...)
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
----
- arch/x86/include/asm/stacktrace.h |    6 ++++++
- arch/x86/kernel/cpu/perf_event.c  |    2 +-
- arch/x86/kernel/dumpstack.c       |   22 ++++++++++++++++++++++
- 3 files changed, 29 insertions(+), 1 deletions(-)
+Thank you,
 
-diff --git a/arch/x86/include/asm/stacktrace.h b/arch/x86/include/asm/stacktrace.h
-index 6c75151..35e8912 100644
---- a/arch/x86/include/asm/stacktrace.h
-+++ b/arch/x86/include/asm/stacktrace.h
-@@ -22,6 +22,12 @@ print_context_stack(struct thread_info *tinfo,
- 		    const struct stacktrace_ops *ops, void *data,
- 		    unsigned long *end, int *graph);
- 
-+extern unsigned long
-+print_context_stack_bp(struct thread_info *tinfo,
-+		       unsigned long *stack, unsigned long bp,
-+		       const struct stacktrace_ops *ops, void *data,
-+		       unsigned long *end, int *graph);
-+
- /* Generic stack tracer with callbacks */
- 
- struct stacktrace_ops {
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index d3802ee..c223b7e 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -2336,7 +2336,7 @@ static const struct stacktrace_ops backtrace_ops = {
- 	.warning_symbol		= backtrace_warning_symbol,
- 	.stack			= backtrace_stack,
- 	.address		= backtrace_address,
--	.walk_stack		= print_context_stack,
-+	.walk_stack		= print_context_stack_bp,
- };
- 
- #include "../dumpstack.h"
-diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
-index 8aaa119..b999d3d 100644
---- a/arch/x86/kernel/dumpstack.c
-+++ b/arch/x86/kernel/dumpstack.c
-@@ -110,6 +110,28 @@ print_context_stack(struct thread_info *tinfo,
- 	return bp;
- }
- 
-+unsigned long
-+print_context_stack_bp(struct thread_info *tinfo,
-+		       unsigned long *stack, unsigned long bp,
-+		       const struct stacktrace_ops *ops, void *data,
-+		       unsigned long *end, int *graph)
-+{
-+	struct stack_frame *frame = (struct stack_frame *)bp;
-+	unsigned long *ret_addr = &frame->return_address;
-+
-+	while (valid_stack_ptr(tinfo, ret_addr, sizeof(*ret_addr), end)) {
-+		unsigned long addr = *ret_addr;
-+
-+		if (__kernel_text_address(addr)) {
-+			ops->address(data, addr, 1);
-+			frame = frame->next_frame;
-+			ret_addr = &frame->return_address;
-+			print_ftrace_graph_addr(addr, data, ops, tinfo, graph);
-+		}
-+	}
-+	return (unsigned long)frame;
-+}
-+
- 
- static void
- print_trace_warning_symbol(void *data, char *msg, unsigned long symbol)
 -- 
-1.6.2.3
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
