@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935934AbZLQB3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935940AbZLQB2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935934AbZLQB3P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935546AbZLQB2z
+	id S935940AbZLQB2g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934817AbZLQB1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:28:55 -0500
-Received: from kroah.org ([198.145.64.141]:48127 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:27:53 -0500
+Received: from kroah.org ([198.145.64.141]:41422 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763685AbZLQBUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763687AbZLQBUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 20:20:54 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:07 2009
-Message-Id: <20091217011607.262223579@mini.kroah.org>
+Message-Id: <20091217011607.388210554@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:22 -0800
+Date: Wed, 16 Dec 2009 17:15:23 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [71/90] p54usb: Remove DMA buffer from stack
+       Yong Wang <yong.y.wang@intel.com>,
+       Borislav Petkov <borislav.petkov@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [72/90] [PATCH .31-stable] x86: Under BIOS control, restore APs APIC_LVTTHMR to the BSP value
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,65 +30,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Yong Wang <yong.y.wang@linux.intel.com>
 
-commit 21d6c270f11c7d0ab5aafa48a6e79ba514f4e5e7 upstream.
+Upstream commit a2202aa29289db64ca7988b12343158b67b27f10.
 
-On 2.6.32-rc6 from wireless-testing, the following warning is emitted:
+On platforms where bios handles the thermal monitor interrupt,
+APIC_LVTTHMR on each logical CPU is programmed to generate a SMI and OS
+can't touch it.
 
-------------[ cut here ]------------
-WARNING: at lib/dma-debug.c:860 check_for_stack+0xaa/0xe0()
-Hardware name: HP Pavilion dv2700 Notebook PC
-ehci_hcd 0000:00:02.1: DMA-API: device driver maps memory fromstack
-	 [addr=ffff8800b6e2bca8]
-Modules linked in: <Removed>
-Pid: 16378, comm: modprobe Not tainted 2.6.32-rc6-wl #244
-Call Trace:
- [<ffffffff81049698>] warn_slowpath_common+0x78/0xb0
- [<ffffffff8104972c>] warn_slowpath_fmt+0x3c/0x40
- [<ffffffff811ae52a>] check_for_stack+0xaa/0xe0
- [<ffffffff811afc8d>] debug_dma_map_page+0xfd/0x170
- [<ffffffffa006297a>] usb_hcd_submit_urb+0x3da/0x9c0 [usbcore]
- [<ffffffff81076e6f>] ? lockdep_init_map+0x5f/0x5d0
- [<ffffffffa0063365>] usb_submit_urb+0xe5/0x260 [usbcore]
- [<ffffffffa0064b7e>] usb_start_wait_urb+0x5e/0xf0 [usbcore]
- [<ffffffffa0063943>] ? usb_init_urb+0x23/0x40 [usbcore]
- [<ffffffffa0064cd4>] usb_bulk_msg+0xc4/0x150 [usbcore]
- [<ffffffffa0441a91>] T.719+0x31/0x40 [p54usb]
- [<ffffffffa0441acf>] p54u_upload_firmware_3887+0x2f/0x490 [p54usb]
- [<ffffffffa049c667>] ? p54_parse_firmware+0x427/0x450 [p54common]
- <Rest of traceback removed>
----[ end trace f77df0316ddad3de ]---
+Unfortunately AP bringup sequence using INIT-SIPI-SIPI clear all
+the LVT entries except the mask bit. Essentially this results in
+all LVT entries including the thermal monitoring interrupt set to masked
+(clearing the bios programmed value for APIC_LVTTHMR).
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+And this leads to kernel take over the thermal monitoring interrupt
+on AP's but not on BSP (leaving the bios programmed value only on BSP).
+
+As a result of this, we have seen system hangs when the thermal
+monitoring interrupt is generated.
+
+Fix this by reading the initial value of thermal LVT entry on BSP
+and if bios has taken over the control, then program the same value
+on all AP's and leave the thermal monitoring interrupt control
+on all the logical cpu's to the bios.
+
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Reviewed-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+LKML-Reference: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/p54/p54usb.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/mce.h               |    6 ++++++
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |   29 ++++++++++++++++++++++++++++-
+ arch/x86/kernel/setup.c                  |    3 +++
+ 3 files changed, 37 insertions(+), 1 deletion(-)
 
---- a/drivers/net/wireless/p54/p54usb.c
-+++ b/drivers/net/wireless/p54/p54usb.c
-@@ -427,12 +427,16 @@ static const char p54u_romboot_3887[] = 
- static int p54u_firmware_reset_3887(struct ieee80211_hw *dev)
- {
- 	struct p54u_priv *priv = dev->priv;
--	u8 buf[4];
-+	u8 *buf;
- 	int ret;
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -214,5 +214,11 @@ void mce_log_therm_throt_event(__u64 sta
+ static inline void mce_log_therm_throt_event(__u64 status) {}
+ #endif
  
--	memcpy(&buf, p54u_romboot_3887, sizeof(buf));
-+	buf = kmalloc(4, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+	memcpy(buf, p54u_romboot_3887, 4);
- 	ret = p54u_bulk_msg(priv, P54U_PIPE_DATA,
--			    buf, sizeof(buf));
-+			    buf, 4);
-+	kfree(buf);
- 	if (ret)
- 		dev_err(&priv->udev->dev, "(p54usb) unable to jump to "
- 			"boot ROM (%d)!\n", ret);
++#ifdef CONFIG_X86_THERMAL_VECTOR
++extern void mcheck_intel_therm_init(void);
++#else
++static inline void mcheck_intel_therm_init(void) { }
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_X86_MCE_H */
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_sta
+ 
+ static atomic_t therm_throt_en	= ATOMIC_INIT(0);
+ 
++static u32 lvtthmr_init __read_mostly;
++
+ #ifdef CONFIG_SYSFS
+ #define define_therm_throt_sysdev_one_ro(_name)				\
+ 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
+@@ -254,6 +256,18 @@ asmlinkage void smp_thermal_interrupt(st
+ 	ack_APIC_irq();
+ }
+ 
++void __init mcheck_intel_therm_init(void)
++{
++	/*
++	 * This function is only called on boot CPU. Save the init thermal
++	 * LVT value on BSP and use that value to restore APs' thermal LVT
++	 * entry BIOS programmed later
++	 */
++	if (cpu_has(&boot_cpu_data, X86_FEATURE_ACPI) &&
++		cpu_has(&boot_cpu_data, X86_FEATURE_ACC))
++		lvtthmr_init = apic_read(APIC_LVTTHMR);
++}
++
+ void intel_init_thermal(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int cpu = smp_processor_id();
+@@ -270,7 +284,20 @@ void intel_init_thermal(struct cpuinfo_x
+ 	 * since it might be delivered via SMI already:
+ 	 */
+ 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
+-	h = apic_read(APIC_LVTTHMR);
++
++	/*
++	 * The initial value of thermal LVT entries on all APs always reads
++	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
++	 * sequence to them and LVT registers are reset to 0s except for
++	 * the mask bits which are set to 1s when APs receive INIT IPI.
++	 * Always restore the value that BIOS has programmed on AP based on
++	 * BSP's info we saved since BIOS is always setting the same value
++	 * for all threads/cores
++	 */
++	apic_write(APIC_LVTTHMR, lvtthmr_init);
++
++	h = lvtthmr_init;
++
+ 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
+ 		printk(KERN_DEBUG
+ 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -107,6 +107,7 @@
+ #ifdef CONFIG_X86_64
+ #include <asm/numa_64.h>
+ #endif
++#include <asm/mce.h>
+ 
+ #ifndef ARCH_SETUP
+ #define ARCH_SETUP
+@@ -1030,6 +1031,8 @@ void __init setup_arch(char **cmdline_p)
+ 	conswitchp = &dummy_con;
+ #endif
+ #endif
++
++	mcheck_intel_therm_init();
+ }
+ 
+ #ifdef CONFIG_X86_32
 
 
