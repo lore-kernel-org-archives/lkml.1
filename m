@@ -1,113 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZLQXfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZLQXfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZLQXfA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZLQXez
+	id S1754839AbZLQXfd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 18:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZLQXfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:34:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49777 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751025AbZLQXev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:34:51 -0500
-Message-ID: <4B2AC01E.6090509@redhat.com>
-Date: Thu, 17 Dec 2009 18:34:54 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 17 Dec 2009 18:35:30 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45368 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbZLQXf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 18:35:26 -0500
+Date: Thu, 17 Dec 2009 23:35:20 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+Message-ID: <20091217233520.GH18217@ZenIV.linux.org.uk>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <20091217061229.GD3946@linux-sh.org> <m3tyvqgfs4.fsf@intrepid.localdomain> <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Sam Ravnborg <sam@ravnborg.org>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, rdreier@cisco.com, mmarek@suse.cz,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] Makefile: set LC_CTYPE, LC_COLLATE,	LC_NUMERIC
- to C
-References: <4B2A1761.4070904@suse.cz> <tip-c051346b7db27aaf674b8f3b4955240580b2a58a@git.kernel.org> <20091217220951.GB4236@merkur.ravnborg.org> <4B2AB07D.5010007@zytor.com>
-In-Reply-To: <4B2AB07D.5010007@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 12/17/2009 02:09 PM, Sam Ravnborg wrote:
->>
->> This is IMO -next fodder and not urgent stuff.
->> In the distant past something similar caused us troubles.
->>
->> I assume that the patch posted by Roland fixes
->> the relevant troubles with the awk script and that
->> this patch is just for consistency.
->> So in other words stuff for -next and not -rc1.
->>
-> 
-> No: the patch Roland posted fixes the problems with non-POSIX-compliant
-> awk (e.g. mawk), but it in turn requires this patch in order to not
-> break on non-C-locale-default systems (which are most systems nowadays.)
+On Thu, Dec 17, 2009 at 06:29:25PM -0500, Mikulas Patocka wrote:
 
-Right, gawk requires locale setting.
+> No. If someone wrote an expression too long to be understood, he will not 
+> understand it when maintaining his code, he burns himself and he will 
+> eventually learn to not write such long expressions. Or ... if he 
+> understands it, there is no problem with it.
 
-btw, something went wrong with it...
+Yes, there is.  Somebody else trying to find a bug.  And having to
+figure out which of five unfamiliar pieces of code is likelier
+candidate.
 
----
-$ make O=/home/mhiramat/kbin/2.6.32 all
-  Using /home/mhiramat/ksrc/linux-2.6-tip as source for kernel
-  GEN     /home/mhiramat/kbin/2.6.32/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    /home/mhiramat/ksrc/linux-2.6-tip/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CHK     include/linux/version.h
-make[3]: `scripts/unifdef' ???????
-  TEST    posttest
-Succeed: decoded and checked 887431 instructions
-Kernel: arch/x86/boot/bzImage is ready  (#19)
-  Building modules, stage 2.
-  MODPOST 434 modules
-WARNING: modpost: Found 2 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
----
+> There is no need to make a script for it. The script isn't so smart to 
+> tell what is understandable and what is nto.
 
-when I ran with LC_ALL=C, it shows message correctly.
-
----
-$ make O=/home/mhiramat/kbin/2.6.32 all LC_ALL=C
-  Using /home/mhiramat/ksrc/linux-2.6-tip as source for kernel
-  GEN     /home/mhiramat/kbin/2.6.32/Makefile
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-x86
-  CALL    /home/mhiramat/ksrc/linux-2.6-tip/scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CHK     include/linux/version.h
-make[3]: `scripts/unifdef' is up to date.
-  TEST    posttest
-Succeed: decoded and checked 887431 instructions
-Kernel: arch/x86/boot/bzImage is ready  (#19)
-  Building modules, stage 2.
-  MODPOST 434 modules
-WARNING: modpost: Found 2 section mismatch(es).
-To see full details build your kernel with:
-'make CONFIG_DEBUG_SECTION_MISMATCH=y'
----
-
-Maybe, "LC_ALL=" line broke it?
-
-Thank you,
-
-
-> 
-> So -rc1.
-> 
-> 	-hpa
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Oh, definitely.  No arguments on that one...
