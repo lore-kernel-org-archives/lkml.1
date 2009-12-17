@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965485AbZLQTim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965498AbZLQTlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965485AbZLQTim (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965471AbZLQTik
+	id S965498AbZLQTlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965489AbZLQTly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:38:40 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:56039 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965464AbZLQTij (ORCPT
+	Thu, 17 Dec 2009 14:41:54 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:51310 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965482AbZLQTlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:38:39 -0500
-Date: Thu, 17 Dec 2009 19:38:26 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Joe Buck <Joe.Buck@synopsys.COM>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>,
+	Thu, 17 Dec 2009 14:41:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=avFsCPYcc6E3E0gf0ZkYcVl7wHPgQxX8hFRZdBQSnlt6IHRdR7wG9k/Sjbr62bA9ml
+         uH5whr41bGJEdu3diB1kSsHObFAd67YysLFo+9ll0snOZRZ51b8sA6Nmfg5Zk7zfkRyC
+         qF+3GtBe1i1xzEXVhSCobvMLWAzw4EUWD18fM=
+Date: Thu, 17 Dec 2009 22:41:48 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+Cc: "H. Peter Anvin" <hpa@linux.intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-Message-ID: <20091217193826.GE362@shareable.org>
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com> <20091217190613.GB4440@n2100.arm.linux.org.uk> <20091217191401.GD10707@synopsys.com>
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
+	setup
+Message-ID: <20091217194148.GB5414@lenovo>
+References: <43F901BD926A4E43B106BF17856F07559A257B5C@orsmsx508.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091217191401.GD10707@synopsys.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <43F901BD926A4E43B106BF17856F07559A257B5C@orsmsx508.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Buck wrote:
-> On Thu, Dec 17, 2009 at 11:06:13AM -0800, Russell King - ARM Linux wrote:
-> > On Thu, Dec 17, 2009 at 10:35:17AM -0800, Joe Buck wrote:
-> > > Besides, didn't I see a whole bunch of kernel security patches related
-> > > to null pointer dereferences lately?  If page 0 can be mapped, you
-> > > suddenly won't get your trap.
-> > 
-> > Page 0 can not be mapped on ARM kernels since the late 1990s, and this
-> > protection is independent of the generic kernel.
-> > 
-> > Milage may vary on other architectures, but that's not a concern here.
+On Thu, Dec 17, 2009 at 09:59:23AM -0800, Pan, Jacob jun wrote:
+> From: Jacob Pan <jacob.jun.pan@intel.com>
+> Date: Thu, 17 Dec 2009 08:07:57 -0800
+> Subject: [PATCH 2/2] x86/apic: check global clockevent in lapic timer setup
+> 
+> Global clockevent is needed to calibrate local apic timer.
+> This patch makes sure we have a valid global clockevent prior
+> to lapic timer setup.
+> Non-pc x86 mid platform with per cpu platform timer may not
+> have a global clockevent device.
+> 
+> Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+> ---
+>  arch/x86/kernel/apic/apic.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+> index aa57c07..7e7aee1 100644
+> --- a/arch/x86/kernel/apic/apic.c
+> +++ b/arch/x86/kernel/apic/apic.c
+> @@ -724,6 +724,13 @@ static int __init calibrate_APIC_clock(void)
+>   */
+>  void __init setup_boot_APIC_clock(void)
+>  {
+> +	/* global clockevent is needed for calibration */
+> +	if (!global_clock_event) {
+> +		apic_printk(APIC_DEBUG,
+> +				"no global clockevent for calibration\n");
+> +		return;
+> +	}
+> +
+>  	/*
+>  	 * The local apic timer can be disabled via the kernel
+>  	 * commandline or from the CPU detection code. Register the lapic
+> -- 
+> 1.6.5.3
+>
 
-It does not trap on at least one ARM-nommu kernel...
+Hi Jacob,
 
-> I don't understand, though, why you would want to implement a generally
-> useful facility (make the kernel trap so you can do a post-mortem
-> analysis) in a way that's only safe for the ARM port.
+Wouldn't be better to operate the same way as in case of "noapictimer"
+boot option. I guess the non-pc x86 midplatforms you're mentioning
+do not use SMP ever but just to be consistent in code.
 
-The patch under discussion, which led to these questions and Cc
-gcc@gcc.gnu.org, is specific to the ARM architecture and that is
-Russell's focus, as ARM kernel maintainer.
+Perhaps something like:
 
-But yes, the whole principle of how to trap and whether it's safe to
-follow a null pointer dereference with __builtin_unreachable() applies
-to all the other architectures too.
+void __init setup_boot_APIC_clock(void) {
 
--- Jamie
+	if (!global_clock_event) {
+		pr_info("No global clockevent for calibration\n");
+		disable_apic_timer = 1;
+	}
+
+	if (disable_apic_timer) {
+		pr_info("Disabling APIC timer\n");
+		/* No broadcast on UP ! */
+		if (num_possible_cpus() > 1) {
+			lapic_clockevent.mult = 1;
+			setup_APIC_timer();
+		}
+		return;
+	}
+
+	...
+}
+
+Or I miss something?
+
+	-- Cyrill
