@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZLQFrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764716AbZLQNXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZLQFrf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 00:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZLQFra
+	id S1764716AbZLQNXG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 08:23:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759833AbZLQNW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 00:47:30 -0500
-Received: from mga12.intel.com ([143.182.124.36]:19997 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752550AbZLQFr2 (ORCPT
+	Thu, 17 Dec 2009 08:22:59 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34440 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759720AbZLQNW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 00:47:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="223878849"
-Date: Thu, 17 Dec 2009 08:22:48 -0500
-From: "Youquan,Song" <youquan.song@linux.intel.com>
-To: jbarnes@virtuousgeek.org
-Cc: andrew.patterson@hp.com, andi@firstfloor.org, ying.huang@intel.com,
-       kent.liu@intel.com, youquan.song@intel.com,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: [Resend PATCH]PCIe AER: reject aer inject if hardware mask error reporting
-Message-ID: <20091217132248.GC11466@youquan-linux.bj.intel.com>
-References: <20091211234855.GB7196@youquan-linux.bj.intel.com> <1260836954.19155.84.camel@bluto.andrew>
-Mime-Version: 1.0
+	Thu, 17 Dec 2009 08:22:58 -0500
+Date: Thu, 17 Dec 2009 08:22:56 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: kyle@mcmartin.ca
+Cc: torvalds@linux-foundation.org, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@suse.de,
+       hch@infradead.org, linux-arch@vger.kernel.org
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+Message-ID: <20091217132256.GO28962@bombadil.infradead.org>
+References: <20091216043618.GB9104@hera.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260836954.19155.84.camel@bluto.andrew>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20091216043618.GB9104@hera.kernel.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Correcteable/Uncorrectable Error Mask Register are used by PCIe AER driver 
-which will controls the reporting of idividual errors to PCIe RC via PCIe
-error messages. 
+Linus, any word on these? I'd really love to get jejb and hch off
+my back. :)
 
-If hardware masks special error reporting to RC, the aer_inject driver should
- not inject aer error.
+cheers, Kyle
 
-Signed-off-by: Youquan, Song <youquan.song@intel.com>
-Acked-by: Ying, Huang <ying.huang@intel.com>
----
-
-
-diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
-index 7fcd533..d002cd9 100644
---- a/drivers/pci/pcie/aer/aer_inject.c
-+++ b/drivers/pci/pcie/aer/aer_inject.c
-@@ -321,7 +321,7 @@ static int aer_inject(struct aer_error_inj *einj)
- 	unsigned long flags;
- 	unsigned int devfn = PCI_DEVFN(einj->dev, einj->fn);
- 	int pos_cap_err, rp_pos_cap_err;
--	u32 sever;
-+	u32 sever, mask;
- 	int ret = 0;
- 
- 	dev = pci_get_domain_bus_and_slot((int)einj->domain, einj->bus, devfn);
-@@ -374,6 +374,24 @@ static int aer_inject(struct aer_error_inj *einj)
- 	err->header_log2 = einj->header_log2;
- 	err->header_log3 = einj->header_log3;
- 
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, &mask);
-+	if (einj->cor_status && !(einj->cor_status & ~mask)) {
-+		ret = -EINVAL;
-+		printk(KERN_WARNING "The correctable error(s) is masked "
-+				"by device\n");
-+		spin_unlock_irqrestore(&inject_lock, flags);
-+		goto out_put;
-+	}
-+
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, &mask);
-+	if (einj->uncor_status && !(einj->uncor_status & ~mask)) {
-+		ret = -EINVAL;
-+		printk(KERN_WARNING "The uncorrectable error(s) is masked "
-+				"by device\n");
-+		spin_unlock_irqrestore(&inject_lock, flags);
-+		goto out_put;
-+	}
-+
- 	rperr = __find_aer_error_by_dev(rpdev);
- 	if (!rperr) {
- 		rperr = rperr_alloc;
+On Wed, Dec 16, 2009 at 04:36:18AM +0000, Kyle McMartin wrote:
+> As discussed on linux-arch@ recently, these fixes are necessary for
+> XFS to work on virtually indexed architectures since otherwise vmalloc'd
+> pages are not properly flushed from the cache.
+> 
+> Thanks!
+>  Kyle
+> 
+> The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
+>   Stephen Rothwell (1):
+>         mfd: compile fix for twl4030 renaming
+> 
+> are available in the git repository at:
+> 
+>   hera.kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git coherence
+> 
+> James Bottomley (6):
+>       mm: add coherence API for DMA to vmalloc/vmap areas
+>       parisc: add mm API for DMA to vmalloc/vmap areas
+>       arm: add mm API for DMA to vmalloc/vmap areas
+>       sh: add mm API for DMA to vmalloc/vmap areas
+>       block: permit I/O to vmalloc/vmap kernel pages
+>       xfs: fix xfs to work with Virtually Indexed architectures
+> 
+>  Documentation/cachetlb.txt           |   24 ++++++++++++++++++++++++
+>  arch/arm/include/asm/cacheflush.h    |   10 ++++++++++
+>  arch/parisc/include/asm/cacheflush.h |    8 ++++++++
+>  arch/sh/include/asm/cacheflush.h     |    8 ++++++++
+>  fs/bio.c                             |   20 ++++++++++++++++++--
+>  fs/xfs/linux-2.6/xfs_buf.c           |   20 ++++++++++++++++++++
+>  include/linux/highmem.h              |    6 ++++++
+>  7 files changed, 94 insertions(+), 2 deletions(-)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-parisc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
