@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936395AbZLQEQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935737AbZLQEQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936395AbZLQEQH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:16:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936379AbZLQEPl
+	id S935737AbZLQEQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936389AbZLQEQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:15:41 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56294 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936374AbZLQEPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:15:35 -0500
-Date: Wed, 16 Dec 2009 20:15:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Csaba Henk <csaba@gluster.com>,
-       Miklos Szeredi <mszeredi@suse.cz>, Harshavardhana <harsha@gluster.com>
-Subject: Re: [04/18] fuse: reject O_DIRECT flag also in fuse_create
-Message-ID: <20091217041534.GA26509@suse.de>
-References: <20091217004707.472856791@mini.kroah.org> <4B298B2A.5010900@caviumnetworks.com>
+	Wed, 16 Dec 2009 23:16:05 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:64402 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936385AbZLQEPz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:15:55 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAE8/KUurR7H+/2dsb2JhbAC+WZZ/hCsE
+X-IronPort-AV: E=Sophos;i="4.47,410,1257120000"; 
+   d="scan'208";a="451079731"
+From: Roland Dreier <rdreier@cisco.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org>
+	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 16 Dec 2009 20:15:53 -0800
+In-Reply-To: <4B29A686.9070603@redhat.com> (Masami Hiramatsu's message of
+	"Wed, 16 Dec 2009 22:33:26 -0500")
+Message-ID: <ada3a3a6xs6.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B298B2A.5010900@caviumnetworks.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 17 Dec 2009 04:15:53.0563 (UTC) FILETIME=[9FAB8AB0:01CA7ECF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 05:36:42PM -0800, David Daney wrote:
-> Greg KH wrote:
->> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
->>
->> ------------------
->> From: Csaba Henk <csaba@gluster.com>
->>
->> commit 1b7323965a8c6eee9dc4e345a7ae4bff1dc93149 upstream.
->>
->> The comment in fuse_open about O_DIRECT:
->>
->>   "VFS checks this, but only _after_ ->open()"
->>
->> also holds for fuse_create, however, the same kind of check was missing there.
->>
->> As an impact of this bug, open(newfile, O_RDWR|O_CREAT|O_DIRECT) fails, but a
->> stub newfile will remain if the fuse server handled the implied FUSE_CREATE
->> request appropriately.
->>
->> Other impact: in the above situation ima_file_free() will complain to open/free
->> imbalance if CONFIG_IMA is set.
->>
->> Signed-off-by: Csaba Henk <csaba@gluster.com>
->> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
->> Cc: Harshavardhana <harsha@gluster.com>
->> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->>
->> ---
->>  fs/fuse/dir.c |    3 +++
->>  1 file changed, 3 insertions(+)
->>
->> --- a/fs/fuse/dir.c
->> +++ b/fs/fuse/dir.c
->> @@ -401,6 +401,9 @@ static int fuse_create_open(struct inode
->>  	if (flags & O_DIRECT)
->>  		return -EINVAL;
->>  +	if (flags & O_DIRECT)
->> +		return -EINVAL;
->> +
->
-> I must be missing something.  The added part seems to be identical to the 
-> lines just above.
->
-> Forgive me if I am totally misreading the diff.
 
-Oops, you are right, this was already included in the last .27 release,
-my mistake.  I've now deleted it from the .27 queue.
+ >        For  example,  before the POSIX standard, to match alphanumeric charac-
+ >        ters, you would have had to write /[A-Za-z0-9]/.  If your character set
+ >        had  other  alphabetic characters in it, this would not match them, and
+ >        if your character set collated differently from ASCII, this  might  not
+ >        even match the ASCII alphanumeric characters.  With the POSIX character
+ >        classes, you can write /[[:alnum:]]/, and this matches  the  alphabetic
+ >        and numeric characters in your character set, no matter what it is.
 
-thanks,
+I'm not sure I understand this, although I'm not a character set expert.
+But is there really some possible locale + awk implementation where an
+awk script, written in pure ASCII, operating on a pure ASCII input file,
+will have [A-Za-z0-9] match a different set of ASCII characters than
+[[:alnum:]] will match?
 
-greg k-h
+ - R.
