@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936375AbZLQEPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936401AbZLQERg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936375AbZLQEPf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936165AbZLQEFh
+	id S936401AbZLQERg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936369AbZLQEQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:05:37 -0500
-Received: from kroah.org ([198.145.64.141]:55943 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:16:57 -0500
+Received: from kroah.org ([198.145.64.141]:55949 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935987AbZLQEFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:31 -0500
+	id S935906AbZLQEFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:33 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:59 2009
-Message-Id: <20091217035658.924129678@mini.kroah.org>
+Message-Id: <20091217035659.056372096@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:00 -0800
+Date: Wed, 16 Dec 2009 19:57:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [123/151] memcg: fix memory.memsw.usage_in_bytes for root cgroup
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Len Brown <len.brown@intel.com>
+Subject: [124/151] thinkpad-acpi: fix default brightness_mode for R50e/R51
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,37 +29,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Kirill A. Shutemov <kirill@shutemov.name>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit cd9b45b78a61e8df250e69385c74e729e5b66abf upstream.
+commit a9f8eacca4e9e8693de9b896c1fa7aadaa9402e8 upstream.
 
-A memory cgroup has a memory.memsw.usage_in_bytes file.  It shows the sum
-of the usage of pages and swapents in the cgroup.  Presently the root
-cgroup's memsw.usage_in_bytes shows the wrong value - the number of
-swapents are not added.
+According to a report, the R50e wants EC-based brightness control,
+even if it uses an Intel GPU.  The current driver default was reported
+to not work at all.
 
-So take MEM_CGROUP_STAT_SWAPOUT into account.
+This bug can be worked around by the "brightness_mode=3" module
+parameter.
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Change the default of the R50e and R51 2xxx models (which use the same
+EC firmware, 1V) to TPACPI_BRGHT_Q_EC, but keep TPACPI_BRGHT_Q_ASK set
+for now, as I'd like to get more reports.
+
+This fixes a regression caused by commit
+59fe4fe34d7afdf63208124f313be9056feaa2f4,
+"thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM"
+
+Kernel 2.6.31 also needs this fix.
+
+Reported-by: Ferenc Wagner <wferi@niif.hu>
+Tested-by: Ferenc Wagner <wferi@niif.hu>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: stable@kernel.org
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/memcontrol.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/platform/x86/thinkpad_acpi.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -2541,6 +2541,7 @@ static u64 mem_cgroup_read(struct cgroup
- 			val += idx_val;
- 			mem_cgroup_get_recursive_idx_stat(mem,
- 				MEM_CGROUP_STAT_SWAPOUT, &idx_val);
-+			val += idx_val;
- 			val <<= PAGE_SHIFT;
- 		} else
- 			val = res_counter_read_u64(&mem->memsw, name);
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -6123,8 +6123,8 @@ static const struct tpacpi_quirk brightn
+ 
+ 	/* Models with Intel Extreme Graphics 2 */
+ 	TPACPI_Q_IBM('1', 'U', TPACPI_BRGHT_Q_NOEC),
+-	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
+-	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_NOEC),
++	TPACPI_Q_IBM('1', 'V', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
++	TPACPI_Q_IBM('1', 'W', TPACPI_BRGHT_Q_ASK|TPACPI_BRGHT_Q_EC),
+ 
+ 	/* Models with Intel GMA900 */
+ 	TPACPI_Q_IBM('7', '0', TPACPI_BRGHT_Q_NOEC),	/* T43, R52 */
 
 
