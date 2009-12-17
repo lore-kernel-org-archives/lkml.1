@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763406AbZLPX7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762960AbZLQABj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763406AbZLPX7i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761723AbZLPX7c
+	id S1762960AbZLQABj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbZLQABh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:59:32 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50746 "EHLO mx2.suse.de"
+	Wed, 16 Dec 2009 19:01:37 -0500
+Received: from gold.linx.net ([195.66.232.40]:58580 "EHLO gold.linx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761610AbZLPX7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:59:31 -0500
-Message-ID: <4B2974F0.1030505@novell.com>
-Date: Thu, 17 Dec 2009 09:01:52 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: stable@kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
-       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [stable] [PATCH -stable] vmalloc: conditionalize build of pcpu_get_vm_areas()
-References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <4B1E0E56.8020003@kernel.org> <4B1E1EE60200007800024364@vpn.id2.novell.com> <4B1E1513.3020000@kernel.org> <4B203614.1010907@novell.com> <20091216231210.GB9421@kroah.com>
-In-Reply-To: <20091216231210.GB9421@kroah.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1756078AbZLQABh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:01:37 -0500
+Subject: Re: [git pull] VFS stuff, part 1
+From: Tony Vroon <tony@linx.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091216232729.GO14381@ZenIV.linux.org.uk>
+References: <20091216185157.GL14381@ZenIV.linux.org.uk>
+	 <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com>
+	 <1261004048.3154.2.camel@localhost>
+	 <20091216230711.GN14381@ZenIV.linux.org.uk>
+	 <1261005194.3154.4.camel@localhost>
+	 <20091216232729.GO14381@ZenIV.linux.org.uk>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-g9Ms8W/SgUZH4APcK34u"
+Organization: London Internet Exchange (LINX; AS5459)
+Date: Thu, 17 Dec 2009 00:02:11 +0000
+Message-ID: <1261008131.3026.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Greg.
 
-On 12/17/2009 08:12 AM, Greg KH wrote:
->> Please note that this commit won't appear on upstream.
-> 
-> So this is only needed for the .32 kernel stable tree?  Not .31?  And
-> it's not upstream as it was solved differently there?
+--=-g9Ms8W/SgUZH4APcK34u
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Yeap, .32 is the only affected one and in the upstream the problem is
-solved way back and ia64 is already using the new dynamic allocator.
+On Wed, 2009-12-16 at 23:27 +0000, Al Viro wrote:
+> > Do you want me to revert 1c7c474c31aea6d5cb2fb35f31d9e9e91ae466b1
+> > locally or try linux-2.6 old enough not to have this?
+> The former.
 
-Thanks.
+That resolves the issue completely. I am now able to boot.
 
--- 
-tejun
+Regards,
+Tony V.
+
+--=-g9Ms8W/SgUZH4APcK34u
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.13 (GNU/Linux)
+
+iEYEABECAAYFAkspdQMACgkQp5vW4rUFj5rLNwCfZ3+PpxUl0m6f8/uB1F7vQusf
+YIcAn2IpKfJGfD4sJl+0g6SxcIrsvANq
+=PcAl
+-----END PGP SIGNATURE-----
+
+--=-g9Ms8W/SgUZH4APcK34u--
+
