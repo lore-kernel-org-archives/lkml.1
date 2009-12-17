@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764972AbZLQRKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764987AbZLQRNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764972AbZLQRKo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764962AbZLQRKc
+	id S1764987AbZLQRNq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759483AbZLQRNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:10:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52892 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757585AbZLQRK3 (ORCPT
+	Thu, 17 Dec 2009 12:13:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50863 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759453AbZLQRNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:10:29 -0500
-Date: Thu, 17 Dec 2009 12:10:25 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: tytso@mit.edu, Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James.Bottomley@suse.de, hch@infradead.org, linux-arch@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-Message-ID: <20091217171025.GB10431@infradead.org>
-References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org> <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain> <20091217163036.GE2123@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217163036.GE2123@thunk.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 17 Dec 2009 12:13:44 -0500
+Subject: Re: [Bug][perf hw-breakpoints] Null pointer exception when using
+ register_user_hw_breakpoint with inherit flag
+From: Peter Zijlstra <peterz@infradead.org>
+To: prasad@linux.vnet.ibm.com
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091217170309.GA5457@in.ibm.com>
+References: <20091217170309.GA5457@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 18:13:09 +0100
+Message-ID: <1261069989.27920.604.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 11:30:36AM -0500, tytso@mit.edu wrote:
-> That's because apparently the iSCSI and DMA blocks assume that they
-> have Real Pages (tm) passed to block I/O requests, and apparently XFS
-> ran into problems when sending vmalloc'ed pages.  I don't know if this
-> is a problem if we pass the bio layer addresses coming from the SLAB
-> allocator, but oral tradition seems to indicate this is problematic,
-> although no one has given me the full chapter and verse explanation
-> about why this is so.
+On Thu, 2009-12-17 at 22:33 +0530, K.Prasad wrote:
+> Hi,
+>   While testing out two new interfaces (to be sent separately) that
+> in-turn uses register_user_hw_breakpoint() and unregister_hw_breakpoint(),
+> I noticed the following error.
+> 
+> The bug is seen only when 'inherit' flag of 'perf_event_attr' is set
+> (not otherwise) before the call to register_user_hw_breakpoint(),
+> and when the user-space process tries to spawn a new thread.
+> 
+> Please find the screen logs taken from an x86 box, running -tip kernel 
+> commit 7818b3d0fc68f5c2a85fed86d9fa37131c5a3068.
+> 
+> Digging further, the causative line of code appears to be
+> 
+> 	atomic_long_inc(&parent_event->filp->f_count);
+> 
+> in inherit_event() function, wherein f_count is NULL (and hence the
+> error). I haven't analysed further to understand why/if the said
+> pointer is/should be NULL.
+> 
+> Thought might bring it to the community's notice for wider
+> notice/further investigation.
 
-Actually at least iscsi now has a workaround for that by checking for
-PageSlab.  Back when we deal with the XFS issue that check was only
-available with debug options enabled.  I tried to sort it out by
-agreeing with the block and iscsi folks that either
+Ooh, cute, it seems the inherit code assumes we have a file structure
+around, which isn't true for events that get created through the kernel
+interface.
 
- a) we need to send down refcountable pages
- b) block drivers need to accept kmalloced pages
-
-I could not get any afreement, and thus we stopped using the kmalloced
-pages in XFS which was easy enough.  A bit later people fixed iscsi,
-but we still don't have formal rules about what is acceptable to the
-block layer.
+I think its a simple matter of testing to see if event->filp is set, but
+we'd better audit the code for it.
 
