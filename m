@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936687AbZLQEnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936680AbZLQEmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936687AbZLQEnf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763069AbZLQEnM
+	id S936680AbZLQEmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935752AbZLQEma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:43:12 -0500
-Received: from kroah.org ([198.145.64.141]:55362 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:42:30 -0500
+Received: from kroah.org ([198.145.64.141]:55369 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761558AbZLQEDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:03:55 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:46 2009
-Message-Id: <20091217035646.823076826@mini.kroah.org>
+	id S1763671AbZLQED4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:03:56 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:47 2009
+Message-Id: <20091217035646.953520979@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:27 -0800
+Date: Wed, 16 Dec 2009 19:55:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Carsten Otte <cotte@de.ibm.com>, Avi Kivity <avi@redhat.com>
-Subject: [030/151] KVM: s390: Fix prefix register checking in arch/s390/kvm/sigp.c
+Subject: [031/151] KVM: s390: Make psw available on all exits, not just a subset
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,45 +30,145 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Carsten Otte <carsteno@de.ibm.com>
 
-commit f50146bd7bdb75435638e60d4960edd9bcdf88b8 upstream.
+commit d7b0b5eb3000c6fb902f08c619fcd673a23d8fab upstream.
 
-This patch corrects the checking of the new address for the prefix register.
-On s390, the prefix register is used to address the cpu's lowcore (address
-0...8k). This check is supposed to verify that the memory is readable and
-present.
-copy_from_guest is a helper function, that can be used to read from guest
-memory. It applies prefixing, adds the start address of the guest memory in
-user, and then calls copy_from_user. Previous code was obviously broken for
-two reasons:
-- prefixing should not be applied here. The current prefix register is
-  going to be updated soon, and the address we're looking for will be
-  0..8k after we've updated the register
-- we're adding the guest origin (gmsor) twice: once in subject code
-  and once in copy_from_guest
+This patch moves s390 processor status word into the base kvm_run
+struct and keeps it up-to date on all userspace exits.
 
-With kuli, we did not hit this problem because (a) we were lucky with
-previous prefix register content, and (b) our guest memory was mmaped
-very low into user address space.
+The userspace ABI is broken by this, however there are no applications
+in the wild using this.  A capability check is provided so users can
+verify the updated API exists.
 
 Signed-off-by: Carsten Otte <cotte@de.ibm.com>
-Reported-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/arch/s390/kvm/sigp.c
-+++ b/arch/s390/kvm/sigp.c
-@@ -188,9 +188,9 @@ static int __sigp_set_prefix(struct kvm_vcpu *vcpu, u16 cpu_addr, u32 address,
+---
+ arch/s390/include/asm/kvm.h |    3 ++-
+ arch/s390/kvm/kvm-s390.c    |   25 +++++++++++++++++--------
+ include/linux/kvm.h         |    8 ++++++--
+ 3 files changed, 25 insertions(+), 11 deletions(-)
+
+--- a/arch/s390/include/asm/kvm.h
++++ b/arch/s390/include/asm/kvm.h
+@@ -1,6 +1,5 @@
+ #ifndef __LINUX_KVM_S390_H
+ #define __LINUX_KVM_S390_H
+-
+ /*
+  * asm-s390/kvm.h - KVM s390 specific structures and definitions
+  *
+@@ -15,6 +14,8 @@
+  */
+ #include <linux/types.h>
  
- 	/* make sure that the new value is valid memory */
- 	address = address & 0x7fffe000u;
--	if ((copy_from_guest(vcpu, &tmp,
--		(u64) (address + vcpu->arch.sie_block->gmsor) , 1)) ||
--	   (copy_from_guest(vcpu, &tmp, (u64) (address +
-+	if ((copy_from_user(&tmp, (void __user *)
-+		(address + vcpu->arch.sie_block->gmsor) , 1)) ||
-+	   (copy_from_user(&tmp, (void __user *)(address +
- 			vcpu->arch.sie_block->gmsor + PAGE_SIZE), 1))) {
- 		*reg |= SIGP_STAT_INVALID_PARAMETER;
- 		return 1; /* invalid parameter */
++#define __KVM_S390
++
+ /* for KVM_GET_REGS and KVM_SET_REGS */
+ struct kvm_regs {
+ 	/* general purpose regs for s390 */
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -116,10 +116,16 @@ long kvm_arch_dev_ioctl(struct file *fil
+ 
+ int kvm_dev_ioctl_check_extension(long ext)
+ {
++	int r;
++
+ 	switch (ext) {
++	case KVM_CAP_S390_PSW:
++		r = 1;
++		break;
+ 	default:
+-		return 0;
++		r = 0;
+ 	}
++	return r;
+ }
+ 
+ /* Section: vm related */
+@@ -419,8 +425,10 @@ static int kvm_arch_vcpu_ioctl_set_initi
+ 	vcpu_load(vcpu);
+ 	if (atomic_read(&vcpu->arch.sie_block->cpuflags) & CPUSTAT_RUNNING)
+ 		rc = -EBUSY;
+-	else
+-		vcpu->arch.sie_block->gpsw = psw;
++	else {
++		vcpu->run->psw_mask = psw.mask;
++		vcpu->run->psw_addr = psw.addr;
++	}
+ 	vcpu_put(vcpu);
+ 	return rc;
+ }
+@@ -508,9 +516,6 @@ rerun_vcpu:
+ 
+ 	switch (kvm_run->exit_reason) {
+ 	case KVM_EXIT_S390_SIEIC:
+-		vcpu->arch.sie_block->gpsw.mask = kvm_run->s390_sieic.mask;
+-		vcpu->arch.sie_block->gpsw.addr = kvm_run->s390_sieic.addr;
+-		break;
+ 	case KVM_EXIT_UNKNOWN:
+ 	case KVM_EXIT_INTR:
+ 	case KVM_EXIT_S390_RESET:
+@@ -519,6 +524,9 @@ rerun_vcpu:
+ 		BUG();
+ 	}
+ 
++	vcpu->arch.sie_block->gpsw.mask = kvm_run->psw_mask;
++	vcpu->arch.sie_block->gpsw.addr = kvm_run->psw_addr;
++
+ 	might_fault();
+ 
+ 	do {
+@@ -538,8 +546,6 @@ rerun_vcpu:
+ 		/* intercept cannot be handled in-kernel, prepare kvm-run */
+ 		kvm_run->exit_reason         = KVM_EXIT_S390_SIEIC;
+ 		kvm_run->s390_sieic.icptcode = vcpu->arch.sie_block->icptcode;
+-		kvm_run->s390_sieic.mask     = vcpu->arch.sie_block->gpsw.mask;
+-		kvm_run->s390_sieic.addr     = vcpu->arch.sie_block->gpsw.addr;
+ 		kvm_run->s390_sieic.ipa      = vcpu->arch.sie_block->ipa;
+ 		kvm_run->s390_sieic.ipb      = vcpu->arch.sie_block->ipb;
+ 		rc = 0;
+@@ -551,6 +557,9 @@ rerun_vcpu:
+ 		rc = 0;
+ 	}
+ 
++	kvm_run->psw_mask     = vcpu->arch.sie_block->gpsw.mask;
++	kvm_run->psw_addr     = vcpu->arch.sie_block->gpsw.addr;
++
+ 	if (vcpu->sigset_active)
+ 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+ 
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -116,6 +116,11 @@ struct kvm_run {
+ 	__u64 cr8;
+ 	__u64 apic_base;
+ 
++#ifdef __KVM_S390
++	/* the processor status word for s390 */
++	__u64 psw_mask; /* psw upper half */
++	__u64 psw_addr; /* psw lower half */
++#endif
+ 	union {
+ 		/* KVM_EXIT_UNKNOWN */
+ 		struct {
+@@ -167,8 +172,6 @@ struct kvm_run {
+ 		/* KVM_EXIT_S390_SIEIC */
+ 		struct {
+ 			__u8 icptcode;
+-			__u64 mask; /* psw upper half */
+-			__u64 addr; /* psw lower half */
+ 			__u16 ipa;
+ 			__u32 ipb;
+ 		} s390_sieic;
+@@ -474,6 +477,7 @@ struct kvm_irq_routing {
+ };
+ 
+ #endif
++#define KVM_CAP_S390_PSW 42
+ 
+ #ifdef KVM_CAP_MCE
+ /* x86 MCE */
 
 
