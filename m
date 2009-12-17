@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbZLQA5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763474AbZLQA52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933724AbZLQA5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbZLQA5P
+	id S1763474AbZLQA52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbZLQA5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:57:15 -0500
-Received: from kroah.org ([198.145.64.141]:44481 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 19:57:13 -0500
+Received: from kroah.org ([198.145.64.141]:44485 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755796AbZLQAyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:54:37 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 16:47:07 2009
-Message-Id: <20091217004707.741791752@mini.kroah.org>
+	id S1759235AbZLQAyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:54:38 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 16:47:08 2009
+Message-Id: <20091217004707.899625984@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 16:45:57 -0800
+Date: Wed, 16 Dec 2009 16:45:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [06/18] pata_hpt{37x|3x2n}: fix timing register masks (take 2)
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [07/18] ssb: Fix range check in sprom write
 In-Reply-To: <20091217005306.GA6230@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,173 +28,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Michael Buesch <mb@bu3sch.de>
 
-commit 5600c70e576199a7552e1c0fff43f3fe16f5566e upstream.
+commit e33761e6f23881de9f3ee77cc2204ab2e26f3d9a upstream.
 
-These drivers inherited from the older 'hpt366' IDE driver the buggy timing
-register masks in their set_piomode() metods. As a result, too low command
-cycle active time is programmed for slow PIO modes.  Quite fortunately, it's
-later "fixed up" by the set_dmamode() methods which also "helpfully" reprogram
-the command timings, usually to PIO mode 4; unfortunately, setting an UltraDMA
-mode #N also reprograms already set PIO data timings, usually to MWDMA mode #
-max(N, 2) timings...
+The range check in the sprom image parser hex2sprom() is broken.
+One sprom word is 4 hex characters.
+This fixes the check and also adds much better sanity checks to the code.
+We better make sure the image is OK by doing some sanity checks to avoid
+bricking the device by accident.
 
-However, the drivers added some breakage of their own too:  the bit that they
-set/clear to control the FIFO is sometimes wrong -- it's actually the MSB of
-the command cycle setup time; also, setting it in DMA mode is wrong as this
-bit is only for PIO actually and clearing it for PIO modes is not needed as
-no mode in any timing table has it set...
-
-Fix all this, inverting the masks while at it, like in the 'hpt366' and
-'pata_hpt366' drivers; bump the drivers' versions, accounting for recent
-patches that forgot to do it...
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/pata_hpt37x.c  |   32 +++++++++++++++-----------------
- drivers/ata/pata_hpt3x2n.c |   17 ++++++++---------
- 2 files changed, 23 insertions(+), 26 deletions(-)
+ drivers/ssb/sprom.c |   20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
---- a/drivers/ata/pata_hpt37x.c
-+++ b/drivers/ata/pata_hpt37x.c
-@@ -24,7 +24,7 @@
- #include <linux/libata.h>
+--- a/drivers/ssb/sprom.c
++++ b/drivers/ssb/sprom.c
+@@ -13,6 +13,8 @@
  
- #define DRV_NAME	"pata_hpt37x"
--#define DRV_VERSION	"0.6.12"
-+#define DRV_VERSION	"0.6.14"
+ #include "ssb_private.h"
  
- struct hpt_clock {
- 	u8	xfer_speed;
-@@ -404,9 +404,8 @@ static void hpt370_set_piomode(struct at
- 
- 	pci_read_config_dword(pdev, addr1, &reg);
- 	mode = hpt37x_find_mode(ap, adev->pio_mode);
--	mode &= ~0x8000000;	/* No FIFO in PIO */
--	mode &= ~0x30070000;	/* Leave config bits alone */
--	reg &= 0x30070000;	/* Strip timing bits */
-+	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
-+	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
- 	pci_write_config_dword(pdev, addr1, reg | mode);
- }
- 
-@@ -423,8 +422,7 @@ static void hpt370_set_dmamode(struct at
- {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
- 	u32 addr1, addr2;
--	u32 reg;
--	u32 mode;
-+	u32 reg, mode, mask;
- 	u8 fast;
- 
- 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
-@@ -436,11 +434,12 @@ static void hpt370_set_dmamode(struct at
- 	fast |= 0x01;
- 	pci_write_config_byte(pdev, addr2, fast);
- 
-+	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
++#include <linux/ctype.h>
 +
- 	pci_read_config_dword(pdev, addr1, &reg);
- 	mode = hpt37x_find_mode(ap, adev->dma_mode);
--	mode |= 0x8000000;	/* FIFO in MWDMA or UDMA */
--	mode &= ~0xC0000000;	/* Leave config bits alone */
--	reg &= 0xC0000000;	/* Strip timing bits */
-+	mode &= mask;
-+	reg &= ~mask;
- 	pci_write_config_dword(pdev, addr1, reg | mode);
- }
  
-@@ -508,9 +507,8 @@ static void hpt372_set_piomode(struct at
- 	mode = hpt37x_find_mode(ap, adev->pio_mode);
- 
- 	printk("Find mode for %d reports %X\n", adev->pio_mode, mode);
--	mode &= ~0x80000000;	/* No FIFO in PIO */
--	mode &= ~0x30070000;	/* Leave config bits alone */
--	reg &= 0x30070000;	/* Strip timing bits */
-+	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
-+	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
- 	pci_write_config_dword(pdev, addr1, reg | mode);
- }
- 
-@@ -527,8 +525,7 @@ static void hpt372_set_dmamode(struct at
+ static int sprom2hex(const u16 *sprom, char *buf, size_t buf_len,
+ 		     size_t sprom_size_words)
+@@ -30,17 +32,27 @@ static int sprom2hex(const u16 *sprom, c
+ static int hex2sprom(u16 *sprom, const char *dump, size_t len,
+ 		     size_t sprom_size_words)
  {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
- 	u32 addr1, addr2;
--	u32 reg;
--	u32 mode;
-+	u32 reg, mode, mask;
- 	u8 fast;
+-	char tmp[5] = { 0 };
+-	int cnt = 0;
++	char c, tmp[5] = { 0 };
++	int err, cnt = 0;
+ 	unsigned long parsed;
  
- 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
-@@ -539,12 +536,13 @@ static void hpt372_set_dmamode(struct at
- 	fast &= ~0x07;
- 	pci_write_config_byte(pdev, addr2, fast);
+-	if (len < sprom_size_words * 2)
++	/* Strip whitespace at the end. */
++	while (len) {
++		c = dump[len - 1];
++		if (!isspace(c) && c != '\0')
++			break;
++		len--;
++	}
++	/* Length must match exactly. */
++	if (len != sprom_size_words * 4)
+ 		return -EINVAL;
  
-+	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
-+
- 	pci_read_config_dword(pdev, addr1, &reg);
- 	mode = hpt37x_find_mode(ap, adev->dma_mode);
- 	printk("Find mode for DMA %d reports %X\n", adev->dma_mode, mode);
--	mode &= ~0xC0000000;	/* Leave config bits alone */
--	mode |= 0x80000000;	/* FIFO in MWDMA or UDMA */
--	reg &= 0xC0000000;	/* Strip timing bits */
-+	mode &= mask;
-+	reg &= ~mask;
- 	pci_write_config_dword(pdev, addr1, reg | mode);
- }
- 
---- a/drivers/ata/pata_hpt3x2n.c
-+++ b/drivers/ata/pata_hpt3x2n.c
-@@ -25,7 +25,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME	"pata_hpt3x2n"
--#define DRV_VERSION	"0.3.4"
-+#define DRV_VERSION	"0.3.7"
- 
- enum {
- 	HPT_PCI_FAST	=	(1 << 31),
-@@ -185,9 +185,8 @@ static void hpt3x2n_set_piomode(struct a
- 
- 	pci_read_config_dword(pdev, addr1, &reg);
- 	mode = hpt3x2n_find_mode(ap, adev->pio_mode);
--	mode &= ~0x8000000;	/* No FIFO in PIO */
--	mode &= ~0x30070000;	/* Leave config bits alone */
--	reg &= 0x30070000;	/* Strip timing bits */
-+	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
-+	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
- 	pci_write_config_dword(pdev, addr1, reg | mode);
- }
- 
-@@ -204,8 +203,7 @@ static void hpt3x2n_set_dmamode(struct a
- {
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
- 	u32 addr1, addr2;
--	u32 reg;
--	u32 mode;
-+	u32 reg, mode, mask;
- 	u8 fast;
- 
- 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
-@@ -216,11 +214,12 @@ static void hpt3x2n_set_dmamode(struct a
- 	fast &= ~0x07;
- 	pci_write_config_byte(pdev, addr2, fast);
- 
-+	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
-+
- 	pci_read_config_dword(pdev, addr1, &reg);
- 	mode = hpt3x2n_find_mode(ap, adev->dma_mode);
--	mode |= 0x8000000;	/* FIFO in MWDMA or UDMA */
--	mode &= ~0xC0000000;	/* Leave config bits alone */
--	reg &= 0xC0000000;	/* Strip timing bits */
-+	mode &= mask;
-+	reg &= ~mask;
- 	pci_write_config_dword(pdev, addr1, reg | mode);
- }
+ 	while (cnt < sprom_size_words) {
+ 		memcpy(tmp, dump, 4);
+ 		dump += 4;
+-		parsed = simple_strtoul(tmp, NULL, 16);
++		err = strict_strtoul(tmp, 16, &parsed);
++		if (err)
++			return err;
+ 		sprom[cnt++] = swab16((u16)parsed);
+ 	}
  
 
 
