@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765034AbZLQR0C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765048AbZLQR0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765034AbZLQR0C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:26:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764995AbZLQR0B
+	id S1765048AbZLQR0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765042AbZLQR0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:26:01 -0500
-Received: from outbound-mail-317.bluehost.com ([67.222.54.10]:42242 "HELO
-	outbound-mail-317.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759518AbZLQR0A (ORCPT
+	Thu, 17 Dec 2009 12:26:11 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:55935 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765038AbZLQR0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:26:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=sfP/ANrzyWEDnDASeIEGCCD2cioVtSLObWc+BRAZYFywmuH1lVaovpk3m2hr3+phX+RdzpEzfjJSAvLEglxLnXEKr0yRYF5utrqPVuhq7u0Z+PgVnepEc/3wB8NJHA2W;
-Date: Thu, 17 Dec 2009 09:25:23 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: keithp@keithp.com, Daniel Vetter <daniel.vetter@ffwll.ch>,
-       linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
- when ..."
-Message-ID: <20091217092523.755ecf29@jbarnes-piketon>
-In-Reply-To: <200912162241.27591.arnd@arndb.de>
-References: <200912071830.14697.arnd@arndb.de>
-	<20091216133005.0e822950@jbarnes-piketon>
-	<200912162136.36458.arnd@arndb.de>
-	<200912162241.27591.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Thu, 17 Dec 2009 12:26:08 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+pxng68ubTLbCg4ZhiJHys
+Date: Thu, 17 Dec 2009 09:26:01 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Sid Boyce <sboyce@blueyonder.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: Re: [GIT PULL] omap build fixes
+Message-ID: <20091217172600.GY4575@atomide.com>
+References: <20091216223520.GV4575@atomide.com>
+ <4B2A1635.1080505@blueyonder.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2A1635.1080505@blueyonder.co.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Dec 2009 22:41:27 +0000
-Arnd Bergmann <arnd@arndb.de> wrote:
+* Sid Boyce <sboyce@blueyonder.co.uk> [091217 03:29]:
 
-> On Wednesday 16 December 2009 21:36:36 Arnd Bergmann wrote:
-> > On Wednesday 16 December 2009 21:30:05 Jesse Barnes wrote:
-> > > But you're sure powersave=0 was solid?  Hmm...
-> > 
-> > It's hard to be sure when it sometimes takes a day before a
-> > broken version crashes. I can keep running this kernel with and
-> > without powersave=0 some more and tell you if it stays reproducible.
-> 
-> Now it has crashed with i915.powersave=0 plus your patch as well
-> (latest 2.6.32 git), indicating that there is something else wrong
-> with the original 652c393a33 patch.
+<snip>
+ 
+> uImage built, so EHCI build problem definitely fixed, just one error
+> I've previously encountered when building modules.
+> slipstream:/home/lancelot/ftp/dec09/OMAP/omap-fixes-for-linus # ARCH=arm
+> make -j 4 CROSS_COMPILE=/opt/arm-2009q3/bin/arm-none-eabi- modules
+> scripts/kconfig/conf -s arch/arm/Kconfig
+>   CHK     include/linux/version.h
+>   SYMLINK include/asm -> include/asm-arm
+> make[1]: `include/asm-arm/mach-types.h' is up to date.
+>   CHK     include/linux/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+> <stdin>:1523: warning: #warning syscall recvmmsg not implemented
+>   Building modules, stage 2.
+>   MODPOST 99 modules
+> ERROR: "omap_ctrl_writel" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
+> ERROR: "omap_ctrl_readl" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
 
-It does very little else that should affect things.  You're sure
-reverting the commit makes things ok?
+Hmm. I'm not seeing this in any of the defconfigs, so I guess this
+happens with ASoC complied as a module.
 
-Other potential problems:
-  - clock gating (the call to intel_init_clock_gating)
-  - the actual mark_busy stuff itself (calls to intel_mark_busy)
-  - intel_idle_update (but powersave=0 should prevent that)
+But instead of exporting omap_ctrl_read/write, we need to get rid of 
+omap_ctrl_read/write stuff in the drivers.
 
-If you want to keep testing you could try removing those calls...
+It seems that omap_mcbsp_dai_set_clks_src() should be implemented in
+the clock framework instead.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Regards,
+
+Tony
