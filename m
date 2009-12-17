@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934678AbZLQDbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934844AbZLQDlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934678AbZLQDbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 22:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933401AbZLQDbg
+	id S934844AbZLQDlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 22:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZLQDlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 22:31:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34632 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932801AbZLQDbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 22:31:35 -0500
-Message-ID: <4B29A686.9070603@redhat.com>
-Date: Wed, 16 Dec 2009 22:33:26 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 16 Dec 2009 22:41:19 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:60198 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756609AbZLQDlS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 22:41:18 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Rob Landley <rob@landley.net>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org> <adabphy750b.fsf@roland-alpha.cisco.com>
-In-Reply-To: <adabphy750b.fsf@roland-alpha.cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [GIT PULL] XFS update for 2.6.33-rc1
+Date: Wed, 16 Dec 2009 21:41:12 -0600
+Message-ID: <1AB9A794DBDDF54A8A81BE2296F7BDFE012A687F@cf--amer001e--3.americas.sgi.com>
+In-Reply-To: <20091217002007.GF4850@discord.disaster>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [GIT PULL] XFS update for 2.6.33-rc1
+Thread-Index: Acp+rtLinScZ3n6tRT+GK2bBC3GDjQAG4H0A
+From: "Alex Elder" <aelder@sgi.com>
+To: "Dave Chinner" <david@fromorbit.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <xfs@oss.sgi.com>, <akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Is there any reason not to apply the patch below, to allow more awk
-> implementations to be used?  After all, it's not like we're going to put
-> non-ASCII characters into the map file...
+Dave Chinner wrote:
+> On Wed, Dec 16, 2009 at 01:55:12PM -0800, Randy Dunlap wrote:
+>> On Wed, 16 Dec 2009 15:26:10 -0600 Alex Elder wrote:
+>> 
+>>> One more XFS update for -rc1, now that the new XFS tracing code has
+>>> been committed.
+>> 
+>> Sorry if I have missed it, but have the printk format warnings
+>> on i386 builds been fixed?
+> 
+> I don't see any here w/ gcc 4.3.4 x86-64 compiling i386 kernels....
 
-Actually, the reason why I decided to use character classes is
-[a-z] wasn't same as [[:lower:]] on some environment.
+I didn't get them either when I built in my environment.
 
-       For  example,  before the POSIX standard, to match alphanumeric charac-
-       ters, you would have had to write /[A-Za-z0-9]/.  If your character set
-       had  other  alphabetic characters in it, this would not match them, and
-       if your character set collated differently from ASCII, this  might  not
-       even match the ASCII alphanumeric characters.  With the POSIX character
-       classes, you can write /[[:alnum:]]/, and this matches  the  alphabetic
-       and numeric characters in your character set, no matter what it is.
+Dave, your patch looks good to me, and Randy has acked it
+so I'm going to pull it into our XFS top-of-tree.  I'll
+hold off sending yet another pull request to Linus for
+now.  Thanks for addressing it quickly.
 
-It seems that "your character set" doesn't mean "what character set are used
- in the data", it means "what character set build env. is using".
-
-So, actually, my first released script had used [a-z], but I needed to
-move onto [[:lower:]].
-
-Thank you,
+					-Alex
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+> /me hates gcc's warning inconsistencies with a passion.
+> 
+>> e.g.:
+>> 
+>> In file included from linux-next-20091216/include/trace/ftrace.h:398,
+>>                  from linux-next-20091216/include/trace/define_trace.h:69,
+>>                  from linux-next-20091216/fs/xfs/linux-2.6/xfs_trace.h:1369,
+>>                  from linux-next-20091216/fs/xfs/linux-2.6/xfs_trace.c:75:
+>> linux-next-20091216/fs/xfs/linux-2.6/./xfs_trace.h: In function
+>> 'ftrace_raw_output_id_xfs_iomap_enter': linux-next-20091216/fs/xfs/linux-2.6/./xfs_trace.h:830:
+>> warning: format '%llx' expects type 'long long unsigned int', but argument 12 has type
+>> 'xfs_fsblock_t'  
+> 
+> Patch that should fix this below.
+> 
+> Cheers,
+> 
+> Dave.
 
