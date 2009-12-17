@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbZLQFar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZLQFnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752190AbZLQFar (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 00:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZLQFap
+	id S1752737AbZLQFnG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 00:43:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbZLQFnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 00:30:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39021 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbZLQFam (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 00:30:42 -0500
-Message-ID: <4B29C02B.80707@zytor.com>
-Date: Wed, 16 Dec 2009 21:22:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 17 Dec 2009 00:43:00 -0500
+Received: from ozlabs.org ([203.10.76.45]:37798 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752505AbZLQFnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 00:43:00 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [this_cpu_xx V7 7/8] Module handling: Use this_cpu_xx to dynamically allocate counters
+Date: Thu, 17 Dec 2009 16:12:53 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+References: <20091214220320.665065925@quilx.com> <alpine.DEB.2.00.0912160900470.8572@router.home> <4B297A69.2010504@kernel.org>
+In-Reply-To: <4B297A69.2010504@kernel.org>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Roland Dreier <rdreier@cisco.com>, Andrew Isaacson <adi@vmware.com>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Rob Landley <rob@landley.net>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org>	<adabphy750b.fsf@roland-alpha.cisco.com> <4B299AB5.7020109@zytor.com> <ada7hsm6y3g.fsf@roland-alpha.cisco.com> <4B29BC90.9090204@zytor.com> <4B29BFF1.6090304@redhat.com>
-In-Reply-To: <4B29BFF1.6090304@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912171612.54117.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/16/2009 09:21 PM, Masami Hiramatsu wrote:
+On Thu, 17 Dec 2009 10:55:13 am Tejun Heo wrote:
+> Hello,
 > 
-> Hmm, it's complicated :(.  Peter, Roland, I don't want to be annoyed
-> by those environmental variables. If my last suggestion is acceptable,
-> could you do as below on your patch :)?
+> On 12/17/2009 01:10 AM, Christoph Lameter wrote:
+> > Fixup patch:
+> > 
+> > Subject: Extend preempt_disable section around module_is_live()
+> > 
+> > Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 > 
+> Looks good to me but as the patch currently isn't any tree, it'll
+> probably be better to merge it into the original patch.  Rusty, do you
+> want to take this one?  If not, I can route it through percpu tree.
 
-See my posted patch - I think it is better.  We're going to have this
-problem again, guaranteed, unless we do something like it anyway.
+Easiest to go with your stuff I think:
 
-	-hpa
+	Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Thanks,
+Rusty.
