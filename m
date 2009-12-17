@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965072AbZLQEOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933225AbZLQEML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965072AbZLQEOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935765AbZLQEOU
+	id S933225AbZLQEML (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:12:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936186AbZLQEFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:14:20 -0500
-Received: from kroah.org ([198.145.64.141]:55990 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:05:46 -0500
+Received: from kroah.org ([198.145.64.141]:56000 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936173AbZLQEFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:42 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:59 2009
-Message-Id: <20091217035659.846589056@mini.kroah.org>
+	id S936179AbZLQEFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:44 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:57:00 2009
+Message-Id: <20091217035659.980303721@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:07 -0800
+Date: Wed, 16 Dec 2009 19:57:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Renninger <trenn@suse.de>,
-       =?ISO-8859-15?q?Peter=20K=C3=BCppers?= <peter-mailbox@web.de>,
-       Michael Franzl <michaelfranzl@gmx.at>, Ian Turner <vectro@vectro.org>,
-       Corentin Chary <corentincj@iksaif.net>, Len Brown <len.brown@intel.com>
-Subject: [130/151] asus-laptop: change light sens default values.
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       Jan Beulich <JBeulich@novell.com>, linux-mm@kvack.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>, Tejun Heo <tj@kernel.org>
+Subject: [131/151] vmalloc: conditionalize build of pcpu_get_vm_areas()
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,50 +30,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Corentin Chary <corentincj@iksaif.net>
+From: Tejun Heo <teheo@novell.com>
 
-commit d951d4cc84e8b5ddb8e0ab81cf6a72cc73fdd668 upstream.
+No matching upstream commit as it was resolved differently there.
 
-The light sensor disable brightness key and
-/sys/class/backlight/ control. There was a lot of report
-from users who didn't understand why they couldn't change their
-brightness, including:
 
-https://bugs.launchpad.net/bugs/222171
-https://bugzilla.novell.com/show_bug.cgi?id=514747
-http://bugzilla.kernel.org/show_bug.cgi?id=13671
-http://bugzilla.kernel.org/show_bug.cgi?id=14432
+pcpu_get_vm_areas() is used only when dynamic percpu allocator is used
+by the architecture.  In 2.6.32, ia64 doesn't use dynamic percpu
+allocator and has a macro which makes pcpu_get_vm_areas() buggy via
+local/global variable aliasing and triggers compile warning.
 
-Now the light sensor is disabled, and if the user want to enable
-it, the level should be ok.
+The problem is fixed in upstream and ia64 uses dynamic percpu
+allocators, so the only left issue is inclusion of unnecessary code
+and compile warning on ia64 on 2.6.32.
 
-The funny thing is that comments where ok, not code.
+Don't build pcpu_get_vm_areas() if legacy percpu allocator is in use.
 
-Cc: stable@kernel.org
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Peter Küppers <peter-mailbox@web.de>
-Cc: Michael Franzl <michaelfranzl@gmx.at>
-Cc: Ian Turner <vectro@vectro.org>
-Signed-off-by: Corentin Chary <corentincj@iksaif.net>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Jan Beulich <JBeulich@novell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/asus-laptop.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/vmalloc.h |    2 ++
+ mm/vmalloc.c            |    2 ++
+ 2 files changed, 4 insertions(+)
 
---- a/drivers/platform/x86/asus-laptop.c
-+++ b/drivers/platform/x86/asus-laptop.c
-@@ -1283,8 +1283,8 @@ static int asus_hotk_add(struct acpi_dev
- 	hotk->ledd_status = 0xFFF;
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -115,9 +115,11 @@ extern rwlock_t vmlist_lock;
+ extern struct vm_struct *vmlist;
+ extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
  
- 	/* Set initial values of light sensor and level */
--	hotk->light_switch = 1;	/* Default to light sensor disabled */
--	hotk->light_level = 0;	/* level 5 for sensor sensitivity */
-+	hotk->light_switch = 0;	/* Default to light sensor disabled */
-+	hotk->light_level = 5;	/* level 5 for sensor sensitivity */
++#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
+ struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
+ 				     const size_t *sizes, int nr_vms,
+ 				     size_t align, gfp_t gfp_mask);
++#endif
  
- 	if (ls_switch_handle)
- 		set_light_sens_switch(hotk->light_switch);
+ void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms);
+ 
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -1993,6 +1993,7 @@ void free_vm_area(struct vm_struct *area
+ }
+ EXPORT_SYMBOL_GPL(free_vm_area);
+ 
++#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
+ static struct vmap_area *node_to_va(struct rb_node *n)
+ {
+ 	return n ? rb_entry(n, struct vmap_area, rb_node) : NULL;
+@@ -2257,6 +2258,7 @@ err_free:
+ 	kfree(vms);
+ 	return NULL;
+ }
++#endif
+ 
+ /**
+  * pcpu_free_vm_areas - free vmalloc areas for percpu allocator
 
 
