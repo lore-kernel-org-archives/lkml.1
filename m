@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965116AbZLQPRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbZLQPS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965116AbZLQPRy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936342AbZLQPRs
+	id S965128AbZLQPS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965125AbZLQPSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:17:48 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:53719 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936196AbZLQPRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:17:46 -0500
-Subject: [PATCH] ext4: return correct wbc.nr_to_write in ext4_da_writepages
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: tytso@mit.edu, adilger@sun.com
-Cc: linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 17 Dec 2009 15:17:43 +0000
-Message-Id: <1261063063.4882.38.camel@castor>
+	Thu, 17 Dec 2009 10:18:16 -0500
+Received: from lo.gmane.org ([80.91.229.12]:55386 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965123AbZLQPSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:18:14 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Lukasz Sokol <el.es.cr@gmail.com>
+Subject: Re: Rfkill buttons : bi-stable, mono-stable, tactile
+Date: Thu, 17 Dec 2009 15:17:51 +0000 (UTC)
+Message-ID: <loom.20091217T161042-883@post.gmane.org>
+References: <loom.20091217T122606-341@post.gmane.org> <20091217150709.GA6375@srcf.ucam.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: sea.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 86.152.73.88 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext4: always re-base nr_to_write in ext4_da_writepages
+Matthew Garrett <mjg59 <at> srcf.ucam.org> writes:
 
-When ext4_da_writepages increases the nr_to_write in writeback_control
-then it must always re-base the return value.
+> > The Internet is almost 'flooded' with reports of this not working on various
+> > distributions, that's why decided to go a level higher.
+> 
+> What do you mean by "not working"? You don't really explain what the 
+> issue you're seeing is.
+> 
 
-Without this change, when wb_writeback calculates how many pages were
-actually written it can get a negative value and loop more times than
-necessary. In tests I have seen nearly all the dirty pages pushed out to
-writeback due to this issue.
+Hello Matthew,
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+I define "not working" in this case by "it switches hardware on/off without the
+software knowing". 
 
-----
+i.e. the rfkill does not know, and the 'problem' is only noticed when the wifi
+disassociates (but Network Manager tries on to reconnect). On the other hand,
+invoking /sbin/rfkill [un]block wifi blocks/unblocks wifi comfortably.
 
-patch against 2.6.32
-tested on x86_64
-
-wb_writeback calculates (MAX_WRITE_PAGES - nr_to_write) & cannot know
-that the value got changed.
-
-I'm not sure what the test I removed was for.
-Perhaps 
-	if (nr_to_writebump)
-		wbc->nr_to_write -= nr_to_writebump;
-was intended?
-
-regards
-Richard
-
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 2c8caa5..52a573c 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -2999,8 +2999,7 @@ retry:
- out_writepages:
- 	if (!no_nrwrite_index_update)
- 		wbc->no_nrwrite_index_update = 0;
--	if (wbc->nr_to_write > nr_to_writebump)
--		wbc->nr_to_write -= nr_to_writebump;
-+	wbc->nr_to_write -= nr_to_writebump;
- 	wbc->range_start = range_start;
- 	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
- 	return ret;
 
 
