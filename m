@@ -1,30 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763909AbZLQEjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936667AbZLQElH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763909AbZLQEjJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763953AbZLQEEE
+	id S936667AbZLQElH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:41:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935752AbZLQEkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:04:04 -0500
-Received: from kroah.org ([198.145.64.141]:55386 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:40:43 -0500
+Received: from kroah.org ([198.145.64.141]:55396 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763277AbZLQED7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:03:59 -0500
+	id S1763942AbZLQEEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:04:00 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:47 2009
-Message-Id: <20091217035647.346284061@mini.kroah.org>
+Message-Id: <20091217035647.478189845@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:31 -0800
+Date: Wed, 16 Dec 2009 19:55:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Law <law@redhat.com>,
-       gcc@gcc.gnu.org, David Daney <ddaney@caviumnetworks.com>,
-       Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>
-Subject: [034/151] x86: Prevent GCC 4.4.x (pentium-mmx et al) function prologue wreckage
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [035/151] x86: Use -maccumulate-outgoing-args for sane mcount prologues
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -36,99 +30,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 746357d6a526d6da9d89a2ec645b28406e959c2e upstream.
+commit b8b7d791a8ff01d2380089279a69afa99115fb23 upstream.
 
-When the kernel is compiled with -pg for tracing GCC 4.4.x inserts
-stack alignment of a function _before_ the mcount prologue if the
--march=pentium-mmx is set and -mtune=generic is not set. This breaks
-the assumption of the function graph tracer which expects that the
-mcount prologue
+commit 746357d (x86: Prevent GCC 4.4.x (pentium-mmx et al) function
+prologue wreckage) uses -mtune=generic to work around the function
+prologue problem with mcount on -march=pentium-mmx and others.
 
-       push %ebp
-       mov  %esp, %ebp
+Jakub pointed out that we can use -maccumulate-outgoing-args instead
+which is selected by -mtune=generic and prevents the problem without
+losing the -march specific optimizations.
 
-is the first stack operation in a function because it needs to modify
-the function return address on the stack to trap into the tracer
-before returning to the real caller.
-
-The generated code is:
-
-        push   %edi
-        lea    0x8(%esp),%edi
-        and    $0xfffffff0,%esp
-        pushl  -0x4(%edi)
-        push   %ebp
-        mov    %esp,%ebp
-
-so the tracer modifies the copy of the return address which is stored
-after the stack alignment and therefor does not trap the return which
-in turn breaks the call chain logic of the tracer and leads to a
-kernel panic.
-
-Aside of the fact that the generated code is horrible for no good
-reason other -march -mtune options generate the expected:
-
-        push   %ebp
-        mov    %esp,%ebp
-        and    $0xfffffff0,%esp
-
-which does the same and keeps everything intact.
-
-After some experimenting we found out that this problem is restricted
-to gcc4.4.x and to the following -march settings:
-
-i586, pentium, pentium-mmx, k6, k6-2, k6-3, winchip-c6, winchip2, c3,
-geode
-
-By adding -mtune=generic the code generator produces always the
-expected code.
-
-So forcing -mtune=generic when CONFIG_FUNCTION_GRAPH_TRACER=y is not
-pretty, but at the moment the only way to prevent that the kernel
-trips over gcc-shrooms induced code madness.
-
-Most distro kernels have CONFIG_X86_GENERIC=y anyway which forces
--mtune=generic as well so it will not impact those.
-
-
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-
+Pointed-out-by: Jakub Jelinek <jakub@redhat.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-Cc: Jeff Law <law@redhat.com>
-Cc: gcc@gcc.gnu.org
-Cc: David Daney <ddaney@caviumnetworks.com>
-Cc: Andrew Haley <aph@redhat.com>
-Cc: Richard Guenther <richard.guenther@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Makefile_32.cpu |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/x86/Makefile_32.cpu |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 --- a/arch/x86/Makefile_32.cpu
 +++ b/arch/x86/Makefile_32.cpu
-@@ -46,6 +46,12 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pen
- # cpu entries
- cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
+@@ -49,8 +49,9 @@ cflags-$(CONFIG_X86_GENERIC) 	+= $(call 
+ # Work around the pentium-mmx code generator madness of gcc4.4.x which
+ # does stack alignment by generating horrible code _before_ the mcount
+ # prologue (push %ebp, mov %esp, %ebp) which breaks the function graph
+-# tracer assumptions
+-cflags-$(CONFIG_FUNCTION_GRAPH_TRACER) += $(call cc-option,-mtune=generic)
++# tracer assumptions. For i686, generic, core2 this is set by the
++# compiler anyway
++cflags-$(CONFIG_FUNCTION_GRAPH_TRACER) += $(call cc-option,-maccumulate-outgoing-args)
  
-+# Work around the pentium-mmx code generator madness of gcc4.4.x which
-+# does stack alignment by generating horrible code _before_ the mcount
-+# prologue (push %ebp, mov %esp, %ebp) which breaks the function graph
-+# tracer assumptions
-+cflags-$(CONFIG_FUNCTION_GRAPH_TRACER) += $(call cc-option,-mtune=generic)
-+
  # Bug fix for binutils: this option is required in order to keep
  # binutils from generating NOPL instructions against our will.
- ifneq ($(CONFIG_X86_P6_NOP),y)
 
 
