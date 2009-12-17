@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbZLREPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935367AbZLQWWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752576AbZLREPS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 23:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZLREPQ
+	id S935367AbZLQWWH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 17:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934184AbZLQWWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 23:15:16 -0500
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:58516 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750901AbZLREPP (ORCPT
+	Thu, 17 Dec 2009 17:22:05 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:56696 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932125AbZLQWWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 23:15:15 -0500
-X-Greylist: delayed 21506 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 23:15:15 EST
-Message-ID: <4B2AADCD.4080802@blueyonder.co.uk>
-Date: Thu, 17 Dec 2009 22:16:45 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0 ThunderBrowse/3.2.6.8
+	Thu, 17 Dec 2009 17:22:04 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=H2Rom963gjvaIv9XMyakmGnDDTChU2xxXurGj3u5lK7O3RJe89YI4qrZw+UvM9gZN
+	7tyJFjZLHAGQtKCmQfWbQ==
+Date: Thu, 17 Dec 2009 14:21:49 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v4.2
+In-Reply-To: <20091215135902.CDD6.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0912171412280.4089@chino.kir.corp.google.com>
+References: <20091215133546.6872fc4f.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0912142046070.436@chino.kir.corp.google.com> <20091215135902.CDD6.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Tony Lindgren <tony@atomide.com>
-CC: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: Re: [GIT PULL] omap build fixes
-References: <20091216223520.GV4575@atomide.com> <4B2A1635.1080505@blueyonder.co.uk> <20091217172600.GY4575@atomide.com>
-In-Reply-To: <20091217172600.GY4575@atomide.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/12/09 17:26, Tony Lindgren wrote:
-> * Sid Boyce <sboyce@blueyonder.co.uk> [091217 03:29]:
+On Tue, 15 Dec 2009, KOSAKI Motohiro wrote:
+
+> > A few requirements that I have:
 > 
-> <snip>
->  
->> uImage built, so EHCI build problem definitely fixed, just one error
->> I've previously encountered when building modules.
->> slipstream:/home/lancelot/ftp/dec09/OMAP/omap-fixes-for-linus # ARCH=arm
->> make -j 4 CROSS_COMPILE=/opt/arm-2009q3/bin/arm-none-eabi- modules
->> scripts/kconfig/conf -s arch/arm/Kconfig
->>   CHK     include/linux/version.h
->>   SYMLINK include/asm -> include/asm-arm
->> make[1]: `include/asm-arm/mach-types.h' is up to date.
->>   CHK     include/linux/utsrelease.h
->>   CALL    scripts/checksyscalls.sh
->> <stdin>:1523: warning: #warning syscall recvmmsg not implemented
->>   Building modules, stage 2.
->>   MODPOST 99 modules
->> ERROR: "omap_ctrl_writel" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
->> ERROR: "omap_ctrl_readl" [sound/soc/omap/snd-soc-omap-mcbsp.ko] undefined!
->> make[1]: *** [__modpost] Error 1
->> make: *** [modules] Error 2
+> Um, good analysis! really.
 > 
-> Hmm. I'm not seeing this in any of the defconfigs, so I guess this
-> happens with ASoC complied as a module.
+> >
+> >  - we must be able to define when a task is a memory hogger; this is
+> >    currently done by /proc/pid/oom_adj relying on the overall total_vm
+> >    size of the task as a baseline.  Most users should have a good sense
+> >    of when their task is using more memory than expected and killing a
+> >    memory leaker should always be the optimal oom killer result.  A better 
+> >    set of units other than a shift on total_vm would be helpful, though.
 > 
-> But instead of exporting omap_ctrl_read/write, we need to get rid of 
-> omap_ctrl_read/write stuff in the drivers.
+> nit: What's mean "Most users"? desktop user(one of most majority users)
+> don't have any expection of memory usage.
 > 
-> It seems that omap_mcbsp_dai_set_clks_src() should be implemented in
-> the clock framework instead.
+> but, if admin have memory expection, they should be able to tune
+> optimal oom result.
 > 
-> Regards,
-> 
-> Tony
-> 
+> I think you pointed right thing.
 > 
 
-Confirmed it works when compiled in.
-Regards
-Sid.
+This is mostly referring to production server users where memory 
+consumption by particular applications can be estimated, which allows the 
+kernel to determine when a task is using a wildly unexpected amount that 
+happens to become egregious enough to force the oom killer into killing a 
+task.
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+That is contrast to using rss as a baseline where we prefer on killing the 
+application with the most resident RAM.  It is not always ideal to kill a 
+task with 8GB of rss when we fail to allocate a single page for a low 
+priority task.
 
+> >  - we must prefer tasks that run on a cpuset or mempolicy's nodes if the 
+> >    oom condition is constrained by that cpuset or mempolicy and its not a
+> >    system-wide issue.
+> 
+> agreed. (who disagree it?)
+> 
+
+It's possible to nullify the current penalization in the badness heuristic 
+(order 3 reduction) if a candidate task does not share nodes with 
+current's allowed set either by way of cpusets or mempolicies.  For 
+example, an oom caused by an application with an MPOL_BIND on a single 
+node can easily kill a task that has no memory resident on that node if 
+its usage (or rss) is 3 orders higher than any candidate that is allowed 
+on my bound node.
+
+> >  - we must be able to polarize the badness heuristic to always select a
+> >    particular task is if its very low priority or disable oom killing for
+> >    a task if its must-run.
+> 
+> Probably I haven't catch your point. What's mean "polarize"? Can you
+> please describe more?
+> 
+
+We need to be able to polarize tasks so they are always killed regardless 
+of any kernel heuristic (/proc/pid/oom_adj of +15, currently) or always 
+chosen last (-16, currently).  We also need a way of completely disabling 
+oom killing for certain tasks such as with OOM_DISABLE.
