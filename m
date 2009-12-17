@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936408AbZLQER7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936375AbZLQEPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936408AbZLQER7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936393AbZLQERr
+	id S936375AbZLQEPf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936165AbZLQEFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:17:47 -0500
-Received: from kroah.org ([198.145.64.141]:55936 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:05:37 -0500
+Received: from kroah.org ([198.145.64.141]:55943 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936156AbZLQEFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:30 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:58 2009
-Message-Id: <20091217035658.797276396@mini.kroah.org>
+	id S935987AbZLQEFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:31 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:59 2009
+Message-Id: <20091217035658.924129678@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:59 -0800
+Date: Wed, 16 Dec 2009 19:57:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Anholt <eric@anholt.net>, Li Peng <peng.li@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Stefan Bader <stefan.bader@canonical.com>
-Subject: [122/151] drm/i915: Fix sync to vblank when VGA output is turned off
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [123/151] memcg: fix memory.memsw.usage_in_bytes for root cgroup
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,104 +29,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
+From: Kirill A. Shutemov <kirill@shutemov.name>
 
-From: Li Peng <peng.li@linux.intel.com>
+commit cd9b45b78a61e8df250e69385c74e729e5b66abf upstream.
 
-commit 778c902640530371a169ad1c03566e7c51b09874 upstream
+A memory cgroup has a memory.memsw.usage_in_bytes file.  It shows the sum
+of the usage of pages and swapents in the cgroup.  Presently the root
+cgroup's memsw.usage_in_bytes shows the wrong value - the number of
+swapents are not added.
 
-In current vblank-wait implementation, if we turn off VGA output,
-drm_wait_vblank will still wait on the disabled pipe until timeout,
-because vblank on the pipe is assumed be enabled. This would cause
-slow system response on some system such as moblin.
+So take MEM_CGROUP_STAT_SWAPOUT into account.
 
-This patch resolve the issue by adding a drm helper function
-drm_vblank_off which explicitly clear vblank_enabled[crtc], wake up
-any waiting queue and save last vblank counter before turning off
-crtc. It also slightly change drm_vblank_get to ensure that we will
-will return immediately if trying to wait on a disabled pipe.
-
-Signed-off-by: Li Peng <peng.li@intel.com>
-Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-[anholt: hand-applied for conflicts with overlay changes]
-Signed-off-by: Eric Anholt <eric@anholt.net>
-Cc: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/gpu/drm/drm_irq.c            |   34 ++++++++++++++++++++++++++--------
- drivers/gpu/drm/i915/intel_display.c |    1 +
- include/drm/drmP.h                   |    1 +
- 3 files changed, 28 insertions(+), 8 deletions(-)
 
---- a/drivers/gpu/drm/drm_irq.c
-+++ b/drivers/gpu/drm/drm_irq.c
-@@ -429,15 +429,21 @@ int drm_vblank_get(struct drm_device *de
- 
- 	spin_lock_irqsave(&dev->vbl_lock, irqflags);
- 	/* Going from 0->1 means we have to enable interrupts again */
--	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1 &&
--	    !dev->vblank_enabled[crtc]) {
--		ret = dev->driver->enable_vblank(dev, crtc);
--		DRM_DEBUG("enabling vblank on crtc %d, ret: %d\n", crtc, ret);
--		if (ret)
-+	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1) {
-+		if (!dev->vblank_enabled[crtc]) {
-+			ret = dev->driver->enable_vblank(dev, crtc);
-+			DRM_DEBUG("enabling vblank on crtc %d, ret: %d\n", crtc, ret);
-+			if (ret)
-+				atomic_dec(&dev->vblank_refcount[crtc]);
-+			else {
-+				dev->vblank_enabled[crtc] = 1;
-+				drm_update_vblank_count(dev, crtc);
-+			}
-+		}
-+	} else {
-+		if (!dev->vblank_enabled[crtc]) {
- 			atomic_dec(&dev->vblank_refcount[crtc]);
--		else {
--			dev->vblank_enabled[crtc] = 1;
--			drm_update_vblank_count(dev, crtc);
-+			ret = -EINVAL;
- 		}
- 	}
- 	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
-@@ -464,6 +470,18 @@ void drm_vblank_put(struct drm_device *d
- }
- EXPORT_SYMBOL(drm_vblank_put);
- 
-+void drm_vblank_off(struct drm_device *dev, int crtc)
-+{
-+	unsigned long irqflags;
-+
-+	spin_lock_irqsave(&dev->vbl_lock, irqflags);
-+	DRM_WAKEUP(&dev->vbl_queue[crtc]);
-+	dev->vblank_enabled[crtc] = 0;
-+	dev->last_vblank[crtc] = dev->driver->get_vblank_counter(dev, crtc);
-+	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
-+}
-+EXPORT_SYMBOL(drm_vblank_off);
-+
- /**
-  * drm_vblank_pre_modeset - account for vblanks across mode sets
-  * @dev: DRM device
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1845,6 +1845,7 @@ static void i9xx_crtc_dpms(struct drm_cr
- 		intel_update_watermarks(dev);
- 		/* Give the overlay scaler a chance to disable if it's on this pipe */
- 		//intel_crtc_dpms_video(crtc, FALSE); TODO
-+		drm_vblank_off(dev, pipe);
- 
- 		if (dev_priv->cfb_plane == plane &&
- 		    dev_priv->display.disable_fbc)
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -1295,6 +1295,7 @@ extern u32 drm_vblank_count(struct drm_d
- extern void drm_handle_vblank(struct drm_device *dev, int crtc);
- extern int drm_vblank_get(struct drm_device *dev, int crtc);
- extern void drm_vblank_put(struct drm_device *dev, int crtc);
-+extern void drm_vblank_off(struct drm_device *dev, int crtc);
- extern void drm_vblank_cleanup(struct drm_device *dev);
- /* Modesetting support */
- extern void drm_vblank_pre_modeset(struct drm_device *dev, int crtc);
+---
+ mm/memcontrol.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2541,6 +2541,7 @@ static u64 mem_cgroup_read(struct cgroup
+ 			val += idx_val;
+ 			mem_cgroup_get_recursive_idx_stat(mem,
+ 				MEM_CGROUP_STAT_SWAPOUT, &idx_val);
++			val += idx_val;
+ 			val <<= PAGE_SHIFT;
+ 		} else
+ 			val = res_counter_read_u64(&mem->memsw, name);
 
 
