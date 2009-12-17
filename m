@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764872AbZLQQ0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbZLQQbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764872AbZLQQ0p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 11:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761695AbZLQQ0k
+	id S1756360AbZLQQbA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 11:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757823AbZLQQaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 11:26:40 -0500
-Received: from lists.laptop.org ([18.85.2.145]:54189 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761484AbZLQQ0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 11:26:38 -0500
-Date: Thu, 17 Dec 2009 11:28:34 -0500
-From: Michael Stone <michael@laptop.org>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Michael Stone <michael@laptop.org>, Ulrich Drepper <drepper@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>
-Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
-Message-ID: <20091217162834.GA3047@heat>
+	Thu, 17 Dec 2009 11:30:55 -0500
+Received: from THUNK.ORG ([69.25.196.29]:41056 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755515AbZLQQax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 11:30:53 -0500
+Date: Thu, 17 Dec 2009 11:30:36 -0500
+From: tytso@mit.edu
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James.Bottomley@suse.de, hch@infradead.org, linux-arch@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+Message-ID: <20091217163036.GE2123@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	James.Bottomley@suse.de, hch@infradead.org,
+	linux-arch@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+References: <20091216043618.GB9104@hera.kernel.org>
+ <20091217132256.GO28962@bombadil.infradead.org>
+ <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2375c9f90912170125u6de30803sd80ecddaa332cc6a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Américo Wang wrote:
+On Thu, Dec 17, 2009 at 08:16:12AM -0800, Linus Torvalds wrote:
+> 
+> I hate them.
+> 
+> I don't see what the point of allowing kernel virtual addresses in bio's 
+> is. It's wrong. The fact that XFS does that sh*t is an XFS issue. Handle 
+> it there.
+> 
+> Fix XFS. Or convince me with some really good arguments, and make sure 
+> that Jens signs off on the cr*p too.
 
-> Any reason why you introdce a new source file?
-> Why not just adding them to kernel/sys.c?
+I have a somewhat similar issue that comes up for ext4; at the moment
+occasionaly we need to clone a buffer head buffer; either because the
+first four bytes match the magic JBD "escape sequence", and we need to
+modify the block and escape it before writing it to the journal, or
+because we need to make a copy of a allocation bitmap block so we can
+write a fixed copy to disk while we modify the "real" block during a
+commit.  At the moment we allocate a full page, even if that means
+allocating a 16k PPC page when the file system block size is 4k, or
+allocating a 4k x86 page when the file system block size is 1k.
 
-Modifying kernel/sys.c would be fine too, I think. I'll incorporate this
-suggestion into the next revision of the prctl()-based patches.
+That's because apparently the iSCSI and DMA blocks assume that they
+have Real Pages (tm) passed to block I/O requests, and apparently XFS
+ran into problems when sending vmalloc'ed pages.  I don't know if this
+is a problem if we pass the bio layer addresses coming from the SLAB
+allocator, but oral tradition seems to indicate this is problematic,
+although no one has given me the full chapter and verse explanation
+about why this is so.
 
-Thanks!
+Now that I see Linus's complaint, I'm wondering if the issue is really
+about kernel virtual addresses (i.e., coming from vmalloc), and not a
+requirement for Real Pages (i.e., coming from the SLAB allocator as
+opposed to get_free_page).  And can this be documented someplace?  I
+tried looking at the bio documentation, and couldn't find anything
+definitive on the subject.
 
-Michael
+Thanks,
+
+						- Ted
