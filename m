@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZLQFPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751558AbZLQFO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbZLQFPz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 00:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZLQFPv
+	id S1751558AbZLQFO3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 00:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZLQFO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 00:15:51 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:60430 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335AbZLQFPu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 00:15:50 -0500
-Date: Thu, 17 Dec 2009 14:15:43 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Subject: Re: [PATCH 5/5] sh: dmaengine support for sh7724
-Message-ID: <20091217051543.GB3946@linux-sh.org>
-References: <Pine.LNX.4.64.0912041936541.3981@axis700.grange> <Pine.LNX.4.64.0912041942330.3981@axis700.grange> <e9c3a7c20912071702h1aea2026kff22db99a221f6c4@mail.gmail.com> <20091208071302.GA23814@linux-sh.org> <29ab51dc0912161914w6967c9d1l79df27d670f01b6a@mail.gmail.com>
+	Thu, 17 Dec 2009 00:14:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40252 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbZLQFO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 00:14:26 -0500
+Message-ID: <4B29BEC4.4070801@redhat.com>
+Date: Thu, 17 Dec 2009 00:16:52 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <29ab51dc0912161914w6967c9d1l79df27d670f01b6a@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Andrew Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org> <20091217011932.GT14381@ZenIV.linux.org.uk> <4B29A8F3.3090306@redhat.com> <20091217043021.GV14381@ZenIV.linux.org.uk>
+In-Reply-To: <20091217043021.GV14381@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 12:14:14PM +0900, Nobuhiro Iwamatsu wrote:
-> Hi,
-> 
-> 2009/12/8 Paul Mundt <lethal@linux-sh.org>:
-> > On Mon, Dec 07, 2009 at 06:02:24PM -0700, Dan Williams wrote:
-> >> On Fri, Dec 4, 2009 at 11:45 AM, Guennadi Liakhovetski
-> >> <g.liakhovetski@gmx.de> wrote:
-> >> > Add a dmaengine platform device to sh7724, fix DMA channel interrupt numbers.
-> >> >
-> >> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> >> > ---
-> >> >
-> >> > With this patch dmatest works with channels 0-5, channels 6-11 still don't
-> >> > work for some reason... So, feel free to discard it for now, if a complete
-> >> > fix would be preferred.
-> >>
-> >> Does this patch limit operation to channels 0-5? ?I leave this one for
-> >> Paul to disposition.
-> >>
-> > There are 6 channels per controller, so the fact that the second
-> > controller isn't working could either be cause the driver needs more work
-> > to handle multiple controllers properly, or there could be a pinmux issue
-> > that hasn't been resolved yet for DMAC1. Both of these cases require the
-> > driver to be a bit smarter, but as Guennadi is presently working on these
-> > things, doing them incrementally is ok with me. If this gets DMAC0
-> > working at least where it wasn't before, it's certainly worth applying.
-> > DMAC1 seems to have more problems than just wrong interrupt numbers, so
-> > this isn't going to cause any regressions there either.
-> >
-> > Acked-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> This patch can not apply Paul's git/HEAD too.
-> I updated patch.
-> 
-> Acked-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-> 
 
-Ok, this doesn't really have any outstanding build dependencies, but
-obviously isn't going to pass the test cases until the outstanding
-dmaengine patches are merged.
 
-In any event, fixing up the wrong IRQs is something we should be doing
-sooner rather than later, so I'll queue this up as it is. Hopefully the
-dmaengine bits will be sorted in time for -rc2 and then everything should
-just magically work ;-)
+Al Viro wrote:
+> On Wed, Dec 16, 2009 at 10:43:47PM -0500, Masami Hiramatsu wrote:
+>> Al Viro wrote:
+>>> On Wed, Dec 16, 2009 at 03:56:17PM -0800, Andrew Isaacson wrote:
+>>>> With CONFIG_KPROBES=y on Ubuntu 9.10 x86_64 default install, I get the
+>>>> following:
+>>>>
+>>>> Error: Your awk doesn't support charactor-class.
+>>>> Please try to use gawk.
+>>>
+>>> Aside of the incorrect suggestion (you need not just gawk, you need that
+>>> thing installed as awk), the use of GNUisms in there is actually pointless
+>>> since encoding is bloody fixed.
+>>
+>> Hmm, maybe "POSIX awk" will be a better suggestion, isn't it?
+> 
+> Not really.
+> 
+> Note that meaning of [:alpha:] depends on locale, and you are working
+> with fixed input, in fixed encoding.  So you *already* have a dependency
+> on locale and it's no better or worse way to express the set than A-Za-z
+> is.  With LANG=C both describe the set you are after; in other locales
+> neither is guaranteed to.  And having it set by caller of your script
+> is trivial.
+> 
+> IOW, you are actually misusing the language feature and while it's easy
+> to fix, the same fix will remove any benefits compared to universally
+> available alternative language feature.
+
+Ah, I see:)
+
+I think that this is not so big issue as making new language in the kernel.
+(wow, if someone wants to do that, I don't dare to stop him :) )
+If just typing less than 100 characters can fix it, I'd like to do it; e.g.
+
+Ualpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+Lalpha = "abcdefghijklmnopqrstuvwxyz"
+alpha = Ualpha Lalpha
+digit = "0123456789"
+alnum = alpha digit
+
+and replace character classes with it. ("[[:alpha:]]"->"[" alpha "]")
+
+That's so easy, isn't that? :-)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
