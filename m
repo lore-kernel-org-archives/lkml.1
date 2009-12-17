@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936313AbZLQEKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936230AbZLQEKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936313AbZLQEKn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936296AbZLQEJq
+	id S936230AbZLQEKa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936290AbZLQEJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:09:46 -0500
-Received: from kroah.org ([198.145.64.141]:56058 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:09:43 -0500
+Received: from kroah.org ([198.145.64.141]:56066 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936200AbZLQEFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:51 -0500
+	id S936203AbZLQEFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:52 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:57:01 2009
-Message-Id: <20091217035701.039621306@mini.kroah.org>
+Message-Id: <20091217035701.150467114@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:16 -0800
+Date: Wed, 16 Dec 2009 19:57:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Shaohua Li <shaohua.li@intel.com>,
        Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
-Subject: [139/151] drm/i915: PineView only has LVDS and CRT ports
+Subject: [140/151] drm/i915: Fix LVDS stability issue on Ironlake
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,67 +30,144 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Zhenyu Wang <zhenyuw@linux.intel.com>
 
-commit 103a196f4224dc6872081305cf7f82ebf67aa7bd upstream.
+commit 1b3c7a47f993bf9ab6c4c7cc3bbf5588052b58f4 upstream.
 
-PineView only has 2 ports for LVDS and CRT. Don't enable other
-ports for it.
+In disable sequence, all output ports on PCH have to be disabled
+before PCH transcoder, but LVDS port was left always enabled. This
+one fixes that by disable LVDS port properly during pipe disable
+process, and resolved stability issue seen on Ironlake. Also move
+panel fitting disable time just after pipe disable to align with
+the spec.
 
-Cc: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
 Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_drv.h      |    4 ++++
- drivers/gpu/drm/i915/intel_display.c |    6 +++---
- 2 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/i915/intel_display.c |   60 +++++++++++++++++++++++------------
+ 1 file changed, 41 insertions(+), 19 deletions(-)
 
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -957,6 +957,7 @@ extern int i915_wait_ring(struct drm_dev
- #define IS_I85X(dev) ((dev)->pci_device == 0x3582)
- #define IS_I855(dev) ((dev)->pci_device == 0x3582)
- #define IS_I865G(dev) ((dev)->pci_device == 0x2572)
-+#define IS_I8XX(dev) (IS_I830(dev) || IS_845G(dev) || IS_I85X(dev) || IS_I865G(dev))
- 
- #define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 0x258a)
- #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
-@@ -1018,9 +1019,12 @@ extern int i915_wait_ring(struct drm_dev
-  */
- #define HAS_128_BYTE_Y_TILING(dev) (IS_I9XX(dev) && !(IS_I915G(dev) || \
- 						      IS_I915GM(dev)))
-+#define SUPPORTS_DIGITAL_OUTPUTS(dev)	(IS_I9XX(dev) && !IS_IGD(dev))
- #define SUPPORTS_INTEGRATED_HDMI(dev)	(IS_G4X(dev) || IS_IGDNG(dev))
- #define SUPPORTS_INTEGRATED_DP(dev)	(IS_G4X(dev) || IS_IGDNG(dev))
- #define SUPPORTS_EDP(dev)		(IS_IGDNG_M(dev))
-+#define SUPPORTS_TV(dev)		(IS_I9XX(dev) && IS_MOBILE(dev) && \
-+					!IS_IGDNG(dev) && !IS_IGD(dev))
- #define I915_HAS_HOTPLUG(dev) (IS_I945G(dev) || IS_I945GM(dev) || IS_G33(dev) || IS_I965G(dev))
- /* dsparb controlled by hw only */
- #define DSPARB_HWCONTROL(dev) (IS_G4X(dev) || IS_IGDNG(dev))
 --- a/drivers/gpu/drm/i915/intel_display.c
 +++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -4119,7 +4119,7 @@ static void intel_setup_outputs(struct d
- 		if (I915_READ(PCH_DP_D) & DP_DETECTED)
- 			intel_dp_init(dev, PCH_DP_D);
+@@ -1482,6 +1482,15 @@ static void igdng_crtc_dpms(struct drm_c
+ 	case DRM_MODE_DPMS_STANDBY:
+ 	case DRM_MODE_DPMS_SUSPEND:
+ 		DRM_DEBUG("crtc %d dpms on\n", pipe);
++
++		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS)) {
++			temp = I915_READ(PCH_LVDS);
++			if ((temp & LVDS_PORT_EN) == 0) {
++				I915_WRITE(PCH_LVDS, temp | LVDS_PORT_EN);
++				POSTING_READ(PCH_LVDS);
++			}
++		}
++
+ 		if (HAS_eDP) {
+ 			/* enable eDP PLL */
+ 			igdng_enable_pll_edp(crtc);
+@@ -1666,8 +1675,6 @@ static void igdng_crtc_dpms(struct drm_c
+ 	case DRM_MODE_DPMS_OFF:
+ 		DRM_DEBUG("crtc %d dpms off\n", pipe);
  
--	} else if (IS_I9XX(dev)) {
-+	} else if (SUPPORTS_DIGITAL_OUTPUTS(dev)) {
- 		bool found = false;
+-		i915_disable_vga(dev);
+-
+ 		/* Disable display plane */
+ 		temp = I915_READ(dspcntr_reg);
+ 		if ((temp & DISPLAY_PLANE_ENABLE) != 0) {
+@@ -1677,6 +1684,8 @@ static void igdng_crtc_dpms(struct drm_c
+ 			I915_READ(dspbase_reg);
+ 		}
  
- 		if (I915_READ(SDVOB) & SDVO_DETECTED) {
-@@ -4146,10 +4146,10 @@ static void intel_setup_outputs(struct d
++		i915_disable_vga(dev);
++
+ 		/* disable cpu pipe, disable after all planes disabled */
+ 		temp = I915_READ(pipeconf_reg);
+ 		if ((temp & PIPEACONF_ENABLE) != 0) {
+@@ -1697,9 +1706,15 @@ static void igdng_crtc_dpms(struct drm_c
+ 		} else
+ 			DRM_DEBUG("crtc %d is disabled\n", pipe);
  
- 		if (SUPPORTS_INTEGRATED_DP(dev) && (I915_READ(DP_D) & DP_DETECTED))
- 			intel_dp_init(dev, DP_D);
--	} else
-+	} else if (IS_I8XX(dev))
- 		intel_dvo_init(dev);
+-		if (HAS_eDP) {
+-			igdng_disable_pll_edp(crtc);
++		udelay(100);
++
++		/* Disable PF */
++		temp = I915_READ(pf_ctl_reg);
++		if ((temp & PF_ENABLE) != 0) {
++			I915_WRITE(pf_ctl_reg, temp & ~PF_ENABLE);
++			I915_READ(pf_ctl_reg);
+ 		}
++		I915_WRITE(pf_win_size, 0);
  
--	if (IS_I9XX(dev) && IS_MOBILE(dev) && !IS_IGDNG(dev))
-+	if (SUPPORTS_TV(dev))
- 		intel_tv_init(dev);
+ 		/* disable CPU FDI tx and PCH FDI rx */
+ 		temp = I915_READ(fdi_tx_reg);
+@@ -1725,6 +1740,13 @@ static void igdng_crtc_dpms(struct drm_c
  
- 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+ 		udelay(100);
+ 
++		if (intel_pipe_has_type(crtc, INTEL_OUTPUT_LVDS)) {
++			temp = I915_READ(PCH_LVDS);
++			I915_WRITE(PCH_LVDS, temp & ~LVDS_PORT_EN);
++			I915_READ(PCH_LVDS);
++			udelay(100);
++		}
++
+ 		/* disable PCH transcoder */
+ 		temp = I915_READ(transconf_reg);
+ 		if ((temp & TRANS_ENABLE) != 0) {
+@@ -1744,6 +1766,8 @@ static void igdng_crtc_dpms(struct drm_c
+ 			}
+ 		}
+ 
++		udelay(100);
++
+ 		/* disable PCH DPLL */
+ 		temp = I915_READ(pch_dpll_reg);
+ 		if ((temp & DPLL_VCO_ENABLE) != 0) {
+@@ -1751,14 +1775,20 @@ static void igdng_crtc_dpms(struct drm_c
+ 			I915_READ(pch_dpll_reg);
+ 		}
+ 
+-		temp = I915_READ(fdi_rx_reg);
+-		if ((temp & FDI_RX_PLL_ENABLE) != 0) {
+-			temp &= ~FDI_SEL_PCDCLK;
+-			temp &= ~FDI_RX_PLL_ENABLE;
+-			I915_WRITE(fdi_rx_reg, temp);
+-			I915_READ(fdi_rx_reg);
++		if (HAS_eDP) {
++			igdng_disable_pll_edp(crtc);
+ 		}
+ 
++		temp = I915_READ(fdi_rx_reg);
++		temp &= ~FDI_SEL_PCDCLK;
++		I915_WRITE(fdi_rx_reg, temp);
++		I915_READ(fdi_rx_reg);
++
++		temp = I915_READ(fdi_rx_reg);
++		temp &= ~FDI_RX_PLL_ENABLE;
++		I915_WRITE(fdi_rx_reg, temp);
++		I915_READ(fdi_rx_reg);
++
+ 		/* Disable CPU FDI TX PLL */
+ 		temp = I915_READ(fdi_tx_reg);
+ 		if ((temp & FDI_TX_PLL_ENABLE) != 0) {
+@@ -1767,16 +1797,8 @@ static void igdng_crtc_dpms(struct drm_c
+ 			udelay(100);
+ 		}
+ 
+-		/* Disable PF */
+-		temp = I915_READ(pf_ctl_reg);
+-		if ((temp & PF_ENABLE) != 0) {
+-			I915_WRITE(pf_ctl_reg, temp & ~PF_ENABLE);
+-			I915_READ(pf_ctl_reg);
+-		}
+-		I915_WRITE(pf_win_size, 0);
+-
+ 		/* Wait for the clocks to turn off. */
+-		udelay(150);
++		udelay(100);
+ 		break;
+ 	}
+ }
 
 
