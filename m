@@ -1,175 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbZLQAfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763452AbZLQAhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763462AbZLQAfx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762867AbZLQAfu
+	id S1763452AbZLQAhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762867AbZLQAhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:35:50 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38086 "EHLO e6.ny.us.ibm.com"
+	Wed, 16 Dec 2009 19:37:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45864 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762864AbZLQAft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:35:49 -0500
-Message-ID: <4B297CE3.6040600@us.ibm.com>
-Date: Wed, 16 Dec 2009 16:35:47 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1758163AbZLQAhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:37:14 -0500
+Date: Thu, 17 Dec 2009 00:36:40 GMT
+From: tip-bot for Simon Horman <horms@verge.net.au>
+Cc: linux-kernel@vger.kernel.org, horms@verge.net.au, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, horms@verge.net.au,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+In-Reply-To: <20091217001542.GD25317@verge.net.au>
+References: <20091217001542.GD25317@verge.net.au>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/urgent] timers: Remove duplicate setting of new_base in __mod_timer()
+Message-ID: <tip-cf1e367ee84e02ac349ad0858eb65e8a6a511c8b@git.kernel.org>
+Git-Commit-ID: cf1e367ee84e02ac349ad0858eb65e8a6a511c8b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       "lkml, " <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] RFC: Use opaque record type in pevent accessor functions
-References: <4B297C79.2090004@us.ibm.com>
-In-Reply-To: <4B297C79.2090004@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 1f76a9521a63e456a950f1a57e69d9dfc36ab001 Mon Sep 17 00:00:00 2001
-From: Darren Hart <dvhltc@us.ibm.com>
-Date: Wed, 16 Dec 2009 15:25:30 -0800
-Subject: [PATCH 2/2] RFC: Start of a tracecmd swig wrapper for python
+Commit-ID:  cf1e367ee84e02ac349ad0858eb65e8a6a511c8b
+Gitweb:     http://git.kernel.org/tip/cf1e367ee84e02ac349ad0858eb65e8a6a511c8b
+Author:     Simon Horman <horms@verge.net.au>
+AuthorDate: Thu, 17 Dec 2009 11:15:42 +1100
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Thu, 17 Dec 2009 01:30:49 +0100
 
-Introduce a python tracecmd module for use in rapidly prototyping
-tracing applications. The interface description is provided in
-tracecmd.i, it identifies which functions are available from within
-python. A test python script is provided as tracecmd-test.py.
+timers: Remove duplicate setting of new_base in __mod_timer()
 
-These bindings are expected to change significantly. Eventually I
-would like to wrap this automated binding with more pythonic objects,
-most likely including Trace and Event objects which merge the
-functionality of tracecmd-input, pevent, record, and event structures.
-This will make development of python apps much more accessible to many
-application developers.
+new_base is set using per_cpu(tvec_bases, cpu) after selecting the
+desired value of cpu immediately below so this line is a unnecessary.
 
-For now, this is mostly a proof of concept and is no where near
-complete. It can however open a trace file and read all the events from
-it, displaying them by CPU in chronological order.
+Signed-off-by: Simon Horman <horms@verge.net.au>
+LKML-Reference: <20091217001542.GD25317@verge.net.au>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 ---
- swig.sh          |   18 ++++++++++++++++++
- tracecmd-test.py |   35 +++++++++++++++++++++++++++++++++++
- tracecmd.i       |   39 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100755 swig.sh
- create mode 100755 tracecmd-test.py
- create mode 100644 tracecmd.i
+ kernel/timer.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/swig.sh b/swig.sh
-new file mode 100755
-index 0000000..c53e7a2
---- /dev/null
-+++ b/swig.sh
-@@ -0,0 +1,18 @@
-+#!/bin/sh
-+
-+# Temporary hack of a build script, eventually we'll incoroporate this
-+# into the Makefile. You may have to update the includes to point to your
-+# python installation.
-+
-+rm tracecmd_wrap.c tracecmd_wrap.o _tracecmd.so &> /dev/null
-+
-+swig -python tracecmd.i
-+
-+gcc -fpic -c  -I/usr/include/python2.6/ -I/usr/lib/python2.6/config \
-+    trace-ftrace.c trace-seq.c trace-util.c \
-+    trace-input.c parse-events.c tracecmd_wrap.c
-+
-+gcc -shared trace-ftrace.o trace-seq.o trace-util.o \
-+    trace-input.o parse-events.o \
-+    tracecmd_wrap.o -o _tracecmd.so
-+
-diff --git a/tracecmd-test.py b/tracecmd-test.py
-new file mode 100755
-index 0000000..1ad2ea4
---- /dev/null
-+++ b/tracecmd-test.py
-@@ -0,0 +1,35 @@
-+#!/usr/bin/env python
-+
-+from tracecmd import *
-+
-+# Let's move the following into a new Trace object constructor
-+filename = "trace.dat"
-+trace_file = open(filename)
-+handle = tracecmd_open(trace_file.fileno())
-+tracecmd_read_headers(handle)
-+tracecmd_init_data(handle)
-+
-+# These should be members, i.e. Trace.cpus
-+pe = tracecmd_get_pevent(handle)
-+cpus = tracecmd_cpus(handle)
-+print "Trace %s contains data for %d cpus" % (filename, cpus) 
-+
-+# FIXME: this doesn't print anything...
-+tracecmd_print_events(handle)
-+
-+print "Cycling through the events for each CPU"
-+for cpu in range(0,cpus):
-+    print "CPU", cpu
-+    rec = tracecmd_read_data(handle, cpu)
-+    while True:
-+        rec = tracecmd_read_data(handle, cpu)
-+        if rec:
-+            # these should be members of a Record object
-+            pid = pevent_data_pid(pe, rec)
-+            comm = pevent_data_comm_from_pid(pe, pid)
-+            type = pevent_data_type(pe, rec)
-+            event = pevent_data_event_from_type(pe, type)
-+            print "\t%f %s: pid=%d comm=%s type=%d" % \
-+                  (record_ts(rec), event_name(event), pid, comm, type)
-+        else:
-+            break
-diff --git a/tracecmd.i b/tracecmd.i
-new file mode 100644
-index 0000000..f43a90b
---- /dev/null
-+++ b/tracecmd.i
-@@ -0,0 +1,39 @@
-+// tracecmd.i
-+%module tracecmd
-+%{
-+/* The following functions provide accessors to the C struct members
-+ * we want to eliminate these if at all possible with changes to the
-+ * tracecmd API.
-+ */
-+#include "parse-events.h"
-+char *event_name(struct event *e) {
-+        return e->name;
-+}
-+
-+/* Python can't handle long long, convert to double in seconds */
-+double record_ts(struct record *rec) {
-+        return (double)(rec->ts) / 1000000000;
-+}
-+%}
-+
-+/* tracecmd functions */
-+struct tracecmd_input *tracecmd_open(int fd);
-+int tracecmd_read_headers(struct tracecmd_input *handle);
-+int tracecmd_init_data(struct tracecmd_input *handle);
-+int tracecmd_cpus(struct tracecmd_input *handle);
-+struct pevent *tracecmd_get_pevent(struct tracecmd_input *handle);
-+/* FIXME: this didn't print anything */
-+void tracecmd_print_events(struct tracecmd_input *handle);
-+/* FIXME: need a way to free the record */
-+struct record *tracecmd_read_data(struct tracecmd_input *handle, int cpu);
-+
-+/* pevent, record, event functions */
-+int pevent_data_pid(struct pevent *pevent, struct record *rec);
-+int pevent_data_type(struct pevent *pevent, struct record *rec);
-+struct event *pevent_data_event_from_type(struct pevent *pevent, int type);
-+const char *pevent_data_comm_from_pid(struct pevent *pevent, int pid);
-+
-+
-+/* custom wrappers to account for opaque pointers */
-+char *event_name(struct event *e);
-+double record_ts(struct record *rec);
--- 
-1.6.3.3
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 5db5a8d..15533b7 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -656,8 +656,6 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 
+ 	debug_activate(timer, expires);
+ 
+-	new_base = __get_cpu_var(tvec_bases);
+-
+ 	cpu = smp_processor_id();
+ 
+ #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
