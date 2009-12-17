@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935778AbZLQEZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936461AbZLQEYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935778AbZLQEZM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:25:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936477AbZLQEYr
+	id S936461AbZLQEYf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763962AbZLQEXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:24:47 -0500
-Received: from kroah.org ([198.145.64.141]:55792 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:23:37 -0500
+Received: from kroah.org ([198.145.64.141]:55799 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935788AbZLQEFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:01 -0500
+	id S935802AbZLQEFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:02 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:56 2009
-Message-Id: <20091217035655.965379342@mini.kroah.org>
+Message-Id: <20091217035656.104519949@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:37 -0800
+Date: Wed, 16 Dec 2009 19:56:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: [100/151] dm snapshot: only take lock for statustype info not table
+       Milan Broz <mbroz@redhat.com>, Alasdair G Kergon <agk@redhat.com>
+Subject: [101/151] dm crypt: move private iv fields to structs
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,61 +28,113 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Milan Broz <mbroz@redhat.com>
 
-commit 94e76572b5dd37b1f0f4b3742ee8a565daead932 upstream.
+commit 6047359277517c4e56d8bfd6ea4966d7a3924151 upstream.
 
-Take snapshot lock only for STATUSTYPE_INFO, not STATUSTYPE_TABLE.
+Define private structures for IV so it's easy to add further attributes
+in a following patch which fixes the way key material is wiped from
+memory.  Also move ESSIV destructor and remove unnecessary 'status'
+operation.
 
-Commit 4c6fff445d7aa753957856278d4d93bcad6e2c14
-(dm-snapshot-lock-snapshot-while-supplying-status.patch)
-introduced this use of the lock, but userspace applications using
-libdevmapper have been found to request STATUSTYPE_TABLE while the device
-is suspended and the lock is already held, leading to deadlock.  Since
-the lock is not necessary in this case, don't try to take it.
+There are no functional changes in this patch.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Milan Broz <mbroz@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-snap.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/md/dm-crypt.c |   35 ++++++++++++++++++++++-------------
+ 1 file changed, 22 insertions(+), 13 deletions(-)
 
---- a/drivers/md/dm-snap.c
-+++ b/drivers/md/dm-snap.c
-@@ -1152,10 +1152,11 @@ static int snapshot_status(struct dm_tar
- 	unsigned sz = 0;
- 	struct dm_snapshot *snap = ti->private;
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -71,10 +71,17 @@ struct crypt_iv_operations {
+ 	int (*ctr)(struct crypt_config *cc, struct dm_target *ti,
+ 		   const char *opts);
+ 	void (*dtr)(struct crypt_config *cc);
+-	const char *(*status)(struct crypt_config *cc);
+ 	int (*generator)(struct crypt_config *cc, u8 *iv, sector_t sector);
+ };
  
--	down_write(&snap->lock);
--
- 	switch (type) {
- 	case STATUSTYPE_INFO:
++struct iv_essiv_private {
++	struct crypto_cipher *tfm;
++};
 +
-+		down_write(&snap->lock);
++struct iv_benbi_private {
++	int shift;
++};
 +
- 		if (!snap->valid)
- 			DMEMIT("Invalid");
- 		else {
-@@ -1171,6 +1172,9 @@ static int snapshot_status(struct dm_tar
- 			else
- 				DMEMIT("Unknown");
- 		}
-+
-+		up_write(&snap->lock);
-+
- 		break;
- 
- 	case STATUSTYPE_TABLE:
-@@ -1185,8 +1189,6 @@ static int snapshot_status(struct dm_tar
- 		break;
- 	}
- 
--	up_write(&snap->lock);
--
+ /*
+  * Crypt: maps a linear range of a block device
+  * and encrypts / decrypts at the same time.
+@@ -102,8 +109,8 @@ struct crypt_config {
+ 	struct crypt_iv_operations *iv_gen_ops;
+ 	char *iv_mode;
+ 	union {
+-		struct crypto_cipher *essiv_tfm;
+-		int benbi_shift;
++		struct iv_essiv_private essiv;
++		struct iv_benbi_private benbi;
+ 	} iv_gen_private;
+ 	sector_t iv_offset;
+ 	unsigned int iv_size;
+@@ -169,6 +176,14 @@ static int crypt_iv_plain_gen(struct cry
  	return 0;
  }
  
++static void crypt_iv_essiv_dtr(struct crypt_config *cc)
++{
++	struct iv_essiv_private *essiv = &cc->iv_gen_private.essiv;
++
++	crypto_free_cipher(essiv->tfm);
++	essiv->tfm = NULL;
++}
++
+ static int crypt_iv_essiv_ctr(struct crypt_config *cc, struct dm_target *ti,
+ 			      const char *opts)
+ {
+@@ -236,21 +251,15 @@ static int crypt_iv_essiv_ctr(struct cry
+ 	}
+ 	kfree(salt);
+ 
+-	cc->iv_gen_private.essiv_tfm = essiv_tfm;
++	cc->iv_gen_private.essiv.tfm = essiv_tfm;
+ 	return 0;
+ }
+ 
+-static void crypt_iv_essiv_dtr(struct crypt_config *cc)
+-{
+-	crypto_free_cipher(cc->iv_gen_private.essiv_tfm);
+-	cc->iv_gen_private.essiv_tfm = NULL;
+-}
+-
+ static int crypt_iv_essiv_gen(struct crypt_config *cc, u8 *iv, sector_t sector)
+ {
+ 	memset(iv, 0, cc->iv_size);
+ 	*(u64 *)iv = cpu_to_le64(sector);
+-	crypto_cipher_encrypt_one(cc->iv_gen_private.essiv_tfm, iv, iv);
++	crypto_cipher_encrypt_one(cc->iv_gen_private.essiv.tfm, iv, iv);
+ 	return 0;
+ }
+ 
+@@ -273,7 +282,7 @@ static int crypt_iv_benbi_ctr(struct cry
+ 		return -EINVAL;
+ 	}
+ 
+-	cc->iv_gen_private.benbi_shift = 9 - log;
++	cc->iv_gen_private.benbi.shift = 9 - log;
+ 
+ 	return 0;
+ }
+@@ -288,7 +297,7 @@ static int crypt_iv_benbi_gen(struct cry
+ 
+ 	memset(iv, 0, cc->iv_size - sizeof(u64)); /* rest is cleared below */
+ 
+-	val = cpu_to_be64(((u64)sector << cc->iv_gen_private.benbi_shift) + 1);
++	val = cpu_to_be64(((u64)sector << cc->iv_gen_private.benbi.shift) + 1);
+ 	put_unaligned(val, (__be64 *)(iv + cc->iv_size - sizeof(u64)));
+ 
+ 	return 0;
 
 
