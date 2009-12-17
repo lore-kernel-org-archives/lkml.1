@@ -1,50 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936627AbZLQSpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936584AbZLQSpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936627AbZLQSpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936558AbZLQSpW
+	id S936584AbZLQSpx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 13:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbZLQSpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:45:22 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36028 "EHLO gate.crashing.org"
+	Thu, 17 Dec 2009 13:45:43 -0500
+Received: from claw.goop.org ([74.207.240.146]:57783 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936484AbZLQSpV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:45:21 -0500
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4B2A6DFA.6000504@intel.com>
-Date: Thu, 17 Dec 2009 12:45:01 -0600
-Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "B04825@freescale.com" <B04825@freescale.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       Vishnu Suresh <Vishnu@freescale.com>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
-       Maneesh Gupta <Maneesh.Gupta@freescale.com>,
-       "R58472@freescale.com" <R58472@freescale.com>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <AFE3AE33-41FB-42EE-A861-9C6CC1D1F435@kernel.crashing.org>
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com> <20091216164144.daff5468.kim.phillips@freescale.com> <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org> <4B296394.9010709@intel.com> <20091217170958.GE18271@ovro.caltech.edu> <4B2A6DFA.6000504@intel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-X-Mailer: Apple Mail (2.1077)
+	id S936652AbZLQSpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 13:45:40 -0500
+Message-ID: <4B2A7C50.5080403@goop.org>
+Date: Thu, 17 Dec 2009 10:45:36 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Ian Campbell <ian.campbell@citrix.com>
+CC: linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] microcode: do not WARN_ON(cpu != 0) during resume
+References: <1261058024-32278-1-git-send-email-ian.campbell@citrix.com>
+In-Reply-To: <1261058024-32278-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/17/2009 05:53 AM, Ian Campbell wrote:
+> 871b72dd "x86: microcode: use smp_call_function_single instead of
+> set_cpus_allowed, cleanup of synchronization logic" included:
+>
+>   static int mc_sysdev_resume(struct sys_device *dev)
+>   {
+> [...]
+> +       /*
+> +        * All non-bootup cpus are still disabled,
+> +        * so only CPU 0 will apply ucode here.
+> +        *
+> +        * Moreover, there can be no concurrent
+> +        * updates from any other places at this point.
+> +        */
+> +       WARN_ON(cpu != 0);
+>
+> However suspend/resume under Xen doesn't need to hot unplug all the CPUs, so we
+> don't; the hypervisor can manage the context save/restore for all CPUs.
+>    
 
-On Dec 17, 2009, at 11:44 AM, Dan Williams wrote:
+Did you see a problem with this in practice, or just by inspection?
 
-> Ira W. Snyder wrote:
->> Yes, I have used the device_prep_dma_interrupt() functionality quite a
->> while back. However, I found it to be pretty much useless.
-> 
-> The specific case it is needed for Talitos/raid is a channel switch interrupt.  The interrupt causes the cleanup operation to be run which will kick off any pending dependent operations on the xor channel.  In the raid case we only have callbacks at the end of a chain, so we need the interrupt to kick the engine in an operation chain like xor->copy->xor->callback.
+The Xen microcode driver will only load in a privileged domain, so I 
+don't think this path can ever be exercised.
 
-Ok, I'm still confused as to how the DMA interrupt interacts with the Talitos/raid side of things.  The should be completely independent (separate interrupts, separate IP blocks).
+Regardless, the Xen microcode driver changes aren't upstream yet, so 
+there's no need to apply this there yet.
 
-- k
+Thanks,
+     J
+
+> It would be unnecessary to load microcode.ko in a Xen domU but if it does occur
+> (e.g. because a distro installs the tools by default) we would like to avoid
+> the warning on resume.
+>
+> Since the real constraint here is that we are running on the CPU for which we
+> would like to load microcode (which in all practical circumstances is CPU0)
+> just check for that and return if we are resuming a different CPU.
+>
+> There is no danger of concurrent updates, even if we ignore the fact that all
+> but one CPUs are unplugged on native, because sysdev_resume() is single
+> threaded.
+>
+> Signed-off-by: Ian Campbell<ian.campbell@citrix.com>
+> Cc: Jeremy Fitzhardinge<jeremy@goop.org>
+> Cc: Dmitry Adamushko<dmitry.adamushko@gmail.com>
+> Cc: Hugh Dickins<hugh@veritas.com>
+> Cc: Ingo Molnar<mingo@elte.hu>
+> ---
+>   arch/x86/kernel/microcode_core.c |   11 +----------
+>   1 files changed, 1 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+> index 378e9a8..1153062 100644
+> --- a/arch/x86/kernel/microcode_core.c
+> +++ b/arch/x86/kernel/microcode_core.c
+> @@ -438,18 +438,9 @@ static int mc_sysdev_resume(struct sys_device *dev)
+>   	int cpu = dev->id;
+>   	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+>
+> -	if (!cpu_online(cpu))
+> +	if (cpu != smp_processor_id())
+>   		return 0;
+>
+> -	/*
+> -	 * All non-bootup cpus are still disabled,
+> -	 * so only CPU 0 will apply ucode here.
+> -	 *
+> -	 * Moreover, there can be no concurrent
+> -	 * updates from any other places at this point.
+> -	 */
+> -	WARN_ON(cpu != 0);
+> -
+>   	if (uci->valid&&  uci->mc)
+>   		microcode_ops->apply_microcode(cpu);
+>
+>    
+
