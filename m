@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbZLQBEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763504AbZLQBTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763565AbZLQBEg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763482AbZLQBEe
+	id S1763504AbZLQBTy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763541AbZLQBTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:04:34 -0500
-Received: from gold.linx.net ([195.66.232.40]:43064 "EHLO gold.linx.net"
+	Wed, 16 Dec 2009 20:19:46 -0500
+Received: from kroah.org ([198.145.64.141]:47729 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761952AbZLQBEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:04:33 -0500
-Subject: Re: [git pull] VFS stuff, part 1
-From: Tony Vroon <tony@linx.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091217004003.GQ14381@ZenIV.linux.org.uk>
-References: <20091216185157.GL14381@ZenIV.linux.org.uk>
-	 <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com>
-	 <1261004048.3154.2.camel@localhost>
-	 <20091216230711.GN14381@ZenIV.linux.org.uk>
-	 <1261005194.3154.4.camel@localhost>
-	 <20091216232729.GO14381@ZenIV.linux.org.uk>
-	 <1261008131.3026.0.camel@localhost>
-	 <20091217004003.GQ14381@ZenIV.linux.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-4Ixr1sJOU9pnVtY4ZBGg"
-Organization: London Internet Exchange (LINX; AS5459)
-Date: Thu, 17 Dec 2009 01:05:06 +0000
-Message-ID: <1261011906.3183.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1763513AbZLQBTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:19:44 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:15:58 2009
+Message-Id: <20091217011557.947684930@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 16 Dec 2009 17:14:12 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Ming Zhao <zhao.ming9@zte.com.cn>
+Subject: [01/90] USB: option: add pid for ZTE
+In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
---=-4Ixr1sJOU9pnVtY4ZBGg
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+------------------
 
-On Thu, 2009-12-17 at 00:40 +0000, Al Viro wrote:
-> In the meanwhile, see if this fixes it
-> 8f4cb3a4252a053d2c7299d7d251389bddf0bcd4
-> diff --git a/mm/shmem.c b/mm/shmem.c
+From: zhao.ming9@zte.com.cn <zhao.ming9@zte.com.cn>
 
-I can confirm that this fixes the problem. (When applied to a virgin
-linux-2.6 checkout, without reverting anything)
+commit 8d87cacda7c8db5c131bfcaaa1d90bfe918c2ebc upstream.
 
-Thank you :)
+This patch adds ZTE modem devices.
 
-> index f848506..eef4ebe 100644
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -1830,6 +1830,8 @@ shmem_mknod(struct inode *dir, struct dentry *dentr=
-y, int mode, dev_t dev)
->  			iput(inode);
->  			return error;
->  		}
-> +#else
-> +		error =3D 0;
->  #endif
->  		if (dir->i_mode & S_ISGID) {
->  			inode->i_gid =3D dir->i_gid;
+Signed-off-by: Ming Zhao <zhao.ming9@zte.com.cn>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Regards,
-Tony V.
+---
+ drivers/usb/serial/option.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
---=-4Ixr1sJOU9pnVtY4ZBGg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -577,12 +577,48 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0086, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x2002, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x2003, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0104, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0106, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0108, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0113, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0117, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0118, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0121, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0122, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0123, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0124, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0125, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0126, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0128, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0142, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0143, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0144, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0145, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0146, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0147, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0148, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0149, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0150, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0151, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0152, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0153, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0154, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0155, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0156, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0157, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0158, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0159, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0160, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0161, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0162, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0014, 0xff, 0xff, 0xff) }, /* ZTE CDMA products */
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0027, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0059, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0060, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0070, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0073, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0130, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0141, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_AC8710, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_AC2726, 0xff, 0xff, 0xff) },
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iEYEABECAAYFAkspg8IACgkQp5vW4rUFj5ohXwCfV58+bv4DbwBzhT5ZiE0m2oxf
-kncAoJhhSPt+4FCqgcG0cmnnTo94+slz
-=RW7x
------END PGP SIGNATURE-----
-
---=-4Ixr1sJOU9pnVtY4ZBGg--
 
