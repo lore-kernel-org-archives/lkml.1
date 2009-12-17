@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935714AbZLQE2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936163AbZLQEFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935714AbZLQE2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936477AbZLQE1k
+	id S936163AbZLQEFx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:05:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935954AbZLQEFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:27:40 -0500
-Received: from kroah.org ([198.145.64.141]:55733 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:05:06 -0500
+Received: from kroah.org ([198.145.64.141]:55760 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935328AbZLQEEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:04:53 -0500
+	id S935712AbZLQEEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:04:54 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:55 2009
-Message-Id: <20091217035654.875765876@mini.kroah.org>
+Message-Id: <20091217035655.039523877@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:29 -0800
+Date: Wed, 16 Dec 2009 19:56:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [092/151] xen: call clock resume notifier on all CPUs
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [093/151] xen: improve error handling in do_suspend.
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,58 +29,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ian Campbell <Ian.Campbell@citrix.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-commit f6eafe3665bcc374c66775d58312d1c06c55303f upstream.
+commit 65f63384b391bf4d384327d8a7c6de9860290b5c upstream.
 
-tick_resume() is never called on secondary processors. Presumably this
-is because they are offlined for suspend on native and so this is
-normally taken care of in the CPU onlining path. Under Xen we keep all
-CPUs online over a suspend.
+The existing error handling has a few issues:
+- If freeze_processes() fails it exits with shutting_down = SHUTDOWN_SUSPEND.
+- If dpm_suspend_noirq() fails it exits without resuming xenbus.
+- If stop_machine() fails it exits without resuming xenbus or calling
+  dpm_resume_end().
+- xs_suspend()/xs_resume() and dpm_suspend_noirq()/dpm_resume_noirq() were not
+  nested in the obvious way.
 
-This patch papers over the issue for me but I will investigate a more
-generic, less hacky, way of doing to the same.
+Fix by ensuring each failure case goto's the correct label. Treat a failure of
+stop_machine() as a cancelled suspend in order to follow the correct resume
+path.
 
-tick_suspend is also only called on the boot CPU which I presume should
-be fixed too.
-
-Signed-off-by: Ian Campbell <Ian.Campbell@citrix.com>
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/xen/suspend.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ drivers/xen/manage.c |   20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
---- a/arch/x86/xen/suspend.c
-+++ b/arch/x86/xen/suspend.c
-@@ -1,4 +1,5 @@
- #include <linux/types.h>
-+#include <linux/clockchips.h>
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -86,32 +86,32 @@ static void do_suspend(void)
+ 	err = freeze_processes();
+ 	if (err) {
+ 		printk(KERN_ERR "xen suspend: freeze failed %d\n", err);
+-		return;
++		goto out;
+ 	}
+ #endif
  
- #include <xen/interface/xen.h>
- #include <xen/grant_table.h>
-@@ -46,7 +47,19 @@ void xen_post_suspend(int suspend_cancel
+ 	err = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (err) {
+ 		printk(KERN_ERR "xen suspend: dpm_suspend_start %d\n", err);
+-		goto out;
++		goto out_thaw;
+ 	}
  
+-	printk(KERN_DEBUG "suspending xenstore...\n");
+-	xs_suspend();
+-
+ 	err = dpm_suspend_noirq(PMSG_SUSPEND);
+ 	if (err) {
+ 		printk(KERN_ERR "dpm_suspend_noirq failed: %d\n", err);
+-		goto resume_devices;
++		goto out_resume;
+ 	}
+ 
++	printk(KERN_DEBUG "suspending xenstore...\n");
++	xs_suspend();
++
+ 	err = stop_machine(xen_suspend, &cancelled, cpumask_of(0));
+ 
+ 	dpm_resume_noirq(PMSG_RESUME);
+ 
+ 	if (err) {
+ 		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
+-		goto out;
++		cancelled = 1;
+ 	}
+ 
+ 	if (!cancelled) {
+@@ -120,15 +120,17 @@ static void do_suspend(void)
+ 	} else
+ 		xs_suspend_cancel();
+ 
+-resume_devices:
++out_resume:
+ 	dpm_resume_end(PMSG_RESUME);
+ 
+ 	/* Make sure timer events get retriggered on all CPUs */
+ 	clock_was_set();
+-out:
++
++out_thaw:
+ #ifdef CONFIG_PREEMPT
+ 	thaw_processes();
+ #endif
++out:
+ 	shutting_down = SHUTDOWN_INVALID;
  }
- 
-+static void xen_vcpu_notify_restore(void *data)
-+{
-+	unsigned long reason = (unsigned long)data;
-+
-+	/* Boot processor notified via generic timekeeping_resume() */
-+	if ( smp_processor_id() == 0)
-+		return;
-+
-+	clockevents_notify(reason, NULL);
-+}
-+
- void xen_arch_resume(void)
- {
--	/* nothing */
-+	smp_call_function(xen_vcpu_notify_restore,
-+			       (void *)CLOCK_EVT_NOTIFY_RESUME, 1);
- }
+ #endif	/* CONFIG_PM_SLEEP */
 
 
