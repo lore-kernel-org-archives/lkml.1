@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936437AbZLQEUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936132AbZLQETj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936437AbZLQEUR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:20:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936083AbZLQEFO
+	id S936132AbZLQETj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935719AbZLQEFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:05:14 -0500
-Received: from kroah.org ([198.145.64.141]:55825 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:05:17 -0500
+Received: from kroah.org ([198.145.64.141]:55836 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935691AbZLQEFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:10 -0500
+	id S935718AbZLQEFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:11 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:57 2009
-Message-Id: <20091217035657.267598397@mini.kroah.org>
+Message-Id: <20091217035657.378247813@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:47 -0800
+Date: Wed, 16 Dec 2009 19:56:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stanislav Brabec <sbrabec@suse.cz>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [110/151] b44 WOL setup: one-bit-off stack corruption kernel panic fix
+Subject: [111/151] sparc64: Dont specify IRQF_SHARED for LDC interrupts.
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,44 +28,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stanislav Brabec <sbrabec@suse.cz>
+From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit: e0188829cb724e7d12a2d4e343b368ff1d6e1471 ]
+[ Upstream commit 08a036d583409e3517e3d15b7478d029b25f2cf2 ]
 
-About 50% of shutdowns of b44 Ethernet adapter ends by kernel panic
-with kernels compiled with stack-protector.
+IRQF_SHARED and IRQF_DISABLED don't mix.
 
-Checking b44_magic_pattern() return values, one call of
-b44_magic_pattern() returns 127. It means, that set_bit(128, pmask)
-was called on line 1509. It means that bit 0 of 17th byte of pmask was
-overwritten. But pmask has only 16 bytes. Stack corruption happens.
-
-It seems that set_bit() on line 1509 always writes one bit off.
-
-The fix does not only solve the stack corruption, but also makes Wake
-On LAN working on my onboard B44 on Asus A7V-333X mainboard.
-
-It seems that this problem affects all kernel versions since commit
-725ad800 ([PATCH] b44: add wol for old nic) on 2006-06-20.
-
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/b44.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/sparc/kernel/ldc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -1505,8 +1505,7 @@ static int b44_magic_pattern(u8 *macaddr
- 		for (k = 0; k< ethaddr_bytes; k++) {
- 			ppattern[offset + magicsync +
- 				(j * ETH_ALEN) + k] = macaddr[k];
--			len++;
--			set_bit(len, (unsigned long *) pmask);
-+			set_bit(len++, (unsigned long *) pmask);
- 		}
- 	}
- 	return len - 1;
+--- a/arch/sparc/kernel/ldc.c
++++ b/arch/sparc/kernel/ldc.c
+@@ -1242,13 +1242,13 @@ int ldc_bind(struct ldc_channel *lp, con
+ 	snprintf(lp->tx_irq_name, LDC_IRQ_NAME_MAX, "%s TX", name);
+ 
+ 	err = request_irq(lp->cfg.rx_irq, ldc_rx,
+-			  IRQF_SAMPLE_RANDOM | IRQF_DISABLED | IRQF_SHARED,
++			  IRQF_SAMPLE_RANDOM | IRQF_DISABLED,
+ 			  lp->rx_irq_name, lp);
+ 	if (err)
+ 		return err;
+ 
+ 	err = request_irq(lp->cfg.tx_irq, ldc_tx,
+-			  IRQF_SAMPLE_RANDOM | IRQF_DISABLED | IRQF_SHARED,
++			  IRQF_SAMPLE_RANDOM | IRQF_DISABLED,
+ 			  lp->tx_irq_name, lp);
+ 	if (err) {
+ 		free_irq(lp->cfg.rx_irq, lp);
 
 
