@@ -1,96 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965206AbZLQPkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965251AbZLQPnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965206AbZLQPkf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965190AbZLQPke
+	id S965251AbZLQPnP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965192AbZLQPnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:40:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41107 "EHLO mx1.redhat.com"
+	Thu, 17 Dec 2009 10:43:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54501 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965187AbZLQPkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:40:33 -0500
-Message-ID: <4B2A50E9.4010806@redhat.com>
-Date: Thu, 17 Dec 2009 09:40:25 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S965190AbZLQPnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:43:10 -0500
+Message-ID: <4B2A518B.1030800@redhat.com>
+Date: Thu, 17 Dec 2009 16:43:07 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 Thunderbird/3.0
 MIME-Version: 1.0
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-CC: tytso@mit.edu, adilger@sun.com, linux-ext4@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext4: return correct wbc.nr_to_write in ext4_da_writepages
-References: <1261063063.4882.38.camel@castor>
-In-Reply-To: <1261063063.4882.38.camel@castor>
+To: Alasdair G Kergon <agk@redhat.com>
+CC: Greg KH <greg@kroah.com>, Zdenek Kabelac <zkabelac@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: dm: sysfs add empty release function to avoid
+ debug	warning
+References: <200912151735.nBFHZ8XP018683@hera.kernel.org> <20091216004739.GB4898@kroah.com> <4B28AC09.2000302@redhat.com> <20091216134538.GA20857@kroah.com> <4B290B95.10306@redhat.com> <20091216174632.GA12473@kroah.com> <4B29299B.5080704@redhat.com> <20091217003021.GB3512@kroah.com>
+In-Reply-To: <20091217003021.GB3512@kroah.com>
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Kennedy wrote:
-> ext4: always re-base nr_to_write in ext4_da_writepages
+On 12/17/2009 01:30 AM, Greg KH wrote:
+> On Wed, Dec 16, 2009 at 07:40:27PM +0100, Milan Broz wrote:
+>> On 12/16/2009 06:46 PM, Greg KH wrote:
+>>> You will find that all of these are modules, right?  That's being worked
+>>> on still.
+>>
+>> probably. I see that this implementation is in kernel since import to git...
 > 
-> When ext4_da_writepages increases the nr_to_write in writeback_control
-> then it must always re-base the return value.
-> 
-> Without this change, when wb_writeback calculates how many pages were
-> actually written it can get a negative value and loop more times than
-> necessary. In tests I have seen nearly all the dirty pages pushed out to
-> writeback due to this issue.
-> 
-> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> 
-> ----
-> 
-> patch against 2.6.32
-> tested on x86_64
-> 
-> wb_writeback calculates (MAX_WRITE_PAGES - nr_to_write) & cannot know
-> that the value got changed.
-> 
-> I'm not sure what the test I removed was for.
-> Perhaps 
-> 	if (nr_to_writebump)
-> 		wbc->nr_to_write -= nr_to_writebump;
-> was intended?
+> And you will also note that I didn't paper over the issue by trying to
+> provide an empty release function :)
 
-Ted's commit 55138e0b added it (just part of the commit):
+Alasdair, can we request revert of that last patch for now
+(which introduced the empty release function)?
 
-@@ -2914,7 +2994,8 @@ retry:
- out_writepages:
-        if (!no_nrwrite_index_update)
-                wbc->no_nrwrite_index_update = 0;
--       wbc->nr_to_write -= nr_to_writebump;
-+       if (wbc->nr_to_write > nr_to_writebump)
-+               wbc->nr_to_write -= nr_to_writebump;
-        wbc->range_start = range_start;
-        trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
-        return ret;
-
-so it looks like the intent there was to stop ->nr_to_write from
-going negative ...
-
-
-> regards
-> Richard
-> 
-> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> index 2c8caa5..52a573c 100644
-> --- a/fs/ext4/inode.c
-> +++ b/fs/ext4/inode.c
-> @@ -2999,8 +2999,7 @@ retry:
->  out_writepages:
->  	if (!no_nrwrite_index_update)
->  		wbc->no_nrwrite_index_update = 0;
-> -	if (wbc->nr_to_write > nr_to_writebump)
-> -		wbc->nr_to_write -= nr_to_writebump;
-> +	wbc->nr_to_write -= nr_to_writebump;
->  	wbc->range_start = range_start;
->  	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
->  	return ret;
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Milan
