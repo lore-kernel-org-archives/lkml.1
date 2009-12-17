@@ -1,120 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760537AbZLQQLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbZLQQOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760537AbZLQQLf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 11:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbZLQQLe
+	id S1762615AbZLQQOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 11:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761484AbZLQQOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 11:11:34 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40427 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbZLQQLe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 11:11:34 -0500
-From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: e100 REGRESSION in 2.6.32 (PATCH v2)
-Date: Thu, 17 Dec 2009 18:10:45 +0200
-User-Agent: KMail/1.12.4 (Linux/2.6.32-ironman-1; KDE/4.3.4; i686; ; )
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>
-References: <Pine.LNX.4.44L0.0912171046070.2645-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912171046070.2645-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 17 Dec 2009 11:14:51 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:64172 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760351AbZLQQOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 11:14:48 -0500
+Date: Thu, 17 Dec 2009 17:14:45 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Ray Copeland" <ray.copeland@aprius.com>
+Cc: <linux-kernel@vger.kernel.org>, <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH 1/2] Wrong ADT7462_VOLT_COUNT for
+ linux-2.6.30  adt7462 hwmon driver
+Message-ID: <20091217171445.0bd28259@hyperion.delvare>
+In-Reply-To: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA328@EXVBE012-13.exch012.intermedia.net>
+References: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA312@EXVBE012-13.exch012.intermedia.net>
+	<AFEAE911EE22F64BACAB05ED86B4D4FC018DA31A@EXVBE012-13.exch012.intermedia.net>
+	<AFEAE911EE22F64BACAB05ED86B4D4FC018DA328@EXVBE012-13.exch012.intermedia.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912171810.45575.roger.oksanen@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 December 2009 17:47:32 Alan Stern wrote:
-> On Thu, 17 Dec 2009, Roger Oksanen wrote:
+Hi Ray,
+
+On Wed, 16 Dec 2009 17:26:19 -0800, Ray Copeland wrote:
+> From: Ray Copeland <ray.copeland@aprius.com>
+> Date: Wed, 16 Dec 2009
+> Subject: [PATCH 1/2] Wrong ADT7462_VOLT_COUNT for linux-2.6.30 adt7462 hwmon driver 
 > 
-> > e100: Fix broken cbs accounting due to missing memset.
-> > 
-> > Alan Stern noticed that e100 caused slab corruption.
-> > commit 98468efddb101f8a29af974101c17ba513b07be1 changed
-> > the allocation of cbs to use dma pools that don't return zeroed memory,
-> > especially the cb->status field used to track which cb to clean, causing
-> > (the visible) double freeing of skbs and a wrong free cbs count.
-> > 
-> > Now the cbs are explicitly zeroed at allocation time.
-> > 
-> > Reported-by: Alan Stern <stern@rowland.harvard.edu>
-> > Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-> > ---
-> >  drivers/net/e100.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> > index d269a68..29a8840 100644
-> > --- a/drivers/net/e100.c
-> > +++ b/drivers/net/e100.c
-> > @@ -1815,6 +1815,7 @@ static int e100_alloc_cbs(struct nic *nic)
-> >  
-> >  	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
-> >  				  &nic->cbs_dma_addr);
-> > +	memset(nic->cbs, 0, count * sizeof(struct cb));
-> >  	if (!nic->cbs)
-> >  		return -ENOMEM;
-> >  
-> > @@ -1825,7 +1826,6 @@ static int e100_alloc_cbs(struct nic *nic)
-> >  		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
-> >  		cb->link = cpu_to_le32(nic->cbs_dma_addr +
-> >  			((i+1) % count) * sizeof(struct cb));
-> > -		cb->skb = NULL;
-> >  	}
-> >  
-> >  	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
+> Description:
 > 
-> Clearly the memset() belongs after the "if" test, not before.  Apart 
-> from that, I confirm that this patch fixes the problem in 2.6.32.
+> The #define ADT7462_VOLT_COUNT is wrong, it should be 13 not 12. All the 
+> for loops that use this as a limit count are of the typical form, "for 
+> (n = 0; n < ADT7462_VOLT_COUNT; n++)", so to loop through all voltages 
+> w/o missing the last one it is necessary for the count to be one greater 
+> than it is.  (Specifically, you will miss the +1.5V 3GPIO input with count 
+> = 12 vs. 13.)
+> 
+> Signed-off-by: Ray Copeland <ray.copeland@aprius.com>
+> 
+> Diff with changes vs. original adt7462.c 2.6.30 version:
+> 
+> --- adt7462.c.orig      2009-12-15 15:51:05.000000000 -0800
+> +++ adt7462.c.volt_count        2009-12-16 14:06:01.000000000 -0800
+> @@ -182,7 +182,7 @@
+>   *
+>   * Some, but not all, of these voltages have low/high limits.
+>   */
+> -#define ADT7462_VOLT_COUNT     12
+> +#define ADT7462_VOLT_COUNT     13
+> 
+>  #define ADT7462_VENDOR         0x41
+>  #define ADT7462_DEVICE         0x62
 
-Silly me! Thanks for testing it. 
-Here is the updated patch.
+While the patch looks functionally correct, it is horribly broken in
+its format. You sent a HTML mail instead of only plain text. Your
+mailer turned the tabs into spaces. And the paths are missing from the
+patch header.
 
-e100: Fix broken cbs accounting due to missing memset.
+Please learn how to send proper patches that kernel maintainers can
+apply. Documentation/SubmittingPatches is a good start.
 
-Alan Stern noticed that e100 caused slab corruption.
-commit 98468efddb101f8a29af974101c17ba513b07be1 changed
-the allocation of cbs to use dma pools that don't return zeroed memory,
-especially the cb->status field used to track which cb to clean, causing
-(the visible) double freeing of skbs and a wrong free cbs count.
-
-Now the cbs are explicitly zeroed at allocation time.
-
-Reported-by: Alan Stern <stern@rowland.harvard.edu>
-Tested-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
----
- drivers/net/e100.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-index d269a68..0c53c92 100644
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -1817,6 +1817,7 @@ static int e100_alloc_cbs(struct nic *nic)
- 				  &nic->cbs_dma_addr);
- 	if (!nic->cbs)
- 		return -ENOMEM;
-+	memset(nic->cbs, 0, count * sizeof(struct cb));
- 
- 	for (cb = nic->cbs, i = 0; i < count; cb++, i++) {
- 		cb->next = (i + 1 < count) ? cb + 1 : nic->cbs;
-@@ -1825,7 +1826,6 @@ static int e100_alloc_cbs(struct nic *nic)
- 		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
- 		cb->link = cpu_to_le32(nic->cbs_dma_addr +
- 			((i+1) % count) * sizeof(struct cb));
--		cb->skb = NULL;
- 	}
- 
- 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
+-- 
+Jean Delvare
