@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936382AbZLQEPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936354AbZLQEO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936382AbZLQEPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936189AbZLQEPU
+	id S936354AbZLQEO4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936345AbZLQEOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:15:20 -0500
-Received: from kroah.org ([198.145.64.141]:55968 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:14:24 -0500
+Received: from kroah.org ([198.145.64.141]:55975 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936167AbZLQEFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:39 -0500
+	id S936170AbZLQEFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:40 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:59 2009
-Message-Id: <20091217035659.451631921@mini.kroah.org>
+Message-Id: <20091217035659.581597734@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:04 -0800
+Date: Wed, 16 Dec 2009 19:57:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhu Yi <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
-Subject: [127/151] ipw2100: fix rebooting hang with driver loaded
+       Alan Cox <alan@linux.intel.com>, Petr Vandrovec <VANDROVE@vc.cvut.cz>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, "Paul A. Clarke" <pc@us.ibm.com>
+Subject: [128/151] matroxfb: fix problems with display stability
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,51 +29,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhu Yi <yi.zhu@intel.com>
+From: Alan Cox <alan@linux.intel.com>
 
-commit 52ce3e9a7db754b78cf2cbabc87013f921b25b28 upstream.
+commit 8c651311a3a08c1e4815de6933e00a760e498dae upstream.
 
-Add PCI .shutdown method so that we can disable the device during
-shutdown or reboot. Without this, the reboot doesn't work well on
-some platforms.
+Regression caused in 2.6.23 and then despite repeated requests never fixed
+or dealt with (Petr promised to sort it in 2008 but seems to have
+forgotten).
 
-This fixes http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2124
+Enough is enough - remove the problem line that was added.  If it upsets
+someone they've had two years to deal with it and at the very least it'll
+rattle their cage and wake them up.
 
-Tested-by: pablo <pablolm2005@gmail.com>
-Signed-off-by: Zhu Yi <yi.zhu@intel.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9709
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Reported-by: Damon <account@bugzilla.kernel.org.juxtaposition.net>
+Tested-by: Ruud van Melick <rvm1974@raketnet.nl>
+Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Paul A. Clarke <pc@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ipw2x00/ipw2100.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/video/matrox/g450_pll.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/net/wireless/ipw2x00/ipw2100.c
-+++ b/drivers/net/wireless/ipw2x00/ipw2100.c
-@@ -6487,6 +6487,16 @@ static int ipw2100_resume(struct pci_dev
- }
- #endif
+--- a/drivers/video/matrox/g450_pll.c
++++ b/drivers/video/matrox/g450_pll.c
+@@ -368,7 +368,8 @@ static int __g450_setclk(struct matrox_f
+ 					M1064_XDVICLKCTRL_C1DVICLKEN |
+ 					M1064_XDVICLKCTRL_DVILOOPCTL |
+ 					M1064_XDVICLKCTRL_P1LOOPBWDTCTL;
+-				matroxfb_DAC_out(minfo, M1064_XDVICLKCTRL, tmp);
++                                /* Setting this breaks PC systems so don't do it */
++				/* matroxfb_DAC_out(minfo, M1064_XDVICLKCTRL, tmp); */
+ 				matroxfb_DAC_out(minfo, M1064_XPWRCTRL,
+ 						 xpwrctrl);
  
-+static void ipw2100_shutdown(struct pci_dev *pci_dev)
-+{
-+	struct ipw2100_priv *priv = pci_get_drvdata(pci_dev);
-+
-+	/* Take down the device; powers it off, etc. */
-+	ipw2100_down(priv);
-+
-+	pci_disable_device(pci_dev);
-+}
-+
- #define IPW2100_DEV_ID(x) { PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, x }
- 
- static struct pci_device_id ipw2100_pci_id_table[] __devinitdata = {
-@@ -6550,6 +6560,7 @@ static struct pci_driver ipw2100_pci_dri
- 	.suspend = ipw2100_suspend,
- 	.resume = ipw2100_resume,
- #endif
-+	.shutdown = ipw2100_shutdown,
- };
- 
- /**
 
 
