@@ -1,97 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZLQUYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764888AbZLQU0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbZLQUYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 15:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759035AbZLQUYt
+	id S1764888AbZLQU0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764885AbZLQU0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 15:24:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29802 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758240AbZLQUXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 15:23:33 -0500
-Subject: Re: NULL pointer dereference in commit_tree() from Linus' Dec17
- tree
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-nfs@vger.kernel.org
-In-Reply-To: <1261075774.2868.16.camel@localhost>
-References: <1261075774.2868.16.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 15:23:31 -0500
-Message-Id: <1261081411.2868.18.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 15:26:12 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33670 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764572AbZLQU0G convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 15:26:06 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18ttAp7LdYtQJHC2+HH6sS4gXhnB2VeMWrnUWLOEU
+	t7DtPyJGhry452
+Date: Thu, 17 Dec 2009 21:25:52 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org,
+       Ian Molton <ian@mnementh.co.uk>
+Subject: Re: [PATCH/RFC] tmio_mmc: keep card-detect interrupts enabled
+In-Reply-To: <Pine.LNX.4.64.0912162223170.5283@axis700.grange>
+Message-ID: <Pine.LNX.4.64.0912172113510.5991@axis700.grange>
+References: <Pine.LNX.4.64.0911061127240.4389@axis700.grange> 
+ <c09aa50a0911090242l35d0dfb2vec0cdeff8b86d33e@mail.gmail.com> 
+ <Pine.LNX.4.64.0911091530030.4289@axis700.grange>
+ <c09aa50a0911091218i681449e0r5cb96b9db3e0def6@mail.gmail.com> 
+ <Pine.LNX.4.64.0911092134440.4289@axis700.grange>
+ <c09aa50a0911091736k27d66483t9012e296bfbf578a@mail.gmail.com>
+ <Pine.LNX.4.64.0911282002490.3696@axis700.grange>
+ <Pine.LNX.4.64.0912162223170.5283@axis700.grange>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=KOI8-R
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 13:49 -0500, Eric Paris wrote:
-> I pulled from Linus Dec16 and didn't have problems.  This is a pull from
-> Dec17, plus some of my own patches which I'd be surprised to learn were
-> related.  I have an NFS mount in my fstab, I assume this is that being
-> mounted on boot.  I'll start a bisect if needed, but maybe someone will
-> know what they broke instantly....
+Hi Andrew
 
-For those playing along at home it is commit e9496ff46a20a8592fdc7 and
-Al is looking at it.
+I originally submitted this [1] patch on the 6th of November, then 
+accidentally the MMC list got dropped from CC and the discussion moved to 
+another irrelevant list, Ian's last reply is at [2]. Unfortunately, Ian 
+hasn't replied to my reminders since then, and I don't see this patch 
+anywhere upstream. Is there any way we could get it into 2.6.33?
 
-Now to get my tree up so I can ask you to pull from mine (which is
-coming so late because it had some conflicts with Al's and I was waiting
-for it to go in)
+Thanks
+Guennadi
 
+[1] http://thread.gmane.org/gmane.linux.kernel.mmc/704
+[2] http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/11981/focus=11995
+
+On Wed, 16 Dec 2009, Guennadi Liakhovetski wrote:
+
+> On Sat, 28 Nov 2009, Guennadi Liakhovetski wrote:
 > 
-> [   16.140640] BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
-> [   16.141381] IP: [<ffffffff8114db7f>] commit_tree+0x6f/0x100
-> [   16.141381] PGD 0 
-> [   16.141381] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> [   16.141381] last sysfs file: /sys/module/lockd/initstate
-> [   16.141381] CPU 1 
-> [   16.141381] Pid: 2413, comm: mount.nfs Not tainted 2.6.32-fanotify #32 /
-> [   16.141381] RIP: 0010:[<ffffffff8114db7f>]  [<ffffffff8114db7f>] commit_tree+0x6f/0x100
-> [   16.141381] RSP: 0018:ffff88007dfb1798  EFLAGS: 00010246
-> [   16.141381] RAX: ffff88007dfb1798 RBX: ffff88007dfb1798 RCX: ffff8800775962e8
-> [   16.141381] RDX: ffff88007dfb1730 RSI: ffff8800775962e8 RDI: ffff88007dfb1798
-> [   16.141381] RBP: ffff88007dfb17c8 R08: 0000000000000002 R09: 0000000000000000
-> [   16.141381] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-> [   16.141381] R13: ffff880077596280 R14: ffff88007e6e6280 R15: 0000000000000000
-> [   16.141381] FS:  00007f05bdf0b700(0000) GS:ffff880004c00000(0000) knlGS:0000000000000000
-> [   16.141381] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [   16.141381] CR2: 0000000000000018 CR3: 00000000777d3000 CR4: 00000000000006e0
-> [   16.141381] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [   16.141381] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [   16.141381] Process mount.nfs (pid: 2413, threadinfo ffff88007dfb0000, task ffff88007dc62430)
-> [   16.141381] Stack:
-> [   16.141381]  ffff8800775962e8 ffff8800775962e8 ffff880077596280 ffff88007e6e6280
-> [   16.141381] <0> ffff88007dfb1be8 ffff88007dfb17e8 ffff88007dfb1828 ffffffff8114e13b
-> [   16.141381] <0> 0000000000000000 ffff88007c307710 ffff88007dfb17e8 ffff88007dfb17e8
-> [   16.141381] Call Trace:
-> [   16.141381]  [<ffffffff8114e13b>] attach_recursive_mnt+0x16b/0x170
-> [   16.141381]  [<ffffffff8114e22b>] graft_tree+0xeb/0x120
-> [   16.141381]  [<ffffffff8114e294>] ? do_add_mount+0x34/0x140
-> [   16.141381]  [<ffffffff8114e354>] do_add_mount+0xf4/0x140
-> [   16.141381]  [<ffffffffa0270a9a>] nfs_follow_mountpoint+0x14a/0x490 [nfs]
-> [   16.141381]  [<ffffffff8102f64e>] ? kvm_clock_read+0x3e/0x70
-> [   16.141381]  [<ffffffff81012499>] ? sched_clock+0x9/0x10
-> [   16.141381]  [<ffffffff81245ca3>] ? selinux_inode_follow_link+0x83/0xb0
-> [   16.141381]  [<ffffffff8113e2d1>] do_follow_link+0x161/0x300
-> [   16.141381]  [<ffffffff8113dadb>] link_path_walk+0x3bb/0x670
-> [   16.141381]  [<ffffffff8113ddec>] path_walk+0x5c/0xc0
-> [   16.141381]  [<ffffffff8113deba>] vfs_path_lookup+0x6a/0xe0
-> [   16.141381]  [<ffffffffa0264f45>] nfs_follow_remote_path+0x35/0x110 [nfs]
-> [   16.141381]  [<ffffffff810927f0>] ? trace_hardirqs_on_caller+0x120/0x1a0
-> [   16.141381]  [<ffffffffa0266235>] ? nfs_do_root_mount+0x85/0xa0 [nfs]
-> [   16.141381]  [<ffffffffa0266235>] ? nfs_do_root_mount+0x85/0xa0 [nfs]
-> [   16.141381]  [<ffffffffa0266397>] nfs4_try_mount+0x77/0xd0 [nfs]
-> [   16.141381]  [<ffffffffa0267336>] nfs_get_sb+0x836/0xd10 [nfs]
-> [   16.141381]  [<ffffffff8109287d>] ? trace_hardirqs_on+0xd/0x10
-> [   16.141381]  [<ffffffff8114c8e6>] ? alloc_vfsmnt+0xc6/0x1a0
-> [   16.141381]  [<ffffffff8113025b>] ? __alloc_percpu+0xb/0x10
-> [   16.141381]  [<ffffffff81134d97>] vfs_kern_mount+0x77/0x180
-> [   16.141381]  [<ffffffff81134f0e>] do_kern_mount+0x4e/0x110
-> [   16.141381]  [<ffffffff8114ea9d>] do_mount+0x51d/0x7e0
-> [   16.141381]  [<ffffffff8114d24a>] ? copy_mount_options+0x10a/0x180
-> [   16.141381]  [<ffffffff8114edea>] sys_mount+0x8a/0xd0
-> [   16.141381]  [<ffffffff8100ae02>] system_call_fastpath+0x16/0x1b
-> [   16.141381] Code: 55 d0 48 83 ea 68 eb 0f 4c 89 a2 c0 00 00 00 48 8b 52 68 48 83 ea 68 48 8b 42 68 0f 18 08 48 8d 42 68 48 39 d8 75 e1 48 8b 4d d0 <49> 8b 74 24 18 48 39 c1 74 15 48 8b 16 48 8b 45 d8 48 89 0e 48
+> > On Tue, 10 Nov 2009, Ian Molton wrote:
+> > 
+> > > Well if they are only masked they shouldnt stop being asserted. But we
+> > > should unmask them again.
+> > > 
+> > > Im not really sure we should mask them anyway, with the card possibly
+> > > being gone... Will need to look into it further.
+> > 
+> > Hi Ian
+> > 
+> > What's the status of this patch? Are you going to queue it for 2.6.33?
+> 
+> Ian, ping? I still don't see this patch in any (Linus' / next) upstream 
+> tree and the merge window will be closing soon. Any update?
+> 
+> Thanks
+> Guennadi
+> 
+> > 
+> > Thanks
+> > Guennadi
+> > 
+> > > 
+> > > 2009/11/9 Guennadi Liakhovetski <g.liakhovetski@gmx.de>:
+> > > > (re-adding accidentally dropped ML)
+> > > >
+> > > > On Mon, 9 Nov 2009, Ian Molton wrote:
+> > > >
+> > > >> Well, I presume we want to know when the card gets removed :)
+> > > >
+> > > > Sure, that's why we shouldn't mask those interrupts:-) If they do get
+> > > > masked and missed, I do not know, if the interrupt remains pending in this
+> > > > case, because they never get detected then:)
+> > > >
+> > > >>
+> > > >> 2009/11/9 Guennadi Liakhovetski <g.liakhovetski@gmx.de>:
+> > > >> > Hi Ian
+> > > >> >
+> > > >> > Why did you drop all CCs?
+> > > >> >
+> > > >> > On Mon, 9 Nov 2009, Ian Molton wrote:
+> > > >> >
+> > > >> >> I havent looked at the consequences for the driver if a insert IRQ
+> > > >> >> occurs during IO, however it seems logical that we should not
+> > > >> >> permanently mask the IRQ.
+> > > >> >>
+> > > >> >> I presume that the IRQ remains pending?
+> > > >> >
+> > > >> > Don't know, never checked. Is this important to know?
+> > > >> >
+> > > >> > Thanks
+> > > >> > Guennadi
+> > > >> >
+> > > >> >>
+> > > >> >> 2009/11/6 Guennadi Liakhovetski <g.liakhovetski@gmx.de>:
+> > > >> >> > On SuperH platforms the SDHI controller does not produce any command IRQs
+> > > >> >> > after a completed IO. This leads to card-detect interrupts staying
+> > > >> >> > disabled. Do not disable card-detect interrupts on DATA IRQs.
+> > > >> >> >
+> > > >> >> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> > > >> >> > ---
+> > > >> >> >
+> > > >> >> > Marked as RFC because I'm not really sure this is a correct approach to
+> > > >> >> > fix this problem, and whether this will have negative effect on other
+> > > >> >> > tmio_mmc MFD users.
+> > > >> >> >
+> > > >> >> > diff --git a/drivers/mmc/host/tmio_mmc.h b/drivers/mmc/host/tmio_mmc.h
+> > > >> >> > index c676767..0b31d44 100644
+> > > >> >> > --- a/drivers/mmc/host/tmio_mmc.h
+> > > >> >> > +++ b/drivers/mmc/host/tmio_mmc.h
+> > > >> >> > @@ -55,10 +55,8 @@
+> > > >> >> >  /* Define some IRQ masks */
+> > > >> >> >  /* This is the mask used at reset by the chip */
+> > > >> >> >  #define TMIO_MASK_ALL           0x837f031d
+> > > >> >> > -#define TMIO_MASK_READOP  (TMIO_STAT_RXRDY | TMIO_STAT_DATAEND | \
+> > > >> >> > -               TMIO_STAT_CARD_REMOVE | TMIO_STAT_CARD_INSERT)
+> > > >> >> > -#define TMIO_MASK_WRITEOP (TMIO_STAT_TXRQ | TMIO_STAT_DATAEND | \
+> > > >> >> > -               TMIO_STAT_CARD_REMOVE | TMIO_STAT_CARD_INSERT)
+> > > >> >> > +#define TMIO_MASK_READOP  (TMIO_STAT_RXRDY | TMIO_STAT_DATAEND)
+> > > >> >> > +#define TMIO_MASK_WRITEOP (TMIO_STAT_TXRQ | TMIO_STAT_DATAEND)
+> > > >> >> >  #define TMIO_MASK_CMD     (TMIO_STAT_CMDRESPEND | TMIO_STAT_CMDTIMEOUT | \
+> > > >> >> >                TMIO_STAT_CARD_REMOVE | TMIO_STAT_CARD_INSERT)
+> > > >> >> >  #define TMIO_MASK_IRQ     (TMIO_MASK_READOP | TMIO_MASK_WRITEOP | TMIO_MASK_CMD)
+> > > >
+> > > > Thanks
+> > > > Guennadi
+> > > > ---
+> > > > Guennadi Liakhovetski, Ph.D.
+> > > > Freelance Open-Source Software Developer
+> > > > http://www.open-technology.de/
+> > > >
+> > > 
+> > > 
+> > > 
+> > > -- 
+> > > Ian Molton
+> > > Linux, Automotive, and other hacking:
+> > > http://www.mnementh.co.uk/
+> > > 
+> > 
+> > ---
+> > Guennadi Liakhovetski
+> > 
+> 
+> ---
+> Guennadi Liakhovetski, Ph.D.
+> Freelance Open-Source Software Developer
+> http://www.open-technology.de/
+> 
 
-
+---
+Guennadi Liakhovetski
