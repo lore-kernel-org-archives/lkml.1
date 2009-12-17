@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936574AbZLQEcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936180AbZLQEFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936574AbZLQEcO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935690AbZLQEbc
+	id S936180AbZLQEFo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935678AbZLQEEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:31:32 -0500
-Received: from kroah.org ([198.145.64.141]:55647 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:04:44 -0500
+Received: from kroah.org ([198.145.64.141]:55639 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935657AbZLQEEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935662AbZLQEEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 23:04:38 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:52 2009
-Message-Id: <20091217035652.596312032@mini.kroah.org>
+Message-Id: <20091217035652.724954569@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:12 -0800
+Date: Wed, 16 Dec 2009 19:56:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [075/151] powerpc: Fix usage of 64-bit instruction in 32-bit altivec code
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+Subject: [076/151] drm/radeon/kms: Add quirk for HIS X1300 board
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,34 +28,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alex Deucher <alexdeucher@gmail.com>
 
-commit e090aa80321b64c3b793f3b047e31ecf1af9538d upstream.
+commit 4e3f9b78ff917cc5c833858fdb5d96bc262e0bf3 upstream.
 
-e821ea70f3b4873b50056a1e0f74befed1014c09 introduced a bug by copying
-some 64-bit originated code as-is to be used by both 32 and 64-bit
-but this code contains a 64-bit ony "cmpdi" instruction.
+Board is DVI+VGA, not DVI+DVI
 
-This changes it to cmpwi, which is fine since VRSAVE can only contains
-a 32-bit value anyway.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/kernel/vector.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/radeon/radeon_atombios.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -58,7 +58,7 @@ _GLOBAL(load_up_altivec)
- 	 * all 1's
- 	 */
- 	mfspr	r4,SPRN_VRSAVE
--	cmpdi	0,r4,0
-+	cmpwi	0,r4,0
- 	bne+	1f
- 	li	r4,-1
- 	mtspr	SPRN_VRSAVE,r4
+--- a/drivers/gpu/drm/radeon/radeon_atombios.c
++++ b/drivers/gpu/drm/radeon/radeon_atombios.c
+@@ -135,6 +135,14 @@ static bool radeon_atom_apply_quirks(str
+ 		}
+ 	}
+ 
++	/* HIS X1300 is DVI+VGA, not DVI+DVI */
++	if ((dev->pdev->device == 0x7146) &&
++	    (dev->pdev->subsystem_vendor == 0x17af) &&
++	    (dev->pdev->subsystem_device == 0x2058)) {
++		if (supported_device == ATOM_DEVICE_DFP1_SUPPORT)
++			return false;
++	}
++
+ 	/* Funky macbooks */
+ 	if ((dev->pdev->device == 0x71C5) &&
+ 	    (dev->pdev->subsystem_vendor == 0x106b) &&
 
 
