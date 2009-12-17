@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbZLQPB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbZLQPD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761550AbZLQPB2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760253AbZLQPB0
+	id S1762345AbZLQPD2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:03:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760277AbZLQPDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:01:26 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:52109 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756480AbZLQPBZ (ORCPT
+	Thu, 17 Dec 2009 10:03:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42604 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760253AbZLQPDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:01:25 -0500
-Date: Thu, 17 Dec 2009 15:01:20 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       David Daney <ddaney@caviumnetworks.com>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-Message-ID: <20091217150120.GD24967@shareable.org>
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 17 Dec 2009 10:03:24 -0500
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+In-Reply-To: <20091217144551.GA6819@linux.vnet.ibm.com>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091216101107.GA15031@basil.fritz.box>
+	 <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20091216102806.GC15031@basil.fritz.box>
+	 <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box>
+	 <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box>
+	 <20091217144551.GA6819@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 16:02:12 +0100
+Message-ID: <1261062132.27920.469.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Kleine-König wrote:
-> Use the new unreachable() macro instead of for(;;);
->  	*(int *)0 = 0;
->  
->  	/* Avoid "noreturn function does return" */
-> -	for (;;);
-> +	unreachable();
+On Thu, 2009-12-17 at 06:45 -0800, Paul E. McKenney wrote:
+> On Thu, Dec 17, 2009 at 09:54:30AM +0100, Andi Kleen wrote:
+> > On Thu, Dec 17, 2009 at 09:45:34AM +0100, Peter Zijlstra wrote:
+> > > On Thu, 2009-12-17 at 09:40 +0100, Andi Kleen wrote:
+> > > > On Wed, Dec 16, 2009 at 11:57:04PM +0100, Peter Zijlstra wrote:
+> > > > > On Wed, 2009-12-16 at 19:31 +0900, KAMEZAWA Hiroyuki wrote:
+> > > > > 
+> > > > > > The problem of range locking is more than mmap_sem, anyway. I don't think
+> > > > > > it's possible easily.
+> > > > > 
+> > > > > We already have a natural range lock in the form of the split pte lock.
+> > > > > 
+> > > > > If we make the vma lookup speculative using RCU, we can use the pte lock
+> > > > 
+> > > > One problem is here that mmap_sem currently contains sleeps
+> > > > and RCU doesn't work for blocking operations until a custom
+> > > > quiescent period is defined.
+> > > 
+> > > Right, so one thing we could do is always have preemptible rcu present
+> > > in another RCU flavour, like
+> > > 
+> > > rcu_read_lock_sleep()
+> > > rcu_read_unlock_sleep()
+> > > call_rcu_sleep()
+> > > 
+> > > or whatever name that would be, and have PREEMPT_RCU=y only flip the
+> > > regular rcu implementation between the sched/sleep one.
+> > 
+> > That could work yes.
+> 
+> OK, I have to ask...
+> 
+> Why not just use the already-existing SRCU in this case?
 
-Will GCC-4.5 remove ("optimise away") the *(int *)0 = 0 because it
-knows the branch of the code leading to unreachable can never be reached?
+Because somehow the preemptible RCU implementation seems superior to
+SRCU, but sure, when developing all this one can start by simply
+mandating PREEMPT_RCU=y, then maybe use SRCU or try to drop the rcu lock
+when sleeping.
 
-If GCC-4.5 does not, are you sure a future version of GCC will never
-remove it?  In other words, is __builtin_unreachable() _defined_ in
-such a way that it cannot remove the previous assignment?
+That mmap_sem lockbreak on wait_page() seems like a sensible idea
+anyway, regardless of what we do with the rest of the locking.
 
-We have seen problems with GCC optimising away important tests for
-NULL pointers in the kernel, due to similar propagation of "impossible
-to occur" conditions, so it's worth checking with GCC people what the
-effect of this one would be.
 
-In C, there is a general theoretical problem with back-propagation of
-optimisations from code with undefined behaviour.  In the case of
-__builtin_unreachable(), it would depend on all sorts of unclearly
-defined semantics whether it can remove a preceding *(int *)0 = 0.
 
-I'd strongly suggest asking on the GCC list.  (I'd have mentioned this
-earlier, if I'd known about the patch for other architectures).
-
-The documentation for __builtin_unreachable() only says the program is
-undefined if control flow reaches it.  In other words, it does not say
-what effect it can have on previous instructions, and I think it's
-quite likely that it has not been analysed in a case like this.
-
-One thing that would give me a lot more confidence, because the GCC
-documentation does mention asm(), is this:
-
->       *(int *)0 = 0;
->       /* Ensure unreachableness optimisations cannot propagate back. *I/
->       __asm__ volatile("");
->       /* Avoid "noreturn function does return" */
->       unreachable();
-
--- Jamie
