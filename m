@@ -1,96 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZLQODp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZLQOCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbZLQODp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 09:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZLQODm
+	id S1756292AbZLQOCz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 09:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZLQOCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 09:03:42 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:25420 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbZLQODl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 09:03:41 -0500
-X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 09:03:41 EST
-X-IronPort-AV: E=Sophos;i="4.47,413,1257138000"; 
-   d="scan'208";a="76879371"
-From: Ian Campbell <ian.campbell@citrix.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] microcode: do not WARN_ON(cpu != 0) during resume
-Date: Thu, 17 Dec 2009 13:53:44 +0000
-Message-Id: <1261058024-32278-1-git-send-email-ian.campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.5
-X-OriginalArrivalTime: 17 Dec 2009 13:53:50.0920 (UTC) FILETIME=[5CFC4C80:01CA7F20]
+	Thu, 17 Dec 2009 09:02:50 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:63961 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753572AbZLQOCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 09:02:48 -0500
+Date: Thu, 17 Dec 2009 15:02:43 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: djwong@us.ibm.com, lenb@kernel.org, Crane Cai <crane.cai@amd.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [RESEND PATCH v2 1/2] ACPI: Quirk to make SMBus objects work on
+  IBM machines with broken BIOSes
+Message-ID: <20091217150243.0d2749a2@hyperion.delvare>
+In-Reply-To: <20091204181103.GN10295@tux1.beaverton.ibm.com>
+References: <20091021173733.GN26149@tux1.beaverton.ibm.com>
+	<20091027183619.16b0b952@hyperion.delvare>
+	<20091204170621.GA10356@tux1.beaverton.ibm.com>
+	<200912041036.36686.bjorn.helgaas@hp.com>
+	<20091204181103.GN10295@tux1.beaverton.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-871b72dd "x86: microcode: use smp_call_function_single instead of
-set_cpus_allowed, cleanup of synchronization logic" included:
+On Fri, 4 Dec 2009 10:11:03 -0800, Darrick J. Wong wrote:
+> On some old IBM workstations and desktop computers, the BIOS presents in the
+> DSDT an SMBus object that is missing the HID identifier that the i2c-scmi
+> driver looks for.  Modify the ACPI device scan code to insert the missing HID
+> if it finds an IBM system with such an object.  This patch requires Crane Cai's
+> update to i2c-scmi to work around incorrectly named methods within the SMBus
+> control object.
+> 
+> Affected machines: ThinkCenter M52, IntelliStation Z20/Z30.  Note that the
+> i2c-i801 driver no longer works on these machines because of ACPI resource
+> conflicts.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/acpi/scan.c         |   38 ++++++++++++++++++++++++++++++++++++++
+>  include/acpi/acpi_drivers.h |    2 ++
+>  2 files changed, 40 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> index 14a7481..5a24429 100644
+> --- a/drivers/acpi/scan.c
+> +++ b/drivers/acpi/scan.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/acpi.h>
+>  #include <linux/signal.h>
+>  #include <linux/kthread.h>
+> +#include <linux/dmi.h>
+>  
+>  #include <acpi/acpi_drivers.h>
+>  
+> @@ -1014,6 +1015,41 @@ static void acpi_add_id(struct acpi_device *device, const char *dev_id)
+>  	list_add_tail(&id->list, &device->pnp.ids);
+>  }
+>  
+> +/*
+> + * Old IBM workstations have a DSDT bug wherein the SMBus object
+> + * lacks the SMBUS01 HID and the methods do not have the necessary "_"
+> + * prefix.  Work around this.
+> + */
+> +static int acpi_ibm_smbus_match(struct acpi_device *device)
+> +{
+> +	acpi_handle h_dummy;
+> +	struct acpi_buffer path = {ACPI_ALLOCATE_BUFFER, NULL};
+> +	int result;
+> +
+> +	if (!dmi_name_in_vendors("IBM"))
+> +		return -ENODEV;
+> +
+> +	/* Look for SMBS object */
+> +	result = acpi_get_name(device->handle, ACPI_SINGLE_NAME, &path);
+> +	if (result)
+> +		return result;
+> +
+> +	if (strcmp("SMBS", path.pointer)) {
+> +		result = -ENODEV;
+> +		goto out;
+> +	}
+> +
+> +	/* Does it have the necessary (but misnamed) methods? */
+> +	result = -ENODEV;
+> +	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "SBI", &h_dummy)) &&
+> +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBR", &h_dummy)) &&
+> +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBW", &h_dummy)))
+> +		result = 0;
+> +out:
+> +	kfree(path.pointer);
+> +	return result;
+> +}
+> +
+>  static void acpi_device_set_id(struct acpi_device *device)
+>  {
+>  	acpi_status status;
+> @@ -1064,6 +1100,8 @@ static void acpi_device_set_id(struct acpi_device *device)
+>  			acpi_add_id(device, ACPI_BAY_HID);
+>  		else if (ACPI_SUCCESS(acpi_dock_match(device)))
+>  			acpi_add_id(device, ACPI_DOCK_HID);
+> +		else if (!acpi_ibm_smbus_match(device))
+> +			acpi_add_id(device, ACPI_SMBUS_IBM_HID);
+>  
+>  		break;
+>  	case ACPI_BUS_TYPE_POWER:
+> diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+> index f4906f6..83a2960 100644
+> --- a/include/acpi/acpi_drivers.h
+> +++ b/include/acpi/acpi_drivers.h
+> @@ -65,6 +65,8 @@
+>  #define ACPI_VIDEO_HID			"LNXVIDEO"
+>  #define ACPI_BAY_HID			"LNXIOBAY"
+>  #define ACPI_DOCK_HID			"LNXDOCK"
+> +/* Quirk for broken IBM BIOSes */
+> +#define ACPI_SMBUS_IBM_HID		"SMBUSIBM"
+>  
+>  /*
+>   * For fixed hardware buttons, we fabricate acpi_devices with HID
 
- static int mc_sysdev_resume(struct sys_device *dev)
- {
-[...]
-+       /*
-+        * All non-bootup cpus are still disabled,
-+        * so only CPU 0 will apply ucode here.
-+        *
-+        * Moreover, there can be no concurrent
-+        * updates from any other places at this point.
-+        */
-+       WARN_ON(cpu != 0);
+Bjorn, Len, can you please apply this quickly? The i2c-scmi side of the
+changes is pending for weeks now, but I can't apply it as long as the
+ACPI parts aren't in.
 
-However suspend/resume under Xen doesn't need to hot unplug all the CPUs, so we
-don't; the hypervisor can manage the context save/restore for all CPUs.
-
-It would be unnecessary to load microcode.ko in a Xen domU but if it does occur
-(e.g. because a distro installs the tools by default) we would like to avoid
-the warning on resume.
-
-Since the real constraint here is that we are running on the CPU for which we
-would like to load microcode (which in all practical circumstances is CPU0)
-just check for that and return if we are resuming a different CPU.
-
-There is no danger of concurrent updates, even if we ignore the fact that all
-but one CPUs are unplugged on native, because sysdev_resume() is single
-threaded.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/microcode_core.c |   11 +----------
- 1 files changed, 1 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index 378e9a8..1153062 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -438,18 +438,9 @@ static int mc_sysdev_resume(struct sys_device *dev)
- 	int cpu = dev->id;
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
--	if (!cpu_online(cpu))
-+	if (cpu != smp_processor_id())
- 		return 0;
- 
--	/*
--	 * All non-bootup cpus are still disabled,
--	 * so only CPU 0 will apply ucode here.
--	 *
--	 * Moreover, there can be no concurrent
--	 * updates from any other places at this point.
--	 */
--	WARN_ON(cpu != 0);
--
- 	if (uci->valid && uci->mc)
- 		microcode_ops->apply_microcode(cpu);
- 
+Thanks,
 -- 
-1.5.6.5
-
+Jean Delvare
