@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbZLQD0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934586AbZLQDaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933908AbZLQD0g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 22:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbZLQD0e
+	id S934586AbZLQDaI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 22:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbZLQD37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 22:26:34 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58570 "EHLO e6.ny.us.ibm.com"
+	Wed, 16 Dec 2009 22:29:59 -0500
+Received: from kroah.org ([198.145.64.141]:41331 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932888AbZLQD0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 22:26:32 -0500
-Subject: Re: Wrong atime on recent kernels
-From: john stultz <johnstul@us.ibm.com>
-To: Petr =?UTF-8?Q?Tit=C4=9Bra?= <petr@titera.eu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4B29494B.4010305@titera.eu>
-References: <4B26AB7E.9020208@titera.eu>
-	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>
-	 <4B29494B.4010305@titera.eu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 19:26:28 -0800
-Message-ID: <1261020388.7245.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	id S932602AbZLQD37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 22:29:59 -0500
+Date: Wed, 16 Dec 2009 19:29:25 -0800
+From: Greg KH <greg@kroah.com>
+To: Ike Panhc <ike.pan@canonical.com>
+Cc: reinette chatre <reinette.chatre@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "stable@kernel.org" <stable@kernel.org>
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+Message-ID: <20091217032925.GA21374@kroah.com>
+References: <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
+ <20091215041500.GB31200@kroah.com>
+ <4B273479.6050502@canonical.com>
+ <20091215134943.GA11667@kroah.com>
+ <20091215163100.GC8097@tuxdriver.com>
+ <1260906168.9623.4.camel@rc-desk>
+ <20091215194938.GA13297@kroah.com>
+ <4B288232.4060901@canonical.com>
+ <1260983101.9623.11.camel@rc-desk>
+ <4B298ECF.7050009@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B298ECF.7050009@canonical.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 21:55 +0100, Petr Titěra wrote:
-> john stultz napsal(a): 
-> > 2009/12/14 Petr Titěra <petr@titera.eu>:
-> >   
-> > > Hello,
-> > > 
-> > >      I see some strange file modification times recently. It seems to me
-> > > that in some situations, kernel allows to set nanoseconds part of  file
-> > > access, modification or change time  to 100000000 ns. Problem seems to be in
-> > > some generic part of kernel because I see it on several different
-> > > filesysytems (ext4 and nilf2). These is I've got during my testing on kernel
-> > >  2.6.32-tip-08309-gad8e75a.
-> > > 
-> > >  File: `./Documentation/dvb/contributors.txt'
-> > >  Size: 3035            Blocks: 8          IO Block: 4096   regular file
-> > > Device: fe04h/65028d    Inode: 818         Links: 1
-> > > Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-> > > Access: 2009-12-14 10:29:04.1000000000 +0100
-> > > Modify: 2009-12-14 10:29:04.1000000000 +0100
-> > > Change: 2009-12-14 10:29:04.1000000000 +0100
-> > > 
-> > > See that all times of that file ends with 1e6 nanoseconds.
->
->     I did not test reverting this patch yet, because I did not find
-> reliable way how to reproduce these strange modify times. But as I
-> read your description. Would it be possible that if there would be bug
-> in your patch i would be observer on mostly quiet system? I'm asking
-> because full day of testing of the system under load did not produce
-> any result, but then when I tried to run "find / | xargs stat" on idle
-> system I've got several new instances of wrong access time (filesystem
-> is mounted without noatime)
+On Thu, Dec 17, 2009 at 09:52:15AM +0800, Ike Panhc wrote:
+> reinette chatre wrote:
+> > On Tue, 2009-12-15 at 22:46 -0800, Ike Panhc wrote:
+> > 
+> >> But Please consider applying the first patch (change IWL6000_UCODE_API_MAX
+> >> to v4) to 2.6.31-stable tree. It will be good to use v4 firmware on iwl6000.
+> > 
+> > Please no. This will effectively enable 6000 series in 2.6.31. We did
+> > not target 2.6.31 for 6000 series enabling and more patches, which are
+> > in 2.6.32, are required for 6000 series to work well.
+> > 
+> > Reinette
+> > 
+> Got it, so backport any patch for iwl6000 to 2.6.31-stable is not reasonable.
 
-Another quick question:
+Bugfixes are fine, but that is not what this is.
 
-What is the normal behavior you see when this issue is not cropping up?
+Please go read the file, Documentation/stable_kernel_rules.txt to give
+you an idea of what we are expecting here.
 
-Do you normally see all 0's in the ns field? Or do you expect to see an
-actual ns value?
+thanks,
 
-I'm asking as all the filesystems I've played with have all zeros, so
-I'm not sure if I need to try a different filesystem (I tried ext4, but
-it was with a disk that was originally ext3), or if the issue is just
-the stray 1sec value in the ns field. 
-
-thanks
--john
-
-
+greg k-h
