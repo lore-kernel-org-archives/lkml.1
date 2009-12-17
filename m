@@ -1,74 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbZLQJZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934827AbZLQJ0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934628AbZLQJZa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 04:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934392AbZLQJZV
+	id S934827AbZLQJ0K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 04:26:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934392AbZLQJ0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 04:25:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43995 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933817AbZLQJZQ (ORCPT
+	Thu, 17 Dec 2009 04:26:02 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:26697 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934143AbZLQJZ4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 04:25:16 -0500
-Subject: Re: [PATCH 2/2] perf lock: Fix output of tracing lock events
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1260934105-4472-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 10:24:45 +0100
-Message-ID: <1261041885.27920.110.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 04:25:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=e78lgedGitC8wLSWk0nA/Rwb/y8OCjGAPONPfJ1Szye3Mkvt7yizJZwXxQnYj7UlVr
+         evaj0YiA4wZTHFHmku5Z2yt/YogTsv/zdL3bjvFo60RLy6HAz0bqWB0wTLNXKBMLM2yy
+         xeLgG4rsv6JXilDQ/jTY4ud9NCgZydq6oEj3A=
+MIME-Version: 1.0
+In-Reply-To: <1260977565-2379-1-git-send-email-michael@laptop.org>
+References: <1260977452-2334-1-git-send-email-michael@laptop.org>
+	 <1260977565-2379-1-git-send-email-michael@laptop.org>
+Date: Thu, 17 Dec 2009 17:25:53 +0800
+Message-ID: <2375c9f90912170125u6de30803sd80ecddaa332cc6a@mail.gmail.com>
+Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Michael Stone <michael@laptop.org>
+Cc: Ulrich Drepper <drepper@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 12:28 +0900, Hitoshi Mitake wrote:
-> This patch adds address of lockdep_map to each lock events.
-> perf lock uses these addresses as IDs of lock instances.
-> 
-> And this removes waittime from output of lock_acquired event.
-> The value will be caliculated in userspace based on timestamp.
-> 
-> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+On Wed, Dec 16, 2009 at 11:32 PM, Michael Stone <michael@laptop.org> wrote:
+> Daniel Bernstein has observed [1] that security-conscious userland processes
+> may benefit from the ability to irrevocably remove their ability to create,
+> bind, connect to, or send messages except in the case of previously connected
+> sockets or AF_UNIX filesystem sockets. We provide this facility by implementing
+> support for a new prctl(PR_SET_NETWORK) flag named PR_NETWORK_OFF.
+>
+> This facility is particularly attractive to security platforms like OLPC
+> Bitfrost [2] and to isolation programs like Rainbow [3] and Plash [4].
+>
+> [1]: http://cr.yp.to/unix/disablenetwork.html
+> [2]: http://wiki.laptop.org/go/OLPC_Bitfrost
+> [3]: http://wiki.laptop.org/go/Rainbow
+> [4]: http://plash.beasts.org/
+>
+> Signed-off-by: Michael Stone <michael@laptop.org>
 > ---
->  include/trace/events/lock.h |   27 ++++++++++++++++++---------
->  kernel/lockdep.c            |    2 +-
->  2 files changed, 19 insertions(+), 10 deletions(-)
-> 
-> diff --git a/include/trace/events/lock.h b/include/trace/events/lock.h
-> index a870ba1..2f94e25 100644
-> --- a/include/trace/events/lock.h
-> +++ b/include/trace/events/lock.h
-> @@ -18,16 +18,19 @@ TRACE_EVENT(lock_acquire,
->  	TP_ARGS(lock, subclass, trylock, read, check, next_lock, ip),
->  
->  	TP_STRUCT__entry(
-> +		__field(struct lockdep_map *, lockdep_addr)
->  		__field(unsigned int, flags)
->  		__string(name, lock->name)
->  	),
+>  include/linux/prctl.h         |    7 +++++++
+>  include/linux/prctl_network.h |    7 +++++++
+>  include/linux/sched.h         |    2 ++
+>  kernel/Makefile               |    2 +-
+>  kernel/prctl_network.c        |   37 +++++++++++++++++++++++++++++++++++++
+>  kernel/sys.c                  |    7 +++++++
+>  6 files changed, 61 insertions(+), 1 deletions(-)
+>  create mode 100644 include/linux/prctl_network.h
+>  create mode 100644 kernel/prctl_network.c
+>
+> diff --git a/include/linux/prctl.h b/include/linux/prctl.h
+> index a3baeb2..4eb4110 100644
+> --- a/include/linux/prctl.h
+> +++ b/include/linux/prctl.h
+> @@ -102,4 +102,11 @@
+>
+>  #define PR_MCE_KILL_GET 34
+>
+> +/* Get/set process disable-network flags */
+> +#define PR_SET_NETWORK 35
+> +#define PR_GET_NETWORK 36
+> +# define PR_NETWORK_ON        0
+> +# define PR_NETWORK_OFF       1
+> +# define PR_NETWORK_ALL_FLAGS 1
+> +
+>  #endif /* _LINUX_PRCTL_H */
+> diff --git a/include/linux/prctl_network.h b/include/linux/prctl_network.h
+> new file mode 100644
+> index 0000000..2db83eb
+> --- /dev/null
+> +++ b/include/linux/prctl_network.h
+> @@ -0,0 +1,7 @@
+> +#ifndef _LINUX_PRCTL_NETWORK_H
+> +#define _LINUX_PRCTL_NETWORK_H
+> +
+> +extern long prctl_get_network(void);
+> +extern long prctl_set_network(unsigned long);
+> +
+> +#endif /* _LINUX_PRCTL_NETWORK_H */
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 5c858f3..751d372 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1395,6 +1395,8 @@ struct task_struct {
+>        unsigned int sessionid;
+>  #endif
+>        seccomp_t seccomp;
+> +/* Flags for limiting networking via prctl(PR_SET_NETWORK). */
+> +  unsigned long network;
+>
+>  /* Thread group tracking */
+>        u32 parent_exec_id;
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 864ff75..cafbff2 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -10,7 +10,7 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
+>            kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+>            hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
+>            notifier.o ksysfs.o pm_qos_params.o sched_clock.o cred.o \
+> -           async.o
+> +           async.o prctl_network.o
+>  obj-y += groups.o
+>
+>  ifdef CONFIG_FUNCTION_TRACER
+> diff --git a/kernel/prctl_network.c b/kernel/prctl_network.c
+> new file mode 100644
+> index 0000000..d173716
+> --- /dev/null
+> +++ b/kernel/prctl_network.c
+> @@ -0,0 +1,37 @@
+> +/*
+> + * linux/kernel/prctl_network.c
+> + *
+> + * Copyright 2009  Michael Stone <michael@laptop.org>
+> + *
+> + * Turn off a process's ability to access new networks.
+> + * See Documentation/prctl_network.txt for details.
+> + */
+> +
+> +#include <linux/prctl_network.h>
+> +#include <linux/sched.h>
+> +#include <linux/prctl.h>
+> +
+> +long prctl_get_network(void)
+> +{
+> +       return current->network;
+> +}
+> +
+> +long prctl_set_network(unsigned long network_flags)
+> +{
+> +       long ret;
+> +
+> +       /* only dropping access is permitted */
+> +       ret = -EPERM;
+> +        if (current->network & ~network_flags)
+> +               goto out;
+> +
+> +       ret = -EINVAL;
+> +       if (network_flags & ~PR_NETWORK_ALL_FLAGS)
+> +               goto out;
+> +
+> +       current->network = network_flags;
+> +       ret = 0;
+> +
+> +out:
+> +       return ret;
+> +}
 
-I feel a bit awkward explicitly leaking kernel pointers like that. All
-this is accessible by root only (for now) so its not too harmfull, but
-sitll.
 
-Also, I don't think we want to expose the struct lockdep_map thing, a
-regular void * would be better.
+Sorry that I didn't follow the original disscusion.
+Any reason why you introdce a new source file?
+Why not just adding them to kernel/sys.c?
 
-As to removing the waittime, I'm not sure, in this case, yes, but if you
-want some other processing that hooks straight into the tracepoints
-instead of using a logging structure, it might be useful.
 
-Removing that do_div() from there and exposing waittime as u64 in nsec,
-for sure, that do_div() is just silly.
-
+> diff --git a/kernel/sys.c b/kernel/sys.c
+> index 20ccfb5..4eccc66 100644
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -35,6 +35,7 @@
+>  #include <linux/cpu.h>
+>  #include <linux/ptrace.h>
+>  #include <linux/fs_struct.h>
+> +#include <linux/prctl_network.h>
+>
+>  #include <linux/compat.h>
+>  #include <linux/syscalls.h>
+> @@ -1576,6 +1577,12 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+>                        else
+>                                error = PR_MCE_KILL_DEFAULT;
+>                        break;
+> +               case PR_SET_NETWORK:
+> +                       error = prctl_set_network(arg2);
+> +                       break;
+> +               case PR_GET_NETWORK:
+> +                       error = prctl_get_network();
+> +                       break;
+>                default:
+>                        error = -EINVAL;
+>                        break;
+> --
+> 1.5.6.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
