@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936183AbZLQEJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936195AbZLQELg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936183AbZLQEJv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:09:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935816AbZLQEFw
+	id S936195AbZLQELg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936301AbZLQELG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:05:52 -0500
-Received: from kroah.org ([198.145.64.141]:56038 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:11:06 -0500
+Received: from kroah.org ([198.145.64.141]:56050 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936183AbZLQEFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:49 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:57:00 2009
-Message-Id: <20091217035700.760145113@mini.kroah.org>
+	id S935718AbZLQEFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:50 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:57:01 2009
+Message-Id: <20091217035700.890391616@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:14 -0800
+Date: Wed, 16 Dec 2009 19:57:15 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yong Wang <yong.y.wang@intel.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [137/151] x86: Under BIOS control, restore APs APIC_LVTTHMR to the BSP value
+       Chris Wilson <chris@chris-wilson.co.uk>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Zhenyu Wang <zhenyu.z.wang@intel.com>,
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
+Subject: [138/151] drm/i915: Avoid NULL dereference with component_only tv_modes
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,128 +31,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yong Wang <yong.y.wang@linux.intel.com>
+From: Chris Wilson <chris@chris-wilson.co.uk>
 
-Upstream commit a2202aa29289db64ca7988b12343158b67b27f10.
+commit d271817baecbccb47da0d9f28c285a0dae8a06b7 upstream.
 
-On platforms where bios handles the thermal monitor interrupt,
-APIC_LVTTHMR on each logical CPU is programmed to generate a SMI and OS
-can't touch it.
+In commit d2d9f2324, the guard for a valid video mode was removed. This
+caused the regression:
 
-Unfortunately AP bringup sequence using INIT-SIPI-SIPI clear all
-the LVT entries except the mask bit. Essentially this results in
-all LVT entries including the thermal monitoring interrupt set to masked
-(clearing the bios programmed value for APIC_LVTTHMR).
+  kernel crash during kms graphic boot on Intel GM4500 platform
+  https://bugzilla.redhat.com/show_bug.cgi?id=540218
 
-And this leads to kernel take over the thermal monitoring interrupt
-on AP's but not on BSP (leaving the bios programmed value only on BSP).
+This patches changes the logic slightly not to rely on a coupled
+variable, but to just check whether the video_modes is valid before
+dereferencing.
 
-As a result of this, we have seen system hangs when the thermal
-monitoring interrupt is generated.
-
-Fix this by reading the initial value of thermal LVT entry on BSP
-and if bios has taken over the control, then program the same value
-on all AP's and leave the thermal monitoring interrupt control
-on all the logical cpu's to the bios.
-
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Reviewed-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Arjan van de Ven <arjan@infradead.org>
-LKML-Reference: <20091110013824.GA24940@ywang-moblin2.bj.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Zhenyu Wang <zhenyu.z.wang@intel.com>
+[ickle: Actually reference the correct bug report]
+Acked-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/mce.h               |    6 ++++++
- arch/x86/kernel/cpu/mcheck/therm_throt.c |   29 ++++++++++++++++++++++++++++-
- arch/x86/kernel/setup.c                  |    3 +++
- 3 files changed, 37 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/i915/intel_tv.c |   11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -214,5 +214,11 @@ void intel_init_thermal(struct cpuinfo_x
- 
- void mce_log_therm_throt_event(__u64 status);
- 
-+#ifdef CONFIG_X86_THERMAL_VECTOR
-+extern void mcheck_intel_therm_init(void);
-+#else
-+static inline void mcheck_intel_therm_init(void) { }
-+#endif
+--- a/drivers/gpu/drm/i915/intel_tv.c
++++ b/drivers/gpu/drm/i915/intel_tv.c
+@@ -1213,20 +1213,17 @@ intel_tv_mode_set(struct drm_encoder *en
+ 		tv_ctl |= TV_TRILEVEL_SYNC;
+ 	if (tv_mode->pal_burst)
+ 		tv_ctl |= TV_PAL_BURST;
 +
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -49,6 +49,8 @@ static DEFINE_PER_CPU(struct thermal_sta
+ 	scctl1 = 0;
+-	/* dda1 implies valid video levels */
+-	if (tv_mode->dda1_inc) {
++	if (tv_mode->dda1_inc)
+ 		scctl1 |= TV_SC_DDA1_EN;
+-	}
+-
+ 	if (tv_mode->dda2_inc)
+ 		scctl1 |= TV_SC_DDA2_EN;
+-
+ 	if (tv_mode->dda3_inc)
+ 		scctl1 |= TV_SC_DDA3_EN;
+-
+ 	scctl1 |= tv_mode->sc_reset;
+-	scctl1 |= video_levels->burst << TV_BURST_LEVEL_SHIFT;
++	if (video_levels)
++		scctl1 |= video_levels->burst << TV_BURST_LEVEL_SHIFT;
+ 	scctl1 |= tv_mode->dda1_inc << TV_SCDDA1_INC_SHIFT;
  
- static atomic_t therm_throt_en	= ATOMIC_INIT(0);
- 
-+static u32 lvtthmr_init __read_mostly;
-+
- #ifdef CONFIG_SYSFS
- #define define_therm_throt_sysdev_one_ro(_name)				\
- 	static SYSDEV_ATTR(_name, 0444, therm_throt_sysdev_show_##_name, NULL)
-@@ -254,6 +256,18 @@ asmlinkage void smp_thermal_interrupt(st
- 	ack_APIC_irq();
- }
- 
-+void __init mcheck_intel_therm_init(void)
-+{
-+	/*
-+	 * This function is only called on boot CPU. Save the init thermal
-+	 * LVT value on BSP and use that value to restore APs' thermal LVT
-+	 * entry BIOS programmed later
-+	 */
-+	if (cpu_has(&boot_cpu_data, X86_FEATURE_ACPI) &&
-+		cpu_has(&boot_cpu_data, X86_FEATURE_ACC))
-+		lvtthmr_init = apic_read(APIC_LVTTHMR);
-+}
-+
- void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	unsigned int cpu = smp_processor_id();
-@@ -270,7 +284,20 @@ void intel_init_thermal(struct cpuinfo_x
- 	 * since it might be delivered via SMI already:
- 	 */
- 	rdmsr(MSR_IA32_MISC_ENABLE, l, h);
--	h = apic_read(APIC_LVTTHMR);
-+
-+	/*
-+	 * The initial value of thermal LVT entries on all APs always reads
-+	 * 0x10000 because APs are woken up by BSP issuing INIT-SIPI-SIPI
-+	 * sequence to them and LVT registers are reset to 0s except for
-+	 * the mask bits which are set to 1s when APs receive INIT IPI.
-+	 * Always restore the value that BIOS has programmed on AP based on
-+	 * BSP's info we saved since BIOS is always setting the same value
-+	 * for all threads/cores
-+	 */
-+	apic_write(APIC_LVTTHMR, lvtthmr_init);
-+
-+	h = lvtthmr_init;
-+
- 	if ((l & MSR_IA32_MISC_ENABLE_TM1) && (h & APIC_DM_SMI)) {
- 		printk(KERN_DEBUG
- 		       "CPU%d: Thermal monitoring handled by SMI\n", cpu);
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -109,6 +109,7 @@
- #ifdef CONFIG_X86_64
- #include <asm/numa_64.h>
- #endif
-+#include <asm/mce.h>
- 
- /*
-  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-@@ -1031,6 +1032,8 @@ void __init setup_arch(char **cmdline_p)
- #endif
- #endif
- 	x86_init.oem.banner();
-+
-+	mcheck_intel_therm_init();
- }
- 
- #ifdef CONFIG_X86_32
+ 	scctl2 = tv_mode->dda2_size << TV_SCDDA2_SIZE_SHIFT |
 
 
