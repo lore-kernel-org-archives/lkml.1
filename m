@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935822AbZLQUIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935901AbZLQUJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935822AbZLQUIl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 15:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933652AbZLQUIg
+	id S935901AbZLQUJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932475AbZLQUJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 15:08:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41982 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761119AbZLQUIf (ORCPT
+	Thu, 17 Dec 2009 15:09:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57744 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761739AbZLQUJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 15:08:35 -0500
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
-In-Reply-To: <alpine.DEB.2.00.0912171331300.3638@router.home>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091216101107.GA15031@basil.fritz.box>
-	 <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091216102806.GC15031@basil.fritz.box>
-	 <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box>
-	 <alpine.DEB.2.00.0912171331300.3638@router.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 21:07:50 +0100
-Message-ID: <1261080470.27920.798.camel@laptop>
+	Thu, 17 Dec 2009 15:09:53 -0500
+Date: Thu, 17 Dec 2009 12:09:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: torvalds@linux-foundation.org, h-shimamoto@ct.jp.nec.com,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: revert "config FS_JOURNAL_INFO"
+Message-Id: <20091217120920.7521d1f3.akpm@linux-foundation.org>
+In-Reply-To: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>
+References: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 13:33 -0600, Christoph Lameter wrote:
-> On Thu, 17 Dec 2009, Andi Kleen wrote:
+On Thu, 17 Dec 2009 10:31:52 +0200
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
+
+> Can we please revert commit e4c570c4cb7a95dbfafa3d016d2739bf3fdfe319
+> "task_struct: make journal_info conditional"
 > 
-> > > There are a few interesting cases like stack extention and hugetlbfs,
-> > > but I think we could start by falling back to mmap_sem locked behaviour
-> > > if the speculative thing fails.
-> >
-> > You mean fall back to mmap_sem if anything sleeps? Maybe. Would need
-> > to check how many such points are really there.
+> I think I gave a good enough arguments to not merge it.
+> To iterate:
+> * patch makes impossible to start using ext3 on EXT3_FS=n kernels
+> without reboot.
+> * this is done only for one pointer on task_struct
 > 
-> You always need some reference on the mm_struct (mm_read_lock) if you are
-> going to sleep to ensure that mm_struct still exists after waking up (page
-> fault, page allocation). RCU and other spin locks are not helping there.
+> None of config options which define task_struct are tristate directly
+> or effectively.
+> 
+> There are other examples where we don't do this:
+> * quota stuff on superblock aren't ifdeffed because of modular XFS
+> with quota support.
+> * exports operations and  s_anon for NFS
+> and so on
 
-Depends what you go to sleep for, the page fault retry patches simply
-retook the whole fault and there is no way the mm could have gone away
-when userspace isn't executing.
+Confused.  I "dropped" that patch when you pointed out the problem then
+forgot about it.
 
-Also pinning a page will pin the vma will pin the mm, and then you can
-always take explicit mm_struct refs, but you really want to avoid that
-since that's a global cacheline again.
+Maybe I dropped something else by accident.  argh.
 
+I agree - I'll queue a revert.
 
 
