@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbZLQKxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764499AbZLQLPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760107AbZLQKxf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964812AbZLQKxa
+	id S1764499AbZLQLPF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 06:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764482AbZLQLO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:53:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45359 "EHLO mx3.mail.elte.hu"
+	Thu, 17 Dec 2009 06:14:58 -0500
+Received: from relay.bearnet.nu ([80.252.223.222]:1646 "EHLO relay.bearnet.nu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752876AbZLQKx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:53:28 -0500
-Date: Thu, 17 Dec 2009 11:53:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Garrett-Glaser <darkshikari@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Kasper Sandberg <lkml@metanurb.dk>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: x264 benchmarks BFS vs CFS
-Message-ID: <20091217105316.GB26010@elte.hu>
-References: <1261042383.14314.0.camel@localhost>
- <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
+	id S1764481AbZLQLOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 06:14:55 -0500
+X-Greylist: delayed 892 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 06:14:55 EST
+Message-ID: <4B2A0F27.8070906@mocean-labs.com>
+Date: Thu, 17 Dec 2009 11:59:51 +0100
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
+	<richard.rojfors@mocean-labs.com>
+Organization: Pelagicore AB
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Paul Mundt <lethal@linux-sh.org>
+CC: John Linn <John.Linn@xilinx.com>, Grant Likely <grant.likely@secretlab.ca>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] spi: xilinx_spi: Fix up I/O routine wrapping bogosity.
+References: <20091216060130.GD31265@linux-sh.org>
+In-Reply-To: <20091216060130.GD31265@linux-sh.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jason Garrett-Glaser <darkshikari@gmail.com> wrote:
-
-> On Thu, Dec 17, 2009 at 1:33 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> > well well :) nothing quite speaks out like graphs..
-> >
-> > http://doom10.org/index.php?topic=78.0
-> >
-> >
-> >
-> > regards,
-> > Kasper Sandberg
+Paul Mundt wrote:
+> xilinx_spi presently makes some fairly questionable assumptions about I/O
+> routines, and attempts to assign ioread32/iowrite32 and friends directly
+> to its own internal function pointers. On many platforms these I/O
+> routines are macros or wrappers and not actual functions on their own,
+> resulting in things like:
 > 
-> Yeah, I sent this to Mike a bit ago.  Seems that .32 has basically tied 
-> it--and given the strict thread-ordering expectations of x264, you basically 
-> can't expect it to do any better, though I'm curious what's responsible for 
-> the gap in "veryslow", even with SCHED_BATCH enabled.
+> ERROR: "ioread32be" [drivers/spi/xilinx_spi.ko] undefined!
+> ERROR: "iowrite32be" [drivers/spi/xilinx_spi.ko] undefined!
+> ERROR: "iowrite32" [drivers/spi/xilinx_spi.ko] undefined!
+> ERROR: "ioread32" [drivers/spi/xilinx_spi.ko] undefined!
 > 
-> The most odd case is that of "ultrafast", in which CFS immediately ties BFS 
-> when we enable SCHED_BATCH.  We're doing some further testing to see exactly 
-> what the conditions of this are--is it because ultrafast is just so much 
-> faster than all the other modes and so switches threads/loads faster?  Is it 
-> because ultrafast has relatively equal workload among the threads, unlike 
-> the other loads?  We'll probably know soon.
+> If xilinx_spi wants to do this sort of casting, it needs to provide its
+> own wrappers for these, or change how it does accesses completely.
+> 
+> I've opted for the first approach, and the attached silly patch does
+> that. If someone with the hardware available wants to give the second
+> option a try that's ok too. In any event, the current code is broken for
+> at least: arm, avr32, blackfin, microblaze, mn10300, and sh.
+> 
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-Thanks for testing it!
+Looks good to me.
 
-Btw., you might want to make use of 'perf sched record', 'perf sched map', 
-'perf sched trace' etc. to get an insight into how a particular workload 
-schedules and why those decisions are done. (You'll need CONFIG_SCHED_DEBUG=y 
-for best results.)
+Acked-by: Richard Röjfors <richard.rojfors@pelagicore.com>
 
-Thanks,
+> 
+> ---
+> 
+>  drivers/spi/xilinx_spi.c |   28 ++++++++++++++++++++++++----
+>  1 file changed, 24 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+> index 9f38637..154e908 100644
+> --- a/drivers/spi/xilinx_spi.c
+> +++ b/drivers/spi/xilinx_spi.c
+> @@ -93,6 +93,26 @@ struct xilinx_spi {
+>  	void (*rx_fn) (struct xilinx_spi *);
+>  };
+>  
+> +static void xspi_write32(u32 val, void __iomem *addr)
+> +{
+> +	iowrite32(val, addr);
+> +}
+> +
+> +static unsigned int xspi_read32(void __iomem *addr)
+> +{
+> +	return ioread32(addr);
+> +}
+> +
+> +static void xspi_write32_be(u32 val, void __iomem *addr)
+> +{
+> +	iowrite32be(val, addr);
+> +}
+> +
+> +static unsigned int xspi_read32_be(void __iomem *addr)
+> +{
+> +	return ioread32be(addr);
+> +}
+> +
+>  static void xspi_tx8(struct xilinx_spi *xspi)
+>  {
+>  	xspi->write_fn(*xspi->tx_ptr, xspi->regs + XSPI_TXD_OFFSET);
+> @@ -374,11 +394,11 @@ struct spi_master *xilinx_spi_init(struct device *dev, struct resource *mem,
+>  	xspi->mem = *mem;
+>  	xspi->irq = irq;
+>  	if (pdata->little_endian) {
+> -		xspi->read_fn = ioread32;
+> -		xspi->write_fn = iowrite32;
+> +		xspi->read_fn = xspi_read32;
+> +		xspi->write_fn = xspi_write32;
+>  	} else {
+> -		xspi->read_fn = ioread32be;
+> -		xspi->write_fn = iowrite32be;
+> +		xspi->read_fn = xspi_read32_be;
+> +		xspi->write_fn = xspi_write32_be;
+>  	}
+>  	xspi->bits_per_word = pdata->bits_per_word;
+>  	if (xspi->bits_per_word == 8) {
 
-	Ingo
+
