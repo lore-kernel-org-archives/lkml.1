@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935795AbZLQOgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764837AbZLQOjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935795AbZLQOgi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 09:36:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZLQOgh
+	id S1764837AbZLQOjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 09:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764829AbZLQOjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 09:36:37 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:58985 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764811AbZLQOgg (ORCPT
+	Thu, 17 Dec 2009 09:39:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59158 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764816AbZLQOjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 09:36:36 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Josua Dietze <digidietze@draisberghof.de>
-Subject: Re: [PATCH] move eject code from zd1211rw to usb-storage
-Date: Thu, 17 Dec 2009 15:36:44 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Dan Williams <dcbw@redhat.com>,
-       Stefan Seyfried <stefan.seyfried@googlemail.com>,
-       linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, usb-storage@lists.one-eyed-alien.net,
-       Stefan Seyfried <seife@sphairon.com>
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <200912171402.42168.oliver@neukum.org> <4B2A3312.104@draisberghof.de>
-In-Reply-To: <4B2A3312.104@draisberghof.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Thu, 17 Dec 2009 09:39:08 -0500
+Subject: Re: Real Time scheduler infos
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ivan Gualandri <finarfin@dreamos.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <117cfc288d1eed419c5f296d43167116@localhost>
+References: <117cfc288d1eed419c5f296d43167116@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 15:38:44 +0100
+Message-ID: <1261060724.27920.442.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912171536.44220.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 17. Dezember 2009 14:33:06 schrieb Josua Dietze:
-> > Can storage tell the devices apart so that it knows which ones to leave
-> > to the kernel solution and which devices to accept so that udev can
-> > issue an eject command?
+On Thu, 2009-12-17 at 15:22 +0100, Ivan Gualandri wrote:
+> Hi, 
 > 
-> If you are thinking about the two specific devices at hand there is 
-> no need to tell them apart. Same IDs on plugin, same switching 
-> procedure, different IDs on return, different drivers take care.
+> i have a question about priorities in RT patchset. 
+> 
+> In linux priorites are from 1 to 139 (1 highest - 139 lowest)
+> And RT prorities are between 1 to 99. An i think 1 is highest and 139
+> lowest.
+> 
+> But now if i try to launch three tasks with 3 different priorities: 
+> for example 
+> A has priority 10
+> B has priority 20
+> C has priority 30 
+> I notice that the tasks B and C are always the first two to run. And A
+> always wait the end of B or C (also if A is the first task launched).
+> 
+> Now my question is: 
+> when i set priority of a RT task (changing the sched_priority field of my
+> task) the highest priority is 99 or 1? 
 
-How do you issue an eject command without a /dev/sgX node?
+The user exposed priorities are from low to high, that is 1 is the
+lowest and 99 (POSIX compliant apps use
+sched_get_priority_max(SCHED_FIFO)) is the highest priority, as
+specified by POSIX.
 
-	Regards
-		Oliver
+The scheduler implementation has this reversed but that should be of no
+consequence.
+
