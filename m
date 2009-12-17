@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964817AbZLQKgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbZLQK4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964817AbZLQKgm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZLQKgl
+	id S964840AbZLQK4O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZLQKz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:36:41 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:38589 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746AbZLQKgk convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 05:55:59 -0500
+Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:40338 "EHLO
+	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762033AbZLQKz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:36:40 -0500
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] IPMI: Add parameter to limit CPU usage in kipmid
-Date: Thu, 17 Dec 2009 11:36:47 +0100
-User-Agent: KMail/1.9.1
-Cc: minyard@acm.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Martin Wilck <martin.wilck@ts.fujitsu.com>,
-       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
-References: <20091216212354.GA13097@minyard.local> <20091216134252.868ea5bf.akpm@linux-foundation.org>
-In-Reply-To: <20091216134252.868ea5bf.akpm@linux-foundation.org>
+	Thu, 17 Dec 2009 05:55:57 -0500
+X-Greylist: delayed 745 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 05:55:56 EST
+Message-ID: <4B2A0AE5.2080006@reactivated.net>
+Date: Thu, 17 Dec 2009 10:41:41 +0000
+From: Daniel Drake <dan@reactivated.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; es-ES; rv:1.9.1.5) Gecko/20091212 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200912171136.48086.jdelvare@suse.de>
+To: Josua Dietze <digidietze@draisberghof.de>
+CC: Stefan Seyfried <stefan.seyfried@googlemail.com>,
+       usb-storage@lists.one-eyed-alien.net, linux-usb@vger.kernel.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stefan Seyfried <seife@sphairon.com>
+Subject: Re: [usb-storage] [PATCH] move eject code from zd1211rw to  usb-storage
+References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <4B278191.1010009@draisberghof.de>
+In-Reply-To: <4B278191.1010009@draisberghof.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Cloudmark-Analysis: v=1.1 cv=1ggfb5FlKZQUfF3vzm9UBYZ2uTfLsbs/8dSljwg5+mE= c=1 sm=0 a=sOupWqN7R48A:10 a=iQiDWL7-QGvl7PhqtaUA:9 a=77POCl-bLNGgAw6lX5T5DHIchHwA:4 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+El 15/12/09 12:31, Josua Dietze escribió:
+> Stefan Seyfried schrieb:
+>
+>> The USB ID claimed by zd1211rw for the fake storage device is
+>> also in use by other, non-zd1211rw devices (Sphairon Homelink
+>> 1202). Move the eject of these devices to where it belongs and
+>> where all the needed infrastructure already exists: usb-storage.
+>
+>
+> We can do the eject (as other mode switches) in userspace. Previous
+> discussions pointed into that direction.
 
-Thanks for your comments.
+When I originally wrote this code this wasn't as easy as you might think 
+- the virtual CD device seems to be very quirky, and utterly confused 
+Linux to the point where it didn't even create a device node. Maybe 
+linux is more flexible these days though.
 
-Le mercredi 16 décembre 2009 22:42, Andrew Morton a écrit :
-> On Wed, 16 Dec 2009 15:23:54 -0600
-> Corey Minyard <minyard@acm.org> wrote:
-> 
-> > From: Martin Wilck <martin.wilck@ts.fujitsu.com>
-> > 
-> > In some cases kipmid can use a lot of CPU.
-> 
-> Why is that?  Without this information it is hard for others to suggest
-> alternative implementations.
-
-Quoting Greg KH as he was investigating this issue:
-
-"This looks to be a difference in the way the hardware works from
-different ipmi controllers. Some allow for sleeping in an
-interruptable state, and others do not, and can not have their delays
-interrupted. Because of this, the process is put into uninterruptable
-sleep mode, which causes a 'fake' system load increase on those types
-of hardware controllers."
-
-> >  This adds a way to tune
-> > the CPU used by kipmid to help in those cases.  By setting
-> > kipmid_max_busy_us to a value between 100 and 500, it is possible to
-> > bring down kipmid CPU load to practically 0 without loosing too much
-> > ipmi throughput performance.  Not setting the value, or setting the
-> > value to zero, operation is unaffected.
-> 
-> Requiring the addition of a module parameter is regrettable.  It'd be
-> better if the code "just works".
-
-That's right, it'd be better. But my understanding is that there is
-no way to figure out automatically when the parameter is needed nor
-its optimal value other than by trial and error. I'd love to be
-proven wrong though.
-
-> > Signed-off-by: Martin Wilck <martin.wilck@ts.fujitsu.com>
-> > Cc: Jean Delvare <jdelvare@suse.de>
-> > Signed-off-by: Corey Minyard <cminyard@mvista.com>
-> > 
-> > --- linux-2.6.29.4/drivers/char/ipmi/ipmi_si_intf.c	2009-05-19 01:52:34.000000000 +0200
-> > +++ linux-2.6.29-rc8/drivers/char/ipmi/ipmi_si_intf.c	2009-06-04 15:30:34.855398091 +0200
-> > @@ -297,6 +297,9 @@
-> >  static int force_kipmid[SI_MAX_PARMS];
-> >  static int num_force_kipmid;
-> >  
-> > +static unsigned int kipmid_max_busy_us[SI_MAX_PARMS];
-> > +static int num_max_busy_us;
-> > +
-> >  static int unload_when_empty = 1;
-> >  
-> >  static int try_smi_init(struct smi_info *smi);
-> > @@ -927,23 +930,56 @@
-> >  	}
-> >  }
-> >  
-> > +#define ipmi_si_set_not_busy(timespec) \
-> > +	do { (timespec)->tv_nsec = -1; } while (0)
-> > +#define ipmi_si_is_busy(timespec) ((timespec)->tv_nsec != -1)
-> 
-> These could have been implemented in C.  It's better that way.
-
-+1, inline functions would be more readable.
-
-I'll let Corey and maybe Martin comment on the rest, as the code is
-not mine and I am not familiar with it.
-
--- 
-Jean Delvare
-Suse L3
+Daniel
