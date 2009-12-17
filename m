@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbZLQGRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761856AbZLQGTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760832AbZLQGRc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 01:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbZLQGR2
+	id S1761856AbZLQGTS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 01:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbZLQGTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 01:17:28 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:39444 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752636AbZLQGR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 01:17:27 -0500
-Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuoEAG9bKUurRN+K/2dsb2JhbACcUqIFlwuELQQ
-X-IronPort-AV: E=Sophos;i="4.47,410,1257120000"; 
-   d="scan'208";a="121083775"
-From: Roland Dreier <rdreier@cisco.com>
+	Thu, 17 Dec 2009 01:19:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63692 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753809AbZLQGTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 01:19:14 -0500
+Message-ID: <4B29CDC6.7040501@redhat.com>
+Date: Thu, 17 Dec 2009 01:20:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Michal Marek <mmarek@suse.cz>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
+CC: Roland Dreier <rdreier@cisco.com>, Michal Marek <mmarek@suse.cz>,
        Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
        x86@kernel.org, linux-kernel@vger.kernel.org,
        linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
 Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org>
-	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>
-	<ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com>
-	<aday6l25gnm.fsf@roland-alpha.cisco.com>
-	<20091217054524.GA3931@merkur.ravnborg.org>
-	<4B29C81E.2000704@zytor.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 16 Dec 2009 22:17:26 -0800
-In-Reply-To: <4B29C81E.2000704@zytor.com> (H. Peter Anvin's message of "Wed,
-	16 Dec 2009 21:56:46 -0800")
-Message-ID: <adatyvq5dl5.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Dec 2009 06:17:26.0331 (UTC) FILETIME=[9A7FA0B0:01CA7EE0]
+References: <20091216235617.GA12267@hexapodia.org>	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>	<ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com> <aday6l25gnm.fsf@roland-alpha.cisco.com> <4B29BFE8.1000502@zytor.com> <4B29C652.5080803@redhat.com> <4B29C661.6090800@zytor.com> <4B29CA73.4050005@redhat.com> <4B29CADE.8020905@zytor.com>
+In-Reply-To: <4B29CADE.8020905@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> On 12/16/2009 10:06 PM, Masami Hiramatsu wrote:
+>>
+>> Hmm, in that case, as Sam said, some user may do it because
+>> they would like to understand error messages. And that can
+>> cause other problems.
+>>
+> 
+> See my other patch.  That doesn't override LC_MESSAGES, which is what
+> matters there.
+> 
+>> Hrm, if there is just this problem, for now, don't you think
+>> fixing it with my workaround is better choice?
+> 
+> No, because this problem is not just limited to this one script.
+> 
+>> Maybe, locale problem should be discussed more widely.
+> 
+> Well, this thread is on both LKML and linux-kbuild.
 
- > +# Avoid funny character set dependencies
- > +LC_ALL=
- > +LC_CTYPE=C
- > +LC_COLLATE=C
- > +LC_NUMERIC=C
- > +export LC_ALL LC_CTYPE LC_COLLATE LC_NUMERIC
+Oh, I see :-).
 
-Yes, this plus my first patch (only touching the awk script, not the
-Makefile) make sense to me.
+So, if your patch is accepted, I'm OK for Roland's patch too(thanks!).
+
+Thank you,
+
+> 
+> 	-hpa
+> 
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
