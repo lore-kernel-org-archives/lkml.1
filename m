@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763665AbZLQBpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763586AbZLQBp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763665AbZLQBpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763589AbZLQBow
+	id S1763586AbZLQBp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763602AbZLQBor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:44:52 -0500
-Received: from kroah.org ([198.145.64.141]:47820 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:44:47 -0500
+Received: from kroah.org ([198.145.64.141]:47824 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763541AbZLQBUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:00 -0500
+	id S1763546AbZLQBUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:01 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:00 2009
-Message-Id: <20091217011600.203236971@mini.kroah.org>
+Message-Id: <20091217011600.331719222@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:29 -0800
+Date: Wed, 16 Dec 2009 17:14:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Igor Grinberg <grinberg@compulab.co.il>,
-       Mike Rapoport <mike@compulab.co.il>, Eric Miao <eric.y.miao@gmail.com>
-Subject: [18/90] [ARM] pxa/em-x270: fix usb hub power up/reset sequence
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [19/90] ssb: Fix range check in sprom write
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,42 +29,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Igor Grinberg <grinberg@compulab.co.il>
+From: Michael Buesch <mb@bu3sch.de>
 
-commit 1b82e4c32fba96d8805b1e2126ba5382e56fac32 upstream.
+commit e33761e6f23881de9f3ee77cc2204ab2e26f3d9a upstream.
 
-Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
-Signed-off-by: Mike Rapoport <mike@compulab.co.il>
-Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
+The range check in the sprom image parser hex2sprom() is broken.
+One sprom word is 4 hex characters.
+This fixes the check and also adds much better sanity checks to the code.
+We better make sure the image is OK by doing some sanity checks to avoid
+bricking the device by accident.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/arm/mach-pxa/em-x270.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/ssb/sprom.c |   20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
---- a/arch/arm/mach-pxa/em-x270.c
-+++ b/arch/arm/mach-pxa/em-x270.c
-@@ -497,16 +497,15 @@ static int em_x270_usb_hub_init(void)
- 		goto err_free_vbus_gpio;
+--- a/drivers/ssb/sprom.c
++++ b/drivers/ssb/sprom.c
+@@ -13,6 +13,8 @@
  
- 	/* USB Hub power-on and reset */
--	gpio_direction_output(usb_hub_reset, 0);
-+	gpio_direction_output(usb_hub_reset, 1);
-+	gpio_direction_output(GPIO9_USB_VBUS_EN, 0);
- 	regulator_enable(em_x270_usb_ldo);
--	gpio_set_value(usb_hub_reset, 1);
- 	gpio_set_value(usb_hub_reset, 0);
-+	gpio_set_value(usb_hub_reset, 1);
- 	regulator_disable(em_x270_usb_ldo);
- 	regulator_enable(em_x270_usb_ldo);
--	gpio_set_value(usb_hub_reset, 1);
--
--	/* enable VBUS */
--	gpio_direction_output(GPIO9_USB_VBUS_EN, 1);
-+	gpio_set_value(usb_hub_reset, 0);
-+	gpio_set_value(GPIO9_USB_VBUS_EN, 1);
+ #include "ssb_private.h"
  
- 	return 0;
++#include <linux/ctype.h>
++
+ 
+ static const struct ssb_sprom *fallback_sprom;
+ 
+@@ -33,17 +35,27 @@ static int sprom2hex(const u16 *sprom, c
+ static int hex2sprom(u16 *sprom, const char *dump, size_t len,
+ 		     size_t sprom_size_words)
+ {
+-	char tmp[5] = { 0 };
+-	int cnt = 0;
++	char c, tmp[5] = { 0 };
++	int err, cnt = 0;
+ 	unsigned long parsed;
+ 
+-	if (len < sprom_size_words * 2)
++	/* Strip whitespace at the end. */
++	while (len) {
++		c = dump[len - 1];
++		if (!isspace(c) && c != '\0')
++			break;
++		len--;
++	}
++	/* Length must match exactly. */
++	if (len != sprom_size_words * 4)
+ 		return -EINVAL;
+ 
+ 	while (cnt < sprom_size_words) {
+ 		memcpy(tmp, dump, 4);
+ 		dump += 4;
+-		parsed = simple_strtoul(tmp, NULL, 16);
++		err = strict_strtoul(tmp, 16, &parsed);
++		if (err)
++			return err;
+ 		sprom[cnt++] = swab16((u16)parsed);
+ 	}
  
 
 
