@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935728AbZLQEE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbZLQEja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935728AbZLQEE6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761937AbZLQEET
+	id S1763953AbZLQEja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936641AbZLQEif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:04:19 -0500
-Received: from kroah.org ([198.145.64.141]:55477 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:38:35 -0500
+Received: from kroah.org ([198.145.64.141]:55484 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763963AbZLQEEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:04:11 -0500
+	id S1763967AbZLQEEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:04:12 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:49 2009
-Message-Id: <20091217035649.016670805@mini.kroah.org>
+Message-Id: <20091217035649.141399735@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:44 -0800
+Date: Wed, 16 Dec 2009 19:55:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Theodore Tso" <tytso@mit.edu>
-Subject: [047/151] jbd2: dont wipe the journal on a failed journal checksum
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Subject: [048/151] USB: xhci: Add correct email and files to MAINTAINERS entry.
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,42 +28,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Theodore Ts'o <tytso@mit.edu>
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 
-commit e6a47428de84e19fda52f21ab73fde2906c40d09 upstream.
+commit 36d0344c254a7b333272757f858c403ea3a2d29f upstream.
 
-If there is a failed journal checksum, don't reset the journal.  This
-allows for userspace programs to decide how to recover from this
-situation.  It may be that ignoring the journal checksum failure might
-be a better way of recovering the file system.  Once we add per-block
-checksums, we can definitely do better.  Until then, a system
-administrator can try backing up the file system image (or taking a
-snapshot) and and trying to determine experimentally whether ignoring
-the checksum failure or aborting the journal replay results in less
-data loss.
+Add the xHCI driver files to its MAINTAINERS entry so that I'm Cc'd on
+cleanup patches.  Update the email address to one I actually use for
+sending patches and responding to Linux mailing list emails.
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd2/journal.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ MAINTAINERS |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -1253,6 +1253,13 @@ int jbd2_journal_load(journal_t *journal
- 	if (jbd2_journal_recover(journal))
- 		goto recovery_error;
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5594,9 +5594,11 @@ S:	Maintained
+ F:	drivers/net/wireless/rndis_wlan.c
  
-+	if (journal->j_failed_commit) {
-+		printk(KERN_ERR "JBD2: journal transaction %u on %s "
-+		       "is corrupt.\n", journal->j_failed_commit,
-+		       journal->j_devname);
-+		return -EIO;
-+	}
-+
- 	/* OK, we've finished with the dynamic journal bits:
- 	 * reinitialise the dynamic contents of the superblock in memory
- 	 * and reset them on disk. */
+ USB XHCI DRIVER
+-M:	Sarah Sharp <sarah.a.sharp@intel.com>
++M:	Sarah Sharp <sarah.a.sharp@linux.intel.com>
+ L:	linux-usb@vger.kernel.org
+ S:	Supported
++F:	drivers/usb/host/xhci*
++F:	drivers/usb/host/pci-quirks*
+ 
+ USB ZC0301 DRIVER
+ M:	Luca Risolia <luca.risolia@studio.unibo.it>
 
 
