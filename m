@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763858AbZLQBvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbZLQBwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763858AbZLQBvY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936149AbZLQBvO
+	id S1763788AbZLQBwi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763289AbZLQBwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:51:14 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47987 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763779AbZLQBu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:50:57 -0500
-Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode drive -v2
-From: Keith Mannthey <kmannth@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <1261004964.21028.521.camel@laptop>
-References: <1260907788.6521.10.camel@keith-laptop>
-	 <1261004964.21028.521.camel@laptop>
-Content-Type: text/plain
-Date: Wed, 16 Dec 2009 17:50:55 -0800
-Message-Id: <1261014655.6521.84.camel@keith-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 16 Dec 2009 20:52:32 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:48620 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759686AbZLQBwa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:52:30 -0500
+Message-ID: <4B298ECF.7050009@canonical.com>
+Date: Thu, 17 Dec 2009 09:52:15 +0800
+From: Ike Panhc <ike.pan@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: reinette chatre <reinette.chatre@intel.com>
+CC: Greg KH <greg@kroah.com>, "John W. Linville" <linville@tuxdriver.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>
+Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
+References: <1260848655-5582-1-git-send-email-ike.pan@canonical.com>	 <1260848710-5650-1-git-send-email-ike.pan@canonical.com>	 <20091215041500.GB31200@kroah.com> <4B273479.6050502@canonical.com>	 <20091215134943.GA11667@kroah.com> <20091215163100.GC8097@tuxdriver.com>	 <1260906168.9623.4.camel@rc-desk> <20091215194938.GA13297@kroah.com>	 <4B288232.4060901@canonical.com> <1260983101.9623.11.camel@rc-desk>
+In-Reply-To: <1260983101.9623.11.camel@rc-desk>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 00:09 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-12-15 at 12:09 -0800, Keith Mannthey wrote:
-> > This driver supports the Real-Time Linux (RTL) BIOS feature.  The RTL
-> > feature allows non-fatal System Management Interrupts (SMIs) to be
-> > disabled on supported IBM platforms. 
-> > 
-> > 
-> > The Device is presented as a special "_rtl_" table to the OS in the
-> > Extended BIOS Data Area.  There is a simple protocol for entering and
-> > exiting the mode at runtime.  This driver creates a simple sysfs
-> > interface to allow a simple entry and exit from RTL mode in the
-> > UFI/BIOS. 
+reinette chatre wrote:
+> On Tue, 2009-12-15 at 22:46 -0800, Ike Panhc wrote:
 > 
-> Why not simply always run with these non-fatal SMIs disabled and provide
-> their function through the OS proper?
+>> But Please consider applying the first patch (change IWL6000_UCODE_API_MAX
+>> to v4) to 2.6.31-stable tree. It will be good to use v4 firmware on iwl6000.
 > 
-> That way you don't need no silly switches and gain consistent platform
-> behaviour.
-
-Peter, 
-
-This driver will load and work on widely used Intel and AMD based IBM
-hardware.  A decent amount of the IBM blades and a few of the rack-mount
-servers with regular firmware support this mode.  This is not special
-hardware with special features is is regular hardware/firmware that can
-enter this special mode.
-
-There are 2 major things that change when you in this mode that keep it
-from being a good fit for many situations. 
-
-1. ECC memory error detection and reporting is the sole responsibility
-of the OS. I have practical experience with this and let just say this
-does not "just work" everywhere even within Linux. 
-
-2. The cpu can no longer be externally throttled. This means externally
-implemented cooling or power saving options just don't work. 
-
-These 2 things make it impractical for it to be an all the time
-everywhere type of thing.  I think a run time state change the OS can
-request is a good fit for the issues and complications at hand.
-
-Thanks,
-  Keith Mannthey 
-  LTC Real-Time 
+> Please no. This will effectively enable 6000 series in 2.6.31. We did
+> not target 2.6.31 for 6000 series enabling and more patches, which are
+> in 2.6.32, are required for 6000 series to work well.
+> 
+> Reinette
+> 
+Got it, so backport any patch for iwl6000 to 2.6.31-stable is not reasonable.
 
