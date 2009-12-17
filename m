@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935383AbZLQO34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764787AbZLQOVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935383AbZLQO34 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 09:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764807AbZLQO3u
+	id S1764787AbZLQOVK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 09:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764781AbZLQOVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 09:29:50 -0500
-Received: from trulit.net ([78.46.66.163]:42410 "EHLO mail.elenhost.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764814AbZLQO3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 09:29:49 -0500
-X-Greylist: delayed 641 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 09:29:49 EST
+	Thu, 17 Dec 2009 09:21:00 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:46351 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762755AbZLQOU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 09:20:58 -0500
+Subject: [PATCH] cciss: fix reporting of scsi status again.
+To: axboe@kernel.dk, James.Bottomley@HansenPartnership.com,
+       akpm@linux-foundation.org
+From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
+Cc: linux-kernel@vger.kernel.org, mikem@beardog.cce.hp.com,
+       linux-scsi@vger.kernel.org, smcameron@yahoo.com
+Date: Thu, 17 Dec 2009 08:22:53 -0600
+Message-ID: <20091217142253.10824.4149.stgit@beardog.cce.hp.com>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Date: Thu, 17 Dec 2009 15:22:08 +0100
-From: Ivan Gualandri <finarfin@dreamos.org>
-To: linux-kernel@vger.kernel.org
-Subject: Real Time scheduler infos
-Message-ID: <117cfc288d1eed419c5f296d43167116@localhost>
-User-Agent: RoundCube Webmail/0.2
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-i have a question about priorities in RT patchset. 
+cciss: fix reporting of scsi status again.  This reverts an earlier
+attempt to fix the status byte reporting.  The status byte does
+not need to be shifted << 1.  Code like "scp-result |= CHECK_CONDITION << 1"
+in other drivers works because CHECK_CONDITION is 0x01, not 0x02 --
+CHECK_CONDITION is pre-shifted to the right 1 bit for some reason.
 
-In linux priorites are from 1 to 139 (1 highest - 139 lowest)
-And RT prorities are between 1 to 99. An i think 1 is highest and 139
-lowest.
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+---
+ drivers/block/cciss_scsi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-But now if i try to launch three tasks with 3 different priorities: 
-for example 
-A has priority 10
-B has priority 20
-C has priority 30 
-I notice that the tasks B and C are always the first two to run. And A
-always wait the end of B or C (also if A is the first task launched).
-
-Now my question is: 
-when i set priority of a RT task (changing the sched_priority field of my
-task) the highest priority is 99 or 1? 
-
-Thanks,
---i
-
-P.s. Sorry for my bad english! 
-
-
-
-
+diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
+index 75a9ca9..0634ec7 100644
+--- a/drivers/block/cciss_scsi.c
++++ b/drivers/block/cciss_scsi.c
+@@ -728,7 +728,7 @@ complete_scsi_command( CommandList_struct *cp, int timeout, __u32 tag)
+ 
+ 	cmd->result = (DID_OK << 16); 		/* host byte */
+ 	cmd->result |= (COMMAND_COMPLETE << 8);	/* msg byte */
+-	cmd->result |= (ei->ScsiStatus << 1);
++	cmd->result |= ei->ScsiStatus;
+ 	/* printk("Scsistatus is 0x%02x\n", ei->ScsiStatus);  */
+ 
+ 	/* copy the sense data whether we need to or not. */
 
