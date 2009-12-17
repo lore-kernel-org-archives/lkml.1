@@ -1,69 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764804AbZLQOXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764819AbZLQO2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764804AbZLQOXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 09:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764772AbZLQOXU
+	id S1764819AbZLQO2z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 09:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764807AbZLQO2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 09:23:20 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:48418 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762715AbZLQOXS (ORCPT
+	Thu, 17 Dec 2009 09:28:54 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:46694 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764810AbZLQO2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 09:23:18 -0500
+	Thu, 17 Dec 2009 09:28:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=GoKznm0PpwB/y7ciZMSfLSANJOSalz+z0pwZM2MMoxMsLywLhrEkcs/C5MQmLimE0j
-         Tv4/pQGz0D2JQejIJ2VF9jxMfdlDZAtC2u2Djf/QL4AXqSBZsE22Cz9cL8RSAZzli4tJ
-         Q9e65OAptlEs/qxeLRpL5XGsXU27741UxN5EY=
-Date: Thu, 17 Dec 2009 22:26:57 +0800
-From: "Liuweni" <qingshenlwy@gmail.com>
-To: "linux-fsdevel" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "viro" <viro@zeniv.linux.org.uk>
-Cc: "Liu Hui" <onlyflyer@gmail.com>,
-       "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>,
-       "strongzgy" <strongzgy@gmail.com>,
-       "qingshenlwy" <qingshenlwy@gmail.com>
-Subject: [PATCH 3/3]posix acl:Add an acl check
-Message-ID: <200912172226552340782@gmail.com>
-X-mailer: Foxmail 6, 15, 201, 22 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=fUXx8FUGwjaRmUHjNDm43gM7PPxjlwmTxz7llkQzmEtxv5AK3yM7edoOExAOJfll50
+         3zCl8cNWmTPlleFrZx4pPpUs/MrEPgNpbDcCsMQNdnoxfTs8zPr18NbZr38U+D/P0s+n
+         yL6YDko+gE6nlwZv3J8eOSfhCpKn+gkhSbZf8=
+MIME-Version: 1.0
+Date: Thu, 17 Dec 2009 15:28:51 +0100
+Message-ID: <2d0a357f0912170628k4c9861b5j851fd6ce1f67c750@mail.gmail.com>
+Subject: Re: linux-next: Tree for December 17
+From: Sedat Dilek <sedat.dilek@googlemail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: sfr@canb.auug.org.au
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In this function, the parameter of acl will be called by FOREACH_ACL_ENTRY(macro) 
-without null point check. I add a Null point check to it. 
+>There is a wiki covering stuff to do with linux-next at
+>http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
 
----
-Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
-diff --git a/fs/posix_acl.c b/fs/posix_acl.c
-index 39df95a..6d81a13 100644
---- a/fs/posix_acl.c
-+++ b/fs/posix_acl.c
-@@ -213,6 +213,9 @@ posix_acl_permission(struct inode *inode, const struct posix_acl *acl, int want)
- 	const struct posix_acl_entry *pa, *pe, *mask_obj;
- 	int found = 0;
- 
-+	if (!acl)
-+		return -EINVAL;
-+
- 	FOREACH_ACL_ENTRY(pa, acl, pe) {
-                 switch(pa->e_tag) {
-                         case ACL_USER_OBJ:
+Just wanna let you know:
+Wiki is not reachable and domain is back to DENIC
+(registration/administration of German Internet domains).
 
- 				
---------------
-Best Regards,
-Liuweni
-2009-12-17
-
+- Sedat -
