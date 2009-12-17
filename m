@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZLQX6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZLQX7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZLQX6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZLQX6O
+	id S1753992AbZLQX7H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 18:59:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZLQX65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:58:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52540 "EHLO hera.kernel.org"
+	Thu, 17 Dec 2009 18:58:57 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52561 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbZLQX6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:58:12 -0500
-Date: Thu, 17 Dec 2009 23:57:38 GMT
-From: "tip-bot for Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+	id S1751877AbZLQX6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 18:58:54 -0500
+Date: Thu, 17 Dec 2009 23:57:53 GMT
+From: "tip-bot for akpm@linux-foundation.org" <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de
+       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de
-In-Reply-To: <20091217202702.GA18015@linux-os.sc.intel.com>
-References: <20091217202702.GA18015@linux-os.sc.intel.com>
+       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <200912172326.nBHNQaQl024796@imap1.linux-foundation.org>
+References: <200912172326.nBHNQaQl024796@imap1.linux-foundation.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Reenable TSC sync check at boot, even with NONSTOP_TSC
-Message-ID: <tip-6c56ccecf05fafe100ab4ea94f6fccbf5ff00db7@git.kernel.org>
-Git-Commit-ID: 6c56ccecf05fafe100ab4ea94f6fccbf5ff00db7
+Subject: [tip:x86/urgent] x86: Fix objdump version check in arch/x86/tools/chkobjdump.awk
+Message-ID: <tip-8c63450718ea62ee3a70bffde170b4d15fc72d3c@git.kernel.org>
+Git-Commit-ID: 8c63450718ea62ee3a70bffde170b4d15fc72d3c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,59 +31,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6c56ccecf05fafe100ab4ea94f6fccbf5ff00db7
-Gitweb:     http://git.kernel.org/tip/6c56ccecf05fafe100ab4ea94f6fccbf5ff00db7
-Author:     Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-AuthorDate: Thu, 17 Dec 2009 12:27:02 -0800
+Commit-ID:  8c63450718ea62ee3a70bffde170b4d15fc72d3c
+Gitweb:     http://git.kernel.org/tip/8c63450718ea62ee3a70bffde170b4d15fc72d3c
+Author:     akpm@linux-foundation.org <akpm@linux-foundation.org>
+AuthorDate: Thu, 17 Dec 2009 15:26:36 -0800
 Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 17 Dec 2009 14:44:35 -0800
+CommitDate: Thu, 17 Dec 2009 15:34:29 -0800
 
-x86: Reenable TSC sync check at boot, even with NONSTOP_TSC
+x86: Fix objdump version check in arch/x86/tools/chkobjdump.awk
 
-Commit 83ce4009 did the following change
-If the TSC is constant and non-stop, also set it reliable.
+It says
 
-But, there seems to be few systems that will end up with TSC warp across
-sockets, depending on how the cpus come out of reset. Skipping TSC sync
-test on such systems may result in time inconsistency later.
+Warning: objdump version  is older than 2.19
+Warning: Skipping posttest.
 
-So, reenable TSC sync test even on constant and non-stop TSC systems.
-Set, sched_clock_stable to 1 by default and reset it in
-mark_tsc_unstable, if TSC sync fails.
+because it used the wrong field from `objdump -v':
 
-This change still gives perf benefit mentioned in 83ce4009 for systems
-where TSC is reliable.
+akpm:/usr/src/25> /opt/crosstool/gcc-4.0.2-glibc-2.3.6/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-objdump -v
+GNU objdump 2.16.1
+Copyright 2005 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License.  This program has absolutely no warranty.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <20091217202702.GA18015@linux-os.sc.intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <200912172326.nBHNQaQl024796@imap1.linux-foundation.org>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- arch/x86/kernel/cpu/intel.c |    1 -
- arch/x86/kernel/tsc.c       |    1 +
- 2 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/tools/chkobjdump.awk |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index 9c31e8b..879666f 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -70,7 +70,6 @@ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
- 	if (c->x86_power & (1 << 8)) {
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
--		set_cpu_cap(c, X86_FEATURE_TSC_RELIABLE);
- 		sched_clock_stable = 1;
- 	}
+diff --git a/arch/x86/tools/chkobjdump.awk b/arch/x86/tools/chkobjdump.awk
+index 0d13cd9..5bbb5a3 100644
+--- a/arch/x86/tools/chkobjdump.awk
++++ b/arch/x86/tools/chkobjdump.awk
+@@ -9,7 +9,7 @@ BEGIN {
+ }
  
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index cd982f4..597683a 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -763,6 +763,7 @@ void mark_tsc_unstable(char *reason)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
-+		sched_clock_stable = 0;
- 		printk(KERN_INFO "Marking TSC unstable due to %s\n", reason);
- 		/* Change only the rating, when not registered */
- 		if (clocksource_tsc.mult)
+ /^GNU/ {
+-	split($4, ver, ".");
++	split($3, ver, ".");
+ 	if (ver[1] > od_ver ||
+ 	    (ver[1] == od_ver && ver[2] >= od_sver)) {
+ 		exit 1;
