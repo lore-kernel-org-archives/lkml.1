@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbZLQBUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936136AbZLQBtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763598AbZLQBUG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:20:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763513AbZLQBTr
+	id S936136AbZLQBtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763554AbZLQBTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:19:47 -0500
-Received: from kroah.org ([198.145.64.141]:47734 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:19:49 -0500
+Received: from kroah.org ([198.145.64.141]:47740 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763537AbZLQBTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763538AbZLQBTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 20:19:45 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:15:58 2009
-Message-Id: <20091217011558.080872855@mini.kroah.org>
+Message-Id: <20091217011558.216332496@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:13 -0800
+Date: Wed, 16 Dec 2009 17:14:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [02/90] USB: usb-storage: fix bug in fill_inquiry
+       Jay Fenlason <fenlason@redhat.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [03/90] firewire: ohci: handle receive packets with a data length of zero
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,57 +29,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Jay Fenlason <fenlason@redhat.com>
 
-commit f3f6faa9edf67c1018270793e0547b0f81abb47e upstream.
+commit 8c0c0cc2d9f4c523fde04bdfe41e4380dec8ee54 upstream.
 
-This patch (as1312) fixes a minor bug in usb-storage.  The
-fill_inquiry() routine neglects to pre-load the inquiry data buffer
-with spaces.  As a result, if the vendor name is shorter than 8
-characters or the product name is shorter than 16, the remainder will
-be filled with garbage.
+Queueing to receive an ISO packet with a payload length of zero
+silently does nothing in dualbuffer mode, and crashes the kernel in
+packet-per-buffer mode.  Return an error in dualbuffer mode, because
+the DMA controller won't let us do what we want, and work correctly in
+packet-per-buffer mode.
 
-The patch also removes some unnecessary calls to strlen().
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Jay Fenlason <fenlason@redhat.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/usb.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/firewire/ohci.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/storage/usb.c
-+++ b/drivers/usb/storage/usb.c
-@@ -228,6 +228,7 @@ void fill_inquiry_response(struct us_dat
- 	if (data_len<36) // You lose.
- 		return;
+--- a/drivers/firewire/ohci.c
++++ b/drivers/firewire/ohci.c
+@@ -2180,6 +2180,13 @@ static int ohci_queue_iso_receive_dualbu
+ 	page     = payload >> PAGE_SHIFT;
+ 	offset   = payload & ~PAGE_MASK;
+ 	rest     = p->payload_length;
++	/*
++	 * The controllers I've tested have not worked correctly when
++	 * second_req_count is zero.  Rather than do something we know won't
++	 * work, return an error
++	 */
++	if (rest == 0)
++		return -EINVAL;
  
-+	memset(data+8, ' ', 28);
- 	if(data[0]&0x20) { /* USB device currently not connected. Return
- 			      peripheral qualifier 001b ("...however, the
- 			      physical device is not currently connected
-@@ -237,15 +238,15 @@ void fill_inquiry_response(struct us_dat
- 			      device, it may return zeros or ASCII spaces 
- 			      (20h) in those fields until the data is
- 			      available from the device."). */
--		memset(data+8,0,28);
- 	} else {
- 		u16 bcdDevice = le16_to_cpu(us->pusb_dev->descriptor.bcdDevice);
--		memcpy(data+8, us->unusual_dev->vendorName, 
--			strlen(us->unusual_dev->vendorName) > 8 ? 8 :
--			strlen(us->unusual_dev->vendorName));
--		memcpy(data+16, us->unusual_dev->productName, 
--			strlen(us->unusual_dev->productName) > 16 ? 16 :
--			strlen(us->unusual_dev->productName));
-+		int n;
-+
-+		n = strlen(us->unusual_dev->vendorName);
-+		memcpy(data+8, us->unusual_dev->vendorName, min(8, n));
-+		n = strlen(us->unusual_dev->productName);
-+		memcpy(data+16, us->unusual_dev->productName, min(16, n));
-+
- 		data[32] = 0x30 + ((bcdDevice>>12) & 0x0F);
- 		data[33] = 0x30 + ((bcdDevice>>8) & 0x0F);
- 		data[34] = 0x30 + ((bcdDevice>>4) & 0x0F);
+ 	/* FIXME: make packet-per-buffer/dual-buffer a context option */
+ 	while (rest > 0) {
+@@ -2233,7 +2240,7 @@ static int ohci_queue_iso_receive_packet
+ 					unsigned long payload)
+ {
+ 	struct iso_context *ctx = container_of(base, struct iso_context, base);
+-	struct descriptor *d = NULL, *pd = NULL;
++	struct descriptor *d, *pd;
+ 	struct fw_iso_packet *p = packet;
+ 	dma_addr_t d_bus, page_bus;
+ 	u32 z, header_z, rest;
+@@ -2271,8 +2278,9 @@ static int ohci_queue_iso_receive_packet
+ 		d->data_address = cpu_to_le32(d_bus + (z * sizeof(*d)));
+ 
+ 		rest = payload_per_buffer;
++		pd = d;
+ 		for (j = 1; j < z; j++) {
+-			pd = d + j;
++			pd++;
+ 			pd->control = cpu_to_le16(DESCRIPTOR_STATUS |
+ 						  DESCRIPTOR_INPUT_MORE);
+ 
 
 
