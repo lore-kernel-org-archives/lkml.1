@@ -1,100 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764583AbZLQMPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZLQMgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764583AbZLQMPH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 07:15:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZLQMPF
+	id S1764251AbZLQMgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 07:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932490AbZLQMgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 07:15:05 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46557 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbZLQMPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 07:15:04 -0500
-From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: e100 REGRESSION in 2.6.32 (PATCH)
-Date: Thu, 17 Dec 2009 14:14:16 +0200
-User-Agent: KMail/1.12.4 (Linux/2.6.32-ironman-1; KDE/4.3.4; i686; ; )
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-References: <Pine.LNX.4.44L0.0912161447260.2643-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912161447260.2643-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Message-Id: <200912171414.16846.roger.oksanen@cs.helsinki.fi>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 07:36:22 -0500
+Received: from comal.ext.ti.com ([198.47.26.152]:43282 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764179AbZLQMgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 07:36:20 -0500
+From: Chaithrika U S <chaithrika@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com,
+       khilman@deeprootsystems.com, Chaithrika U S <chaithrika@ti.com>
+Subject: [PATCH 1/2] davinci: MMC: Add a function to control reset state of the controller
+Date: Thu, 17 Dec 2009 17:44:51 +0530
+Message-Id: <1261052091-14379-1-git-send-email-chaithrika@ti.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 December 2009 21:50:38 Alan Stern wrote:
-> On Wed, 16 Dec 2009, Brandeburg, Jesse wrote:
-> 
-> > copied the netdev mailing list.
-> 
-> Oops.  With all the other CC's I forgot to include netdev.  Shame, 
-> shame...
-> 
-> >  Alan thanks for the report, I wonder if 
-> > you can revert 98468efddb101f8a29af974101c17ba513b07be1 and see if that 
-> > fixes it?
-> 
-> It does indeed.  Thanks for the quick response.
-> 
-> > Roger on the To: line made that change, which may have broken e100 for 
-> > your system.
-> 
-> It looks simple enough, but obviously something is wrong with it.
+Add a helper function which will aid in changing the reset
+status of the controller.
 
-Well it took a while, and it seems that I had missed the undocumented(?) fact
-that pci_alloc_consistent returns zeroed memory (and pci_pool doesn't), and 
-the alloc_cbs doesn't explicitly zero the cb->status field when allocating. So
-here is a patch against v2.6.32:
-(David: 98468efddb101f8a29af974101c17ba513b07be1 should be removed from
-the -stable queue and replaced by a patch that includes this fix)
-
-e100: Fix broken cbs accounting due to missing memset.
-
-Alan Stern noticed that e100 caused slab corruption.
-commit 98468efddb101f8a29af974101c17ba513b07be1 changed
-the allocation of cbs to use dma pools that don't return zeroed memory,
-especially the cb->status field used to track which cb to clean, causing
-(the visible) double freeing of skbs and a wrong free cbs count.
-
-Now the cbs are explicitly zeroed at allocation time.
-
-Reported-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+Signed-off-by: Chaithrika U S <chaithrika@ti.com>
 ---
- drivers/net/e100.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Applies to Linus' kernel tree.
 
-diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-index d269a68..29a8840 100644
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -1815,6 +1815,7 @@ static int e100_alloc_cbs(struct nic *nic)
- 
- 	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
- 				  &nic->cbs_dma_addr);
-+	memset(nic->cbs, 0, count * sizeof(struct cb));
- 	if (!nic->cbs)
- 		return -ENOMEM;
- 
-@@ -1825,7 +1826,6 @@ static int e100_alloc_cbs(struct nic *nic)
- 		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
- 		cb->link = cpu_to_le32(nic->cbs_dma_addr +
- 			((i+1) % count) * sizeof(struct cb));
--		cb->skb = NULL;
+ drivers/mmc/host/davinci_mmc.c |   37 ++++++++++++++++---------------------
+ 1 files changed, 16 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+index dd45e7c..25645bf 100644
+--- a/drivers/mmc/host/davinci_mmc.c
++++ b/drivers/mmc/host/davinci_mmc.c
+@@ -884,19 +884,26 @@ static void mmc_davinci_cmd_done(struct mmc_davinci_host *host,
  	}
+ }
  
- 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
+-static void
+-davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
++static inline void mmc_davinci_reset_ctrl(struct mmc_davinci_host *host,
++								int val)
+ {
+ 	u32 temp;
+ 
+-	/* reset command and data state machines */
+ 	temp = readl(host->base + DAVINCI_MMCCTL);
+-	writel(temp | MMCCTL_CMDRST | MMCCTL_DATRST,
+-		host->base + DAVINCI_MMCCTL);
++	if (val)	/* reset */
++		temp |= MMCCTL_CMDRST | MMCCTL_DATRST;
++	else		/* enable */
++		temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
+ 
+-	temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
+-	udelay(10);
+ 	writel(temp, host->base + DAVINCI_MMCCTL);
++	udelay(10);
++}
++
++static void
++davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
++{
++	mmc_davinci_reset_ctrl(host, 1);
++	mmc_davinci_reset_ctrl(host, 0);
+ }
+ 
+ static irqreturn_t mmc_davinci_irq(int irq, void *dev_id)
+@@ -1100,15 +1107,8 @@ static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
+ #endif
+ static void __init init_mmcsd_host(struct mmc_davinci_host *host)
+ {
+-	/* DAT line portion is diabled and in reset state */
+-	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_DATRST,
+-		host->base + DAVINCI_MMCCTL);
+-
+-	/* CMD line portion is diabled and in reset state */
+-	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_CMDRST,
+-		host->base + DAVINCI_MMCCTL);
+ 
+-	udelay(10);
++	mmc_davinci_reset_ctrl(host, 1);
+ 
+ 	writel(0, host->base + DAVINCI_MMCCLK);
+ 	writel(MMCCLK_CLKEN, host->base + DAVINCI_MMCCLK);
+@@ -1116,12 +1116,7 @@ static void __init init_mmcsd_host(struct mmc_davinci_host *host)
+ 	writel(0x1FFF, host->base + DAVINCI_MMCTOR);
+ 	writel(0xFFFF, host->base + DAVINCI_MMCTOD);
+ 
+-	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_DATRST,
+-		host->base + DAVINCI_MMCCTL);
+-	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_CMDRST,
+-		host->base + DAVINCI_MMCCTL);
+-
+-	udelay(10);
++	mmc_davinci_reset_ctrl(host, 0);
+ }
+ 
+ static int __init davinci_mmcsd_probe(struct platform_device *pdev)
+-- 
+1.5.6
+
