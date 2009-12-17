@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbZLQT6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935393AbZLQUFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761759AbZLQT6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZLQT6e
+	id S935393AbZLQUFR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbZLQUFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:58:34 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39999 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754392AbZLQT6d (ORCPT
+	Thu, 17 Dec 2009 15:05:15 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:40426 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757870AbZLQUFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:58:33 -0500
-Date: Thu, 17 Dec 2009 19:58:08 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Joe Buck <Joe.Buck@synopsys.COM>, "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-Message-ID: <20091217195808.GE4440@n2100.arm.linux.org.uk>
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com> <20091217190613.GB4440@n2100.arm.linux.org.uk> <20091217191401.GD10707@synopsys.com> <20091217193826.GE362@shareable.org> <20091217194837.GD4440@n2100.arm.linux.org.uk>
+	Thu, 17 Dec 2009 15:05:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=dJW4ZVwUp4Co10xncDw2w1z1BLp4Mp579Dbe3d9VjGqm6pv2vtxKou4fW9psNX/+lm
+         AqVHdTw+UvAn4p01TWg1KXCk91aXImTmLrubNp425HdzNK7L5fFiSbnw3gdFQsMWQnpz
+         XKBkvdGgHY28tsOZvZGN/Ee45zrN/ivnAB8E4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217194837.GD4440@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 17 Dec 2009 15:05:05 -0500
+Message-ID: <d4b6d3ea0912171205q21dce848m7e75663dd2e7b29c@mail.gmail.com>
+Subject: DP55WG Motherboard BIOS warm boot issue
+From: Michael Madore <michael.madore@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 07:48:37PM +0000, Russell King - ARM Linux wrote:
-> Given the lack of progress/bug reporting on ARM uclinux, the lack of
-> platform support and the lack of configurations, my view is that there
-> is no one actually using it.  I know that I don't particularly take any
-> care with respect to uclinux when making changes to the MMU based kernels.
-> Why bother if apparantly no one's using it?
+Sorry for the duplicate post.  I sent the previous e-mail out with the
+wrong subject.
 
-Jamie,
+I am experiencing a strange problem running linux on the Intel DP55WG
+motherboard.  Installation goes fine, but when the system is warm
+booted, I get the following error message from the BIOS POST:
 
-As you seem to be a user of uclinux on ARM, could you help ensure that
-the support there is bug fixed and we at least have a configuration file
-which kautobuild can use to provide feedback on the build status of
-uclinux on ARM please?
+"The system BIOS has detected unsuccessful POST attempt(s). Possible
+causes include recent changes to BIOS Performance options or recent
+hardware changes. Press 'Y' to enter BIOS Setup or press 'N' to cancel
+and attempt to boot with previous settings."
+
+Selecting either option allows the system to boot, but the same error
+will be displayed on the next warm boot.  If the system is powered off
+and then on instead, the error is not displayed.
+
+When the error is displayed, the port 80h POST code is 69.  According
+the the motherboard documentation:
+
+Boot Device Selection (BDS): 60-6F BDS driver entry
+
+The details of the system:
+
+Intel DP55WG motherboard
+BIOS tested: 3206, 3878
+Memory tested: 4G and 8G
+CPU: Core i7 870 @ 2.93GHz
+
+Hard disks tested:
+- Western Digital Model WD20EADS (2 TB)
+- Seagate Model ST380811AS (80GB)
+- 3Ware 9650SE-4LPML with 4 x Seagate Model ST31500341AS (1.5TB)
+
+Linux distributions tested:
+- RHEL 5.3
+- RHEL 5.4
+- Fedora 10
+- Fedora 11
+- Fedora 12
+
+In addition, I have tested 2.6.32 from kernel.org and today's git.
+
+Here is a posting on the Intel community forums from a user with the
+same problem:
+
+http://communities.intel.com/message/71164
+
+I attempted to disable the Failsafe Watchdog as suggested in that
+thread, but then the kernel gets stuck during reboot and the system
+has to be powered off.
+
+Normally I would try to bisect, but I haven't found a kernel yet that
+will boot on this board and doesn't exhibit the behaviour.
+
+Thanks,
+
+Mike Madore
