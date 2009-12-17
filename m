@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935401AbZLQSRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935777AbZLQSV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935401AbZLQSRj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935124AbZLQSRh
+	id S935777AbZLQSV6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 13:21:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935356AbZLQSVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:17:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37674 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934997AbZLQSRf (ORCPT
+	Thu, 17 Dec 2009 13:21:52 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45526 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935554AbZLQSVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:17:35 -0500
-Date: Thu, 17 Dec 2009 10:17:03 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Christoph Hellwig <hch@infradead.org>, tytso@mit.edu,
-       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James.Bottomley@suse.de, linux-arch@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-In-Reply-To: <20091217180802.GA1546@flint.arm.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0912171016430.15740@localhost.localdomain>
-References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org> <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain> <20091217163036.GE2123@thunk.org> <alpine.LFD.2.00.0912170839550.15740@localhost.localdomain>
- <20091217170743.GA10431@infradead.org> <alpine.LFD.2.00.0912170928310.15740@localhost.localdomain> <20091217180802.GA1546@flint.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 13:21:49 -0500
+Date: Thu, 17 Dec 2009 18:17:18 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Richard Guenther <richard.guenther@gmail.com>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+Message-ID: <20091217181718.GA4440@n2100.arm.linux.org.uk>
+References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Dec 2009, Russell King wrote:
+On Thu, Dec 17, 2009 at 06:17:11PM +0100, Richard Guenther wrote:
+> On Thu, Dec 17, 2009 at 6:09 PM, David Daney <ddaney@caviumnetworks.com> wrote:
+> > Jamie Lokier wrote:
+> >>
+> >> Uwe Kleine-König wrote:
+> >>>
+> >>> Use the new unreachable() macro instead of for(;;);
+> >>>        *(int *)0 = 0;
+> >>>          /* Avoid "noreturn function does return" */
+> >>> -       for (;;);
+> >>> +       unreachable();
+> >>
+> >> Will GCC-4.5 remove ("optimise away") the *(int *)0 = 0 because it
+> >> knows the branch of the code leading to unreachable can never be reached?
+> >>
+> >
+> > I don't know the definitive answer, so I am sending to gcc@...
+> >
+> > FYI: #define unreachable() __builtin_unreachable()
 > 
-> That's not entirely true.  If you have write back caches which are not DMA
-> coherent, you need to as a minimum:
-> 
-> - on write, clean the cache to ensure that the page is up to date with data
->   held in cache.
-> 
-> - on read, you must ensure that there are no potential write-backs before
->   the read commenses and invalidate at some point.
+> It shouldn't as *(int *)0 = 0; might trap.  But if you want to be sure
+> use
+>    __builtin_trap ();
+> instead for the whole sequence (the unreachable is implied then).
+> GCC choses a size-optimal trap representation for your target then.
 
-Right you are.
+How is "size-optimal trap" defined?  The point of "*(int *)0 = 0;" is
+to cause a NULL pointer dereference which is trapped by the kernel to
+produce a full post mortem and backtrace which is easily recognised
+as a result of this code.
 
-		Linus
+Having gcc decide on, maybe, an undefined instruction instead would be
+confusing.
+
+Let me put it another way: I want this function to terminate with an
+explicit NULL pointer dereference in every case.
