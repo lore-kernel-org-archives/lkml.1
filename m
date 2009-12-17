@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbZLQBCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763565AbZLQBEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932569AbZLQBCn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763539AbZLQBCY
+	id S1763565AbZLQBEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763482AbZLQBEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:02:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38954 "EHLO hera.kernel.org"
+	Wed, 16 Dec 2009 20:04:34 -0500
+Received: from gold.linx.net ([195.66.232.40]:43064 "EHLO gold.linx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763566AbZLQBCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:02:16 -0500
-Date: Thu, 17 Dec 2009 01:01:44 GMT
-From: tip-bot for Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de
-In-Reply-To: <4B22D754.2020706@kernel.org>
-References: <4B22D754.2020706@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Increase MAX_EARLY_RES; insufficient on 32-bit NUMA
-Message-ID: <tip-6a1e008a0915f502eb026fb995ea3e49d5b017f7@git.kernel.org>
-Git-Commit-ID: 6a1e008a0915f502eb026fb995ea3e49d5b017f7
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	id S1761952AbZLQBEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:04:33 -0500
+Subject: Re: [git pull] VFS stuff, part 1
+From: Tony Vroon <tony@linx.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091217004003.GQ14381@ZenIV.linux.org.uk>
+References: <20091216185157.GL14381@ZenIV.linux.org.uk>
+	 <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com>
+	 <1261004048.3154.2.camel@localhost>
+	 <20091216230711.GN14381@ZenIV.linux.org.uk>
+	 <1261005194.3154.4.camel@localhost>
+	 <20091216232729.GO14381@ZenIV.linux.org.uk>
+	 <1261008131.3026.0.camel@localhost>
+	 <20091217004003.GQ14381@ZenIV.linux.org.uk>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-4Ixr1sJOU9pnVtY4ZBGg"
+Organization: London Internet Exchange (LINX; AS5459)
+Date: Thu, 17 Dec 2009 01:05:06 +0000
+Message-ID: <1261011906.3183.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6a1e008a0915f502eb026fb995ea3e49d5b017f7
-Gitweb:     http://git.kernel.org/tip/6a1e008a0915f502eb026fb995ea3e49d5b017f7
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Tue, 15 Dec 2009 17:59:03 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Wed, 16 Dec 2009 16:46:23 -0800
 
-x86: Increase MAX_EARLY_RES; insufficient on 32-bit NUMA
+--=-4Ixr1sJOU9pnVtY4ZBGg
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Due to recent changes wakeup and mptable, we run out of early
-reservations on 32-bit NUMA.  Thus, adjust the available number.
+On Thu, 2009-12-17 at 00:40 +0000, Al Viro wrote:
+> In the meanwhile, see if this fixes it
+> 8f4cb3a4252a053d2c7299d7d251389bddf0bcd4
+> diff --git a/mm/shmem.c b/mm/shmem.c
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <4B22D754.2020706@kernel.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/e820.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I can confirm that this fixes the problem. (When applied to a virgin
+linux-2.6 checkout, without reverting anything)
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index f50447d..05ed7ab 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -724,7 +724,7 @@ core_initcall(e820_mark_nvs_memory);
- /*
-  * Early reserved memory areas.
-  */
--#define MAX_EARLY_RES 20
-+#define MAX_EARLY_RES 32
- 
- struct early_res {
- 	u64 start, end;
+Thank you :)
+
+> index f848506..eef4ebe 100644
+> --- a/mm/shmem.c
+> +++ b/mm/shmem.c
+> @@ -1830,6 +1830,8 @@ shmem_mknod(struct inode *dir, struct dentry *dentr=
+y, int mode, dev_t dev)
+>  			iput(inode);
+>  			return error;
+>  		}
+> +#else
+> +		error =3D 0;
+>  #endif
+>  		if (dir->i_mode & S_ISGID) {
+>  			inode->i_gid =3D dir->i_gid;
+
+Regards,
+Tony V.
+
+--=-4Ixr1sJOU9pnVtY4ZBGg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.13 (GNU/Linux)
+
+iEYEABECAAYFAkspg8IACgkQp5vW4rUFj5ohXwCfV58+bv4DbwBzhT5ZiE0m2oxf
+kncAoJhhSPt+4FCqgcG0cmnnTo94+slz
+=RW7x
+-----END PGP SIGNATURE-----
+
+--=-4Ixr1sJOU9pnVtY4ZBGg--
+
