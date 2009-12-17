@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936453AbZLQEXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936455AbZLQEXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936453AbZLQEXy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935942AbZLQEXb
+	id S936455AbZLQEXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935976AbZLQEX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:23:31 -0500
-Received: from kroah.org ([198.145.64.141]:55810 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:23:29 -0500
+Received: from kroah.org ([198.145.64.141]:55815 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935807AbZLQEFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935942AbZLQEFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 23:05:04 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:56 2009
-Message-Id: <20091217035656.350302499@mini.kroah.org>
+Message-Id: <20091217035656.480820893@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:40 -0800
+Date: Wed, 16 Dec 2009 19:56:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Mikulas Patocka <mpatocka@redhat.com>,
        Alasdair G Kergon <agk@redhat.com>
-Subject: [103/151] dm: avoid _hash_lock deadlock
+Subject: [104/151] dm snapshot: cope with chunk size larger than origin
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,132 +31,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 6076905b5ef39e0ea58db32583c9e0036c05e47b upstream.
+commit 8e87b9b81b3c370f7e53c1ab6e1c3519ef37a644 upstream.
 
-Fix a reported deadlock if there are still unprocessed multipath events
-on a device that is being removed.
+Under some special conditions the snapshot hash_size is calculated as zero.
+This patch instead sets a minimum value of 64, the same as for the
+pending exception table.
 
-_hash_lock is held during dev_remove while trying to send the
-outstanding events.  Sending the events requests the _hash_lock
-again in dm_copy_name_and_uuid.
+rounddown_pow_of_two(0) is an undefined operation (it expands to shift
+by -1).  init_exception_table with an argument of 0 would fail with -ENOMEM.
 
-This patch introduces a separate lock around regions that modify the
-link to the hash table (dm_set_mdptr) or the name or uuid so that
-dm_copy_name_and_uuid no longer needs _hash_lock.
+The way to trigger the problem is to create a snapshot with a chunk size
+that is larger than the origin device.
 
-Additionally, dm_copy_name_and_uuid can only be called if md exists
-so we can drop the dm_get() and dm_put() which can lead to a BUG()
-while md is being freed.
-
-The deadlock:
- #0 [ffff8106298dfb48] schedule at ffffffff80063035
- #1 [ffff8106298dfc20] __down_read at ffffffff8006475d
- #2 [ffff8106298dfc60] dm_copy_name_and_uuid at ffffffff8824f740
- #3 [ffff8106298dfc90] dm_send_uevents at ffffffff88252685
- #4 [ffff8106298dfcd0] event_callback at ffffffff8824c678
- #5 [ffff8106298dfd00] dm_table_event at ffffffff8824dd01
- #6 [ffff8106298dfd10] __hash_remove at ffffffff882507ad
- #7 [ffff8106298dfd30] dev_remove at ffffffff88250865
- #8 [ffff8106298dfd60] ctl_ioctl at ffffffff88250d80
- #9 [ffff8106298dfee0] do_ioctl at ffffffff800418c4
-#10 [ffff8106298dff00] vfs_ioctl at ffffffff8002fab9
-#11 [ffff8106298dff40] sys_ioctl at ffffffff8004bdaf
-#12 [ffff8106298dff80] tracesys at ffffffff8005d28d (via system_call)
-
-Reported-by: guy keren <choo@actcom.co.il>
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-ioctl.c  |   17 +++++++++++++----
- drivers/md/dm-uevent.c |    9 ++++-----
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/md/dm-snap.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/md/dm-ioctl.c
-+++ b/drivers/md/dm-ioctl.c
-@@ -56,6 +56,11 @@ static void dm_hash_remove_all(int keep_
-  */
- static DECLARE_RWSEM(_hash_lock);
+--- a/drivers/md/dm-snap.c
++++ b/drivers/md/dm-snap.c
+@@ -553,6 +553,8 @@ static int init_hash_tables(struct dm_sn
+ 	hash_size = min(origin_dev_size, cow_dev_size) >> s->store->chunk_shift;
+ 	hash_size = min(hash_size, max_buckets);
  
-+/*
-+ * Protects use of mdptr to obtain hash cell name and uuid from mapped device.
-+ */
-+static DEFINE_MUTEX(dm_hash_cells_mutex);
-+
- static void init_buckets(struct list_head *buckets)
- {
- 	unsigned int i;
-@@ -206,7 +211,9 @@ static int dm_hash_insert(const char *na
- 		list_add(&cell->uuid_list, _uuid_buckets + hash_str(uuid));
- 	}
- 	dm_get(md);
-+	mutex_lock(&dm_hash_cells_mutex);
- 	dm_set_mdptr(md, cell);
-+	mutex_unlock(&dm_hash_cells_mutex);
- 	up_write(&_hash_lock);
- 
- 	return 0;
-@@ -224,7 +231,9 @@ static void __hash_remove(struct hash_ce
- 	/* remove from the dev hash */
- 	list_del(&hc->uuid_list);
- 	list_del(&hc->name_list);
-+	mutex_lock(&dm_hash_cells_mutex);
- 	dm_set_mdptr(hc->md, NULL);
-+	mutex_unlock(&dm_hash_cells_mutex);
- 
- 	table = dm_get_table(hc->md);
- 	if (table) {
-@@ -321,7 +330,9 @@ static int dm_hash_rename(uint32_t cooki
- 	 */
- 	list_del(&hc->name_list);
- 	old_name = hc->name;
-+	mutex_lock(&dm_hash_cells_mutex);
- 	hc->name = new_name;
-+	mutex_unlock(&dm_hash_cells_mutex);
- 	list_add(&hc->name_list, _name_buckets + hash_str(new_name));
- 
- 	/*
-@@ -1582,8 +1593,7 @@ int dm_copy_name_and_uuid(struct mapped_
- 	if (!md)
- 		return -ENXIO;
- 
--	dm_get(md);
--	down_read(&_hash_lock);
-+	mutex_lock(&dm_hash_cells_mutex);
- 	hc = dm_get_mdptr(md);
- 	if (!hc || hc->md != md) {
- 		r = -ENXIO;
-@@ -1596,8 +1606,7 @@ int dm_copy_name_and_uuid(struct mapped_
- 		strcpy(uuid, hc->uuid ? : "");
- 
- out:
--	up_read(&_hash_lock);
--	dm_put(md);
-+	mutex_unlock(&dm_hash_cells_mutex);
- 
- 	return r;
- }
---- a/drivers/md/dm-uevent.c
-+++ b/drivers/md/dm-uevent.c
-@@ -139,14 +139,13 @@ void dm_send_uevents(struct list_head *e
- 		list_del_init(&event->elist);
- 
- 		/*
--		 * Need to call dm_copy_name_and_uuid from here for now.
--		 * Context of previous var adds and locking used for
--		 * hash_cell not compatable.
-+		 * When a device is being removed this copy fails and we
-+		 * discard these unsent events.
- 		 */
- 		if (dm_copy_name_and_uuid(event->md, event->name,
- 					  event->uuid)) {
--			DMERR("%s: dm_copy_name_and_uuid() failed",
--			      __func__);
-+			DMINFO("%s: skipping sending uevent for lost device",
-+			       __func__);
- 			goto uevent_free;
- 		}
- 
++	if (hash_size < 64)
++		hash_size = 64;
+ 	hash_size = rounddown_pow_of_two(hash_size);
+ 	if (init_exception_table(&s->complete, hash_size,
+ 				 DM_CHUNK_CONSECUTIVE_BITS))
 
 
