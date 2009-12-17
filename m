@@ -1,81 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbZLQQqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764835AbZLQQr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764881AbZLQQqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 11:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764802AbZLQQqU
+	id S1764835AbZLQQr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 11:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764843AbZLQQrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 11:46:20 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49931 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756652AbZLQQqT (ORCPT
+	Thu, 17 Dec 2009 11:47:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44289 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764802AbZLQQrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 11:46:19 -0500
-Date: Thu, 17 Dec 2009 17:46:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SYSCTL: Fix sysctl breakage on systems with older glibc
-Message-ID: <20091217164614.GI9804@basil.fritz.box>
-References: <20091216112844.GA31705@basil.fritz.box> <m16385abat.fsf@fess.ebiederm.org>
+	Thu, 17 Dec 2009 11:47:23 -0500
+Date: Thu, 17 Dec 2009 08:46:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: tytso@mit.edu
+cc: Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James.Bottomley@suse.de, hch@infradead.org, linux-arch@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+In-Reply-To: <20091217163036.GE2123@thunk.org>
+Message-ID: <alpine.LFD.2.00.0912170839550.15740@localhost.localdomain>
+References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org> <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain> <20091217163036.GE2123@thunk.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m16385abat.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 07:07:54AM -0800, Eric W. Biederman wrote:
-> reaction would be.  If it makes logging in and manually using the
-> machine unbearable on systems with versions of glibc from days of
-> yore, the level of logging is too high.
 
-The reason I was slightly annoyed is because I flagged this 
-during code review and it wasn't addressed before merging.
 
+On Thu, 17 Dec 2009, tytso@mit.edu wrote:
 > 
-> > I see this on a SUSE 10.0 system with glibc 2.3.5.
-> > Don't warn for this common case.
-> 
-> Perhaps it is just my sample of the world but glibc < 2.5 isn't
-> common, especially on machines that I am putting new kernels on.
-> Equally machines with 3+ year old installs are rare.
+> That's because apparently the iSCSI and DMA blocks assume that they
+> have Real Pages (tm) passed to block I/O requests, and apparently XFS
+> ran into problems when sending vmalloc'ed pages.  I don't know if this
+> is a problem if we pass the bio layer addresses coming from the SLAB
+> allocator, but oral tradition seems to indicate this is problematic,
+> although no one has given me the full chapter and verse explanation
+> about why this is so.
 
-Linux simply cannot abandon older user land. We still (near) 
-fully support a.out executables, even on 64bit.
+kmalloc() memory should be ok. It's backed by "real pages". Doing the DMA 
+translations for such pages is trivial and fundamental.
 
-> 
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> >
-> > diff -u linux-2.6.32-git12/kernel/sysctl_binary.c-o linux-2.6.32-git12/kernel/sysctl_binary.c
-> > --- linux-2.6.32-git12/kernel/sysctl_binary.c-o	2009-12-16 12:15:52.000000000 +0100
-> > +++ linux-2.6.32-git12/kernel/sysctl_binary.c	2009-12-16 12:14:58.000000000 +0100
-> > @@ -1399,6 +1399,13 @@
-> >  {
-> >  	int i;
-> >  
-> > +	/* 
-> > +	 * CTL_KERN/KERN_VERSION is used by older glibc and cannot 
-> > +	 * ever go away.
-> > +	 */
-> The comment is wrong.  Older versions of glibc are perfectly happy
-> getting -ENOSYS form sys_sysctl.
+In contrast, vmalloc is pure and utter unadulterated CRAP. The pages 
+may be contiguous virtually, but it makes no difference for the block 
+layer, that has to be able to do IO by DMA anyway, so it has to look up 
+the page translations in the page tables etc crazy sh*t.
 
-and it fills and fills and fills the kernel log. In practice
-that's not usable.
+So passing vmalloc'ed page addresses around to something that will 
+eventually do a non-CPU-virtual thing on them is fundamentally insane. The 
+vmalloc space is about CPU virtual addresses. Such concepts simpyl do not 
+-exist- for some random block device.
 
-> 
-> > +	if (name[0] == CTL_KERN && name[1] == KERN_VERSION)
-> > +		return;
-> 
-> If you make it printk_once for this case I think that strikes the right
-> balance.  You won't be spammed to death by messages telling you about
-> a silly old glibc, but you will be told.
+> Now that I see Linus's complaint, I'm wondering if the issue is really
+> about kernel virtual addresses (i.e., coming from vmalloc), and not a
+> requirement for Real Pages (i.e., coming from the SLAB allocator as
+> opposed to get_free_page).  And can this be documented someplace?  I
+> tried looking at the bio documentation, and couldn't find anything
+> definitive on the subject.
 
-It's not a "silly old glibc", it's a "perfectly functional old glibc"
+The whole "vmalloc is special" has always been true. If you want to 
+treat vmalloc as normal memory, you need to look up the pages yourself. We 
+have helpers for that (including helpers that populate vmalloc space from 
+a page array to begin with - so you can _start_ from some array of pages 
+and then lay them out virtually if you want to have a convenient CPU 
+access to the array).
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+And this whole "vmalloc is about CPU virtual addresses" is so obviously 
+and fundamentally true that I don't understand how anybody can ever be 
+confused about it. The "v" in vmalloc is for "virtual" as in virtual 
+memory.
+
+Think of it like virtual user addresses. Does anybody really expect to be 
+able to pass a random user address to the BIO layer?
+
+And if you do, I would suggest that you get out of kernel programming 
+pronto. You're a danger to society, and have a lukewarm IQ. I don't want 
+you touching kernel code.
+
+And no, I do _not_ want the BIO layer having to walk page tables. Not for 
+vmalloc space, not for user virtual addresses.
+
+(And don't tell me it already does. Maybe somebody sneaked it in past me, 
+without me ever noticing. That wouldn't be an excuse, that would be just 
+sad. Jesus wept)
+
+			Linus
