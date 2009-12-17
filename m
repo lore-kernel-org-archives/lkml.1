@@ -1,120 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZLQRHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764954AbZLQRHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932998AbZLQRHI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:07:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZLQRHA
+	id S1764954AbZLQRHu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762703AbZLQRHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:07:00 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:12673 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbZLQRG7 (ORCPT
+	Thu, 17 Dec 2009 12:07:47 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51694 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754884AbZLQRHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:06:59 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Huang Ying <ying.huang@intel.com>
-Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
-Date: Thu, 17 Dec 2009 10:06:55 -0700
-User-Agent: KMail/1.9.10
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com> <200912161054.19951.bjorn.helgaas@hp.com> <1261038787.13378.148.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1261038787.13378.148.camel@yhuang-dev.sh.intel.com>
+	Thu, 17 Dec 2009 12:07:46 -0500
+Date: Thu, 17 Dec 2009 12:07:44 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: tytso@mit.edu, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James.Bottomley@suse.de, hch@infradead.org, linux-arch@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+Message-ID: <20091217170743.GA10431@infradead.org>
+References: <20091216043618.GB9104@hera.kernel.org> <20091217132256.GO28962@bombadil.infradead.org> <alpine.LFD.2.00.0912170811130.15740@localhost.localdomain> <20091217163036.GE2123@thunk.org> <alpine.LFD.2.00.0912170839550.15740@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200912171006.56273.bjorn.helgaas@hp.com>
+In-Reply-To: <alpine.LFD.2.00.0912170839550.15740@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 December 2009 01:33:07 am Huang Ying wrote:
-> On Thu, 2009-12-17 at 01:54 +0800, Bjorn Helgaas wrote: 
-> > On Tuesday 15 December 2009 06:23:15 pm Huang Ying wrote:
-> > > On Wed, 2009-12-16 at 01:47 +0800, Bjorn Helgaas wrote: 
-> > > > On Monday 14 December 2009 06:04:13 pm Huang Ying wrote:
-> > > > > On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
-> > > > > > I think your code would be simpler if acpi_pre_map_gar() returned a
-> > > > > > struct acpi_iomap pointer (from the caller's point of view, this would
-> > > > > > be an opaque cookie).  Then you could just supply that cookie to
-> > > > > > acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
-> > > > > > you could even get rid of the list and all the fancy RCU & kref stuff
-> > > > > > then, too.
-> > > > > 
-> > > > > The interface chosen is based on usage model, which is:
-> > > > > 
-> > > > > 1. In init function, all GARs needed are pre-mapped
-> > > > > 2. In atomic context, pre-mapped GARs are accessed
-> > > > > 3. In exit function, all GARs are post-unmapped
-> > > > > 
-> > > > > In 3), if struct acpi_iomap* is used as parameter for post-unmap
-> > > > > function, we need to record that pointer in another list. In 2), we need
-> > > > > find mapped address from GAR.
-> > > > 
-> > > > I understand that my proposal would require a slight change in your
-> > > > usage model.  I am suggesting that you make it follow the same pattern
-> > > > as pci_iomap(), e.g.:
-> > > > 
-> > > > 	void *pci_iomap(struct pci_dev *, int bar, unsigned long len);
-> > > > 	unsigned int ioread32(void *);
-> > > > 	void pci_iounmap(struct pci_dev *, void *);
-> > > > 
-> > > > 	void *acpi_map_generic_address(struct acpi_generic_address *);
-> > > > 	u64 acpi_read_atomic(void *);
-> > > > 	void acpi_unmap_generic_address(void *);
-> > > > 
-> > > > acpi_map_generic_address() would validate the GAR and do the ioremap().
-> > > > If the validation or ioremap() failed, it would return a NULL pointer.
-> > > > 
-> > > > This would require the caller of acpi_map_generic_address() to hang onto
-> > > > the pointer returned (just as callers of pci_iomap() must hang onto the
-> > > > pointer it returns).
-> > > > 
-> > > > The pointer would be supplied to acpi_read_atomic(), so it would not
-> > > > need to do acpi_check_gar() because we know it was done successfully
-> > > > in acpi_map_generic_address().  It wouldn't need to look up the GAR
-> > > > in the list because the list entry was passed in.  Since all the
-> > > > possible failure conditions were checked in acpi_map_generic_address(),
-> > > > acpi_read_atomic() doesn't need to return status and could simply
-> > > > return the u64 directly.
-> > > 
-> > > The usage model is different. Please take a look at
-> > > __apei_exec_read_register(). We need to get virtual address from
-> > > physical address in GAR. And many small-size GARs in ERST or EINJ may
-> > > share same page, so some kind of virtual space optimization is
-> > > necessary.
-> > 
-> > The sharing could be done with a reference count in the map/unmap
-> > path.
-> > 
-> > I don't have time to fully understand your patch series, but I suspect
-> > the issue is that you're interpreting opcodes, and those contain or
-> > reference generic_address structures, and you think it's easier just
-> > pass around the GAR pointer than it is to remember a (GAR, mapped-GAR)
-> > association made by pre_map_gar() and use the mapped-GAR when executing
-> > the "read" opcode.
-> 
-> So we need the (GAR, mapped-GAR) association anyway. Variable
-> acpi_iomaps in atomicio.c is such a association. When executing the
-> "read" opcode, we still need get mapped-GAR from the GAR. So I think
-> your proposal and my implementation is similar, with different naming
-> convention and you want to put the association in APEI code, and I want
-> to put it in ACPI code.
+On Thu, Dec 17, 2009 at 08:46:33AM -0800, Linus Torvalds wrote:
+> The whole "vmalloc is special" has always been true. If you want to 
+> treat vmalloc as normal memory, you need to look up the pages yourself. We 
+> have helpers for that (including helpers that populate vmalloc space from 
+> a page array to begin with - so you can _start_ from some array of pages 
+> and then lay them out virtually if you want to have a convenient CPU 
+> access to the array).
 
-Well, yes, they're similar in the sense that both do remember the (GAR,
-mapped-GAR) association.  Your implementation remembers it in the
-acpi_iomaps list, and I proposed having the caller keep it.  The
-advantage I see with having the caller keep it is that it would make
-atomicio.c MUCH simpler -- no list, no lookup, no repeated validation,
-no RCU, probably no kref stuff.  Obviously this would come at the cost
-of some increased complexity in the callers.
+Which is exactly what the XFS code does.  Pages are allocated manually
+and we store pointers to the page struct that later get added to the
+bio.  But we access them through vmap (which I added exactly for this
+reason back in 2002) for kernel accesses.  On all architectures with
+sane caches things just work, but for parisc, arm and friends that have
+virtually indexed caches we need to make sure to flush caches for this
+different access.  The vmalloc linear address is not used for I/O
+everywhere.
 
-And I think it's worth something to use the pattern of pci_iomap(),
-because that's a well-known Linux design pattern.
-
-Anyway, just my opinion; feel free to ignore.
-
-Bjorn
