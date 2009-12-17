@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936206AbZLQPKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936217AbZLQPLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936206AbZLQPKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935039AbZLQPKU
+	id S936217AbZLQPLQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:11:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935742AbZLQPLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:10:20 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:57261 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936193AbZLQPKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:10:17 -0500
-Date: Thu, 17 Dec 2009 16:10:09 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: roger blofeld <blofeldus@yahoo.com>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] adt7462: Fix pin 28 monitoring
-Message-ID: <20091217161009.3a3a106f@hyperion.delvare>
-In-Reply-To: <994.13667.qm@web53501.mail.re2.yahoo.com>
-References: <994.13667.qm@web53501.mail.re2.yahoo.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 10:11:10 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:59655 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935609AbZLQPLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:11:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EDkfStngCJR95Vzz9Q5uvrsssRN2p/VHwei7tC0tb1UZs6+vf6pz0rTcgebcllJgnA
+         SNMj5tUepUdws9yOhg6GoXCiZ7aAPx+kyFpPLituOnSQxCIDgV21YiK+O3L1RM9WwKgw
+         35FABQvkRoR9ZfIq1KnMiTp3A0HdIcp9SlewY=
+Date: Thu, 17 Dec 2009 18:11:02 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Michal Marek <mmarek@suse.cz>,
+       Andrew Randrianasulu <randrik_a@yahoo.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] hw-breakpoint: Fix hardware breakpoints -> perf
+	events dependency
+Message-ID: <20091217151102.GA5414@lenovo>
+References: <1261009575-7496-1-git-send-regression-fweisbec@gmail.com> <1261010034-7786-1-git-send-regression-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261010034-7786-1-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roger,
-
-On Fri, 11 Dec 2009 18:54:54 -0800 (PST), roger blofeld wrote:
-> The ADT7462_PIN28_VOLT value is a 4-bit field, so the corresponding shift must be 4.
+On Thu, Dec 17, 2009 at 01:33:54AM +0100, Frederic Weisbecker wrote:
+...
 > 
-> Signed-off-by: Roger Blofeld <blofeldus@yahoo.com>
-> ---
-> My mailer will whitespace damage the inline copy of the patch.
-> The attached version should be OK.
+> This fixes the following kind of build errors:
 > 
-> diff --git a/drivers/hwmon/adt7462.c b/drivers/hwmon/adt7462.c
-> index 1852f27..262c133 100644
-> --- a/drivers/hwmon/adt7462.c
-> +++ b/drivers/hwmon/adt7462.c
-> @@ -97,7 +97,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
->  #define        ADT7462_PIN24_SHIFT        6
->  #define        ADT7462_PIN26_VOLT_INPUT    0x08
->  #define        ADT7462_PIN25_VOLT_INPUT    0x20
-> -#define        ADT7462_PIN28_SHIFT        6    /* cfg3 */
-> +#define        ADT7462_PIN28_SHIFT        4    /* cfg3 */
->  #define        ADT7462_PIN28_VOLT        0x5
->  
->  #define ADT7462_REG_ALARM1            0xB8
+> In file included from arch/x86/kernel/hw_breakpoint.c:31:
+> include/linux/hw_breakpoint.h: In function 'hw_breakpoint_addr':
+> include/linux/hw_breakpoint.h:39: error: 'struct perf_event' has no member named 'attr'
+> include/linux/hw_breakpoint.h: In function 'hw_breakpoint_type':
+> include/linux/hw_breakpoint.h:44: error: 'struct perf_event' has no member named 'attr'
+> include/linux/hw_breakpoint.h: In function 'hw_breakpoint_len':
+> include/linux/hw_breakpoint.h:49: error: 'struct perf_event' has no member named 'attr'
+> include/linux/hw_breakpoint.h: In function 'counter_arch_bp':
+> include/linux/hw_breakpoint.h:85: error: 'struct perf_event' has no member named 'hw'
+> 
+> v2: Select also ANON_INODES from x86, required for perf
+> 
+...
 
-Correct. Applied, thanks.
+Thanks Frederic! It did trick for me.
 
--- 
-Jean Delvare
+	-- Cyrill
