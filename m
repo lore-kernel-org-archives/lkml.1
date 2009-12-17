@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbZLQBV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936050AbZLQBgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934559AbZLQBV2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763643AbZLQBUj
+	id S936050AbZLQBgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936056AbZLQBfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:39 -0500
-Received: from kroah.org ([198.145.64.141]:48005 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:35:46 -0500
+Received: from kroah.org ([198.145.64.141]:48009 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763585AbZLQBUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:31 -0500
+	id S1763635AbZLQBUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:32 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:04 2009
-Message-Id: <20091217011604.090632427@mini.kroah.org>
+Message-Id: <20091217011604.223046724@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:58 -0800
+Date: Wed, 16 Dec 2009 17:14:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alexander Beregalov <a.beregalov@gmail.com>,
+       Stanislav Brabec <sbrabec@suse.cz>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [47/90] Au1x00: fix crash when trying register_netdev()
+Subject: [48/90] b44 WOL setup: one-bit-off stack corruption kernel panic fix
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,53 +29,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
 
-[ Upstream commit 63edaf647607795a065e6956a79c47f500dc8447 ]
+From: Stanislav Brabec <sbrabec@suse.cz>
 
-Andreas Lohre reported that the driver crashes when trying
-to register_netdev(), he sugessted to move dev->netdev_ops initialization
-before calling register_netdev(), it worked for him.
+[ Upstream commit: e0188829cb724e7d12a2d4e343b368ff1d6e1471 ]
 
-Reported-by: Andreas Lohre <alohre@gmail.com>
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+About 50% of shutdowns of b44 Ethernet adapter ends by kernel panic
+with kernels compiled with stack-protector.
+
+Checking b44_magic_pattern() return values, one call of
+b44_magic_pattern() returns 127. It means, that set_bit(128, pmask)
+was called on line 1509. It means that bit 0 of 17th byte of pmask was
+overwritten. But pmask has only 16 bytes. Stack corruption happens.
+
+It seems that set_bit() on line 1509 always writes one bit off.
+
+The fix does not only solve the stack corruption, but also makes Wake
+On LAN working on my onboard B44 on Asus A7V-333X mainboard.
+
+It seems that this problem affects all kernel versions since commit
+725ad800 ([PATCH] b44: add wol for old nic) on 2006-06-20.
+
+Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/net/au1000_eth.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/net/b44.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/drivers/net/au1000_eth.c
-+++ b/drivers/net/au1000_eth.c
-@@ -1089,7 +1089,14 @@ static struct net_device * au1000_probe(
- 		return NULL;
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -1505,8 +1505,7 @@ static int b44_magic_pattern(u8 *macaddr
+ 		for (k = 0; k< ethaddr_bytes; k++) {
+ 			ppattern[offset + magicsync +
+ 				(j * ETH_ALEN) + k] = macaddr[k];
+-			len++;
+-			set_bit(len, (unsigned long *) pmask);
++			set_bit(len++, (unsigned long *) pmask);
+ 		}
  	}
- 
--	if ((err = register_netdev(dev)) != 0) {
-+	dev->base_addr = base;
-+	dev->irq = irq;
-+	dev->netdev_ops = &au1000_netdev_ops;
-+	SET_ETHTOOL_OPS(dev, &au1000_ethtool_ops);
-+	dev->watchdog_timeo = ETH_TX_TIMEOUT;
-+
-+	err = register_netdev(dev);
-+	if (err != 0) {
- 		printk(KERN_ERR "%s: Cannot register net device, error %d\n",
- 				DRV_NAME, err);
- 		free_netdev(dev);
-@@ -1207,12 +1214,6 @@ static struct net_device * au1000_probe(
- 		aup->tx_db_inuse[i] = pDB;
- 	}
- 
--	dev->base_addr = base;
--	dev->irq = irq;
--	dev->netdev_ops = &au1000_netdev_ops;
--	SET_ETHTOOL_OPS(dev, &au1000_ethtool_ops);
--	dev->watchdog_timeo = ETH_TX_TIMEOUT;
--
- 	/*
- 	 * The boot code uses the ethernet controller, so reset it to start
- 	 * fresh.  au1000_init() expects that the device is in reset state.
+ 	return len - 1;
 
 
