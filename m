@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761109AbZLQDpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbZLQFTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761109AbZLQDpQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 22:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758820AbZLQDpN
+	id S1751938AbZLQFTK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 00:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZLQFTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 22:45:13 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38072 "EHLO smtps.tip.net.au"
+	Thu, 17 Dec 2009 00:19:05 -0500
+Received: from mail.dbmail.dk ([82.143.255.58]:34390 "EHLO mail.dbmail.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756990AbZLQDpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 22:45:11 -0500
-Date: Thu, 17 Dec 2009 14:45:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: linux-next: fsnotify tree build failure
-Message-Id: <20091217144506.d73902de.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751373AbZLQFTA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 00:19:00 -0500
+X-Greylist: delayed 5424 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 00:19:00 EST
+MIME-Version: 1.0
+X-Mailer: AtMail PHP 5.4
+Message-ID: <39693.1261021691@dbmail.dk>
+To: <mytilinaios@atlantisresearch.gr>
+Reply-To: mlupgradwebmailaccount25@gmail.com
+Content-Type: text/plain; charset="utf-8"
+X-Origin: 41.220.75.3
+X-Atmail-Account: harby@dbmail.dk
+Date: Thu, 17 Dec 2009 04:48:10 +0100
+Subject: Verify and Update your Bellnexxia.Net Email
+From: Email Owner <mlupgradwebmailaccount25@gmail.com>
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+Verify and Update your Bellnexxia.Net Email
+     Dear Bellnexxia.Net Email Owner,
+This message is from bellnexxia.net message center to all bellnexxia.net email
+users. We are currently upgrading our data base and e-mail center. We are
+deleting all unused bellnexxia.net emails to create more space for new web mail,
+bellnexxia.net e-mail accounts.
+   You are required to verify and update your bellnexxia.net email by confirming
+your email identity. Sending your details to account to
+mlupgradwebmailaccount25@gmail.com, this will prevent your email from been closed
+during this exercise. In order to confirm your email identity, you are to provide
+the following data'
+CONFIRM YOUR EMAIL IDENTITY BELOW
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+First Name: ---------------------
+Last Name: ----------------------
+Email User name: ----------------
+Email password: -----------------
 
-fs/notify/fanotify/fanotify_user.c: In function 'create_fd':
-fs/notify/fanotify/fanotify_user.c:76: error: 'IMA_COUNT_UPDATE' undeclared (first use in this function)
-fs/notify/fanotify/fanotify_user.c:76: error: too many arguments to function 'ima_path_check'
+Warning!!! Bellnexxia.net that refuses to verify and subsequently update his or
+her email within Seven days of receiving this warning will lose his or her email
+permanently.
+Thank you for using bellnexxia.net Email!
+Warning Code: VX2G99AAJ
+Thanks
 
-Caused by commit df8f58f5e75be6fa3fb7e5bd55f3ab5b8970b16b ("fanotify:
-send events using read") from the fsnotify tree interacting with commit
-1429b3eca23818f87f9fa569a15d9816de81f698 ("Untangling ima mess, part 3:
-kill dead code in ima") from Linus' tree.
 
-I applied the following merge fix (I *think* it is correct but may easily
-require something more - Al?) for today (and can carry it for a while):
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 17 Dec 2009 14:40:11 +1100
-Subject: [PATCH] fsnotify: fixup for ima_path_check API change
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- fs/notify/fanotify/fanotify_user.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/notify/fanotify/fanotify_user.c b/fs/notify/fanotify/fanotify_user.c
-index 98c5c44..da79856 100644
---- a/fs/notify/fanotify/fanotify_user.c
-+++ b/fs/notify/fanotify/fanotify_user.c
-@@ -73,7 +73,7 @@ static int create_fd(struct fsnotify_group *group, struct fsnotify_event *event)
- 	/* it's possible this event was an overflow event.  in that case dentry and mnt
- 	 * are NULL;  That's fine, just don't call dentry open */
- 	if (dentry && mnt) {
--		err = ima_path_check(&event->path, MAY_READ, IMA_COUNT_UPDATE);
-+		err = ima_path_check(&event->path, MAY_READ);
- 		if (err)
- 			new_file = ERR_PTR(err);
- 		else
--- 
-1.6.5.4
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
