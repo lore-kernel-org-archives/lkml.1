@@ -1,179 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764317AbZLQKWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935093AbZLQK0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764317AbZLQKWQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764292AbZLQKWP
+	id S935093AbZLQK0m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761424AbZLQK0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:22:15 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49313 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751392AbZLQKWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:22:13 -0500
-Message-ID: <4B2A0547.4040507@cn.fujitsu.com>
-Date: Thu, 17 Dec 2009 18:17:43 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, jmoyer@redhat.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [RFC] CFQ group scheduling structure organization
-References: <1261003980-10115-1-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1261003980-10115-1-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 17 Dec 2009 05:26:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43587 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbZLQK0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 05:26:41 -0500
+Subject: Re: [PATCH 2/2] perf lock: Fix output of tracing lock events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <20091217100922.GA23778@elte.hu>
+References: <1260934105-4472-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	 <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	 <1261041885.27920.110.camel@laptop>  <20091217100922.GA23778@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 11:26:14 +0100
+Message-ID: <1261045574.27920.179.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> Hi All,
+On Thu, 2009-12-17 at 11:09 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> With some basic group scheduling support in CFQ, there are few questions
-> regarding how group structure should look like in CFQ.
+> > >  	TP_STRUCT__entry(
+> > > +		__field(struct lockdep_map *, lockdep_addr)
+> > >  		__field(unsigned int, flags)
+> > >  		__string(name, lock->name)
+> > >  	),
+> > 
+> > I feel a bit awkward explicitly leaking kernel pointers like that. All this 
+> > is accessible by root only (for now) so its not too harmfull, but sitll.
 > 
-> Currently, grouping looks as follows. A, and B are two cgroups created by
-> user.
+> What would you suggest as a 'natural lock class key'? The name? It might not 
+> be unique enough.
 > 
-> Proposal 1:
-> =========
-> 			grp-service-tree
-> 			/      |     \
-> 		    root       A     B
-> 
-> One issue with this structure is that RT tasks are not system wide. So an
-> RT tasks inside root group has RT priority only with-in root group. So a
-> BE task inside A will get it fair share despite the fact that root has got
-> RT tasks.
-> 
-> 
-> Proposal 2:
-> ==========
-> One proposal to solve this issue is that make RT and IDLE tasks system
-> wide and provide weight based service differentiation only for BE class
-> tasks. So RT or IDLE tasks running in any of the groups will automatically
-> move to one global RT group maintained by CFQ internally. Same is true for
-> IDLE tasks. But BE class tasks will honor the cgroup limitations and will
-> get differentiated service according to weight.
-> 
-> Internal structure will look as follows.
-> 
->      grp-RT-service-tree  grp-BE-service-tree   grp-IDLE-service-tree 
->              |		      /  \                      |
-> 	all_RT_task_group    A   B               all_idle_tasks_grp
-> 		
-> 
-> Here A and B are two cgroups and some BE tasks might be running inside 
-> those groups. systemwide RT tasks will move under all_RT_task_group and
-> all idle tasks will move under all_idle_tasks_grp.
-> 
-> So one will notice service differentiation only for BE tasks.
+> Other kernel objects like tasks, cpus, inodes, pages all have some natural key 
+> that isnt a kernel pointer - but locks are a bit special.
 
-Hi Vivek,
+Well, yeah, that's the problem, and we use the pointer for exactly this
+purpose inside the kernel too, its just that its a blatant data leak
+when we expose it to userspace like that.
 
-I still think that we need to give choices for users. When an user want to give
-RT Tasks service differentiation, we shouldn't treat all RT tasks as systemwide.
-But if a user want better latency for RT tasks, we treat them systemwide. CFQ can
-rely on sysfs tunable to achieve this.
+On the other hand, adding some ID generation just so we can expose it
+seems silly too.
 
-Thanks
-Gui
-
-> 
-> 
-> Proposal 3:
-> ===========
-> 
-> One can argue that we need group service differentiation for RT class
-> tasks also and don't move tasks automatically across groups. That means
-> we need to support "group class" type also. Probably we can support
-> three classes of cgroups RT, BE and IDLE and CFQ will use that data to
-> put cgroups in respective tree. 
-> 
-> Things should look as follows.
-> 
->      grp-RT-service-tree  grp-BE-service-tree   grp-IDLE-service-tree 
->              / \		      /  \             /   \  
-> 	    C  D                     A   B            E    F
-> 
-> 
-> Here A and B are BE type groups created by user.
-> C and D are RT type cgroups created by user.
-> E and F are IDLE type cgroups created by user.
-> 
-> Now in this scheme of things, by default root will be of type BE. Any task
-> RT task under "root" group will not be system wide RT task. It will be RT
-> only with-in root group. To make it system wide idle, admin shall have to
-> create a new cgroup, say C, of type RT and move task in that cgroup.
-> Because RT group C is system wide, now that task becomes system wide RT.
-> 
-> So this scheme might throw some surprise to existing users. They might
-> create a new group and not realize that their RT tasks are no more system
-> wide RT tasks and they need to specifically create one RT cgroup and move
-> all RT tasks in that cgroup.
-> 
-> Practically I am not sure how many people are looking for group service
-> differentiation for RT and IDLE class tasks also.
-> 
-> Proposal 4:
-> ==========
-> Treat task and group at same level. Currently groups are at top level and
-> at second level are tasks. View the whole hierarchy as follows.
-> 
-> 
-> 			service-tree
-> 			/   |  \  \
-> 		       T1   T2  G1 G2
-> 
-> Here T1 and T2 are two tasks in root group and G1 and G2 are two cgroups
-> created under root.
-> 
-> In this kind of scheme, any RT task in root group will still be system
-> wide RT even if we create groups G1 and G2.
-> 
-> So what are the issues?
-> 
-> - I talked to few folks and everybody found this scheme not so intutive.
->   Their argument was that once I create a cgroup, say A,  under root, then
->   bandwidth should be divided between "root" and "A" proportionate to
->   the weight.
-> 
->   It is not very intutive that group is competing with all the tasks 
->   running in root group. And disk share of newly created group will change
->   if more tasks fork in root group. So it is highly dynamic and not
->   static hence un-intutive.
-> 
->   To emulate the behavior of previous proposals, root shall have to create
->   a new group and move all root tasks there. But admin shall have to still 
->   keep RT tasks in root group so that they still remain system-wide.
-> 
-> 			service-tree
-> 			/   |    \  \
-> 		       T1  root  G1 G2
-> 			    |
-> 			    T2
-> 
->   Now admin has specifically created a group "root" along side G1 and G2
->   and moved T2 under root. T1 is still left in top level group as it might
->   be an RT task and we want it to remain RT task systemwide.
-> 
->   So to some people this scheme is un-intutive and requires more work in
->   user space to achive desired behavior. I am kind of 50:50 between two
->   kind of arrangements.
-> 
-> 
-> I am looking for some feedback on what makes most sense.
-> 
-> For the time being, I am little inclined towards proposal 2 and I have
-> implemented a proof of concept version on top of for-2.6.33 branch in block
-> tree.  These patches are compile and boot tested only and I have yet to do
-> testing.
-> 
-> Thanks
-> Vivek
-> 
-> 
-> 
+Why do we need to have instance resolution?
 
