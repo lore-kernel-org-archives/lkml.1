@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764983AbZLQRM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764964AbZLQRKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764983AbZLQRM3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764962AbZLQRM1
+	id S1764964AbZLQRKO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759019AbZLQRKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:12:27 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:5292 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764419AbZLQRM1 (ORCPT
+	Thu, 17 Dec 2009 12:10:05 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:42951 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757585AbZLQRKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:12:27 -0500
-Message-ID: <4B2A65C6.7080009@caviumnetworks.com>
-Date: Thu, 17 Dec 2009 09:09:26 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 17 Dec 2009 12:10:00 -0500
+Date: Thu, 17 Dec 2009 09:09:58 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       "B04825@freescale.com" <B04825@freescale.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       Vishnu Suresh <Vishnu@freescale.com>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       Dipen Dudhat <Dipen.Dudhat@freescale.com>,
+       Maneesh Gupta <Maneesh.Gupta@freescale.com>,
+       "R58472@freescale.com" <R58472@freescale.com>
+Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR
+ offload
+Message-ID: <20091217170958.GE18271@ovro.caltech.edu>
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
+ <20091216164144.daff5468.kim.phillips@freescale.com>
+ <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+ <4B296394.9010709@intel.com>
 MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>, "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>
-CC: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org>
-In-Reply-To: <20091217150120.GD24967@shareable.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 17 Dec 2009 17:09:28.0478 (UTC) FILETIME=[B11D83E0:01CA7F3B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B296394.9010709@intel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 17 Dec 2009 09:09:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier wrote:
-> Uwe Kleine-König wrote:
->> Use the new unreachable() macro instead of for(;;);
->>  	*(int *)0 = 0;
->>  
->>  	/* Avoid "noreturn function does return" */
->> -	for (;;);
->> +	unreachable();
+On Wed, Dec 16, 2009 at 03:47:48PM -0700, Dan Williams wrote:
+> Kumar Gala wrote:
+> >>> Changes with respect to v1 as per comments received
+> >>> o. Rebased to linux-next as of 20091216
+> >>> o. The selection is based exclusive of fsldma
+> >>> o. Intoduced a new Kernel Configuration variable
+> >>>   *. This enables selecting the Cryptographic functionality
+> >>>      of Talitos along with fsldma.
+> >>>   *. Disables the XOR parity calculation offload, if fsldma enabled
+> >>>      either as kernel in-built or as a module
+> >>>   *. Once the inter-operability with fsldma is resolved, this option
+> >>>      can be removed
+> >> wait, why can't the interoperability bug be fixed in the first place?
+> > 
+> > I agree w/Kim.  We need to better understand what the bug is and how to reproduce it so we can get to the root cause.
+> > 
+> > Paper taping over it by disabling fsldma is not the right solution.
 > 
-> Will GCC-4.5 remove ("optimise away") the *(int *)0 = 0 because it
-> knows the branch of the code leading to unreachable can never be reached?
+> Hopefully this prompts fsldma authors to get involved because the 
+> interoperability issue has been out there without comment*, just 
+> band-aids, since October.
 > 
+> --
+> Dan
+> 
+> * well one comment from Ira saying the interrupt functionality worked 
+> for him.
 
-I don't know the definitive answer, so I am sending to gcc@...
+Yes, I have used the device_prep_dma_interrupt() functionality quite a
+while back. However, I found it to be pretty much useless. Any
+functionality I need is covered by adding a callback to the last DMA
+memcpy() operation. Since the operations happen in-order, I can be sure
+that the entire set of memcpy()s cas completed. I never needed the
+capability to generate an interrupt without a memcpy().
 
-FYI: #define unreachable() __builtin_unreachable()
+I agree that the fsldma driver could use some love. There are places
+where I am still not confident in the locking. Perhaps I can find some
+time over Christmas to work on it, but I need someone with 85xx/86xx
+hardware to test the changes. I only have 83xx hardware.
 
-
-> If GCC-4.5 does not, are you sure a future version of GCC will never
-> remove it?  In other words, is __builtin_unreachable() _defined_ in
-> such a way that it cannot remove the previous assignment?
-> 
-> We have seen problems with GCC optimising away important tests for
-> NULL pointers in the kernel, due to similar propagation of "impossible
-> to occur" conditions, so it's worth checking with GCC people what the
-> effect of this one would be.
-> 
-> In C, there is a general theoretical problem with back-propagation of
-> optimisations from code with undefined behaviour.  In the case of
-> __builtin_unreachable(), it would depend on all sorts of unclearly
-> defined semantics whether it can remove a preceding *(int *)0 = 0.
-> 
-> I'd strongly suggest asking on the GCC list.  (I'd have mentioned this
-> earlier, if I'd known about the patch for other architectures).
-> 
-> The documentation for __builtin_unreachable() only says the program is
-> undefined if control flow reaches it.  In other words, it does not say
-> what effect it can have on previous instructions, and I think it's
-> quite likely that it has not been analysed in a case like this.
-> 
-> One thing that would give me a lot more confidence, because the GCC
-> documentation does mention asm(), is this:
-> 
->>       *(int *)0 = 0;
->>       /* Ensure unreachableness optimisations cannot propagate back. *I/
->>       __asm__ volatile("");
->>       /* Avoid "noreturn function does return" */
->>       unreachable();
-> 
-> -- Jamie
-
+Ira
