@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936724AbZLQEqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936744AbZLQEpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936724AbZLQEqh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935548AbZLQEqP
+	id S936744AbZLQEpv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936713AbZLQEo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:46:15 -0500
-Received: from kroah.org ([198.145.64.141]:55318 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:44:57 -0500
+Received: from kroah.org ([198.145.64.141]:55324 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763292AbZLQEDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:03:49 -0500
+	id S1763311AbZLQEDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:03:50 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:46 2009
-Message-Id: <20091217035645.929446109@mini.kroah.org>
+Message-Id: <20091217035646.060484400@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:20 -0800
+Date: Wed, 16 Dec 2009 19:55:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Buesch <mb@bu3sch.de>,
+       Bob Copeland <me@bobcopeland.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [023/151] ssb: Fix range check in sprom write
+Subject: [024/151] ath5k: allow setting txpower to 0
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,66 +29,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Buesch <mb@bu3sch.de>
+From: Bob Copeland <me@bobcopeland.com>
 
-commit e33761e6f23881de9f3ee77cc2204ab2e26f3d9a upstream.
+commit 2eb2fa67e5462a36e98172fb92c78bc405b3035f upstream.
 
-The range check in the sprom image parser hex2sprom() is broken.
-One sprom word is 4 hex characters.
-This fixes the check and also adds much better sanity checks to the code.
-We better make sure the image is OK by doing some sanity checks to avoid
-bricking the device by accident.
+As a holdover from earlier code when we used to set
+the power limit to '0' after a reset to configure the
+default transmit power, ath5k interprets txpower=0 as
+12.5 dBm.  Fix that by just passing 0 through.
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+This fixes http://bugzilla.kernel.org/show_bug.cgi?id=14567
+
+Reported-by: Daniel Folkers <daniel.folkers@task24.nl>
+Tested-by: Daniel Folkers <daniel.folkers@task24.nl>
+Signed-off-by: Bob Copeland <me@bobcopeland.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ssb/sprom.c |   20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/net/wireless/ath/ath5k/phy.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/drivers/ssb/sprom.c
-+++ b/drivers/ssb/sprom.c
-@@ -13,6 +13,8 @@
- 
- #include "ssb_private.h"
- 
-+#include <linux/ctype.h>
-+
- 
- static const struct ssb_sprom *fallback_sprom;
- 
-@@ -33,17 +35,27 @@ static int sprom2hex(const u16 *sprom, c
- static int hex2sprom(u16 *sprom, const char *dump, size_t len,
- 		     size_t sprom_size_words)
- {
--	char tmp[5] = { 0 };
--	int cnt = 0;
-+	char c, tmp[5] = { 0 };
-+	int err, cnt = 0;
- 	unsigned long parsed;
- 
--	if (len < sprom_size_words * 2)
-+	/* Strip whitespace at the end. */
-+	while (len) {
-+		c = dump[len - 1];
-+		if (!isspace(c) && c != '\0')
-+			break;
-+		len--;
-+	}
-+	/* Length must match exactly. */
-+	if (len != sprom_size_words * 4)
+--- a/drivers/net/wireless/ath/ath5k/phy.c
++++ b/drivers/net/wireless/ath/ath5k/phy.c
+@@ -2954,8 +2954,6 @@ ath5k_hw_txpower(struct ath5k_hw *ah, st
+ 		ATH5K_ERR(ah->ah_sc, "invalid tx power: %u\n", txpower);
  		return -EINVAL;
- 
- 	while (cnt < sprom_size_words) {
- 		memcpy(tmp, dump, 4);
- 		dump += 4;
--		parsed = simple_strtoul(tmp, NULL, 16);
-+		err = strict_strtoul(tmp, 16, &parsed);
-+		if (err)
-+			return err;
- 		sprom[cnt++] = swab16((u16)parsed);
  	}
+-	if (txpower == 0)
+-		txpower = AR5K_TUNE_DEFAULT_TXPOWER;
  
+ 	/* Reset TX power values */
+ 	memset(&ah->ah_txpower, 0, sizeof(ah->ah_txpower));
 
 
