@@ -1,113 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbZLQXMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbZLQXQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbZLQXMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbZLQXMt
+	id S1760166AbZLQXQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 18:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759197AbZLQXQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:12:49 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:35604 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755138AbZLQXMs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:12:48 -0500
-Date: Fri, 18 Dec 2009 08:12:40 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-Message-ID: <20091217231240.GA1421@linux-sh.org>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <20091217061229.GD3946@linux-sh.org> <Pine.LNX.4.64.0912171725370.21142@hs20-bc2-1.build.redhat.com>
+	Thu, 17 Dec 2009 18:16:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:32970 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757558AbZLQXQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 18:16:29 -0500
+Date: Thu, 17 Dec 2009 15:16:21 -0800
+From: Greg KH <gregkh@suse.de>
+To: Phil Carmody <ext-phil.2.carmody@nokia.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC 0/6] Driver core: Encourage use of const attributes
+Message-ID: <20091217231621.GA5103@suse.de>
+References: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0912171725370.21142@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 05:37:57PM -0500, Mikulas Patocka wrote:
-> On Thu, 17 Dec 2009, Paul Mundt wrote:
-> > On Tue, Dec 15, 2009 at 04:57:49PM -0500, Mikulas Patocka wrote:
-> > > (5) Wrapping makes long expressions harder to understand
-> > > --------------------------------------------------------
-> > > 
-> > > If I have a complex expression, I do not try to wrap it at predefined
-> > > 80-column boundaries, but at logical boundaries within the expression to make
-> > > it more readable (the brain can't find matching parentheses fast, so we can
-> > > help it by aligning the code according to topmost terms in the expression).
-> > > 
-> > > Example:
-> > > 				if (unlikely(call_some_function(s, value) != RET
-> > > _SUCCESS) ||
-> > > 				    (var_1 == prev_var_1 && var_2 == prev_var_2)
-> > >  ||
-> > > 				    flags & (FLAG_1 | FLAG_2) ||
-> > > 				    some_other_condition) {
-> > > 				}
-> > > 
-> > > Now, if we impose 80-column limit, we get this. One may argue that is looks
-> > > aesthetically better, but it is also less intelligible than the previous
-> > > version:
-> > > 				if (unlikely(call_some_function(s, value) !=
-> > > 				    RET_SUCCESS) || (var_1 == prev_var_1 &&
-> > > 				    var_2 == prev_var_2) || flags & (FLAG_1 |
-> > > 				    FLAG_2) || some_other_condition) {
-> > > 				}
-> > > 
-> > For starters, this is just crap. If you're writing code like this, then
-> > line wrapping is really the least of your concerns. Take your function
-> > return value and assign it to a variable before testing it in unlikely()
-> > as per existing conventions and most of this goes away in this example.
+On Thu, Dec 17, 2009 at 08:12:10PM +0200, Phil Carmody wrote:
+> I know now's probably a bad time to be mentioning const issues
+> but I recently a reviewed a patch where 'const' was being removed 
+> from a device_attribute structure, and I enquired why. The reason
+> was simply so that device_create_file() could be called, it taking
+> a non-const attribute pointer. Looking inside, all that function 
+> did was pass a pointer to sysfs_create_file, which itself took a
+> const pointer. Non-constness was not required at all.
 > 
-> I wouldn't say that this is better:
-> 				int csf_failed, vars_equal, flags_12;
+> So here I offer a small patchset which I hope will permit and 
+> encourage device and other attributes to be made const, and put 
+> in read-only sections.
 > 
-> 				...
-> 
-> 				csf_failed = call_some_function(s, value) != RET_SUCCESS;
-> 				vars_equal = var_1 == prev_var_1 && var_2 == prev_var_2;
-> 				flags_12 = flags & (FLAG_1 | FLAG_2);
-> 				if (unlikely(csf_failed) || vars_equal ||
-> 				    flags_12 || some_other_conditions) {
-> 				}
-> 
-> If you think that it is better, it's OK, just write your code like that. 
-> And don't force it to everyone.
-> 
-No, I wouldn't say that that's better either, but that's also not how I
-suggested cleaning reworking it. We have existing conventions for how
-complex blocks are broken down in to more readable forms which you seem
-to have issues grasping. My point is that you are purposely obfuscating
-things, and therefore your entire rationale is suspect at best.
+> 1-3 address the three attribute types which seemed to be trivially 
+> const-able, and are the important part of the set.
 
-> For me, breaking the expression into variables is worse because:
-> - adding/removing conditions must be done at 3 places (vs. my original 
-> example, where it would be done only on 1 place)
-> - when reading the conditions, your eyes must skip to two places (vs. my 
-> original example, where you only read it at one place)
-> 
-> But everyone has different brain, so it may be that for you, the extra 
-> variables are really more understandable. So write your code like that and 
-> don't preach.
-> 
-This isn't a subjective thing as you are now trying to spin it. There are
-existing conventions that the majority of kernel code follows and any of
-your above obfuscated blocks are unlikely to show up in any code outside
-of drivers/. How about actually reading through the coding style document
-and existing code before attempting to cripple checkpatch.
+I like these, very nice.
 
-You've also ignored everything that was stated about the reasons for why
-we have this limit and why it is useful, instead focusing purely on the
-fact that I've taken issue with your bogus examples that would never have
-been applied in the first place.
+> 4 adds a new macro to encourage the use of Const ATTRibutes,
+> and may need a better name. (I wanted to avoid RO, for example.)
 
-If you simply wanted a way to get around the limit, then something like
-Bart's patch is quite reasonable and I don't believe anyone has any
-objections to it. This half-baked rationale for tossing it out completely
-using examples that don't even show up in the kernel though is simply
-nonsense. Perhaps if you spent half as much time auditing vendor patches
-you would have some idea of why having these warnings is not just a nice
-thing to have, but also the only sensible default.
+Hm, is this really needed?  How badly do things break if you change the
+current attribute macros to use 'const'?  What subsystems are not using
+const?
+
+> 5 and 6 are merely two quick examples of how easy it is to adopt 
+> the new const convention. In reality, these structures have been
+> constant and treated as constant by the driver core all along, it's
+> just that one word was missing from a few important places.
+> 
+> I would hope to submit a patchset with 1-3 and a possibly modified 
+> 4. The migrations themselves will belong in different trees.
+
+I'll be glad to take 1-3 now, and queue it up for .34.
+
+thanks,
+
+greg k-h
