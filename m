@@ -1,90 +1,35 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933184AbZLOXQP (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 15 Dec 2009 18:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761936AbZLOXPm
+	id S1754934AbZLQAuk (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 16 Dec 2009 19:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZLQAuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Dec 2009 18:15:42 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44975 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934168AbZLOXCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Dec 2009 18:02:46 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC tip/core/rcu 10/18] rcu: make force_quiescent_state() start grace period if needed
-Date: Tue, 15 Dec 2009 15:02:33 -0800
-Message-Id: <12609181613597-git-send-email->
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20091215230213.GA9093@linux.vnet.ibm.com>
-References: <20091215230213.GA9093@linux.vnet.ibm.com>
+	Wed, 16 Dec 2009 19:50:39 -0500
+Received: from web82005.mail.mud.yahoo.com ([66.163.178.249]:36608 "HELO
+	web82005.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752497AbZLQAui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:50:38 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=sH8UWR4mbeaGGsgFueg601bxIHNF8/pLT9OubXVGacMtAmX/IgwVgt68rrtpA3qu2BkM4QQqF9R/lJjOUev4A6bgVbjngsrHosO8O9/cx9BgBeMiSAm9xYSH6Y9CLLHO4kLP04L7hdFGLWoOcE2uUvFJ9uLelcWgFUBgQWJN+g8=;
+Message-ID: <10556.94218.qm@web82005.mail.mud.yahoo.com>
+X-YMail-OSG: 5izXA78VM1kIQMGr0ww_6rU.VszjHfmYEdQsRMq46mJ_GJGYBa_n2CqHarxyxpK3QrzgVvDzppTL7gKfoRBKMzy5sx864_TU60oNNleQ7X41HndXBWn0daiMOU6BnuKPLYVW.arU1QllMDtkTLBgufGA0BiH35tG4y8oAX5Y1xKCl5QNs3KlTD9_uROJEd7hi.jTpa.jjBY8B0K4gYZXaKaSPkzdWh9nEOKkD28wqPZs4OEhJtr9ID06GLwcbSLkCctkwpE1VjA.pPWYevHQuAgdTtbFbm_LZ8mBXjdVSkXwBtJB9VneMRhmlw6PvJgdDkgJjpC9q21HWGwkG.JqoDqR4XOoLnMaDCiXab92E1YWZqdZQR18yrp5IglrFBDSGUgkl89p05Qx.TvwBODUC7oukHlxKRc5HBtJOJW8_H.5.hOU1K0s1euK8J2ap.ELttm8j8FKrXwhXyY4DUwi_9a.tbfp2gEDZHesvpBRfMFEoOztNBke8hvo5C3TazwdB4hmYny.MrEcEp0-
+X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
+Date: Wed, 16 Dec 2009 16:50:36 -0800 (PST)
+From: Xmas Promo <charlott-carter@sbcglobal.net>
+Reply-To: tobacco.09@9.cn
+Subject: re
+To: undisclosed recipients:;
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Proposed for 2.6.34, not for inclusion.
+1,000,000.00 GBP was awarded to your Id in our Tobacco Award Promo send details.
 
-Grace periods cannot be started while force_quiescent_state() is
-active.  This is OK in that the affected CPUs will try again later,
-but it does induce needless grace-period delays.  This patch causes
-rcu_start_gp() to record a failed attempt to start a grace period.
-When force_quiescent_state() prepares to return, it then starts the
-grace period if there was such a failed attempt.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- kernel/rcutree.c |    8 ++++++++
- kernel/rcutree.h |    5 +++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index d920285..55e8f6e 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -660,6 +660,8 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	struct rcu_node *rnp = rcu_get_root(rsp);
- 
- 	if (!cpu_needs_another_gp(rsp, rdp) || rsp->fqs_active) {
-+		if (cpu_needs_another_gp(rsp, rdp))
-+			rsp->fqs_need_gp = 1;
- 		if (rnp->completed == rsp->completed) {
- 			spin_unlock_irqrestore(&rnp->lock, flags);
- 			return;
-@@ -1239,6 +1241,12 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 		break;
- 	}
- 	rsp->fqs_active = 0;
-+	if (rsp->fqs_need_gp) {
-+		spin_unlock(&rsp->fqslock); /* irqs remain disabled */
-+		rsp->fqs_need_gp = 0;
-+		rcu_start_gp(rsp, flags); /* releases rnp->lock */
-+		return;
-+	}
- 	spin_unlock(&rnp->lock);  /* irqs remain disabled */
- unlock_fqs_ret:
- 	spin_unlock_irqrestore(&rsp->fqslock, flags);
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index edb6fae..bd5d78a 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -278,6 +278,11 @@ struct rcu_state {
- 						/* Force QS state. */
- 	u8	fqs_active;			/* force_quiescent_state() */
- 						/*  is running. */
-+	u8	fqs_need_gp;			/* A CPU was prevented from */
-+						/*  starting a new grace */
-+						/*  period because */
-+						/*  force_quiescent_state() */
-+						/*  was running. */
- 	long	gpnum;				/* Current gp number. */
- 	long	completed;			/* # of last completed gp. */
- 
--- 
-1.5.2.5
-
+Names:
+Address:
+Tel:
