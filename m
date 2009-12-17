@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764185AbZLQJ2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764203AbZLQJ3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764185AbZLQJ2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 04:28:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbZLQJ2S
+	id S1764203AbZLQJ3r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 04:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762364AbZLQJ3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 04:28:18 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:57361 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756716AbZLQJ2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 04:28:16 -0500
+	Thu, 17 Dec 2009 04:29:47 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33711 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759054AbZLQJ3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 04:29:45 -0500
+Date: Thu, 17 Dec 2009 09:29:42 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Xiaotian Feng <dfeng@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] direct_io: fix use after free in __blockdev_direct_IO
+Message-ID: <20091217092942.GX14381@ZenIV.linux.org.uk>
+References: <1261039772-18403-1-git-send-email-dfeng@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19241.63911.160765.909812@pilspetsen.it.uu.se>
-Date: Thu, 17 Dec 2009 10:28:07 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Romain Kubany <rkubany@ikoula.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Possible regression of LBA48 support for piix
-In-Reply-To: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com>
-References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+In-Reply-To: <1261039772-18403-1-git-send-email-dfeng@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Romain Kubany writes:
- > Hello,
- > 
- > We are using Microsoft Hyper-V Virtualization technology for some of our GNU/Linux guests and we recently discovered 
- > that the emulated hardware does not seem to support LBA48 adressing on IDE controller.
- > 
- > After some tests, here are the results on a VM with a 200GB virtual disk : disk is detected as 214748MB up to kernel 2.6.27.41 and as 136899MB in 2.6.28 and up.
- > 
- > The two kernels (2.6.27.41 and 2.6.28) were compiled with approximatively the same parameters (just an oldconfig between them, I'll paste a line to their respective config at the end of the mail)
- > except that many changes occured in IDE management between 2.6.27 and 2.6.28 series of the kernel so it is possible that the problem is coming from a misconfiguration on our side (in which case I'll present you my truthful apologies for making you waste your time).
- > 
- > Here are some useful informations (I think) for start :
- > 
- > [On the "working" kernel, 2.6.27.41 w/ 200GB recognized vdisk]
- > 
- > # hdparm -I /dev/hda
+On Thu, Dec 17, 2009 at 04:49:32PM +0800, Xiaotian Feng wrote:
+> @@ -1197,7 +1200,11 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+>  		(end > i_size_read(inode)));
+>  
+>  	retval = direct_io_worker(rw, iocb, inode, iov, offset,
+> -				nr_segs, blkbits, get_block, end_io, dio);
+> +				  nr_segs, blkbits, get_block, end_io,
+> +				  dio, &dio_freed);
+> +
+> +	if (dio_freed)
+> +		goto out;
 
-Try using libata and ata_piix instead of the old IDE drivers, but
-be aware that the disk will show up as /dev/sda not /dev/hda.
-
-Also, IDE/ATA-related issues should be cc:d to linux-ide (see MAINTAINERS).
+Um... I'm not sure that this would be the right fix.  How about simple
+s/dio->flags/flags/ in the line below?
