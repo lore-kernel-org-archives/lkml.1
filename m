@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965012AbZLQLeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965029AbZLQLfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965012AbZLQLeO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 06:34:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964995AbZLQLeO
+	id S965029AbZLQLfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 06:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964994AbZLQLfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 06:34:14 -0500
-Received: from hmcexedge01.ikoula.com ([78.24.135.21]:33974 "EHLO
-	mail.hmc.ikoula.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964992AbZLQLeN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 06:34:13 -0500
-From: Romain Kubany <rkubany@ikoula.com>
-To: Jeff Garzik <jeff@garzik.org>
-CC: Mikael Pettersson <mikpe@it.uu.se>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
-Date: Thu, 17 Dec 2009 12:34:08 +0100
-Subject: RE: Possible regression of LBA48 support for piix
-Thread-Topic: Possible regression of LBA48 support for piix
-Thread-Index: Acp/CMNKGQxR/gnCSu6dArPEsqSOowAA1cXg
-Message-ID: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB301@HMCEXMBX01CLUS.hmcikoula.com>
-References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com>
- <19241.63911.160765.909812@pilspetsen.it.uu.se>
- <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2C1@HMCEXMBX01CLUS.hmcikoula.com>
- <4B2A1008.9070202@garzik.org>
-In-Reply-To: <4B2A1008.9070202@garzik.org>
-Accept-Language: fr-FR, en-US
-Content-Language: fr-FR
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: fr-FR, en-US
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Thu, 17 Dec 2009 06:35:01 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40402 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964995AbZLQLfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 06:35:00 -0500
+Message-ID: <4B2A1761.4070904@suse.cz>
+Date: Thu, 17 Dec 2009 12:34:57 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
 MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org> <adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com> <ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com> <aday6l25gnm.fsf@roland-alpha.cisco.com> <20091217054524.GA3931@merkur.ravnborg.org> <4B29C81E.2000704@zytor.com> <20091217080900.GA4010@merkur.ravnborg.org>
+In-Reply-To: <20091217080900.GA4010@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your concern. :)
+On 17.12.2009 09:09, Sam Ravnborg wrote:
+> On Wed, Dec 16, 2009 at 09:56:46PM -0800, H. Peter Anvin wrote:
+>> On 12/16/2009 09:45 PM, Sam Ravnborg wrote:
+>>>>
+>>>> diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+>>>> index 45b20e4..0c46d60 100644
+>>>> --- a/arch/x86/lib/Makefile
+>>>> +++ b/arch/x86/lib/Makefile
+>>>> @@ -5,7 +5,7 @@
+>>>>  inat_tables_script = $(srctree)/arch/x86/tools/gen-insn-attr-x86.awk
+>>>>  inat_tables_maps = $(srctree)/arch/x86/lib/x86-opcode-map.txt
+>>>>  quiet_cmd_inat_tables = GEN     $@
+>>>> -      cmd_inat_tables = $(AWK) -f $(inat_tables_script) $(inat_tables_maps) > $@ || rm -f $@
+>>>> +      cmd_inat_tables = LC_ALL=C $(AWK) -f $(inat_tables_script) $(inat_tables_maps) > $@ || rm -f $@
+>>>
+>>> This will result in error messages in english always from awk - no?
+>>> Some people will care.
+>>>
+>>
+>> True, we probably don't want to set LC_MESSAGES.  Which means:
+>>
+>> diff --git a/Makefile b/Makefile
+>> index 33d4732..357e83b 100644
+>> --- a/Makefile
+>> +++ b/Makefile
+>> @@ -302,6 +302,13 @@ MAKEFLAGS += --include-dir=$(srctree)
+>>  $(srctree)/scripts/Kbuild.include: ;
+>>  include $(srctree)/scripts/Kbuild.include
+>>
+>> +# Avoid funny character set dependencies
+>> +LC_ALL=
+>> +LC_CTYPE=C
+>> +LC_COLLATE=C
+>> +LC_NUMERIC=C
+>> +export LC_ALL LC_CTYPE LC_COLLATE LC_NUMERIC
+>> +
+>>  # Make variables (CC, etc...)
+>>
+>>  AS		= $(CROSS_COMPILE)as
+> 
+> Took a closer look at the patch.
+> I think we should move this upwards in the Makefile so it take effect as soon as possible.
+> Around the line where we do:
+> 
+> MAKEFLAGS += -rR --no-print-directory
 
-Here is the full dmesg output : http://pastebin.com/f484004a5 (2.6.28 with same config as in my previous mail)
+There are only some variable assignments and a sed call in the SUBARCH
+definition, but right, to be 100% sure that in the future there won't
+appear anything locale-dependent, we should move it upwards.
 
-I'm going to test a 2.6.32.1 kernel and similar config
-
------Message d'origine-----
-De : linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] De la part de Jeff Garzik
-Envoyé : jeudi 17 décembre 2009 12:04
-À : Romain Kubany
-Cc : Mikael Pettersson; linux-kernel@vger.kernel.org; linux-ide@vger.kernel.org
-Objet : Re: Possible regression of LBA48 support for piix
-
-On 12/17/2009 05:04 AM, Romain Kubany wrote:
-> Ok, thanks for the prompt reply and the notice for the cc: :)
-> I'm using libata and ata_piix now.
-> My disk is seen as "sda" and a lshw is reporting the controler as using "ata_piix" :
->
-> # lshw -c STORAGE
->    *-ide
->         description: IDE interface
->         product: 82371AB/EB/MB PIIX4 IDE
->         vendor: Intel Corporation
->         physical id: 7.1
->         bus info: pci@0000:00:07.1
->         logical name: scsi0
->         logical name: scsi1
->         version: 01
->         width: 32 bits
->         clock: 33MHz
->         capabilities: ide bus_master emulated
->         configuration: driver=ata_piix latency=0
->
-> But fdisk always recognize the disk as 136.8Gb :
->
-> # fdisk -l
->
-> Disk /dev/sda: 136.8 GB, 136899993600 bytes
-> 16 heads, 63 sectors/track, 265260 cylinders
-> Units = cylinders of 1008 * 512 = 516096 bytes
-> Disk identifier: 0xd7267427
->
->     Device Boot      Start         End      Blocks   Id  System
-> /dev/sda1   *           1         204      102815+  83  Linux
-> /dev/sda2             205        2236     1024128   82  Linux swap / Solaris
-> /dev/sda3            2237       20805     9358776   83  Linux
->
-> Here is the new kernel config file : http://pastebin.com/f65fd472b
-
-I would definitely be interested in seeing the 'dmesg' output for 
-libata, and results from a more recent kernel.
-
-	Jeff
-
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+Michal
