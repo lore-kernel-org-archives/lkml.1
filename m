@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936605AbZLQEfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935754AbZLQEf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936605AbZLQEfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935376AbZLQEEZ
+	id S935754AbZLQEf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935345AbZLQEEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:04:25 -0500
-Received: from kroah.org ([198.145.64.141]:55506 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:04:23 -0500
+Received: from kroah.org ([198.145.64.141]:55509 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763979AbZLQEEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:04:16 -0500
+	id S1763975AbZLQEER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:04:17 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:49 2009
-Message-Id: <20091217035649.649378015@mini.kroah.org>
+Message-Id: <20091217035649.777133501@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:49 -0800
+Date: Wed, 16 Dec 2009 19:55:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [052/151] USB: usb-storage: add BAD_SENSE flag
+       Russ Dill <Russ.Dill@gmail.com>
+Subject: [053/151] USB: Close usb_find_interface race v3
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,139 +28,103 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Russ Dill <Russ.Dill@gmail.com>
 
-commit a0bb108112a872c0b0c4b3ef4974f95fb75b155d upstream.
+commit c2d284ee04ab6f6718de2ddcf1b43160e046c41d upstream.
 
-This patch (as1311) fixes a problem in usb-storage: Some devices are
-pretty broken when it comes to reporting sense data.  The information
-they send back indicates that they have more than 18 bytes of sense
-data available, but when the system asks for more than 18 they fail or
-hang.  The symptom is that probing fails with multiple resets.
+USB drivers that create character devices call usb_register_dev in their
+probe function. This associates the usb_interface device with that minor
+number and creates the character device and announces it to the world.
+However, the driver's probe function is called before the new
+usb_interface is added to the driver's klist_devices.
 
-The patch adds a new BAD_SENSE flag to indicate that usb-storage
-should never ask for more than 18 bytes of sense data.  The flag can
-be set in an unusual_devs entry or via the "quirks=" module parameter,
-and it is set automatically whenever a REQUEST SENSE command for more
-than 18 bytes fails or times out.
+This is a problem because userspace will respond to the character device
+creation announcement by opening the character device. The driver's open
+function will the call usb_find_interface to find the usb_interface
+associated with that minor number. usb_find_interface will walk the
+driver's list of devices and find the usb_interface with the matching
+minor number.
 
-An unusual_devs entry is added for the Agfa photo frame, which uses a
-Prolific chip having this bug.
+Because the announcement happens before the usb_interface is added to the
+driver's klist_devices, a race condition exists. A straightforward fix
+is to walk the list of devices on usb_bus_type instead since the device
+is added to that list before the announcement occurs.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Tested-by: Daniel Kukula <daniel.kuku@gmail.com>
+bus_find_device calls get_device to bump the reference count on the found
+device. It is arguable that the reference count should be dropped by the
+caller of usb_find_interface instead of usb_find_interface, however,
+the current users of usb_find_interface do not expect this.
+
+The original version of this patch only matched against minor number
+instead of driver and minor number. This version matches against both.
+
+Signed-off-by: Russ Dill <Russ.Dill@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2663,6 +2663,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 			to a common usb-storage quirk flag as follows:
- 				a = SANE_SENSE (collect more than 18 bytes
- 					of sense data);
-+				b = BAD_SENSE (don't collect more than 18
-+					bytes of sense data);
- 				c = FIX_CAPACITY (decrease the reported
- 					device capacity by one sector);
- 				h = CAPACITY_HEURISTICS (decrease the
-diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
-index 589f6b4..cc313d1 100644
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -666,10 +666,11 @@ void usb_stor_invoke_transport(struct scsi_cmnd *srb, struct us_data *us)
- 	 * to wait for at least one CHECK_CONDITION to determine
- 	 * SANE_SENSE support
- 	 */
--	if ((srb->cmnd[0] == ATA_16 || srb->cmnd[0] == ATA_12) &&
-+	if (unlikely((srb->cmnd[0] == ATA_16 || srb->cmnd[0] == ATA_12) &&
- 	    result == USB_STOR_TRANSPORT_GOOD &&
- 	    !(us->fflags & US_FL_SANE_SENSE) &&
--	    !(srb->cmnd[2] & 0x20)) {
-+	    !(us->fflags & US_FL_BAD_SENSE) &&
-+	    !(srb->cmnd[2] & 0x20))) {
- 		US_DEBUGP("-- SAT supported, increasing auto-sense\n");
- 		us->fflags |= US_FL_SANE_SENSE;
- 	}
-@@ -718,6 +719,12 @@ Retry_Sense:
- 		if (test_bit(US_FLIDX_TIMED_OUT, &us->dflags)) {
- 			US_DEBUGP("-- auto-sense aborted\n");
- 			srb->result = DID_ABORT << 16;
+---
+ drivers/usb/core/usb.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
+
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -132,7 +132,7 @@ EXPORT_SYMBOL_GPL(usb_altnum_to_altsetti
+ 
+ struct find_interface_arg {
+ 	int minor;
+-	struct usb_interface *interface;
++	struct device_driver *drv;
+ };
+ 
+ static int __find_interface(struct device *dev, void *data)
+@@ -143,12 +143,10 @@ static int __find_interface(struct devic
+ 	if (!is_usb_interface(dev))
+ 		return 0;
+ 
++	if (dev->driver != arg->drv)
++		return 0;
+ 	intf = to_usb_interface(dev);
+-	if (intf->minor != -1 && intf->minor == arg->minor) {
+-		arg->interface = intf;
+-		return 1;
+-	}
+-	return 0;
++	return intf->minor == arg->minor;
+ }
+ 
+ /**
+@@ -156,21 +154,24 @@ static int __find_interface(struct devic
+  * @drv: the driver whose current configuration is considered
+  * @minor: the minor number of the desired device
+  *
+- * This walks the driver device list and returns a pointer to the interface
+- * with the matching minor.  Note, this only works for devices that share the
+- * USB major number.
++ * This walks the bus device list and returns a pointer to the interface
++ * with the matching minor and driver.  Note, this only works for devices
++ * that share the USB major number.
+  */
+ struct usb_interface *usb_find_interface(struct usb_driver *drv, int minor)
+ {
+ 	struct find_interface_arg argb;
+-	int retval;
++	struct device *dev;
+ 
+ 	argb.minor = minor;
+-	argb.interface = NULL;
+-	/* eat the error, it will be in argb.interface */
+-	retval = driver_for_each_device(&drv->drvwrap.driver, NULL, &argb,
+-					__find_interface);
+-	return argb.interface;
++	argb.drv = &drv->drvwrap.driver;
 +
-+			/* If SANE_SENSE caused this problem, disable it */
-+			if (sense_size != US_SENSE_SIZE) {
-+				us->fflags &= ~US_FL_SANE_SENSE;
-+				us->fflags |= US_FL_BAD_SENSE;
-+			}
- 			goto Handle_Errors;
- 		}
- 
-@@ -727,10 +734,11 @@ Retry_Sense:
- 		 * (small) sense request. This fixes some USB GSM modems
- 		 */
- 		if (temp_result == USB_STOR_TRANSPORT_FAILED &&
--		    (us->fflags & US_FL_SANE_SENSE) &&
--		    sense_size != US_SENSE_SIZE) {
-+				sense_size != US_SENSE_SIZE) {
- 			US_DEBUGP("-- auto-sense failure, retry small sense\n");
- 			sense_size = US_SENSE_SIZE;
-+			us->fflags &= ~US_FL_SANE_SENSE;
-+			us->fflags |= US_FL_BAD_SENSE;
- 			goto Retry_Sense;
- 		}
- 
-@@ -754,6 +762,7 @@ Retry_Sense:
- 		 */
- 		if (srb->sense_buffer[7] > (US_SENSE_SIZE - 8) &&
- 		    !(us->fflags & US_FL_SANE_SENSE) &&
-+		    !(us->fflags & US_FL_BAD_SENSE) &&
- 		    (srb->sense_buffer[0] & 0x7C) == 0x70) {
- 			US_DEBUGP("-- SANE_SENSE support enabled\n");
- 			us->fflags |= US_FL_SANE_SENSE;
-diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
-index d4f034e..64a0a2c 100644
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -818,6 +818,13 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0001,
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY ),
- 
-+/* Reported by Daniel Kukula <daniel.kuku@gmail.com> */
-+UNUSUAL_DEV( 0x067b, 0x1063, 0x0100, 0x0100,
-+		"Prolific Technology, Inc.",
-+		"Prolific Storage Gadget",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_BAD_SENSE ),
++	dev = bus_find_device(&usb_bus_type, NULL, &argb, __find_interface);
 +
- /* Reported by Rogerio Brito <rbrito@ime.usp.br> */
- UNUSUAL_DEV( 0x067b, 0x2317, 0x0001, 0x001,
- 		"Prolific Technology, Inc.",
-diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
-index 1599d86..f5c0264 100644
---- a/drivers/usb/storage/usb.c
-+++ b/drivers/usb/storage/usb.c
-@@ -463,6 +463,9 @@ static void adjust_quirks(struct us_data *us)
- 		case 'a':
- 			f |= US_FL_SANE_SENSE;
- 			break;
-+		case 'b':
-+			f |= US_FL_BAD_SENSE;
-+			break;
- 		case 'c':
- 			f |= US_FL_FIX_CAPACITY;
- 			break;
-diff --git a/include/linux/usb_usual.h b/include/linux/usb_usual.h
-index 3d15fb9..a4b947e 100644
---- a/include/linux/usb_usual.h
-+++ b/include/linux/usb_usual.h
-@@ -56,7 +56,9 @@
- 	US_FLAG(SANE_SENSE,     0x00008000)			\
- 		/* Sane Sense (> 18 bytes) */			\
- 	US_FLAG(CAPACITY_OK,	0x00010000)			\
--		/* READ CAPACITY response is correct */
-+		/* READ CAPACITY response is correct */		\
-+	US_FLAG(BAD_SENSE,	0x00020000)			\
-+		/* Bad Sense (never more than 18 bytes) */
++	/* Drop reference count from bus_find_device */
++	put_device(dev);
++
++	return dev ? to_usb_interface(dev) : NULL;
+ }
+ EXPORT_SYMBOL_GPL(usb_find_interface);
  
- #define US_FLAG(name, value)	US_FL_##name = value ,
- enum { US_DO_ALL_FLAGS };
 
 
