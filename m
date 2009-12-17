@@ -1,72 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764224AbZLQJc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZLQJtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764224AbZLQJc2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 04:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764194AbZLQJcY
+	id S1760001AbZLQJtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 04:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZLQJtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 04:32:24 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56633 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756766AbZLQJcV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 04:32:21 -0500
-Date: Thu, 17 Dec 2009 09:32:16 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
+	Thu, 17 Dec 2009 04:49:31 -0500
+Received: from fom01.emnet.dk ([89.249.14.84]:59926 "EHLO fom01.emnet.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751088AbZLQJta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 04:49:30 -0500
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 04:49:29 EST
+X-AuditID: 59f90e54-b7bd7ae000001243-82-4b29fb210712
+Subject: x264 benchmarks BFS vs CFS
+From: Kasper Sandberg <lkml@metanurb.dk>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Zach Brown <zach.brown@oracle.com>,
-       Alex Elder <aelder@sgi.com>, Mark Fasheh <mfasheh@suse.com>,
-       Joel Becker <joel.becker@oracle.com>
-Subject: Re: -tip: origin tree boot crash
-Message-ID: <20091217093216.GZ14381@ZenIV.linux.org.uk>
-References: <20091217090250.GA4844@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217090250.GA4844@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 17 Dec 2009 10:33:03 +0100
+Message-Id: <1261042383.14314.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAhIa6gcSGuw4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 10:02:50AM +0100, Ingo Molnar wrote:
-> 
-> Today's -tip crashes during bootup on one of my testsystems, and i've bisected 
-> it back to this commit:
-> 
-> | 5fe878ae7f82fbf0830dbfaee4c5ca18f3aee442 is the first bad commit
-> | commit 5fe878ae7f82fbf0830dbfaee4c5ca18f3aee442
-> | Author: Christoph Hellwig <hch@lst.de>
-> | Date:   Tue Dec 15 16:47:50 2009 -0800
-> |
-> |    direct-io: cleanup blockdev_direct_IO locking
-> |
-> |    Currently the locking in blockdev_direct_IO is a mess, we have three
-> |    different locking types and very confusing checks for some of them.  The
-> |    most complicated one is DIO_OWN_LOCKING for reads, which happens to not
-> |    actually be used.
-> 
-> I have no bootlog available currently. The kernel config is attached.
-> 
-> I've reverted the patch from -tip for now.
+well well :) nothing quite speaks out like graphs..
 
-How about this:
+http://doom10.org/index.php?topic=78.0
 
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 4012885..e82adc2 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -1206,7 +1206,7 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
- 	 * NOTE: filesystems with their own locking have to handle this
- 	 * on their own.
- 	 */
--	if (dio->flags & DIO_LOCKING) {
-+	if (flags & DIO_LOCKING) {
- 		if (unlikely((rw & WRITE) && retval < 0)) {
- 			loff_t isize = i_size_read(inode);
- 			if (end > isize)
+
+
+regards,
+Kasper Sandberg
+
