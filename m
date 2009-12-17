@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936680AbZLQEmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936661AbZLQEmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936680AbZLQEmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935752AbZLQEma
+	id S936661AbZLQEmN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763069AbZLQEEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:42:30 -0500
-Received: from kroah.org ([198.145.64.141]:55369 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:04:00 -0500
+Received: from kroah.org ([198.145.64.141]:55375 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763671AbZLQED4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:03:56 -0500
+	id S1763830AbZLQED5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:03:57 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:47 2009
-Message-Id: <20091217035646.953520979@mini.kroah.org>
+Message-Id: <20091217035647.086599672@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:28 -0800
+Date: Wed, 16 Dec 2009 19:55:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Carsten Otte <cotte@de.ibm.com>, Avi Kivity <avi@redhat.com>
-Subject: [031/151] KVM: s390: Make psw available on all exits, not just a subset
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: [032/151] KVM: fix irq_source_id size verification
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,147 +28,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Carsten Otte <carsteno@de.ibm.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-commit d7b0b5eb3000c6fb902f08c619fcd673a23d8fab upstream.
+commit cd5a2685de4a642fd0bd763e8c19711ef08dbe27 upstream.
 
-This patch moves s390 processor status word into the base kvm_run
-struct and keeps it up-to date on all userspace exits.
+find_first_zero_bit works with bit numbers, not bytes.
 
-The userspace ABI is broken by this, however there are no applications
-in the wild using this.  A capability check is provided so users can
-verify the updated API exists.
+Fixes
 
-Signed-off-by: Carsten Otte <cotte@de.ibm.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+https://sourceforge.net/tracker/?func=detail&aid=2847560&group_id=180599&atid=893831
+
+Reported-by: "Xu, Jiajun" <jiajun.xu@intel.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/s390/include/asm/kvm.h |    3 ++-
- arch/s390/kvm/kvm-s390.c    |   25 +++++++++++++++++--------
- include/linux/kvm.h         |    8 ++++++--
- 3 files changed, 25 insertions(+), 11 deletions(-)
+ virt/kvm/irq_comm.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
---- a/arch/s390/include/asm/kvm.h
-+++ b/arch/s390/include/asm/kvm.h
-@@ -1,6 +1,5 @@
- #ifndef __LINUX_KVM_S390_H
- #define __LINUX_KVM_S390_H
--
- /*
-  * asm-s390/kvm.h - KVM s390 specific structures and definitions
-  *
-@@ -15,6 +14,8 @@
-  */
- #include <linux/types.h>
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -205,10 +205,9 @@ int kvm_request_irq_source_id(struct kvm
+ 	int irq_source_id;
  
-+#define __KVM_S390
-+
- /* for KVM_GET_REGS and KVM_SET_REGS */
- struct kvm_regs {
- 	/* general purpose regs for s390 */
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -116,10 +116,16 @@ long kvm_arch_dev_ioctl(struct file *fil
+ 	mutex_lock(&kvm->irq_lock);
+-	irq_source_id = find_first_zero_bit(bitmap,
+-				sizeof(kvm->arch.irq_sources_bitmap));
++	irq_source_id = find_first_zero_bit(bitmap, BITS_PER_LONG);
  
- int kvm_dev_ioctl_check_extension(long ext)
- {
-+	int r;
-+
- 	switch (ext) {
-+	case KVM_CAP_S390_PSW:
-+		r = 1;
-+		break;
- 	default:
--		return 0;
-+		r = 0;
+-	if (irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
++	if (irq_source_id >= BITS_PER_LONG) {
+ 		printk(KERN_WARNING "kvm: exhaust allocatable IRQ sources!\n");
+ 		return -EFAULT;
  	}
-+	return r;
- }
+@@ -228,7 +227,7 @@ void kvm_free_irq_source_id(struct kvm *
  
- /* Section: vm related */
-@@ -419,8 +425,10 @@ static int kvm_arch_vcpu_ioctl_set_initi
- 	vcpu_load(vcpu);
- 	if (atomic_read(&vcpu->arch.sie_block->cpuflags) & CPUSTAT_RUNNING)
- 		rc = -EBUSY;
--	else
--		vcpu->arch.sie_block->gpsw = psw;
-+	else {
-+		vcpu->run->psw_mask = psw.mask;
-+		vcpu->run->psw_addr = psw.addr;
-+	}
- 	vcpu_put(vcpu);
- 	return rc;
- }
-@@ -508,9 +516,6 @@ rerun_vcpu:
- 
- 	switch (kvm_run->exit_reason) {
- 	case KVM_EXIT_S390_SIEIC:
--		vcpu->arch.sie_block->gpsw.mask = kvm_run->s390_sieic.mask;
--		vcpu->arch.sie_block->gpsw.addr = kvm_run->s390_sieic.addr;
--		break;
- 	case KVM_EXIT_UNKNOWN:
- 	case KVM_EXIT_INTR:
- 	case KVM_EXIT_S390_RESET:
-@@ -519,6 +524,9 @@ rerun_vcpu:
- 		BUG();
+ 	mutex_lock(&kvm->irq_lock);
+ 	if (irq_source_id < 0 ||
+-	    irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
++	    irq_source_id >= BITS_PER_LONG) {
+ 		printk(KERN_ERR "kvm: IRQ source ID out of range!\n");
+ 		return;
  	}
- 
-+	vcpu->arch.sie_block->gpsw.mask = kvm_run->psw_mask;
-+	vcpu->arch.sie_block->gpsw.addr = kvm_run->psw_addr;
-+
- 	might_fault();
- 
- 	do {
-@@ -538,8 +546,6 @@ rerun_vcpu:
- 		/* intercept cannot be handled in-kernel, prepare kvm-run */
- 		kvm_run->exit_reason         = KVM_EXIT_S390_SIEIC;
- 		kvm_run->s390_sieic.icptcode = vcpu->arch.sie_block->icptcode;
--		kvm_run->s390_sieic.mask     = vcpu->arch.sie_block->gpsw.mask;
--		kvm_run->s390_sieic.addr     = vcpu->arch.sie_block->gpsw.addr;
- 		kvm_run->s390_sieic.ipa      = vcpu->arch.sie_block->ipa;
- 		kvm_run->s390_sieic.ipb      = vcpu->arch.sie_block->ipb;
- 		rc = 0;
-@@ -551,6 +557,9 @@ rerun_vcpu:
- 		rc = 0;
- 	}
- 
-+	kvm_run->psw_mask     = vcpu->arch.sie_block->gpsw.mask;
-+	kvm_run->psw_addr     = vcpu->arch.sie_block->gpsw.addr;
-+
- 	if (vcpu->sigset_active)
- 		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
- 
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -116,6 +116,11 @@ struct kvm_run {
- 	__u64 cr8;
- 	__u64 apic_base;
- 
-+#ifdef __KVM_S390
-+	/* the processor status word for s390 */
-+	__u64 psw_mask; /* psw upper half */
-+	__u64 psw_addr; /* psw lower half */
-+#endif
- 	union {
- 		/* KVM_EXIT_UNKNOWN */
- 		struct {
-@@ -167,8 +172,6 @@ struct kvm_run {
- 		/* KVM_EXIT_S390_SIEIC */
- 		struct {
- 			__u8 icptcode;
--			__u64 mask; /* psw upper half */
--			__u64 addr; /* psw lower half */
- 			__u16 ipa;
- 			__u32 ipb;
- 		} s390_sieic;
-@@ -474,6 +477,7 @@ struct kvm_irq_routing {
- };
- 
- #endif
-+#define KVM_CAP_S390_PSW 42
- 
- #ifdef KVM_CAP_MCE
- /* x86 MCE */
 
 
