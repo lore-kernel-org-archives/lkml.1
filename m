@@ -1,89 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764950AbZLQRDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZLQRHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764950AbZLQRDV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764941AbZLQRDS
+	id S932998AbZLQRHI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZLQRHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:03:18 -0500
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:58580 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764931AbZLQRDQ (ORCPT
+	Thu, 17 Dec 2009 12:07:00 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:12673 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbZLQRG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:03:16 -0500
-Date: Thu, 17 Dec 2009 22:33:09 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "mingo@elte.hu" <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [Bug][perf hw-breakpoints] Null pointer exception when using
-	register_user_hw_breakpoint with inherit flag
-Message-ID: <20091217170309.GA5457@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	Thu, 17 Dec 2009 12:06:59 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
+Date: Thu, 17 Dec 2009 10:06:55 -0700
+User-Agent: KMail/1.9.10
+Cc: "lenb@kernel.org" <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com> <200912161054.19951.bjorn.helgaas@hp.com> <1261038787.13378.148.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1261038787.13378.148.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200912171006.56273.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  While testing out two new interfaces (to be sent separately) that
-in-turn uses register_user_hw_breakpoint() and unregister_hw_breakpoint(),
-I noticed the following error.
+On Thursday 17 December 2009 01:33:07 am Huang Ying wrote:
+> On Thu, 2009-12-17 at 01:54 +0800, Bjorn Helgaas wrote: 
+> > On Tuesday 15 December 2009 06:23:15 pm Huang Ying wrote:
+> > > On Wed, 2009-12-16 at 01:47 +0800, Bjorn Helgaas wrote: 
+> > > > On Monday 14 December 2009 06:04:13 pm Huang Ying wrote:
+> > > > > On Sat, 2009-12-12 at 01:36 +0800, Bjorn Helgaas wrote: 
+> > > > > > I think your code would be simpler if acpi_pre_map_gar() returned a
+> > > > > > struct acpi_iomap pointer (from the caller's point of view, this would
+> > > > > > be an opaque cookie).  Then you could just supply that cookie to
+> > > > > > acpi_atomic_write(), and you wouldn't have to look it up again.  Maybe
+> > > > > > you could even get rid of the list and all the fancy RCU & kref stuff
+> > > > > > then, too.
+> > > > > 
+> > > > > The interface chosen is based on usage model, which is:
+> > > > > 
+> > > > > 1. In init function, all GARs needed are pre-mapped
+> > > > > 2. In atomic context, pre-mapped GARs are accessed
+> > > > > 3. In exit function, all GARs are post-unmapped
+> > > > > 
+> > > > > In 3), if struct acpi_iomap* is used as parameter for post-unmap
+> > > > > function, we need to record that pointer in another list. In 2), we need
+> > > > > find mapped address from GAR.
+> > > > 
+> > > > I understand that my proposal would require a slight change in your
+> > > > usage model.  I am suggesting that you make it follow the same pattern
+> > > > as pci_iomap(), e.g.:
+> > > > 
+> > > > 	void *pci_iomap(struct pci_dev *, int bar, unsigned long len);
+> > > > 	unsigned int ioread32(void *);
+> > > > 	void pci_iounmap(struct pci_dev *, void *);
+> > > > 
+> > > > 	void *acpi_map_generic_address(struct acpi_generic_address *);
+> > > > 	u64 acpi_read_atomic(void *);
+> > > > 	void acpi_unmap_generic_address(void *);
+> > > > 
+> > > > acpi_map_generic_address() would validate the GAR and do the ioremap().
+> > > > If the validation or ioremap() failed, it would return a NULL pointer.
+> > > > 
+> > > > This would require the caller of acpi_map_generic_address() to hang onto
+> > > > the pointer returned (just as callers of pci_iomap() must hang onto the
+> > > > pointer it returns).
+> > > > 
+> > > > The pointer would be supplied to acpi_read_atomic(), so it would not
+> > > > need to do acpi_check_gar() because we know it was done successfully
+> > > > in acpi_map_generic_address().  It wouldn't need to look up the GAR
+> > > > in the list because the list entry was passed in.  Since all the
+> > > > possible failure conditions were checked in acpi_map_generic_address(),
+> > > > acpi_read_atomic() doesn't need to return status and could simply
+> > > > return the u64 directly.
+> > > 
+> > > The usage model is different. Please take a look at
+> > > __apei_exec_read_register(). We need to get virtual address from
+> > > physical address in GAR. And many small-size GARs in ERST or EINJ may
+> > > share same page, so some kind of virtual space optimization is
+> > > necessary.
+> > 
+> > The sharing could be done with a reference count in the map/unmap
+> > path.
+> > 
+> > I don't have time to fully understand your patch series, but I suspect
+> > the issue is that you're interpreting opcodes, and those contain or
+> > reference generic_address structures, and you think it's easier just
+> > pass around the GAR pointer than it is to remember a (GAR, mapped-GAR)
+> > association made by pre_map_gar() and use the mapped-GAR when executing
+> > the "read" opcode.
+> 
+> So we need the (GAR, mapped-GAR) association anyway. Variable
+> acpi_iomaps in atomicio.c is such a association. When executing the
+> "read" opcode, we still need get mapped-GAR from the GAR. So I think
+> your proposal and my implementation is similar, with different naming
+> convention and you want to put the association in APEI code, and I want
+> to put it in ACPI code.
 
-The bug is seen only when 'inherit' flag of 'perf_event_attr' is set
-(not otherwise) before the call to register_user_hw_breakpoint(),
-and when the user-space process tries to spawn a new thread.
+Well, yes, they're similar in the sense that both do remember the (GAR,
+mapped-GAR) association.  Your implementation remembers it in the
+acpi_iomaps list, and I proposed having the caller keep it.  The
+advantage I see with having the caller keep it is that it would make
+atomicio.c MUCH simpler -- no list, no lookup, no repeated validation,
+no RCU, probably no kref stuff.  Obviously this would come at the cost
+of some increased complexity in the callers.
 
-Please find the screen logs taken from an x86 box, running -tip kernel 
-commit 7818b3d0fc68f5c2a85fed86d9fa37131c5a3068.
+And I think it's worth something to use the pattern of pci_iomap(),
+because that's a well-known Linux design pattern.
 
-Digging further, the causative line of code appears to be
+Anyway, just my opinion; feel free to ignore.
 
-	atomic_long_inc(&parent_event->filp->f_count);
-
-in inherit_event() function, wherein f_count is NULL (and hence the
-error). I haven't analysed further to understand why/if the said
-pointer is/should be NULL.
-
-Thought might bring it to the community's notice for wider
-notice/further investigation.
-
-Thanks,
-K.Prasad
-
-Error message
---------------
-BUG: unable to handle kernel NULL pointer dereference at 00000038
-IP: [<c04a1827>] inherit_event+0x90/0xf9
-*pde = 00000000 
-Oops: 0002 [#1] SMP 
-last sysfs file: /sys/devices/system/cpu/cpu3/topology/core_siblings
-Modules linked in: data_breakpoint_2 stap_7360b82bc2f92256437d244aa8ebe5e6_2590 ipt_MASQUERADE iptable_nat nf_nat sco bridge stp bnep l2cap crc16 bluetooth ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6 p4_clockmod dm_multipath uinput joydev ppdev pcspkr ata_generic pata_acpi aic7xxx serio_raw tg3 i2c_piix4 e1000 pata_serverworks e100 libphy mii i2c_core ibmasm parport_pc parport floppy mptspi mptscsih mptbase scsi_transport_spi [last unloaded: scsi_wait_scan]
-
-Pid: 5098, comm: probe7-thread Not tainted 2.6.32-tip.latest+ #1 /eserver xSeries 235 -[86714AX]-
-EIP: 0060:[<c04a1827>] EFLAGS: 00010246 CPU: 2
-EIP is at inherit_event+0x90/0xf9
-EAX: 00000038 EBX: f6d4c850 ECX: f6e8baa8 EDX: 00000000
-ESI: f582cf90 EDI: f6e8baa0 EBP: eb47de6c ESP: eb47de60
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process probe7-thread (pid: 5098, ti=eb47d000 task=ea171580 task.ti=eb47d000)
-Stack:
- f6d4cbe0 00000000 f6d4c850 eb47deb4 c04a1a08 ea2bd600 00000000 f6d4c850
-<0> ea2bd608 ea2bd600 f6d4cc04 f6d4cc54 f582cf90 ea171580 00000001 ea2bd7ac
-<0> eb47deb4 00000282 ea2bd600 00000000 ea2be2d4 eb47df14 c04395cd c314c550
-Call Trace:
- [<c04a1a08>] ? perf_event_init_task+0x122/0x20d
- [<c04395cd>] ? copy_process+0x560/0x10cd
- [<c043a257>] ? do_fork+0x11d/0x297
- [<c072bda1>] ? do_page_fault+0x2f6/0x324
- [<c04815b1>] ? audit_syscall_entry+0x11b/0x140
- [<c04092d2>] ? sys_clone+0x24/0x29
- [<c0403331>] ? ptregs_clone+0x15/0x24
- [<c072972d>] ? syscall_call+0x7/0xb
-Code: 00 89 87 f8 00 00 00 89 97 fc 00 00 00 8b 86 70 02 00 00 89 da 89 87 70 02 00 00 89 f8 e8 5b eb ff ff 8b 96 34 01 00 00 8d 42 38 <f0> ff 42 38 8b 86 30 01 00 00 83 b8 ac 00 00 00 00 74 1f 80 3d 
-EIP: [<c04a1827>] inherit_event+0x90/0xf9 SS:ESP 0068:eb47de60
-CR2: 0000000000000038
----[ end trace 2f6ec1ff2cce0ff3 ]---
+Bjorn
