@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbZLQGv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbZLQHGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbZLQGv7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 01:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbZLQGvx
+	id S1758748AbZLQHGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 02:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZLQHGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 01:51:53 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:57207 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755262AbZLQGvw (ORCPT
+	Thu, 17 Dec 2009 02:06:37 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:49435 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756752AbZLQHGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 01:51:52 -0500
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAKxjKUurR7H+/2dsb2JhbAC+SpcJhC0E
-X-IronPort-AV: E=Sophos;i="4.47,410,1257120000"; 
-   d="scan'208";a="451153248"
-From: Roland Dreier <rdreier@cisco.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Michal Marek <mmarek@suse.cz>,
-       Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org>
-	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>
-	<ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com>
-	<aday6l25gnm.fsf@roland-alpha.cisco.com> <4B29BFE8.1000502@zytor.com>
-	<4B29C652.5080803@redhat.com> <4B29C661.6090800@zytor.com>
-	<4B29CA73.4050005@redhat.com> <4B29CADE.8020905@zytor.com>
-	<4B29CDC6.7040501@redhat.com> <4B29CF16.6060206@zytor.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 16 Dec 2009 22:51:51 -0800
-In-Reply-To: <4B29CF16.6060206@zytor.com> (H. Peter Anvin's message of "Wed,
-	16 Dec 2009 22:26:30 -0800")
-Message-ID: <adapr6e5bzs.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Thu, 17 Dec 2009 02:06:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=TfmLm9vg2mwJSvvhO4jX/tJwDYNEn8lE2uE6gutWw5xSwNdEOZe5Fl8/DsBoM+d8de
+         eMzO2Gm43NW9/v7MQSAePabnBV3WazapRHkI2H07iWwQvA4WvwODtod5TtxiiM6G0dmj
+         LgfDey5W84iuNdLP9B10J2hJzD7wwDINBXmdo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Dec 2009 06:51:51.0940 (UTC) FILETIME=[69B28C40:01CA7EE5]
+In-Reply-To: <4B292D9A.5060501@poelzi.org>
+References: <4B292D9A.5060501@poelzi.org>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Thu, 17 Dec 2009 02:06:15 -0500
+Message-ID: <3e8340490912162306m4236569s4e497ad01409c756@mail.gmail.com>
+Subject: Re: Suggestion: xtime as new inode attribute
+To: Daniel Poelzleithner <poelzi@poelzi.org>
+Cc: linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
+       Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 16, 2009 at 1:57 PM, Daniel Poelzleithner <poelzi@poelzi.org> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Hi,
+>
+> I would like to suggest a new attribute for inodes in linux filesystems
+> to record the last execution time of files.
+>
+> The problem:
+>
+> If a linux installation gets older and older, more and more programs get
+> installed over time. Mostly to just test them for a particular problem
+> and often the deinstallation is forgotten. To find out which packages
+> are not used for a long time is currently quite impossible. The user may
+> use program X which will run but not depend on program Y as a subprocess
+> for example.
+>
+> The solution:
+>
+> I suggest a new inode attribute called xtime, which is like atime, but
+> will only be updated when a file is executed. This would allow tracking
+> of unused binaries and could be used with some clever algorithms in the
+> cleanup program to find unused packages for removal or other cleanup
+> purposes.
+> It would also add an additional information in forensic analysis of
+> hacked systems btw.
 
- > Roland, Masami, Sam: can I add your respective Acked-by:?
+Why isn't atime sufficient? atime is updated when programs are
+executed, and it's uncommon for executable files to be accessed
+without being executed; for the purposes of determining whether a
+program is needed, it ought to be good enough.
 
-Yes, please.
+Note that many modern distros use relatime to reduce the (significant)
+overhead of atime; this may account for why you may not be seeing
+atime update for executables; try mounting with -o strictatime if you
+want to see it at work, but beware, as this will bring with it a major
+performance hit - which your proposal would as well :)
