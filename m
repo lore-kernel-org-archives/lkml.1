@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765375AbZLQVTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765381AbZLQVUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765375AbZLQVTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 16:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765346AbZLQVTP
+	id S1765381AbZLQVUq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 16:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765349AbZLQVUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 16:19:15 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35685 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765342AbZLQVTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 16:19:14 -0500
-Subject: Re: Wrong atime on recent kernels
-From: john stultz <johnstul@us.ibm.com>
-To: Petr =?UTF-8?Q?Tit=C4=9Bra?= <P.Titera@century.cz>
-Cc: Petr =?UTF-8?Q?Tit=C4=9Bra?= <petr@titera.eu>,
-       linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>
-In-Reply-To: <4B2A1051.9010808@century.cz>
-References: <4B26AB7E.9020208@titera.eu>
-	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>
-	 <4B29494B.4010305@titera.eu>
-	 <1261020388.7245.27.camel@localhost.localdomain>
-	 <4B2A1051.9010808@century.cz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 13:19:08 -0800
-Message-ID: <1261084748.3466.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 17 Dec 2009 16:20:42 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43049 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765346AbZLQVUl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 16:20:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=IaVy2Nhu5oDMiyfaRpnqEqLtNXH8jKvZwkMCXGWsfEduj/eCiCM35/+kS4W6OYFqXj
+         nWN7p1TlcrBRut7un33tNW9bbkInaf3suVsnqi5r7B7cHFZSiTQfH4gAs4ImN4PbTHU0
+         9aSTVDuF3LZaSNlIX1ExAg4ob74U1W7b2j5gI=
+MIME-Version: 1.0
+In-Reply-To: <20091217211759.GB16520@n2100.arm.linux.org.uk>
+References: <4B2A9F8E.5080508@gmail.com> <20091217211759.GB16520@n2100.arm.linux.org.uk>
+From: roel kluin <roel.kluin@gmail.com>
+Date: Thu, 17 Dec 2009 22:20:18 +0100
+Message-ID: <25e057c00912171320m3c596ecancafc568cedfd70b8@mail.gmail.com>
+Subject: Re: [PATCH] ARM: Wrong size used in dump_mem()
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 12:04 +0100, Petr Titěra wrote:
-> Now when I'm looking through stat /stats.file I was able to find some 
-> really old instances of this error from October:
-> 
->   File: `/mnt/data/linux-2.6/.git/refs/remotes/origin'
->   Size: 4096            Blocks: 8          IO Block: 4096   directory
-> Device: fe00h/65024d    Inode: 130953      Links: 2
-> Access: (0775/drwxrwxr-x)  Uid: (    0/    root)   Gid: (    0/    root)
-> Access: 2009-12-16 21:21:52.776000002 +0100
-> Modify: 2009-10-14 07:57:03.1000000000 +0200
-> Change: 2009-10-14 07:57:03.1000000000 +0200
->   File: `/mnt/data/linux-2.6/.git/refs/remotes/origin/master'
->   Size: 41              Blocks: 8          IO Block: 4096   regular file
-> Device: fe00h/65024d    Inode: 147522      Links: 1
-> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-> Access: 2009-10-14 07:57:04.040000000 +0200
-> Modify: 2009-10-14 07:57:03.970000000 +0200
-> Change: 2009-10-14 07:57:03.1000000000 +0200
-> 
-> So this happened before but only recently it started to happen in places 
-> where it hurts. I found this trange behaviour because I was unable to 
-> create initramfs of new kernels. mkinitrd command could not copy files 
-> and preserve their times because of timestamp validity check in cp.
+On Thu, Dec 17, 2009 at 10:17 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Thu, Dec 17, 2009 at 10:15:58PM +0100, Roel Kluin wrote:
+>> The sizeof the pointed to should be used rather than of the pointer
+>>
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>> ---
+>> Unless I am mistaken?
+>
+> You are mistaken.  sizeof(array) is the byte size of the array.
+> sizeof(*array) is the size of one individual object of the array.
+>
+> The code is correct as is - which is to fill  the entire array with
+> space characters and then zero the last one.
 
-Huh. If its really the case, then its not the change I suspect. 
-
-Ted: Have you seen anything like this? Where the sub-second field holds
-a full second of time?
-
-
-> I will try to revert commit you told me and will test.
-
-Thanks, that will help greatly narrow this down.
-
-thanks again
--john
-
-
+hmm, I see. sorry for the noise
