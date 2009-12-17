@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbZLQBmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbZLQBnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbZLQBmK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762907AbZLQBUJ
+	id S1761661AbZLQBnh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936074AbZLQBnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:09 -0500
-Received: from kroah.org ([198.145.64.141]:47852 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:43:23 -0500
+Received: from kroah.org ([198.145.64.141]:47820 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763597AbZLQBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763092AbZLQBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 20:20:06 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:01 2009
-Message-Id: <20091217011600.998528574@mini.kroah.org>
+Message-Id: <20091217011601.125726102@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:35 -0800
+Date: Wed, 16 Dec 2009 17:14:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [24/90] USB: usb-storage: add BAD_SENSE flag
+       Andre Herms <andre.herms@tec-venture.de>
+Subject: [25/90] USB: usbtmc: repeat usb_bulk_msg until whole message is transfered
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,139 +28,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Andre Herms <andre.herms@tec-venture.de>
 
-commit a0bb108112a872c0b0c4b3ef4974f95fb75b155d upstream.
+commit ec412b92dbe3ea839716853eea058d1bcc5e6ca4 upstream.
 
-This patch (as1311) fixes a problem in usb-storage: Some devices are
-pretty broken when it comes to reporting sense data.  The information
-they send back indicates that they have more than 18 bytes of sense
-data available, but when the system asks for more than 18 they fail or
-hang.  The symptom is that probing fails with multiple resets.
+usb_bulk_msg() transfers only bytes up to the maximum packet size.
+It must be repeated by the usbtmc driver until all bytes of a TMC message
+are transfered.
 
-The patch adds a new BAD_SENSE flag to indicate that usb-storage
-should never ask for more than 18 bytes of sense data.  The flag can
-be set in an unusual_devs entry or via the "quirks=" module parameter,
-and it is set automatically whenever a REQUEST SENSE command for more
-than 18 bytes fails or times out.
+Without this patch, ETIMEDOUT is reported when writing TMC messages
+larger than the maximum USB bulk size and the transfer remains incomplete.
+The user will notice that the device hangs and must be reset by either closing
+the application or pulling the plug.
 
-An unusual_devs entry is added for the Agfa photo frame, which uses a
-Prolific chip having this bug.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Tested-by: Daniel Kukula <daniel.kuku@gmail.com>
+Signed-off-by: Andre Herms <andre.herms@tec-venture.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/kernel-parameters.txt |    2 ++
- drivers/usb/storage/transport.c     |   17 +++++++++++++----
- drivers/usb/storage/unusual_devs.h  |    7 +++++++
- drivers/usb/storage/usb.c           |    3 +++
- include/linux/usb_usual.h           |    4 +++-
- 5 files changed, 28 insertions(+), 5 deletions(-)
+ drivers/usb/class/usbtmc.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2561,6 +2561,8 @@ and is between 256 and 4096 characters. 
- 			to a common usb-storage quirk flag as follows:
- 				a = SANE_SENSE (collect more than 18 bytes
- 					of sense data);
-+				b = BAD_SENSE (don't collect more than 18
-+					bytes of sense data);
- 				c = FIX_CAPACITY (decrease the reported
- 					device capacity by one sector);
- 				h = CAPACITY_HEURISTICS (decrease the
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -666,10 +666,11 @@ void usb_stor_invoke_transport(struct sc
- 	 * to wait for at least one CHECK_CONDITION to determine
- 	 * SANE_SENSE support
- 	 */
--	if ((srb->cmnd[0] == ATA_16 || srb->cmnd[0] == ATA_12) &&
-+	if (unlikely((srb->cmnd[0] == ATA_16 || srb->cmnd[0] == ATA_12) &&
- 	    result == USB_STOR_TRANSPORT_GOOD &&
- 	    !(us->fflags & US_FL_SANE_SENSE) &&
--	    !(srb->cmnd[2] & 0x20)) {
-+	    !(us->fflags & US_FL_BAD_SENSE) &&
-+	    !(srb->cmnd[2] & 0x20))) {
- 		US_DEBUGP("-- SAT supported, increasing auto-sense\n");
- 		us->fflags |= US_FL_SANE_SENSE;
- 	}
-@@ -718,6 +719,12 @@ Retry_Sense:
- 		if (test_bit(US_FLIDX_TIMED_OUT, &us->dflags)) {
- 			US_DEBUGP("-- auto-sense aborted\n");
- 			srb->result = DID_ABORT << 16;
-+
-+			/* If SANE_SENSE caused this problem, disable it */
-+			if (sense_size != US_SENSE_SIZE) {
-+				us->fflags &= ~US_FL_SANE_SENSE;
-+				us->fflags |= US_FL_BAD_SENSE;
-+			}
- 			goto Handle_Errors;
- 		}
+--- a/drivers/usb/class/usbtmc.c
++++ b/drivers/usb/class/usbtmc.c
+@@ -545,10 +545,16 @@ static ssize_t usbtmc_write(struct file 
+ 		n_bytes = roundup(12 + this_part, 4);
+ 		memset(buffer + 12 + this_part, 0, n_bytes - (12 + this_part));
  
-@@ -727,10 +734,11 @@ Retry_Sense:
- 		 * (small) sense request. This fixes some USB GSM modems
- 		 */
- 		if (temp_result == USB_STOR_TRANSPORT_FAILED &&
--		    (us->fflags & US_FL_SANE_SENSE) &&
--		    sense_size != US_SENSE_SIZE) {
-+				sense_size != US_SENSE_SIZE) {
- 			US_DEBUGP("-- auto-sense failure, retry small sense\n");
- 			sense_size = US_SENSE_SIZE;
-+			us->fflags &= ~US_FL_SANE_SENSE;
-+			us->fflags |= US_FL_BAD_SENSE;
- 			goto Retry_Sense;
- 		}
+-		retval = usb_bulk_msg(data->usb_dev,
+-				      usb_sndbulkpipe(data->usb_dev,
+-						      data->bulk_out),
+-				      buffer, n_bytes, &actual, USBTMC_TIMEOUT);
++		do {
++			retval = usb_bulk_msg(data->usb_dev,
++					      usb_sndbulkpipe(data->usb_dev,
++							      data->bulk_out),
++					      buffer, n_bytes,
++					      &actual, USBTMC_TIMEOUT);
++			if (retval != 0)
++				break;
++			n_bytes -= actual;
++		} while (n_bytes);
  
-@@ -754,6 +762,7 @@ Retry_Sense:
- 		 */
- 		if (srb->sense_buffer[7] > (US_SENSE_SIZE - 8) &&
- 		    !(us->fflags & US_FL_SANE_SENSE) &&
-+		    !(us->fflags & US_FL_BAD_SENSE) &&
- 		    (srb->sense_buffer[0] & 0x7C) == 0x70) {
- 			US_DEBUGP("-- SANE_SENSE support enabled\n");
- 			us->fflags |= US_FL_SANE_SENSE;
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -838,6 +838,13 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY ),
- 
-+/* Reported by Daniel Kukula <daniel.kuku@gmail.com> */
-+UNUSUAL_DEV( 0x067b, 0x1063, 0x0100, 0x0100,
-+		"Prolific Technology, Inc.",
-+		"Prolific Storage Gadget",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_BAD_SENSE ),
-+
- /* Reported by Rogerio Brito <rbrito@ime.usp.br> */
- UNUSUAL_DEV( 0x067b, 0x2317, 0x0001, 0x001,
- 		"Prolific Technology, Inc.",
---- a/drivers/usb/storage/usb.c
-+++ b/drivers/usb/storage/usb.c
-@@ -460,6 +460,9 @@ static void adjust_quirks(struct us_data
- 		case 'a':
- 			f |= US_FL_SANE_SENSE;
- 			break;
-+		case 'b':
-+			f |= US_FL_BAD_SENSE;
-+			break;
- 		case 'c':
- 			f |= US_FL_FIX_CAPACITY;
- 			break;
---- a/include/linux/usb_usual.h
-+++ b/include/linux/usb_usual.h
-@@ -56,7 +56,9 @@
- 	US_FLAG(SANE_SENSE,     0x00008000)			\
- 		/* Sane Sense (> 18 bytes) */			\
- 	US_FLAG(CAPACITY_OK,	0x00010000)			\
--		/* READ CAPACITY response is correct */
-+		/* READ CAPACITY response is correct */		\
-+	US_FLAG(BAD_SENSE,	0x00020000)			\
-+		/* Bad Sense (never more than 18 bytes) */
- 
- #define US_FLAG(name, value)	US_FL_##name = value ,
- enum { US_DO_ALL_FLAGS };
+ 		data->bTag_last_write = data->bTag;
+ 		data->bTag++;
 
 
