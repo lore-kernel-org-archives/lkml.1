@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbZLQROz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765004AbZLQRRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbZLQROz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:14:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764962AbZLQROu
+	id S1765004AbZLQRRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764967AbZLQRRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:14:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47637 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759483AbZLQROt (ORCPT
+	Thu, 17 Dec 2009 12:17:13 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:61847 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764962AbZLQRRM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:14:49 -0500
-Date: Thu, 17 Dec 2009 18:14:47 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mark Seaborn <mrs@mythic-beasts.com>
-Cc: Michael Stone <michael@laptop.org>, Andi Kleen <andi@firstfloor.org>,
-       Ulrich Drepper <drepper@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>
-Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
-Message-ID: <20091217171447.GJ9804@basil.fritz.box>
-References: <20091216155938.GG15031@basil.fritz.box> <20091217012540.GA2609@heat> <fb69ef3c0912170906t291a37c4r6c4758ddc7dd300b@mail.gmail.com>
+	Thu, 17 Dec 2009 12:17:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XyxaInWw3kX+TiJXc1be3JQDdVSMA0MxyrugfFMKKcF2QnFFDSMAw7iJnXKvkyutVT
+         SCCwjJMs/rFHgMwny0povp5dnrcjRLZuPFPkSioVi6lbK8f4dZcg2NCZb6SURujbHFoC
+         ngWwlFjb2FH+im4EF3kaGz+tnptoLRM11vbbs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fb69ef3c0912170906t291a37c4r6c4758ddc7dd300b@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4B2A65C6.7080009@caviumnetworks.com>
+References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <20091217150120.GD24967@shareable.org>
+	 <4B2A65C6.7080009@caviumnetworks.com>
+Date: Thu, 17 Dec 2009 18:17:11 +0100
+Message-ID: <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com>
+Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+From: Richard Guenther <richard.guenther@gmail.com>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: Jamie Lokier <jamie@shareable.org>, "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>,
+       =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is not very good because in some situations it is useful to disable
-> connect() and bind() while still allowing ptracing of other processes.  For
-> example, Plash creates a new UID for each sandbox and it is possible to use
-> strace and gdb inside a sandbox.  Currently Plash is not able to block
-> network access or allow only limited network access.  If you treat ptrace()
-> this way we won't have the ability to use strace and gdb while limiting
-> network access.
+On Thu, Dec 17, 2009 at 6:09 PM, David Daney <ddaney@caviumnetworks.com> wrote:
+> Jamie Lokier wrote:
+>>
+>> Uwe Kleine-König wrote:
+>>>
+>>> Use the new unreachable() macro instead of for(;;);
+>>>        *(int *)0 = 0;
+>>>          /* Avoid "noreturn function does return" */
+>>> -       for (;;);
+>>> +       unreachable();
+>>
+>> Will GCC-4.5 remove ("optimise away") the *(int *)0 = 0 because it
+>> knows the branch of the code leading to unreachable can never be reached?
+>>
+>
+> I don't know the definitive answer, so I am sending to gcc@...
+>
+> FYI: #define unreachable() __builtin_unreachable()
 
-No that's not what the hunk does. I first thought the same. But it actually
-just limits these processes from initiating ptracing themselves. You can still
-attach gdb/strace to them.
+It shouldn't as *(int *)0 = 0; might trap.  But if you want to be sure
+use
+   __builtin_trap ();
+instead for the whole sequence (the unreachable is implied then).
+GCC choses a size-optimal trap representation for your target then.
 
-Now I'm not sure if that's closing all holes, but at least I can't come
-up with any obvious ones currently. I think I would still prefer a more
-general security container in general.
+Richard.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+>
+>> If GCC-4.5 does not, are you sure a future version of GCC will never
+>> remove it?  In other words, is __builtin_unreachable() _defined_ in
+>> such a way that it cannot remove the previous assignment?
+>>
+>> We have seen problems with GCC optimising away important tests for
+>> NULL pointers in the kernel, due to similar propagation of "impossible
+>> to occur" conditions, so it's worth checking with GCC people what the
+>> effect of this one would be.
+>>
+>> In C, there is a general theoretical problem with back-propagation of
+>> optimisations from code with undefined behaviour.  In the case of
+>> __builtin_unreachable(), it would depend on all sorts of unclearly
+>> defined semantics whether it can remove a preceding *(int *)0 = 0.
+>>
+>> I'd strongly suggest asking on the GCC list.  (I'd have mentioned this
+>> earlier, if I'd known about the patch for other architectures).
+>>
+>> The documentation for __builtin_unreachable() only says the program is
+>> undefined if control flow reaches it.  In other words, it does not say
+>> what effect it can have on previous instructions, and I think it's
+>> quite likely that it has not been analysed in a case like this.
+>>
+>> One thing that would give me a lot more confidence, because the GCC
+>> documentation does mention asm(), is this:
+>>
+>>>      *(int *)0 = 0;
+>>>      /* Ensure unreachableness optimisations cannot propagate back. *I/
+>>>      __asm__ volatile("");
+>>>      /* Avoid "noreturn function does return" */
+>>>      unreachable();
+>>
+>> -- Jamie
+>
+>
