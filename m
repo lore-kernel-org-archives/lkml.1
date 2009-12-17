@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbZLQGPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbZLQGMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379AbZLQGPx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 01:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759046AbZLQGPs
+	id S1759934AbZLQGMj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 01:12:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759093AbZLQGMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 01:15:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57352 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759148AbZLQGPs (ORCPT
+	Thu, 17 Dec 2009 01:12:38 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:59481 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759002AbZLQGMg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 01:15:48 -0500
-Message-ID: <4B29CADE.8020905@zytor.com>
-Date: Wed, 16 Dec 2009 22:08:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 17 Dec 2009 01:12:36 -0500
+Date: Thu, 17 Dec 2009 15:12:30 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+Message-ID: <20091217061229.GD3946@linux-sh.org>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Roland Dreier <rdreier@cisco.com>, Michal Marek <mmarek@suse.cz>,
-       Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org>	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>	<ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com> <aday6l25gnm.fsf@roland-alpha.cisco.com> <4B29BFE8.1000502@zytor.com> <4B29C652.5080803@redhat.com> <4B29C661.6090800@zytor.com> <4B29CA73.4050005@redhat.com>
-In-Reply-To: <4B29CA73.4050005@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/16/2009 10:06 PM, Masami Hiramatsu wrote:
+On Tue, Dec 15, 2009 at 04:57:49PM -0500, Mikulas Patocka wrote:
+> (5) Wrapping makes long expressions harder to understand
+> --------------------------------------------------------
 > 
-> Hmm, in that case, as Sam said, some user may do it because
-> they would like to understand error messages. And that can
-> cause other problems.
+> If I have a complex expression, I do not try to wrap it at predefined
+> 80-column boundaries, but at logical boundaries within the expression to make
+> it more readable (the brain can't find matching parentheses fast, so we can
+> help it by aligning the code according to topmost terms in the expression).
 > 
+> Example:
+> 				if (unlikely(call_some_function(s, value) != RET
+> _SUCCESS) ||
+> 				    (var_1 == prev_var_1 && var_2 == prev_var_2)
+>  ||
+> 				    flags & (FLAG_1 | FLAG_2) ||
+> 				    some_other_condition) {
+> 				}
+> 
+> Now, if we impose 80-column limit, we get this. One may argue that is looks
+> aesthetically better, but it is also less intelligible than the previous
+> version:
+> 				if (unlikely(call_some_function(s, value) !=
+> 				    RET_SUCCESS) || (var_1 == prev_var_1 &&
+> 				    var_2 == prev_var_2) || flags & (FLAG_1 |
+> 				    FLAG_2) || some_other_condition) {
+> 				}
+> 
+For starters, this is just crap. If you're writing code like this, then
+line wrapping is really the least of your concerns. Take your function
+return value and assign it to a variable before testing it in unlikely()
+as per existing conventions and most of this goes away in this example.
+If you're testing an absurd amount of conditions in a single block with
+needlessly verbose variable names, then yes, you will go over 80
+characters. Consequently, your "clean" example doesn't look much better
+than your purposely obfuscated one.
 
-See my other patch.  That doesn't override LC_MESSAGES, which is what
-matters there.
+The 80 character limit isn't a hard limit, but it's still an excellent
+guideline largely because it stops people from writing code like in your
+above example. Some amount of common sense is necessary, and most
+people in a position of applying patches can work out when to ignore
+checkpatch and when not to. The exception that you also noted is that
+some people run checkpatch on inbound patches before applying them, so
+having a flag to ignore the line size (or at least make it non-fatal) is
+probably not the worst idea ever -- although I disagree with killing off
+any notice about the line size completely.
 
-> Hrm, if there is just this problem, for now, don't you think
-> fixing it with my workaround is better choice?
-
-No, because this problem is not just limited to this one script.
-
-> Maybe, locale problem should be discussed more widely.
-
-Well, this thread is on both LKML and linux-kbuild.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Aiming to keep things around 80 characters has served us well over the
+years, so I don't quite agree with suddenly adopting an anything goes
+policy in checkpatch. People that don't care about the limit can disable
+it in their scripts while folks running their patches through prior to
+list submission are still better off being reminded that they should keep
+things reasonably close. One only has to take a look through some of the
+staging/ drivers pre-cleanup efforts for examples that clearly benefit
+from triggering these warnings rather than implicitly supporting insane
+tab depths.
