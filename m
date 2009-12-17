@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936161AbZLQESZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936417AbZLQESf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936161AbZLQESZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936146AbZLQEFZ
+	id S936417AbZLQESf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936403AbZLQERw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:05:25 -0500
-Received: from kroah.org ([198.145.64.141]:55891 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:17:52 -0500
+Received: from kroah.org ([198.145.64.141]:55901 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936129AbZLQEFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:21 -0500
+	id S936150AbZLQEFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:24 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:58 2009
-Message-Id: <20091217035658.273685245@mini.kroah.org>
+Message-Id: <20091217035658.407255478@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:55 -0800
+Date: Wed, 16 Dec 2009 19:56:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        linux-wireless@vger.kernel.org,
        "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Vasanthakumar Thiagarajan <vasanth@atheros.com>,
-       Vivek Natarajan <Vivek.Natarajan@atheros.com>
-Subject: [118/151] ath9k: fix processing of TX PS null data frames
+       Kyungwan Nam <kyungwan.nam@atheros.com>,
+       Bennyam Malavazi <bennyam.malavazi@atheros.com>,
+       Stephen Chen <stephen.chen@atheros.com>,
+       Shan Palanisamy <shan.palanisamy@atheros.com>,
+       Paul Shaw <paul.shaw@atheros.com>,
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Subject: [119/151] ath9k: Fix maximum tx fifo settings for single stream devices
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,131 +37,111 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
 
-This is a backport of upstream commit: e7824a50662f7f79b1a739f705b4d906c31cf221
+This is a backport of upstream commit: f4709fdf683e1ed37b321c258b614ebe39752bf3
 
-When mac80211 was telling us to go into Powersave we listened
-and immediately turned RX off. This meant hardware would not
-see the ACKs from the AP we're associated with and hardware
-we'd end up retransmiting the null data frame in a loop
-helplessly.
+Atheros single stream AR9285 and AR9271 have half the PCU TX FIFO
+buffer size of that of dual stream devices. Dual stream devices
+have a max PCU TX FIFO size of 8 KB while single stream devices
+have 4 KB. Single stream devices have an issue though and require
+hardware only to use half of the amount of its capable PCU TX FIFO
+size, 2 KB and this requires a change in software.
 
-Fix this by keeping track of the transmitted nullfunc frames
-and only when we are sure the AP has sent back an ACK do we
-go ahead and shut RX off.
+Technically a change would not have been required (except for frame
+burst considerations of 128 bytes) if these devices would have been
+able to use the full 4 KB of the PCU TX FIFO size but our systems
+engineers recommend 2 KB to be used only. We enforce this through
+software by reducing the max frame triggger level to 2 KB.
 
+Fixing the max frame trigger level should then have a few benefits:
 
+  * The PER will now be adjusted as designed for underruns when the
+    max trigger level is reached. This should help alleviate the
+    bus as the rate control algorithm chooses a slower rate which
+    should ensure frames are transmitted properly under high system
+    bus load.
+
+  * The poll we use on our TX queues should now trigger and work
+    as designed for single stream devices. The hardware passes
+    data from each TX queue on the PCU TX FIFO queue respecting each
+    queue's priority. The new trigger level ensures this seeding of
+    the PCU TX FIFO queue occurs as designed which could mean avoiding
+    false resets and actually reseting hw correctly when a TX queue
+    is indeed stuck.
+
+  * Some undocumented / unsupported behaviour could have been triggered
+    when the max trigger level level was being set to 4 KB on single
+    stream devices. Its not clear what this issue was to me yet.
+
+Cc: Kyungwan Nam <kyungwan.nam@atheros.com>
+Cc: Bennyam Malavazi <bennyam.malavazi@atheros.com>
+Cc: Stephen Chen <stephen.chen@atheros.com>
+Cc: Shan Palanisamy <shan.palanisamy@atheros.com>
+Cc: Paul Shaw <paul.shaw@atheros.com>
 Signed-off-by: Vasanthakumar Thiagarajan <vasanth@atheros.com>
-Signed-off-by: Vivek Natarajan <Vivek.Natarajan@atheros.com>
 Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/wireless/ath/ath9k/ath9k.h |    3 +++
- drivers/net/wireless/ath/ath9k/mac.c   |    2 ++
- drivers/net/wireless/ath/ath9k/mac.h   |    1 +
- drivers/net/wireless/ath/ath9k/main.c  |    9 ++++++++-
- drivers/net/wireless/ath/ath9k/xmit.c  |   16 ++++++++++++++++
- 5 files changed, 30 insertions(+), 1 deletion(-)
+ drivers/net/wireless/ath/ath9k/hw.c  |   11 ++++++++++-
+ drivers/net/wireless/ath/ath9k/hw.h  |    1 +
+ drivers/net/wireless/ath/ath9k/mac.c |    4 ++--
+ 3 files changed, 13 insertions(+), 3 deletions(-)
 
---- a/drivers/net/wireless/ath/ath9k/ath9k.h
-+++ b/drivers/net/wireless/ath/ath9k/ath9k.h
-@@ -139,6 +139,7 @@ struct ath_buf {
- 	dma_addr_t bf_daddr;		/* physical addr of desc */
- 	dma_addr_t bf_buf_addr;		/* physical addr of data buffer */
- 	bool bf_stale;
-+	bool bf_isnullfunc;
- 	u16 bf_flags;
- 	struct ath_buf_state bf_state;
- 	dma_addr_t bf_dmacontext;
-@@ -524,6 +525,8 @@ struct ath_led {
- #define SC_OP_BEACON_SYNC       BIT(19)
- #define SC_OP_BTCOEX_ENABLED    BIT(20)
- #define SC_OP_BT_PRIORITY_DETECTED BIT(21)
-+#define SC_OP_NULLFUNC_COMPLETED   BIT(22)
-+#define SC_OP_PS_ENABLED	BIT(23)
+--- a/drivers/net/wireless/ath/ath9k/hw.c
++++ b/drivers/net/wireless/ath/ath9k/hw.c
+@@ -937,6 +937,11 @@ int ath9k_hw_init(struct ath_hw *ah)
+ 	DPRINTF(ah->ah_sc, ATH_DBG_RESET, "serialize_regmode is %d\n",
+ 		ah->config.serialize_regmode);
  
- struct ath_bus_ops {
- 	void		(*read_cachesize)(struct ath_softc *sc, int *csz);
++	if (AR_SREV_9285(ah) || AR_SREV_9271(ah))
++		ah->config.max_txtrig_level = MAX_TX_FIFO_THRESHOLD >> 1;
++	else
++		ah->config.max_txtrig_level = MAX_TX_FIFO_THRESHOLD;
++
+ 	if (!ath9k_hw_macversion_supported(ah->hw_version.macVersion)) {
+ 		DPRINTF(ah->ah_sc, ATH_DBG_FATAL,
+ 			"Mac Chip Rev 0x%02x.%x is not supported by "
+@@ -3670,7 +3675,11 @@ void ath9k_hw_fill_cap_info(struct ath_h
+ 		pCap->keycache_size = AR_KEYTABLE_SIZE;
+ 
+ 	pCap->hw_caps |= ATH9K_HW_CAP_FASTCC;
+-	pCap->tx_triglevel_max = MAX_TX_FIFO_THRESHOLD;
++
++	if (AR_SREV_9285(ah) || AR_SREV_9271(ah))
++		pCap->tx_triglevel_max = MAX_TX_FIFO_THRESHOLD >> 1;
++	else
++		pCap->tx_triglevel_max = MAX_TX_FIFO_THRESHOLD;
+ 
+ 	if (AR_SREV_9285_10_OR_LATER(ah))
+ 		pCap->num_gpio_pins = AR9285_NUM_GPIO;
+--- a/drivers/net/wireless/ath/ath9k/hw.h
++++ b/drivers/net/wireless/ath/ath9k/hw.h
+@@ -218,6 +218,7 @@ struct ath9k_ops_config {
+ #define AR_SPUR_FEEQ_BOUND_HT20 10
+ 	int spurmode;
+ 	u16 spurchans[AR_EEPROM_MODAL_SPURS][2];
++	u8 max_txtrig_level;
+ };
+ 
+ enum ath9k_int {
 --- a/drivers/net/wireless/ath/ath9k/mac.c
 +++ b/drivers/net/wireless/ath/ath9k/mac.c
-@@ -222,6 +222,8 @@ int ath9k_hw_txprocdesc(struct ath_hw *a
- 	ds->ds_txstat.ts_status = 0;
- 	ds->ds_txstat.ts_flags = 0;
+@@ -70,7 +70,7 @@ bool ath9k_hw_updatetxtriglevel(struct a
+ 	u32 txcfg, curLevel, newLevel;
+ 	enum ath9k_int omask;
  
-+	if (ads->ds_txstatus1 & AR_FrmXmitOK)
-+		ds->ds_txstat.ts_status |= ATH9K_TX_ACKED;
- 	if (ads->ds_txstatus1 & AR_ExcessiveRetries)
- 		ds->ds_txstat.ts_status |= ATH9K_TXERR_XRETRY;
- 	if (ads->ds_txstatus1 & AR_Filtered)
---- a/drivers/net/wireless/ath/ath9k/mac.h
-+++ b/drivers/net/wireless/ath/ath9k/mac.h
-@@ -76,6 +76,7 @@
- #define ATH9K_TXERR_FIFO           0x04
- #define ATH9K_TXERR_XTXOP          0x08
- #define ATH9K_TXERR_TIMER_EXPIRED  0x10
-+#define ATH9K_TX_ACKED		   0x20
+-	if (ah->tx_trig_level >= MAX_TX_FIFO_THRESHOLD)
++	if (ah->tx_trig_level >= ah->config.max_txtrig_level)
+ 		return false;
  
- #define ATH9K_TX_BA                0x01
- #define ATH9K_TX_PWRMGMT           0x02
---- a/drivers/net/wireless/ath/ath9k/main.c
-+++ b/drivers/net/wireless/ath/ath9k/main.c
-@@ -2327,6 +2327,7 @@ static int ath9k_config(struct ieee80211
- 
- 	if (changed & IEEE80211_CONF_CHANGE_PS) {
- 		if (conf->flags & IEEE80211_CONF_PS) {
-+			sc->sc_flags |= SC_OP_PS_ENABLED;
- 			if (!(ah->caps.hw_caps &
- 			      ATH9K_HW_CAP_AUTOSLEEP)) {
- 				if ((sc->imask & ATH9K_INT_TIM_TIMER) == 0) {
-@@ -2334,11 +2335,17 @@ static int ath9k_config(struct ieee80211
- 					ath9k_hw_set_interrupts(sc->sc_ah,
- 							sc->imask);
- 				}
--				ath9k_hw_setrxabort(sc->sc_ah, 1);
- 			}
- 			sc->ps_enabled = true;
-+			if ((sc->sc_flags & SC_OP_NULLFUNC_COMPLETED)) {
-+				sc->sc_flags &= ~SC_OP_NULLFUNC_COMPLETED;
-+				sc->ps_enabled = true;
-+				ath9k_hw_setrxabort(sc->sc_ah, 1);
-+			}
- 		} else {
- 			sc->ps_enabled = false;
-+			sc->sc_flags &= ~(SC_OP_PS_ENABLED |
-+					  SC_OP_NULLFUNC_COMPLETED);
- 			ath9k_hw_setpower(sc->sc_ah, ATH9K_PM_AWAKE);
- 			if (!(ah->caps.hw_caps &
- 			      ATH9K_HW_CAP_AUTOSLEEP)) {
---- a/drivers/net/wireless/ath/ath9k/xmit.c
-+++ b/drivers/net/wireless/ath/ath9k/xmit.c
-@@ -1592,6 +1592,13 @@ static int ath_tx_setup_buffer(struct ie
- 	}
- 
- 	bf->bf_buf_addr = bf->bf_dmacontext;
-+
-+	if (ieee80211_is_nullfunc(fc) && ieee80211_has_pm(fc)) {
-+		bf->bf_isnullfunc = true;
-+		sc->sc_flags &= ~SC_OP_NULLFUNC_COMPLETED;
-+	} else
-+		bf->bf_isnullfunc = false;
-+
- 	return 0;
- }
- 
-@@ -1989,6 +1996,15 @@ static void ath_tx_processq(struct ath_s
- 		if (ds == txq->axq_gatingds)
- 			txq->axq_gatingds = NULL;
- 
-+		if (bf->bf_isnullfunc &&
-+		    (ds->ds_txstat.ts_status & ATH9K_TX_ACKED)) {
-+			if ((sc->sc_flags & SC_OP_PS_ENABLED)) {
-+				sc->ps_enabled = true;
-+				ath9k_hw_setrxabort(sc->sc_ah, 1);
-+			} else
-+				sc->sc_flags |= SC_OP_NULLFUNC_COMPLETED;
-+		}
-+
- 		/*
- 		 * Remove ath_buf's of the same transmit unit from txq,
- 		 * however leave the last descriptor back as the holding
+ 	omask = ath9k_hw_set_interrupts(ah, ah->mask_reg & ~ATH9K_INT_GLOBAL);
+@@ -79,7 +79,7 @@ bool ath9k_hw_updatetxtriglevel(struct a
+ 	curLevel = MS(txcfg, AR_FTRIG);
+ 	newLevel = curLevel;
+ 	if (bIncTrigLevel) {
+-		if (curLevel < MAX_TX_FIFO_THRESHOLD)
++		if (curLevel < ah->config.max_txtrig_level)
+ 			newLevel++;
+ 	} else if (curLevel > MIN_TX_FIFO_THRESHOLD)
+ 		newLevel--;
 
 
