@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbZLQEja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936653AbZLQEiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763953AbZLQEja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936641AbZLQEif
+	id S936653AbZLQEiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935750AbZLQEhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:38:35 -0500
-Received: from kroah.org ([198.145.64.141]:55484 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:37:47 -0500
+Received: from kroah.org ([198.145.64.141]:55490 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763967AbZLQEEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:04:12 -0500
+	id S1763970AbZLQEEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:04:13 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:49 2009
-Message-Id: <20091217035649.141399735@mini.kroah.org>
+Message-Id: <20091217035649.269026296@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:45 -0800
+Date: Wed, 16 Dec 2009 19:55:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: [048/151] USB: xhci: Add correct email and files to MAINTAINERS entry.
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Anand Gadiyar <gadiyar@ti.com>
+Subject: [049/151] USB: musb_gadget_ep0: fix unhandled endpoint 0 IRQs, again
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,35 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit 36d0344c254a7b333272757f858c403ea3a2d29f upstream.
+commit 196f1b7a387546f425df2f1fad26772e3d513aea upstream.
 
-Add the xHCI driver files to its MAINTAINERS entry so that I'm Cc'd on
-cleanup patches.  Update the email address to one I actually use for
-sending patches and responding to Linux mailing list emails.
+Commit a5073b52833e4df8e16c93dc4cbb7e0c558c74a2 (musb_gadget: fix
+unhandled endpoint 0 IRQs) somehow missed its key change:
 
-Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+"The gadget EP0 code routinely ignores an interrupt at end of
+the data phase because of musb_g_ep0_giveback() resetting the
+state machine to "idle, waiting for SETUP" phase prematurely."
+
+So, the majority of the cases of unhandled IRQs is still unfixed...
+
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- MAINTAINERS |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/usb/musb/musb_gadget_ep0.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5594,9 +5594,11 @@ S:	Maintained
- F:	drivers/net/wireless/rndis_wlan.c
+--- a/drivers/usb/musb/musb_gadget_ep0.c
++++ b/drivers/usb/musb/musb_gadget_ep0.c
+@@ -199,7 +199,6 @@ service_in_request(struct musb *musb, co
+ static void musb_g_ep0_giveback(struct musb *musb, struct usb_request *req)
+ {
+ 	musb_g_giveback(&musb->endpoints[0].ep_in, req, 0);
+-	musb->ep0_state = MUSB_EP0_STAGE_SETUP;
+ }
  
- USB XHCI DRIVER
--M:	Sarah Sharp <sarah.a.sharp@intel.com>
-+M:	Sarah Sharp <sarah.a.sharp@linux.intel.com>
- L:	linux-usb@vger.kernel.org
- S:	Supported
-+F:	drivers/usb/host/xhci*
-+F:	drivers/usb/host/pci-quirks*
- 
- USB ZC0301 DRIVER
- M:	Luca Risolia <luca.risolia@studio.unibo.it>
+ /*
 
 
