@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936085AbZLQEVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbZLQEUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936085AbZLQEVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936410AbZLQEUJ
+	id S1763637AbZLQEUz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936426AbZLQEUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:20:09 -0500
-Received: from kroah.org ([198.145.64.141]:55868 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:20:07 -0500
+Received: from kroah.org ([198.145.64.141]:55872 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936085AbZLQEFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:05:14 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:57 2009
-Message-Id: <20091217035657.762200531@mini.kroah.org>
+	id S935682AbZLQEFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:05:15 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:58 2009
+Message-Id: <20091217035657.891238507@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:56:51 -0800
+Date: Wed, 16 Dec 2009 19:56:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [114/151] sparc: Set UTS_MACHINE correctly.
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [115/151] b43legacy: avoid PPC fault during resume
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,42 +29,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-[ Upstream commit 7f5620a5fcd658f219e85831d3691908f1eccbde ]
+commit 316a4d966cae3c2dec83ebb1ee1a3515f97b30ff upstream.
 
-"ARCH" can be just about anything, so we shouldn't end up
-with UTS_MACHINE of "sparc" in a 64-bit kernel build just
-because someone set the personality using 'sparc32' or
-similar.  CONFIG_SPARC64 drives the compilation and
-therefore provides the definitive value, not "ARCH".
+For PPC architecture with PHY Revision < 3, a read of the register
+B43_MMIO_HWENABLED_LO will cause a CPU fault unless b43legacy_status()
+returns a value of 2 (B43legacy_STAT_STARTED); however, one finds that
+the driver is unable to associate after resuming from hibernation unless
+this routine returns 1. To satisfy both conditions, the routine is rewritten
+to return TRUE whenever b43legacy_status() returns a value < 2.
 
-This mirrors commit 8c6531f7a99f29ba8817ffb12cc9ecf190049bd6
-(x86: correctly set UTS_MACHINE for "make ARCH=x86")
+This patch fixes the second problem listed in the postings for Red Hat
+Bugzilla #538523.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/sparc/Makefile |    2 ++
- 1 file changed, 2 insertions(+)
 
---- a/arch/sparc/Makefile
-+++ b/arch/sparc/Makefile
-@@ -27,6 +27,7 @@ AS             := $(AS) -32
- LDFLAGS        := -m elf32_sparc
- CHECKFLAGS     += -D__sparc__
- export BITS    := 32
-+UTS_MACHINE    := sparc
- 
- #KBUILD_CFLAGS += -g -pipe -fcall-used-g5 -fcall-used-g7
- KBUILD_CFLAGS += -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7
-@@ -46,6 +47,7 @@ CHECKFLAGS      += -D__sparc__ -D__sparc
- 
- LDFLAGS              := -m elf64_sparc
- export BITS          := 64
-+UTS_MACHINE          := sparc64
- 
- KBUILD_CFLAGS += -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow   \
-                  -ffixed-g4 -ffixed-g5 -fcall-used-g7 -Wno-sign-compare \
+---
+ drivers/net/wireless/b43legacy/rfkill.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/drivers/net/wireless/b43legacy/rfkill.c
++++ b/drivers/net/wireless/b43legacy/rfkill.c
+@@ -34,6 +34,13 @@ bool b43legacy_is_hw_radio_enabled(struc
+ 		      & B43legacy_MMIO_RADIO_HWENABLED_HI_MASK))
+ 			return 1;
+ 	} else {
++		/* To prevent CPU fault on PPC, do not read a register
++		 * unless the interface is started; however, on resume
++		 * for hibernation, this routine is entered early. When
++		 * that happens, unconditionally return TRUE.
++		 */
++		if (b43legacy_status(dev) < B43legacy_STAT_STARTED)
++			return 1;
+ 		if (b43legacy_read16(dev, B43legacy_MMIO_RADIO_HWENABLED_LO)
+ 		    & B43legacy_MMIO_RADIO_HWENABLED_LO_MASK)
+ 			return 1;
 
 
