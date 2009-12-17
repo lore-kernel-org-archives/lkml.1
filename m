@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZLQT47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbZLQT6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759712AbZLQT47 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:56:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZLQT46
+	id S1761759AbZLQT6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZLQT6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:56:58 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:55778 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbZLQT46 (ORCPT
+	Thu, 17 Dec 2009 14:58:34 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39999 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754392AbZLQT6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:56:58 -0500
-Date: Thu, 17 Dec 2009 13:56:27 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Andi Kleen <andi@firstfloor.org>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Thu, 17 Dec 2009 14:58:33 -0500
+Date: Thu, 17 Dec 2009 19:58:08 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Joe Buck <Joe.Buck@synopsys.COM>, "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-In-Reply-To: <20091217195530.GM9804@basil.fritz.box>
-Message-ID: <alpine.DEB.2.00.0912171356020.4640@router.home>
-References: <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com> <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box>
- <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box> <20091217144551.GA6819@linux.vnet.ibm.com> <20091217175338.GL9804@basil.fritz.box> <20091217190804.GB6788@linux.vnet.ibm.com> <20091217195530.GM9804@basil.fritz.box>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+Message-ID: <20091217195808.GE4440@n2100.arm.linux.org.uk>
+References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com> <20091217190613.GB4440@n2100.arm.linux.org.uk> <20091217191401.GD10707@synopsys.com> <20091217193826.GE362@shareable.org> <20091217194837.GD4440@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091217194837.GD4440@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Andi Kleen wrote:
+On Thu, Dec 17, 2009 at 07:48:37PM +0000, Russell King - ARM Linux wrote:
+> Given the lack of progress/bug reporting on ARM uclinux, the lack of
+> platform support and the lack of configurations, my view is that there
+> is no one actually using it.  I know that I don't particularly take any
+> care with respect to uclinux when making changes to the MMU based kernels.
+> Why bother if apparantly no one's using it?
 
-> mmap_sem is a nasty lock, handlings lots of different things.
+Jamie,
 
-That is why I think that the accessors are a good first step.
+As you seem to be a user of uclinux on ARM, could you help ensure that
+the support there is bug fixed and we at least have a configuration file
+which kautobuild can use to provide feedback on the build status of
+uclinux on ARM please?
