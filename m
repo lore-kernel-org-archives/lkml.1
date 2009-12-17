@@ -1,126 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbZLQAeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763466AbZLQAeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763444AbZLQAeB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762854AbZLQAeA
+	id S1763466AbZLQAeP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763455AbZLQAeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:34:00 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:34568 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762844AbZLQAd7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:33:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Q320u14Hpu75Qc6fD9ANbyo/2Ow4jHmGltR9zr1+8icNA804cDp9JKtcfhgwnxwWsS
-         ZkOGvhmrHynl91i70QbO75iqSGcrVap4xO+A7B48EOMda0zrIMJDzkKEJ4mAlgm5sHAU
-         GqOT/UuEDMOa4o8KgjpSZeo4HtLZ9Ar7hlqK8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Michal Marek <mmarek@suse.cz>,
-       Andrew Randrianasulu <randrik_a@yahoo.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [PATCH v2] hw-breakpoint: Fix hardware breakpoints -> perf events dependency
-Date: Thu, 17 Dec 2009 01:33:54 +0100
-Message-Id: <1261010034-7786-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1261009575-7496-1-git-send-regression-fweisbec@gmail.com>
-References: <1261009575-7496-1-git-send-regression-fweisbec@gmail.com>
+	Wed, 16 Dec 2009 19:34:10 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:47324 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762854AbZLQAeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:34:07 -0500
+Message-ID: <4B297C79.2090004@us.ibm.com>
+Date: Wed, 16 Dec 2009 16:34:01 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>,
+       "lkml, " <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] Use opaque record type in pevent accessor functions
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kbuild's select command doesn't propagate through the config
-dependencies.
+>From 35c283e97c16525bbebae6f9937a1ccd0f3b8da9 Mon Sep 17 00:00:00 2001
+From: Darren Hart <dvhltc@us.ibm.com>
+Date: Wed, 16 Dec 2009 15:40:31 -0800
+Subject: [PATCH 1/2] Use opaque record type in pevent accessor functions
 
-Hence the current rules of hardware breakpoint's config can't
-ensure perf can never be disabled under us.
+The caller of the pevent accessor functions:
 
-We have:
+	pevent_data_pid(pevent, data) for example
 
-config X86
-	selects HAVE_HW_BREAKPOINTS
+Already have a struct record. Let them send that directly:
 
-config HAVE_HW_BREAKPOINTS
-	select PERF_EVENTS
+	pevent_data_pid(pevent, record)
 
-config PERF_EVENTS
-	[...]
+This decouples the API from the struct implementation and facilitates
+language bindings which use opaque pointers for passing the C structs
+around.
 
-x86 will select the breakpoints but that won't propagate to perf
-events. The user can still disable the latter, but it is necessary
-for the breakpoints.
-
-What we need is:
-
-- x86 selects HAVE_HW_BREAKPOINTS and PERF_EVENTS
-- HAVE_HW_BREAKPOINTS depends on PERF_EVENTS
-
-so that we ensure PERF_EVENTS is enabled and frozen for x86.
-
-This fixes the following kind of build errors:
-
-In file included from arch/x86/kernel/hw_breakpoint.c:31:
-include/linux/hw_breakpoint.h: In function 'hw_breakpoint_addr':
-include/linux/hw_breakpoint.h:39: error: 'struct perf_event' has no member named 'attr'
-include/linux/hw_breakpoint.h: In function 'hw_breakpoint_type':
-include/linux/hw_breakpoint.h:44: error: 'struct perf_event' has no member named 'attr'
-include/linux/hw_breakpoint.h: In function 'hw_breakpoint_len':
-include/linux/hw_breakpoint.h:49: error: 'struct perf_event' has no member named 'attr'
-include/linux/hw_breakpoint.h: In function 'counter_arch_bp':
-include/linux/hw_breakpoint.h:85: error: 'struct perf_event' has no member named 'hw'
-
-v2: Select also ANON_INODES from x86, required for perf
-
-Reported-by: Cyrill Gorcunov <gorcunov@gmail.com>
-Reported-by: Michal Marek <mmarek@suse.cz>
-Reported-by: Andrew Randrianasulu <randrik_a@yahoo.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 ---
- arch/Kconfig     |    4 +---
- arch/x86/Kconfig |    2 ++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ parse-events.c |   14 +++++++-------
+ parse-events.h |   12 ++++++++++--
+ trace-cmd.h    |    8 --------
+ 3 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 28146cd..32e8b68 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -138,9 +138,7 @@ config HAVE_USER_RETURN_NOTIFIER
+diff --git a/parse-events.c b/parse-events.c
+index 7112eb8..1a2c7ca 100644
+--- a/parse-events.c
++++ b/parse-events.c
+@@ -3081,13 +3081,13 @@ void pevent_data_lat_fmt(struct pevent *pevent,
+ /**
+  * pevent_data_type - parse out the given event type
+  * @pevent: a handle to the pevent
+- * @data: the raw data to read from
++ * @rec: the record to read from
+  *
+- * This returns the event id from the raw @data.
++ * This returns the event id from the @rec.
+  */
+-int pevent_data_type(struct pevent *pevent, void *data)
++int pevent_data_type(struct pevent *pevent, struct record *rec)
+ {
+-	return trace_parse_common_type(pevent, data);
++	return trace_parse_common_type(pevent, rec->data);
+ }
  
- config HAVE_HW_BREAKPOINT
- 	bool
--	depends on HAVE_PERF_EVENTS
--	select ANON_INODES
--	select PERF_EVENTS
-+	depends on PERF_EVENTS
+ /**
+@@ -3105,13 +3105,13 @@ struct event *pevent_data_event_from_type(struct pevent *pevent, int type)
+ /**
+  * pevent_data_pid - parse the PID from raw data
+  * @pevent: a handle to the pevent
+- * @data: the raw data to parse
++ * @rec: the record to parse
+  *
+  * This returns the PID from a raw data.
+  */
+-int pevent_data_pid(struct pevent *pevent, void *data)
++int pevent_data_pid(struct pevent *pevent, struct record *rec)
+ {
+-	return parse_common_pid(pevent, data);
++	return parse_common_pid(pevent, rec->data);
+ }
  
+ /**
+diff --git a/parse-events.h b/parse-events.h
+index 9b5ba0d..e6f5806 100644
+--- a/parse-events.h
++++ b/parse-events.h
+@@ -14,6 +14,14 @@
+ #define TRACE_SEQ_SIZE 4096
+ #endif
  
- source "kernel/gcov/Kconfig"
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 098f0d3..cbc1b98 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -50,6 +50,8 @@ config X86
- 	select HAVE_KERNEL_BZIP2
- 	select HAVE_KERNEL_LZMA
- 	select HAVE_HW_BREAKPOINT
-+	select PERF_EVENTS
-+	select ANON_INODES
- 	select HAVE_ARCH_KMEMCHECK
- 	select HAVE_USER_RETURN_NOTIFIER
++struct record {
++	unsigned long long ts;
++	unsigned long long offset;
++	int record_size;		/* size of binary record */
++	int size;			/* size of data */
++	void *data;
++};
++
+ /*
+  * Trace sequences are used to allow a function to call several other functions
+  * to create a string of data to use (up to a max of PAGE_SIZE).
+@@ -368,9 +376,9 @@ pevent_find_event_by_name(struct pevent *pevent, const char *sys, const char *na
  
+ void pevent_data_lat_fmt(struct pevent *pevent,
+ 			 struct trace_seq *s, void *data, int size __unused);
+-int pevent_data_type(struct pevent *pevent, void *data);
++int pevent_data_type(struct pevent *pevent, struct record *rec);
+ struct event *pevent_data_event_from_type(struct pevent *pevent, int type);
+-int pevent_data_pid(struct pevent *pevent, void *data);
++int pevent_data_pid(struct pevent *pevent, struct record *rec);
+ const char *pevent_data_comm_from_pid(struct pevent *pevent, int pid);
+ void pevent_event_info(struct trace_seq *s, struct event *event,
+ 		       int cpu, void *data, int size, unsigned long long nsecs);
+diff --git a/trace-cmd.h b/trace-cmd.h
+index d6e4db0..1c4d359 100644
+--- a/trace-cmd.h
++++ b/trace-cmd.h
+@@ -28,14 +28,6 @@ enum {
+ #define TS_SHIFT		27
+ #endif
+ 
+-struct record {
+-	unsigned long long ts;
+-	unsigned long long offset;
+-	int record_size;		/* size of binary record */
+-	int size;			/* size of data */
+-	void *data;
+-};
+-
+ static inline void free_record(struct record *record)
+ {
+ 	free(record);
 -- 
-1.6.2.3
-
+1.6.3.3
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
