@@ -1,53 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763533AbZLQBAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763542AbZLQBBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763533AbZLQBAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763499AbZLQBAj
+	id S1763542AbZLQBBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763520AbZLQBBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:00:39 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46307 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763520AbZLQBAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:00:37 -0500
-Date: Thu, 17 Dec 2009 01:00:32 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] VFS stuff, part 1
-Message-ID: <20091217010032.GS14381@ZenIV.linux.org.uk>
-References: <20091216185157.GL14381@ZenIV.linux.org.uk> <a4423d670912161441v12bfa53dj7cf2cca6247dd290@mail.gmail.com> <1261004048.3154.2.camel@localhost> <20091216230711.GN14381@ZenIV.linux.org.uk> <1261005194.3154.4.camel@localhost> <20091216232729.GO14381@ZenIV.linux.org.uk> <1261008131.3026.0.camel@localhost> <20091217004003.GQ14381@ZenIV.linux.org.uk>
+	Wed, 16 Dec 2009 20:01:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35124 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756311AbZLQBBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:01:10 -0500
+Date: Thu, 17 Dec 2009 01:00:40 GMT
+From: tip-bot for Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andreas.herrmann3@amd.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de
+In-Reply-To: <20091216144355.GB28798@alberich.amd.com>
+References: <20091216144355.GB28798@alberich.amd.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, amd: Get multi-node CPU info from NodeId MSR instead of PCI config space
+Message-ID: <tip-9d260ebc09a0ad6b5c73e17676df42c7bc75ff64@git.kernel.org>
+Git-Commit-ID: 9d260ebc09a0ad6b5c73e17676df42c7bc75ff64
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091217004003.GQ14381@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 12:40:03AM +0000, Al Viro wrote:
-> On Thu, Dec 17, 2009 at 12:02:11AM +0000, Tony Vroon wrote:
-> > On Wed, 2009-12-16 at 23:27 +0000, Al Viro wrote:
-> > > > Do you want me to revert 1c7c474c31aea6d5cb2fb35f31d9e9e91ae466b1
-> > > > locally or try linux-2.6 old enough not to have this?
-> > > The former.
-> > 
-> > That resolves the issue completely. I am now able to boot.
-> 
-> Oh, fsck...  I see.  Linus, the fix is added to the same branch (and
-> I'll throw the fix for removed alloc_file export there in a few minutes).
+Commit-ID:  9d260ebc09a0ad6b5c73e17676df42c7bc75ff64
+Gitweb:     http://git.kernel.org/tip/9d260ebc09a0ad6b5c73e17676df42c7bc75ff64
+Author:     Andreas Herrmann <herrmann.der.user@googlemail.com>
+AuthorDate: Wed, 16 Dec 2009 15:43:55 +0100
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Wed, 16 Dec 2009 15:06:23 -0800
 
-Nevermind, alloc_file export had been restored in mainline already.
-So just pull from the same place, same branch (
-git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ master
-), there's just that one commit on top of mainline.
+x86, amd: Get multi-node CPU info from NodeId MSR instead of PCI config space
 
-What happened: in absence of CONFIG_TPMFS_POSIX_ACL, shmem_mknod() had
-code that boiled down to
-	error = 0; /* shmem_acl_init(...), actually */
-	if (error)
-		cleanup
-and Christoph's patch had put all that chunk under ifdef.  Which was not
-an equivalent transformation, since we could arrive there with non-zero
-error.  Old code used to set it to 0, new one left as-is.
+Use NodeId MSR to get NodeId and number of nodes per processor.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+LKML-Reference: <20091216144355.GB28798@alberich.amd.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/include/asm/cpufeature.h |    1 +
+ arch/x86/include/asm/msr-index.h  |    1 +
+ arch/x86/kernel/cpu/amd.c         |   53 ++++++++++--------------------------
+ 3 files changed, 17 insertions(+), 38 deletions(-)
+
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 613700f..637e1ec 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -153,6 +153,7 @@
+ #define X86_FEATURE_SSE5	(6*32+11) /* SSE-5 */
+ #define X86_FEATURE_SKINIT	(6*32+12) /* SKINIT/STGI instructions */
+ #define X86_FEATURE_WDT		(6*32+13) /* Watchdog timer */
++#define X86_FEATURE_NODEID_MSR	(6*32+19) /* NodeId MSR */
+ 
+ /*
+  * Auxiliary flags: Linux defined - For features scattered in various
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index ac98d29..1cd58cd 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -124,6 +124,7 @@
+ #define FAM10H_MMIO_CONF_BUSRANGE_SHIFT 2
+ #define FAM10H_MMIO_CONF_BASE_MASK	0xfffffff
+ #define FAM10H_MMIO_CONF_BASE_SHIFT	20
++#define MSR_FAM10H_NODE_ID		0xc001100c
+ 
+ /* K8 MSRs */
+ #define MSR_K8_TOP_MEM1			0xc001001a
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 8dc3ea1..e485825 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -254,59 +254,36 @@ static int __cpuinit nearby_node(int apicid)
+ 
+ /*
+  * Fixup core topology information for AMD multi-node processors.
+- * Assumption 1: Number of cores in each internal node is the same.
+- * Assumption 2: Mixed systems with both single-node and dual-node
+- *               processors are not supported.
++ * Assumption: Number of cores in each internal node is the same.
+  */
+ #ifdef CONFIG_X86_HT
+ static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
+ {
+-#ifdef CONFIG_PCI
+-	u32 t, cpn;
+-	u8 n, n_id;
++	unsigned long long value;
++	u32 nodes, cores_per_node;
+ 	int cpu = smp_processor_id();
+ 
++	if (!cpu_has(c, X86_FEATURE_NODEID_MSR))
++		return;
++
+ 	/* fixup topology information only once for a core */
+ 	if (cpu_has(c, X86_FEATURE_AMD_DCM))
+ 		return;
+ 
+-	/* check for multi-node processor on boot cpu */
+-	t = read_pci_config(0, 24, 3, 0xe8);
+-	if (!(t & (1 << 29)))
++	rdmsrl(MSR_FAM10H_NODE_ID, value);
++
++	nodes = ((value >> 3) & 7) + 1;
++	if (nodes == 1)
+ 		return;
+ 
+ 	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
++	cores_per_node = c->x86_max_cores / nodes;
+ 
+-	/* cores per node: each internal node has half the number of cores */
+-	cpn = c->x86_max_cores >> 1;
++	/* store NodeID, use llc_shared_map to store sibling info */
++	per_cpu(cpu_llc_id, cpu) = value & 7;
+ 
+-	/* even-numbered NB_id of this dual-node processor */
+-	n = c->phys_proc_id << 1;
+-
+-	/*
+-	 * determine internal node id and assign cores fifty-fifty to
+-	 * each node of the dual-node processor
+-	 */
+-	t = read_pci_config(0, 24 + n, 3, 0xe8);
+-	n = (t>>30) & 0x3;
+-	if (n == 0) {
+-		if (c->cpu_core_id < cpn)
+-			n_id = 0;
+-		else
+-			n_id = 1;
+-	} else {
+-		if (c->cpu_core_id < cpn)
+-			n_id = 1;
+-		else
+-			n_id = 0;
+-	}
+-
+-	/* compute entire NodeID, use llc_shared_map to store sibling info */
+-	per_cpu(cpu_llc_id, cpu) = (c->phys_proc_id << 1) + n_id;
+-
+-	/* fixup core id to be in range from 0 to cpn */
+-	c->cpu_core_id = c->cpu_core_id % cpn;
+-#endif
++	/* fixup core id to be in range from 0 to (cores_per_node - 1) */
++	c->cpu_core_id = c->cpu_core_id % cores_per_node;
+ }
+ #endif
+ 
