@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbZLQNMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764695AbZLQNQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbZLQNMt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 08:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759507AbZLQNMs
+	id S1764695AbZLQNQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 08:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764046AbZLQNQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 08:12:48 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:62342 "EHLO poutre.nerim.net"
+	Thu, 17 Dec 2009 08:16:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12872 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934204AbZLQNMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 08:12:47 -0500
-Date: Thu, 17 Dec 2009 14:12:43 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, lm-sensors@lm-sensors.org,
-       Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [lm-sensors] [patch 1/5] hwmon: Convert fschmd to 
- unlocked_ioctl
-Message-ID: <20091217141243.770dba04@hyperion.delvare>
-In-Reply-To: <alpine.LFD.2.00.0911061655060.12138@localhost.localdomain>
-References: <20091015202722.372890083@linutronix.de>
-	<20091015202758.400949170@linutronix.de>
-	<20091106141542.12404c5c@hyperion.delvare>
-	<alpine.LFD.2.00.0911061655060.12138@localhost.localdomain>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1760557AbZLQNQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 08:16:25 -0500
+Message-ID: <4B2A2F94.9000204@redhat.com>
+Date: Thu, 17 Dec 2009 08:18:12 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Roland Dreier <rdreier@cisco.com>, Michal Marek <mmarek@suse.cz>,
+       Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org>	<adabphy750b.fsf@roland-alpha.cisco.com> <4B29A686.9070603@redhat.com>	<ada3a3a6xs6.fsf@roland-alpha.cisco.com> <4B29BA13.7020502@redhat.com> <aday6l25gnm.fsf@roland-alpha.cisco.com> <4B29BFE8.1000502@zytor.com> <4B29C652.5080803@redhat.com> <4B29C661.6090800@zytor.com> <4B29CA73.4050005@redhat.com> <4B29CADE.8020905@zytor.com> <4B29CDC6.7040501@redhat.com> <4B29CF16.6060206@zytor.com>
+In-Reply-To: <4B29CF16.6060206@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
-
-On Fri, 6 Nov 2009 16:56:34 +0100 (CET), Thomas Gleixner wrote:
-> On Fri, 6 Nov 2009, Jean Delvare wrote:
-> > I'm not sure why we need to hold the mutex here? My understanding is
-> > that watchdog_data_mutex protects watchdog_data_list and each
-> > watchdog's kref. And the above code doesn't touch either.
-> > 
-> > What I am more worried about is why ident is declared static. This
-> > looks like a bug to me. Instead of abusing watchdog_data_mutex to
-> > workaround this, I'd rather remove the "static". I guess that the
-> > current code happens to work because neither data->revision nor
-> > nowayout can change over time, but this looks needlessly fragile.
+H. Peter Anvin wrote:
+> On 12/16/2009 10:20 PM, Masami Hiramatsu wrote:
+>>
+>> So, if your patch is accepted, I'm OK for Roland's patch too(thanks!).
+>>
 > 
-> Right, we can change ident to be non static instead of abusing the
-> mutex. Stupid me. Will fix.
+> Roland, Masami, Sam: can I add your respective Acked-by:?
 
-This was quite some time ago and I can't seem to find an updated version
-of your patch that I could apply. Care to send one?
+Ah, yes, of course!
 
-Thanks,
+Thank you,
+
 -- 
-Jean Delvare
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
