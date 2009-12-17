@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965251AbZLQPnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965272AbZLQPrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965251AbZLQPnP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965192AbZLQPnN
+	id S965272AbZLQPrk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965201AbZLQPrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:43:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54501 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965190AbZLQPnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:43:10 -0500
-Message-ID: <4B2A518B.1030800@redhat.com>
-Date: Thu, 17 Dec 2009 16:43:07 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 Thunderbird/3.0
+	Thu, 17 Dec 2009 10:47:37 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:55664 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965200AbZLQPrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:47:35 -0500
+Date: Thu, 17 Dec 2009 10:47:32 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: e100 REGRESSION in 2.6.32 (PATCH)
+In-Reply-To: <200912171414.16846.roger.oksanen@cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.44L0.0912171046070.2645-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alasdair G Kergon <agk@redhat.com>
-CC: Greg KH <greg@kroah.com>, Zdenek Kabelac <zkabelac@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: dm: sysfs add empty release function to avoid
- debug	warning
-References: <200912151735.nBFHZ8XP018683@hera.kernel.org> <20091216004739.GB4898@kroah.com> <4B28AC09.2000302@redhat.com> <20091216134538.GA20857@kroah.com> <4B290B95.10306@redhat.com> <20091216174632.GA12473@kroah.com> <4B29299B.5080704@redhat.com> <20091217003021.GB3512@kroah.com>
-In-Reply-To: <20091217003021.GB3512@kroah.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/17/2009 01:30 AM, Greg KH wrote:
-> On Wed, Dec 16, 2009 at 07:40:27PM +0100, Milan Broz wrote:
->> On 12/16/2009 06:46 PM, Greg KH wrote:
->>> You will find that all of these are modules, right?  That's being worked
->>> on still.
->>
->> probably. I see that this implementation is in kernel since import to git...
+On Thu, 17 Dec 2009, Roger Oksanen wrote:
+
+> e100: Fix broken cbs accounting due to missing memset.
 > 
-> And you will also note that I didn't paper over the issue by trying to
-> provide an empty release function :)
+> Alan Stern noticed that e100 caused slab corruption.
+> commit 98468efddb101f8a29af974101c17ba513b07be1 changed
+> the allocation of cbs to use dma pools that don't return zeroed memory,
+> especially the cb->status field used to track which cb to clean, causing
+> (the visible) double freeing of skbs and a wrong free cbs count.
+> 
+> Now the cbs are explicitly zeroed at allocation time.
+> 
+> Reported-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+> ---
+>  drivers/net/e100.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+> index d269a68..29a8840 100644
+> --- a/drivers/net/e100.c
+> +++ b/drivers/net/e100.c
+> @@ -1815,6 +1815,7 @@ static int e100_alloc_cbs(struct nic *nic)
+>  
+>  	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
+>  				  &nic->cbs_dma_addr);
+> +	memset(nic->cbs, 0, count * sizeof(struct cb));
+>  	if (!nic->cbs)
+>  		return -ENOMEM;
+>  
+> @@ -1825,7 +1826,6 @@ static int e100_alloc_cbs(struct nic *nic)
+>  		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
+>  		cb->link = cpu_to_le32(nic->cbs_dma_addr +
+>  			((i+1) % count) * sizeof(struct cb));
+> -		cb->skb = NULL;
+>  	}
+>  
+>  	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
 
-Alasdair, can we request revert of that last patch for now
-(which introduced the empty release function)?
+Clearly the memset() belongs after the "if" test, not before.  Apart 
+from that, I confirm that this patch fixes the problem in 2.6.32.
 
-Milan
+Tested-by: Alan Stern <stern@rowland.harvard.edu>
+
+Alan Stern
+
