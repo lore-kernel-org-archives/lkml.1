@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934818AbZLQBYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763766AbZLQBXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934818AbZLQBYB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763739AbZLQBVP
+	id S1763766AbZLQBXu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763740AbZLQBVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:21:15 -0500
-Received: from kroah.org ([198.145.64.141]:41487 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:21:16 -0500
+Received: from kroah.org ([198.145.64.141]:41500 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763682AbZLQBVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:21:01 -0500
+	id S1763708AbZLQBVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:21:03 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:08 2009
-Message-Id: <20091217011608.305374103@mini.kroah.org>
+Message-Id: <20091217011608.432875928@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:30 -0800
+Date: Wed, 16 Dec 2009 17:15:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       Stefan Bader <stefan.bader@canonical.com>
-Subject: [79/90] drm/i915: save/restore BLC histogram control reg across suspend/resume
+       Shaohua Li <shaohua.li@intel.com>,
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>
+Subject: [80/90] drm/i915: PineView only has LVDS and CRT ports
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,62 +29,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
 
-commit 0eb96d6ed38430b72897adde58f5477a6b71757a upstream.
+commit 103a196f4224dc6872081305cf7f82ebf67aa7bd upstream.
 
-Turns out some machines, like the ThinkPad X40 don't come back if you
-don't save/restore this register.
+PineView only has 2 ports for LVDS and CRT. Don't enable other
+ports for it.
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
 Signed-off-by: Eric Anholt <eric@anholt.net>
-Cc: Stefan Bader <stefan.bader@canonical.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_drv.h     |    1 +
- drivers/gpu/drm/i915/i915_reg.h     |    2 ++
- drivers/gpu/drm/i915/i915_suspend.c |    2 ++
- 3 files changed, 5 insertions(+)
+ drivers/gpu/drm/i915/i915_drv.h      |    4 ++++
+ drivers/gpu/drm/i915/intel_display.c |    6 +++---
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
 --- a/drivers/gpu/drm/i915/i915_drv.h
 +++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -264,6 +264,7 @@ typedef struct drm_i915_private {
- 	u32 saveDSPASURF;
- 	u32 saveDSPATILEOFF;
- 	u32 savePFIT_PGM_RATIOS;
-+	u32 saveBLC_HIST_CTL;
- 	u32 saveBLC_PWM_CTL;
- 	u32 saveBLC_PWM_CTL2;
- 	u32 saveFPB0;
---- a/drivers/gpu/drm/i915/i915_reg.h
-+++ b/drivers/gpu/drm/i915/i915_reg.h
-@@ -915,6 +915,8 @@
- #define   BACKLIGHT_DUTY_CYCLE_SHIFT		(0)
- #define   BACKLIGHT_DUTY_CYCLE_MASK		(0xffff)
+@@ -838,6 +838,7 @@ extern int i915_wait_ring(struct drm_dev
+ #define IS_I85X(dev) ((dev)->pci_device == 0x3582)
+ #define IS_I855(dev) ((dev)->pci_device == 0x3582)
+ #define IS_I865G(dev) ((dev)->pci_device == 0x2572)
++#define IS_I8XX(dev) (IS_I830(dev) || IS_845G(dev) || IS_I85X(dev) || IS_I865G(dev))
  
-+#define BLC_HIST_CTL		0x61260
-+
- /* TV port control */
- #define TV_CTL			0x68000
- /** Enables the TV encoder */
---- a/drivers/gpu/drm/i915/i915_suspend.c
-+++ b/drivers/gpu/drm/i915/i915_suspend.c
-@@ -416,6 +416,7 @@ int i915_save_state(struct drm_device *d
- 	dev_priv->savePP_CONTROL = I915_READ(PP_CONTROL);
- 	dev_priv->savePFIT_PGM_RATIOS = I915_READ(PFIT_PGM_RATIOS);
- 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
-+	dev_priv->saveBLC_HIST_CTL = I915_READ(BLC_HIST_CTL);
- 	if (IS_I965G(dev))
- 		dev_priv->saveBLC_PWM_CTL2 = I915_READ(BLC_PWM_CTL2);
- 	if (IS_MOBILE(dev) && !IS_I830(dev))
-@@ -560,6 +561,7 @@ int i915_restore_state(struct drm_device
+ #define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 0x258a)
+ #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
+@@ -899,9 +900,12 @@ extern int i915_wait_ring(struct drm_dev
+  */
+ #define HAS_128_BYTE_Y_TILING(dev) (IS_I9XX(dev) && !(IS_I915G(dev) || \
+ 						      IS_I915GM(dev)))
++#define SUPPORTS_DIGITAL_OUTPUTS(dev)	(IS_I9XX(dev) && !IS_IGD(dev))
+ #define SUPPORTS_INTEGRATED_HDMI(dev)	(IS_G4X(dev) || IS_IGDNG(dev))
+ #define SUPPORTS_INTEGRATED_DP(dev)	(IS_G4X(dev) || IS_IGDNG(dev))
+ #define SUPPORTS_EDP(dev)		(IS_IGDNG_M(dev))
++#define SUPPORTS_TV(dev)		(IS_I9XX(dev) && IS_MOBILE(dev) && \
++					!IS_IGDNG(dev) && !IS_IGD(dev))
+ #define I915_HAS_HOTPLUG(dev) (IS_I945G(dev) || IS_I945GM(dev) || IS_I965G(dev))
+ /* dsparb controlled by hw only */
+ #define DSPARB_HWCONTROL(dev) (IS_G4X(dev) || IS_IGDNG(dev))
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -3347,7 +3347,7 @@ static void intel_setup_outputs(struct d
+ 		if (I915_READ(PCH_DP_D) & DP_DETECTED)
+ 			intel_dp_init(dev, PCH_DP_D);
  
- 	I915_WRITE(PFIT_PGM_RATIOS, dev_priv->savePFIT_PGM_RATIOS);
- 	I915_WRITE(BLC_PWM_CTL, dev_priv->saveBLC_PWM_CTL);
-+	I915_WRITE(BLC_HIST_CTL, dev_priv->saveBLC_HIST_CTL);
- 	I915_WRITE(PP_ON_DELAYS, dev_priv->savePP_ON_DELAYS);
- 	I915_WRITE(PP_OFF_DELAYS, dev_priv->savePP_OFF_DELAYS);
- 	I915_WRITE(PP_DIVISOR, dev_priv->savePP_DIVISOR);
+-	} else if (IS_I9XX(dev)) {
++	} else if (SUPPORTS_DIGITAL_OUTPUTS(dev)) {
+ 		bool found = false;
+ 
+ 		if (I915_READ(SDVOB) & SDVO_DETECTED) {
+@@ -3374,10 +3374,10 @@ static void intel_setup_outputs(struct d
+ 
+ 		if (SUPPORTS_INTEGRATED_DP(dev) && (I915_READ(DP_D) & DP_DETECTED))
+ 			intel_dp_init(dev, DP_D);
+-	} else
++	} else if (IS_I8XX(dev))
+ 		intel_dvo_init(dev);
+ 
+-	if (IS_I9XX(dev) && IS_MOBILE(dev) && !IS_IGDNG(dev))
++	if (SUPPORTS_TV(dev))
+ 		intel_tv_init(dev);
+ 
+ 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
 
