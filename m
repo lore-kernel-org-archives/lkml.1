@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763331AbZLPX6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763406AbZLPX7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763331AbZLPX6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 18:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762708AbZLPX6n
+	id S1763406AbZLPX7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 18:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761723AbZLPX7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 18:58:43 -0500
-Received: from www.tglx.de ([62.245.132.106]:38154 "EHLO www.tglx.de"
+	Wed, 16 Dec 2009 18:59:32 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50746 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757949AbZLPX6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 18:58:42 -0500
-Date: Thu, 17 Dec 2009 00:58:27 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Simon Horman <horms@verge.net.au>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] timers: Remove duplicate setting of new_base in
- __mod_timer()
-In-Reply-To: <20091216222028.GA15841@verge.net.au>
-Message-ID: <alpine.LFD.2.00.0912170053400.2755@localhost.localdomain>
-References: <20091216222028.GA15841@verge.net.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1761610AbZLPX7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 18:59:31 -0500
+Message-ID: <4B2974F0.1030505@novell.com>
+Date: Thu, 17 Dec 2009 09:01:52 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>
+Cc: stable@kernel.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jan Beulich <JBeulich@novell.com>,
+       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [stable] [PATCH -stable] vmalloc: conditionalize build of pcpu_get_vm_areas()
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <4B1E0E56.8020003@kernel.org> <4B1E1EE60200007800024364@vpn.id2.novell.com> <4B1E1513.3020000@kernel.org> <4B203614.1010907@novell.com> <20091216231210.GB9421@kroah.com>
+In-Reply-To: <20091216231210.GB9421@kroah.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-B1;2005;0cSimon,
+Hello, Greg.
 
-On Thu, 17 Dec 2009, Simon Horman wrote:
-
-> I am wondering if the first line of the following snippet of
-> __mod_timer() can be removed as new_base always seems to be reset.
-
-Good catch.
- 
-> Alternatively perhaps smp_processor_id() and  per_cpu() could
-> be moved to inside the #if and the call to __get_cpu_var() moved to
-> inside #else ?
-
-Nah, __get_cpu_var does a smp_processor_id() anyway. Removing that
-first new_base assignment is the right thing to do.
-
->         new_base = __get_cpu_var(tvec_bases);
+On 12/17/2009 08:12 AM, Greg KH wrote:
+>> Please note that this commit won't appear on upstream.
 > 
->         cpu = smp_processor_id();
->         
-> #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
->         if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
->                 int preferred_cpu = get_nohz_load_balancer();
->                         
->                 if (preferred_cpu >= 0)
->                         cpu = preferred_cpu;
->         }
-> #endif
->         new_base = per_cpu(tvec_bases, cpu);
-> 
-> Signed-off-by: Simon Horman <horms@verge.net.au>
-> 
-> Index: linux-2.6/kernel/timer.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/timer.c	2009-12-17 07:02:57.000000000 +0900
-> +++ linux-2.6/kernel/timer.c	2009-12-17 07:03:17.000000000 +0900
-> @@ -656,8 +656,6 @@ __mod_timer(struct timer_list *timer, un
->  
->  	debug_activate(timer, expires);
->  
-> -	new_base = __get_cpu_var(tvec_bases);
-> -
->  	cpu = smp_processor_id();
->  
->  #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
+> So this is only needed for the .32 kernel stable tree?  Not .31?  And
+> it's not upstream as it was solved differently there?
 
-Could you please resend the patch with a proper change log ?
+Yeap, .32 is the only affected one and in the upstream the problem is
+solved way back and ia64 is already using the new dynamic allocator.
 
-Thanks,
+Thanks.
 
-	tglx
- 
+-- 
+tejun
