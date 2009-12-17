@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765381AbZLQVUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765389AbZLQVWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765381AbZLQVUq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 16:20:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765349AbZLQVUm
+	id S1765389AbZLQVWT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 16:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765357AbZLQVWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 16:20:42 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43049 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765346AbZLQVUl convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 16:22:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59617 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757903AbZLQVWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 16:20:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=IaVy2Nhu5oDMiyfaRpnqEqLtNXH8jKvZwkMCXGWsfEduj/eCiCM35/+kS4W6OYFqXj
-         nWN7p1TlcrBRut7un33tNW9bbkInaf3suVsnqi5r7B7cHFZSiTQfH4gAs4ImN4PbTHU0
-         9aSTVDuF3LZaSNlIX1ExAg4ob74U1W7b2j5gI=
+	Thu, 17 Dec 2009 16:22:15 -0500
+Date: Thu, 17 Dec 2009 13:22:12 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [git pull] vfs pile 2
+In-Reply-To: <20091217183952.GC18217@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.2.00.0912171316220.15740@localhost.localdomain>
+References: <20091217162454.GA18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912170831030.15740@localhost.localdomain> <20091217180319.GB18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912171008220.15740@localhost.localdomain>
+ <20091217183952.GC18217@ZenIV.linux.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20091217211759.GB16520@n2100.arm.linux.org.uk>
-References: <4B2A9F8E.5080508@gmail.com> <20091217211759.GB16520@n2100.arm.linux.org.uk>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Thu, 17 Dec 2009 22:20:18 +0100
-Message-ID: <25e057c00912171320m3c596ecancafc568cedfd70b8@mail.gmail.com>
-Subject: Re: [PATCH] ARM: Wrong size used in dump_mem()
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 10:17 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Thu, Dec 17, 2009 at 10:15:58PM +0100, Roel Kluin wrote:
->> The sizeof the pointed to should be used rather than of the pointer
->>
->> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
->> ---
->> Unless I am mistaken?
->
-> You are mistaken.  sizeof(array) is the byte size of the array.
-> sizeof(*array) is the size of one individual object of the array.
->
-> The code is correct as is - which is to fill  the entire array with
-> space characters and then zero the last one.
 
-hmm, I see. sorry for the noise
+
+On Thu, 17 Dec 2009, Al Viro wrote:
+> 
+> reflog had been pruned already; still no effect.  Moreover, after looking
+> through the loose objects, I've found several commits that are definitely
+> reachable from master and now from your tree as well.  E.g.
+> objects/ea/ff8079d4f1016a12e34ab323737314f24127dd
+> is one of those - it's a commit and it's both in mainline *and* happens
+> to be tip of master.  No questions about being unreachable and AFAICS
+> no reasons whatsoever to leave it as a loose object...
+
+If you want a maximal pack, use "git repack -Adl"
+
+The default gc thing will stop when it hits stuff that has been packed 
+already, which can leave _older_ unpacked objects unpacked. And since my 
+own repo isn't always fully packed, and git will only remove local objects 
+if they are available as _packed_ objects in the reference tree (ie my 
+repo), you'll end up with that kind of situation.
+
+I usually repack my tree a couple of times per release, no more often, so 
+you'll seldom see _perfect_ packing.
+
+		Linus
+
