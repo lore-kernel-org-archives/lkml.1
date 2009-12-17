@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763746AbZLQBVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbZLQBV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763746AbZLQBVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763649AbZLQBUi
+	id S934559AbZLQBV2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:21:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763643AbZLQBUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:38 -0500
-Received: from kroah.org ([198.145.64.141]:47976 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:20:39 -0500
+Received: from kroah.org ([198.145.64.141]:48005 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763606AbZLQBUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:30 -0500
+	id S1763585AbZLQBUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:31 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:04 2009
-Message-Id: <20091217011603.954645418@mini.kroah.org>
+Message-Id: <20091217011604.090632427@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:57 -0800
+Date: Wed, 16 Dec 2009 17:14:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [46/90] slc90e66: fix UDMA handling
+Subject: [47/90] Au1x00: fix crash when trying register_netdev()
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,31 +29,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-[ Upstream commit ee31527a02b0a8e1aa4a5e4084d2db5fa34737ed ]
+[ Upstream commit 63edaf647607795a065e6956a79c47f500dc8447 ]
 
-Fix checking of the currently programmed UDMA mode.
+Andreas Lohre reported that the driver crashes when trying
+to register_netdev(), he sugessted to move dev->netdev_ops initialization
+before calling register_netdev(), it worked for him.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Reported-by: Andreas Lohre <alohre@gmail.com>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/ide/slc90e66.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/drivers/ide/slc90e66.c
-+++ b/drivers/ide/slc90e66.c
-@@ -91,8 +91,7 @@ static void slc90e66_set_dma_mode(ide_dr
+---
+ drivers/net/au1000_eth.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+--- a/drivers/net/au1000_eth.c
++++ b/drivers/net/au1000_eth.c
+@@ -1089,7 +1089,14 @@ static struct net_device * au1000_probe(
+ 		return NULL;
+ 	}
  
- 		if (!(reg48 & u_flag))
- 			pci_write_config_word(dev, 0x48, reg48|u_flag);
--		/* FIXME: (reg4a & a_speed) ? */
--		if ((reg4a & u_speed) != u_speed) {
-+		if ((reg4a & a_speed) != u_speed) {
- 			pci_write_config_word(dev, 0x4a, reg4a & ~a_speed);
- 			pci_read_config_word(dev, 0x4a, &reg4a);
- 			pci_write_config_word(dev, 0x4a, reg4a|u_speed);
+-	if ((err = register_netdev(dev)) != 0) {
++	dev->base_addr = base;
++	dev->irq = irq;
++	dev->netdev_ops = &au1000_netdev_ops;
++	SET_ETHTOOL_OPS(dev, &au1000_ethtool_ops);
++	dev->watchdog_timeo = ETH_TX_TIMEOUT;
++
++	err = register_netdev(dev);
++	if (err != 0) {
+ 		printk(KERN_ERR "%s: Cannot register net device, error %d\n",
+ 				DRV_NAME, err);
+ 		free_netdev(dev);
+@@ -1207,12 +1214,6 @@ static struct net_device * au1000_probe(
+ 		aup->tx_db_inuse[i] = pDB;
+ 	}
+ 
+-	dev->base_addr = base;
+-	dev->irq = irq;
+-	dev->netdev_ops = &au1000_netdev_ops;
+-	SET_ETHTOOL_OPS(dev, &au1000_ethtool_ops);
+-	dev->watchdog_timeo = ETH_TX_TIMEOUT;
+-
+ 	/*
+ 	 * The boot code uses the ethernet controller, so reset it to start
+ 	 * fresh.  au1000_init() expects that the device is in reset state.
 
 
