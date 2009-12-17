@@ -1,105 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764299AbZLQKEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964798AbZLQKHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764299AbZLQKEp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764273AbZLQKEo
+	id S964798AbZLQKHZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764282AbZLQKHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:04:44 -0500
-Received: from hmcexedge02.ikoula.com ([78.24.135.22]:3319 "EHLO
-	mail.hmc.ikoula.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751172AbZLQKEm convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 05:07:24 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.122]:54493 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764275AbZLQKHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:04:42 -0500
-From: Romain Kubany <rkubany@ikoula.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
-Date: Thu, 17 Dec 2009 11:04:38 +0100
-Subject: RE: Possible regression of LBA48 support for piix
-Thread-Topic: Possible regression of LBA48 support for piix
-Thread-Index: Acp++1iEjE8IQli7SOi+HnsnWBBRnQAAt3Gw
-Message-ID: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2C1@HMCEXMBX01CLUS.hmcikoula.com>
-References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com>
- <19241.63911.160765.909812@pilspetsen.it.uu.se>
-In-Reply-To: <19241.63911.160765.909812@pilspetsen.it.uu.se>
-Accept-Language: fr-FR, en-US
-Content-Language: fr-FR
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: fr-FR, en-US
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Thu, 17 Dec 2009 05:07:22 -0500
+X-Authority-Analysis: v=1.0 c=1 a=OQTQEGK7ctAA:10 a=kNzghBICnV1Dk5q4yq8A:9 a=loyIBOlsRrV-A8SkNt8A:7 a=uUXpRZrquxoMJmzbhFFndRsz1d8A:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 97.102.92.77
+Message-ID: <4B2A02D8.2020208@cfl.rr.com>
+Date: Thu, 17 Dec 2009 05:07:20 -0500
+From: Mark Hounschell <dmarkh@cfl.rr.com>
+Reply-To: dmarkh@cfl.rr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: markh@compro.net, Alain Knaff <alain@knaff.lu>, fdutils@fdutils.linux.lu
+Subject: Re: Unable to format or use floppies since 2.6.28
+References: <4B215007.4030703@compro.net>
+In-Reply-To: <4B215007.4030703@compro.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, thanks for the prompt reply and the notice for the cc: :)
-I'm using libata and ata_piix now.
-My disk is seen as "sda" and a lshw is reporting the controler as using "ata_piix" : 
+On 12/10/2009 02:46 PM, Mark Hounschell wrote:
+> I have many boxes. They all do the same thing. Running different versions of SuSE, 10.3-11.2. Any kernel at or above 2.6.28 fails to fdformat a floppy. These same machines, using the same floppies and drives, running kernels older than 2.6.28 work just fine. I googled and found other such reports but no solution. I know better than to just assume it's a kernel bug but it sure looks like it could be so I'm inquiring about it here. 
+> 
+> 
+> # fdformat /dev/fd0u1440
+> Double-sided, 80 tracks, 18 sec/track. Total capacity 1440 kB.
+> Formatting ... done
+> Verifying ... Problem reading cylinder 1, expected 18432, read 2048
+> 
+> 
+> dmesg from 2.6.32:
+> 
+> Dec 10 14:24:21 harley kernel: end_request: I/O error, dev fd0, sector 45
+> Dec 10 14:24:21 harley kernel: Buffer I/O error on device fd0, logical block 5
+> Dec 10 14:24:23 harley kernel: end_request: I/O error, dev fd0, sector 72
+> Dec 10 14:24:23 harley kernel: Buffer I/O error on device fd0, logical block 9
+> Dec 10 14:24:26 harley kernel: end_request: I/O error, dev fd0, sector 117
+> Dec 10 14:24:26 harley kernel: Buffer I/O error on device fd0, logical block 14
+> Dec 10 14:24:28 harley kernel: end_request: I/O error, dev fd0, sector 127
+> Dec 10 14:24:28 harley kernel: Buffer I/O error on device fd0, logical block 15
+> Dec 10 14:24:30 harley kernel: end_request: I/O error, dev fd0, sector 45
+> Dec 10 14:24:30 harley kernel: Buffer I/O error on device fd0, logical block 5
+> Dec 10 14:24:32 harley kernel: end_request: I/O error, dev fd0, sector 144
+> Dec 10 14:24:32 harley kernel: Buffer I/O error on device fd0, logical block 18
+> Dec 10 14:24:34 harley kernel: end_request: I/O error, dev fd0, sector 189
+> Dec 10 14:24:34 harley kernel: Buffer I/O error on device fd0, logical block 23
+> Dec 10 14:24:36 harley kernel: end_request: I/O error, dev fd0, sector 216
+> Dec 10 14:24:36 harley kernel: Buffer I/O error on device fd0, logical block 27
+> Dec 10 14:24:39 harley kernel: end_request: I/O error, dev fd0, sector 261
+> Dec 10 14:24:39 harley kernel: Buffer I/O error on device fd0, logical block 32
+> Dec 10 14:24:41 harley kernel: end_request: I/O error, dev fd0, sector 288
+> Dec 10 14:24:41 harley kernel: Buffer I/O error on device fd0, logical block 36
+> Dec 10 14:24:43 harley kernel: end_request: I/O error, dev fd0, sector 333
+> Dec 10 14:24:43 harley kernel: Buffer I/O error on device fd0, logical block 41
+> Dec 10 14:24:45 harley kernel: end_request: I/O error, dev fd0, sector 360
+> Dec 10 14:24:45 harley kernel: Buffer I/O error on device fd0, logical block 45
+> 
+> 
+> # rpm -qf /usr/sbin/fdformat
+> util-linux-2.16-4.5.1.i586
+> 
+> Again, on this very machine, running 2.6.27.41 all is fine....
+> 
 
-# lshw -c STORAGE
-  *-ide
-       description: IDE interface
-       product: 82371AB/EB/MB PIIX4 IDE
-       vendor: Intel Corporation
-       physical id: 7.1
-       bus info: pci@0000:00:07.1
-       logical name: scsi0
-       logical name: scsi1
-       version: 01
-       width: 32 bits
-       clock: 33MHz
-       capabilities: ide bus_master emulated
-       configuration: driver=ata_piix latency=0
 
-But fdisk always recognize the disk as 136.8Gb :
+The last known working kernel here is 2.6.27.41. 2.6.28 fails. How many from
+changes 2.7.27 to 2.6.28?
 
-# fdisk -l
+There has been some development on this problem on the fdutils list. It turns
+out that if dma is disabled, (floppy=nodma) fdformat works just fine on kernels
+from 2.6.28 to current. So Alain Knaff is trying to help sort it out over on the
+fdutils list.
 
-Disk /dev/sda: 136.8 GB, 136899993600 bytes
-16 heads, 63 sectors/track, 265260 cylinders
-Units = cylinders of 1008 * 512 = 516096 bytes
-Disk identifier: 0xd7267427
+Dan, I'm adding Alain Knaff and the fdutils list to the CC list and quoting your
+response in this email so he will see it there. I don't thinkAlain has been
+monitoring this list for this problem and it might help.
 
-   Device Boot      Start         End      Blocks   Id  System
-/dev/sda1   *           1         204      102815+  83  Linux
-/dev/sda2             205        2236     1024128   82  Linux swap / Solaris
-/dev/sda3            2237       20805     9358776   83  Linux
+> On 12/17/2009 03:30 AM, Dan Carpenter wrote:
+> I don't know if this is related to your bug, but it's a weirdness in
+> floppy.c (from 2.6.32-rc8 sorry I suck for being up to date).
+>
+> drivers/block/floppy.c
+>   2532          size = blk_rq_cur_bytes(current_req);
+>   2533
+>   2534          rq_for_each_segment(bv, current_req, iter) {
+>   2535                  if (!remaining)
+>   2536                          break;
+>   2537
+>   2538                  size = bv->bv_len;
+>
+> We never use the first size = blk_rq_cur_bytes() assignment.
 
-Here is the new kernel config file : http://pastebin.com/f65fd472b
 
------Message d'origine-----
-De : linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] De la part de Mikael Pettersson
-Envoyé : jeudi 17 décembre 2009 10:28
-À : Romain Kubany
-Cc : linux-kernel@vger.kernel.org
-Objet : Re: Possible regression of LBA48 support for piix
+What we have been able to see when dma is enabled appears to be corruption of
+the track label buffer while in transit (dma) to the FDC. It seems that starting
+with track 1 and then every 4 tracks or so after that, the track number in the
+label for sector 0x0a is 1 less than it should be. We see the buffer (via
+printks) is correct before and after transit but does not get transmitted
+correctly when DMA is used.
 
-Romain Kubany writes:
- > Hello,
- > 
- > We are using Microsoft Hyper-V Virtualization technology for some of our GNU/Linux guests and we recently discovered 
- > that the emulated hardware does not seem to support LBA48 adressing on IDE controller.
- > 
- > After some tests, here are the results on a VM with a 200GB virtual disk : disk is detected as 214748MB up to kernel 2.6.27.41 and as 136899MB in 2.6.28 and up.
- > 
- > The two kernels (2.6.27.41 and 2.6.28) were compiled with approximatively the same parameters (just an oldconfig between them, I'll paste a line to their respective config at the end of the mail)
- > except that many changes occured in IDE management between 2.6.27 and 2.6.28 series of the kernel so it is possible that the problem is coming from a misconfiguration on our side (in which case I'll present you my truthful apologies for making you waste your time).
- > 
- > Here are some useful informations (I think) for start :
- > 
- > [On the "working" kernel, 2.6.27.41 w/ 200GB recognized vdisk]
- > 
- > # hdparm -I /dev/hda
+The thread on the fdutils list is getting long but progress is being made.
+Please CC that list if anyone can help further.
 
-Try using libata and ata_piix instead of the old IDE drivers, but
-be aware that the disk will show up as /dev/sda not /dev/hda.
-
-Also, IDE/ATA-related issues should be cc:d to linux-ide (see MAINTAINERS).
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+Thanks and regards
+Mark
