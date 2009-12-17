@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765205AbZLQRxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765230AbZLQRzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765205AbZLQRxp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 12:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760469AbZLQRxo
+	id S1765230AbZLQRzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 12:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764867AbZLQRzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 12:53:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:32770 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759595AbZLQRxk (ORCPT
+	Thu, 17 Dec 2009 12:55:50 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:35774 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757069AbZLQRzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 12:53:40 -0500
-Date: Thu, 17 Dec 2009 18:53:39 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-Message-ID: <20091217175338.GL9804@basil.fritz.box>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com> <20091216101107.GA15031@basil.fritz.box> <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com> <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box> <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box> <20091217144551.GA6819@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217144551.GA6819@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 17 Dec 2009 12:55:49 -0500
+Date: Thu, 17 Dec 2009 09:55:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pci@vger.kernel.org
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 17 (pci/quirks)
+Message-Id: <20091217095506.64f0a43f.randy.dunlap@oracle.com>
+In-Reply-To: <20091217165840.e11fc719.sfr@canb.auug.org.au>
+References: <20091217165840.e11fc719.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Auth-Type: Internal IP
+X-Source-IP: acsinet15.oracle.com [141.146.126.227]
+X-CT-RefId: str=0001.0A090203.4B2A70A1.018C:SCFMA922111,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, I have to ask...
+On Thu, 17 Dec 2009 16:58:40 +1100 Stephen Rothwell wrote:
+
+> Hi all,
 > 
-> Why not just use the already-existing SRCU in this case?
+> My usual call for calm: please do not put stuff destined for 2.6.34 into
+> linux-next trees until after 2.6.33-rc1.
+> 
+> Changes since 20091216:
 
-You right, SRCU could work. 
 
-Still needs a lot more work of course.
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+When CONFIG_PCI_QUIRKS=n:
+
+drivers/built-in.o: In function `pci_dev_reset':
+pci.c:(.text+0xdb0b): undefined reference to `pci_dev_reset_methods'
+pci.c:(.text+0xdb2b): undefined reference to `pci_dev_reset_methods'
+pci.c:(.text+0xdb85): undefined reference to `pci_dev_reset_methods'
+
+
+pci_dev_reset() calls (inlined) pci_dev_specific_reset(),
+which references pci_dev_reset_methods, which does not exist.
+
+
+---
+~Randy
