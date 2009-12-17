@@ -1,74 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965130AbZLQSO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964910AbZLQSOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965130AbZLQSO1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:14:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932187AbZLQSOJ
+	id S964910AbZLQSOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 13:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935124AbZLQSOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:14:09 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:36416 "EHLO
+	Thu, 17 Dec 2009 13:14:07 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:36415 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935077AbZLQSN6 (ORCPT
+	with ESMTP id S932187AbZLQSN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:13:58 -0500
+	Thu, 17 Dec 2009 13:13:57 -0500
 From: Phil Carmody <ext-phil.2.carmody@nokia.com>
 To: gregkh@suse.de
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC 0/6] Driver core: Encourage use of const attributes
-Date: Thu, 17 Dec 2009 20:12:10 +0200
-Message-Id: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
+Subject: [RFC 1/6] Driver core: device_attribute parameters can often be const*
+Date: Thu, 17 Dec 2009 20:12:11 +0200
+Message-Id: <1261073536-27396-2-git-send-email-ext-phil.2.carmody@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
-X-OriginalArrivalTime: 17 Dec 2009 18:11:52.0781 (UTC) FILETIME=[68E4CFD0:01CA7F44]
+In-Reply-To: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
+References: <1261073536-27396-1-git-send-email-ext-phil.2.carmody@nokia.com>
+X-OriginalArrivalTime: 17 Dec 2009 18:11:54.0062 (UTC) FILETIME=[69A846E0:01CA7F44]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I know now's probably a bad time to be mentioning const issues
-but I recently a reviewed a patch where 'const' was being removed 
-from a device_attribute structure, and I enquired why. The reason
-was simply so that device_create_file() could be called, it taking
-a non-const attribute pointer. Looking inside, all that function 
-did was pass a pointer to sysfs_create_file, which itself took a
-const pointer. Non-constness was not required at all.
+Most device_attributes are const, and are begging to be
+put in a ro section. However, the create and remove
+file interfaces were failing to propagate the const promise
+which the only functions they call offer.
 
-So here I offer a small patchset which I hope will permit and 
-encourage device and other attributes to be made const, and put 
-in read-only sections.
+Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
+---
+ Documentation/filesystems/sysfs.txt |    8 ++++----
+ drivers/base/core.c                 |    6 ++++--
+ include/linux/device.h              |    4 ++--
+ 3 files changed, 10 insertions(+), 8 deletions(-)
 
-1-3 address the three attribute types which seemed to be trivially 
-const-able, and are the important part of the set.
-
-4 adds a new macro to encourage the use of Const ATTRibutes,
-and may need a better name. (I wanted to avoid RO, for example.)
-
-5 and 6 are merely two quick examples of how easy it is to adopt 
-the new const convention. In reality, these structures have been
-constant and treated as constant by the driver core all along, it's
-just that one word was missing from a few important places.
-
-I would hope to submit a patchset with 1-3 and a possibly modified 
-4. The migrations themselves will belong in different trees.
-
-These have been compile/sparse tested against arm and x86_64 targets, 
-and through my usual suite of tests on the arm platform I use.
-
-Regards,
-Phil
-
-Phil Carmody (6):
-  Driver core: device_attribute parameters can often be const*
-  Driver core: bin_attribute parameters can often be const*
-  Driver core: driver_attribute parameters can often be const*
-  Driver core: Easy macros to encourage const attributes
-  PM: Example of how easy it is to mark attributes const
-  gpio: Example of how easy it is to mark attributes const
-
- drivers/base/core.c      |   12 ++++++++----
- drivers/base/driver.c    |    4 ++--
- drivers/gpio/gpiolib.c   |   12 ++++++------
- drivers/regulator/core.c |   38 +++++++++++++++++++-------------------
- fs/sysfs/bin.c           |    6 ++++--
- include/linux/device.h   |   20 ++++++++++++++------
- include/linux/sysfs.h    |    9 +++++----
- 7 files changed, 58 insertions(+), 43 deletions(-)
+diff --git a/Documentation/filesystems/sysfs.txt b/Documentation/filesystems/sysfs.txt
+index b245d52..a4ac2b9 100644
+--- a/Documentation/filesystems/sysfs.txt
++++ b/Documentation/filesystems/sysfs.txt
+@@ -91,8 +91,8 @@ struct device_attribute {
+ 			 const char *buf, size_t count);
+ };
+ 
+-int device_create_file(struct device *, struct device_attribute *);
+-void device_remove_file(struct device *, struct device_attribute *);
++int device_create_file(struct device *, const struct device_attribute *);
++void device_remove_file(struct device *, const struct device_attribute *);
+ 
+ It also defines this helper for defining device attributes: 
+ 
+@@ -316,8 +316,8 @@ DEVICE_ATTR(_name, _mode, _show, _store);
+ 
+ Creation/Removal:
+ 
+-int device_create_file(struct device *device, struct device_attribute * attr);
+-void device_remove_file(struct device * dev, struct device_attribute * attr);
++int device_create_file(struct device *dev, const struct device_attribute * attr);
++void device_remove_file(struct device *dev, const struct device_attribute * attr);
+ 
+ 
+ - bus drivers (include/linux/device.h)
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 6bee6af..c1e3cad 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -439,7 +439,8 @@ struct kset *devices_kset;
+  * @dev: device.
+  * @attr: device attribute descriptor.
+  */
+-int device_create_file(struct device *dev, struct device_attribute *attr)
++int device_create_file(struct device *dev,
++		       const struct device_attribute *attr)
+ {
+ 	int error = 0;
+ 	if (dev)
+@@ -452,7 +453,8 @@ int device_create_file(struct device *dev, struct device_attribute *attr)
+  * @dev: device.
+  * @attr: device attribute descriptor.
+  */
+-void device_remove_file(struct device *dev, struct device_attribute *attr)
++void device_remove_file(struct device *dev,
++			const struct device_attribute *attr)
+ {
+ 	if (dev)
+ 		sysfs_remove_file(&dev->kobj, &attr->attr);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 2ea3e49..9ecd9b0 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -319,9 +319,9 @@ struct device_attribute {
+ struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
+ 
+ extern int __must_check device_create_file(struct device *device,
+-					   struct device_attribute *entry);
++					   const struct device_attribute *entry);
+ extern void device_remove_file(struct device *dev,
+-			       struct device_attribute *attr);
++			       const struct device_attribute *attr);
+ extern int __must_check device_create_bin_file(struct device *dev,
+ 					       struct bin_attribute *attr);
+ extern void device_remove_bin_file(struct device *dev,
+-- 
+1.6.0.4
 
