@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935974AbZLQBaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935523AbZLQBrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935974AbZLQBaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935950AbZLQB34
+	id S935523AbZLQBrq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763683AbZLQBqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:29:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60046 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935967AbZLQB3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:29:52 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Thu, 17 Dec 2009 02:30:24 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912161753540.2643-100000@iolanthe.rowland.org> <200912170018.05175.rjw@sisk.pl>
-In-Reply-To: <200912170018.05175.rjw@sisk.pl>
+	Wed, 16 Dec 2009 20:46:40 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:3474 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763609AbZLQBqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:46:31 -0500
+Message-ID: <4B298B2A.5010900@caviumnetworks.com>
+Date: Wed, 16 Dec 2009 17:36:42 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Csaba Henk <csaba@gluster.com>,
+       Miklos Szeredi <mszeredi@suse.cz>, Harshavardhana <harsha@gluster.com>
+Subject: Re: [04/18] fuse: reject O_DIRECT flag also in fuse_create
+References: <20091217004707.472856791@mini.kroah.org>
+In-Reply-To: <20091217004707.472856791@mini.kroah.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912170230.24147.rjw@sisk.pl>
+X-OriginalArrivalTime: 17 Dec 2009 01:36:43.0168 (UTC) FILETIME=[6330EA00:01CA7EB9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 December 2009, Rafael J. Wysocki wrote:
-> On Thursday 17 December 2009, Alan Stern wrote:
-> > On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > > I've just put the first set of data, for the HP nx6325 at:
-> > > http://www.sisk.pl/kernel/data/nx6325/
-> > >  
-> > > The *-dmesg.log files contain full dmesg outputs starting from a cold boot and
-> > > including one suspend-resume cycle in each case, with debug_initcall enabled.
-> > > 
-> > > The *-suspend.log files are excerpts from the *-dmesg.log files containing
-> > > the suspend messages only, and analogously for *-resume.log.
-> > 
-> > I've just started looking at the sync-suspend.log file.  What are all 
-> > the '+' characters and " @ 3368" strings after the device names?
+Greg KH wrote:
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 > 
-> I think the + is necessary for the Arjan's graph-generating script and the
-> @ number is the value of current (ie. the PID of the calling task).
+> ------------------
+> From: Csaba Henk <csaba@gluster.com>
 > 
-> > You didn't print out the parent name for each device, so the tree 
-> > structure has been lost.
+> commit 1b7323965a8c6eee9dc4e345a7ae4bff1dc93149 upstream.
 > 
-> That's because the original Arjan's patch doesn't do that, I'm adding it
-> right now.
+> The comment in fuse_open about O_DIRECT:
 > 
-> > Why do those "sd 0:0:0:0 [sda]" messages appear in between two 
-> > callbacks?  The cache-synchronization and the spin-down commands are
-> > not executed asynchronously.
+>   "VFS checks this, but only _after_ ->open()"
 > 
-> Because the data are incomplete.  :-(
+> also holds for fuse_create, however, the same kind of check was missing there.
 > 
-> I've just realized that the Arjan's patch only covers bus types and classes
-> that have been converted to dev_pm_ops already, so I'm extending it to the
-> "legacy" ones at the moment.
+> As an impact of this bug, open(newfile, O_RDWR|O_CREAT|O_DIRECT) fails, but a
+> stub newfile will remain if the fuse server handled the implied FUSE_CREATE
+> request appropriately.
+> 
+> Other impact: in the above situation ima_file_free() will complain to open/free
+> imbalance if CONFIG_IMA is set.
+> 
+> Signed-off-by: Csaba Henk <csaba@gluster.com>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> Cc: Harshavardhana <harsha@gluster.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  fs/fuse/dir.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> --- a/fs/fuse/dir.c
+> +++ b/fs/fuse/dir.c
+> @@ -401,6 +401,9 @@ static int fuse_create_open(struct inode
+>  	if (flags & O_DIRECT)
+>  		return -EINVAL;
+>  
+> +	if (flags & O_DIRECT)
+> +		return -EINVAL;
+> +
 
-New data files have been uploaded to:
+I must be missing something.  The added part seems to be identical to 
+the lines just above.
 
-http://www.sisk.pl/kernel/data/nx6325/
-http://www.sisk.pl/kernel/data/wind/
+Forgive me if I am totally misreading the diff.
 
-Please let me know if you need more information.
+David Daney
 
-Rafael
+
+>  	forget_req = fuse_get_req(fc);
+>  	if (IS_ERR(forget_req))
+>  		return PTR_ERR(forget_req);
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
