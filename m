@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbZLQWt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765470AbZLQWts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765453AbZLQWt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 17:49:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbZLQWt0
+	id S1765470AbZLQWts (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 17:49:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765462AbZLQWtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 17:49:26 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:42553 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760108AbZLQWtZ convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 17:49:46 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:53955 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762979AbZLQWtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 17:49:25 -0500
+	Thu, 17 Dec 2009 17:49:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=lnooRw+DzTTeowhMfiQAWpRPi/uS6hGgIN3ilJ0RbhFfU50y4zoY+9N3WEVGasX262
-         ZabNkwwd3Sa9IVviMrlNCWr+DUdy06hiGNkfN+IXKq5PH2aCy2/bEaxj/B3tsihKAPbr
-         0V4Yp183ItGrSeBEad80RxrRqeAuFix6Wv7Jg=
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=vZdhBkFAgVO5CB8Ccw2Oy++3c9a7tHysQGSkQkDBGBswWq09vTBsf5DV/f63a4HkOt
+         Umb1+n9Nm9oZGs1ZHr6j+JV9UZzSQJduYnGrfBscN30SZS5gGjZvUMFI/unbr02P3692
+         ON5gWHpucx/kwOppU7dVqKtuKbaYtQiNzzvg4=
 MIME-Version: 1.0
-In-Reply-To: <20419.1260982769@redhat.com>
-References: <1260921350-6539-1-git-send-email-vapier@gentoo.org> 
-	<20419.1260982769@redhat.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 17 Dec 2009 17:49:04 -0500
-Message-ID: <8bd0f97a0912171449x1b6cad88kd5a58c1d00c20d3c@mail.gmail.com>
-Subject: Re: [uClinux-dev] Re: [PATCH] NOMMU: add [stack] label to per-process 
-	maps output
-To: uClinux development list <uclinux-dev@uclinux.org>
-Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Date: Thu, 17 Dec 2009 17:49:44 -0500
+Message-ID: <e75d22a90912171449s7262b0fag41b045526ed35091@mail.gmail.com>
+Subject: tg3 and bcm5703 cards - rx dropped packets
+From: Michael Di Domenico <mdidomenico4@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 11:59, David Howells wrote:
-> Mike Frysinger wrote:
->> +             if (vma->vm_start <= mm->start_brk &&
->> +                             vma->vm_end >= mm->brk) {
->
-> Hmmm...  That ought to involve mm->start_stack somewhere...  (Or, more
-> probably, task->stack_start:-/)
+I have several Dell t3500 workstation which we've installed PCI-X
+BroadCom cards specifically the BCM5703 Fiber cards.
 
-with MMU, the [heap] (i.e. brk) and [stack] are different mappings.
-under NOMMU, they're the same mapping, except that no one uses the brk
-and the "heap" is really all of dynamic kernel memory.  so we have to
-avoid the brk/[heap] check and simply copy over the [stack] one:
-    } else if (mm) {
-        if (vma->vm_start <= mm->start_stack &&
-                vma->vm_end >= mm->start_stack) {
-            pad_len_spaces(m, len);
-            seq_puts(m, "[stack]");
-        }
-    }
+We're also using RedHat v5.4 2.6.18-164.6.1 kernel with all the stock drivers.
 
-the semi-annoying thing is that FLAT combines a whole lot of stuff
-(including the stack) into the same mapping giving us the output:
-root:/> cat /proc/155/maps
-029f0000-029f9000 rwxp 00000000 00:00 0          [stack]
+For some reason which i cannot determine, when we read a large amount
+of data into the workstation we see the RX dropped counter steadily
+(rapidly) increase.
 
-but i guess this is no worse than the current ?
--mike
+This only happens on reads, if we do a write operation we do not see TX drops.
+
+We've tested this between all types of devices (nfs, http) servers at
+various points in the network and the only common thing is the NIC.
+
+I'd think it was just a bad nic, but we have several nics across t3500
+and t3400's doing this.
+
+Is anyone aware of such an issue?  Can anyone recommend some steps i
+can take to isolate why the packets are being dropped?
+
+I hooked up wireshark on one of the servers while we were running the
+test and i see a lot of Duplicate ACK and TCP Checksum errors, in the
+communications between the two hosts.  But im not sure that actually
+points to anything.
+
+Thanks
