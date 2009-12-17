@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936294AbZLQEJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936200AbZLQEKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936294AbZLQEJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936176AbZLQEJQ
+	id S936200AbZLQEKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936282AbZLQEJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:09:16 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:44805 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936221AbZLQEJJ (ORCPT
+	Wed, 16 Dec 2009 23:09:39 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33158
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936296AbZLQEJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:09:09 -0500
-Authentication-Results: sj-iport-4.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEADI9KUurRN+J/2dsb2JhbAC+WJZ/hCsE
-X-IronPort-AV: E=Sophos;i="4.47,410,1257120000"; 
-   d="scan'208";a="63912687"
-From: Roland Dreier <rdreier@cisco.com>
+	Wed, 16 Dec 2009 23:09:36 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Masami Hiramatsu <mhiramat@redhat.com>,
-       Rob Landley <rob@landley.net>
 Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org>
-	<adabphy750b.fsf@roland-alpha.cisco.com> <4B299AB5.7020109@zytor.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 16 Dec 2009 20:09:07 -0800
-In-Reply-To: <4B299AB5.7020109@zytor.com> (H. Peter Anvin's message of "Wed,
-	16 Dec 2009 18:43:01 -0800")
-Message-ID: <ada7hsm6y3g.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+Date: Wed, 16 Dec 2009 22:09:28 -0600
+User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
+Cc: Roland Dreier <rdreier@cisco.com>, Andrew Isaacson <adi@vmware.com>,
+       Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Masami Hiramatsu <mhiramat@redhat.com>
+References: <20091216235617.GA12267@hexapodia.org> <adabphy750b.fsf@roland-alpha.cisco.com> <4B299AB5.7020109@zytor.com>
+In-Reply-To: <4B299AB5.7020109@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Dec 2009 04:09:07.0666 (UTC) FILETIME=[ADBC9320:01CA7ECE]
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912162209.29744.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 16 December 2009 20:43:01 H. Peter Anvin wrote:
+> On 12/16/2009 05:39 PM, Roland Dreier wrote:
+> > Is there any reason not to apply the patch below, to allow more awk
+> > implementations to be used?  After all, it's not like we're going to put
+> > non-ASCII characters into the map file...
+>
+> I guess the question is if it will break under any other circumstances,
+> but I guess we can find those when we get to them.
+>
+> There was a long discussion about the use of awk on IRC today.
+> Apparently mawk, in particular, is actively broken, because the
+> maintainer believe that POSIX is crap.  There are quite a few issues
+> with it, according to reports.
 
- > > Is there any reason not to apply the patch below, to allow more awk
- > > implementations to be used?  After all, it's not like we're going to put
- > > non-ASCII characters into the map file...
+if the kernel specifies posix, and that implementation doesn't do posix, then 
+that implementation doesn't build the kernel.  Blacklisting known broken 
+implementations makes a certain amount of sense.
 
- > I guess the question is if it will break under any other circumstances,
- > but I guess we can find those when we get to them.
+> We need a sane scripting language available to the kernel build, and
+> given all the problems we have had with different versions or even just
+> sometimes different builds of sh, awk, and even bc -- plus the fact that
+> those utilities just don't necessarily do what we want makes it very
+> frustrating.
 
-I should have mentioned it, but with the current Debian testing version
-(mawk 1.3.3-15) and my patch, I get a byte-for-byte identical
-inat-tables.c to what I get with the unpatched kernel and gawk
-1:3.1.6.dfsg-4.
+1) Posix exists for a reason.
 
-I'm not sure how likely all this is to change in the future, but it's
-hard for me to see a sane reason why eg [:lower:] and a-z would be
-different for this use.
+2) Busybox implements what the kernel has needed to build.  (I test this every 
+release, and I fix it where necessary.)
 
- - R.
+> Personally I think a dependency on Perl is better than the
+> mess we're in; I understand other people disagree.
+
+Vehemently.
+
+> What is definitely
+> not acceptable, however, is the status quo.  The situation is, quite
+> frankly, ridiculous enough that perhaps the right thing to do is to
+> write a small scripting engine and bundle it with the kernel.  Something
+> that does what we need it to do, but is only one implementation and
+> something we can extend at will if need be.
+
+*shrug*  That's one way to avoid environmental dependencies.
+
+> 	-hpa
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
