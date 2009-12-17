@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763334AbZLQA62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbZLQA5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763334AbZLQA62 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761478AbZLQA6R
+	id S933724AbZLQA5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbZLQA5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:58:17 -0500
-Received: from kroah.org ([198.145.64.141]:44485 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 19:57:15 -0500
+Received: from kroah.org ([198.145.64.141]:44481 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758187AbZLQAyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:54:36 -0500
+	id S1755796AbZLQAyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:54:37 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 16:47:07 2009
-Message-Id: <20091217004707.607176768@mini.kroah.org>
+Message-Id: <20091217004707.741791752@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 16:45:56 -0800
+Date: Wed, 16 Dec 2009 16:45:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       WANG Cong <amwang@redhat.com>, Eugene Teo <eteo@redhat.com>,
-       Roman Zippel <zippel@linux-m68k.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@lst.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Dave Anderson <anderson@redhat.com>
-Subject: [05/18] hfs: fix a potential buffer overflow
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [06/18] pata_hpt{37x|3x2n}: fix timing register masks (take 2)
 In-Reply-To: <20091217005306.GA6230@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,95 +28,173 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Amerigo Wang <amwang@redhat.com>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit ec81aecb29668ad71f699f4e7b96ec46691895b6 upstream.
+commit 5600c70e576199a7552e1c0fff43f3fe16f5566e upstream.
 
-A specially-crafted Hierarchical File System (HFS) filesystem could cause
-a buffer overflow to occur in a process's kernel stack during a memcpy()
-call within the hfs_bnode_read() function (at fs/hfs/bnode.c:24).  The
-attacker can provide the source buffer and length, and the destination
-buffer is a local variable of a fixed length.  This local variable (passed
-as "&entry" from fs/hfs/dir.c:112 and allocated on line 60) is stored in
-the stack frame of hfs_bnode_read()'s caller, which is hfs_readdir().
-Because the hfs_readdir() function executes upon any attempt to read a
-directory on the filesystem, it gets called whenever a user attempts to
-inspect any filesystem contents.
+These drivers inherited from the older 'hpt366' IDE driver the buggy timing
+register masks in their set_piomode() metods. As a result, too low command
+cycle active time is programmed for slow PIO modes.  Quite fortunately, it's
+later "fixed up" by the set_dmamode() methods which also "helpfully" reprogram
+the command timings, usually to PIO mode 4; unfortunately, setting an UltraDMA
+mode #N also reprograms already set PIO data timings, usually to MWDMA mode #
+max(N, 2) timings...
 
-[amwang@redhat.com: modify this patch and fix coding style problems]
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Eugene Teo <eteo@redhat.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Dave Anderson <anderson@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+However, the drivers added some breakage of their own too:  the bit that they
+set/clear to control the FIFO is sometimes wrong -- it's actually the MSB of
+the command cycle setup time; also, setting it in DMA mode is wrong as this
+bit is only for PIO actually and clearing it for PIO modes is not needed as
+no mode in any timing table has it set...
+
+Fix all this, inverting the masks while at it, like in the 'hpt366' and
+'pata_hpt366' drivers; bump the drivers' versions, accounting for recent
+patches that forgot to do it...
+
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/hfs/catalog.c |    4 ++++
- fs/hfs/dir.c     |   11 +++++++++++
- fs/hfs/super.c   |    7 ++++++-
- 3 files changed, 21 insertions(+), 1 deletion(-)
+ drivers/ata/pata_hpt37x.c  |   32 +++++++++++++++-----------------
+ drivers/ata/pata_hpt3x2n.c |   17 ++++++++---------
+ 2 files changed, 23 insertions(+), 26 deletions(-)
 
---- a/fs/hfs/catalog.c
-+++ b/fs/hfs/catalog.c
-@@ -289,6 +289,10 @@ int hfs_cat_move(u32 cnid, struct inode 
- 	err = hfs_brec_find(&src_fd);
- 	if (err)
- 		goto out;
-+	if (src_fd.entrylength > sizeof(entry) || src_fd.entrylength < 0) {
-+		err = -EIO;
-+		goto out;
-+	}
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -24,7 +24,7 @@
+ #include <linux/libata.h>
  
- 	hfs_bnode_read(src_fd.bnode, &entry, src_fd.entryoffset,
- 			    src_fd.entrylength);
---- a/fs/hfs/dir.c
-+++ b/fs/hfs/dir.c
-@@ -79,6 +79,11 @@ static int hfs_readdir(struct file *filp
- 		filp->f_pos++;
- 		/* fall through */
- 	case 1:
-+		if (fd.entrylength > sizeof(entry) || fd.entrylength < 0) {
-+			err = -EIO;
-+			goto out;
-+		}
+ #define DRV_NAME	"pata_hpt37x"
+-#define DRV_VERSION	"0.6.12"
++#define DRV_VERSION	"0.6.14"
+ 
+ struct hpt_clock {
+ 	u8	xfer_speed;
+@@ -404,9 +404,8 @@ static void hpt370_set_piomode(struct at
+ 
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt37x_find_mode(ap, adev->pio_mode);
+-	mode &= ~0x8000000;	/* No FIFO in PIO */
+-	mode &= ~0x30070000;	/* Leave config bits alone */
+-	reg &= 0x30070000;	/* Strip timing bits */
++	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
++	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -423,8 +422,7 @@ static void hpt370_set_dmamode(struct at
+ {
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	u32 addr1, addr2;
+-	u32 reg;
+-	u32 mode;
++	u32 reg, mode, mask;
+ 	u8 fast;
+ 
+ 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
+@@ -436,11 +434,12 @@ static void hpt370_set_dmamode(struct at
+ 	fast |= 0x01;
+ 	pci_write_config_byte(pdev, addr2, fast);
+ 
++	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
 +
- 		hfs_bnode_read(fd.bnode, &entry, fd.entryoffset, fd.entrylength);
- 		if (entry.type != HFS_CDR_THD) {
- 			printk(KERN_ERR "hfs: bad catalog folder thread\n");
-@@ -109,6 +114,12 @@ static int hfs_readdir(struct file *filp
- 			err = -EIO;
- 			goto out;
- 		}
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt37x_find_mode(ap, adev->dma_mode);
+-	mode |= 0x8000000;	/* FIFO in MWDMA or UDMA */
+-	mode &= ~0xC0000000;	/* Leave config bits alone */
+-	reg &= 0xC0000000;	/* Strip timing bits */
++	mode &= mask;
++	reg &= ~mask;
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -508,9 +507,8 @@ static void hpt372_set_piomode(struct at
+ 	mode = hpt37x_find_mode(ap, adev->pio_mode);
+ 
+ 	printk("Find mode for %d reports %X\n", adev->pio_mode, mode);
+-	mode &= ~0x80000000;	/* No FIFO in PIO */
+-	mode &= ~0x30070000;	/* Leave config bits alone */
+-	reg &= 0x30070000;	/* Strip timing bits */
++	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
++	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -527,8 +525,7 @@ static void hpt372_set_dmamode(struct at
+ {
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	u32 addr1, addr2;
+-	u32 reg;
+-	u32 mode;
++	u32 reg, mode, mask;
+ 	u8 fast;
+ 
+ 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
+@@ -539,12 +536,13 @@ static void hpt372_set_dmamode(struct at
+ 	fast &= ~0x07;
+ 	pci_write_config_byte(pdev, addr2, fast);
+ 
++	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
 +
-+		if (fd.entrylength > sizeof(entry) || fd.entrylength < 0) {
-+			err = -EIO;
-+			goto out;
-+		}
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt37x_find_mode(ap, adev->dma_mode);
+ 	printk("Find mode for DMA %d reports %X\n", adev->dma_mode, mode);
+-	mode &= ~0xC0000000;	/* Leave config bits alone */
+-	mode |= 0x80000000;	/* FIFO in MWDMA or UDMA */
+-	reg &= 0xC0000000;	/* Strip timing bits */
++	mode &= mask;
++	reg &= ~mask;
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+--- a/drivers/ata/pata_hpt3x2n.c
++++ b/drivers/ata/pata_hpt3x2n.c
+@@ -25,7 +25,7 @@
+ #include <linux/libata.h>
+ 
+ #define DRV_NAME	"pata_hpt3x2n"
+-#define DRV_VERSION	"0.3.4"
++#define DRV_VERSION	"0.3.7"
+ 
+ enum {
+ 	HPT_PCI_FAST	=	(1 << 31),
+@@ -185,9 +185,8 @@ static void hpt3x2n_set_piomode(struct a
+ 
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt3x2n_find_mode(ap, adev->pio_mode);
+-	mode &= ~0x8000000;	/* No FIFO in PIO */
+-	mode &= ~0x30070000;	/* Leave config bits alone */
+-	reg &= 0x30070000;	/* Strip timing bits */
++	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
++	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -204,8 +203,7 @@ static void hpt3x2n_set_dmamode(struct a
+ {
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	u32 addr1, addr2;
+-	u32 reg;
+-	u32 mode;
++	u32 reg, mode, mask;
+ 	u8 fast;
+ 
+ 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
+@@ -216,11 +214,12 @@ static void hpt3x2n_set_dmamode(struct a
+ 	fast &= ~0x07;
+ 	pci_write_config_byte(pdev, addr2, fast);
+ 
++	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
 +
- 		hfs_bnode_read(fd.bnode, &entry, fd.entryoffset, fd.entrylength);
- 		type = entry.type;
- 		len = hfs_mac2asc(sb, strbuf, &fd.key->cat.CName);
---- a/fs/hfs/super.c
-+++ b/fs/hfs/super.c
-@@ -386,8 +386,13 @@ static int hfs_fill_super(struct super_b
- 	/* try to get the root inode */
- 	hfs_find_init(HFS_SB(sb)->cat_tree, &fd);
- 	res = hfs_cat_find_brec(sb, HFS_ROOT_CNID, &fd);
--	if (!res)
-+	if (!res) {
-+		if (fd.entrylength > sizeof(rec) || fd.entrylength < 0) {
-+			res =  -EIO;
-+			goto bail;
-+		}
- 		hfs_bnode_read(fd.bnode, &rec, fd.entryoffset, fd.entrylength);
-+	}
- 	if (res) {
- 		hfs_find_exit(&fd);
- 		goto bail_no_root;
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt3x2n_find_mode(ap, adev->dma_mode);
+-	mode |= 0x8000000;	/* FIFO in MWDMA or UDMA */
+-	mode &= ~0xC0000000;	/* Leave config bits alone */
+-	reg &= 0xC0000000;	/* Strip timing bits */
++	mode &= mask;
++	reg &= ~mask;
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
 
 
