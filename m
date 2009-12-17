@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765367AbZLQVQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765363AbZLQVS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765367AbZLQVQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 16:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765268AbZLQVQO
+	id S1765363AbZLQVS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 16:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765342AbZLQVSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 16:16:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43061 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765320AbZLQVQL (ORCPT
+	Thu, 17 Dec 2009 16:18:25 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38420 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756075AbZLQVSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 16:16:11 -0500
-Date: Thu, 17 Dec 2009 13:16:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SYSCTL: Fix sysctl breakage on systems with older
- glibc
-In-Reply-To: <m1iqc5zc4i.fsf@fess.ebiederm.org>
-Message-ID: <alpine.LFD.2.00.0912171315080.15740@localhost.localdomain>
-References: <20091216112844.GA31705@basil.fritz.box> <m16385abat.fsf@fess.ebiederm.org> <20091217164614.GI9804@basil.fritz.box> <m1iqc5zc4i.fsf@fess.ebiederm.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 16:18:25 -0500
+Date: Thu, 17 Dec 2009 21:17:59 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ARM: Wrong size used in dump_mem()
+Message-ID: <20091217211759.GB16520@n2100.arm.linux.org.uk>
+References: <4B2A9F8E.5080508@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2A9F8E.5080508@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Dec 2009, Eric W. Biederman wrote:
+On Thu, Dec 17, 2009 at 10:15:58PM +0100, Roel Kluin wrote:
+> The sizeof the pointed to should be used rather than of the pointer
 > 
-> As for glibc.  The usage in glibc before glibc 2.5 does not count as a
-> user space application that cares.  You can return any string or
-> -ENOSYS and glibc works fine.
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Unless I am mistaken?
 
-Annoying and pointless messages that flood your terminals etc is not 
-"fine".
+You are mistaken.  sizeof(array) is the byte size of the array.
+sizeof(*array) is the size of one individual object of the array.
 
-Backwards compatibility is more than "technically it still works". It's 
-something almost sacred.
+The code is correct as is - which is to fill  the entire array with
+space characters and then zero the last one.
 
-		Linus
+> diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
+> index 3f361a7..5e828fa 100644
+> --- a/arch/arm/kernel/traps.c
+> +++ b/arch/arm/kernel/traps.c
+> @@ -102,7 +102,7 @@ static void dump_mem(const char *lvl, const char *str, unsigned long bottom,
+>  		unsigned long p;
+>  		char str[sizeof(" 12345678") * 8 + 1];
+>  
+> -		memset(str, ' ', sizeof(str));
+> +		memset(str, ' ', sizeof(*str));
+>  		str[sizeof(str) - 1] = '\0';
+>  
+>  		for (p = first, i = 0; i < 8 && p < top; i++, p += 4) {
