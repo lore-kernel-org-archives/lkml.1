@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbZLQA4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbZLQAzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760546AbZLQA4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:56:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763262AbZLQAzc
+	id S933231AbZLQAzl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763227AbZLQAz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:55:32 -0500
-Received: from kroah.org ([198.145.64.141]:44550 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 19:55:29 -0500
+Received: from kroah.org ([198.145.64.141]:44554 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762058AbZLQAyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:54:47 -0500
+	id S1762105AbZLQAys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:54:48 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 16:47:09 2009
-Message-Id: <20091217004709.378331483@mini.kroah.org>
+Message-Id: <20091217004709.508264959@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 16:46:08 -0800
+Date: Wed, 16 Dec 2009 16:46:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [17/18] jffs2: Fix long-standing bug with symlink garbage collection.
+       Alan Cox <alan@linux.intel.com>, Petr Vandrovec <VANDROVE@vc.cvut.cz>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, "Paul A. Clarke" <pc@us.ibm.com>
+Subject: [18/18] matroxfb: fix problems with display stability
 In-Reply-To: <20091217005306.GA6230@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,33 +28,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: David Woodhouse <David.Woodhouse@intel.com>
+From: Alan Cox <alan@linux.intel.com>
 
-commit 2e16cfca6e17ae37ae21feca080a6f2eca9087dc upstream.
+commit 8c651311a3a08c1e4815de6933e00a760e498dae upstream.
 
-Ever since jffs2_garbage_collect_metadata() was first half-written in
-February 2001, it's been broken on architectures where 'char' is signed.
-When garbage collecting a symlink with target length above 127, the payload
-length would end up negative, causing interesting and bad things to happen.
+Regression caused in 2.6.23 and then despite repeated requests never fixed
+or dealt with (Petr promised to sort it in 2008 but seems to have
+forgotten).
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Enough is enough - remove the problem line that was added.  If it upsets
+someone they've had two years to deal with it and at the very least it'll
+rattle their cage and wake them up.
+
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9709
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Reported-by: Damon <account@bugzilla.kernel.org.juxtaposition.net>
+Tested-by: Ruud van Melick <rvm1974@raketnet.nl>
+Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Paul A. Clarke <pc@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jffs2/gc.c |    3 ++-
+ drivers/video/matrox/g450_pll.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/jffs2/gc.c
-+++ b/fs/jffs2/gc.c
-@@ -700,7 +700,8 @@ static int jffs2_garbage_collect_metadat
- 	struct jffs2_raw_inode ri;
- 	struct jffs2_node_frag *last_frag;
- 	union jffs2_device_node dev;
--	char *mdata = NULL, mdatalen = 0;
-+	char *mdata = NULL;
-+	int mdatalen = 0;
- 	uint32_t alloclen, ilen;
- 	int ret;
+--- a/drivers/video/matrox/g450_pll.c
++++ b/drivers/video/matrox/g450_pll.c
+@@ -341,7 +341,8 @@ static int __g450_setclk(WPMINFO unsigne
+ 					M1064_XDVICLKCTRL_C1DVICLKEN |
+ 					M1064_XDVICLKCTRL_DVILOOPCTL |
+ 					M1064_XDVICLKCTRL_P1LOOPBWDTCTL;
+-				matroxfb_DAC_out(PMINFO M1064_XDVICLKCTRL,tmp);
++				/* Setting this breaks PC systems so don't do it */
++				/* matroxfb_DAC_out(PMINFO M1064_XDVICLKCTRL,tmp); */
+ 				matroxfb_DAC_out(PMINFO M1064_XPWRCTRL,
+ 						 xpwrctrl);
  
 
 
