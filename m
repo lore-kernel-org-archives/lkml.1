@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763860AbZLQB0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763755AbZLQBXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763860AbZLQB0z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763819AbZLQB0J
+	id S1763755AbZLQBXb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763708AbZLQBVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:26:09 -0500
-Received: from kroah.org ([198.145.64.141]:41509 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:21:18 -0500
+Received: from kroah.org ([198.145.64.141]:41518 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763711AbZLQBVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:21:04 -0500
+	id S1763713AbZLQBVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:21:05 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:08 2009
-Message-Id: <20091217011608.696291429@mini.kroah.org>
+Message-Id: <20091217011608.830966337@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:33 -0800
+Date: Wed, 16 Dec 2009 17:15:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Deon van der Merwe <dvdm@truteq.co.za>, Julian Anastasov <ja@ssi.bg>,
-       Simon Horman <horms@verge.net.au>, Patrick McHardy <kaber@trash.net>
-Subject: [82/90] ipvs: zero usvc and udest
+       Zhu Yi <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
+Subject: [83/90] ipw2100: fix rebooting hang with driver loaded
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,50 +28,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Simon Horman <horms@verge.net.au>
+From: Zhu Yi <yi.zhu@intel.com>
 
-commit 258c889362aa95d0ab534b38ce8c15d3009705b1 upstream.
+commit 52ce3e9a7db754b78cf2cbabc87013f921b25b28 upstream.
 
-Make sure that any otherwise uninitialised fields of usvc are zero.
+Add PCI .shutdown method so that we can disable the device during
+shutdown or reboot. Without this, the reboot doesn't work well on
+some platforms.
 
-This has been obvserved to cause a problem whereby the port of
-fwmark services may end up as a non-zero value which causes
-scheduling of a destination server to fail for persisitent services.
+This fixes http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2124
 
-As observed by Deon van der Merwe <dvdm@truteq.co.za>.
-This fix suggested by Julian Anastasov <ja@ssi.bg>.
-
-For good measure also zero udest.
-
-Cc: Deon van der Merwe <dvdm@truteq.co.za>
-Acked-by: Julian Anastasov <ja@ssi.bg>
-Signed-off-by: Simon Horman <horms@verge.net.au>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Tested-by: pablo <pablolm2005@gmail.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/ipvs/ip_vs_ctl.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/wireless/ipw2x00/ipw2100.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
---- a/net/netfilter/ipvs/ip_vs_ctl.c
-+++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -2713,6 +2713,8 @@ static int ip_vs_genl_parse_service(stru
- 	if (!(nla_af && (nla_fwmark || (nla_port && nla_protocol && nla_addr))))
- 		return -EINVAL;
+--- a/drivers/net/wireless/ipw2x00/ipw2100.c
++++ b/drivers/net/wireless/ipw2x00/ipw2100.c
+@@ -6487,6 +6487,16 @@ static int ipw2100_resume(struct pci_dev
+ }
+ #endif
  
-+	memset(usvc, 0, sizeof(*usvc));
++static void ipw2100_shutdown(struct pci_dev *pci_dev)
++{
++	struct ipw2100_priv *priv = pci_get_drvdata(pci_dev);
 +
- 	usvc->af = nla_get_u16(nla_af);
- #ifdef CONFIG_IP_VS_IPV6
- 	if (usvc->af != AF_INET && usvc->af != AF_INET6)
-@@ -2900,6 +2902,8 @@ static int ip_vs_genl_parse_dest(struct 
- 	if (!(nla_addr && nla_port))
- 		return -EINVAL;
- 
-+	memset(udest, 0, sizeof(*udest));
++	/* Take down the device; powers it off, etc. */
++	ipw2100_down(priv);
 +
- 	nla_memcpy(&udest->addr, nla_addr, sizeof(udest->addr));
- 	udest->port = nla_get_u16(nla_port);
++	pci_disable_device(pci_dev);
++}
++
+ #define IPW2100_DEV_ID(x) { PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, x }
  
+ static struct pci_device_id ipw2100_pci_id_table[] __devinitdata = {
+@@ -6550,6 +6560,7 @@ static struct pci_driver ipw2100_pci_dri
+ 	.suspend = ipw2100_suspend,
+ 	.resume = ipw2100_resume,
+ #endif
++	.shutdown = ipw2100_shutdown,
+ };
+ 
+ /**
 
 
