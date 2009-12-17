@@ -1,34 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZLQX10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936769AbZLQWig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbZLQX10 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 18:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZLQX1W
+	id S936769AbZLQWig (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 17:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936748AbZLQWig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 18:27:22 -0500
-Received: from ns4.aau.edu.et ([213.55.95.16]:49511 "EHLO demera.aau.edu.et"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751070AbZLQX1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 18:27:19 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -0.992
-Date: Fri, 18 Dec 2009 01:34:48 +0300 (EAT)
-From: Mr Su Ning <rajuvjt@chem.aau.edu.et>
-Reply-To: Mr Su Ning <ningsu11@live.hk>
-Message-ID: <18589626.47681261089288859.JavaMail.root@buhe.aau.edu.et>
-Subject: Matter of Urgency (GET BACK TO ME)
+	Thu, 17 Dec 2009 17:38:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50548 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936702AbZLQWif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 17:38:35 -0500
+Date: Thu, 17 Dec 2009 17:37:57 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Paul Mundt <lethal@linux-sh.org>
+cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+In-Reply-To: <20091217061229.GD3946@linux-sh.org>
+Message-ID: <Pine.LNX.4.64.0912171725370.21142@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+ <20091217061229.GD3946@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.90.20.22]
-X-Mailer: Zimbra 5.0.5_GA_2201.F7 (zclient/5.0.5_GA_2201.F7)
-To: undisclosed-recipients:;
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings
 
-I am  Mr Su Ning, The deputy governor of peoples bank of china. I have a very urgent business proposal worth 21.5 million dollars for your Consideration. If willing, please email me at ningsu11@live.hk  for details and modalities.
 
-Thank you
-Su Ning
+On Thu, 17 Dec 2009, Paul Mundt wrote:
+
+> On Tue, Dec 15, 2009 at 04:57:49PM -0500, Mikulas Patocka wrote:
+> > (5) Wrapping makes long expressions harder to understand
+> > --------------------------------------------------------
+> > 
+> > If I have a complex expression, I do not try to wrap it at predefined
+> > 80-column boundaries, but at logical boundaries within the expression to make
+> > it more readable (the brain can't find matching parentheses fast, so we can
+> > help it by aligning the code according to topmost terms in the expression).
+> > 
+> > Example:
+> > 				if (unlikely(call_some_function(s, value) != RET
+> > _SUCCESS) ||
+> > 				    (var_1 == prev_var_1 && var_2 == prev_var_2)
+> >  ||
+> > 				    flags & (FLAG_1 | FLAG_2) ||
+> > 				    some_other_condition) {
+> > 				}
+> > 
+> > Now, if we impose 80-column limit, we get this. One may argue that is looks
+> > aesthetically better, but it is also less intelligible than the previous
+> > version:
+> > 				if (unlikely(call_some_function(s, value) !=
+> > 				    RET_SUCCESS) || (var_1 == prev_var_1 &&
+> > 				    var_2 == prev_var_2) || flags & (FLAG_1 |
+> > 				    FLAG_2) || some_other_condition) {
+> > 				}
+> > 
+> For starters, this is just crap. If you're writing code like this, then
+> line wrapping is really the least of your concerns. Take your function
+> return value and assign it to a variable before testing it in unlikely()
+> as per existing conventions and most of this goes away in this example.
+
+I wouldn't say that this is better:
+				int csf_failed, vars_equal, flags_12;
+
+				...
+
+				csf_failed = call_some_function(s, value) != RET_SUCCESS;
+				vars_equal = var_1 == prev_var_1 && var_2 == prev_var_2;
+				flags_12 = flags & (FLAG_1 | FLAG_2);
+				if (unlikely(csf_failed) || vars_equal ||
+				    flags_12 || some_other_conditions) {
+				}
+
+If you think that it is better, it's OK, just write your code like that. 
+And don't force it to everyone.
+
+> If you're testing an absurd amount of conditions in a single block with
+> needlessly verbose variable names, then yes, you will go over 80
+> characters. Consequently, your "clean" example doesn't look much better
+> than your purposely obfuscated one.
+
+For me, breaking the expression into variables is worse because:
+- adding/removing conditions must be done at 3 places (vs. my original 
+example, where it would be done only on 1 place)
+- when reading the conditions, your eyes must skip to two places (vs. my 
+original example, where you only read it at one place)
+
+But everyone has different brain, so it may be that for you, the extra 
+variables are really more understandable. So write your code like that and 
+don't preach.
+
+Mikulas
