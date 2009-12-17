@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbZLQHGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbZLQHM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758748AbZLQHGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 02:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZLQHGh
+	id S1759987AbZLQHM0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 02:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbZLQHMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 02:06:37 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49435 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756752AbZLQHGg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 02:06:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=TfmLm9vg2mwJSvvhO4jX/tJwDYNEn8lE2uE6gutWw5xSwNdEOZe5Fl8/DsBoM+d8de
-         eMzO2Gm43NW9/v7MQSAePabnBV3WazapRHkI2H07iWwQvA4WvwODtod5TtxiiM6G0dmj
-         LgfDey5W84iuNdLP9B10J2hJzD7wwDINBXmdo=
+	Thu, 17 Dec 2009 02:12:25 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:46629 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756893AbZLQHMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 02:12:24 -0500
+Message-ID: <4B29D9D6.9030702@msgid.tls.msk.ru>
+Date: Thu, 17 Dec 2009 10:12:22 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-In-Reply-To: <4B292D9A.5060501@poelzi.org>
-References: <4B292D9A.5060501@poelzi.org>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Thu, 17 Dec 2009 02:06:15 -0500
-Message-ID: <3e8340490912162306m4236569s4e497ad01409c756@mail.gmail.com>
-Subject: Re: Suggestion: xtime as new inode attribute
-To: Daniel Poelzleithner <poelzi@poelzi.org>
-Cc: linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>,
-       Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: minyard@acm.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Wilck <martin.wilck@ts.fujitsu.com>,
+       Jean Delvare <jdelvare@suse.de>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+Subject: Re: [PATCH] IPMI: Add parameter to limit CPU usage in kipmid
+References: <20091216212354.GA13097@minyard.local> <20091216134252.868ea5bf.akpm@linux-foundation.org>
+In-Reply-To: <20091216134252.868ea5bf.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=804465C5
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 1:57 PM, Daniel Poelzleithner <poelzi@poelzi.org> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Hi,
->
-> I would like to suggest a new attribute for inodes in linux filesystems
-> to record the last execution time of files.
->
-> The problem:
->
-> If a linux installation gets older and older, more and more programs get
-> installed over time. Mostly to just test them for a particular problem
-> and often the deinstallation is forgotten. To find out which packages
-> are not used for a long time is currently quite impossible. The user may
-> use program X which will run but not depend on program Y as a subprocess
-> for example.
->
-> The solution:
->
-> I suggest a new inode attribute called xtime, which is like atime, but
-> will only be updated when a file is executed. This would allow tracking
-> of unused binaries and could be used with some clever algorithms in the
-> cleanup program to find unused packages for removal or other cleanup
-> purposes.
-> It would also add an additional information in forensic analysis of
-> hacked systems btw.
+Andrew Morton wrote:
+> On Wed, 16 Dec 2009 15:23:54 -0600
+> Corey Minyard <minyard@acm.org> wrote:
+> 
+>> From: Martin Wilck <martin.wilck@ts.fujitsu.com>
+>>
+>> In some cases kipmid can use a lot of CPU.
+> 
+> Why is that?  Without this information it is hard for others to suggest
+> alternative implementations.
 
-Why isn't atime sufficient? atime is updated when programs are
-executed, and it's uncommon for executable files to be accessed
-without being executed; for the purposes of determining whether a
-program is needed, it ought to be good enough.
+[picking up the thread from the middle]
 
-Note that many modern distros use relatime to reduce the (significant)
-overhead of atime; this may account for why you may not be seeing
-atime update for executables; try mounting with -o strictatime if you
-want to see it at work, but beware, as this will bring with it a major
-performance hit - which your proposal would as well :)
+I dunno why, but I can confirm that kipmid is one of the most
+noticeable threads on all machines here running ipmid.
+
+Here's an example from a machine with 20days uptime.
+According to `ps -aflx', [kipmid] process took 30:34
+sec of CPU time.  Most close to that is [md6_raid1]
+thread with 12:30, and next to that is [kjournald]
+with 0:24.  30:34 is not exactly huge given 20days
+uptime, but it is a clear "winner", far from the
+most close competitor.
+
+Different kernels, somewhat different hardware, but
+the same behavour.
+
+/mjt
