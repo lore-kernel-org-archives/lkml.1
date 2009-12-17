@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbZLQK7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764427AbZLQLD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761906AbZLQK7k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:59:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbZLQK7j
+	id S1764427AbZLQLD5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 06:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764413AbZLQLDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:59:39 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35882 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbZLQK7i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:59:38 -0500
-Date: Thu, 17 Dec 2009 03:01:44 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Salman Qazi <sqazi@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the 
- Linux Kernel
-Message-ID: <20091217030144.186b1b19@infradead.org>
-In-Reply-To: <4352991a0912151215o33524766p830e7fcbf9f1fc87@mail.gmail.com>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	<20091214161922.6f252492@infradead.org>
-	<4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
-	<20091214170616.59fc163f@infradead.org>
-	<4352991a0912151215o33524766p830e7fcbf9f1fc87@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Dec 2009 06:03:53 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:58549 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764375AbZLQLDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 06:03:41 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 1/9] pci: separate pci_setup_bridge to small functions
+Date: Thu, 17 Dec 2009 12:03:22 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.80; i686; ; )
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+References: <4ADEB601.8020200@kernel.org> <4B10D29F.2000800@kernel.org> <20091216124147.4163cd10@jbarnes-piketon>
+In-Reply-To: <20091216124147.4163cd10@jbarnes-piketon>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1946333.LLi9HJaeNg";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200912171203.29367.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Dec 2009 12:15:30 -0800
-Salman Qazi <sqazi@google.com> wrote:
+--nextPart1946333.LLi9HJaeNg
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> > (having the memory power in a machine suddenly be half or less is a
-> > huge step in power, for something, the alignment itself, that does
-> > not cost much if any extra performance over randomly distributed
-> > idle insertions)
-> 
-> I think there is a difference in goals here.  Our goal is to free up
-> power from one machine, so that it can be used elsewhere.  This means
-> that any power that we save has to be predictably saved. 
+Jesse Barnes wrote:
+> On Fri, 27 Nov 2009 23:34:55 -0800
+>=20
+> Yinghai Lu <yinghai@kernel.org> wrote:
+> > prepare to use those small functions according to resource type later
+> >
+> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >
+> > ---
+> >  drivers/pci/setup-bus.c |   54
+> > +++++++++++++++++++++++++++++++++++++++--------- 1 file changed, 44
+> > insertions(+), 10 deletions(-)
+>=20
+> Seems like a reasonable cleanup, anyone have objections?
 
-unless your population of machines is big enough, and you get "close
-enough" in terms of predictability.
+There are some newlines missing between some functions, e.g. before =20
+pci_setup_bridge_mmio().
 
-> We have
-> models that map between CPU time and power usage, that have to account
-> for the worst case.
+Eike
 
-the delta between worst case and average/typical even for cpu time <->
-power usage is enormous (2x to 3x would not surprise me)... adding
-memory to that equation does not change the fundamentals much.
+--nextPart1946333.LLi9HJaeNg
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
 
+iEYEABECAAYFAksqEAEACgkQXKSJPmm5/E58wQCfWOpgejKq9PpLfKhIaNzzcHE7
+SPUAnjH6GLgI16kvPLKyWYmU5/7RFZew
+=itAm
+-----END PGP SIGNATURE-----
 
-> Having said that, energy savings is a worthy goal by itself.  But, we
-> have to make sure to balance it with performance.
-
-I would think the people who pay the power bill at the end of the month
-would notice a 10% reduction ;-)
-
-
-> > as long as the tentative portion of the idle time gets injected at
-> > the same time.. I suspect there can be a decent balance here where
-> > most of the time we get the full CPU *and* memory savings, while we
-> > degrade gracefully for the case where we get increasingly more
-> > interactive activity.
-> 
-> Let me rephrase what you just said to verify that I understand you
-> correctly:  we should align the enforcement intervals across CPUs and
-> thereby eagerly inject over the same time period across multiple CPUs.
-
-we should at least try hard to do this. it's ok to not always get it, 
-but when we can we should.
-
->  If there is no interactive workload then we would get maximal CPU and
-> memory savings.  If there are interactive tasks, then we just let them
-> run like we would in the eager injection in original design.
-
-the interactive tasks would indeed run "normal"; but since they are
-interactive that is supposedly "only sporadic".
+--nextPart1946333.LLi9HJaeNg--
