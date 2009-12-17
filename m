@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbZLQK4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764313AbZLQKmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964840AbZLQK4O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:56:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZLQKz7
+	id S1764313AbZLQKmq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZLQKmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:55:59 -0500
-Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:40338 "EHLO
-	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762033AbZLQKz5 (ORCPT
+	Thu, 17 Dec 2009 05:42:45 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:47317 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751842AbZLQKmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:55:57 -0500
-X-Greylist: delayed 745 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 05:55:56 EST
-Message-ID: <4B2A0AE5.2080006@reactivated.net>
-Date: Thu, 17 Dec 2009 10:41:41 +0000
-From: Daniel Drake <dan@reactivated.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; es-ES; rv:1.9.1.5) Gecko/20091212 Thunderbird/3.0
+	Thu, 17 Dec 2009 05:42:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=gxoZaw5e7X1uJH968tBYQzLDHEmXTgBCqifOR1RToZ2COQvyv0izrtbgwaAjjsefSA
+         b/kcjw8A/bufr/k6PzQRlk0YCVZAc4f6Vf7Vst0ZoncEGyx0jINgrUw2somv6UhNCeho
+         6+4GFE00+2VE2gfy41h37mP3zvKdkszveHUEs=
 MIME-Version: 1.0
-To: Josua Dietze <digidietze@draisberghof.de>
-CC: Stefan Seyfried <stefan.seyfried@googlemail.com>,
-       usb-storage@lists.one-eyed-alien.net, linux-usb@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [usb-storage] [PATCH] move eject code from zd1211rw to  usb-storage
-References: <1260878800-14691-1-git-send-email-stefan.seyfried@googlemail.com> <4B278191.1010009@draisberghof.de>
-In-Reply-To: <4B278191.1010009@draisberghof.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Cloudmark-Analysis: v=1.1 cv=1ggfb5FlKZQUfF3vzm9UBYZ2uTfLsbs/8dSljwg5+mE= c=1 sm=0 a=sOupWqN7R48A:10 a=iQiDWL7-QGvl7PhqtaUA:9 a=77POCl-bLNGgAw6lX5T5DHIchHwA:4 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
+In-Reply-To: <1261042383.14314.0.camel@localhost>
+References: <1261042383.14314.0.camel@localhost>
+From: Jason Garrett-Glaser <darkshikari@gmail.com>
+Date: Thu, 17 Dec 2009 02:42:24 -0800
+Message-ID: <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
+Subject: Re: x264 benchmarks BFS vs CFS
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El 15/12/09 12:31, Josua Dietze escribió:
-> Stefan Seyfried schrieb:
+On Thu, Dec 17, 2009 at 1:33 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+> well well :) nothing quite speaks out like graphs..
 >
->> The USB ID claimed by zd1211rw for the fake storage device is
->> also in use by other, non-zd1211rw devices (Sphairon Homelink
->> 1202). Move the eject of these devices to where it belongs and
->> where all the needed infrastructure already exists: usb-storage.
+> http://doom10.org/index.php?topic=78.0
 >
 >
-> We can do the eject (as other mode switches) in userspace. Previous
-> discussions pointed into that direction.
+>
+> regards,
+> Kasper Sandberg
 
-When I originally wrote this code this wasn't as easy as you might think 
-- the virtual CD device seems to be very quirky, and utterly confused 
-Linux to the point where it didn't even create a device node. Maybe 
-linux is more flexible these days though.
+Yeah, I sent this to Mike a bit ago.  Seems that .32 has basically
+tied it--and given the strict thread-ordering expectations of x264,
+you basically can't expect it to do any better, though I'm curious
+what's responsible for the gap in "veryslow", even with SCHED_BATCH
+enabled.
 
-Daniel
+The most odd case is that of "ultrafast", in which CFS immediately
+ties BFS when we enable SCHED_BATCH.  We're doing some further testing
+to see exactly what the conditions of this are--is it because
+ultrafast is just so much faster than all the other modes and so
+switches threads/loads faster?  Is it because ultrafast has relatively
+equal workload among the threads, unlike the other loads?  We'll
+probably know soon.
+
+Jason
