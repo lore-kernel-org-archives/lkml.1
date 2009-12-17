@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764382AbZLQUha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764915AbZLQUmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764382AbZLQUha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 15:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763071AbZLQUh2
+	id S1764915AbZLQUmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 15:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762699AbZLQUme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 15:37:28 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35196 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762908AbZLQUh1 (ORCPT
+	Thu, 17 Dec 2009 15:42:34 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42533 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759930AbZLQUmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 15:37:27 -0500
-Date: Thu, 17 Dec 2009 20:37:26 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: [revert] commit e9496ff46a20a8592fdc7bdaaf41b45eb808d310 needs
-	to be reverted
-Message-ID: <20091217203726.GE18217@ZenIV.linux.org.uk>
-References: <1261075774.2868.16.camel@localhost> <20091217202613.GD18217@ZenIV.linux.org.uk>
+	Thu, 17 Dec 2009 15:42:33 -0500
+Date: Thu, 17 Dec 2009 14:42:03 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andi Kleen <andi@firstfloor.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+In-Reply-To: <1261080855.27920.807.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0912171439380.4640@router.home>
+References: <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>  <20091216102806.GC15031@basil.fritz.box>  <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com>  <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box> 
+ <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box>  <20091217144551.GA6819@linux.vnet.ibm.com>  <20091217175338.GL9804@basil.fritz.box>  <20091217190804.GB6788@linux.vnet.ibm.com>  <20091217195530.GM9804@basil.fritz.box> 
+ <alpine.DEB.2.00.0912171356020.4640@router.home> <1261080855.27920.807.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217202613.GD18217@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 08:26:13PM +0000, Al Viro wrote:
-> On Thu, Dec 17, 2009 at 01:49:34PM -0500, Eric Paris wrote:
-> > I pulled from Linus Dec16 and didn't have problems.  This is a pull from
-> > Dec17, plus some of my own patches which I'd be surprised to learn were
-> > related.  I have an NFS mount in my fstab, I assume this is that being
-> > mounted on boot.  I'll start a bisect if needed, but maybe someone will
-> > know what they broke instantly....
-> 
-> Gyah...  Please, revert e9496ff46a20a8592fdc7bdaaf41b45eb808d310;
-> it's dependent on a lot of other stuff not currently in mainline
-> and badly broken with current fs/namespace.c.  Sorry, badly out-of-order
-> cherry-pick from old queue.
+On Thu, 17 Dec 2009, Peter Zijlstra wrote:
 
-PS: there's a large pending series reworking the refcounting and lifetime
-rules for vfsmounts that will, among other things, allow to rip a subtree
-away _without_ dissolving connections in it, to be garbage-collected
-when all active references are gone.  It's considerably saner wrt "is
-the subtree busy" logics, but it's nowhere near being ready for merge
-at the moment; this changeset is one of the things becoming possible
-with that sucker, but it certainly shouldn't have been picked during this
-cycle.  My apologies...
+> > That is why I think that the accessors are a good first step.
+>
+> They're not, they're daft, they operate on a global resource mm_struct,
+> that's the whole problem, giving it a different name isn't going to
+> solve anything.
+
+It is not about naming. The accessors hide the locking mechanism for
+mmap_sem. Then you can change the locking in a central place.
+
+The locking may even become configurable later. Maybe an embedded solution
+will want the existing scheme but dual quad socket may want a distributed
+reference counter to avoid bouncing cachelines on faults.
+
+
