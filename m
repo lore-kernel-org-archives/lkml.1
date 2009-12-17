@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbZLQPS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965152AbZLQPTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965128AbZLQPS0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965125AbZLQPSQ
+	id S965152AbZLQPTx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965079AbZLQPTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:18:16 -0500
-Received: from lo.gmane.org ([80.91.229.12]:55386 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965123AbZLQPSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:18:14 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Lukasz Sokol <el.es.cr@gmail.com>
-Subject: Re: Rfkill buttons : bi-stable, mono-stable, tactile
-Date: Thu, 17 Dec 2009 15:17:51 +0000 (UTC)
-Message-ID: <loom.20091217T161042-883@post.gmane.org>
-References: <loom.20091217T122606-341@post.gmane.org> <20091217150709.GA6375@srcf.ucam.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: sea.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 86.152.73.88 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5)
+	Thu, 17 Dec 2009 10:19:46 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:55334 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965138AbZLQPTo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:19:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=Fey0yammuVFS/DPesLmz/9N43X97iF2NVrcdDyf7sIpOZqBEDecJvq7fKUGYvhS12/
+         ij0UMO5zV/2HqWL87erw56I+KZ5VxsfXiFt4xhLCzG/s9069pPM//tFwTaZqoCA2ZrN5
+         HHvGfr1jotF10nSApSdPpitDabjk53lUisN9s=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+Date: Thu, 17 Dec 2009 16:18:32 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: =?utf-8?q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com> <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200912171618.32882.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett <mjg59 <at> srcf.ucam.org> writes:
-
-> > The Internet is almost 'flooded' with reports of this not working on various
-> > distributions, that's why decided to go a level higher.
+On Thursday 17 December 2009 04:14:37 pm Linus Torvalds wrote:
 > 
-> What do you mean by "not working"? You don't really explain what the 
-> issue you're seeing is.
+> On Thu, 17 Dec 2009, Américo Wang wrote:
+> > 
+> > I like this patch, this is actually what I wanted to do.
 > 
+> I have nothing against a switch, but it had better default to off.
+> 
+> The whole 80-char limit is insane. It results in insane "fixes". Just 
+> about every time somebody "improves" a patch due to the warning, the 
+> result is worse than the original patch.
 
-Hello Matthew,
+Examples? :)
 
-I define "not working" in this case by "it switches hardware on/off without the
-software knowing". 
-
-i.e. the rfkill does not know, and the 'problem' is only noticed when the wifi
-disassociates (but Network Manager tries on to reconnect). On the other hand,
-invoking /sbin/rfkill [un]block wifi blocks/unblocks wifi comfortably.
-
-
-
+--
+Bartlomiej Zolnierkiewicz
