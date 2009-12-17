@@ -1,108 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764704AbZLQNUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZLQFrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764704AbZLQNUo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 08:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZLQNUn
+	id S1753316AbZLQFrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 00:47:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZLQFra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 08:20:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10512 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973AbZLQNUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 08:20:42 -0500
-Message-ID: <4B2A3071.9000003@redhat.com>
-Date: Thu, 17 Dec 2009 08:21:53 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Rob Landley <rob@landley.net>
-Subject: Re: CONFIG_KPROBES=y build requires gawk
-References: <20091216235617.GA12267@hexapodia.org> <adabphy750b.fsf@roland-alpha.cisco.com>
-In-Reply-To: <adabphy750b.fsf@roland-alpha.cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 00:47:30 -0500
+Received: from mga12.intel.com ([143.182.124.36]:19997 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752550AbZLQFr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 00:47:28 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="223878849"
+Date: Thu, 17 Dec 2009 08:22:48 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: jbarnes@virtuousgeek.org
+Cc: andrew.patterson@hp.com, andi@firstfloor.org, ying.huang@intel.com,
+       kent.liu@intel.com, youquan.song@intel.com,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [Resend PATCH]PCIe AER: reject aer inject if hardware mask error reporting
+Message-ID: <20091217132248.GC11466@youquan-linux.bj.intel.com>
+References: <20091211234855.GB7196@youquan-linux.bj.intel.com> <1260836954.19155.84.camel@bluto.andrew>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260836954.19155.84.camel@bluto.andrew>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Is there any reason not to apply the patch below, to allow more awk
-> implementations to be used?  After all, it's not like we're going to put
-> non-ASCII characters into the map file...
-> 
-> ===
-> 
-> x86: Don't use POSIX character classes in gen-insn-attr-x86.awk
-> 
-> Not all awk implementations (including the default awk in Ubuntu 9.10)
-> support POSIX character classes.  Since x86-opcode-map.txt is plain
-> ASCII, we can just use explicit ranges for lower case, alphabetic, and
-> alphanumeric characters instead.
-> 
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Correcteable/Uncorrectable Error Mask Register are used by PCIe AER driver 
+which will controls the reporting of idividual errors to PCIe RC via PCIe
+error messages. 
 
-As far as Peter's LC_* patch is accepted:), this looks good to me.
-Thank you for fixing and discussing that!
+If hardware masks special error reporting to RC, the aer_inject driver should
+ not inject aer error.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Signed-off-by: Youquan, Song <youquan.song@intel.com>
+Acked-by: Ying, Huang <ying.huang@intel.com>
+---
 
-> ---
->  arch/x86/tools/gen-insn-attr-x86.awk |   10 ++++------
->  1 files changed, 4 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
-> index 7a68506..eaf11f5 100644
-> --- a/arch/x86/tools/gen-insn-attr-x86.awk
-> +++ b/arch/x86/tools/gen-insn-attr-x86.awk
-> @@ -6,8 +6,6 @@
->  
->  # Awk implementation sanity check
->  function check_awk_implement() {
-> -	if (!match("abc", "[[:lower:]]+"))
-> -		return "Your awk doesn't support charactor-class."
->  	if (sprintf("%x", 0) != "0")
->  		return "Your awk has a printf-format problem."
->  	return ""
-> @@ -44,12 +42,12 @@ BEGIN {
->  	delete gtable
->  	delete atable
->  
-> -	opnd_expr = "^[[:alpha:]/]"
-> +	opnd_expr = "^[A-Za-z/]"
->  	ext_expr = "^\\("
->  	sep_expr = "^\\|$"
-> -	group_expr = "^Grp[[:alnum:]]+"
-> +	group_expr = "^Grp[0-9A-Za-z]+"
->  
-> -	imm_expr = "^[IJAO][[:lower:]]"
-> +	imm_expr = "^[IJAO][a-z]"
->  	imm_flag["Ib"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
->  	imm_flag["Jb"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
->  	imm_flag["Iw"] = "INAT_MAKE_IMM(INAT_IMM_WORD)"
-> @@ -62,7 +60,7 @@ BEGIN {
->  	imm_flag["Ob"] = "INAT_MOFFSET"
->  	imm_flag["Ov"] = "INAT_MOFFSET"
->  
-> -	modrm_expr = "^([CDEGMNPQRSUVW/][[:lower:]]+|NTA|T[012])"
-> +	modrm_expr = "^([CDEGMNPQRSUVW/][a-z]+|NTA|T[012])"
->  	force64_expr = "\\([df]64\\)"
->  	rex_expr = "^REX(\\.[XRWB]+)*"
->  	fpu_expr = "^ESC" # TODO
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
+index 7fcd533..d002cd9 100644
+--- a/drivers/pci/pcie/aer/aer_inject.c
++++ b/drivers/pci/pcie/aer/aer_inject.c
+@@ -321,7 +321,7 @@ static int aer_inject(struct aer_error_inj *einj)
+ 	unsigned long flags;
+ 	unsigned int devfn = PCI_DEVFN(einj->dev, einj->fn);
+ 	int pos_cap_err, rp_pos_cap_err;
+-	u32 sever;
++	u32 sever, mask;
+ 	int ret = 0;
+ 
+ 	dev = pci_get_domain_bus_and_slot((int)einj->domain, einj->bus, devfn);
+@@ -374,6 +374,24 @@ static int aer_inject(struct aer_error_inj *einj)
+ 	err->header_log2 = einj->header_log2;
+ 	err->header_log3 = einj->header_log3;
+ 
++	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, &mask);
++	if (einj->cor_status && !(einj->cor_status & ~mask)) {
++		ret = -EINVAL;
++		printk(KERN_WARNING "The correctable error(s) is masked "
++				"by device\n");
++		spin_unlock_irqrestore(&inject_lock, flags);
++		goto out_put;
++	}
++
++	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, &mask);
++	if (einj->uncor_status && !(einj->uncor_status & ~mask)) {
++		ret = -EINVAL;
++		printk(KERN_WARNING "The uncorrectable error(s) is masked "
++				"by device\n");
++		spin_unlock_irqrestore(&inject_lock, flags);
++		goto out_put;
++	}
++
+ 	rperr = __find_aer_error_by_dev(rpdev);
+ 	if (!rperr) {
+ 		rperr = rperr_alloc;
