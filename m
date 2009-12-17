@@ -1,36 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbZLQKy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933503AbZLQKxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764328AbZLQKy6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761691AbZLQKy1
+	id S933503AbZLQKxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZLQKxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:54:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54029 "EHLO hera.kernel.org"
+	Thu, 17 Dec 2009 05:53:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53973 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759261AbZLQKyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:54:20 -0500
-Date: Thu, 17 Dec 2009 10:52:03 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: acme@redhat.com, mingo@redhat.com, peterz@infradead.org,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
-       mhiramat@redhat.com, systemtap@sources.redhat.com,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, paulus@samba.org,
-       jkenisto@us.ibm.com, hch@infradead.org, ananth@in.ibm.com,
-       srikar@linux.vnet.ibm.com, mingo@elte.hu, prasad@linux.vnet.ibm.com
-Reply-To: mingo@redhat.com, acme@redhat.com, peterz@infradead.org,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
-       mhiramat@redhat.com, systemtap@sources.redhat.com,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, paulus@samba.org,
-       jkenisto@us.ibm.com, hch@infradead.org, ananth@in.ibm.com,
-       srikar@linux.vnet.ibm.com, prasad@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20091216222415.14459.71383.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091216222415.14459.71383.stgit@dhcp-100-2-132.bos.redhat.com>
+	id S1752053AbZLQKxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 05:53:14 -0500
+Date: Thu, 17 Dec 2009 10:52:18 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, fweisbec@gmail.com, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
+References: <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf probe: Check new event name
-Message-ID: <tip-b7702a2136b5f8e0e186e22cae91aaecf98b418c@git.kernel.org>
-Git-Commit-ID: b7702a2136b5f8e0e186e22cae91aaecf98b418c
+Subject: [tip:sched/urgent] sched: Teach might_sleep() about preemptible RCU
+Message-ID: <tip-234da7bcdc7aaa935846534c3b726dbc79a9cdd5@git.kernel.org>
+Git-Commit-ID: 234da7bcdc7aaa935846534c3b726dbc79a9cdd5
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -39,74 +31,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b7702a2136b5f8e0e186e22cae91aaecf98b418c
-Gitweb:     http://git.kernel.org/tip/b7702a2136b5f8e0e186e22cae91aaecf98b418c
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Wed, 16 Dec 2009 17:24:15 -0500
+Commit-ID:  234da7bcdc7aaa935846534c3b726dbc79a9cdd5
+Gitweb:     http://git.kernel.org/tip/234da7bcdc7aaa935846534c3b726dbc79a9cdd5
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Wed, 16 Dec 2009 20:21:05 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 17 Dec 2009 09:42:44 +0100
+CommitDate: Thu, 17 Dec 2009 09:46:44 +0100
 
-perf probe: Check new event name
+sched: Teach might_sleep() about preemptible RCU
 
-Check new event name is same syntax as a C symbol in perf command.
-In other words, checking the name is as like as other tracepoint
-events.
+In practice, it is harmless to voluntarily sleep in a
+rcu_read_lock() section if we are running under preempt rcu, but
+it is illegal if we build a kernel running non-preemptable rcu.
 
-This can prevent user to create an event with useless name (e.g.
-foo|bar, foo*bar).
+Currently, might_sleep() doesn't notice sleepable operations
+under rcu_read_lock() sections if we are running under
+preemptable rcu because preempt_count() is left untouched after
+rcu_read_lock() in this case. But we want developers who test
+their changes under such config to notice the "sleeping while
+atomic" issues.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+So we add rcu_read_lock_nesting to prempt_count() in
+might_sleep() checks.
+
+[ v2: Handle rcu-tiny ]
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: systemtap <systemtap@sources.redhat.com>
-Cc: DLE <dle-develop@lists.sourceforge.net>
-LKML-Reference: <20091216222415.14459.71383.stgit@dhcp-100-2-132.bos.redhat.com>
-[ v2: minor cleanups ]
+LKML-Reference: <1260991265-8451-1-git-send-regression-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/util/probe-event.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ include/linux/rcutiny.h |    5 +++++
+ include/linux/rcutree.h |   11 +++++++++++
+ kernel/sched.c          |    2 +-
+ 3 files changed, 17 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 2ca6215..29465d4 100644
---- a/tools/perf/util/probe-event.c
-+++ b/tools/perf/util/probe-event.c
-@@ -62,6 +62,18 @@ static int e_snprintf(char *str, size_t size, const char *format, ...)
- 	return ret;
+diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
+index c4ba9a7..96cc307 100644
+--- a/include/linux/rcutiny.h
++++ b/include/linux/rcutiny.h
+@@ -101,4 +101,9 @@ static inline void exit_rcu(void)
+ {
  }
  
-+/* Check the name is good for event/group */
-+static bool check_event_name(const char *name)
++static inline int rcu_preempt_depth(void)
 +{
-+	if (!isalpha(*name) && *name != '_')
-+		return false;
-+	while (*++name != '\0') {
-+		if (!isalpha(*name) && !isdigit(*name) && *name != '_')
-+			return false;
-+	}
-+	return true;
++	return 0;
 +}
 +
- /* Parse probepoint definition. */
- static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
+ #endif /* __LINUX_RCUTINY_H */
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index c93eee5..8044b1b 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -45,6 +45,12 @@ extern void __rcu_read_unlock(void);
+ extern void synchronize_rcu(void);
+ extern void exit_rcu(void);
+ 
++/*
++ * Defined as macro as it is a very low level header
++ * included from areas that don't even know about current
++ */
++#define rcu_preempt_depth() (current->rcu_read_lock_nesting)
++
+ #else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+ 
+ static inline void __rcu_read_lock(void)
+@@ -63,6 +69,11 @@ static inline void exit_rcu(void)
  {
-@@ -82,6 +94,9 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
- 		ptr = strchr(arg, ':');
- 		if (ptr)	/* Group name is not supported yet. */
- 			semantic_error("Group name is not supported yet.");
-+		if (!check_event_name(arg))
-+			semantic_error("%s is bad for event name -it must "
-+				       "follow C symbol-naming rule.", arg);
- 		pp->event = strdup(arg);
- 		arg = tmp;
- 	}
+ }
+ 
++static inline int rcu_preempt_depth(void)
++{
++	return 0;
++}
++
+ #endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
+ 
+ static inline void __rcu_read_lock_bh(void)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index af7dfa7..7be88a7 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9682,7 +9682,7 @@ void __init sched_init(void)
+ #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+ static inline int preempt_count_equals(int preempt_offset)
+ {
+-	int nested = preempt_count() & ~PREEMPT_ACTIVE;
++	int nested = (preempt_count() & ~PREEMPT_ACTIVE) + rcu_preempt_depth();
+ 
+ 	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
+ }
