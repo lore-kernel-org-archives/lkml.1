@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763782AbZLQBYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935084AbZLQBY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763782AbZLQBYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763725AbZLQBYh
+	id S935084AbZLQBY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:24:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763778AbZLQBX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:24:37 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59424 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763738AbZLQBVO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:21:14 -0500
-Subject: Re: Wrong atime on recent kernels
-From: john stultz <johnstul@us.ibm.com>
-To: Petr =?UTF-8?Q?Tit=C4=9Bra?= <petr@titera.eu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4B29494B.4010305@titera.eu>
-References: <4B26AB7E.9020208@titera.eu>
-	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>
-	 <4B29494B.4010305@titera.eu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 16 Dec 2009 17:21:08 -0800
-Message-ID: <1261012868.7245.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 16 Dec 2009 20:23:57 -0500
+Received: from lists.laptop.org ([18.85.2.145]:46252 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763771AbZLQBXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:23:51 -0500
+Date: Wed, 16 Dec 2009 20:25:40 -0500
+From: Michael Stone <michael@laptop.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Michael Stone <michael@laptop.org>, Ulrich Drepper <drepper@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>
+Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
+Message-ID: <20091217012540.GA2609@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20091216155938.GG15031@basil.fritz.box>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-16 at 21:55 +0100, Petr Titěra wrote:
-> john stultz napsal(a): 
-> > 2009/12/14 Petr Titěra <petr@titera.eu>:
-> >   
-> > > Hello,
-> > > 
-> > >      I see some strange file modification times recently. It seems to me
-> > > that in some situations, kernel allows to set nanoseconds part of  file
-> > > access, modification or change time  to 100000000 ns. Problem seems to be in
-> > > some generic part of kernel because I see it on several different
-> > > filesysytems (ext4 and nilf2). These is I've got during my testing on kernel
-> > >  2.6.32-tip-08309-gad8e75a.
-> > > 
-> > >  File: `./Documentation/dvb/contributors.txt'
-> > >  Size: 3035            Blocks: 8          IO Block: 4096   regular file
-> > > Device: fe04h/65028d    Inode: 818         Links: 1
-> > > Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-> > > Access: 2009-12-14 10:29:04.1000000000 +0100
-> > > Modify: 2009-12-14 10:29:04.1000000000 +0100
-> > > Change: 2009-12-14 10:29:04.1000000000 +0100
-> > > 
-> > > See that all times of that file ends with 1e6 nanoseconds.
-> > >     
-> > 
-> > Hrmmm. Does reverting this change solve it?
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=patch;h=7bc7d637452383d56ba4368d4336b0dde1bb476d
-> > 
-> > thanks
-> > -john
-> >   
-> Hello,
+Andi Kleen wrote:
+> On Wed, Dec 16, 2009 at 10:32:43AM -0500, Michael Stone wrote:
+>> Daniel Bernstein has observed [1] that security-conscious userland processes
+>> may benefit from the ability to irrevocably remove their ability to create,
+>> bind, connect to, or send messages except in the case of previously
+>> connected sockets or AF_UNIX filesystem sockets. We provide this facility by
+>> implementing support for a new prctl(PR_SET_NETWORK) flag named
+>> PR_NETWORK_OFF.
+>> 
+>> This facility is particularly attractive to security platforms like OLPC
+>> Bitfrost [2] and to isolation programs like Rainbow [3] and Plash [4].
 > 
->     I did not test reverting this patch yet, because I did not find
-> reliable way how to reproduce these strange modify times. But as I
-> read your description. Would it be possible that if there would be bug
-> in your patch i would be observer on mostly quiet system? I'm asking
-> because full day of testing of the system under load did not produce
-> any result, but then when I tried to run "find / | xargs stat" on idle
-> system I've got several new instances of wrong access time (filesystem
-> is mounted without noatime)
+> What would stop them from ptracing someone else running under the same
+> uid who still has the network access? 
 
-Yes, its possible it would be more likely to be seen on an idle system.
+Just like in the (revised from last year) rlimits version, there's a hunk in
+the prctl_network semantics patch which disables networking-via-ptrace() like
+so:
 
-Can you describe your system to me?  Is it x86? x86_64? Could you send
-your .config to me?
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 23bd09c..5b38db0 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -151,6 +151,8 @@ int __ptrace_may_access(struct task_struct *task, unsigned int mode)
+                dumpable = get_dumpable(task->mm);
+        if (!dumpable && !capable(CAP_SYS_PTRACE))
+                return -EPERM;
++       if (current->network)
++               return -EPERM;
 
-Please try to revert the patch, and I'll see if I can reproduce anything
-similar on my systems.
+        return security_ptrace_access_check(task, mode);
+  }
 
-thanks
--john
+More questions?
 
+Regards, and thanks for your interest,
 
+Michael
