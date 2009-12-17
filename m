@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965459AbZLQTeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965466AbZLQTfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965459AbZLQTeG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 14:34:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965452AbZLQTeA
+	id S965466AbZLQTfe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbZLQTfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 14:34:00 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58524 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965449AbZLQTd6 (ORCPT
+	Thu, 17 Dec 2009 14:35:30 -0500
+Received: from trinity.develer.com ([83.149.158.210]:48574 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965424AbZLQTf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 14:33:58 -0500
-Date: Thu, 17 Dec 2009 19:33:17 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Joe Buck <Joe.Buck@synopsys.COM>
-Cc: Richard Guenther <richard.guenther@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-Message-ID: <20091217193317.GC4440@n2100.arm.linux.org.uk>
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <20091217183517.GC10707@synopsys.com> <20091217190613.GB4440@n2100.arm.linux.org.uk> <20091217191401.GD10707@synopsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217191401.GD10707@synopsys.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Dec 2009 14:35:29 -0500
+Subject: Re: Network isolation with RLIMIT_NETWORK, cont'd.
+From: Bernie Innocenti <bernie@codewiz.org>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: Mark Seaborn <mrs@mythic-beasts.com>, Michael Stone <michael@laptop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       =?ISO-8859-1?Q?R=E9mi?= Denis-Courmont <rdenis@simphalempin.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       Linux Containers <containers@lists.osdl.org>
+In-Reply-To: <3e8340490912171024n2120e88q569c69fe7d09140f@mail.gmail.com>
+References: <m1ljh7jijk.fsf@fess.ebiederm.org> <20091213142149.GB4777@heat>
+	 <fb69ef3c0912170931l5cbf0e3dh81c88e6502651042@mail.gmail.com>
+	 <3e8340490912171024n2120e88q569c69fe7d09140f@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Sugar Labs - http://www.sugarlabs.org/
+Date: Thu, 17 Dec 2009 14:35:17 -0500
+Message-ID: <1261078517.4073.32.camel@giskard.codewiz.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.3 (2.29.3-1.fc13) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 11:14:01AM -0800, Joe Buck wrote:
-> On Thu, Dec 17, 2009 at 11:06:13AM -0800, Russell King - ARM Linux wrote:
-> > On Thu, Dec 17, 2009 at 10:35:17AM -0800, Joe Buck wrote:
-> > > Besides, didn't I see a whole bunch of kernel security patches related
-> > > to null pointer dereferences lately?  If page 0 can be mapped, you
-> > > suddenly won't get your trap.
-> > 
-> > Page 0 can not be mapped on ARM kernels since the late 1990s, and this
-> > protection is independent of the generic kernel.
-> > 
-> > Milage may vary on other architectures, but that's not a concern here.
-> 
-> I don't understand, though, why you would want to implement a generally
-> useful facility (make the kernel trap so you can do a post-mortem
-> analysis) in a way that's only safe for the ARM port.
+On Thu, 2009-12-17 at 13:24 -0500, Bryan Donlan wrote:
+> Can this be done using openat() and friends currently? It would seem
+> the natural way to implement this; open /proc/(pid)/root, then
+> openat() things from there (or even chdir to it and see the mounts
+> that it sees from there...)
 
-The discussion at hand is about code contained in the ARM supporting
-files (arch/arm/kernel/traps.c), rather than the generic kernel.
+Yeah, but /proc/<pid>/root is just a symlink. It's correct for chroots,
+but I doubt it can be meaningful for per-process namespaces.
 
-As such, it is not relevant to any architecture other than ARM.
+If we were to implement Mark Seaborn's idea of naming
+namespaces, /proc/<pid>/rootfd would be a file descriptor providing
+access to the namespace through some fancy ioctls.
+
+Or maybe not. Could such a file-descriptor be used as the source
+argument to mount(), perhaps along with a new MS_NS flag?
+
+Alternatively, perhaps one could come up with a userspace solution:
+read /proc/<pid>/mounts and repeat all mounts, perhaps with a prefix.
+The downsides are that it would require superuser privs and wouldn't
+automatically stay synchronized with the real namespace.
+
+-- 
+   // Bernie Innocenti - http://codewiz.org/
+ \X/  Sugar Labs       - http://sugarlabs.org/
+
