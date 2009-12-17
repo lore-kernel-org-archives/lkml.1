@@ -1,50 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763408AbZLQV6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765419AbZLQWAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763408AbZLQV6x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 16:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763094AbZLQV6v
+	id S1765419AbZLQWAN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 17:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762686AbZLQWAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 16:58:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33519 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762686AbZLQV6u (ORCPT
+	Thu, 17 Dec 2009 17:00:11 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:19404 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756610AbZLQWAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 16:58:50 -0500
-Date: Thu, 17 Dec 2009 13:58:16 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] vfs pile 2
-In-Reply-To: <20091217214320.GG18217@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0912171350540.15740@localhost.localdomain>
-References: <20091217162454.GA18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912170831030.15740@localhost.localdomain> <20091217180319.GB18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912171008220.15740@localhost.localdomain> <20091217183952.GC18217@ZenIV.linux.org.uk>
- <alpine.LFD.2.00.0912171316220.15740@localhost.localdomain> <20091217214320.GG18217@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 17:00:09 -0500
+Date: Thu, 17 Dec 2009 16:59:25 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Btrfs updates for 2.6.33-git
+Message-ID: <20091217215925.GB2804@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B2AA9C0.00D7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello everyone,
 
-On Thu, 17 Dec 2009, Al Viro wrote:
-> 
-> Yeah, but why aren't they put into local pack?  They _are_ new and they
-> definitely are referenced.  The newest in the repository, as the matter
-> of fact.
-> 
-> Odd...
+This btrfs update is mostly a collection of fixes.  Josef has the
+snapshot-supported yum update code pending, but I wanted to give that
+some more time to cook before we send it out.
 
-Hmm. It seems to be the same objects that are unpacked in my repo. What 
-happens is probably that git doesn't want to pack them, because they are 
-available in the alternates, but then also doesn't want to prune them, 
-because they aren't available in a _pack_ in the alternate.
+Linus please pull the for-linus branch of the btrfs-unstable tree
 
-That does look like something we migth decide to want to change in git. 
-Maybe. 
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git for-linus
 
-But I repacked my repo, just so that you can get your "no loose objects" 
-situation you want ;)
+This has the same code as the master branch (which is based on 2.6.32),
+but it is merged Linus' current git.  There is only one trivial
+conflict.
 
-		Linus
+This includes a patch to fail mounting if you send btrfs a mount option
+it doesn't understand.  So, if you've got something like nodataum in
+your fstab you'll find errors instead of silently ignoring it.
+
+Josef patched the block group code to make smaller metadata block groups
+by default.  This helps us waste less metadata space in general.
+
+Chris Mason (1) commits (+9/-4):
+    Btrfs: make sure fallocate properly starts a transaction
+
+Josef Bacik (1) commits (+2/-11):
+    Btrfs: make metadata chunks smaller
+
+Matthew Wilcox (1) commits (+2/-0):
+    Btrfs: Show discard option in /proc/mounts
+
+Sage Weil (1) commits (+8/-1):
+    Btrfs: fail mount on bad mount options
+
+TARUISI Hiroaki (1) commits (+4/-0):
+    Btrfs: deny sys_link across subvolumes.
+
+Zheng Yan (13) commits (+1155/-907):
+    Btrfs: Pass transaction handle to security and ACL initialization functions (+96/-63)
+    Btrfs: Avoid orphan inodes cleanup during committing transaction (+17/-16)
+    Btrfs: Avoid orphan inodes cleanup while replaying log (+55/-36)
+    Btrfs: Fix btrfs_drop_extent_cache for skip pinned case (+3/-7)
+    Btrfs: don't add extent 0 to the free space cache v2 (+9/-1)
+    Btrfs: Make truncate(2) more ENOSPC friendly (+212/-137)
+    Btrfs: Make fallocate(2) more ENOSPC friendly (+32/-33)
+    Btrfs: Fix disk_i_size update corner case (+127/-56)
+    Btrfs: Avoid superfluous tree-log writeout (+47/-31)
+    Btrfs: Fix per root used space accounting (+47/-27)
+    Btrfs: Rewrite btrfs_drop_extents (+277/-423)
+    Btrfs: Add btrfs_duplicate_item (+143/-59)
+    Btrfs: Add delayed iput (+90/-18)
+
+Total: (18) commits
+
+ fs/btrfs/acl.c          |   23 -
+ fs/btrfs/btrfs_inode.h  |    5 
+ fs/btrfs/ctree.c        |  229 ++++++++++------
+ fs/btrfs/ctree.h        |   40 ++
+ fs/btrfs/dir-item.c     |   19 -
+ fs/btrfs/disk-io.c      |   27 +
+ fs/btrfs/extent-tree.c  |   72 +++--
+ fs/btrfs/file.c         |  669 +++++++++++++++++++-----------------------------
+ fs/btrfs/inode.c        |  585 ++++++++++++++++++++++++++---------------
+ fs/btrfs/ioctl.c        |   34 +-
+ fs/btrfs/ordered-data.c |  115 ++++++--
+ fs/btrfs/ordered-data.h |    5 
+ fs/btrfs/relocation.c   |   38 +-
+ fs/btrfs/super.c        |   15 -
+ fs/btrfs/transaction.c  |   44 +--
+ fs/btrfs/transaction.h  |    6 
+ fs/btrfs/tree-log.c     |   86 +++---
+ fs/btrfs/volumes.c      |    2 
+ fs/btrfs/xattr.c        |   80 +++--
+ fs/btrfs/xattr.h        |    9 
+ 20 files changed, 1180 insertions(+), 923 deletions(-)
