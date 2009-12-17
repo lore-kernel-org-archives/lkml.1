@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936736AbZLQEq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936721AbZLQEpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936736AbZLQEq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936730AbZLQEqS
+	id S936721AbZLQEpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763309AbZLQEDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:46:18 -0500
-Received: from kroah.org ([198.145.64.141]:55301 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:03:52 -0500
+Received: from kroah.org ([198.145.64.141]:55305 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763261AbZLQEDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:03:46 -0500
+	id S1757994AbZLQEDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:03:47 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:45 2009
-Message-Id: <20091217035645.550452168@mini.kroah.org>
+Message-Id: <20091217035645.678326175@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:17 -0800
+Date: Wed, 16 Dec 2009 19:55:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joe Perches <joe@perches.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [020/151] x86: GART: pci-gart_64.c: Use correct length in strncmp
+       Leann Ogasawara <leann.ogasawara@canonical.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [021/151] x86: ASUS P4S800 reboot=bios quirk
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,29 +29,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joe Perches <joe@perches.com>
+From: Leann Ogasawara <leann.ogasawara@canonical.com>
 
-commit 41855b77547fa18d90ed6a5d322983d3fdab1959 upstream.
+commit 4832ddda2ec4df96ea1eed334ae2dbd65fc1f541 upstream.
 
-Signed-off-by: Joe Perches <joe@perches.com>
-LKML-Reference: <1257818330.12852.72.camel@Joe-Laptop.home>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Bug reporter noted their system with an ASUS P4S800 motherboard would
+hang when rebooting unless reboot=b was specified.  Their dmidecode
+didn't contain descriptive System Information for Manufacturer or
+Product Name, so I used their Base Board Information to create a
+reboot quirk patch.  The bug reporter confirmed this patch resolves
+the reboot hang.
+
+Handle 0x0001, DMI type 1, 25 bytes
+System Information
+       Manufacturer: System Manufacturer
+       Product Name: System Name
+       Version: System Version
+       Serial Number: SYS-1234567890
+       UUID: E0BFCD8B-7948-D911-A953-E486B4EEB67F
+       Wake-up Type: Power Switch
+
+Handle 0x0002, DMI type 2, 8 bytes
+Base Board Information
+     Manufacturer: ASUSTeK Computer INC.
+     Product Name: P4S800
+     Version: REV 1.xx
+     Serial Number: xxxxxxxxxxx
+
+BugLink: http://bugs.launchpad.net/bugs/366682
+
+ASUS P4S800 will hang when rebooting unless reboot=b is specified.
+Add a quirk to reboot through the bios.
+
+Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
+LKML-Reference: <1259972107.4629.275.camel@emiko>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/pci-gart_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/reboot.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -856,7 +856,7 @@ void __init gart_parse_options(char *p)
- #endif
- 	if (isdigit(*p) && get_option(&p, &arg))
- 		iommu_size = arg;
--	if (!strncmp(p, "fullflush", 8))
-+	if (!strncmp(p, "fullflush", 9))
- 		iommu_fullflush = 1;
- 	if (!strncmp(p, "nofullflush", 11))
- 		iommu_fullflush = 0;
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -259,6 +259,14 @@ static struct dmi_system_id __initdata r
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
+ 		},
+ 	},
++	{       /* Handle problems with rebooting on ASUS P4S800 */
++		.callback = set_bios_reboot,
++		.ident = "ASUS P4S800",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK Computer INC."),
++			DMI_MATCH(DMI_BOARD_NAME, "P4S800"),
++		},
++	},
+ 	{ }
+ };
+ 
 
 
