@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936136AbZLQBtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751692AbZLQBUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936136AbZLQBtY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763554AbZLQBTt
+	id S1751692AbZLQBUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763574AbZLQBTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:19:49 -0500
-Received: from kroah.org ([198.145.64.141]:47740 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:19:52 -0500
+Received: from kroah.org ([198.145.64.141]:47746 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763538AbZLQBTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:19:45 -0500
+	id S1763546AbZLQBTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:19:46 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:15:58 2009
-Message-Id: <20091217011558.216332496@mini.kroah.org>
+Message-Id: <20091217011558.346236779@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:14 -0800
+Date: Wed, 16 Dec 2009 17:14:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jay Fenlason <fenlason@redhat.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [03/90] firewire: ohci: handle receive packets with a data length of zero
+       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Subject: [04/90] ALSA: hda - Terradici HDA controllers does not support 64-bit mode
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,59 +28,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jay Fenlason <fenlason@redhat.com>
+From: Jaroslav Kysela <perex@perex.cz>
 
-commit 8c0c0cc2d9f4c523fde04bdfe41e4380dec8ee54 upstream.
+commit 396087eaead95fcb29eb36f1e59517aeb58c545e upstream.
 
-Queueing to receive an ISO packet with a payload length of zero
-silently does nothing in dualbuffer mode, and crashes the kernel in
-packet-per-buffer mode.  Return an error in dualbuffer mode, because
-the DMA controller won't let us do what we want, and work correctly in
-packet-per-buffer mode.
+Confirmed from vendor and tests in RedHat bugzilla #536782 .
 
-Signed-off-by: Jay Fenlason <fenlason@redhat.com>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/firewire/ohci.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ sound/pci/hda/hda_intel.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/firewire/ohci.c
-+++ b/drivers/firewire/ohci.c
-@@ -2180,6 +2180,13 @@ static int ohci_queue_iso_receive_dualbu
- 	page     = payload >> PAGE_SHIFT;
- 	offset   = payload & ~PAGE_MASK;
- 	rest     = p->payload_length;
-+	/*
-+	 * The controllers I've tested have not worked correctly when
-+	 * second_req_count is zero.  Rather than do something we know won't
-+	 * work, return an error
-+	 */
-+	if (rest == 0)
-+		return -EINVAL;
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -2392,6 +2392,11 @@ static int __devinit azx_create(struct s
+ 		}
+ 	}
  
- 	/* FIXME: make packet-per-buffer/dual-buffer a context option */
- 	while (rest > 0) {
-@@ -2233,7 +2240,7 @@ static int ohci_queue_iso_receive_packet
- 					unsigned long payload)
- {
- 	struct iso_context *ctx = container_of(base, struct iso_context, base);
--	struct descriptor *d = NULL, *pd = NULL;
-+	struct descriptor *d, *pd;
- 	struct fw_iso_packet *p = packet;
- 	dma_addr_t d_bus, page_bus;
- 	u32 z, header_z, rest;
-@@ -2271,8 +2278,9 @@ static int ohci_queue_iso_receive_packet
- 		d->data_address = cpu_to_le32(d_bus + (z * sizeof(*d)));
- 
- 		rest = payload_per_buffer;
-+		pd = d;
- 		for (j = 1; j < z; j++) {
--			pd = d + j;
-+			pd++;
- 			pd->control = cpu_to_le16(DESCRIPTOR_STATUS |
- 						  DESCRIPTOR_INPUT_MORE);
- 
++	/* disable 64bit DMA address for Teradici */
++	/* it does not work with device 6549:1200 subsys e4a2:040b */
++	if (chip->driver_type == AZX_DRIVER_TERA)
++		gcap &= ~ICH6_GCAP_64OK;
++
+ 	/* allow 64bit DMA address if supported by H/W */
+ 	if ((gcap & ICH6_GCAP_64OK) && !pci_set_dma_mask(pci, DMA_BIT_MASK(64)))
+ 		pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(64));
 
 
