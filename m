@@ -1,40 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764344AbZLQKq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964817AbZLQKgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764344AbZLQKq6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 05:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761651AbZLQKq5
+	id S964817AbZLQKgm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 05:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZLQKgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 05:46:57 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:49329 "EHLO lll.lu"
+	Thu, 17 Dec 2009 05:36:41 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38589 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbZLQKq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 05:46:56 -0500
-Message-ID: <4B2A099B.1010909@knaff.lu>
-Date: Thu, 17 Dec 2009 11:36:11 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+	id S1751746AbZLQKgk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 05:36:40 -0500
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] IPMI: Add parameter to limit CPU usage in kipmid
+Date: Thu, 17 Dec 2009 11:36:47 +0100
+User-Agent: KMail/1.9.1
+Cc: minyard@acm.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Wilck <martin.wilck@ts.fujitsu.com>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+References: <20091216212354.GA13097@minyard.local> <20091216134252.868ea5bf.akpm@linux-foundation.org>
+In-Reply-To: <20091216134252.868ea5bf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: dmarkh@cfl.rr.com
-CC: linux-kernel@vger.kernel.org, markh@compro.net, fdutils@fdutils.linux.lu
-Subject: Re: Unable to format or use floppies since 2.6.28
-References: <4B215007.4030703@compro.net> <4B2A02D8.2020208@cfl.rr.com> <4B2A095E.3080306@cfl.rr.com>
-In-Reply-To: <4B2A095E.3080306@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200912171136.48086.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/12/09 11:35, Mark Hounschell wrote:
-> On 12/17/2009 05:07 AM, Mark Hounschell wrote:
+Hi Andrew,
+
+Thanks for your comments.
+
+Le mercredi 16 décembre 2009 22:42, Andrew Morton a écrit :
+> On Wed, 16 Dec 2009 15:23:54 -0600
+> Corey Minyard <minyard@acm.org> wrote:
 > 
-> FYI, the current vanilla 2.6.32.1 fails too.
+> > From: Martin Wilck <martin.wilck@ts.fujitsu.com>
+> > 
+> > In some cases kipmid can use a lot of CPU.
 > 
-> Mark
+> Why is that?  Without this information it is hard for others to suggest
+> alternative implementations.
 
-Any news about trying to "mis"align the format headers, and whether that
-fixes it?
+Quoting Greg KH as he was investigating this issue:
 
-Thanks,
+"This looks to be a difference in the way the hardware works from
+different ipmi controllers. Some allow for sleeping in an
+interruptable state, and others do not, and can not have their delays
+interrupted. Because of this, the process is put into uninterruptable
+sleep mode, which causes a 'fake' system load increase on those types
+of hardware controllers."
 
-Alain
+> >  This adds a way to tune
+> > the CPU used by kipmid to help in those cases.  By setting
+> > kipmid_max_busy_us to a value between 100 and 500, it is possible to
+> > bring down kipmid CPU load to practically 0 without loosing too much
+> > ipmi throughput performance.  Not setting the value, or setting the
+> > value to zero, operation is unaffected.
+> 
+> Requiring the addition of a module parameter is regrettable.  It'd be
+> better if the code "just works".
+
+That's right, it'd be better. But my understanding is that there is
+no way to figure out automatically when the parameter is needed nor
+its optimal value other than by trial and error. I'd love to be
+proven wrong though.
+
+> > Signed-off-by: Martin Wilck <martin.wilck@ts.fujitsu.com>
+> > Cc: Jean Delvare <jdelvare@suse.de>
+> > Signed-off-by: Corey Minyard <cminyard@mvista.com>
+> > 
+> > --- linux-2.6.29.4/drivers/char/ipmi/ipmi_si_intf.c	2009-05-19 01:52:34.000000000 +0200
+> > +++ linux-2.6.29-rc8/drivers/char/ipmi/ipmi_si_intf.c	2009-06-04 15:30:34.855398091 +0200
+> > @@ -297,6 +297,9 @@
+> >  static int force_kipmid[SI_MAX_PARMS];
+> >  static int num_force_kipmid;
+> >  
+> > +static unsigned int kipmid_max_busy_us[SI_MAX_PARMS];
+> > +static int num_max_busy_us;
+> > +
+> >  static int unload_when_empty = 1;
+> >  
+> >  static int try_smi_init(struct smi_info *smi);
+> > @@ -927,23 +930,56 @@
+> >  	}
+> >  }
+> >  
+> > +#define ipmi_si_set_not_busy(timespec) \
+> > +	do { (timespec)->tv_nsec = -1; } while (0)
+> > +#define ipmi_si_is_busy(timespec) ((timespec)->tv_nsec != -1)
+> 
+> These could have been implemented in C.  It's better that way.
+
++1, inline functions would be more readable.
+
+I'll let Corey and maybe Martin comment on the rest, as the code is
+not mine and I am not familiar with it.
+
+-- 
+Jean Delvare
+Suse L3
