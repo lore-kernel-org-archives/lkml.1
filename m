@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964874AbZLQBgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936057AbZLQBfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964874AbZLQBgg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763633AbZLQBUb
+	id S936057AbZLQBfw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763636AbZLQBUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:31 -0500
-Received: from kroah.org ([198.145.64.141]:47925 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:20:33 -0500
+Received: from kroah.org ([198.145.64.141]:47942 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763575AbZLQBUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:20 -0500
+	id S1763619AbZLQBUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:21 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:02 2009
-Message-Id: <20091217011602.713264453@mini.kroah.org>
+Message-Id: <20091217011602.837916977@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:48 -0800
+Date: Wed, 16 Dec 2009 17:14:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
-Subject: [37/90] drm/radeon/kms: fix legacy crtc2 dpms
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [38/90] mac80211: Fix bug in computing crc over dynamic IEs in beacon
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,49 +29,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alex Deucher <alexdeucher@gmail.com>
+From: Vasanthakumar Thiagarajan <vasanth@atheros.com>
 
-commit 8de21525439e6b5bb8d8c81e49094d867bf82f6d upstream.
+commit 1814077fd12a9cdf478c10076e9c42094e9d9250 upstream.
 
-noticed by Matthijs Kooijman on fdo bug 22140
+On a 32-bit machine, BIT() macro does not give the required
+bit value if the bit is mroe than 31. In ieee802_11_parse_elems_crc(),
+BIT() is suppossed to get the bit value more than 31 (42 (id of ERP_INFO_IE),
+37 (CHANNEL_SWITCH_IE), (42), 32 (POWER_CONSTRAINT_IE), 45 (HT_CAP_IE),
+61 (HT_INFO_IE)). As we do not get the required bit value for the above
+IEs, crc over these IEs are never calculated, so any dynamic change in these
+IEs after the association is not really handled on 32-bit platforms.
+This patch fixes this issue.
 
-Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/radeon/radeon_legacy_crtc.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ net/mac80211/util.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-+++ b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-@@ -291,8 +291,7 @@ void radeon_crtc_dpms(struct drm_crtc *c
- 	uint32_t mask;
+--- a/net/mac80211/util.c
++++ b/net/mac80211/util.c
+@@ -537,7 +537,7 @@ u32 ieee802_11_parse_elems_crc(u8 *start
+ 		if (elen > left)
+ 			break;
  
- 	if (radeon_crtc->crtc_id)
--		mask = (RADEON_CRTC2_EN |
--			RADEON_CRTC2_DISP_DIS |
-+		mask = (RADEON_CRTC2_DISP_DIS |
- 			RADEON_CRTC2_VSYNC_DIS |
- 			RADEON_CRTC2_HSYNC_DIS |
- 			RADEON_CRTC2_DISP_REQ_EN_B);
-@@ -304,7 +303,7 @@ void radeon_crtc_dpms(struct drm_crtc *c
- 	switch (mode) {
- 	case DRM_MODE_DPMS_ON:
- 		if (radeon_crtc->crtc_id)
--			WREG32_P(RADEON_CRTC2_GEN_CNTL, RADEON_CRTC2_EN, ~mask);
-+			WREG32_P(RADEON_CRTC2_GEN_CNTL, RADEON_CRTC2_EN, ~(RADEON_CRTC2_EN | mask));
- 		else {
- 			WREG32_P(RADEON_CRTC_GEN_CNTL, RADEON_CRTC_EN, ~(RADEON_CRTC_EN |
- 									 RADEON_CRTC_DISP_REQ_EN_B));
-@@ -318,7 +317,7 @@ void radeon_crtc_dpms(struct drm_crtc *c
- 	case DRM_MODE_DPMS_OFF:
- 		drm_vblank_pre_modeset(dev, radeon_crtc->crtc_id);
- 		if (radeon_crtc->crtc_id)
--			WREG32_P(RADEON_CRTC2_GEN_CNTL, mask, ~mask);
-+			WREG32_P(RADEON_CRTC2_GEN_CNTL, mask, ~(RADEON_CRTC2_EN | mask));
- 		else {
- 			WREG32_P(RADEON_CRTC_GEN_CNTL, RADEON_CRTC_DISP_REQ_EN_B, ~(RADEON_CRTC_EN |
- 										    RADEON_CRTC_DISP_REQ_EN_B));
+-		if (calc_crc && id < 64 && (filter & BIT(id)))
++		if (calc_crc && id < 64 && (filter & (1ULL << id)))
+ 			crc = crc32_be(crc, pos - 2, elen + 2);
+ 
+ 		switch (id) {
 
 
