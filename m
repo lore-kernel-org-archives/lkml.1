@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763551AbZLQBUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbZLQBr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763551AbZLQBUh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763587AbZLQBUA
+	id S1759888AbZLQBr2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763522AbZLQBq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:20:00 -0500
-Received: from kroah.org ([198.145.64.141]:47800 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:46:26 -0500
+Received: from kroah.org ([198.145.64.141]:47804 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763546AbZLQBTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:19:55 -0500
+	id S1763581AbZLQBT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:19:56 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:15:59 2009
-Message-Id: <20091217011559.541241545@mini.kroah.org>
+Message-Id: <20091217011559.676670596@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:24 -0800
+Date: Wed, 16 Dec 2009 17:14:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Feng Tang <feng.tang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [13/90] hrtimer: Fix /proc/timer_list regression
+       "Theodore Tso" <tytso@mit.edu>
+Subject: [14/90] jbd2: dont wipe the journal on a failed journal checksum
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,55 +28,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Feng Tang <feng.tang@intel.com>
+From: Theodore Ts'o <tytso@mit.edu>
 
-commit 8629ea2eaba8ca0de2e38ce1b4a825e16255976e upstream.
+commit e6a47428de84e19fda52f21ab73fde2906c40d09 upstream.
 
-commit 507e1231 (timer stats: Optimize by adding quick check to avoid
-function calls) introduced a regression in /proc/timer_list.
+If there is a failed journal checksum, don't reset the journal.  This
+allows for userspace programs to decide how to recover from this
+situation.  It may be that ignoring the journal checksum failure might
+be a better way of recovering the file system.  Once we add per-block
+checksums, we can definitely do better.  Until then, a system
+administrator can try backing up the file system image (or taking a
+snapshot) and and trying to determine experimentally whether ignoring
+the checksum failure or aborting the journal replay results in less
+data loss.
 
-/proc/timer_list shows now
- #0: <c27d46b0>, tick_sched_timer, S:01, <(null)>, /-1
-instead of
- #0: <c27d46b0>, tick_sched_timer, S:01, hrtimer_start, swapper/0
-
-Revert the hrtimer quick check for now. The optimization needs more
-thought, but this is neither 2.6.32-rc7 nor stable material.
-
-[ tglx: - Removed unrelated changes from the original patch
-  	- Prevent unneccesary call to timer_stats_update_stats
-	- massaged the changelog ]
-
-Signed-off-by: Feng Tang <feng.tang@intel.com>
-LKML-Reference: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/hrtimer.h |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ fs/jbd2/journal.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -448,7 +448,7 @@ extern void timer_stats_update_stats(voi
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -1421,6 +1421,13 @@ int jbd2_journal_load(journal_t *journal
+ 	if (jbd2_journal_recover(journal))
+ 		goto recovery_error;
  
- static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
- {
--	if (likely(!timer->start_site))
-+	if (likely(!timer_stats_active))
- 		return;
- 	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
- 				 timer->function, timer->start_comm, 0);
-@@ -459,8 +459,6 @@ extern void __timer_stats_hrtimer_set_st
- 
- static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
- {
--	if (likely(!timer_stats_active))
--		return;
- 	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
- }
- 
++	if (journal->j_failed_commit) {
++		printk(KERN_ERR "JBD2: journal transaction %u on %s "
++		       "is corrupt.\n", journal->j_failed_commit,
++		       journal->j_devname);
++		return -EIO;
++	}
++
+ 	/* OK, we've finished with the dynamic journal bits:
+ 	 * reinitialise the dynamic contents of the superblock in memory
+ 	 * and reset them on disk. */
 
 
