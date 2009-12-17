@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933225AbZLQEML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936309AbZLQELZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933225AbZLQEML (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:12:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936186AbZLQEFq
+	id S936309AbZLQELZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936190AbZLQEFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:05:46 -0500
-Received: from kroah.org ([198.145.64.141]:56000 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:05:48 -0500
+Received: from kroah.org ([198.145.64.141]:56007 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936179AbZLQEFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S936183AbZLQEFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Dec 2009 23:05:44 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:57:00 2009
-Message-Id: <20091217035659.980303721@mini.kroah.org>
+Message-Id: <20091217035700.108658513@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:57:08 -0800
+Date: Wed, 16 Dec 2009 19:57:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Jan Beulich <JBeulich@novell.com>, linux-mm@kvack.org,
-       Geert Uytterhoeven <geert@linux-m68k.org>, Tejun Heo <tj@kernel.org>
-Subject: [131/151] vmalloc: conditionalize build of pcpu_get_vm_areas()
+       Zhao Yakui <yakui.zhao@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [132/151] ACPI: Use the ARB_DISABLE for the CPU which model id is less than 0x0f.
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,62 +30,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <teheo@novell.com>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-No matching upstream commit as it was resolved differently there.
+commit 03a05ed1152944000151d57b71000de287a1eb02 upstream.
 
+Currently, ARB_DISABLE is a NOP on all of the recent Intel platforms.
+For such platforms, reduce contention on c3_lock by skipping the fake
+ARB_DISABLE.
 
-pcpu_get_vm_areas() is used only when dynamic percpu allocator is used
-by the architecture.  In 2.6.32, ia64 doesn't use dynamic percpu
-allocator and has a macro which makes pcpu_get_vm_areas() buggy via
-local/global variable aliasing and triggers compile warning.
+The cpu model id on one laptop is 14. If we disable ARB_DISABLE on this box,
+the box can't be booted correctly. But if we still enable ARB_DISABLE on this
+box, the box can be booted correctly.
 
-The problem is fixed in upstream and ia64 uses dynamic percpu
-allocators, so the only left issue is inclusion of unnecessary code
-and compile warning on ia64 on 2.6.32.
+So we still use the ARB_DISABLE for the cpu which mode id is less than 0x0f.
 
-Don't build pcpu_get_vm_areas() if legacy percpu allocator is in use.
+http://bugzilla.kernel.org/show_bug.cgi?id=14700
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Jan Beulich <JBeulich@novell.com>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/vmalloc.h |    2 ++
- mm/vmalloc.c            |    2 ++
- 2 files changed, 4 insertions(+)
+ arch/x86/kernel/acpi/cstate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -115,9 +115,11 @@ extern rwlock_t vmlist_lock;
- extern struct vm_struct *vmlist;
- extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
- 
-+#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
- 				     const size_t *sizes, int nr_vms,
- 				     size_t align, gfp_t gfp_mask);
-+#endif
- 
- void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms);
- 
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -1993,6 +1993,7 @@ void free_vm_area(struct vm_struct *area
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -48,7 +48,7 @@ void acpi_processor_power_init_bm_check(
+ 	 * P4, Core and beyond CPUs
+ 	 */
+ 	if (c->x86_vendor == X86_VENDOR_INTEL &&
+-	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 14)))
++	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
+ 			flags->bm_control = 0;
  }
- EXPORT_SYMBOL_GPL(free_vm_area);
- 
-+#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- static struct vmap_area *node_to_va(struct rb_node *n)
- {
- 	return n ? rb_entry(n, struct vmap_area, rb_node) : NULL;
-@@ -2257,6 +2258,7 @@ err_free:
- 	kfree(vms);
- 	return NULL;
- }
-+#endif
- 
- /**
-  * pcpu_free_vm_areas - free vmalloc areas for percpu allocator
+ EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
 
 
