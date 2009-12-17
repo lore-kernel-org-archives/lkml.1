@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936679AbZLQEmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763909AbZLQEjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936679AbZLQEmh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 23:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936673AbZLQEm0
+	id S1763909AbZLQEjJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763953AbZLQEEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 23:42:26 -0500
-Received: from kroah.org ([198.145.64.141]:55379 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 23:04:04 -0500
+Received: from kroah.org ([198.145.64.141]:55386 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763857AbZLQED6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 23:03:58 -0500
+	id S1763277AbZLQED7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:03:59 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:47 2009
-Message-Id: <20091217035647.215895711@mini.kroah.org>
+Message-Id: <20091217035647.346284061@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 19:55:30 -0800
+Date: Wed, 16 Dec 2009 19:55:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Glauber Costa <glommer@redhat.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [033/151] KVM: x86: include pvclock MSRs in msrs_to_save
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Law <law@redhat.com>,
+       gcc@gcc.gnu.org, David Daney <ddaney@caviumnetworks.com>,
+       Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>
+Subject: [034/151] x86: Prevent GCC 4.4.x (pentium-mmx et al) function prologue wreckage
 In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,59 +34,101 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Glauber Costa <glommer@redhat.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit e3267cbbbfbcbe9c18833e89b10beabb1117cb55 upstream.
+commit 746357d6a526d6da9d89a2ec645b28406e959c2e upstream.
 
-For a while now, we are issuing a rdmsr instruction to find out which
-msrs in our save list are really supported by the underlying machine.
-However, it fails to account for kvm-specific msrs, such as the pvclock
-ones.
+When the kernel is compiled with -pg for tracing GCC 4.4.x inserts
+stack alignment of a function _before_ the mcount prologue if the
+-march=pentium-mmx is set and -mtune=generic is not set. This breaks
+the assumption of the function graph tracer which expects that the
+mcount prologue
 
-This patch moves then to the beginning of the list, and skip testing them.
+       push %ebp
+       mov  %esp, %ebp
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+is the first stack operation in a function because it needs to modify
+the function return address on the stack to trap into the tracer
+before returning to the real caller.
+
+The generated code is:
+
+        push   %edi
+        lea    0x8(%esp),%edi
+        and    $0xfffffff0,%esp
+        pushl  -0x4(%edi)
+        push   %ebp
+        mov    %esp,%ebp
+
+so the tracer modifies the copy of the return address which is stored
+after the stack alignment and therefor does not trap the return which
+in turn breaks the call chain logic of the tracer and leads to a
+kernel panic.
+
+Aside of the fact that the generated code is horrible for no good
+reason other -march -mtune options generate the expected:
+
+        push   %ebp
+        mov    %esp,%ebp
+        and    $0xfffffff0,%esp
+
+which does the same and keeps everything intact.
+
+After some experimenting we found out that this problem is restricted
+to gcc4.4.x and to the following -march settings:
+
+i586, pentium, pentium-mmx, k6, k6-2, k6-3, winchip-c6, winchip2, c3,
+geode
+
+By adding -mtune=generic the code generator produces always the
+expected code.
+
+So forcing -mtune=generic when CONFIG_FUNCTION_GRAPH_TRACER=y is not
+pretty, but at the moment the only way to prevent that the kernel
+trips over gcc-shrooms induced code madness.
+
+Most distro kernels have CONFIG_X86_GENERIC=y anyway which forces
+-mtune=generic as well so it will not impact those.
+
+
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
+
+------------------
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+Cc: Jeff Law <law@redhat.com>
+Cc: gcc@gcc.gnu.org
+Cc: David Daney <ddaney@caviumnetworks.com>
+Cc: Andrew Haley <aph@redhat.com>
+Cc: Richard Guenther <richard.guenther@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/x86.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ arch/x86/Makefile_32.cpu |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -484,16 +484,19 @@ static inline u32 bit(int bitno)
-  * and KVM_SET_MSRS, and KVM_GET_MSR_INDEX_LIST.
-  *
-  * This list is modified at module load time to reflect the
-- * capabilities of the host cpu.
-+ * capabilities of the host cpu. This capabilities test skips MSRs that are
-+ * kvm-specific. Those are put in the beginning of the list.
-  */
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -46,6 +46,12 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pen
+ # cpu entries
+ cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
+ 
++# Work around the pentium-mmx code generator madness of gcc4.4.x which
++# does stack alignment by generating horrible code _before_ the mcount
++# prologue (push %ebp, mov %esp, %ebp) which breaks the function graph
++# tracer assumptions
++cflags-$(CONFIG_FUNCTION_GRAPH_TRACER) += $(call cc-option,-mtune=generic)
 +
-+#define KVM_SAVE_MSRS_BEGIN	2
- static u32 msrs_to_save[] = {
-+	MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
- 	MSR_IA32_SYSENTER_CS, MSR_IA32_SYSENTER_ESP, MSR_IA32_SYSENTER_EIP,
- 	MSR_K6_STAR,
- #ifdef CONFIG_X86_64
- 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
- #endif
--	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
--	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
-+	MSR_IA32_TSC, MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
- };
- 
- static unsigned num_msrs_to_save;
-@@ -2433,7 +2436,8 @@ static void kvm_init_msr_list(void)
- 	u32 dummy[2];
- 	unsigned i, j;
- 
--	for (i = j = 0; i < ARRAY_SIZE(msrs_to_save); i++) {
-+	/* skip the first msrs in the list. KVM-specific */
-+	for (i = j = KVM_SAVE_MSRS_BEGIN; i < ARRAY_SIZE(msrs_to_save); i++) {
- 		if (rdmsr_safe(msrs_to_save[i], &dummy[0], &dummy[1]) < 0)
- 			continue;
- 		if (j < i)
+ # Bug fix for binutils: this option is required in order to keep
+ # binutils from generating NOPL instructions against our will.
+ ifneq ($(CONFIG_X86_P6_NOP),y)
 
 
