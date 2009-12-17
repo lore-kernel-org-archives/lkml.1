@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764847AbZLQOoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764850AbZLQOp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764847AbZLQOoF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 09:44:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764831AbZLQOn7
+	id S1764850AbZLQOp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 09:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758746AbZLQOpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 09:43:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16852 "EHLO mx1.redhat.com"
+	Thu, 17 Dec 2009 09:45:55 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48166 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758619AbZLQOn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 09:43:58 -0500
-Message-ID: <4B2A438A.6000908@redhat.com>
-Date: Thu, 17 Dec 2009 09:43:22 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	id S1758294AbZLQOpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 09:45:54 -0500
+Date: Thu, 17 Dec 2009 06:45:51 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, minchan.kim@gmail.com
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+Message-ID: <20091217144551.GA6819@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com> <20091216101107.GA15031@basil.fritz.box> <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com> <20091216102806.GC15031@basil.fritz.box> <20091216193109.778b881b.kamezawa.hiroyu@jp.fujitsu.com> <1261004224.21028.500.camel@laptop> <20091217084046.GA9804@basil.fritz.box> <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box>
 MIME-Version: 1.0
-To: lwoodman@redhat.com
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: FWD:  [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
-References: <20091211164651.036f5340@annuminas.surriel.com> <1260810481.6666.13.camel@dhcp-100-19-198.bos.redhat.com> <20091217193818.9FA9.A69D9226@jp.fujitsu.com> <4B2A22C0.8080001@redhat.com>
-In-Reply-To: <4B2A22C0.8080001@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091217085430.GG9804@basil.fritz.box>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/17/2009 07:23 AM, Larry Woodman wrote:
+On Thu, Dec 17, 2009 at 09:54:30AM +0100, Andi Kleen wrote:
+> On Thu, Dec 17, 2009 at 09:45:34AM +0100, Peter Zijlstra wrote:
+> > On Thu, 2009-12-17 at 09:40 +0100, Andi Kleen wrote:
+> > > On Wed, Dec 16, 2009 at 11:57:04PM +0100, Peter Zijlstra wrote:
+> > > > On Wed, 2009-12-16 at 19:31 +0900, KAMEZAWA Hiroyuki wrote:
+> > > > 
+> > > > > The problem of range locking is more than mmap_sem, anyway. I don't think
+> > > > > it's possible easily.
+> > > > 
+> > > > We already have a natural range lock in the form of the split pte lock.
+> > > > 
+> > > > If we make the vma lookup speculative using RCU, we can use the pte lock
+> > > 
+> > > One problem is here that mmap_sem currently contains sleeps
+> > > and RCU doesn't work for blocking operations until a custom
+> > > quiescent period is defined.
+> > 
+> > Right, so one thing we could do is always have preemptible rcu present
+> > in another RCU flavour, like
+> > 
+> > rcu_read_lock_sleep()
+> > rcu_read_unlock_sleep()
+> > call_rcu_sleep()
+> > 
+> > or whatever name that would be, and have PREEMPT_RCU=y only flip the
+> > regular rcu implementation between the sched/sleep one.
+> 
+> That could work yes.
 
->>> The system would not respond so I dont know whats going on yet. I'll
->>> add debug code to figure out why its in that state as soon as I get
->>> access to the hardware.
->
-> This was in response to Rik's first patch and seems to be fixed by the
-> latest path set.
->
-> Finally, having said all that, the system still struggles reclaiming
-> memory with
-> ~10000 processes trying at the same time, you fix one bottleneck and it
-> moves
-> somewhere else. The latest run showed all but one running process
-> spinning in
-> page_lock_anon_vma() trying for the anon_vma_lock. I noticed that there are
-> ~5000 vma's linked to one anon_vma, this seems excessive!!!
+OK, I have to ask...
 
-I have some ideas on how to keep processes waiting better
-on the per zone reclaim_wait waitqueue.
+Why not just use the already-existing SRCU in this case?
 
-For one, we should probably only do the lots-free wakeup
-if we have more than zone->pages_high free pages in the
-zone - having each of the waiters free some memory one
-after another should not be a problem as long as we do
-not have too much free memory in the zone.
-
-Currently it's a hair trigger, with the threshold for
-processes going into the page reclaim path and processes
-exiting it "plenty free" being exactly the same.
-
-Some hysteresis there could help.
-
--- 
-All rights reversed.
+							Thanx, Paul
