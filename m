@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935970AbZLQBfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936046AbZLQBfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935970AbZLQBfJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936044AbZLQBei
+	id S936046AbZLQBfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936022AbZLQBeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:34:38 -0500
-Received: from kroah.org ([198.145.64.141]:48026 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:34:36 -0500
+Received: from kroah.org ([198.145.64.141]:48032 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763640AbZLQBUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:20:35 -0500
+	id S1763645AbZLQBUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:36 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:04 2009
-Message-Id: <20091217011604.615316659@mini.kroah.org>
+Message-Id: <20091217011604.755061670@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:15:02 -0800
+Date: Wed, 16 Dec 2009 17:15:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick McHardy <kaber@trash.net>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [51/90] gro: Fix illegal merging of trailer trash
+Subject: [52/90] ip_fragment: also adjust skb->truesize for packets not owned by a socket
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,41 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Patrick McHardy <kaber@trash.net>
 
-[ Upstream commit 69c0cab120a85471054614418b447349caba22d7 ]
+[ Upstream commit b2722b1c3a893ec6021508da15b32282ec79f4da ]
 
-When we've merged skb's with page frags, and subsequently receive
-a trailer skb (< MSS) that is not completely non-linear (this can
-occur on Intel NICs if the packet size falls below the threshold),
-GRO ends up producing an illegal GSO skb with a frag_list.
+When a large packet gets reassembled by ip_defrag(), the head skb
+accounts for all the fragments in skb->truesize. If this packet is
+refragmented again, skb->truesize is not re-adjusted to reflect only
+the head size since its not owned by a socket. If the head fragment
+then gets recycled and reused for another received fragment, it might
+exceed the defragmentation limits due to its large truesize value.
 
-This is harmless unless the skb is then forwarded through an
-interface that requires software GSO, whereupon the GSO code
-will BUG.
+skb_recycle_check() explicitly checks for linear skbs, so any recycled
+skb should reflect its true size in skb->truesize. Change ip_fragment()
+to also adjust the truesize value of skbs not owned by a socket.
 
-This patch detects this case in GRO and avoids merging the
-trailer skb.
-
-Reported-by: Mark Wagner <mwagner@redhat.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Reported-and-tested-by: Ben Menchaca <ben@bigfootnetworks.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/core/skbuff.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/ipv4/ip_output.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -2704,7 +2704,8 @@ int skb_gro_receive(struct sk_buff **hea
+--- a/net/ipv4/ip_output.c
++++ b/net/ipv4/ip_output.c
+@@ -500,8 +500,8 @@ int ip_fragment(struct sk_buff *skb, int
+ 			if (skb->sk) {
+ 				frag->sk = skb->sk;
+ 				frag->destructor = sock_wfree;
+-				truesizes += frag->truesize;
+ 			}
++			truesizes += frag->truesize;
+ 		}
  
- 		NAPI_GRO_CB(skb)->free = 1;
- 		goto done;
--	}
-+	} else if (skb_gro_len(p) != pinfo->gso_size)
-+		return -E2BIG;
- 
- 	headroom = skb_headroom(p);
- 	nskb = netdev_alloc_skb(p->dev, headroom + skb_gro_offset(p));
+ 		/* Everything is OK. Generate! */
 
 
