@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764752AbZLQQjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764670AbZLQQlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764752AbZLQQjz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 11:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764360AbZLQQjt
+	id S1764670AbZLQQlX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 11:41:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764544AbZLQQlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 11:39:49 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:33978 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1764425AbZLQQjq (ORCPT
+	Thu, 17 Dec 2009 11:41:19 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:45856 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764392AbZLQQlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 11:39:46 -0500
-Date: Thu, 17 Dec 2009 19:39:44 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH 6/7] spi/mpc8xxx: don't check platform_get_irq's return
- value against zero
-Message-ID: <20091217163944.GA6453@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-2-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-3-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-4-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-5-git-send-email-u.kleine-koenig@pengutronix.de>
- <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
+	Thu, 17 Dec 2009 11:41:18 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1260979809-24811-6-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 17 Dec 2009 08:40:57 -0800
+X-Google-Sender-Auth: b39b72db41915be3
+Message-ID: <fa686aa40912170840h6bd921b4me244cb83c31cab7f@mail.gmail.com>
+Subject: [git pull] 2nd batch of SPI changes
+To: spi-devel-general@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 05:10:08PM +0100, Uwe Kleine-König wrote:
-> platform_get_irq returns -ENXIO on failure, so !irq was probably
-> always true.  Better use (int)irq <= 0.  Note that a return value of
-> zero is still handled as error even though this could mean irq0.
-> 
-> This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
-> changed the return value of platform_get_irq from 0 to -ENXIO on error.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: David Vrabel <dvrabel@arcom.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: spi-devel-general@lists.sourceforge.net
-> ---
->  drivers/spi/spi_mpc8xxx.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-> index e9390d7..b13501a 100644
-> --- a/drivers/spi/spi_mpc8xxx.c
-> +++ b/drivers/spi/spi_mpc8xxx.c
-> @@ -1339,7 +1339,7 @@ static int __devinit plat_mpc8xxx_spi_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  
->  	irq = platform_get_irq(pdev, 0);
-> -	if (!irq)
-> +	if ((int)irq <= 0)
+Hi Linus,
 
-I tend to think that it's really hopeless to fix the
-platform_get_irq() in its current form, so can you get rid
-of this ugly cast and just make the irq signed?
+This is later than I'd like it to be, and I hope it gets to you before
+you cut -rc1.  There was some slack between Andrew and I on handing
+off SPI maintainership.  Patches I had picked up in the last batch
+conflicted with his stack and we decided it was best if I just take
+the remainder of his SPI queue and commit them to my tree.
+(Basically, I made the mess, so I got to clean it up).  It took me a
+bit to get sorted out.
 
-And I'll be fine with it. :-(
+Commits in this batch are either a) from Andrew's tree, b) trivial
+fixes from the list, or c) new drivers.
+
+The following changes since commit 718deb6b61e34c200c1f2b706176d9aac334cb2d:
+  Al Viro (1):
+        Fix breakage in shmem.c
+
+are available in the git repository at:
+
+  git://git.secretlab.ca/git/linux-2.6 next-spi
+
+Ben Dooks (1):
+      spi_s3c24xx: add FIQ pseudo-DMA support
+
+Ben Nizette (1):
+      atmel_spi: fix dma addr calculation for len > BUFFER_SIZE
+
+Feng Tang (1):
+      spi: controller driver for Designware SPI core
+
+Jassi Brar (1):
+      spi: Add s3c64xx SPI Controller driver
+
+Mike Frysinger (1):
+      spidev: add proper section markers
+
+Thadeu Lima de Souza Cascardo (1):
+      spidev: use DECLARE_BITMAP instead of declaring the array
+
+hartleys (5):
+      spi: atmel_spi.c: use resource_size()
+      spi: spi_bfin5xx.c: use resource_size()
+      spi: spi_mpc8xxx.c: use resource_size()
+      spi: spi_sh_sci.c: use resource_size()
+      spi: spi_txx9.c: use resource_size()
+
+ arch/arm/mach-s3c2410/include/mach/spi.h |    2 +
+ drivers/spi/Kconfig                      |   28 +
+ drivers/spi/Makefile                     |   10 +-
+ drivers/spi/atmel_spi.c                  |    6 +-
+ drivers/spi/dw_spi.c                     |  944 +++++++++++++++++++++++
+ drivers/spi/dw_spi_pci.c                 |  169 +++++
+ drivers/spi/spi_bfin5xx.c                |    2 +-
+ drivers/spi/spi_mpc8xxx.c                |    2 +-
+ drivers/spi/spi_s3c24xx.c                |  244 ++++++-
+ drivers/spi/spi_s3c24xx_fiq.S            |  116 +++
+ drivers/spi/spi_s3c24xx_fiq.h            |   26 +
+ drivers/spi/spi_s3c64xx.c                | 1196 ++++++++++++++++++++++++++++++
+ drivers/spi/spi_sh_sci.c                 |    2 +-
+ drivers/spi/spi_txx9.c                   |    6 +-
+ drivers/spi/spidev.c                     |   18 +-
+ include/linux/spi/dw_spi.h               |  212 ++++++
+ 16 files changed, 2950 insertions(+), 33 deletions(-)
+ create mode 100644 drivers/spi/dw_spi.c
+ create mode 100644 drivers/spi/dw_spi_pci.c
+ create mode 100644 drivers/spi/spi_s3c24xx_fiq.S
+ create mode 100644 drivers/spi/spi_s3c24xx_fiq.h
+ create mode 100644 drivers/spi/spi_s3c64xx.c
+ create mode 100644 include/linux/spi/dw_spi.h
+
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
