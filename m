@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763418AbZLQAHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763404AbZLQAKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763418AbZLQAHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 19:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762949AbZLQAHe
+	id S1763404AbZLQAKY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 19:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762948AbZLQAKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 19:07:34 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:43056 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761273AbZLQAHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 19:07:33 -0500
-Date: Thu, 17 Dec 2009 11:07:30 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] timers: Remove duplicate setting of new_base in
- __mod_timer()
-Message-ID: <20091217000730.GB25317@verge.net.au>
-References: <20091216222028.GA15841@verge.net.au>
- <alpine.LFD.2.00.0912170053400.2755@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912170053400.2755@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 16 Dec 2009 19:10:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33237 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762567AbZLQAKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 19:10:16 -0500
+Date: Thu, 17 Dec 2009 11:10:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: origin tree build warning
+Message-Id: <20091217111009.35d480da.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__17_Dec_2009_11_10_09_+1100_kHjEigWU=WJ82TY0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 12:58:27AM +0100, Thomas Gleixner wrote:
-> B1;2005;0cSimon,
-> 
-> On Thu, 17 Dec 2009, Simon Horman wrote:
-> 
-> > I am wondering if the first line of the following snippet of
-> > __mod_timer() can be removed as new_base always seems to be reset.
-> 
-> Good catch.
->  
-> > Alternatively perhaps smp_processor_id() and  per_cpu() could
-> > be moved to inside the #if and the call to __get_cpu_var() moved to
-> > inside #else ?
-> 
-> Nah, __get_cpu_var does a smp_processor_id() anyway. Removing that
-> first new_base assignment is the right thing to do.
-> 
-> >         new_base = __get_cpu_var(tvec_bases);
-> > 
-> >         cpu = smp_processor_id();
-> >         
-> > #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
-> >         if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
-> >                 int preferred_cpu = get_nohz_load_balancer();
-> >                         
-> >                 if (preferred_cpu >= 0)
-> >                         cpu = preferred_cpu;
-> >         }
-> > #endif
-> >         new_base = per_cpu(tvec_bases, cpu);
-> > 
-> > Signed-off-by: Simon Horman <horms@verge.net.au>
-> > 
-> > Index: linux-2.6/kernel/timer.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/timer.c	2009-12-17 07:02:57.000000000 +0900
-> > +++ linux-2.6/kernel/timer.c	2009-12-17 07:03:17.000000000 +0900
-> > @@ -656,8 +656,6 @@ __mod_timer(struct timer_list *timer, un
-> >  
-> >  	debug_activate(timer, expires);
-> >  
-> > -	new_base = __get_cpu_var(tvec_bases);
-> > -
-> >  	cpu = smp_processor_id();
-> >  
-> >  #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
-> 
-> Could you please resend the patch with a proper change log ?
+--Signature=_Thu__17_Dec_2009_11_10_09_+1100_kHjEigWU=WJ82TY0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Will do.
+Hi Linus,
 
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+
+fs/nfs/super.c: In function 'nfs_follow_remote_path':
+fs/nfs/super.c:2672: warning: label 'out_mntput' defined but not used
+
+Introduced by commit e9496ff46a20a8592fdc7bdaaf41b45eb808d310 ("fix
+mismerge with Trond's stuff (create_mnt_ns() export is gone now)").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__17_Dec_2009_11_10_09_+1100_kHjEigWU=WJ82TY0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkspduEACgkQjjKRsyhoI8y4SQCfblKWw+81+Avx3NnTvgzHNcJV
+lxEAoINg8shSBEgDuUsnp7gDUPVBT4uC
+=55Pk
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__17_Dec_2009_11_10_09_+1100_kHjEigWU=WJ82TY0--
