@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbZLQFTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759875AbZLQEDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751938AbZLQFTK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 00:19:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZLQFTF
+	id S1759875AbZLQEDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 23:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbZLQED3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 00:19:05 -0500
-Received: from mail.dbmail.dk ([82.143.255.58]:34390 "EHLO mail.dbmail.dk"
+	Wed, 16 Dec 2009 23:03:29 -0500
+Received: from kroah.org ([198.145.64.141]:55159 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbZLQFTA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 00:19:00 -0500
-X-Greylist: delayed 5424 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 00:19:00 EST
-MIME-Version: 1.0
-X-Mailer: AtMail PHP 5.4
-Message-ID: <39693.1261021691@dbmail.dk>
-To: <mytilinaios@atlantisresearch.gr>
-Reply-To: mlupgradwebmailaccount25@gmail.com
-Content-Type: text/plain; charset="utf-8"
-X-Origin: 41.220.75.3
-X-Atmail-Account: harby@dbmail.dk
-Date: Thu, 17 Dec 2009 04:48:10 +0100
-Subject: Verify and Update your Bellnexxia.Net Email
-From: Email Owner <mlupgradwebmailaccount25@gmail.com>
-Content-Transfer-Encoding: 8BIT
+	id S1751507AbZLQED2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 23:03:28 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 19:56:43 2009
+Message-Id: <20091217035643.118533253@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 16 Dec 2009 19:54:58 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [001/151] USB: usb-storage: fix bug in fill_inquiry
+In-Reply-To: <20091217040208.GA26571@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Verify and Update your Bellnexxia.Net Email
-     Dear Bellnexxia.Net Email Owner,
-This message is from bellnexxia.net message center to all bellnexxia.net email
-users. We are currently upgrading our data base and e-mail center. We are
-deleting all unused bellnexxia.net emails to create more space for new web mail,
-bellnexxia.net e-mail accounts.
-   You are required to verify and update your bellnexxia.net email by confirming
-your email identity. Sending your details to account to
-mlupgradwebmailaccount25@gmail.com, this will prevent your email from been closed
-during this exercise. In order to confirm your email identity, you are to provide
-the following data'
-CONFIRM YOUR EMAIL IDENTITY BELOW
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-First Name: ---------------------
-Last Name: ----------------------
-Email User name: ----------------
-Email password: -----------------
+------------------
 
-Warning!!! Bellnexxia.net that refuses to verify and subsequently update his or
-her email within Seven days of receiving this warning will lose his or her email
-permanently.
-Thank you for using bellnexxia.net Email!
-Warning Code: VX2G99AAJ
-Thanks
+From: Alan Stern <stern@rowland.harvard.edu>
 
+commit f3f6faa9edf67c1018270793e0547b0f81abb47e upstream.
 
+This patch (as1312) fixes a minor bug in usb-storage.  The
+fill_inquiry() routine neglects to pre-load the inquiry data buffer
+with spaces.  As a result, if the vendor name is shorter than 8
+characters or the product name is shorter than 16, the remainder will
+be filled with garbage.
 
+The patch also removes some unnecessary calls to strlen().
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/storage/usb.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -228,6 +228,7 @@ void fill_inquiry_response(struct us_dat
+ 	if (data_len<36) // You lose.
+ 		return;
+ 
++	memset(data+8, ' ', 28);
+ 	if(data[0]&0x20) { /* USB device currently not connected. Return
+ 			      peripheral qualifier 001b ("...however, the
+ 			      physical device is not currently connected
+@@ -237,15 +238,15 @@ void fill_inquiry_response(struct us_dat
+ 			      device, it may return zeros or ASCII spaces 
+ 			      (20h) in those fields until the data is
+ 			      available from the device."). */
+-		memset(data+8,0,28);
+ 	} else {
+ 		u16 bcdDevice = le16_to_cpu(us->pusb_dev->descriptor.bcdDevice);
+-		memcpy(data+8, us->unusual_dev->vendorName, 
+-			strlen(us->unusual_dev->vendorName) > 8 ? 8 :
+-			strlen(us->unusual_dev->vendorName));
+-		memcpy(data+16, us->unusual_dev->productName, 
+-			strlen(us->unusual_dev->productName) > 16 ? 16 :
+-			strlen(us->unusual_dev->productName));
++		int n;
++
++		n = strlen(us->unusual_dev->vendorName);
++		memcpy(data+8, us->unusual_dev->vendorName, min(8, n));
++		n = strlen(us->unusual_dev->productName);
++		memcpy(data+16, us->unusual_dev->productName, min(16, n));
++
+ 		data[32] = 0x30 + ((bcdDevice>>12) & 0x0F);
+ 		data[33] = 0x30 + ((bcdDevice>>8) & 0x0F);
+ 		data[34] = 0x30 + ((bcdDevice>>4) & 0x0F);
 
 
