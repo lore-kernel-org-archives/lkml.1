@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764579AbZLQMIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764583AbZLQMPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764579AbZLQMIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 07:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764584AbZLQMIg
+	id S1764583AbZLQMPH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 07:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZLQMPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 07:08:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46279 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764562AbZLQMIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 07:08:36 -0500
-Date: Thu, 17 Dec 2009 13:08:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Jason Garrett-Glaser <darkshikari@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: x264 benchmarks BFS vs CFS
-Message-ID: <20091217120826.GA32125@elte.hu>
-References: <1261042383.14314.0.camel@localhost>
- <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
- <20091217105316.GB26010@elte.hu>
- <1261047618.14314.6.camel@localhost>
+	Thu, 17 Dec 2009 07:15:05 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46557 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbZLQMPE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 07:15:04 -0500
+From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: e100 REGRESSION in 2.6.32 (PATCH)
+Date: Thu, 17 Dec 2009 14:14:16 +0200
+User-Agent: KMail/1.12.4 (Linux/2.6.32-ironman-1; KDE/4.3.4; i686; ; )
+Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+References: <Pine.LNX.4.44L0.0912161447260.2643-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912161447260.2643-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261047618.14314.6.camel@localhost>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200912171414.16846.roger.oksanen@cs.helsinki.fi>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Kasper Sandberg <lkml@metanurb.dk> wrote:
-
-> On Thu, 2009-12-17 at 11:53 +0100, Ingo Molnar wrote:
-> > * Jason Garrett-Glaser <darkshikari@gmail.com> wrote:
-> > 
-> > > On Thu, Dec 17, 2009 at 1:33 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> > > > well well :) nothing quite speaks out like graphs..
-> > > >
-> > > > http://doom10.org/index.php?topic=78.0
-> > > >
-> > > >
-> > > >
-> > > > regards,
-> > > > Kasper Sandberg
-> > > 
-> > > Yeah, I sent this to Mike a bit ago.  Seems that .32 has basically tied 
-> > > it--and given the strict thread-ordering expectations of x264, you basically 
-> > > can't expect it to do any better, though I'm curious what's responsible for 
-> > > the gap in "veryslow", even with SCHED_BATCH enabled.
-> > > 
-> > > The most odd case is that of "ultrafast", in which CFS immediately ties BFS 
-> > > when we enable SCHED_BATCH.  We're doing some further testing to see exactly 
+On Wednesday 16 December 2009 21:50:38 Alan Stern wrote:
+> On Wed, 16 Dec 2009, Brandeburg, Jesse wrote:
 > 
-> Thats kinda besides the point.
+> > copied the netdev mailing list.
 > 
-> all these tunables and weirdness is _NEVER_ going to work for people.
-
-v2.6.32 improved quite a bit on the x264 front so i dont think that's 
-necessarily the case.
-
-But yes, i'll subscribe to the view that we cannot satisfy everything all the 
-time. There's tradeoffs in every scheduler design.
-
-> now forgive me for being so blunt, but for a user, having to do
-> echo x264 > /proc/cfs/gief_me_performance_on_app
-> or
-> echo some_benchmark > x264 > /proc/cfs/gief_me_performance_on_app
+> Oops.  With all the other CC's I forgot to include netdev.  Shame, 
+> shame...
 > 
-> just isnt usable, bfs matches, even exceeds cfs on all accounts, with ZERO 
-> user tuning, so while cfs may be able to nearly match up with a ton of 
-> application specific stuff, that just doesnt work for a normal user.
+> >  Alan thanks for the report, I wonder if 
+> > you can revert 98468efddb101f8a29af974101c17ba513b07be1 and see if that 
+> > fixes it?
 > 
-> not to mention that bfs does this whilst not loosing interactivity, 
-> something which cfs certainly cannot boast.
+> It does indeed.  Thanks for the quick response.
+> 
+> > Roger on the To: line made that change, which may have broken e100 for 
+> > your system.
+> 
+> It looks simple enough, but obviously something is wrong with it.
 
-What kind of latencies are those? Arent they just compiz induced due to 
-different weighting of workloads in BFS and in the upstream scheduler?
-Would you be willing to help us out pinning them down?
+Well it took a while, and it seems that I had missed the undocumented(?) fact
+that pci_alloc_consistent returns zeroed memory (and pci_pool doesn't), and 
+the alloc_cbs doesn't explicitly zero the cb->status field when allocating. So
+here is a patch against v2.6.32:
+(David: 98468efddb101f8a29af974101c17ba513b07be1 should be removed from
+the -stable queue and replaced by a patch that includes this fix)
 
-To move the discussion to the numeric front please send the 'perf sched 
-latency' output of an affected workload.
+e100: Fix broken cbs accounting due to missing memset.
 
-Thanks,
+Alan Stern noticed that e100 caused slab corruption.
+commit 98468efddb101f8a29af974101c17ba513b07be1 changed
+the allocation of cbs to use dma pools that don't return zeroed memory,
+especially the cb->status field used to track which cb to clean, causing
+(the visible) double freeing of skbs and a wrong free cbs count.
 
-	Ingo
+Now the cbs are explicitly zeroed at allocation time.
+
+Reported-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+---
+ drivers/net/e100.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index d269a68..29a8840 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -1815,6 +1815,7 @@ static int e100_alloc_cbs(struct nic *nic)
+ 
+ 	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
+ 				  &nic->cbs_dma_addr);
++	memset(nic->cbs, 0, count * sizeof(struct cb));
+ 	if (!nic->cbs)
+ 		return -ENOMEM;
+ 
+@@ -1825,7 +1826,6 @@ static int e100_alloc_cbs(struct nic *nic)
+ 		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
+ 		cb->link = cpu_to_le32(nic->cbs_dma_addr +
+ 			((i+1) % count) * sizeof(struct cb));
+-		cb->skb = NULL;
+ 	}
+ 
+ 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
