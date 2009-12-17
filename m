@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936734AbZLQSqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965351AbZLQTLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936734AbZLQSqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 13:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936706AbZLQSqI
+	id S965351AbZLQTLP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 14:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965321AbZLQTLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 13:46:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33264 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936694AbZLQSp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 13:45:57 -0500
-To: Christoph Hellwig <hch@infradead.org>
-Cc: tytso@mit.edu, Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-From: Andi Kleen <andi@firstfloor.org>
-References: <20091216043618.GB9104@hera.kernel.org>
-	<20091217132256.GO28962@bombadil.infradead.org>
-	<alpine.LFD.2.00.0912170811130.15740@localhost.localdomain>
-	<20091217163036.GE2123@thunk.org>
-	<20091217171025.GB10431@infradead.org>
-Date: Thu, 17 Dec 2009 19:45:55 +0100
-In-Reply-To: <20091217171025.GB10431@infradead.org> (Christoph Hellwig's message of "Thu, 17 Dec 2009 12:10:25 -0500")
-Message-ID: <87zl5hsal8.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 17 Dec 2009 14:11:10 -0500
+Received: from ox1.aei.mpg.de ([194.94.224.6]:60491 "EHLO ox1.aei.mpg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965317AbZLQTLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 14:11:09 -0500
+X-Greylist: delayed 1336 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 14:11:09 EST
+Date: Thu, 17 Dec 2009 19:48:31 +0100
+From: "Carlos R. Mafra" <crmafra@aei.mpg.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>
+Subject: [PATCH] acpi: Do not select ACPI_DOCK from ATA_ACPI
+Message-ID: <20091217184831.GA10604@Pilar.aei.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+In March 2008 commit 0ac4a3c2fbbcadc3e96e4dc47d4ae802d66e6f67 ("ACPI: fix
+ATA_ACPI build") made CONFIG_ACPI_DOCK be selected by CONFIG_ATA_ACPI because
+of a build error when CONFIG_ATA_ACPI=y and CONFIG_ACPI_DOCK=m.
 
-> On Thu, Dec 17, 2009 at 11:30:36AM -0500, tytso@mit.edu wrote:
->> That's because apparently the iSCSI and DMA blocks assume that they
->> have Real Pages (tm) passed to block I/O requests, and apparently XFS
->> ran into problems when sending vmalloc'ed pages.  I don't know if this
->> is a problem if we pass the bio layer addresses coming from the SLAB
->> allocator, but oral tradition seems to indicate this is problematic,
->> although no one has given me the full chapter and verse explanation
->> about why this is so.
->
-> Actually at least iscsi now has a workaround for that by checking for
-> PageSlab.  Back when we deal with the XFS issue that check was only
-> available with debug options enabled.  I tried to sort it out by
-> agreeing with the block and iscsi folks that either
+However, in September 2008 commit 898b054f3eec5921320ae8614b5bdd7b07ea5b43
+("dock: make dock driver not a module") removed the possibility of having
+CONFIG_ACPI_DOCK=m and therefore there is no need for selecting it when
+CONFIG_ATA_ACPI=y.
 
-DRBD has the same workaround as well:
+This makes the kernel ~5 Kb smaller for people who don't have a dock by
+allowing them to not have ACPI_DOCK compiled-in because of ATA_ACPI=y.
 
-        if (disable_sendpage || (page_count(page) < 1) || PageSlab(page))
+Signed-off-by: Carlos R. Mafra <crmafra@aei.mpg.de>
+---
 
-But it seems like a gross hack to me. Perhaps this should be 
-passed as some sort of BIO attribute?
+I was puzzled by not being able to unselect DOCK even though my laptop
+has no dock...
 
--Andi
+Compile tested with CONFIG_ATA_ACPI=y and CONFIG_ACPI_DOCK not set.
 
+ drivers/ata/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 85844d0..56c6374 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -40,7 +40,6 @@ config ATA_VERBOSE_ERROR
+ config ATA_ACPI
+ 	bool "ATA ACPI Support"
+ 	depends on ACPI && PCI
+-	select ACPI_DOCK
+ 	default y
+ 	help
+ 	  This option adds support for ATA-related ACPI objects.
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.6.rc0.61.g41d5b
+
