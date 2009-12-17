@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764427AbZLQLD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764395AbZLQLDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764427AbZLQLD5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 06:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764413AbZLQLDx
+	id S1764395AbZLQLDn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 06:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764382AbZLQLDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 06:03:53 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:58549 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764375AbZLQLDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Dec 2009 06:03:41 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 1/9] pci: separate pci_setup_bridge to small functions
-Date: Thu, 17 Dec 2009 12:03:22 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.80; i686; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-References: <4ADEB601.8020200@kernel.org> <4B10D29F.2000800@kernel.org> <20091216124147.4163cd10@jbarnes-piketon>
-In-Reply-To: <20091216124147.4163cd10@jbarnes-piketon>
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:54844 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764373AbZLQLDk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 06:03:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=H9bh5LomxBLIAgV/Uld26JG3xFDABitJ3fwJkHIuChWEntVxxMoce+29SrgUXmwtzw
+         jYS4x7LJlT0Rc0fMgnBRmzSh1VzqZzpGWAUBuWSeT4II6VUYcxRP7NlDNuKeIlpJDBZH
+         weymWRFkhiWLPqxSjbvfP2dIvm9ZC1iIJoT2o=
+Message-ID: <4B2A1008.9070202@garzik.org>
+Date: Thu, 17 Dec 2009 06:03:36 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1946333.LLi9HJaeNg";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Romain Kubany <rkubany@ikoula.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Subject: Re: Possible regression of LBA48 support for piix
+References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com> <19241.63911.160765.909812@pilspetsen.it.uu.se> <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2C1@HMCEXMBX01CLUS.hmcikoula.com>
+In-Reply-To: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2C1@HMCEXMBX01CLUS.hmcikoula.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912171203.29367.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1946333.LLi9HJaeNg
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On 12/17/2009 05:04 AM, Romain Kubany wrote:
+> Ok, thanks for the prompt reply and the notice for the cc: :)
+> I'm using libata and ata_piix now.
+> My disk is seen as "sda" and a lshw is reporting the controler as using "ata_piix" :
+>
+> # lshw -c STORAGE
+>    *-ide
+>         description: IDE interface
+>         product: 82371AB/EB/MB PIIX4 IDE
+>         vendor: Intel Corporation
+>         physical id: 7.1
+>         bus info: pci@0000:00:07.1
+>         logical name: scsi0
+>         logical name: scsi1
+>         version: 01
+>         width: 32 bits
+>         clock: 33MHz
+>         capabilities: ide bus_master emulated
+>         configuration: driver=ata_piix latency=0
+>
+> But fdisk always recognize the disk as 136.8Gb :
+>
+> # fdisk -l
+>
+> Disk /dev/sda: 136.8 GB, 136899993600 bytes
+> 16 heads, 63 sectors/track, 265260 cylinders
+> Units = cylinders of 1008 * 512 = 516096 bytes
+> Disk identifier: 0xd7267427
+>
+>     Device Boot      Start         End      Blocks   Id  System
+> /dev/sda1   *           1         204      102815+  83  Linux
+> /dev/sda2             205        2236     1024128   82  Linux swap / Solaris
+> /dev/sda3            2237       20805     9358776   83  Linux
+>
+> Here is the new kernel config file : http://pastebin.com/f65fd472b
 
-Jesse Barnes wrote:
-> On Fri, 27 Nov 2009 23:34:55 -0800
->=20
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> > prepare to use those small functions according to resource type later
-> >
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >
-> > ---
-> >  drivers/pci/setup-bus.c |   54
-> > +++++++++++++++++++++++++++++++++++++++--------- 1 file changed, 44
-> > insertions(+), 10 deletions(-)
->=20
-> Seems like a reasonable cleanup, anyone have objections?
+I would definitely be interested in seeing the 'dmesg' output for 
+libata, and results from a more recent kernel.
 
-There are some newlines missing between some functions, e.g. before =20
-pci_setup_bridge_mmio().
+	Jeff
 
-Eike
 
---nextPart1946333.LLi9HJaeNg
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEABECAAYFAksqEAEACgkQXKSJPmm5/E58wQCfWOpgejKq9PpLfKhIaNzzcHE7
-SPUAnjH6GLgI16kvPLKyWYmU5/7RFZew
-=itAm
------END PGP SIGNATURE-----
-
---nextPart1946333.LLi9HJaeNg--
