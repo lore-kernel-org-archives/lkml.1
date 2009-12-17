@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbZLQBrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763646AbZLQBpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763676AbZLQBrJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 20:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763270AbZLQBqT
+	id S1763646AbZLQBpp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 20:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763546AbZLQBou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 20:46:19 -0500
-Received: from kroah.org ([198.145.64.141]:47814 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 20:44:50 -0500
+Received: from kroah.org ([198.145.64.141]:47817 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763584AbZLQBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 20:19:58 -0500
+	id S1763589AbZLQBUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 20:20:00 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed Dec 16 17:16:00 2009
-Message-Id: <20091217011559.935025982@mini.kroah.org>
+Message-Id: <20091217011600.063985666@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 16 Dec 2009 17:14:27 -0800
+Date: Wed, 16 Dec 2009 17:14:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       NeilBrown <neilb@suse.de>
-Subject: [16/90] md/bitmap: protect against bitmap removal while being updated.
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [17/90] pata_hpt{37x|3x2n}: fix timing register masks (take 2)
 In-Reply-To: <20091217011835.GA20434@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,148 +29,173 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit aa5cbd103887011b4830355f88fb055f9ad2d556 upstream.
+commit 5600c70e576199a7552e1c0fff43f3fe16f5566e upstream.
 
-A write intent bitmap can be removed from an array while the
-array is active.
-When this happens, all IO is suspended and flushed before the
-bitmap is removed.
-However it is possible that bitmap_daemon_work is still running to
-clear old bits from the bitmap.  If it is, it can dereference the
-bitmap after it has been freed.
+These drivers inherited from the older 'hpt366' IDE driver the buggy timing
+register masks in their set_piomode() metods. As a result, too low command
+cycle active time is programmed for slow PIO modes.  Quite fortunately, it's
+later "fixed up" by the set_dmamode() methods which also "helpfully" reprogram
+the command timings, usually to PIO mode 4; unfortunately, setting an UltraDMA
+mode #N also reprograms already set PIO data timings, usually to MWDMA mode #
+max(N, 2) timings...
 
-So introduce a new mutex to protect bitmap_daemon_work and get it
-before destroying a bitmap.
+However, the drivers added some breakage of their own too:  the bit that they
+set/clear to control the FIFO is sometimes wrong -- it's actually the MSB of
+the command cycle setup time; also, setting it in DMA mode is wrong as this
+bit is only for PIO actually and clearing it for PIO modes is not needed as
+no mode in any timing table has it set...
 
-This is suitable for any current -stable kernel.
+Fix all this, inverting the masks while at it, like in the 'hpt366' and
+'pata_hpt366' drivers; bump the drivers' versions, accounting for recent
+patches that forgot to do it...
 
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/bitmap.c |   24 ++++++++++++++++++------
- drivers/md/bitmap.h |    2 +-
- drivers/md/md.c     |    3 ++-
- drivers/md/md.h     |    1 +
- 4 files changed, 22 insertions(+), 8 deletions(-)
+ drivers/ata/pata_hpt37x.c  |   32 +++++++++++++++-----------------
+ drivers/ata/pata_hpt3x2n.c |   17 ++++++++---------
+ 2 files changed, 23 insertions(+), 26 deletions(-)
 
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -1077,23 +1077,31 @@ static bitmap_counter_t *bitmap_get_coun
-  *			out to disk
-  */
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -24,7 +24,7 @@
+ #include <linux/libata.h>
  
--void bitmap_daemon_work(struct bitmap *bitmap)
-+void bitmap_daemon_work(mddev_t *mddev)
+ #define DRV_NAME	"pata_hpt37x"
+-#define DRV_VERSION	"0.6.12"
++#define DRV_VERSION	"0.6.14"
+ 
+ struct hpt_clock {
+ 	u8	xfer_speed;
+@@ -404,9 +404,8 @@ static void hpt370_set_piomode(struct at
+ 
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt37x_find_mode(ap, adev->pio_mode);
+-	mode &= ~0x8000000;	/* No FIFO in PIO */
+-	mode &= ~0x30070000;	/* Leave config bits alone */
+-	reg &= 0x30070000;	/* Strip timing bits */
++	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
++	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -423,8 +422,7 @@ static void hpt370_set_dmamode(struct at
  {
-+	struct bitmap *bitmap;
- 	unsigned long j;
- 	unsigned long flags;
- 	struct page *page = NULL, *lastpage = NULL;
- 	int blocks;
- 	void *paddr;
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	u32 addr1, addr2;
+-	u32 reg;
+-	u32 mode;
++	u32 reg, mode, mask;
+ 	u8 fast;
  
--	if (bitmap == NULL)
-+	/* Use a mutex to guard daemon_work against
-+	 * bitmap_destroy.
-+	 */
-+	mutex_lock(&mddev->bitmap_mutex);
-+	bitmap = mddev->bitmap;
-+	if (bitmap == NULL) {
-+		mutex_unlock(&mddev->bitmap_mutex);
- 		return;
-+	}
- 	if (time_before(jiffies, bitmap->daemon_lastrun + bitmap->daemon_sleep*HZ))
- 		goto done;
+ 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
+@@ -436,11 +434,12 @@ static void hpt370_set_dmamode(struct at
+ 	fast |= 0x01;
+ 	pci_write_config_byte(pdev, addr2, fast);
  
- 	bitmap->daemon_lastrun = jiffies;
- 	if (bitmap->allclean) {
- 		bitmap->mddev->thread->timeout = MAX_SCHEDULE_TIMEOUT;
--		return;
-+		goto done;
- 	}
- 	bitmap->allclean = 1;
- 
-@@ -1202,6 +1210,7 @@ void bitmap_daemon_work(struct bitmap *b
-  done:
- 	if (bitmap->allclean == 0)
- 		bitmap->mddev->thread->timeout = bitmap->daemon_sleep * HZ;
-+	mutex_unlock(&mddev->bitmap_mutex);
- }
- 
- static bitmap_counter_t *bitmap_get_counter(struct bitmap *bitmap,
-@@ -1538,9 +1547,9 @@ void bitmap_flush(mddev_t *mddev)
- 	 */
- 	sleep = bitmap->daemon_sleep;
- 	bitmap->daemon_sleep = 0;
--	bitmap_daemon_work(bitmap);
--	bitmap_daemon_work(bitmap);
--	bitmap_daemon_work(bitmap);
-+	bitmap_daemon_work(mddev);
-+	bitmap_daemon_work(mddev);
-+	bitmap_daemon_work(mddev);
- 	bitmap->daemon_sleep = sleep;
- 	bitmap_update_sb(bitmap);
- }
-@@ -1571,6 +1580,7 @@ static void bitmap_free(struct bitmap *b
- 	kfree(bp);
- 	kfree(bitmap);
- }
++	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
 +
- void bitmap_destroy(mddev_t *mddev)
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt37x_find_mode(ap, adev->dma_mode);
+-	mode |= 0x8000000;	/* FIFO in MWDMA or UDMA */
+-	mode &= ~0xC0000000;	/* Leave config bits alone */
+-	reg &= 0xC0000000;	/* Strip timing bits */
++	mode &= mask;
++	reg &= ~mask;
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -508,9 +507,8 @@ static void hpt372_set_piomode(struct at
+ 	mode = hpt37x_find_mode(ap, adev->pio_mode);
+ 
+ 	printk("Find mode for %d reports %X\n", adev->pio_mode, mode);
+-	mode &= ~0x80000000;	/* No FIFO in PIO */
+-	mode &= ~0x30070000;	/* Leave config bits alone */
+-	reg &= 0x30070000;	/* Strip timing bits */
++	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
++	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
+@@ -527,8 +525,7 @@ static void hpt372_set_dmamode(struct at
  {
- 	struct bitmap *bitmap = mddev->bitmap;
-@@ -1578,7 +1588,9 @@ void bitmap_destroy(mddev_t *mddev)
- 	if (!bitmap) /* there was no bitmap */
- 		return;
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	u32 addr1, addr2;
+-	u32 reg;
+-	u32 mode;
++	u32 reg, mode, mask;
+ 	u8 fast;
  
-+	mutex_lock(&mddev->bitmap_mutex);
- 	mddev->bitmap = NULL; /* disconnect from the md device */
-+	mutex_unlock(&mddev->bitmap_mutex);
- 	if (mddev->thread)
- 		mddev->thread->timeout = MAX_SCHEDULE_TIMEOUT;
+ 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
+@@ -539,12 +536,13 @@ static void hpt372_set_dmamode(struct at
+ 	fast &= ~0x07;
+ 	pci_write_config_byte(pdev, addr2, fast);
  
---- a/drivers/md/bitmap.h
-+++ b/drivers/md/bitmap.h
-@@ -282,7 +282,7 @@ void bitmap_close_sync(struct bitmap *bi
- void bitmap_cond_end_sync(struct bitmap *bitmap, sector_t sector);
++	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
++
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt37x_find_mode(ap, adev->dma_mode);
+ 	printk("Find mode for DMA %d reports %X\n", adev->dma_mode, mode);
+-	mode &= ~0xC0000000;	/* Leave config bits alone */
+-	mode |= 0x80000000;	/* FIFO in MWDMA or UDMA */
+-	reg &= 0xC0000000;	/* Strip timing bits */
++	mode &= mask;
++	reg &= ~mask;
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
  
- void bitmap_unplug(struct bitmap *bitmap);
--void bitmap_daemon_work(struct bitmap *bitmap);
-+void bitmap_daemon_work(mddev_t *mddev);
- #endif
+--- a/drivers/ata/pata_hpt3x2n.c
++++ b/drivers/ata/pata_hpt3x2n.c
+@@ -25,7 +25,7 @@
+ #include <linux/libata.h>
  
- #endif
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -361,6 +361,7 @@ static mddev_t * mddev_find(dev_t unit)
+ #define DRV_NAME	"pata_hpt3x2n"
+-#define DRV_VERSION	"0.3.4"
++#define DRV_VERSION	"0.3.7"
  
- 	mutex_init(&new->open_mutex);
- 	mutex_init(&new->reconfig_mutex);
-+	mutex_init(&new->bitmap_mutex);
- 	INIT_LIST_HEAD(&new->disks);
- 	INIT_LIST_HEAD(&new->all_mddevs);
- 	init_timer(&new->safemode_timer);
-@@ -6595,7 +6596,7 @@ void md_check_recovery(mddev_t *mddev)
+ enum {
+ 	HPT_PCI_FAST	=	(1 << 31),
+@@ -185,9 +185,8 @@ static void hpt3x2n_set_piomode(struct a
  
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt3x2n_find_mode(ap, adev->pio_mode);
+-	mode &= ~0x8000000;	/* No FIFO in PIO */
+-	mode &= ~0x30070000;	/* Leave config bits alone */
+-	reg &= 0x30070000;	/* Strip timing bits */
++	mode &= 0xCFC3FFFF;	/* Leave DMA bits alone */
++	reg &= ~0xCFC3FFFF;	/* Strip timing bits */
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
  
- 	if (mddev->bitmap)
--		bitmap_daemon_work(mddev->bitmap);
-+		bitmap_daemon_work(mddev);
+@@ -204,8 +203,7 @@ static void hpt3x2n_set_dmamode(struct a
+ {
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	u32 addr1, addr2;
+-	u32 reg;
+-	u32 mode;
++	u32 reg, mode, mask;
+ 	u8 fast;
  
- 	if (mddev->ro)
- 		return;
---- a/drivers/md/md.h
-+++ b/drivers/md/md.h
-@@ -289,6 +289,7 @@ struct mddev_s
- 								* hot-adding a bitmap.  It should
- 								* eventually be settable by sysfs.
- 								*/
-+	struct mutex			bitmap_mutex;
+ 	addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
+@@ -216,11 +214,12 @@ static void hpt3x2n_set_dmamode(struct a
+ 	fast &= ~0x07;
+ 	pci_write_config_byte(pdev, addr2, fast);
  
- 	struct list_head		all_mddevs;
- };
++	mask = adev->dma_mode < XFER_UDMA_0 ? 0x31C001FF : 0x303C0000;
++
+ 	pci_read_config_dword(pdev, addr1, &reg);
+ 	mode = hpt3x2n_find_mode(ap, adev->dma_mode);
+-	mode |= 0x8000000;	/* FIFO in MWDMA or UDMA */
+-	mode &= ~0xC0000000;	/* Leave config bits alone */
+-	reg &= 0xC0000000;	/* Strip timing bits */
++	mode &= mask;
++	reg &= ~mask;
+ 	pci_write_config_dword(pdev, addr1, reg | mode);
+ }
+ 
 
 
