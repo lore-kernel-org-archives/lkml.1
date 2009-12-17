@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965195AbZLQPia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965206AbZLQPkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965195AbZLQPia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 10:38:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965186AbZLQPi2
+	id S965206AbZLQPkf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 10:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965190AbZLQPke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 10:38:28 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40621 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965183AbZLQPi0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 10:38:26 -0500
-Date: Thu, 17 Dec 2009 07:37:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-In-Reply-To: <200912171618.32882.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.2.00.0912170726230.17868@localhost.localdomain>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com> <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain> <200912171618.32882.bzolnier@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 10:40:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41107 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965187AbZLQPkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 10:40:33 -0500
+Message-ID: <4B2A50E9.4010806@redhat.com>
+Date: Thu, 17 Dec 2009 09:40:25 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+CC: tytso@mit.edu, adilger@sun.com, linux-ext4@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext4: return correct wbc.nr_to_write in ext4_da_writepages
+References: <1261063063.4882.38.camel@castor>
+In-Reply-To: <1261063063.4882.38.camel@castor>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
+Richard Kennedy wrote:
+> ext4: always re-base nr_to_write in ext4_da_writepages
 > 
-> Examples? :)
+> When ext4_da_writepages increases the nr_to_write in writeback_control
+> then it must always re-base the return value.
+> 
+> Without this change, when wb_writeback calculates how many pages were
+> actually written it can get a negative value and loop more times than
+> necessary. In tests I have seen nearly all the dirty pages pushed out to
+> writeback due to this issue.
+> 
+> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> 
+> ----
+> 
+> patch against 2.6.32
+> tested on x86_64
+> 
+> wb_writeback calculates (MAX_WRITE_PAGES - nr_to_write) & cannot know
+> that the value got changed.
+> 
+> I'm not sure what the test I removed was for.
+> Perhaps 
+> 	if (nr_to_writebump)
+> 		wbc->nr_to_write -= nr_to_writebump;
+> was intended?
 
-They're typically things like this:
+Ted's commit 55138e0b added it (just part of the commit):
 
--			ret = sscanf (buf, "0x%lx - 0x%lx", &start_addr, &end_addr);
-+			ret = sscanf(buf, "0x%lx - 0x%lx", &start_addr,
-+				&end_addr);
+@@ -2914,7 +2994,8 @@ retry:
+ out_writepages:
+        if (!no_nrwrite_index_update)
+                wbc->no_nrwrite_index_update = 0;
+-       wbc->nr_to_write -= nr_to_writebump;
++       if (wbc->nr_to_write > nr_to_writebump)
++               wbc->nr_to_write -= nr_to_writebump;
+        wbc->range_start = range_start;
+        trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
+        return ret;
 
-ie a line-break that is just annoying and makes the code harder to read 
-rather than easier. 
+so it looks like the intent there was to stop ->nr_to_write from
+going negative ...
 
-			Linus
+
+> regards
+> Richard
+> 
+> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+> index 2c8caa5..52a573c 100644
+> --- a/fs/ext4/inode.c
+> +++ b/fs/ext4/inode.c
+> @@ -2999,8 +2999,7 @@ retry:
+>  out_writepages:
+>  	if (!no_nrwrite_index_update)
+>  		wbc->no_nrwrite_index_update = 0;
+> -	if (wbc->nr_to_write > nr_to_writebump)
+> -		wbc->nr_to_write -= nr_to_writebump;
+> +	wbc->nr_to_write -= nr_to_writebump;
+>  	wbc->range_start = range_start;
+>  	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
+>  	return ret;
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
