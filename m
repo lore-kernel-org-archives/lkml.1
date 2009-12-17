@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934586AbZLQDaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934678AbZLQDbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934586AbZLQDaI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Dec 2009 22:30:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbZLQD37
+	id S934678AbZLQDbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Dec 2009 22:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933401AbZLQDbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Dec 2009 22:29:59 -0500
-Received: from kroah.org ([198.145.64.141]:41331 "EHLO coco.kroah.org"
+	Wed, 16 Dec 2009 22:31:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34632 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932602AbZLQD37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Dec 2009 22:29:59 -0500
-Date: Wed, 16 Dec 2009 19:29:25 -0800
-From: Greg KH <greg@kroah.com>
-To: Ike Panhc <ike.pan@canonical.com>
-Cc: reinette chatre <reinette.chatre@intel.com>, "Zhu, Yi" <yi.zhu@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Guy, Wey-Yi W" <wey-yi.w.guy@intel.com>,
-       "Winkler, Tomas" <tomas.winkler@intel.com>,
-       "stable@kernel.org" <stable@kernel.org>
-Subject: Re: [stable] [PATCH 2/2] iwlwifi: unify iwl_setup_rxon_timing
-Message-ID: <20091217032925.GA21374@kroah.com>
-References: <1260848710-5650-1-git-send-email-ike.pan@canonical.com>
- <20091215041500.GB31200@kroah.com>
- <4B273479.6050502@canonical.com>
- <20091215134943.GA11667@kroah.com>
- <20091215163100.GC8097@tuxdriver.com>
- <1260906168.9623.4.camel@rc-desk>
- <20091215194938.GA13297@kroah.com>
- <4B288232.4060901@canonical.com>
- <1260983101.9623.11.camel@rc-desk>
- <4B298ECF.7050009@canonical.com>
+	id S932801AbZLQDbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Dec 2009 22:31:35 -0500
+Message-ID: <4B29A686.9070603@redhat.com>
+Date: Wed, 16 Dec 2009 22:33:26 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B298ECF.7050009@canonical.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Roland Dreier <rdreier@cisco.com>
+CC: Andrew Isaacson <adi@vmware.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Rob Landley <rob@landley.net>
+Subject: Re: CONFIG_KPROBES=y build requires gawk
+References: <20091216235617.GA12267@hexapodia.org> <adabphy750b.fsf@roland-alpha.cisco.com>
+In-Reply-To: <adabphy750b.fsf@roland-alpha.cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 09:52:15AM +0800, Ike Panhc wrote:
-> reinette chatre wrote:
-> > On Tue, 2009-12-15 at 22:46 -0800, Ike Panhc wrote:
-> > 
-> >> But Please consider applying the first patch (change IWL6000_UCODE_API_MAX
-> >> to v4) to 2.6.31-stable tree. It will be good to use v4 firmware on iwl6000.
-> > 
-> > Please no. This will effectively enable 6000 series in 2.6.31. We did
-> > not target 2.6.31 for 6000 series enabling and more patches, which are
-> > in 2.6.32, are required for 6000 series to work well.
-> > 
-> > Reinette
-> > 
-> Got it, so backport any patch for iwl6000 to 2.6.31-stable is not reasonable.
+Roland Dreier wrote:
+> Is there any reason not to apply the patch below, to allow more awk
+> implementations to be used?  After all, it's not like we're going to put
+> non-ASCII characters into the map file...
 
-Bugfixes are fine, but that is not what this is.
+Actually, the reason why I decided to use character classes is
+[a-z] wasn't same as [[:lower:]] on some environment.
 
-Please go read the file, Documentation/stable_kernel_rules.txt to give
-you an idea of what we are expecting here.
+       For  example,  before the POSIX standard, to match alphanumeric charac-
+       ters, you would have had to write /[A-Za-z0-9]/.  If your character set
+       had  other  alphabetic characters in it, this would not match them, and
+       if your character set collated differently from ASCII, this  might  not
+       even match the ASCII alphanumeric characters.  With the POSIX character
+       classes, you can write /[[:alnum:]]/, and this matches  the  alphabetic
+       and numeric characters in your character set, no matter what it is.
 
-thanks,
+It seems that "your character set" doesn't mean "what character set are used
+ in the data", it means "what character set build env. is using".
 
-greg k-h
+So, actually, my first released script had used [a-z], but I needed to
+move onto [[:lower:]].
+
+Thank you,
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
