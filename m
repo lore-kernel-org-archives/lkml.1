@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765389AbZLQVWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765395AbZLQVW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765389AbZLQVWT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 16:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765357AbZLQVWQ
+	id S1765395AbZLQVW7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 16:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765360AbZLQVW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 16:22:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59617 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757903AbZLQVWP (ORCPT
+	Thu, 17 Dec 2009 16:22:57 -0500
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:14619 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765357AbZLQVW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 16:22:15 -0500
-Date: Thu, 17 Dec 2009 13:22:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] vfs pile 2
-In-Reply-To: <20091217183952.GC18217@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0912171316220.15740@localhost.localdomain>
-References: <20091217162454.GA18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912170831030.15740@localhost.localdomain> <20091217180319.GB18217@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912171008220.15740@localhost.localdomain>
- <20091217183952.GC18217@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 16:22:56 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=w4iE+TBsmj5y1WloLYF40w==:17 a=pGLkceISAAAA:8 a=x1oE7adPAAAA:8
+ a=z7mH6uBVGvqxVWCMyBsA:9 a=QaWZU7upW0whEbWhz8EA:7
+ a=5SeBxeHEhDFbtPf2gDi3gwj4414A:4 a=MSl-tDqOz04A:10 a=TE5l_RiVrn7TzTvB:21
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: linux-kernel@vger.kernel.org
+Subject: Re: x264 benchmarks BFS vs CFS
+Date: Thu, 17 Dec 2009 14:22:54 -0700
+User-Agent: KMail/1.12.4 (Linux/2.6.31-1-amd64; KDE/4.3.4; x86_64; ; )
+References: <1261042383.14314.0.camel@localhost> <20091217105316.GB26010@elte.hu> <1261047618.14314.6.camel@localhost>
+In-Reply-To: <1261047618.14314.6.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912171422.54836.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 Dec 2009, Al Viro wrote:
+On Thu December 17 2009, Kasper Sandberg wrote:
+> On Thu, 2009-12-17 at 11:53 +0100, Ingo Molnar wrote:
+> > * Jason Garrett-Glaser <darkshikari@gmail.com> wrote:
+> > > On Thu, Dec 17, 2009 at 1:33 AM, Kasper Sandberg <lkml@metanurb.dk> 
+wrote:
+> > > > well well :) nothing quite speaks out like graphs..
+> > > >
+> > > > http://doom10.org/index.php?topic=78.0
+> > > >
+> > > >
+> > > >
+> > > > regards,
+> > > > Kasper Sandberg
+> > >
+> > > Yeah, I sent this to Mike a bit ago.  Seems that .32 has basically
+> > > tied it--and given the strict thread-ordering expectations of x264,
+> > > you basically can't expect it to do any better, though I'm curious
+> > > what's responsible for the gap in "veryslow", even with SCHED_BATCH
+> > > enabled.
+> > >
+> > > The most odd case is that of "ultrafast", in which CFS immediately
+> > > ties BFS when we enable SCHED_BATCH.  We're doing some further
+> > > testing to see exactly
 > 
-> reflog had been pruned already; still no effect.  Moreover, after looking
-> through the loose objects, I've found several commits that are definitely
-> reachable from master and now from your tree as well.  E.g.
-> objects/ea/ff8079d4f1016a12e34ab323737314f24127dd
-> is one of those - it's a commit and it's both in mainline *and* happens
-> to be tip of master.  No questions about being unreachable and AFAICS
-> no reasons whatsoever to leave it as a loose object...
+> Thats kinda besides the point.
+> 
+> all these tunables and weirdness is _NEVER_ going to work for people.
+> 
+> now forgive me for being so blunt, but for a user, having to do
+> echo x264 > /proc/cfs/gief_me_performance_on_app
+> or
+> echo some_benchmark > x264 > /proc/cfs/gief_me_performance_on_app
+> 
+> just isnt usable, bfs matches, even exceeds cfs on all accounts, with
+> ZERO user tuning, so while cfs may be able to nearly match up with a ton
+> of application specific stuff, that just doesnt work for a normal user.
+> 
+> not to mention that bfs does this whilst not loosing interactivity,
+> something which cfs certainly cannot boast.
+> 
+> <snip>
 
-If you want a maximal pack, use "git repack -Adl"
+Strange, I seem to recall that BFS needs you to run apps with some silly 
+schedtool program to get media apps to not skip while doing other tasks. (I 
+don't have to tweak CFS at all)
 
-The default gc thing will stop when it hits stuff that has been packed 
-already, which can leave _older_ unpacked objects unpacked. And since my 
-own repo isn't always fully packed, and git will only remove local objects 
-if they are available as _packed_ objects in the reference tree (ie my 
-repo), you'll end up with that kind of situation.
+> > Thanks,
+> >
+> > 	Ingo
 
-I usually repack my tree a couple of times per release, no more often, so 
-you'll seldom see _perfect_ packing.
 
-		Linus
 
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
