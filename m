@@ -1,140 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZLRQBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbZLRQDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbZLRQBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZLRQBO
+	id S1754702AbZLRQDb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZLRQDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:01:14 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:39923 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754650AbZLRQBH convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;6:1>);
-	Fri, 18 Dec 2009 11:01:07 -0500
-Message-Id: <4B2BB5830200007800026AC7@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 18 Dec 2009 16:01:55 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: slightly shorten __ticket_spin_trylock() (v3)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 18 Dec 2009 11:03:30 -0500
+Received: from www.tglx.de ([62.245.132.106]:57231 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbZLRQD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:03:29 -0500
+Date: Fri, 18 Dec 2009 17:02:35 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+cc: "H. Peter Anvin" <hpa@linux.intel.com>, "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: initialize stack canary in secondary start
+In-Reply-To: <43F901BD926A4E43B106BF17856F07559A257B5F@orsmsx508.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.00.0912181701470.2755@localhost.localdomain>
+References: <43F901BD926A4E43B106BF17856F07559A257B5F@orsmsx508.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the callers generally expect a boolean value, there's no need to
-zero-extend the outcome of the comparison. It just requires that all
-of x86' trylock implementations have their return type changed
-accordingly.
+On Thu, 17 Dec 2009, Pan, Jacob jun wrote:
+> >From 06503838368350268a46528e134c1dad9f4f8c93 Mon Sep 17 00:00:00 2001
+> From: Jacob Pan <jacob.jun.pan@intel.com>
+> Date: Thu, 17 Sep 2009 07:36:43 -0700
+> Subject: [PATCH 1/2] x86: initialize stack canary in secondary start
+> 
+> some secondary clockevent setup code needs to call request_irq, which will
+> cause fake stack check failure in schedule() if voluntary preemption
+> model is chosen, it is safe to have stack canary initialized here early,
+> since start_secondary() does not return.
 
-v2: Don't use bool for the return type though - this is being frowned
-on and presently doesn't work with the pv-ops patching macros.
+Where is it initialized now ? Shouldnt the current init be removed ?
 
-v3: Keep the return value in %eax (or really, %al).
+Thanks,
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	tglx
 
----
- arch/x86/include/asm/paravirt.h       |    4 ++--
- arch/x86/include/asm/paravirt_types.h |    2 +-
- arch/x86/include/asm/spinlock.h       |   14 ++++++--------
- arch/x86/xen/spinlock.c               |    2 +-
- 4 files changed, 10 insertions(+), 12 deletions(-)
-
---- linux-2.6.33-rc1/arch/x86/include/asm/paravirt.h	2009-12-18 16:05:40.000000000 +0100
-+++ 2.6.33-rc1-x86-spin-trylock-simplify/arch/x86/include/asm/paravirt.h	2009-12-03 09:43:42.000000000 +0100
-@@ -753,9 +753,9 @@ static __always_inline void arch_spin_lo
- 	PVOP_VCALL2(pv_lock_ops.spin_lock_flags, lock, flags);
- }
- 
--static __always_inline int arch_spin_trylock(struct arch_spinlock *lock)
-+static __always_inline u8 arch_spin_trylock(struct arch_spinlock *lock)
- {
--	return PVOP_CALL1(int, pv_lock_ops.spin_trylock, lock);
-+	return PVOP_CALL1(u8, pv_lock_ops.spin_trylock, lock);
- }
- 
- static __always_inline void arch_spin_unlock(struct arch_spinlock *lock)
---- linux-2.6.33-rc1/arch/x86/include/asm/paravirt_types.h	2009-12-18 16:05:40.000000000 +0100
-+++ 2.6.33-rc1-x86-spin-trylock-simplify/arch/x86/include/asm/paravirt_types.h	2009-12-03 09:43:50.000000000 +0100
-@@ -324,7 +324,7 @@ struct pv_lock_ops {
- 	int (*spin_is_contended)(struct arch_spinlock *lock);
- 	void (*spin_lock)(struct arch_spinlock *lock);
- 	void (*spin_lock_flags)(struct arch_spinlock *lock, unsigned long flags);
--	int (*spin_trylock)(struct arch_spinlock *lock);
-+	u8 (*spin_trylock)(struct arch_spinlock *lock);
- 	void (*spin_unlock)(struct arch_spinlock *lock);
- };
- 
---- linux-2.6.33-rc1/arch/x86/include/asm/spinlock.h	2009-12-18 16:05:40.000000000 +0100
-+++ 2.6.33-rc1-x86-spin-trylock-simplify/arch/x86/include/asm/spinlock.h	2009-12-10 15:30:52.000000000 +0100
-@@ -77,7 +77,7 @@ static __always_inline void __ticket_spi
- 		: "memory", "cc");
- }
- 
--static __always_inline int __ticket_spin_trylock(arch_spinlock_t *lock)
-+static __always_inline u8 __ticket_spin_trylock(arch_spinlock_t *lock)
- {
- 	int tmp, new;
- 
-@@ -87,8 +87,7 @@ static __always_inline int __ticket_spin
- 		     "jne 1f\n\t"
- 		     LOCK_PREFIX "cmpxchgw %w1,%2\n\t"
- 		     "1:"
--		     "sete %b1\n\t"
--		     "movzbl %b1,%0\n\t"
-+		     "sete %b0\n\t"
- 		     : "=&a" (tmp), "=&q" (new), "+m" (lock->slock)
- 		     :
- 		     : "memory", "cc");
-@@ -127,7 +126,7 @@ static __always_inline void __ticket_spi
- 		     : "memory", "cc");
- }
- 
--static __always_inline int __ticket_spin_trylock(arch_spinlock_t *lock)
-+static __always_inline u8 __ticket_spin_trylock(arch_spinlock_t *lock)
- {
- 	int tmp;
- 	int new;
-@@ -140,9 +139,8 @@ static __always_inline int __ticket_spin
- 		     "jne 1f\n\t"
- 		     LOCK_PREFIX "cmpxchgl %1,%2\n\t"
- 		     "1:"
--		     "sete %b1\n\t"
--		     "movzbl %b1,%0\n\t"
--		     : "=&a" (tmp), "=&q" (new), "+m" (lock->slock)
-+		     "sete %b0\n\t"
-+		     : "=&a" (tmp), "=&r" (new), "+m" (lock->slock)
- 		     :
- 		     : "memory", "cc");
- 
-@@ -190,7 +188,7 @@ static __always_inline void arch_spin_lo
- 	__ticket_spin_lock(lock);
- }
- 
--static __always_inline int arch_spin_trylock(arch_spinlock_t *lock)
-+static __always_inline u8 arch_spin_trylock(arch_spinlock_t *lock)
- {
- 	return __ticket_spin_trylock(lock);
- }
---- linux-2.6.33-rc1/arch/x86/xen/spinlock.c	2009-12-18 16:05:40.000000000 +0100
-+++ 2.6.33-rc1-x86-spin-trylock-simplify/arch/x86/xen/spinlock.c	2009-12-03 09:44:33.000000000 +0100
-@@ -136,7 +136,7 @@ static int xen_spin_is_contended(struct 
- 	return xl->spinners != 0;
- }
- 
--static int xen_spin_trylock(struct arch_spinlock *lock)
-+static u8 xen_spin_trylock(struct arch_spinlock *lock)
- {
- 	struct xen_spinlock *xl = (struct xen_spinlock *)lock;
- 	u8 old = 1;
-
-
+> Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+> ---
+>  arch/x86/kernel/smpboot.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index 678d0b8..56ce974 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -48,6 +48,7 @@
+>  #include <linux/err.h>
+>  #include <linux/nmi.h>
+>  #include <linux/tboot.h>
+> +#include <linux/stackprotector.h>
+>  
+>  #include <asm/acpi.h>
+>  #include <asm/desc.h>
+> @@ -324,6 +325,9 @@ notrace static void __cpuinit start_secondary(void *unused)
+>  	/* enable local interrupts */
+>  	local_irq_enable();
+>  
+> +	/* to prevent fake stack check failure in clock setup */
+> +	boot_init_stack_canary();
+> +
+>  	x86_cpuinit.setup_percpu_clockev();
+>  
+>  	wmb();
+> -- 
+> 1.6.5.3
+> 
+> 
