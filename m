@@ -1,246 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZLSA0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZLSA1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbZLSA0R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 19:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZLSA0I
+	id S1755929AbZLSA1N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 19:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZLSA1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 19:26:08 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40081 "EHLO
+	Fri, 18 Dec 2009 19:27:00 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40055 "EHLO
 	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755872AbZLSA0D (ORCPT
+	with ESMTP id S1755820AbZLSAZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 19:26:03 -0500
-Message-Id: <20091218222651.865772102@quilx.com>
+	Fri, 18 Dec 2009 19:25:59 -0500
+Message-Id: <20091218222652.446462888@quilx.com>
 References: <20091218222617.384355422@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Dec 2009 16:26:25 -0600
+Date: Fri, 18 Dec 2009 16:26:26 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Tejun Heo <tj@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 CC: Mel Gorman <mel@csn.ul.ie>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [this_cpu_xx V8 08/16] Remove cpu_local_xx macros
-Content-Disposition: inline; filename=percpu_local_t_remove_cpu_alloc
+Subject: [this_cpu_xx V8 09/16] Allow arch to provide inc/dec functionality for each size separately
+Content-Disposition: inline; filename=percpu_add_inc_dec
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These macros have not been used for awhile now and are not used
-by the last local_t user in the tree (trace ringbuffer logic).
+Current this_cpu ops only allow an arch to specify add RMW operations or inc
+and dec for all sizes. Some arches can do more efficient inc and dec
+operations. Allow size specific override of fallback functions like with
+the other operations.
 
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- arch/alpha/include/asm/local.h   |   17 -----------------
- arch/m32r/include/asm/local.h    |   25 -------------------------
- arch/mips/include/asm/local.h    |   25 -------------------------
- arch/powerpc/include/asm/local.h |   25 -------------------------
- arch/x86/include/asm/local.h     |   37 -------------------------------------
- include/asm-generic/local.h      |   19 -------------------
- 6 files changed, 148 deletions(-)
+ include/linux/percpu.h |   96 +++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 90 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/arch/alpha/include/asm/local.h
+Index: linux-2.6/include/linux/percpu.h
 ===================================================================
---- linux-2.6.orig/arch/alpha/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/alpha/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -98,21 +98,4 @@ static __inline__ long local_sub_return(
- #define __local_add(i,l)	((l)->a.counter+=(i))
- #define __local_sub(i,l)	((l)->a.counter-=(i))
+--- linux-2.6.orig/include/linux/percpu.h	2009-12-18 13:34:13.000000000 -0600
++++ linux-2.6/include/linux/percpu.h	2009-12-18 14:19:25.000000000 -0600
+@@ -257,6 +257,18 @@ do {									\
+ 	}								\
+ } while (0)
  
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable, not an address.
-- */
--#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
--#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
--
--#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
--#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
--#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
--#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
--
--#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
--#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
--#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
--#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
--
- #endif /* _ALPHA_LOCAL_H */
-Index: linux-2.6/arch/m32r/include/asm/local.h
-===================================================================
---- linux-2.6.orig/arch/m32r/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/m32r/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -338,29 +338,4 @@ static inline void local_set_mask(unsign
-  * a variable, not an address.
-  */
++#define __pcpu_size_call_noparam(stem, variable)			\
++do {									\
++	switch(sizeof(variable)) {					\
++		case 1: stem##1(variable);break;			\
++		case 2: stem##2(variable);break;			\
++		case 4: stem##4(variable);break;			\
++		case 8: stem##8(variable);break;			\
++		default: 						\
++			__bad_size_call_parameter();break;		\
++	}								\
++} while (0)
++
+ /*
+  * Optimized manipulation for memory allocated through the per cpu
+  * allocator or for addresses of per cpu variables (can be determined
+@@ -352,11 +364,35 @@ do {									\
+ #endif
  
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non local way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
--#define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* __M32R_LOCAL_H */
-Index: linux-2.6/arch/mips/include/asm/local.h
-===================================================================
---- linux-2.6.orig/arch/mips/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/mips/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -193,29 +193,4 @@ static __inline__ long local_sub_return(
- #define __local_add(i, l)	((l)->a.counter+=(i))
- #define __local_sub(i, l)	((l)->a.counter-=(i))
+ #ifndef this_cpu_inc
+-# define this_cpu_inc(pcp)		this_cpu_add((pcp), 1)
++# ifndef this_cpu_inc_1
++#  define this_cpu_inc_1(pcp)	__this_cpu_add((pcp), 1)
++# endif
++# ifndef this_cpu_inc_2
++#  define this_cpu_inc_2(pcp)	__this_cpu_add((pcp), 1)
++# endif
++# ifndef this_cpu_inc_4
++#  define this_cpu_inc_4(pcp)	__this_cpu_add((pcp), 1)
++# endif
++# ifndef this_cpu_inc_8
++#  define this_cpu_inc_8(pcp)	__this_cpu_add((pcp), 1)
++# endif
++# define this_cpu_inc(pcp)		__pcpu_size_call_noparam(this_cpu_inc_, (pcp))
+ #endif
  
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
--#define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* _ARCH_MIPS_LOCAL_H */
-Index: linux-2.6/arch/powerpc/include/asm/local.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/powerpc/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -172,29 +172,4 @@ static __inline__ long local_dec_if_posi
- #define __local_add(i,l)	((l)->a.counter+=(i))
- #define __local_sub(i,l)	((l)->a.counter-=(i))
+ #ifndef this_cpu_dec
+-# define this_cpu_dec(pcp)		this_cpu_sub((pcp), 1)
++# ifndef this_cpu_dec_1
++#  define this_cpu_dec_1(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# ifndef this_cpu_dec_2
++#  define this_cpu_dec_2(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# ifndef this_cpu_dec_4
++#  define this_cpu_dec_4(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# ifndef this_cpu_dec_8
++#  define this_cpu_dec_8(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# define this_cpu_dec(pcp)		__pcpu_size_call_noparam(this_cpu_dec_, (pcp))
+ #endif
  
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
--#define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* _ARCH_POWERPC_LOCAL_H */
-Index: linux-2.6/arch/x86/include/asm/local.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/x86/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -195,41 +195,4 @@ static inline long local_sub_return(long
- #define __local_add(i, l)	local_add((i), (l))
- #define __local_sub(i, l)	local_sub((i), (l))
+ #ifndef this_cpu_and
+@@ -479,11 +515,35 @@ do {									\
+ #endif
  
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable, not an address.
-- *
-- * X86_64: This could be done better if we moved the per cpu data directly
-- * after GS.
-- */
--
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)		\
--({					\
--	local_t res__;			\
--	preempt_disable(); 		\
--	res__ = (l);			\
--	preempt_enable();		\
--	res__;				\
--})
--#define cpu_local_wrap(l)		\
--({					\
--	preempt_disable();		\
--	(l);				\
--	preempt_enable();		\
--})					\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var((l))))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var((l)), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var((l))))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var((l))))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var((l))))
--
--#define __cpu_local_inc(l)	cpu_local_inc((l))
--#define __cpu_local_dec(l)	cpu_local_dec((l))
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* _ASM_X86_LOCAL_H */
-Index: linux-2.6/include/asm-generic/local.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/include/asm-generic/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -52,23 +52,4 @@ typedef struct
- #define __local_add(i,l)	local_set((l), local_read(l) + (i))
- #define __local_sub(i,l)	local_set((l), local_read(l) - (i))
+ #ifndef __this_cpu_inc
+-# define __this_cpu_inc(pcp)		__this_cpu_add((pcp), 1)
++# ifndef __this_cpu_inc_1
++#  define __this_cpu_inc_1(pcp)	__this_cpu_add_1((pcp), 1)
++# endif
++# ifndef __this_cpu_inc_2
++#  define __this_cpu_inc_2(pcp)	__this_cpu_add_2((pcp), 1)
++# endif
++# ifndef __this_cpu_inc_4
++#  define __this_cpu_inc_4(pcp)	__this_cpu_add_4((pcp), 1)
++# endif
++# ifndef __this_cpu_inc_8
++#  define __this_cpu_inc_8(pcp)	__this_cpu_add_8((pcp), 1)
++# endif
++# define __this_cpu_inc(pcp)	__pcpu_size_call_noparam(__this_cpu_inc_, (pcp))
+ #endif
  
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable (eg. mystruct.foo), not an address.
-- */
--#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
--#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
--#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
--#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
--#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
--#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
--
--/* Non-atomic increments, ie. preemption disabled and won't be touched
-- * in interrupt, etc.  Some archs can optimize this case well.
-- */
--#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
--#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
--#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
--#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
--
- #endif /* _ASM_GENERIC_LOCAL_H */
+ #ifndef __this_cpu_dec
+-# define __this_cpu_dec(pcp)		__this_cpu_sub((pcp), 1)
++# ifndef __this_cpu_dec_1
++#  define __this_cpu_dec_1(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# ifndef __this_cpu_dec_2
++#  define __this_cpu_dec_2(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# ifndef __this_cpu_dec_4
++#  define __this_cpu_dec_4(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# ifndef __this_cpu_dec_8
++#  define __this_cpu_dec_8(pcp)	__this_cpu_sub((pcp), 1)
++# endif
++# define __this_cpu_dec(pcp)	__pcpu_size_call_noparam(__this_cpu_dec_, (pcp))
+ #endif
+ 
+ #ifndef __this_cpu_and
+@@ -570,11 +630,35 @@ do {									\
+ #endif
+ 
+ #ifndef irqsafe_cpu_inc
+-# define irqsafe_cpu_inc(pcp)	irqsafe_cpu_add((pcp), 1)
++# ifndef irqsafe_cpu_inc_1
++#  define irqsafe_cpu_inc_1(pcp)	irqsafe_cpu_add_1((pcp), 1)
++# endif
++# ifndef irqsafe_cpu_inc_2
++#  define irqsafe_cpu_inc_2(pcp)	irqsafe_cpu_add_2((pcp), 1)
++# endif
++# ifndef irqsafe_cpu_inc_4
++#  define irqsafe_cpu_inc_4(pcp)	irqsafe_cpu_add_4((pcp), 1)
++# endif
++# ifndef irqsafe_cpu_inc_8
++#  define irqsafe_cpu_inc_8(pcp)	irqsafe_cpu_add_8((pcp), 1)
++# endif
++# define irqsafe_cpu_inc(pcp)	__pcpu_size_call_noparam(irqsafe_cpu_inc_, (pcp))
+ #endif
+ 
+ #ifndef irqsafe_cpu_dec
+-# define irqsafe_cpu_dec(pcp)	irqsafe_cpu_sub((pcp), 1)
++# ifndef irqsafe_cpu_dec_1
++#  define irqsafe_cpu_dec_1(pcp)	irqsafe_cpu_sub_1((pcp), 1)
++# endif
++# ifndef irqsafe_cpu_dec_2
++#  define irqsafe_cpu_dec_2(pcp)	irqsafe_cpu_sub_2((pcp), 1)
++# endif
++# ifndef irqsafe_cpu_dec_4
++#  define irqsafe_cpu_dec_4(pcp)	irqsafe_cpu_sub_4((pcp), 1)
++# endif
++# ifndef irqsafe_cpu_dec_8
++#  define irqsafe_cpu_dec_8(pcp)	irqsafe_cpu_sub_8((pcp), 1)
++# endif
++# define irqsafe_cpu_dec(pcp)	__pcpu_size_call_noparam(irqsafe_cpu_dec_, (pcp))
+ #endif
+ 
+ #ifndef irqsafe_cpu_and
 
 -- 
