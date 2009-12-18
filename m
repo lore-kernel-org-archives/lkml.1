@@ -1,71 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZLRCQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327AbZLRCLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756047AbZLRCQa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 21:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZLRCQ3
+	id S1756327AbZLRCLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZLRCLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 21:16:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8601 "EHLO mx1.redhat.com"
+	Thu, 17 Dec 2009 21:11:51 -0500
+Received: from mga03.intel.com ([143.182.124.21]:22237 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbZLRCQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 21:16:28 -0500
-Date: Fri, 18 Dec 2009 03:10:42 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
-	08d68323d1f0c34452e614263b212ca556dae47f
-Message-ID: <20091218021042.GA508@redhat.com>
-References: <20091218005650.GA20667@redhat.com> <20091218014021.CB474135F@magilla.sf.frob.com>
+	id S1750716AbZLRCLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:11:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="224267783"
+Date: Fri, 18 Dec 2009 10:11:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Americo Wang <xiyou.wangcong@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Alex Chiang <achiang@hp.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Li, Haicheng" <haicheng.li@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: [PATCH v3] mm: introduce dump_page() and print symbolic flag names
+Message-ID: <20091218021145.GA12553@localhost>
+References: <20091216153513.GC2804@hack> <20091218012324.GA7953@localhost> <20091218102711.6532.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20091218014021.CB474135F@magilla.sf.frob.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091218102711.6532.A69D9226@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/17, Roland McGrath wrote:
->
-> Comparing to the old (2.6.32) logic, I think it might be this (untested).
-> I also note this is the sole use of get_si_code, seems like it should
-> just be rolled in here.
+On Fri, Dec 18, 2009 at 09:35:59AM +0800, KOSAKI Motohiro wrote:
+> > On Wed, Dec 16, 2009 at 11:35:13PM +0800, Américo Wang wrote:
+> > > On Wed, Dec 16, 2009 at 08:33:10PM +0800, Wu Fengguang wrote:
+> > > >On Wed, Dec 16, 2009 at 08:26:40PM +0800, Wu Fengguang wrote:
+> > > >> - introduce dump_page() to print the page info for debugging some error condition.
+> > > >> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
+> > > >> - print an extra field: the symbolic names of page->flags
+> > > >> 
+> > > >> Example dump_page() output:
+> > > >> 
+> > > >> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1
+> > > >> mapping:ffff88001c901791 index:147
+> > > >                                 ~~~ this is in fact 0x147
+> > > >
+> > > >The index value may sometimes be misread as decimal number, shall this
+> > > >be fixed by adding a "0x" prefix?
+> > > 
+> > > 
+> > > Using '%#x' will do.
+> > 
+> > +	printk(KERN_ALERT "page flags: %lx(", flags);
+> 
+> nit.
+> Now, you append 0x prefix to index. why don't you appent 0x prefix to this?
+> I mean we have to keep consist prefix printing rule in the same printk.
 
-Well, it is too late for me to even try to read this patch ;)
+Good suggestion, thanks!
+---
 
-but...
+mm: introduce dump_page()
 
-> @@ -569,14 +568,15 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
->  	 * We already checked v86 mode above, so we can check for kernel mode
->  	 * by just checking the CPL of CS.
->  	 */
-> +	dr6 = tsk->thread.debugreg6;
+- introduce dump_page() to print the page info for debugging some error condition.
+- convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
+- print an extra field: the symbolic names of page->flags
 
-why? we have "tsk->thread.debugreg6 = dr6" above
+Example dump_page() output:
 
->  	if ((dr6 & DR_STEP) && !user_mode(regs)) {
->  		tsk->thread.debugreg6 &= ~DR_STEP;
->  		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
->  		regs->flags &= ~X86_EFLAGS_TF;
+[  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1 mapping:ffff88001c901791 index:0x147
+[  157.525570] page flags: 0x100000000100068(uptodate|lru|active|swapbacked)
 
-this looks strange... we set TIF_SINGLESTEP but clear X86_EFLAGS_TF
+CC: Ingo Molnar <mingo@elte.hu> 
+CC: Alex Chiang <achiang@hp.com>
+CC: Rik van Riel <riel@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org> 
+CC: Mel Gorman <mel@linux.vnet.ibm.com> 
+CC: Christoph Lameter <cl@linux-foundation.org> 
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/mm.h  |    2 +
+ mm/memory.c         |    8 +---
+ mm/memory_hotplug.c |    6 +--
+ mm/page_alloc.c     |   83 +++++++++++++++++++++++++++++++++++++++---
+ 4 files changed, 86 insertions(+), 13 deletions(-)
 
-> +	} else if (dr6 & (DR_STEP | DR_TRAP_BITS)) {
-> +		send_sigtrap(tsk, regs, error_code, get_si_code(dr6));
->  	}
-> -	si_code = get_si_code(tsk->thread.debugreg6);
-> -	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
-> -		send_sigtrap(tsk, regs, error_code, si_code);
-> +
-
-can't understand how this change can fix the problem. We should always
-send SIGTRAP if the task returns to user-mode with X86_EFLAGS_TF?
-
-OK. I blindly applied this patch, step-simple still fails.
-
-Oleg.
-
+--- linux-mm.orig/mm/page_alloc.c	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/mm/page_alloc.c	2009-12-18 10:08:24.000000000 +0800
+@@ -49,6 +49,7 @@
+ #include <linux/debugobjects.h>
+ #include <linux/kmemleak.h>
+ #include <trace/events/kmem.h>
++#include <linux/ftrace_event.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -262,10 +263,7 @@ static void bad_page(struct page *page)
+ 
+ 	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
+ 		current->comm, page_to_pfn(page));
+-	printk(KERN_ALERT
+-		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+-		page, (void *)page->flags, page_count(page),
+-		page_mapcount(page), page->mapping, page->index);
++	dump_page(page);
+ 
+ 	dump_stack();
+ out:
+@@ -5106,3 +5104,80 @@ bool is_free_buddy_page(struct page *pag
+ 	return order < MAX_ORDER;
+ }
+ #endif
++
++static struct trace_print_flags pageflag_names[] = {
++	{1UL << PG_locked,		"locked"	},
++	{1UL << PG_error,		"error"		},
++	{1UL << PG_referenced,		"referenced"	},
++	{1UL << PG_uptodate,		"uptodate"	},
++	{1UL << PG_dirty,		"dirty"		},
++	{1UL << PG_lru,			"lru"		},
++	{1UL << PG_active,		"active"	},
++	{1UL << PG_slab,		"slab"		},
++	{1UL << PG_owner_priv_1,	"owner_priv_1"	},
++	{1UL << PG_arch_1,		"arch_1"	},
++	{1UL << PG_reserved,		"reserved"	},
++	{1UL << PG_private,		"private"	},
++	{1UL << PG_private_2,		"private_2"	},
++	{1UL << PG_writeback,		"writeback"	},
++#ifdef CONFIG_PAGEFLAGS_EXTENDED
++	{1UL << PG_head,		"head"		},
++	{1UL << PG_tail,		"tail"		},
++#else
++	{1UL << PG_compound,		"compound"	},
++#endif
++	{1UL << PG_swapcache,		"swapcache"	},
++	{1UL << PG_mappedtodisk,	"mappedtodisk"	},
++	{1UL << PG_reclaim,		"reclaim"	},
++	{1UL << PG_buddy,		"buddy"		},
++	{1UL << PG_swapbacked,		"swapbacked"	},
++	{1UL << PG_unevictable,		"unevictable"	},
++#ifdef CONFIG_MMU
++	{1UL << PG_mlocked,		"mlocked"	},
++#endif
++#ifdef CONFIG_ARCH_USES_PG_UNCACHED
++	{1UL << PG_uncached,		"uncached"	},
++#endif
++#ifdef CONFIG_MEMORY_FAILURE
++	{1UL << PG_hwpoison,		"hwpoison"	},
++#endif
++	{-1UL,				NULL		},
++};
++
++static void dump_page_flags(unsigned long flags)
++{
++	const char *delim = "";
++	unsigned long mask;
++	int i;
++
++	printk(KERN_ALERT "page flags: %#lx(", flags);
++
++	/* remove zone id */
++	flags &= (1UL << NR_PAGEFLAGS) - 1;
++
++	for (i = 0; pageflag_names[i].name && flags; i++) {
++
++		mask = pageflag_names[i].mask;
++		if ((flags & mask) != mask)
++			continue;
++
++		flags &= ~mask;
++		printk("%s%s", delim, pageflag_names[i].name);
++		delim = "|";
++	}
++
++	/* check for left over flags */
++	if (flags)
++		printk("%s%#lx", delim, flags);
++
++	printk(")\n");
++}
++
++void dump_page(struct page *page)
++{
++	printk(KERN_ALERT
++	       "page:%p count:%d mapcount:%d mapping:%p index:%#lx\n",
++		page, page_count(page), page_mapcount(page),
++		page->mapping, page->index);
++	dump_page_flags(page->flags);
++}
+--- linux-mm.orig/mm/memory.c	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/mm/memory.c	2009-12-14 19:21:22.000000000 +0800
+@@ -430,12 +430,8 @@ static void print_bad_pte(struct vm_area
+ 		"BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
+ 		current->comm,
+ 		(long long)pte_val(pte), (long long)pmd_val(*pmd));
+-	if (page) {
+-		printk(KERN_ALERT
+-		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+-		page, (void *)page->flags, page_count(page),
+-		page_mapcount(page), page->mapping, page->index);
+-	}
++	if (page)
++		dump_page(page);
+ 	printk(KERN_ALERT
+ 		"addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
+ 		(void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
+--- linux-mm.orig/mm/memory_hotplug.c	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/mm/memory_hotplug.c	2009-12-14 19:21:22.000000000 +0800
+@@ -678,9 +678,9 @@ do_migrate_range(unsigned long start_pfn
+ 			if (page_count(page))
+ 				not_managed++;
+ #ifdef CONFIG_DEBUG_VM
+-			printk(KERN_INFO "removing from LRU failed"
+-					 " %lx/%d/%lx\n",
+-				pfn, page_count(page), page->flags);
++			printk(KERN_ALERT "removing pfn %lx from LRU failed\n",
++			       pfn);
++			dump_page(page);
+ #endif
+ 		}
+ 	}
+--- linux-mm.orig/include/linux/mm.h	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/include/linux/mm.h	2009-12-14 19:21:22.000000000 +0800
+@@ -1328,5 +1328,7 @@ extern void shake_page(struct page *p, i
+ extern atomic_long_t mce_bad_pages;
+ extern int soft_offline_page(struct page *page, int flags);
+ 
++extern void dump_page(struct page *page);
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
