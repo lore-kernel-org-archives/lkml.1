@@ -1,286 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZLRCbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZLRCfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbZLRCbK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 21:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZLRCbJ
+	id S1755848AbZLRCfc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZLRCfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 21:31:09 -0500
-Received: from mga01.intel.com ([192.55.52.88]:55490 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750860AbZLRCbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 21:31:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,416,1257148800"; 
-   d="scan'208";a="524255381"
-Subject: [patch] x86, irq: allow 0xff for /proc/irq/[n]/smp_affinity on a 8
- cpu system
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       John Blackwood <john.blackwood@ccur.com>,
-       Dimitri Sivanich <sivanich@sgi.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 17 Dec 2009 18:29:46 -0800
-Message-Id: <1261103386.2535.409.camel@sbs-t61>
+	Thu, 17 Dec 2009 21:35:30 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:56386 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbZLRCf3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:35:29 -0500
+Subject: Linking issue with THINKPAD_ACPI=y and ALSA subsystem
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 18:35:06 -0800
+Message-Id: <1261103706.4041.83.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Blackwood reported:
-> on an older Dell PowerEdge 6650 system with 8 cpus (4 are hyper-threaded),
-> and  32 bit (x86) kernel, once you change the irq smp_affinity of an irq
-> to be less than all cpus in the system, you can never change really the
-> irq smp_affinity back to be all cpus in the system (0xff) again,
-> even though no error status is returned on the "/bin/echo ff >
-> /proc/irq/[n]/smp_affinity" operation.
->
-> This is due to that fact that BAD_APICID has the same value as
-> all cpus (0xff) on 32bit kernels, and thus the value returned from
-> set_desc_affinity() via the cpu_mask_to_apicid_and() function is treated
-> as a failure in set_ioapic_affinity_irq_desc(), and no affinity changes
-> are made.
+Hi Henrique,
 
-set_desc_affinity() is already checking if the incoming cpu mask
-intersects with the cpu online mask or not. So there is no need
-for the apic op cpu_mask_to_apicid_and() to check again
-and return BAD_APICID.
+so I am seeing the current issue when building 2.6.33-rc1 for a X200
+machine:
 
-Remove the BAD_APICID return value from cpu_mask_to_apicid_and()
-and also fix set_desc_affinity() to return -1 instead of using BAD_APICID
-to represent error conditions (as cpu_mask_to_apicid_and() can return
-logical or physical apicid values and BAD_APICID is really to represent
-bad physical apic id).
+drivers/built-in.o: In function `volume_alsa_notify_change':
+thinkpad_acpi.c:(.text+0x16c135): undefined reference to `snd_ctl_notify'
+thinkpad_acpi.c:(.text+0x16c14f): undefined reference to `snd_ctl_notify'
+drivers/built-in.o: In function `volume_exit':
+thinkpad_acpi.c:(.text+0x17000a): undefined reference to `snd_card_free'
+drivers/built-in.o: In function `volume_init':
+thinkpad_acpi.c:(.init.text+0xa05c): undefined reference to `snd_card_create'
+thinkpad_acpi.c:(.init.text+0xa170): undefined reference to `snd_ctl_new1'
+thinkpad_acpi.c:(.init.text+0xa17f): undefined reference to `snd_ctl_add'
+thinkpad_acpi.c:(.init.text+0xa1a3): undefined reference to `snd_ctl_new1'
+thinkpad_acpi.c:(.init.text+0xa1b2): undefined reference to `snd_ctl_add'
+thinkpad_acpi.c:(.init.text+0xa1f0): undefined reference to `snd_card_register'
+thinkpad_acpi.c:(.init.text+0xa200): undefined reference to `snd_card_free'
+drivers/built-in.o:(.devinit.data+0xfb8): undefined reference to `snd_ctl_boolean_mono_info'
 
-Reported-by: John Blackwood <john.blackwood@ccur.com>
-Root-caused-by: John Blackwood <john.blackwood@ccur.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
- arch/x86/include/asm/hw_irq.h         |    3 ++-
- arch/x86/kernel/apic/apic_flat_64.c   |    5 +----
- arch/x86/kernel/apic/bigsmp_32.c      |    5 +----
- arch/x86/kernel/apic/io_apic.c        |   32 ++++++++++++++------------------
- arch/x86/kernel/apic/x2apic_cluster.c |    5 +----
- arch/x86/kernel/apic/x2apic_phys.c    |    5 +----
- arch/x86/kernel/apic/x2apic_uv_x.c    |    5 +----
- arch/x86/kernel/uv_irq.c              |    3 +--
- 8 files changed, 22 insertions(+), 41 deletions(-)
+I do have THINKPAD_ACPI=y in my configuration and CONFIG_SND=m.
 
-diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
-index 08c48a8..eeac829 100644
---- a/arch/x86/include/asm/hw_irq.h
-+++ b/arch/x86/include/asm/hw_irq.h
-@@ -103,7 +103,8 @@ extern int assign_irq_vector(int, struct irq_cfg *, const struct cpumask *);
- extern void send_cleanup_vector(struct irq_cfg *);
- 
- struct irq_desc;
--extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *);
-+extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *,
-+				      unsigned int *dest_id);
- extern int IO_APIC_get_PCI_irq_vector(int bus, int devfn, int pin, struct io_apic_irq_attr *irq_attr);
- extern void setup_ioapic_dest(void);
- 
-diff --git a/arch/x86/kernel/apic/apic_flat_64.c b/arch/x86/kernel/apic/apic_flat_64.c
-index d0c99ab..eacbd2b 100644
---- a/arch/x86/kernel/apic/apic_flat_64.c
-+++ b/arch/x86/kernel/apic/apic_flat_64.c
-@@ -306,10 +306,7 @@ physflat_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 		if (cpumask_test_cpu(cpu, cpu_online_mask))
- 			break;
- 	}
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_apicid, cpu);
- }
- 
- struct apic apic_physflat =  {
-diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
-index 38dcecf..cb804c5 100644
---- a/arch/x86/kernel/apic/bigsmp_32.c
-+++ b/arch/x86/kernel/apic/bigsmp_32.c
-@@ -131,10 +131,7 @@ static unsigned int bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 		if (cpumask_test_cpu(cpu, cpu_online_mask))
- 			break;
- 	}
--	if (cpu < nr_cpu_ids)
--		return bigsmp_cpu_to_logical_apicid(cpu);
--
--	return BAD_APICID;
-+	return bigsmp_cpu_to_logical_apicid(cpu);
- }
- 
- static int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 11a5851..de00c46 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -2276,26 +2276,28 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq
- 
- /*
-  * Either sets desc->affinity to a valid value, and returns
-- * ->cpu_mask_to_apicid of that, or returns BAD_APICID and
-+ * ->cpu_mask_to_apicid of that in dest_id, or returns -1 and
-  * leaves desc->affinity untouched.
-  */
- unsigned int
--set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
-+set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask,
-+		  unsigned int *dest_id)
- {
- 	struct irq_cfg *cfg;
- 	unsigned int irq;
- 
- 	if (!cpumask_intersects(mask, cpu_online_mask))
--		return BAD_APICID;
-+		return -1;
- 
- 	irq = desc->irq;
- 	cfg = desc->chip_data;
- 	if (assign_irq_vector(irq, cfg, mask))
--		return BAD_APICID;
-+		return -1;
- 
- 	cpumask_copy(desc->affinity, mask);
- 
--	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
-+	*dest_id = apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
-+	return 0;
- }
- 
- static int
-@@ -2311,12 +2313,11 @@ set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
- 	cfg = desc->chip_data;
- 
- 	spin_lock_irqsave(&ioapic_lock, flags);
--	dest = set_desc_affinity(desc, mask);
--	if (dest != BAD_APICID) {
-+	ret = set_desc_affinity(desc, mask, &dest);
-+	if (!ret) {
- 		/* Only the high 8 bits are valid. */
- 		dest = SET_APIC_LOGICAL_ID(dest);
- 		__target_IO_APIC_irq(irq, dest, cfg);
--		ret = 0;
- 	}
- 	spin_unlock_irqrestore(&ioapic_lock, flags);
- 
-@@ -3351,8 +3352,7 @@ static int set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct msi_msg msg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-@@ -3384,8 +3384,7 @@ ir_set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	if (get_irte(irq, &irte))
- 		return -1;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	irte.vector = cfg->vector;
-@@ -3567,8 +3566,7 @@ static int dmar_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct msi_msg msg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-@@ -3623,8 +3621,7 @@ static int hpet_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct msi_msg msg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-@@ -3730,8 +3727,7 @@ static int set_ht_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct irq_cfg *cfg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
-index a5371ec..cf69c59 100644
---- a/arch/x86/kernel/apic/x2apic_cluster.c
-+++ b/arch/x86/kernel/apic/x2apic_cluster.c
-@@ -148,10 +148,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 			break;
- 	}
- 
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_logical_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_logical_apicid, cpu);
- }
- 
- static unsigned int x2apic_cluster_phys_get_apic_id(unsigned long x)
-diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
-index a8989aa..8972f38 100644
---- a/arch/x86/kernel/apic/x2apic_phys.c
-+++ b/arch/x86/kernel/apic/x2apic_phys.c
-@@ -146,10 +146,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 			break;
- 	}
- 
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_apicid, cpu);
- }
- 
- static unsigned int x2apic_phys_get_apic_id(unsigned long x)
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index b684bb3..d56b0ef 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -225,10 +225,7 @@ uv_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 		if (cpumask_test_cpu(cpu, cpu_online_mask))
- 			break;
- 	}
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_apicid, cpu);
- }
- 
- static unsigned int x2apic_get_apic_id(unsigned long x)
-diff --git a/arch/x86/kernel/uv_irq.c b/arch/x86/kernel/uv_irq.c
-index 61d805d..ece73d8 100644
---- a/arch/x86/kernel/uv_irq.c
-+++ b/arch/x86/kernel/uv_irq.c
-@@ -215,8 +215,7 @@ static int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	unsigned long mmr_offset;
- 	unsigned mmr_pnode;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	mmr_value = 0;
+Regards
+
+Marcel
 
 
