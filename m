@@ -1,135 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932464AbZLRTE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZLRTGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932464AbZLRTE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 14:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbZLRTEZ
+	id S1755434AbZLRTGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 14:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbZLRTGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 14:04:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35511 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754345AbZLRTEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 14:04:24 -0500
-Date: Fri, 18 Dec 2009 19:03:35 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1261161358-23959-1-git-send-email-acme@infradead.org>
-References: <1261161358-23959-1-git-send-email-acme@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf diff: Fix usage array, it must end with a NULL entry
-Message-ID: <tip-0422a4fc2c6a41c3d4184984797512af2650014e@git.kernel.org>
-Git-Commit-ID: 0422a4fc2c6a41c3d4184984797512af2650014e
-X-Mailer: tip-git-log-daemon
+	Fri, 18 Dec 2009 14:06:04 -0500
+Received: from ns3.baby-dragons.com ([64.62.236.141]:56383 "EHLO
+	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755398AbZLRTGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 14:06:00 -0500
+Date: Fri, 18 Dec 2009 10:05:46 -0900 (AKST)
+From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Linux Kernel Maillist <linux-kernel@vger.kernel.org>
+Subject: Re: [kernel] Re: kernel/rcutree.h:301: sorry, unimplemented: inlining
+ failed in call to 'rcu_bootup_announce': function body not available
+In-Reply-To: <20091218183633.GD6712@linux.vnet.ibm.com>
+Message-ID: <alpine.LNX.2.01.0912181000090.9874@filesrv1.baby-dragons.com>
+References: <alpine.LNX.2.01.0912172037570.9874@filesrv1.baby-dragons.com> <2375c9f90912180152p2189aa60o96c1c0ec97c30b83@mail.gmail.com> <20091218160100.GA6712@linux.vnet.ibm.com> <alpine.LNX.2.01.0912180803130.9874@filesrv1.baby-dragons.com>
+ <20091218172750.GC6712@linux.vnet.ibm.com> <alpine.LNX.2.01.0912180900450.9874@filesrv1.baby-dragons.com> <20091218183633.GD6712@linux.vnet.ibm.com>
+User-Agent: Alpine 2.01 (LNX 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: MULTIPART/MIXED; BOUNDARY="566704117-1719292056-1261163147=:9874"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (ns3.baby-dragons.com [64.62.236.141]); Fri, 18 Dec 2009 19:05:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0422a4fc2c6a41c3d4184984797512af2650014e
-Gitweb:     http://git.kernel.org/tip/0422a4fc2c6a41c3d4184984797512af2650014e
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Fri, 18 Dec 2009 16:35:58 -0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 18 Dec 2009 20:01:52 +0100
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-perf diff: Fix usage array, it must end with a NULL entry
+--566704117-1719292056-1261163147=:9874
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Fixing this:
+ 	Hello Paul ,
 
- [acme@doppio linux-2.6-tip]$ perf diff --hell
-   Error: unknown option `hell'
+On Fri, 18 Dec 2009, Paul E. McKenney wrote:
+> On Fri, Dec 18, 2009 at 09:08:00AM -0900, Mr. James W. Laferriere wrote:
+>> On Fri, 18 Dec 2009, Paul E. McKenney wrote:
+>>> On Fri, Dec 18, 2009 at 08:07:51AM -0900, Mr. James W. Laferriere wrote:
+>>>> On Fri, 18 Dec 2009, Paul E. McKenney wrote:
+>>>>> On Fri, Dec 18, 2009 at 05:52:51PM +0800, Américo Wang wrote:
+>>>>>> On Fri, Dec 18, 2009 at 1:45 PM, Mr. James W. Laferriere
+>>>>>> <babydr@baby-dragons.com> wrote:
+>>>>>>>        Hello All ,
+>>>>>>>
+>>>>>>>  gcc -Wp,-MD,kernel/.rcutree.o.d  -nostdinc -isystem
+>>>>>>> /usr/lib/gcc/i486-slackware-linux/3.4.6/include -Iinclude
+>>>>>>> -I/usr/src/linux-2.6.32.1/arch/x86/include -include
+>>>>>>> include/linux/autoconf.h
+>>>>>>> -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
+>>>>>>> -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration
+>>>>>>> -Wno-format-security -fno-delete-null-pointer-checks -O2 -m32
+>>>>>>> -msoft-float
+>>>>>>> -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2
+>>>>>>> -fno-unit-at-a-time -march=i686 -ffreestanding -DCONFIG_AS_CFI=1 -pipe
+>>>>>>> -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx
+>>>>>>> -mno-sse2 -mno-3dnow -fno-omit-frame-pointer
+>>>>>>> -fno-optimize-sibling-calls
+>>>>>>> -g
+>>>>>>> -Wdeclaration-after-statement   -D"KBUILD_STR(s)=#s"
+>>>>>>> -D"KBUILD_BASENAME=KBUILD_STR(rcutree)"
+>>>>>>>  -D"KBUILD_MODNAME=KBUILD_STR(rcutree)" -c -o kernel/rcutree.o
+>>>>>>> kernel/rcutree.c
+>>>>>>> kernel/rcutree.c: In function `__rcu_init':
+>>>>>>> kernel/rcutree.h:301: sorry, unimplemented: inlining failed in call to
+>>>>>>> 'rcu_bootup_announce': function body not available
+>>>>>>> kernel/rcutree.c:1740: sorry, unimplemented: called from here
+>>>>>>> make[1]: *** [kernel/rcutree.o] Error 1
+>>>>>>> make: *** [kernel] Error 2
+>>>>>>>
+>>>>>>>        There is no way ,  thru the 'make *config' methods to
+>>>>>>> disable this
+>>>>>>> broken stuff ,  So How may I get past this brokeness ?
+>>>>>>>        And looking the posts for the 2.6.32-pre/rc the old rcu has
+>>>>>>> been
+>>>>>>> trashed completely .  So I am not able to even try using that .
+>>>>>>>
+>>>>>>>        Would someone please shed some light on this .  I really
+>>>>>>> need the
+>>>>>>> updates for the Fusion/mpt driver & the changes in the /md/ tree as
+>>>>>>> well
+>>>>>>> .
+>>>>>>
+>>>>>> Hmm, I see the problem, but not sure how to fix it...
+>>>>>>
+>>>>>> Paul, why do we have #include "rcutree_plugin.h" at the bottom
+>>>>>> of rcutree.c? This looks strange for me...
+>>>>>>
+>>>>>> How about moving it up? At least just move upper to rcu_init().
+>>>>>
+>>>>> Could you please apply commit #dbe01350fa8ce0c11948ab7d6be71a4d901be151
+>>>>> from Linus's git tree?  Corresponding diff attached.
+>>>>>
+>>>>> 							Thanx, Paul
+>>>>>
+>>>>> ------------------------------------------------------------------------
+>>>>>
+>>>>> diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+>>>>> index c1891c3..ddb79ec 100644
+>>>>> --- a/kernel/rcutree.h
+>>>>> +++ b/kernel/rcutree.h
+>>>>> @@ -301,7 +301,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
+>>>>> #else /* #ifdef RCU_TREE_NONCORE */
+>>>>>
+>>>>> /* Forward declarations for rcutree_plugin.h */
+>>>>> -static inline void rcu_bootup_announce(void);
+>>>>> +static void rcu_bootup_announce(void);
+>>>>> long rcu_batches_completed(void);
+>>>>> static void rcu_preempt_note_context_switch(int cpu);
+>>>>> static int rcu_preempted_readers(struct rcu_node *rnp);
+>>>>> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+>>>>> index ef2a58c..c03edf7 100644
+>>>>> --- a/kernel/rcutree_plugin.h
+>>>>> +++ b/kernel/rcutree_plugin.h
+>>>>> @@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
+>>>>> /*
+>>>>>  * Tell them what RCU they are running.
+>>>>>  */
+>>>>> -static inline void rcu_bootup_announce(void)
+>>>>> +static void rcu_bootup_announce(void)
+>>>>> {
+>>>>> 	printk(KERN_INFO
+>>>>> 	       "Experimental preemptable hierarchical RCU implementation.\n");
+>>>>> @@ -481,7 +481,7 @@ void exit_rcu(void)
+>>>>> /*
+>>>>>  * Tell them what RCU they are running.
+>>>>>  */
+>>>>> -static inline void rcu_bootup_announce(void)
+>>>>> +static void rcu_bootup_announce(void)
+>>>>> {
+>>>>> 	printk(KERN_INFO "Hierarchical RCU implementation.\n");
+>>>>> }
+>>>>
+>>>> 	Thank you & Americo for responding .
+>>>>
+>>>> 	Patch applied & same error as far as I can tell .
+>>>> 	did
+>>>>
+>>>> 	make mrproper
+>>>> 	cp ../old.config .config	(same as in previous email)
+>>>> 	make oldconfig
+>>>> 	( time make V=1 KBUILD_VERBOSE=1 INSTALL_PATH=/boot clean all install
+>>>> modules_install ) >../linux-2.6.32.1d.log 2>&1
+>>>> 	error'd (See below) ...
+>>>>
+>>>> 	If there is any further info I can provide or something I can do to
+>>>> 	provide ,  Please request it .
+>>>
+>>> Hmmm....  Yes.  Could you please execute the following command from
+>>> the top-level directory of your patched kernel source tree?
+>>>
+>>> 	grep rcu_bootup_announce kernel/rcu*
+>>>
+>>> I would expect the following output:
+>>>
+>>> 	kernel/rcutree.c:       rcu_bootup_announce();
+>>> 	kernel/rcutree.h:static void rcu_bootup_announce(void);
+>>> 	kernel/rcutree_plugin.h:static void __init rcu_bootup_announce(void)
+>>> 	kernel/rcutree_plugin.h:static void __init rcu_bootup_announce(void)
+>>>
+>>> 							Thanx, Paul
+>>
+>> 	This is with your patch applied on top of linux-2.6.32.1.tar.gz
+>> 	no other patches or additions .
+>>
+>> 	OK ,  it looks like I wandered right by the first file ie:
+>> 'kernel/rcutree.h' so I need to patch that as well .  Doing this by hand as
+>> the offending system is not online and all I have is serial console access
+>> presently .
+>> 	But ,  the last two you've changed to 'void __init' instead of just 'void'
+>> .
+>> 	Do you want me to add those changes to the file 'kernel/rcutree_plugin.h'
+>> as well ?
+>
+> We were starting from different places.  The important thing is to
+> remove the "inline" declarations.
+ 	Ok ,  That was the very reason for why I asked this question .
 
-  usage: perf diff [<options>] [old_file] [new_file]
- Segmentation fault
- [acme@doppio linux-2.6-tip]$
+>> # grep rcu_bootup_announce kernel/rcu*
+>> kernel/rcutree.c:       rcu_bootup_announce();
+>> kernel/rcutree.h:static inline void rcu_bootup_announce(void);
+>
+> The above "inline" needs to go as well.  (Ah, as you noted above.)
+> Strange -- this change -was- in the patch I sent.
+ 	I also mentioned not seeing the first file in the patch so I had to go 
+back & edit it also .
 
-Also go over the other such arrays to check if they all were OK,
-they are, but there were some minor changes to do like making
-one static and renaming another to match the command it refers
-to.
+>> kernel/rcutree_plugin.h:static void rcu_bootup_announce(void)
+>> kernel/rcutree_plugin.h:static void rcu_bootup_announce(void)
+>
+> Does removing all three "inline" directives fix your build?
+>
+> 							Thanx, Paul
+ 	Yes ,  Removing the 'inline's from all three locations gets me past the 
+rcu error issue .  But now I am into errors in the code that I was really 
+interested in getting 2.6.32 for are now error'ng .  I'll place those errors 
+onto the list & other authors in another email .
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1261161358-23959-1-git-send-email-acme@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/builtin-buildid-list.c |    2 +-
- tools/perf/builtin-diff.c         |    3 ++-
- tools/perf/builtin-report.c       |    3 +--
- tools/perf/builtin-trace.c        |    4 ++--
- 4 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/tools/perf/builtin-buildid-list.c b/tools/perf/builtin-buildid-list.c
-index e693e67..1e99ac8 100644
---- a/tools/perf/builtin-buildid-list.c
-+++ b/tools/perf/builtin-buildid-list.c
-@@ -17,7 +17,7 @@
- static char const *input_name = "perf.data";
- static int force;
- 
--static const char *const buildid_list_usage[] = {
-+static const char * const buildid_list_usage[] = {
- 	"perf buildid-list [<options>]",
- 	NULL
- };
-diff --git a/tools/perf/builtin-diff.c b/tools/perf/builtin-diff.c
-index 4d33b55..bd71b8c 100644
---- a/tools/perf/builtin-diff.c
-+++ b/tools/perf/builtin-diff.c
-@@ -189,8 +189,9 @@ out_delete:
- 	return ret;
- }
- 
--static const char *const diff_usage[] = {
-+static const char * const diff_usage[] = {
- 	"perf diff [<options>] [old_file] [new_file]",
-+	NULL,
- };
- 
- static const struct option options[] = {
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 5c2ab53..db10c0e 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -294,8 +294,7 @@ setup:
- 	return 0;
- }
- 
--//static const char * const report_usage[] = {
--const char * const report_usage[] = {
-+static const char * const report_usage[] = {
- 	"perf report [<options>] <command>",
- 	NULL
- };
-diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
-index e2285e2..574a215 100644
---- a/tools/perf/builtin-trace.c
-+++ b/tools/perf/builtin-trace.c
-@@ -512,7 +512,7 @@ static char *get_script_path(const char *script_root, const char *suffix)
- 	return path;
- }
- 
--static const char * const annotate_usage[] = {
-+static const char * const trace_usage[] = {
- 	"perf trace [<options>] <command>",
- 	NULL
- };
-@@ -581,7 +581,7 @@ int cmd_trace(int argc, const char **argv, const char *prefix __used)
- 
- 	setup_scripting();
- 
--	argc = parse_options(argc, argv, options, annotate_usage,
-+	argc = parse_options(argc, argv, options, trace_usage,
- 			     PARSE_OPT_STOP_AT_NON_OPTION);
- 
- 	if (symbol__init() < 0)
+ 	Thank you ,  for your efforts & the success .  JimL
+-- 
++------------------------------------------------------------------+
+| James   W.   Laferriere | System    Techniques | Give me VMS     |
+| Network&System Engineer | 3237     Holden Road |  Give me Linux  |
+| babydr@baby-dragons.com | Fairbanks, AK. 99709 |   only  on  AXP |
++------------------------------------------------------------------+
+--566704117-1719292056-1261163147=:9874--
