@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932257AbZLRRNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932246AbZLRRNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932257AbZLRRNX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932198AbZLRRNR
+	id S932246AbZLRRNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZLRRMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:13:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60616 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932112AbZLRRNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:13:12 -0500
-Date: Fri, 18 Dec 2009 18:12:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-Message-ID: <20091218171240.GB1354@elte.hu>
-References: <20091217085430.GG9804@basil.fritz.box>
- <20091217144551.GA6819@linux.vnet.ibm.com>
- <20091217175338.GL9804@basil.fritz.box>
- <20091217190804.GB6788@linux.vnet.ibm.com>
- <20091217195530.GM9804@basil.fritz.box>
- <alpine.DEB.2.00.0912171356020.4640@router.home>
- <1261080855.27920.807.camel@laptop>
- <alpine.DEB.2.00.0912171439380.4640@router.home>
- <20091218051754.GC417@elte.hu>
- <4B2BB52A.7050103@redhat.com>
+	Fri, 18 Dec 2009 12:12:54 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43077 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932232AbZLRRMv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 12:12:51 -0500
+Message-ID: <4B2BB812.103@zytor.com>
+Date: Fri, 18 Dec 2009 09:12:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B2BB52A.7050103@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Chris Rankin <rankincj@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Kernel built for i586 chip crashes instantly at boot time
+ (CMOV instructions)
+References: <219280.97558.qm@web52907.mail.re2.yahoo.com>
+In-Reply-To: <219280.97558.qm@web52907.mail.re2.yahoo.com>
+Content-Type: multipart/mixed;
+ boundary="------------040109030508070100020306"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------040109030508070100020306
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-* Avi Kivity <avi@redhat.com> wrote:
-
-> On 12/18/2009 07:17 AM, Ingo Molnar wrote:
-> >
-> >>It is not about naming. The accessors hide the locking mechanism for
-> >>mmap_sem. Then you can change the locking in a central place.
-> >>
-> >>The locking may even become configurable later. Maybe an embedded solution
-> >>will want the existing scheme but dual quad socket may want a distributed
-> >>reference counter to avoid bouncing cachelines on faults.
-> >Hiding the locking is pretty much the worst design decision one can make.
-> >
+On 12/18/2009 07:28 AM, Chris Rankin wrote:
+> Hi,
 > 
-> It does allow incremental updates.  For example if we go with range locks, 
-> the accessor turns into a range lock of the entire address space; users can 
-> be converted one by one to use their true ranges in order of importance.
+> I have been trying to build a 2.6.31.x kernel with Fedora 12's gcc compiler, and have discovered that this kernel crashes instantly at boot-time due to a pair of CMOV instructions in arch/x86/boot/compressed/misc.o. According to "make V=1", the command used to compile misc.c is:
+> 
+>   gcc -Wp,-MD,arch/x86/boot/compressed/.misc.o.d  -nostdinc -isystem /usr/lib/gcc/i686-redhat-linux/4.4.2/include -Iinclude -Iinclude2 -I/home/chris/LINUX/linux-2.6.31/include -I/home/chris/LINUX/linux-2.6.31/arch/x86/include -include include/linux/autoconf.h  -I/home/chris/LINUX/linux-2.6.31/arch/x86/boot/compressed -Iarch/x86/boot/compressed -D__KERNEL__ -m32 -D__KERNEL__ -O2 -fno-strict-aliasing -fPIC -DDISABLE_BRANCH_PROFILING -ffreestanding -fno-stack-protector   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(misc)"  -D"KBUILD_MODNAME=KBUILD_STR(misc)"  -c -o arch/x86/boot/compressed/misc.o /home/chris/LINUX/linux-2.6.31/arch/x86/boot/compressed/misc.c
+> 
+> which apparently uses gcc's default architecture. However, Fedora has recently changed its gcc default architecture from i586 to i686, and so I end up with a pair on invalid instructions in my kernel binary.
+> 
 
-This has been brought up in favor of say the mmap_sem wrappers in the past 
-(but also mentioned for other wrappers), but the supposed advantage never 
-materialized.
+Does this patch work for you?
 
-In reality updating the locking usage is never a big issue - it's almost 
-mechanic and the compiler is our friend if we want to change semantics. Hiding 
-the true nature and the true dependencies of the code, hiding the type of the 
-lock is a bigger issue.
+	-hpa
 
-We've been through this many times in the past within the kernel: many times 
-when we hid some locking primitive within some clever wrapping scheme the 
-quality of locking started to deteriorate. In most of the important cases we 
-got rid of the indirection and went with an existing core kernel locking 
-primitive which are all well known and have clear semantics and lead to more 
-maintainable code.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-	Ingo
+
+--------------040109030508070100020306
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="diff"
+
+ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2Jvb3QvY29tcHJlc3NlZC9NYWtlZmlsZSBiL2FyY2gv
+eDg2L2Jvb3QvY29tcHJlc3NlZC9NYWtlZmlsZQppbmRleCBmOGVkMDY1Li5mMjViYmQzIDEw
+MDY0NAotLS0gYS9hcmNoL3g4Ni9ib290L2NvbXByZXNzZWQvTWFrZWZpbGUKKysrIGIvYXJj
+aC94ODYvYm9vdC9jb21wcmVzc2VkL01ha2VmaWxlCkBAIC05LDYgKzksNyBAQCB0YXJnZXRz
+IDo9IHZtbGludXgubGRzIHZtbGludXggdm1saW51eC5iaW4gdm1saW51eC5iaW4uZ3ogdm1s
+aW51eC5iaW4uYnoyIHZtbGludQogS0JVSUxEX0NGTEFHUyA6PSAtbSQoQklUUykgLURfX0tF
+Uk5FTF9fICQoTElOVVhfSU5DTFVERSkgLU8yCiBLQlVJTERfQ0ZMQUdTICs9IC1mbm8tc3Ry
+aWN0LWFsaWFzaW5nIC1mUElDCiBLQlVJTERfQ0ZMQUdTICs9IC1ERElTQUJMRV9CUkFOQ0hf
+UFJPRklMSU5HCitjZmxhZ3MtJChDT05GSUdfWDg2XzMyKSA6PSAtbWFyY2g9aTM4NgogY2Zs
+YWdzLSQoQ09ORklHX1g4Nl82NCkgOj0gLW1jbW9kZWw9c21hbGwKIEtCVUlMRF9DRkxBR1Mg
+Kz0gJChjZmxhZ3MteSkKIEtCVUlMRF9DRkxBR1MgKz0gJChjYWxsIGNjLW9wdGlvbiwtZmZy
+ZWVzdGFuZGluZykK
+--------------040109030508070100020306--
