@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZLRR2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbZLRR3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbZLRR2z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZLRR2w
+	id S932204AbZLRR3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZLRR3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:28:52 -0500
-Received: from outbound-mail-20.bluehost.com ([69.89.20.235]:44787 "HELO
-	outbound-mail-20.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750771AbZLRR2v (ORCPT
+	Fri, 18 Dec 2009 12:29:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40186 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753608AbZLRR3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:28:51 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Lop9YTOSI2TVBvXJFH0m18Dzc3tRuPRAbSCr+9rjeXl6Jqrphs5xrQ+yC8JqCQiK5FI1wvoTrNMAl1N4PqpULdS/XJU04xjEZYasMX9qVmOSL7c411y1cfCQ0UJO5YBx;
-Date: Fri, 18 Dec 2009 09:28:14 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: tj@kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-netdev@vger.kernel.org
-Subject: Re: intelligent CLS kills qemu's 8139cp
-Message-ID: <20091218092814.12b535b5@jbarnes-piketon>
-In-Reply-To: <b6fcc0a0912180549u6970ceden53dc919bae52452e@mail.gmail.com>
-References: <b6fcc0a0912180549u6970ceden53dc919bae52452e@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Fri, 18 Dec 2009 12:29:14 -0500
+Date: Fri, 18 Dec 2009 09:28:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mikulas Patocka <mpatocka@redhat.com>
+cc: kevin granade <kevin.granade@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Valdis.Kletnieks@vt.edu, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+In-Reply-To: <Pine.LNX.4.64.0912181203040.3223@hs20-bc2-1.build.redhat.com>
+Message-ID: <alpine.LFD.2.00.0912180925130.3712@localhost.localdomain>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>  <20091217061229.GD3946@linux-sh.org>  <m3tyvqgfs4.fsf@intrepid.localdomain>  <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>  <24653.1261110557@localhost>
+ <m3my1g1hmr.fsf@intrepid.localdomain> <7004b08e0912180652p42777da3h70906f2fbdb60a69@mail.gmail.com> <Pine.LNX.4.64.0912181137140.23738@hs20-bc2-1.build.redhat.com> <alpine.LFD.2.00.0912180849080.3712@localhost.localdomain>
+ <Pine.LNX.4.64.0912181203040.3223@hs20-bc2-1.build.redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009 15:49:18 +0200
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> After this patch qemu's 8139cp won't be initialized resulting in no
-> network. It einvals in pci_set_cacheline_size() where
-> pci_cache_line_size=0
+
+On Fri, 18 Dec 2009, Mikulas Patocka wrote:
 > 
-> PCI: CLS 0 bytes, default 32
-> 
-> ac1aa47b131416a6ff37eb1005a0a1d2541aad6c is first bad commit
-> commit ac1aa47b131416a6ff37eb1005a0a1d2541aad6c
-> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Date:   Mon Oct 26 13:20:44 2009 -0700
-> 
->     PCI: determine CLS more intelligently
+> Function declarations are often larger than 80 characters. And if you wrap 
+> them at 100, you are wasting every second line on 80-character display.
 
-My for-linus branch has
+If you care so much, use a non-wrapping editor. That's what I do.
 
-commit 2820f333e3b4ad96590093efbed7b3400bcf492b
-Author: Csaba Henk <csaba@gluster.com>
-Date:   Tue Dec 15 17:55:25 2009 +0530
+> If you make line length unlimited, the space will be used optimally on all 
+> displays --- a function with 200 character declaration will use 3 lines on 
+> 80-character display and 2 lines on 100-character display.
 
-    PCI: Handle case when no pci device can provide cache line size hint
+Yeah, and that's just crazy.
 
-which may fix this issue.  You can grab my tree from
-git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6
+We all use good hardware these days, but we certainly don't have unlimited 
+line length. And wrapping is ugly. So sane people (definition: "me") use 
+editors that don't wrap (marking long lines at the end instead), and for 
+the very rare case when I use a small terminal, I'll need to go look if I 
+care (which is seldom).
 
-Jesse
+> And besides --- wrapping at 100 doesn't fix the initial problem (why I 
+> posted this thread) --- that making any modification to the function 
+> header or long expression requires the user to manually realign the 
+> arguments.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Sure. Nothing fixes the problem that you need to _occasionally_ wrap.
+
+But the real problem is that crazy people consider checkpatch.pl to be so 
+important that they wrap whether it makes sense or not.
+
+Sense. It's what some people have. Too rare, though.
+
+I'll happily remove the checkpatch.pl limit entirely, and ask people to 
+try to use common sense, though.
+
+		Linus
