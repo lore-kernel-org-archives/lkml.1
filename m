@@ -1,98 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZLRCmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZLRCot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbZLRCmK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 21:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZLRCmJ
+	id S1756590AbZLRCot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbZLRCor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 21:42:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43702 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbZLRCmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 21:42:07 -0500
-Subject: [GIT PULL] notification - make audit use fsnotify and drop
- inotify.c
-From: Eric Paris <eparis@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 21:41:58 -0500
-Message-Id: <1261104118.2868.25.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 21:44:47 -0500
+Received: from bld-mail16.adl2.internode.on.net ([150.101.137.101]:34609 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754300AbZLRCoq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:44:46 -0500
+Date: Fri, 18 Dec 2009 13:44:40 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: James.Bottomley@suse.de, jens.axboe@oracle.com,
+       torvalds@linux-foundation.org, tytso@mit.edu, kyle@mcmartin.ca,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org, linux-arch@vger.kernel.org
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+Message-ID: <20091218024440.GG4850@discord.disaster>
+References: <alpine.LFD.2.00.0912170950330.15740@localhost.localdomain> <20091217193648.GI4489@kernel.dk> <1261094220.2752.27.camel@mulgrave.site> <20091218095944G.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091218095944G.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm going to be the first one to admit I'm not 100% comfortable
-requesting this pull, but the window is going to (already did?) close
-and I want to put it out there.  I've been waiting for the VFS merge
-since I knew I had conflicts with Al which couldn't be resolved already
-since the VFS tree didn't exist.
+On Fri, Dec 18, 2009 at 10:00:21AM +0900, FUJITA Tomonori wrote:
+> On Fri, 18 Dec 2009 00:57:00 +0100
+> James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> > On Thu, 2009-12-17 at 20:36 +0100, Jens Axboe wrote:
+> > > On Thu, Dec 17 2009, Linus Torvalds wrote:
+> > > > 
+> > > > 
+> > > > On Thu, 17 Dec 2009, tytso@mit.edu wrote:
+> > > > > 
+> > > > > Sure, but there's some rumors/oral traditions going around that some
+> > > > > block devices want bio address which are page aligned, because they
+> > > > > want to play some kind of refcounting game,
+> > > > 
+> > > > Yeah, you might be right at that.
+> > > > 
+> > > > > And it's Weird Shit(tm) (aka iSCSI, AoE) type drivers, that most of us 
+> > > > > don't have access to, so just because it works Just Fine on SATA doesn't 
+> > > > > mean anything.
+> > > > > 
+> > > > > And none of this is documented anywhere, which is frustrating as hell.
+> > > > > Just rumors that "if you do this, AoE/iSCSI will corrupt your file
+> > > > > systems".
+> > > > 
+> > > > ACK. Jens? 
+> > > 
+> > > I've heard those rumours too, and I don't even know if they are true.
+> > > Who has a pointer to such a bug report and/or issue? The block layer
+> > > itself doesn't not have any such requirements, and the only places where
+> > > we play page games is for bio's that were explicitly mapped with pages
+> > > by itself (like mapping user data).o
+> > 
+> > OK, so what happened is that prior to the map single fix
+> > 
+> > commit df46b9a44ceb5af2ea2351ce8e28ae7bd840b00f
+> > Author: Mike Christie  <michaelc@cs.wisc.edu>
+> > Date:   Mon Jun 20 14:04:44 2005 +0200
+> > 
+> >     [PATCH] Add blk_rq_map_kern()
+> > 
+> > 
+> > bio could only accept user space buffers, so we had a special path for
+> > kernel allocated buffers.  That commit unified the path (with a separate
+> > block API) so we could now submit kmalloc'd buffers via block APIs.
+> > 
+> > So the rule now is we can accept any user mapped area via
+> > blk_rq_map_user and any kmalloc'd area via blk_rq_map_kern().  We might
+> > not be able to do a stack area (depending on how the arch maps the
+> > stack) and we definitely cannot do a vmalloc'd area.
+> > 
+> > So it sounds like we only need a blk_rq_map_vmalloc() using the same
+> > techniques as the patch set and we're good to go.
+> 
+> I'm not sure about it.
+> 
+> As I said before (when I was against this 'adding vmalloc support to
+> the block layer' stuff), are there potential users of this except for
+> XFS? Are there anyone who does such a thing now?
 
-These have been in linux-next for about 2 full cycles.  They do 3 main
-things.
+As Christoph already mentioned, XFS is not passing the vmalloc'd
+range to the block layer - it passes the underlying pages to the
+block layer. Hence I'm not sure there actually is anyone who is
+passing vmalloc'd addresses to the block layer. Perhaps we should
+put a WARN_ON() in the block layer to catch anyone doing such a
+thing before considering supporting vmalloc'd addresses in the block
+layer?
 
-1) Fix a couple inotify problems including some of the idr memory leak
-stuff
-2) convert audit to use fsnotify
-3) drop the old in kernel inotify altogether thus shrinking struct
-inode!
+> This API might be useful for only journaling file systems using log
+> formats that need large contiguous buffer. Sound like only XFS?
 
-I'll do more heavyweight testing, but these pass light testing that I
-could do since I rebased on top of the VFS tree.
+FWIW, mapped buffers larger than PAGE_SIZE are used for more than just log
+recovery in XFS. e.g. filesystems with directory block size larger
+than page size uses mapped buffers.
 
----
+Cheers,
 
-The following changes since commit b8a7f3cd7e8212e5c572178ff3b5a514861036a5:
-  Linus Torvalds (1):
-        Merge branch 'master' of git://git.kernel.org/.../viro/vfs-2.6
-
-are available in the git repository at:
-
-  git://git.infradead.org/users/eparis/notify.git for-linus
-
-Eric Paris (17):
-      inotify: simplify the inotify idr handling
-      Audit: clean up the audit_watch split
-      audit: convert audit watches to use fsnotify instead of inotify
-      audit: redo audit watch locking and refcnt in light of fsnotify
-      audit: do not get and put just to free a watch
-      fsnotify: duplicate fsnotify_mark_entry data between 2 marks
-      fsnotify: allow addition of duplicate fsnotify marks
-      audit: reimplement audit_trees using fsnotify rather than inotify
-      Audit: audit watches depend on fsnotify
-      Audit: split audit watch Kconfig
-      Audit: audit watch init should not be before fsnotify init
-      fsnotify: use fsnotify_create_event to allocate the q_overflow event
-      inotify: use container_of instead of casting
-      fsnotify: kzalloc fsnotify groups
-      fsnotify: use kmem_cache_zalloc to simplify event initialization
-      inotify: do not reuse watch descriptors
-      inotify: remove inotify in kernel interface
-
- Documentation/feature-removal-schedule.txt |    8 -
- fs/inode.c                                 |    6 -
- fs/notify/dnotify/dnotify.c                |    2 +-
- fs/notify/group.c                          |    2 +-
- fs/notify/inode_mark.c                     |   18 +-
- fs/notify/inotify/Kconfig                  |   15 -
- fs/notify/inotify/Makefile                 |    1 -
- fs/notify/inotify/inotify.c                |  933 ----------------------------
- fs/notify/inotify/inotify_user.c           |  211 +++++--
- fs/notify/notification.c                   |   24 +-
- fs/open.c                                  |    1 +
- include/linux/fs.h                         |    5 -
- include/linux/fsnotify.h                   |   51 +--
- include/linux/fsnotify_backend.h           |   10 +-
- include/linux/inotify.h                    |  174 ------
- init/Kconfig                               |   10 +-
- kernel/Makefile                            |    5 +-
- kernel/audit.c                             |    1 -
- kernel/audit.h                             |   26 +-
- kernel/audit_tree.c                        |  223 ++++---
- kernel/audit_watch.c                       |  293 +++++----
- kernel/auditfilter.c                       |   39 +-
- kernel/auditsc.c                           |   10 +-
- 23 files changed, 519 insertions(+), 1549 deletions(-)
- delete mode 100644 fs/notify/inotify/inotify.c
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
