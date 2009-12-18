@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbZLRPDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZLRPIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbZLRPDd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbZLRPDa
+	id S1754366AbZLRPIe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbZLRPIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:03:30 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:36212 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754419AbZLRPD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:03:28 -0500
-X-Sasl-enc: gmI+K0MlsIXwrvdhjOhG3BmMWzQsUzSPHEeAr9d9p0im 1261148607
-Date: Fri, 18 Dec 2009 13:03:24 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Xiaotian Feng <xtfeng@gmail.com>, Amerigo Wang <amwang@redhat.com>,
-       linux-kernel@vger.kernel.org, Corentin Chary <corentincj@iksaif.net>,
-       ibm-acpi-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, akpm@linux-foundation.org,
-       helight.xu@gmail.com
-Subject: Re: [Patch] thinkpad_acpi: fix a build error
-Message-ID: <20091218150324.GA5383@khazad-dum.debian.net>
-References: <20091218093132.4415.23424.sendpatchset@localhost.localdomain>
- <7b6bb4a50912180142u5e66fa88odb7cd3b6fa1a2ba2@mail.gmail.com>
- <s5hhbrowpty.wl%tiwai@suse.de>
- <20091218142815.GB15898@khazad-dum.debian.net>
- <s5h4ono73qx.wl%tiwai@suse.de>
+	Fri, 18 Dec 2009 10:08:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9498 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754013AbZLRPId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:08:33 -0500
+Date: Fri, 18 Dec 2009 10:08:25 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Corrado Zoccolo <czoccolo@gmail.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cfq: Remove useless css reference get
+Message-ID: <20091218150825.GA3123@redhat.com>
+References: <4B289C93.3070603@cn.fujitsu.com> <20091216163941.GA2807@redhat.com> <4B29C834.8090407@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <s5h4ono73qx.wl%tiwai@suse.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B29C834.8090407@cn.fujitsu.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009, Takashi Iwai wrote:
-> At Fri, 18 Dec 2009 12:28:15 -0200,
-> Henrique de Moraes Holschuh wrote:
-> > On Fri, 18 Dec 2009, Takashi Iwai wrote:
-> > > The patch isn't correct (I guess the upstream fix is same?).
-> > > 
-> > > CONFIG_SOUND is a global config for sound subsystem.  The relevant
-> > > functions are ALSA core part, which is CONFIG_SND.
-> > > So, the fix should be:
-> > > 
-> > > 	depends on SND
-> > > 
-> > > instead.
+On Thu, Dec 17, 2009 at 01:57:08PM +0800, Li Zefan wrote:
+> 于 2009年12月17日 00:39, Vivek Goyal 写道:
+> > On Wed, Dec 16, 2009 at 04:38:43PM +0800, Gui Jianfeng wrote:
+> >> There's no need to take css reference here, for the caller
+> >> has already called rcu_read_lock() to prevent cgroup from 
+> >> being removed.
+> >>
+> >> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> >> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 > > 
-> > Indeed.  Ingo already fixed that too.
+> > Hi Gui,
 > > 
-> > Although I personally would prefer:
-> > select SOUND
-> > select SND
+> > How would an rcu lock protect against the possibility that blkiocg_destroy()
+> > has not already been called on another cpu? rcu lock will make sure that
+> > cgroup and blkio_cgroup object should still be around as long as I am
+> > holding rcu lock but will not protect against deletion path being executed
+> > on another cpu? So I don't want to end up in following situation.
+> > 
+> >      cpu1                      cpu2
+> > 
+> > rcu_read_lock()
+> > 			      blkiocg_destroy()
+> > 
+> > blkiocg_add_blkio_group()
+> > rcu_read_unlock()
+> > 
+> > I don't want to add blkg object on a potentially dead blkio_cgroup object
+> > which will go away. Does this protection is provided by generic cgroup
+> > code where blkiocg_destroy() will not be called if I have got cgroup
+> > pointer under rcu lock?
+> > 
+> > Currently we are deriving cgroup information from task context so task is
+> > still inside cgroup, so cgroup can't be deleted anyway. What if I was 
+> > deriving cgroup information from bio, will taking css object reference be
+> > necessary in that case or just cgroup pointer under rcu lock is sufficient
+> > to preclude the race against cgroup deletion path?
+> > 
 > 
-> SND already depends on SOUND, so it's just superfluous.
+> We pass a cgroup ptr to cfq_find_alloc_cfqg(), which means the cgroup is
+> valid. As long as it's safe to access the cgroup, it's safe to access the
+> corresponding blkio_cgroup.
+> 
 
-No, it is not (test it).  Which is the main reason why select can be a pain.
+Ok.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> But if you still want blkio_cgroup to be valid after dropping rcu_read_lock
+> (or cgroup_mutex), you need to call css_get() first. Note you don't need
+> to call css_tryget(). css_tryget() is only needed in mem_cgroup, because
+> mem_cgroup is a bit special, in that a mem_cgroup can remain valid after
+> a cgroup is destroyed.
+> 
+> If a user tries to rmdir a cgroup when its css refcnt > 0, EBUSY will be
+> returned.
+
+Ok. I was not taking a reference to css object because I don't want to
+stop deletion of cgroup just because there might be some pending IO from 
+that group which has not finished yet. So if some task issues some IO and
+it exits or moves to a different cgroup, then user should be able to
+delete the cgroup even if there is pending IO in that cgroup.
+
+That's the reason I don't take a reference to css object and once cgroup
+deletion call comes (->destroy()), I just call CFQ to unlink the group and let
+cgroup and blkio_cgroup go away. cfq_group and blkio_group objects will still
+be around till all the pending IO in that group is finished and cfq_group
+will be freed after that automatically (all rq and cfqq references gone).
+
+Thanks
+Vivek
