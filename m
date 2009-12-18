@@ -1,65 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZLRNG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZLRNPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbZLRNG4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZLRNGz
+	id S1751918AbZLRNPO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:15:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZLRNPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 08:06:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47986 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbZLRNGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 08:06:53 -0500
-Date: Fri, 18 Dec 2009 14:06:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Jason Garrett-Glaser <darkshikari@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: x264 benchmarks BFS vs CFS
-Message-ID: <20091218130642.GA17033@elte.hu>
-References: <1261042383.14314.0.camel@localhost>
- <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
- <20091217105316.GB26010@elte.hu>
- <1261047618.14314.6.camel@localhost>
- <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
- <20091218052344.GD417@elte.hu>
- <1261121405.30469.8.camel@marge.simson.net>
- <28f2fcbc0912180211we599252v39cb94d113537eb5@mail.gmail.com>
- <1261140546.15591.5.camel@marge.simson.net>
+	Fri, 18 Dec 2009 08:15:12 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:43505
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751050AbZLRNPJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 08:15:09 -0500
+X-SpamScore: -21
+X-BigFish: VPS-21(z34a4jzab9bh1432R98dN1447Rzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KUUNGY-01-3I8-02
+X-M-MSG: 
+Date: Fri, 18 Dec 2009 14:14:58 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Shaun Ruffell <sruffell@digium.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dma-debug: Do not add notifier when dma debugging is
+ disabled.
+Message-ID: <20091218131458.GA14679@amd.com>
+References: <4B2AC624.3080201@digium.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <1261140546.15591.5.camel@marge.simson.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4B2AC624.3080201@digium.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 18 Dec 2009 13:14:58.0716 (UTC) FILETIME=[194BF5C0:01CA7FE4]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> > I'm personally curious as to what kind of scheduler issues this results 
-> > in--I haven't done any BFS vs CFS tests with this option enabled yet.
+On Thu, Dec 17, 2009 at 06:00:36PM -0600, Shaun Ruffell wrote:
+> If CONFIG_HAVE_DMA_API_DEBUG is defined and "dma_debug=off" is
+> specified on the kernel command line, when you detach a driver from a
+> device you can cause the following NULL pointer dereference:
 > 
-> I'll look for x264 source, and patch/piddle.
+> BUG: unable to handle kernel NULL pointer dereference at (null)
+> IP: [<c0580d35>] dma_debug_device_change+0x5d/0x117
+> 
+> The problem is that the dma_debug_device_change notifier function is
+> added to the bus notifier chain even though the dma_entry_hash array
+> was never initialized.  If dma debugging is disabled, this patch both
+> prevents dma_debug_device_change notifiers from being added to the
+> chain, and additionally ensures that the dma_entry_hash array is always
+> initialized to a valid state.
 
-btw., would be nice to look at it via tools/perf/ as well:
+Thanks for the fix. I applied a slightly different version to
+dma-debug/fixes branch of my tree. See below for the patch I applied.
 
-  perf stat --repeat 3 ...
+>From d9c18bf39cd45ff1e68b9b357eca08b4556d66c1 Mon Sep 17 00:00:00 2001
+From: Shaun Ruffell <sruffell@digium.com>
+Date: Thu, 17 Dec 2009 18:00:36 -0600
+Subject: [PATCH 123/123] dma-debug: Do not add notifier when dma debugging is disabled.
 
-to see the basic hardware utilization (cycles/cache-misses, branch execution 
-rate, instructions, etc.) and the basic parallelism metrics, at a glance.
+If CONFIG_HAVE_DMA_API_DEBUG is defined and "dma_debug=off" is
+specified on the kernel command line, when you detach a driver from a
+device you can cause the following NULL pointer dereference:
 
-i suspect "perf stat -e L1-icache-loads -e L1-icache-load-misses" would give 
-us an even more detailed picture.
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: [<c0580d35>] dma_debug_device_change+0x5d/0x117
 
-	Ingo
+The problem is that the dma_debug_device_change notifier function is
+added to the bus notifier chain even though the dma_entry_hash array
+was never initialized.  If dma debugging is disabled, this patch both
+prevents dma_debug_device_change notifiers from being added to the
+chain, and additionally ensures that the dma_debug_device_change
+notifier function is a no-op.
+
+Signed-off-by: Shaun Ruffell <sruffell@digium.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ lib/dma-debug.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index d9b08e0..7399744 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -676,6 +676,8 @@ static int dma_debug_device_change(struct notifier_block *nb,
+ 	struct device *dev = data;
+ 	int count;
+ 
++	if (global_disable)
++		return;
+ 
+ 	switch (action) {
+ 	case BUS_NOTIFY_UNBOUND_DRIVER:
+@@ -697,6 +699,9 @@ void dma_debug_add_bus(struct bus_type *bus)
+ {
+ 	struct notifier_block *nb;
+ 
++	if (global_disable)
++		return;
++
+ 	nb = kzalloc(sizeof(struct notifier_block), GFP_KERNEL);
+ 	if (nb == NULL) {
+ 		pr_err("dma_debug_add_bus: out of memory\n");
+-- 
+1.6.5.4
+
+
