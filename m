@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbZLRXZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZLRXPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751879AbZLRXZK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 18:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbZLRXZI
+	id S1755788AbZLRXPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 18:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZLRXPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 18:25:08 -0500
-Received: from nspiron-3.llnl.gov ([128.115.41.83]:49497 "EHLO smtp.llnl.gov"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750752AbZLRXZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 18:25:07 -0500
-X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Dec 2009 18:25:07 EST
-X-Attachments: None
-Date: Fri, 18 Dec 2009 15:15:05 -0800
-From: Jim Garlick <garlick@llnl.gov>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Sage Weil <sage@newdream.net>, Gregory Haskins <gregory.haskins@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Ceph distributed file system client for 2.6.33
-Message-ID: <20091218231505.GA21371@llnl.gov>
-References: <Pine.LNX.4.64.0912071511470.32397@cobra.newdream.net> <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net> <alpine.LFD.2.00.0912181327200.3712@localhost.localdomain>
-Mime-Version: 1.0
+	Fri, 18 Dec 2009 18:15:52 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:51976 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZLRXPv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 18:15:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HeOq2YqP+0uf4tMbX1ooLusgz23bCQR6secUemZCrOsikgqzSCR9R+d4VfYP3+Fsfs
+         e6n+F9LOAIuuf7uuCjFwSJ7+zQemM0tFDfKUbOx0HGcQmORxlXqA9uV+OHO2OOO4NBYa
+         cQZ+yAU1XD0mJbAP586QfZ0eQ5ZOclGoVVTCg=
+Date: Sat, 19 Dec 2009 00:15:47 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Roland McGrath <roland@redhat.com>, Jan Kiszka <jan.kiszka@siemens.com>,
+       Avi Kivity <avi@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
+	08d68323d1f0c34452e614263b212ca556dae47f
+Message-ID: <20091218231545.GA8803@nowhere>
+References: <20091218005650.GA20667@redhat.com> <20091218030601.GB16470@nowhere> <20091218172747.GA10924@redhat.com> <20091218200503.2CA0DF9A4@magilla.sf.frob.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912181327200.3712@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20091218200503.2CA0DF9A4@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 01:38:00PM -0800, Linus Torvalds wrote:
-> On Fri, 18 Dec 2009, Sage Weil wrote:
-> > 
-> > I would still like to see ceph merged for 2.6.33.  It's certainly not 
-> > production ready, but it would be greatly beneficial to be in mainline for 
-> > the same reasons other file systems like btrfs and exofs were merged 
-> > early.
+On Fri, Dec 18, 2009 at 12:05:03PM -0800, Roland McGrath wrote:
+> > Please find the trivial test-case below. It hangs, because
+> > PTRACE_SINGLESTEP doesn't trigger the trap.
 > 
-> The best thing to do is to try to have users that are vocal about the 
-> feature, and talk about how great it is. Some advocates for it, in other 
-> words. Just a few other people saying "hey, I use this, it's great", is 
-> actually a big deal to me. For alacrityvm and cephfs, I didn't have that, 
-> or they just weren't loud enough for me to hear.
+> 2.6.33-rc1 x86-64 works for me with either -m64 or -m32 version of that test.
+> 
+> > (not sure this matters, but I did the testing under kvm)
+> 
+> Apparently it does.  You should hack some printks into do_debug() and see
+> how kvm is differing from real hardware.  (Actually you can probably do
+> this with a notifier added by a module, not that you are shy about
+> recompiling!)  
+> 
+> Probably kvm's emulation of the hardware behavior wrt the DR6 bits is not
+> sufficiently faithful.  Conceivably, kvm is being consistent with some
+> older hardware and we have encoded assumptions that only newer hardware
+> meets.  But I'd guess it's just a plain kvm bug.
 
-FWIW: I'd like to see it go in.
 
-Ceph is new and experimental so you're not going to see production shops
-like ours jumping up and down saying we use it and are tired of merging it,
-like we would say if if Lustre were (again) on the table.
+It looks like in kvm, before entering the guest, we restore its
+debug registers:
 
-However I will say Ceph looks good and in the interest of nuturing future
-options, I'm for merging it!
+vcpu_enter_guest():
+	if (unlikely(vcpu->arch.switch_db_regs)) {
+		set_debugreg(0, 7);
+		set_debugreg(vcpu->arch.eff_db[0], 0);
+		set_debugreg(vcpu->arch.eff_db[1], 1);
+		set_debugreg(vcpu->arch.eff_db[2], 2);
+		set_debugreg(vcpu->arch.eff_db[3], 3);
+	}
 
-Jim Garlick
-Lawrence Livermore National Laboratory
+
+But what happens to dr6, I don't know.
+
+Adding Avi and Jan in Cc.
+
