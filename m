@@ -1,107 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbZLRR6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbZLRSH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbZLRR6z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZLRR6w
+	id S932350AbZLRSH1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 13:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbZLRSH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:58:52 -0500
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:45460 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755099AbZLRR6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:58:51 -0500
-Date: Fri, 18 Dec 2009 23:28:42 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
-	08d68323d1f0c34452e614263b212ca556dae47f
-Message-ID: <20091218175842.GA10666@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20091218005650.GA20667@redhat.com> <20091218030601.GB16470@nowhere> <20091218172747.GA10924@redhat.com>
+	Fri, 18 Dec 2009 13:07:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47712 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932265AbZLRSHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 13:07:23 -0500
+Date: Fri, 18 Dec 2009 18:06:37 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20091218154012.16960.5113.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091218154012.16960.5113.stgit@dhcp-100-2-132.bos.redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Fix objdump version check in chkobjdump.awk for different formats.
+Message-ID: <tip-8bee738bb1979c8bf7b42716b772522ab7d26b0c@git.kernel.org>
+Git-Commit-ID: 8bee738bb1979c8bf7b42716b772522ab7d26b0c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091218172747.GA10924@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 06:27:47PM +0100, Oleg Nesterov wrote:
-> On 12/18, Frederic Weisbecker wrote:
-> >
-> > On Fri, Dec 18, 2009 at 01:56:50AM +0100, Oleg Nesterov wrote:
-> > > Hi.
+Commit-ID:  8bee738bb1979c8bf7b42716b772522ab7d26b0c
+Gitweb:     http://git.kernel.org/tip/8bee738bb1979c8bf7b42716b772522ab7d26b0c
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Fri, 18 Dec 2009 10:40:13 -0500
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 18 Dec 2009 09:26:56 -0800
 
-<snipped>
+x86: Fix objdump version check in chkobjdump.awk for different formats.
 
-> > Single stepping works well for me, after a quick check on
-> > gdb. How did you trigger the bug?
-> 
-> Please find the trivial test-case below. It hangs, because
-> PTRACE_SINGLESTEP doesn't trigger the trap.
-> 
+Different version of objdump says its version in different way;
 
-aah...my other mail just criss-crossed yours.
+GNU objdump 2.16.1
 
-I quickly ran on the said x86 box, loaded with -tip (commit
-7818b3d0fc68f5c2a85fed86d9fa37131c5a3068) and it runs fine.
+or
 
-[root@llm05 prasadkr]# cat oleg.c
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
-#include <assert.h>
+GNU objdump version 2.19.51.0.14-1.fc11 20090722
 
-int main(void)
-{
-        int pid, status, i;
+This patch uses the first argument which starts with a number
+as version string.
 
-        pid = fork();
-        if (!pid)
-                for (;;);
+Changes in v2:
+ - Remove unneeded increment.
 
-        sleep(1);
-        assert(ptrace(PTRACE_ATTACH, pid, 0,0) == 0);
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+LKML-Reference: <20091218154012.16960.5113.stgit@dhcp-100-2-132.bos.redhat.com>
+Suggested-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/tools/chkobjdump.awk |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
 
-        assert(pid == wait(&status));
-        assert(WIFSTOPPED(status));
-
-        for (i = 0; i < 10; ++i) {
-                assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-
-                printf("wait %d ...\n", i);
-                assert(pid == wait(&status));
-
-                assert(WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP);
-       	}
-
-        kill(pid, SIGKILL);
-        return 0;
-}
-
-[root@llm05 prasadkr]# gcc -o oleg oleg.c -g -Wall
-[root@llm05 prasadkr]# ./oleg
-wait 0 ...
-wait 1 ...
-wait 2 ...
-wait 3 ...
-wait 4 ...
-wait 5 ...
-wait 6 ...
-wait 7 ...
-wait 8 ...
-wait 9 ...
-[root@llm05 prasadkr]# 
-
-Am I missing something here?
-
-Thanks,
-K.Prasad
-
+diff --git a/arch/x86/tools/chkobjdump.awk b/arch/x86/tools/chkobjdump.awk
+index 5bbb5a3..fd1ab80 100644
+--- a/arch/x86/tools/chkobjdump.awk
++++ b/arch/x86/tools/chkobjdump.awk
+@@ -8,14 +8,24 @@ BEGIN {
+ 	od_sver = 19;
+ }
+ 
+-/^GNU/ {
+-	split($3, ver, ".");
++/^GNU objdump/ {
++	verstr = ""
++	for (i = 3; i <= NF; i++)
++		if (match($(i), "^[0-9]")) {
++			verstr = $(i);
++			break;
++		}
++	if (verstr == "") {
++		printf("Warning: Failed to find objdump version number.\n");
++		exit 0;
++	}
++	split(verstr, ver, ".");
+ 	if (ver[1] > od_ver ||
+ 	    (ver[1] == od_ver && ver[2] >= od_sver)) {
+ 		exit 1;
+ 	} else {
+ 		printf("Warning: objdump version %s is older than %d.%d\n",
+-		       $4, od_ver, od_sver);
++		       verstr, od_ver, od_sver);
+ 		print("Warning: Skipping posttest.");
+ 		# Logic is inverted, because we just skip test without error.
+ 		exit 0;
