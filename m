@@ -1,226 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbZLRKdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZLRKuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbZLRKdL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 05:33:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZLRKdJ
+	id S1752802AbZLRKuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 05:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZLRKuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 05:33:09 -0500
-Received: from sh.osrg.net ([192.16.179.4]:38252 "EHLO sh.osrg.net"
+	Fri, 18 Dec 2009 05:50:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42342 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbZLRKdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 05:33:07 -0500
-Date: Fri, 18 Dec 2009 19:33:00 +0900
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] block: remove Documentation/block/as-iosched.txt
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751918AbZLRKuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 05:50:23 -0500
+Message-ID: <4B2B5E61.1030207@redhat.com>
+Date: Fri, 18 Dec 2009 08:50:09 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 17 (media/dvb)
+References: <20091217165840.e11fc719.sfr@canb.auug.org.au> <20091217095725.d7109149.randy.dunlap@oracle.com>
+In-Reply-To: <20091217095725.d7109149.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091218192457G.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 18 Dec 2009 19:33:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Randy Dunlap wrote:
+> On Thu, 17 Dec 2009 16:58:40 +1100 Stephen Rothwell wrote:
+> 
+>> Hi all,
+>>
+>> My usual call for calm: please do not put stuff destined for 2.6.34 into
+>> linux-next trees until after 2.6.33-rc1.
+>>
+>> Changes since 20091216:
+> 
+> 
+> (repeating:)
+> 
+> drivers/media/dvb/frontends/dib8000.h:104: error: expected expression before '}' token
+> drivers/media/dvb/frontends/dib8000.h:104: warning: left-hand operand of comma expression has no effect
+> 
+>     return CT_SHUTDOWN,
+> 
+> 
+> s/,/;/ and fix indentation.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- Documentation/block/00-INDEX       |    2 -
- Documentation/block/as-iosched.txt |  172 ------------------------------------
- 2 files changed, 0 insertions(+), 174 deletions(-)
- delete mode 100644 Documentation/block/as-iosched.txt
+The affect patch went into for 2.6.33. I haven't noticed this issue before, since it
+appears only if DVB_DIB8000 is not defined.
 
-diff --git a/Documentation/block/00-INDEX b/Documentation/block/00-INDEX
-index 961a051..a406286 100644
---- a/Documentation/block/00-INDEX
-+++ b/Documentation/block/00-INDEX
-@@ -1,7 +1,5 @@
- 00-INDEX
- 	- This file
--as-iosched.txt
--	- Anticipatory IO scheduler
- barrier.txt
- 	- I/O Barriers
- biodoc.txt
-diff --git a/Documentation/block/as-iosched.txt b/Documentation/block/as-iosched.txt
-deleted file mode 100644
-index 738b72b..0000000
---- a/Documentation/block/as-iosched.txt
-+++ /dev/null
-@@ -1,172 +0,0 @@
--Anticipatory IO scheduler
---------------------------
--Nick Piggin <piggin@cyberone.com.au>    13 Sep 2003
--
--Attention! Database servers, especially those using "TCQ" disks should
--investigate performance with the 'deadline' IO scheduler. Any system with high
--disk performance requirements should do so, in fact.
--
--If you see unusual performance characteristics of your disk systems, or you
--see big performance regressions versus the deadline scheduler, please email
--me. Database users don't bother unless you're willing to test a lot of patches
--from me ;) its a known issue.
--
--Also, users with hardware RAID controllers, doing striping, may find
--highly variable performance results with using the as-iosched. The
--as-iosched anticipatory implementation is based on the notion that a disk
--device has only one physical seeking head.  A striped RAID controller
--actually has a head for each physical device in the logical RAID device.
--
--However, setting the antic_expire (see tunable parameters below) produces
--very similar behavior to the deadline IO scheduler.
--
--Selecting IO schedulers
-------------------------
--Refer to Documentation/block/switching-sched.txt for information on
--selecting an io scheduler on a per-device basis.
--
--Anticipatory IO scheduler Policies
------------------------------------
--The as-iosched implementation implements several layers of policies
--to determine when an IO request is dispatched to the disk controller.
--Here are the policies outlined, in order of application.
--
--1. one-way Elevator algorithm.
--
--The elevator algorithm is similar to that used in deadline scheduler, with
--the addition that it allows limited backward movement of the elevator
--(i.e. seeks backwards).  A seek backwards can occur when choosing between
--two IO requests where one is behind the elevator's current position, and
--the other is in front of the elevator's position. If the seek distance to
--the request in back of the elevator is less than half the seek distance to
--the request in front of the elevator, then the request in back can be chosen.
--Backward seeks are also limited to a maximum of MAXBACK (1024*1024) sectors.
--This favors forward movement of the elevator, while allowing opportunistic
--"short" backward seeks.
--
--2. FIFO expiration times for reads and for writes.
--
--This is again very similar to the deadline IO scheduler.  The expiration
--times for requests on these lists is tunable using the parameters read_expire
--and write_expire discussed below.  When a read or a write expires in this way,
--the IO scheduler will interrupt its current elevator sweep or read anticipation
--to service the expired request.
--
--3. Read and write request batching
--
--A batch is a collection of read requests or a collection of write
--requests.  The as scheduler alternates dispatching read and write batches
--to the driver.  In the case a read batch, the scheduler submits read
--requests to the driver as long as there are read requests to submit, and
--the read batch time limit has not been exceeded (read_batch_expire).
--The read batch time limit begins counting down only when there are
--competing write requests pending.
--
--In the case of a write batch, the scheduler submits write requests to
--the driver as long as there are write requests available, and the
--write batch time limit has not been exceeded (write_batch_expire).
--However, the length of write batches will be gradually shortened
--when read batches frequently exceed their time limit.
--
--When changing between batch types, the scheduler waits for all requests
--from the previous batch to complete before scheduling requests for the
--next batch.
--
--The read and write fifo expiration times described in policy 2 above
--are checked only when in scheduling IO of a batch for the corresponding
--(read/write) type.  So for example, the read FIFO timeout values are
--tested only during read batches.  Likewise, the write FIFO timeout
--values are tested only during write batches.  For this reason,
--it is generally not recommended for the read batch time
--to be longer than the write expiration time, nor for the write batch
--time to exceed the read expiration time (see tunable parameters below).
--
--When the IO scheduler changes from a read to a write batch,
--it begins the elevator from the request that is on the head of the
--write expiration FIFO.  Likewise, when changing from a write batch to
--a read batch, scheduler begins the elevator from the first entry
--on the read expiration FIFO.
--
--4. Read anticipation.
--
--Read anticipation occurs only when scheduling a read batch.
--This implementation of read anticipation allows only one read request
--to be dispatched to the disk controller at a time.  In
--contrast, many write requests may be dispatched to the disk controller
--at a time during a write batch.  It is this characteristic that can make
--the anticipatory scheduler perform anomalously with controllers supporting
--TCQ, or with hardware striped RAID devices. Setting the antic_expire
--queue parameter (see below) to zero disables this behavior, and the 
--anticipatory scheduler behaves essentially like the deadline scheduler.
--
--When read anticipation is enabled (antic_expire is not zero), reads
--are dispatched to the disk controller one at a time.
--At the end of each read request, the IO scheduler examines its next
--candidate read request from its sorted read list.  If that next request
--is from the same process as the request that just completed,
--or if the next request in the queue is "very close" to the
--just completed request, it is dispatched immediately.  Otherwise,
--statistics (average think time, average seek distance) on the process
--that submitted the just completed request are examined.  If it seems
--likely that that process will submit another request soon, and that
--request is likely to be near the just completed request, then the IO
--scheduler will stop dispatching more read requests for up to (antic_expire)
--milliseconds, hoping that process will submit a new request near the one
--that just completed.  If such a request is made, then it is dispatched
--immediately.  If the antic_expire wait time expires, then the IO scheduler
--will dispatch the next read request from the sorted read queue.
--
--To decide whether an anticipatory wait is worthwhile, the scheduler
--maintains statistics for each process that can be used to compute
--mean "think time" (the time between read requests), and mean seek
--distance for that process.  One observation is that these statistics
--are associated with each process, but those statistics are not associated
--with a specific IO device.  So for example, if a process is doing IO
--on several file systems on separate devices, the statistics will be
--a combination of IO behavior from all those devices.
--
--
--Tuning the anticipatory IO scheduler
--------------------------------------
--When using 'as', the anticipatory IO scheduler there are 5 parameters under
--/sys/block/*/queue/iosched/. All are units of milliseconds.
--
--The parameters are:
--* read_expire
--    Controls how long until a read request becomes "expired". It also controls the
--    interval between which expired requests are served, so set to 50, a request
--    might take anywhere < 100ms to be serviced _if_ it is the next on the
--    expired list. Obviously request expiration strategies won't make the disk
--    go faster. The result basically equates to the timeslice a single reader
--    gets in the presence of other IO. 100*((seek time / read_expire) + 1) is
--    very roughly the % streaming read efficiency your disk should get with
--    multiple readers.
--
--* read_batch_expire
--    Controls how much time a batch of reads is given before pending writes are
--    served. A higher value is more efficient. This might be set below read_expire
--    if writes are to be given higher priority than reads, but reads are to be
--    as efficient as possible when there are no writes. Generally though, it
--    should be some multiple of read_expire.
--
--* write_expire, and
--* write_batch_expire are equivalent to the above, for writes.
--
--* antic_expire
--    Controls the maximum amount of time we can anticipate a good read (one
--    with a short seek distance from the most recently completed request) before
--    giving up. Many other factors may cause anticipation to be stopped early,
--    or some processes will not be "anticipated" at all. Should be a bit higher
--    for big seek time devices though not a linear correspondence - most
--    processes have only a few ms thinktime.
--
--In addition to the tunables above there is a read-only file named est_time
--which, when read, will show:
--
--    - The probability of a task exiting without a cooperating task
--      submitting an anticipated IO.
--
--    - The current mean think time.
--
--    - The seek distance used to determine if an incoming IO is better.
--
--- 
-1.5.6.5
+Anyway, I'm adding today a patch for it.
 
+Thanks,
+Mauro.
