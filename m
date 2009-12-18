@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZLRO2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZLRO23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbZLRO2R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 09:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZLRO2P
+	id S1754128AbZLRO23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 09:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbZLRO2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 18 Dec 2009 09:28:17 -0500
+Received: from khc.piap.pl ([195.187.100.11]:34796 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753978AbZLRO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Dec 2009 09:28:15 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:53939 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbZLRO2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 09:28:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=JZsDFavkk/YhMuUfLNNhgcouRvm65KO7cmcUCeBk7PCIH/RYHsyCFiyM0uKvBOK6Bv
-         PlMBE/n4ZS39VXiggAWT5hlRivZyLSOD4Wn8BNKPGcnrmbgedk1NS6iwF5rEMveSuKIy
-         z5t0NiuXGz/OeN0Lj/D60D+DY3fUv9lN+H8kU=
-Message-ID: <4B2B9179.5000009@gmail.com>
-Date: Fri, 18 Dec 2009 14:28:09 +0000
-From: Lukasz Sokol <el.es.cr@googlemail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Valdis.Kletnieks@vt.edu
+Cc: Mikulas Patocka <mpatocka@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+	<20091217061229.GD3946@linux-sh.org>
+	<m3tyvqgfs4.fsf@intrepid.localdomain>
+	<Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>
+	<24653.1261110557@localhost>
+Date: Fri, 18 Dec 2009 15:28:12 +0100
+In-Reply-To: <24653.1261110557@localhost> (Valdis Kletnieks's message of "Thu,
+	17 Dec 2009 23:29:17 -0500")
+Message-ID: <m3my1g1hmr.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Lukasz Sokol <el.es.cr@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Rfkill buttons : bi-stable, mono-stable, tactile
-References: <loom.20091217T122606-341@post.gmane.org> <20091217150709.GA6375@srcf.ucam.org> <loom.20091217T161042-883@post.gmane.org> <20091217195231.GA11747@srcf.ucam.org> <4B2B42B6.1010501@gmail.com> <20091218141543.GA24825@srcf.ucam.org>
-In-Reply-To: <20091218141543.GA24825@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Fri, Dec 18, 2009 at 08:52:06AM +0000, Lukasz Sokol wrote:
-> 
->> lrwxrwxrwx 1 root root 0 2009-12-17 20:30 rfkill0 -> ../../devices/pci0000:00/0000:00:1c.2/0000:03:00.0/ieee80211/phy0/rfkill0
-> 
-> Ok. You have no platform rfkill interface. ath5k needs to notice that 
-> it's been killed and update its rfkill state accordingly.
-> 
-So it is up to the ath5k driver developers then ? :)
+Valdis.Kletnieks@vt.edu writes:
 
-Lukasz
+> Yeah, but I respectfully submit that if the regexp '^\t{6}' matches a non-
+> continuation line, it's probably in its rights to whinge.
+
+Yes, but don't make it a hard error, only a suggestion that something is
+probably really wrong.
+
+> fs/reisersfs/do_balan.c, lines 460-477 (note: 3 leading tabs elided)
+>
+> 				leaf_paste_entries(&bi,
+> 						   n +
+> 						   item_pos
+> 						   -
+> 						   ret_val,
+> 						   l_pos_in_item,
+> 						   1,
+> 						   (struct
+> 						    reiserfs_de_head
+> 						    *)
+> 						   body,
+> 						   body
+> 						   +
+> 						   DEH_SIZE,
+> 						   tb->
+> 						   insert_size
+> 						   [0]
+> 				    );
+>
+> Yes, that used to be 24 more columns to the right.  Gaak.
+
+Precisely. It's a clear show of the damage hard rules like that do.
+I can't even tell how the code should be fixed and if the simple merging
+would do, since I can't really imagine how it would look like :-)
+-- 
+Krzysztof Halasa
