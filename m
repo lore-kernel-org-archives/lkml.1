@@ -1,205 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbZLRUrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZLRUve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932601AbZLRUrz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 15:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZLRUry
+	id S932645AbZLRUve (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 15:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932591AbZLRUve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 15:47:54 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:57540 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751872AbZLRUrw (ORCPT
+	Fri, 18 Dec 2009 15:51:34 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:42427 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932568AbZLRUvc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 15:47:52 -0500
+	Fri, 18 Dec 2009 15:51:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=w/6XEwLyLIF1clEG3nP8Y2m1fDSRbT/m9x6hgr1tSfAMCniF4KmFkgLhOKOeK5cK2p
-         3del88Bw9x0WIq5EyPsygO0G6vO7a9zVH+WtBhhKCanglDNGf1ScL4U7NrCOhe6WgI8W
-         NfwEs+sn++2fNYggij54Mrrf+qebUDMWRTDic=
-Date: Fri, 18 Dec 2009 21:47:48 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Patch 1/1] Introduce register_user_hbp_by_pid() and
-	unregister_user_hbp_by_pid()
-Message-ID: <20091218204744.GC5004@nowhere>
-References: <20091217172010.GB5457@in.ibm.com> <20091217172253.GC5457@in.ibm.com>
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=ui5mFLCsQQ8oGRvB/D+LO4b7qIUz6fL8FaUJcHCpmDbiA65nbPUeckJZPM1wt9ZGVr
+         59ug7E6/JM7AmfQXsAFKqUbcGAvlX8mdi/TDrgN2tvWm70ad8LXrBTFuwC4CFuaxibE9
+         vvd3vKGfx/zKsv9XTR2rjHzUzfMACO+KlJRVc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091217172253.GC5457@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <43e72e890912181155h444956a3tf228ddd8d281a9d3@mail.gmail.com>
+References: <43e72e890912180926oad3b09fl6b7951864a836700@mail.gmail.com> 
+	<200912181838.20204.bzolnier@gmail.com> <43e72e890912181119t53e01ec2y5dc8687d23f7a668@mail.gmail.com> 
+	<43e72e890912181155h444956a3tf228ddd8d281a9d3@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 18 Dec 2009 12:51:12 -0800
+Message-ID: <43e72e890912181251q7ef1fb59n42da94c86e5c33c1@mail.gmail.com>
+Subject: Re: git pull on linux-next makes my system crawl to its knees and beg 
+	for mercy
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Bob Copeland <me@bobcopeland.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 10:52:53PM +0530, K.Prasad wrote:
-> Provide an interface to (un)register user-space breakpoints using a
-> process' pid.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  include/linux/hw_breakpoint.h |    8 +++
->  kernel/hw_breakpoint.c        |   92 ++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 100 insertions(+)
-> 
-> Index: linux-2.6-tip.reg_by_pid/include/linux/hw_breakpoint.h
-> ===================================================================
-> --- linux-2.6-tip.reg_by_pid.orig/include/linux/hw_breakpoint.h
-> +++ linux-2.6-tip.reg_by_pid/include/linux/hw_breakpoint.h
-> @@ -54,6 +54,10 @@ register_user_hw_breakpoint(struct perf_
->  			    perf_overflow_handler_t triggered,
->  			    struct task_struct *tsk);
->  
-> +extern int register_user_hbp_by_pid(struct perf_event_attr *attr,
-> +			 perf_overflow_handler_t triggered,
-> +			 pid_t pid);
-> +extern void unregister_user_hbp_by_pid(pid_t pid);
->  /* FIXME: only change from the attr, and don't unregister */
->  extern int
->  modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr);
-> @@ -91,6 +95,10 @@ static inline struct perf_event *
->  register_user_hw_breakpoint(struct perf_event_attr *attr,
->  			    perf_overflow_handler_t triggered,
->  			    struct task_struct *tsk)	{ return NULL; }
-> +int register_user_hbp_by_pid(struct perf_event_attr *attr,
-> +			 perf_overflow_handler_t triggered,
-> +			 pid_t pid)	{ return 0; }
-> +void unregister_user_hbp_by_pid(pid_t pid) {}
->  static inline int
->  modify_user_hw_breakpoint(struct perf_event *bp,
->  			  struct perf_event_attr *attr)	{ return -ENOSYS; }
-> Index: linux-2.6-tip.reg_by_pid/kernel/hw_breakpoint.c
-> ===================================================================
-> --- linux-2.6-tip.reg_by_pid.orig/kernel/hw_breakpoint.c
-> +++ linux-2.6-tip.reg_by_pid/kernel/hw_breakpoint.c
-> @@ -298,6 +298,98 @@ int register_perf_hw_breakpoint(struct p
->  	return ret;
->  }
->  
-> +/*
-> + * Unregister breakpoints thread-by-thread, for all threads ranging from
-> + * @start to @end.
-> + */
-> +static inline void __unregister_user_hbp_for_threads(struct task_struct *start,
-> +						struct task_struct *end)
+On Fri, Dec 18, 2009 at 11:55 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Fri, Dec 18, 2009 at 11:19 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> On Fri, Dec 18, 2009 at 9:38 AM, Bartlomiej Zolnierkiewicz
+>> <bzolnier@gmail.com> wrote:
+>>> On Friday 18 December 2009 06:26:29 pm Luis R. Rodriguez wrote:
+>>>
+>>>> on my kernel logs. Bewildered with this issue I set out to prove to
+>>>> myself this issue was not a 2.6.32 issue and booted other kernels,
+>>>> including Ubuntu's distro kernel on 2.6.31 and then later my own built
+>>>> fresh 2.6.27.41 kernel. The issue was reproducible on all three
+>>>> kernels!
+>>>>
+>>>> This lead me to believe this was a system / hard drive issue and
+>>>> embraced myself for a system fix. I yet needed to prove this was
+>>>
+>>> Just some hints for ruling out the system / hard drive problem.
+>>>
+>>> smartctl -a /dev/sdx is your friend for checking your disk (keep an eye
+>>> on anything suspicious like re-allocated sector count going up etc.)
+>>
+>> Sweet thanks, here's my current output, I'll try later after I get
+>> some day work done to pull linux-next and make it moan. Let me know if
+>> you see anything fishy.
+>
+> <-- snip full log -->
+>
+>> Also available at:
+>>
+>> http://bombadil.infradead.org/~mcgrof/logs/2009/12/smart-ctl-sda2.txt
+>>
+>>> It could be also fs related issue that shows up only under specific
+>>> conditions
+>>
+>> OK -- I see, I used a fresh new ext3, did not make the jump to ext4.
+>>
+>>> (i.e. almost full partition -- some file-systems starts to
+>>> crawl when the amount of available free space gets low).
+>>
+>> Got it, thanks, so partition has a lot of room.
+>>
+>> mcgrof@tux ~ $ df -h
+>> Filesystem            Size  Used Avail Use% Mounted on
+>> /dev/sda2              91G   43G   44G  50% /
+>>
+>> Also ony have one partition.
+>
+> GSmartControl is very cool, just ran the short self test and it passed
+> without issues. I'll now run the extended self tests. I'll not that
+> right after the self test I had to checkout the 2.6.32.y branch on
+> hpa's tree and noticed similar type of slow down as I did with pulling
+> linux-next. Only thing with linux-next is it takes ages complete which
+> just makes waiting unbearable. This all makes me suspect its something
+> else. But lets seee what these results on the GSmartControl yield.
 
+I tested the same exact git pull on the other T61 laptop I have and
+was able to see the same crippling effects but not as bad as with my
+main T61. Different between them is the one where I see the worst
+issue has a Intel(R) Core(TM)2 Duo CPU     T8100  @ 1.80GHz while the
+other one has the same CPU but at 2.10GHz. The only thing I see
+different between linux-next and say wireless-testing is linux-next
+will have a lot more newer objects and the pull will end with a git
+merge that will fail and require you to 'git reset --hard origin'. The
+later part shouldn't be taken into the equation there though as I see
+the issue creeping up early on during the pull, while git is counting
+objects and even later compressing.
 
+I'm starting to glare at CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+with suspicious looks. On both boxes the CPU kept itself @ 800 MHz
+during most of the git pull, I did see the CPU idle hitting 0
+frequently and the CPU wait time ~ 20 or 30.
 
-I'm not sure this wants to be inlined. The function is not not
-that tiny. May be let the compiler choose?
+My GSmartControl extensive test is almost done.
 
+I'll test 2.6.33-rc1 once John gets it into his tree.
 
-> +{
-> +	struct perf_event *bp, *temp_bp;
-> +
-> +	do {
-> +		mutex_lock(&start->perf_event_mutex);
-> +		list_for_each_entry_safe(bp, temp_bp, &start->perf_event_list,
-> +					 owner_entry) {
-> +			if (bp->attr.type != PERF_TYPE_BREAKPOINT)
-> +				continue;
-> +			unregister_hw_breakpoint(bp);
-> +			break;
-
-
-
-Do you really want to unregister all of them? What about those
-that may have been registered using perf syscall?
-
-> +/**
-> + * register_user_hbp_by_pid - register a hardware breakpoint for user space using pid
-> + * @attr: breakpoint attributes
-> + * @triggered: callback to trigger when we hit the breakpoint
-> + * @pid: pid of the thread group for which breakpoints must be registered
-> + */
-> +int register_user_hbp_by_pid(struct perf_event_attr *attr,
-> +			 perf_overflow_handler_t triggered,
-> +			 pid_t pid)
-> +{
-> +	int ret;
-> +	struct task_struct *t1, *t2;
-
-
-
-This needs rcu_read_lock()
-
-
-
-> +	t1 = t2 = find_task_by_vpid(pid);
-> +	if (t1 == NULL)
-> +		return -ESRCH;
-> +
-> +	/*
-> +	 * Ensure that the breakpoint propogates to every new thread created in
-> +	 * this thread_group.
-> +	 */
-> +	attr->inherit = 1;
-> +	/*
-> +	 * Register a breakpoint individually for every thread of the
-> +	 * thread_group using register_user_hw_breakpoint() interface.
-> +	 * Warning: Involves redundant validation checks using
-> +	 * arch_validate_hwbkpt_settings().
-> +	 */
-> +	do {
-> +		ret = IS_ERR(register_user_hw_breakpoint(attr, triggered, t1));
-> +		if (ret)
-> +			goto fail;
-> +		t1 = next_thread(t1);
-> +	} while (t1 != t2);
-
-
-And this needs rcu_read_unlock()
-
-
-
-> +	return 0;
-> +fail:
-> +	/*
-> +	 * Check if the very first register_user_hw_breakpoint() request
-> +	 * failed. If then, do nothing but return the error value.
-> +	 */
-> +	if (t1 == t2)
-> +		return ret;
-> +	/*
-> +	 * Since there exists a thread where the breakpoint request was not
-> +	 * successful, we are unable to provide a process-wide breakpoint. Hence
-> +	 * cleanup the breakpoints from the previously registered threads.
-> +	 */
-> +	__unregister_user_hbp_for_threads(t2, t1);
-
-
-There too.
-
-Once you play with tasks (if it's not current), and iterate
-through these, you need to protect either by read-lock
-tasklist_lock or using rcu.
-
-Rcu is the much prefered way here.
-
-
-> +/**
-> + * unregister_hbp_by_pid - unregister a user-space hardware breakpoint previously registered using a pid
-> + * @pid: pid of the process for which breakpoint must be unregistered
-> + */
-> +void unregister_user_hbp_by_pid(pid_t pid)
-> +{
-> +	struct task_struct *t1, *t2;
-> +
-> +	t1 = t2 = find_task_by_vpid(pid);
-> +	if (t1 == NULL)
-> +		return;
-> +
-> +	__unregister_user_hbp_for_threads(t1, t2);
-
-
-
-And this function needs rcu too.
-
-I don't see any in-kernel user for this new feature.
-That would be required to integrate it.
-
-Thanks.
-
+  Luis
