@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751408AbZLRTax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZLRTmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751408AbZLRTax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 14:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZLRTaw
+	id S1755621AbZLRTmO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 14:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbZLRTmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 14:30:52 -0500
-Received: from www.sr71.net ([198.145.64.142]:53839 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbZLRTav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 14:30:51 -0500
-Subject: Re: -tip: origin tree boot crash
-From: Dave Hansen <dave@sr71.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@linux.intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20091218170622.GA1354@elte.hu>
-References: <20091218164509.GA14574@elte.hu>
-	 <1261155689.27372.1444.camel@nimitz>  <20091218170622.GA1354@elte.hu>
-Content-Type: text/plain
-Date: Fri, 18 Dec 2009 11:30:50 -0800
-Message-Id: <1261164650.27372.1742.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Dec 2009 14:42:01 -0500
+Received: from smtp-04.oit.duke.edu ([152.3.174.85]:60918 "EHLO smtp.duke.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755569AbZLRTl6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 14:41:58 -0500
+X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Dec 2009 14:41:58 EST
+MIME-Version: 1.0
+X-Mailer: AtMail PHP 5.61
+Message-ID: <50664.1261164757@duke.edu>
+To: <linux-kernel@vger.kernel.org>
+Reply-To: rb6@duke.edu
+Content-Type: text/plain; charset="utf-8"
+X-Origin: 71.111.201.152
+X-Atmail-Account: rb6@duke.edu
+Date: Fri, 18 Dec 2009 14:32:37 -0500
+Subject: intel_bufmgr_gem.c:825: Error setting to CPU domain 626: Input/output error
+From: Rann Bar-On <rb6@duke.edu>
+Content-Transfer-Encoding: 8BIT
+X-PMX-Version: 5.4.2.338381, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2009.12.18.192418
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 18:06 +0100, Ingo Molnar wrote:
-> * Dave Hansen <dave@sr71.net> wrote:
-> I just double-checked it again on a couple of my systems and it seems to 
-> > deny loading the module correctly.
-> > 
-> > What kind of hardware is this?  Could you send me 'dmidecode' output?
-> > 
-> > I'm wondering if your hardware matched the "Intel" string somehow and the 
-> > dmi code didn't bother to check anything else.  I'll also go try and run on 
-> > a few more pieces of hardware and see if I can get it to trigger.
-> 
-> It's an Athlon64 whitebox PC - a pretty old one - and nothing special.
-> 
-> Also note the crash signature - it crashes in the DMI code. Note, this is a 
-> built-in-driver (not a modular driver) bootup.
+Plz cc me, as I am not on the list.
 
-I figured as much since you said it was a real bootup problem.  I've
-been testing the same way.
+With 2.6.32 or newer on Intel (in this case GM965, but also confirmed with
+others), X does not start properly.  Errors similar to the one in the
+subject line occur in Xorg.0.log.  Reports at:
 
-I've tried a few other pieces of hardware that I have sitting around and
-can't seem to recreate this.  I've also double-checked the code to look
-for any obvious bugs.  No luck on either front.  You didn't see any
-other dmesg output from these, did you?
+http://bugs.gentoo.org/show_bug.cgi?id=295777
 
-                pr_info("skipping hardware autodetection\n");
-                pr_info("Please send 'dmidecode' output to dave@sr71.net\n");
+and
+
+http://groups.google.com/group/linux.debian.kernel/browse_thread/thread/543d6ac539cb0efa/124a9a6a92d16cc2?lnk=raot
+
+There is some suspicion this is caused by framebuffer compression and more
+speculation that this only appears with 4GB of ram.
+
+Plz help! (and plz cc me)
+
+Thanks,
+Rann
 
 
--- Dave
 
