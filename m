@@ -1,94 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZLRXpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbZLRXtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbZLRXpA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 18:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZLRXo7
+	id S932608AbZLRXtR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 18:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZLRXtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 18:44:59 -0500
-Received: from mail1.radix.net ([207.192.128.31]:41826 "EHLO mail1.radix.net"
+	Fri, 18 Dec 2009 18:49:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38538 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbZLRXo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 18:44:58 -0500
-Subject: Re: [patch] media video cx23888 driver: fix possible races using
- new kfifo_API kfifo_reset()
-From: Andy Walls <awalls@radix.net>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>
-In-Reply-To: <1261174870.13019.24.camel@wall-e>
-References: <1261174870.13019.24.camel@wall-e>
-Content-Type: text/plain
-Date: Fri, 18 Dec 2009 18:43:48 -0500
-Message-Id: <1261179828.3060.15.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	id S1755499AbZLRXtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 18:49:15 -0500
+Message-ID: <4B2C14A3.90906@kernel.org>
+Date: Fri, 18 Dec 2009 15:47:47 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/9] x86: move range related operation to one file
+References: <4B2B4C19.6010402@kernel.org> <4B2B4F85.5030901@kernel.org> <4B2BE1BF.60803@zytor.com> <4B2BE348.207@kernel.org> <4B2BF38F.3090101@zytor.com>
+In-Reply-To: <4B2BF38F.3090101@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 23:21 +0100, Stefani Seibold wrote:
-> Fix the cx23888 driver to use the new kfifo API. Using kfifo_reset() may
-> result in a possible race conditions. This patch fix it by using
-> spinlock around the kfifo_reset() function.
+H. Peter Anvin wrote:
+> On 12/18/2009 12:17 PM, Yinghai Lu wrote:
+>> yes here is we have [start, end] instead of [start, end)
+>>
+>> those range operation is used for one purpose:
+>> add several ranges, and subtract some other ranges, it will take out overlap between those two sets.
+>> and leave out the range that could be used.
+>>
+>> and it is array based...for early stage.
+>>
 > 
-> The patch-set is against mm tree from 11-Dec-2009
-> 
-> Greetings,
-> Stefani
-> 
-> Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> Yes.  We should be able to use the *exact same code* for the e820
+> ranges, using the e820 attribute as the attribute parameters, and a
+> simple boolean for the case where all you want is inclusion/exclusion.
+> And yes, I agree array based is the right thing to do for the early code.
 
-For both this patch together with your previous patch:
+i could try to merge range handling to to early_res handling code.
+first step is change the end in range to be consistent to the one in early_res.
 
-Reviewed-by: Andy Walls <awalls@radix.net>
-Acked-by: Andy Walls <awalls@radix.net>
+later could move them into kernel/range.c or kernel/early_res.c after we convert all bootmem to early_res.
 
-Thanks Stefani.
+YH
 
-Regards,
-Andy
-
-> ---
->  cx23888-ir.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> --- mmotm.orig/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 22:57:13.588337402 +0100
-> +++ mmotm/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 23:15:14.651365720 +0100
-> @@ -519,6 +519,7 @@ static int cx23888_ir_irq_handler(struct
->  {
->  	struct cx23888_ir_state *state = to_state(sd);
->  	struct cx23885_dev *dev = state->dev;
-> +	unsigned long flags;
->  
->  	u32 cntrl = cx23888_ir_read4(dev, CX23888_IR_CNTRL_REG);
->  	u32 irqen = cx23888_ir_read4(dev, CX23888_IR_IRQEN_REG);
-> @@ -629,8 +630,11 @@ static int cx23888_ir_irq_handler(struct
->  		cx23888_ir_write4(dev, CX23888_IR_CNTRL_REG, cntrl);
->  		*handled = true;
->  	}
-> +
-> +	spin_lock_irqsave(&state->rx_kfifo_lock, flags);
->  	if (kfifo_len(&state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
->  		events |= V4L2_SUBDEV_IR_RX_FIFO_SERVICE_REQ;
-> +	spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
->  
->  	if (events)
->  		v4l2_subdev_notify(sd, V4L2_SUBDEV_IR_RX_NOTIFY, &events);
-> @@ -783,7 +787,12 @@ static int cx23888_ir_rx_s_parameters(st
->  	o->interrupt_enable = p->interrupt_enable;
->  	o->enable = p->enable;
->  	if (p->enable) {
-> +		unsigned long flags;
-> +
-> +		spin_lock_irqsave(&state->rx_kfifo_lock, flags);
->  		kfifo_reset(&state->rx_kfifo);
-> +		/* reset tx_fifo too if there is one... */
-> +		spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
->  		if (p->interrupt_enable)
->  			irqenable_rx(dev, IRQEN_RSE | IRQEN_RTE | IRQEN_ROE);
->  		control_rx_enable(dev, p->enable);
-> 
-> 
 
