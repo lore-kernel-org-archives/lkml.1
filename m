@@ -1,106 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932527AbZLRStr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbZLRSxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932527AbZLRStr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 13:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZLRStq
+	id S932496AbZLRSxR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 13:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbZLRSxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 13:49:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58427 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Dec 2009 13:53:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42985 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754605AbZLRStp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 13:49:45 -0500
-Date: Fri, 18 Dec 2009 19:49:36 +0100
+	id S1751379AbZLRSxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 13:53:13 -0500
+Date: Fri, 18 Dec 2009 19:52:46 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] timer fixes
-Message-ID: <20091218184936.GA24429@elte.hu>
+Subject: [GIT PULL] core kernel fixes
+Message-ID: <20091218185246.GA32199@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest timers-fixes-for-linus git tree from:
+Please pull the latest core-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Simon Horman (1):
-      timers: Remove duplicate setting of new_base in __mod_timer()
+Thomas Gleixner (3):
+      signal: Fix racy access to __task_cred in kill_pid_info_as_uid()
+      signals: Fix more rcu assumptions
+      sys: Fix missing rcu protection for __task_cred() access
 
-Thomas Gleixner (1):
-      clockevents: Prevent clockevent_devices list corruption on cpu hotplug
 
+ kernel/signal.c |   25 ++++++++++++++-----------
+ kernel/sys.c    |    2 ++
+ 2 files changed, 16 insertions(+), 11 deletions(-)
 
- kernel/time/clockevents.c |   18 +++++++++++++++---
- kernel/timer.c            |    2 --
- 2 files changed, 15 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 20a8920..91db2e3 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -238,8 +238,9 @@ void clockevents_exchange_device(struct clock_event_device *old,
-  */
- void clockevents_notify(unsigned long reason, void *arg)
- {
--	struct list_head *node, *tmp;
-+	struct clock_event_device *dev, *tmp;
- 	unsigned long flags;
-+	int cpu;
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 6b982f2..f67545f 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -218,13 +218,13 @@ __sigqueue_alloc(int sig, struct task_struct *t, gfp_t flags, int override_rlimi
+ 	struct user_struct *user;
  
- 	spin_lock_irqsave(&clockevents_lock, flags);
- 	clockevents_do_notify(reason, arg);
-@@ -250,8 +251,19 @@ void clockevents_notify(unsigned long reason, void *arg)
- 		 * Unregister the clock event devices which were
- 		 * released from the users in the notify chain.
- 		 */
--		list_for_each_safe(node, tmp, &clockevents_released)
--			list_del(node);
-+		list_for_each_entry_safe(dev, tmp, &clockevents_released, list)
-+			list_del(&dev->list);
-+		/*
-+		 * Now check whether the CPU has left unused per cpu devices
-+		 */
-+		cpu = *((int *)arg);
-+		list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
-+			if (cpumask_test_cpu(cpu, dev->cpumask) &&
-+			    cpumask_weight(dev->cpumask) == 1) {
-+				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
-+				list_del(&dev->list);
-+			}
-+		}
- 		break;
- 	default:
- 		break;
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 5db5a8d..15533b7 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -656,8 +656,6 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 	/*
+-	 * We won't get problems with the target's UID changing under us
+-	 * because changing it requires RCU be used, and if t != current, the
+-	 * caller must be holding the RCU readlock (by way of a spinlock) and
+-	 * we use RCU protection here
++	 * Protect access to @t credentials. This can go away when all
++	 * callers hold rcu read lock.
+ 	 */
++	rcu_read_lock();
+ 	user = get_uid(__task_cred(t)->user);
+ 	atomic_inc(&user->sigpending);
++	rcu_read_unlock();
  
- 	debug_activate(timer, expires);
+ 	if (override_rlimit ||
+ 	    atomic_read(&user->sigpending) <=
+@@ -1175,11 +1175,12 @@ int kill_pid_info_as_uid(int sig, struct siginfo *info, struct pid *pid,
+ 	int ret = -EINVAL;
+ 	struct task_struct *p;
+ 	const struct cred *pcred;
++	unsigned long flags;
  
--	new_base = __get_cpu_var(tvec_bases);
--
- 	cpu = smp_processor_id();
+ 	if (!valid_signal(sig))
+ 		return ret;
  
- #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	p = pid_task(pid, PIDTYPE_PID);
+ 	if (!p) {
+ 		ret = -ESRCH;
+@@ -1196,14 +1197,16 @@ int kill_pid_info_as_uid(int sig, struct siginfo *info, struct pid *pid,
+ 	ret = security_task_kill(p, info, sig, secid);
+ 	if (ret)
+ 		goto out_unlock;
+-	if (sig && p->sighand) {
+-		unsigned long flags;
+-		spin_lock_irqsave(&p->sighand->siglock, flags);
+-		ret = __send_signal(sig, info, p, 1, 0);
+-		spin_unlock_irqrestore(&p->sighand->siglock, flags);
++
++	if (sig) {
++		if (lock_task_sighand(p, &flags)) {
++			ret = __send_signal(sig, info, p, 1, 0);
++			unlock_task_sighand(p, &flags);
++		} else
++			ret = -ESRCH;
+ 	}
+ out_unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 9968c5f..bc1dc61 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -163,6 +163,7 @@ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ 	if (niceval > 19)
+ 		niceval = 19;
+ 
++	rcu_read_lock();
+ 	read_lock(&tasklist_lock);
+ 	switch (which) {
+ 		case PRIO_PROCESS:
+@@ -200,6 +201,7 @@ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ 	}
+ out_unlock:
+ 	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ out:
+ 	return error;
+ }
