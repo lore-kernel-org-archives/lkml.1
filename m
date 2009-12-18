@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZLRJl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZLRJmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbZLRJl5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 04:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZLRJl4
+	id S1752787AbZLRJmi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 04:42:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZLRJmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 04:41:56 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:39619 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbZLRJlz (ORCPT
+	Fri, 18 Dec 2009 04:42:37 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:42912 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751642AbZLRJmg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 04:41:55 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] vsnprintf: fix reference for compressed ipv6 addresses
-Date: Fri, 18 Dec 2009 10:41:48 +0100
-Message-Id: <1261129308-5568-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <20091218085345.GA25816@orion.carnet.hr>
-References: <20091218085345.GA25816@orion.carnet.hr>
+	Fri, 18 Dec 2009 04:42:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=O0srBwu/eSxqru+OD3nwxhFkGBkhXGaq/AcrHTtjO/FxnPYvy9l94jqs70bMWwcKBN
+         OS3hPcaBK1M585pMXoClxiGH+Hop8eSYiXs9yP7Jt6M5JDzXmvXwuCZtTfGqtmXpHaE5
+         QqjT3T+FZSSyteS5KX2YZWHu5C5LpdrqYC+Oo=
 MIME-Version: 1.0
+In-Reply-To: <20091218093132.4415.23424.sendpatchset@localhost.localdomain>
+References: <20091218093132.4415.23424.sendpatchset@localhost.localdomain>
+Date: Fri, 18 Dec 2009 17:42:34 +0800
+Message-ID: <7b6bb4a50912180142u5e66fa88odb7cd3b6fa1a2ba2@mail.gmail.com>
+Subject: Re: [Patch] thinkpad_acpi: fix a build error
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Corentin Chary <corentincj@iksaif.net>,
+       ibm-acpi-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, akpm@linux-foundation.org,
+       helight.xu@gmail.com
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Reported-by: Josip Rodin <joy@entuzijast.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- lib/vsprintf.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Ingo already sent this patch yesterday.
+http://lkml.org/lkml/2009/12/17/25
 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index d4996cf..3b8aeec 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -903,7 +903,7 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
-  *       IPv6 omits the colons (01020304...0f)
-  *       IPv4 uses dot-separated decimal with leading 0's (010.123.045.006)
-  * - 'I6c' for IPv6 addresses printed as specified by
-- *       http://www.ietf.org/id/draft-kawamura-ipv6-text-representation-03.txt
-+ *       http://tools.ietf.org/html/draft-ietf-6man-text-addr-representation-00
-  * - 'U' For a 16 byte UUID/GUID, it prints the UUID/GUID in the form
-  *       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  *       Options for %pU are:
-@@ -1188,7 +1188,7 @@ qualifier:
-  * %pI6 print an IPv6 address with colons
-  * %pi6 print an IPv6 address without colons
-  * %pI6c print an IPv6 address as specified by
-- *   http://www.ietf.org/id/draft-kawamura-ipv6-text-representation-03.txt
-+ *   http://tools.ietf.org/html/draft-ietf-6man-text-addr-representation-00
-  * %pU[bBlL] print a UUID/GUID in big or little endian using lower or upper
-  *   case.
-  * %n is ignored
--- 
-1.6.5.2
 
+On Fri, Dec 18, 2009 at 5:28 PM, Amerigo Wang <amwang@redhat.com> wrote:
+>
+> This patch fixes the following build error:
+>
+>  Building modules, stage 2.
+>  MODPOST 1834 modules
+> ERROR: "snd_card_create" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+> ERROR: "snd_ctl_notify" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+> ERROR: "snd_ctl_boolean_mono_info" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+> ERROR: "snd_ctl_new1" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+> ERROR: "snd_card_free" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+> ERROR: "snd_card_register" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+> ERROR: "snd_ctl_add" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Corentin Chary <corentincj@iksaif.net>
+> Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> Reported-by: Helight.Xu <helight.xu@gmail.com>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Tested-by: Helight.Xu <helight.xu@gmail.com>
+>
+> ---
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index fc5bf9d..596966c 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -215,6 +215,7 @@ config THINKPAD_ACPI
+>        depends on ACPI
+>        depends on INPUT
+>        depends on RFKILL || RFKILL = n
+> +       depends on SOUND
+>        select BACKLIGHT_LCD_SUPPORT
+>        select BACKLIGHT_CLASS_DEVICE
+>        select HWMON
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
