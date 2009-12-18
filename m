@@ -1,51 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZLROla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZLROrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295AbZLROla (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 09:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZLROl2
+	id S1754353AbZLROrx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 09:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZLROrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 09:41:28 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:45007 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753231AbZLROl1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 09:41:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Rtfs8qggRqYa23bX29cKzrrYv/3uEt6+Xz+5RfWxoKQ3ZC406QhQzb436lwmqEGaAc
-         8svgqyjtTHwhtu7XxNUR6fMRrIq/w6Tx3ptQGIXnhxut25zvvKa0J1qHWiYl/RrNTCJV
-         Htpwp0bTTzso+MRFGclW0sK3RoNmQc0VtaTpk=
-Message-ID: <4B2B9493.1080005@gmail.com>
-Date: Fri, 18 Dec 2009 14:41:23 +0000
-From: Lukasz Sokol <el.es.cr@googlemail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 18 Dec 2009 09:47:52 -0500
+Received: from nox.protox.org ([88.191.38.29]:44579 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753857AbZLROru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 09:47:50 -0500
+Date: Fri, 18 Dec 2009 15:44:35 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error with
+ linux-2.6.32)
+Message-ID: <20091218144435.GH22703@localhost.localdomain>
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
+ <20091216184148.GB22703@localhost.localdomain>
+ <200912162031.48983.johannes.hirte@fem.tu-ilmenau.de>
+ <200912181447.00498.johannes.hirte@fem.tu-ilmenau.de>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Lukasz Sokol <el.es.cr@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Rfkill buttons : bi-stable, mono-stable, tactile
-References: <loom.20091217T122606-341@post.gmane.org> <20091217150709.GA6375@srcf.ucam.org> <loom.20091217T161042-883@post.gmane.org> <20091217195231.GA11747@srcf.ucam.org> <4B2B42B6.1010501@gmail.com> <20091218141543.GA24825@srcf.ucam.org> <4B2B9179.5000009@gmail.com> <20091218143550.GA25400@srcf.ucam.org>
-In-Reply-To: <20091218143550.GA25400@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912181447.00498.johannes.hirte@fem.tu-ilmenau.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Fri, Dec 18, 2009 at 02:28:09PM +0000, Lukasz Sokol wrote:
->> Matthew Garrett wrote:
->>> On Fri, Dec 18, 2009 at 08:52:06AM +0000, Lukasz Sokol wrote:
->>>
->>>> lrwxrwxrwx 1 root root 0 2009-12-17 20:30 rfkill0 -> ../../devices/pci0000:00/0000:00:1c.2/0000:03:00.0/ieee80211/phy0/rfkill0
->>> Ok. You have no platform rfkill interface. ath5k needs to notice that 
->>> it's been killed and update its rfkill state accordingly.
->>>
->> So it is up to the ath5k driver developers then ? :)
+On Fri, Dec 18, 2009 at 02:47:00PM +0100, Johannes Hirte wrote:
+> Am Mittwoch 16 Dezember 2009 20:31:48 schrieb Johannes Hirte:
+> > Am Mittwoch 16 Dezember 2009 19:41:48 schrieb Jerome Glisse:
+> > > On Wed, Dec 16, 2009 at 03:58:30PM +0100, Johannes Hirte wrote:
+> > > > Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
+> > > > > On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
+> > > > > > This patch (as the BIOS option) will only disable the error
+> > > > > > reports. The error itself will still occur, right? So necessary to
+> > > > > > find out why the radeon driver trigger this error.
+> > > > >
+> > > > > Because the graphics driver does aperture accesses with no
+> > > > > matching GART translation, and the hw generates mchecks for
+> > > > > that. The whole story on GART table walk errors is in section
+> > > > > "13.10.1 GART Table Walk Error Reporting" in the document here:
+> > > > > http://support.amd.com/us/Processor_TechDocs/32559.pdf
+> > > > >
+> > > > > I can't say for sure about your BIOS, but if it is done as described
+> > > > > in the abovementioned section, the BIOS option should disable logging
+> > > > > of the error, which implies reporting too.
+> > > > >
+> > > > > The patch is still needed for machines that do not have that BIOS
+> > > > > option.
+> > > >
+> > > > Disabling in BIOS doesn't made any difference. The errors were still
+> > > > reported. Your patch disabled it. But I think this will make work
+> > > > harder for driver developers as they won't get this error anymore.
+> > > > Could this be made changeable on runtime/boottime?
+> > > >
+> > > > I've added drm people to CC as they're responsible for this error.
+> > > >
+> > > >
+> > > > regards,
+> > > >   Johannes
+> > >
+> > > More context would be usefull. Are you using KMS ? If so is your
+> > > userspace KMS capable ? Does this GART error happen all the time or only
+> > > after sometimes or when doing somethings specific ?
+> > 
+> > Yes I'm using KMS when this error occours.
+> > Hardware:
+> > - Tyan Tiger K8W S8875 (AMD8151 Northbridge)
+> > - Radeon HD3650 AGP (RV635)
+> > 
+> > Software:
+> > - linux-2.6.32
+> > - libdrm-2.4.16
+> > - mesa-7.7_rc2
+> > - xf86-video-ati-9999 (latest git everytime)
+> > - KDE-4.3.4 with compositing enabled (OpenGL)
+> > 
+> > The errors occours after a while of normal desktop work. I haven't tested
+> > without KMS or compisiting. Will do this as well.
 > 
-> Yup.
+> It's KMS related but not to compositing. Without KMS the errors don't occur. I 
+> found at least two log entries where the error occurred on initializing KMS. 
+> It happens reliable after a while working with X.
+> 
+> regards,
+>   Johannes
+> 
 
-Thanks Matthew, will see if somebody shows up :)
+Can you give me the full reference of your motherboard ?
 
-Lukasz
+Cheers,
+Jerome
