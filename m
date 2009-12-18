@@ -1,218 +1,374 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZLRAtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbZLRArJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbZLRAtN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 19:49:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZLRAtL
+	id S1755433AbZLRArJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 19:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbZLRArG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 19:49:11 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40124 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501AbZLRAtJ (ORCPT
+	Thu, 17 Dec 2009 19:47:06 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:47613 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZLRArE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 19:49:09 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 18 Dec 2009 09:46:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Subject: [RFC 4/4] speculative pag fault
-Message-Id: <20091218094602.3dcd5a02.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091218093849.8ba69ad9.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091216101107.GA15031@basil.fritz.box>
-	<20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091216102806.GC15031@basil.fritz.box>
-	<28c262360912160231r18db8478sf41349362360cab8@mail.gmail.com>
-	<20091216193315.14a508d5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091218093849.8ba69ad9.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 17 Dec 2009 19:47:04 -0500
+Subject: [PATCH 3/3] Convert sparc to arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1261096985.3466.17.camel@localhost.localdomain>
+References: <1261096687.3466.12.camel@localhost.localdomain>
+	 <1261096985.3466.17.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 16:46:56 -0800
+Message-ID: <1261097216.3466.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch converts sparc (specifically sparc32) to use GENERIC_TIME via
+the arch_getoffset() infrastructure, reducing the amount of arch
+specific code we need to maintain.
 
-Lookup vma in lockless style, do page fault, and check mm's version
-after takine page table lock. If racy, mm's version is invalid .
-Then, retry page fault.
+The sparc architecture is one of the last 3 arches that need to be
+converted.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+This patch applies on top of Linus' current -git tree
+
+I've taken my best swing at converting this, but I'm not 100% confident
+I got it right. My cross-compiler is now out of date (gcc4.2) so I
+wasn't able to check if it compiled. Any assistance from arch
+maintainers or testers to get this merged would be great.
+
+thanks
+-john
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 ---
- arch/x86/mm/fault.c |   28 +++++++++++++++++++++++++---
- mm/memory.c         |   21 ++++++++++++++-------
- 2 files changed, 39 insertions(+), 10 deletions(-)
+ Kconfig          |    5 +-
+ kernel/pcic.c    |  104 ++++++++-----------------------------------------
+ kernel/time_32.c |  115 +++++++++++--------------------------------------------
+ 3 files changed, 45 insertions(+), 179 deletions(-)
 
-Index: mmotm-mm-accessor/arch/x86/mm/fault.c
-===================================================================
---- mmotm-mm-accessor.orig/arch/x86/mm/fault.c
-+++ mmotm-mm-accessor/arch/x86/mm/fault.c
-@@ -11,6 +11,7 @@
- #include <linux/kprobes.h>		/* __kprobes, ...		*/
- #include <linux/mmiotrace.h>		/* kmmio_handler, ...		*/
- #include <linux/perf_event.h>		/* perf_sw_event		*/
-+#include <linux/hugetlb.h>		/* is_vm_hugetlb...*/
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 108197a..4097f6a 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -64,8 +64,11 @@ config BITS
+ 	default 64 if SPARC64
  
- #include <asm/traps.h>			/* dotraplinkage, ...		*/
- #include <asm/pgalloc.h>		/* pgd_*(), ...			*/
-@@ -952,6 +953,7 @@ do_page_fault(struct pt_regs *regs, unsi
- 	struct mm_struct *mm;
- 	int write;
- 	int fault;
-+	int speculative;
- 
- 	tsk = current;
- 	mm = tsk->mm;
-@@ -1040,6 +1042,17 @@ do_page_fault(struct pt_regs *regs, unsi
- 		return;
- 	}
- 
-+	if ((error_code & PF_USER) && mm_version_check(mm)) {
-+		vma = lookup_vma_cache(mm, address);
-+		if (vma && mm_version_check(mm) &&
-+		   (vma->vm_start <= address) && (address < vma->vm_end)) {
-+			speculative = 1;
-+			goto found_vma;
-+		}
-+		if (vma)
-+			vma_release(vma);
-+	}
+ config GENERIC_TIME
++	def_bool y
 +
- 	/*
- 	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in
-@@ -1056,6 +1069,8 @@ do_page_fault(struct pt_regs *regs, unsi
- 	 * validate the source. If this is invalid we can skip the address
- 	 * space check, thus avoiding the deadlock:
- 	 */
-+retry_with_lock:
-+	speculative = 0;
- 	if (unlikely(!mm_read_trylock(mm))) {
- 		if ((error_code & PF_USER) == 0 &&
- 		    !search_exception_tables(regs->ip)) {
-@@ -1073,6 +1088,7 @@ do_page_fault(struct pt_regs *regs, unsi
- 	}
++config ARCH_USES_GETTIMEOFFSET
+ 	bool
+-	default y if SPARC64
++	default y if SPARC32
  
- 	vma = find_vma(mm, address);
-+found_vma:
- 	if (unlikely(!vma)) {
- 		bad_area(regs, error_code, address);
- 		return;
-@@ -1119,6 +1135,7 @@ good_area:
- 	 */
- 	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ config GENERIC_CMOS_UPDATE
+ 	bool
+diff --git a/arch/sparc/kernel/pcic.c b/arch/sparc/kernel/pcic.c
+index 85e7037..8ff470c 100644
+--- a/arch/sparc/kernel/pcic.c
++++ b/arch/sparc/kernel/pcic.c
+@@ -163,8 +163,6 @@ void __iomem *pcic_regs;
+ volatile int pcic_speculative;
+ volatile int pcic_trapped;
  
+-static void pci_do_gettimeofday(struct timeval *tv);
+-static int pci_do_settimeofday(struct timespec *tv);
+ 
+ #define CONFIG_CMD(bus, device_fn, where) (0x80000000 | (((unsigned int)bus) << 16) | (((unsigned int)device_fn) << 8) | (where & ~3))
+ 
+@@ -716,19 +714,29 @@ static irqreturn_t pcic_timer_handler (int irq, void *h)
+ #define USECS_PER_JIFFY  10000  /* We have 100HZ "standard" timer for sparc */
+ #define TICK_TIMER_LIMIT ((100*1000000/4)/100)
+ 
++extern u32 (*do_arch_gettimeoffset)(void);
 +
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
- 		mm_fault_error(regs, error_code, address, fault);
- 		return;
-@@ -1128,13 +1145,18 @@ good_area:
- 		tsk->maj_flt++;
- 		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1, 0,
- 				     regs, address);
--	} else {
-+	} else if (!speculative || mm_version_check(mm)) {
- 		tsk->min_flt++;
- 		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1, 0,
- 				     regs, address);
-+	} else {
-+		vma_release(vma);
-+		goto retry_with_lock;
- 	}
- 
- 	check_v8086_mode(regs, address, tsk);
--
--	mm_read_unlock(mm);
-+	if (!speculative)
-+		mm_read_unlock(mm);
-+	else
-+		vma_release(vma);
- }
-Index: mmotm-mm-accessor/mm/memory.c
-===================================================================
---- mmotm-mm-accessor.orig/mm/memory.c
-+++ mmotm-mm-accessor/mm/memory.c
-@@ -121,6 +121,13 @@ static int __init init_zero_pfn(void)
- }
- core_initcall(init_zero_pfn);
- 
-+static bool test_valid_pte(struct mm_struct *mm, pte_t pte, pte_t orig)
++u32 pci_gettimeoffset(void)
 +{
-+	if (likely(mm_version_check(mm) && pte_same(pte, orig)))
-+		return true;
-+	return false;
++	/*
++	 * We divide all by 100
++	 * to have microsecond resolution and to avoid overflow
++	 */
++	unsigned long count =
++	    readl(pcic0.pcic_regs+PCI_SYS_COUNTER) & ~PCI_SYS_COUNTER_OVERFLOW;
++	count = ((count/100)*USECS_PER_JIFFY) / (TICK_TIMER_LIMIT/100);
++	return count * 1000;
 +}
 +
++
+ void __init pci_time_init(void)
+ {
+ 	struct linux_pcic *pcic = &pcic0;
+ 	unsigned long v;
+ 	int timer_irq, irq;
+ 
+-	/* A hack until do_gettimeofday prototype is moved to arch specific headers
+-	   and btfixupped. Patch do_gettimeofday with ba pci_do_gettimeofday; nop */
+-	((unsigned int *)do_gettimeofday)[0] = 
+-	    0x10800000 | ((((unsigned long)pci_do_gettimeofday -
+-	     (unsigned long)do_gettimeofday) >> 2) & 0x003fffff);
+-	((unsigned int *)do_gettimeofday)[1] = 0x01000000;
+-	BTFIXUPSET_CALL(bus_do_settimeofday, pci_do_settimeofday, BTFIXUPCALL_NORM);
++	do_arch_gettimeoffset = pci_gettimeoffset;
++
+ 	btfixup();
+ 
+ 	writel (TICK_TIMER_LIMIT, pcic->pcic_regs+PCI_SYS_LIMIT);
+@@ -746,84 +754,6 @@ void __init pci_time_init(void)
+ 	local_irq_enable();
+ }
+ 
+-static inline unsigned long do_gettimeoffset(void)
+-{
+-	/*
+-	 * We divide all by 100
+-	 * to have microsecond resolution and to avoid overflow
+-	 */
+-	unsigned long count =
+-	    readl(pcic0.pcic_regs+PCI_SYS_COUNTER) & ~PCI_SYS_COUNTER_OVERFLOW;
+-	count = ((count/100)*USECS_PER_JIFFY) / (TICK_TIMER_LIMIT/100);
+-	return count;
+-}
+-
+-static void pci_do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-	unsigned long max_ntp_tick = tick_usec - tickadj;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-		usec = do_gettimeoffset();
+-
+-		/*
+-		 * If time_adjust is negative then NTP is slowing the clock
+-		 * so make sure not to go into next possible interval.
+-		 * Better to lose some accuracy than have time go backwards..
+-		 */
+-		if (unlikely(time_adjust < 0))
+-			usec = min(usec, max_ntp_tick);
+-
+-		sec = xtime.tv_sec;
+-		usec += (xtime.tv_nsec / 1000);
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-static int pci_do_settimeofday(struct timespec *tv)
+-{
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	/*
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
+-	 */
+-	tv->tv_nsec -= 1000 * do_gettimeoffset();
+-	while (tv->tv_nsec < 0) {
+-		tv->tv_nsec += NSEC_PER_SEC;
+-		tv->tv_sec--;
+-	}
+-
+-	wall_to_monotonic.tv_sec += xtime.tv_sec - tv->tv_sec;
+-	wall_to_monotonic.tv_nsec += xtime.tv_nsec - tv->tv_nsec;
+-
+-	if (wall_to_monotonic.tv_nsec > NSEC_PER_SEC) {
+-		wall_to_monotonic.tv_nsec -= NSEC_PER_SEC;
+-		wall_to_monotonic.tv_sec++;
+-	}
+-	if (wall_to_monotonic.tv_nsec < 0) {
+-		wall_to_monotonic.tv_nsec += NSEC_PER_SEC;
+-		wall_to_monotonic.tv_sec--;
+-	}
+-
+-	xtime.tv_sec = tv->tv_sec;
+-	xtime.tv_nsec = tv->tv_nsec;
+-	ntp_clear();
+-	return 0;
+-}
+ 
+ #if 0
+ static void watchdog_reset() {
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index 5b2f595..9b440c0 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -51,7 +51,6 @@ DEFINE_SPINLOCK(rtc_lock);
+ EXPORT_SYMBOL(rtc_lock);
+ 
+ static int set_rtc_mmss(unsigned long);
+-static int sbus_do_settimeofday(struct timespec *tv);
+ 
+ unsigned long profile_pc(struct pt_regs *regs)
+ {
+@@ -76,6 +75,8 @@ EXPORT_SYMBOL(profile_pc);
+ 
+ __volatile__ unsigned int *master_l10_counter;
+ 
++u32 (*do_arch_gettimeoffset)(void);
++
  /*
-  * If a p?d_bad entry is found while walking page tables, report
-  * the error, before resetting entry to p?d_none.  Usually (but
-@@ -2044,7 +2051,7 @@ static int do_wp_page(struct mm_struct *
- 			lock_page(old_page);
- 			page_table = pte_offset_map_lock(mm, pmd, address,
- 							 &ptl);
--			if (!pte_same(*page_table, orig_pte)) {
-+			if (!test_valid_pte(mm, *page_table, orig_pte)) {
- 				unlock_page(old_page);
- 				page_cache_release(old_page);
- 				goto unlock;
-@@ -2105,7 +2112,7 @@ static int do_wp_page(struct mm_struct *
- 			 */
- 			page_table = pte_offset_map_lock(mm, pmd, address,
- 							 &ptl);
--			if (!pte_same(*page_table, orig_pte)) {
-+			if (!test_valid_pte(mm, *page_table, orig_pte)) {
- 				unlock_page(old_page);
- 				page_cache_release(old_page);
- 				goto unlock;
-@@ -2169,7 +2176,7 @@ gotten:
- 	 * Re-check the pte - we dropped the lock
- 	 */
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
--	if (likely(pte_same(*page_table, orig_pte))) {
-+	if (test_valid_pte(mm, *page_table, orig_pte)) {
- 		if (old_page) {
- 			if (!PageAnon(old_page)) {
- 				dec_mm_counter(mm, file_rss);
-@@ -2555,7 +2562,7 @@ static int do_swap_page(struct mm_struct
- 			 * while we released the pte lock.
- 			 */
- 			page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
--			if (likely(pte_same(*page_table, orig_pte)))
-+			if (pte_same(*page_table, orig_pte))
- 				ret = VM_FAULT_OOM;
- 			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 			goto unlock;
-@@ -2588,7 +2595,7 @@ static int do_swap_page(struct mm_struct
- 	 * Back out if somebody else already faulted in this pte.
- 	 */
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
--	if (unlikely(!pte_same(*page_table, orig_pte)))
-+	if (unlikely(!test_valid_pte(mm, *page_table, orig_pte)))
- 		goto out_nomap;
+  * timer_interrupt() needs to keep up the real-time clock,
+  * as well as call the "do_timer()" routine every clocktick
+@@ -196,35 +197,14 @@ static int __init clock_init(void)
+ {
+ 	return of_register_driver(&clock_driver, &of_platform_bus_type);
+ }
+-
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+  * be before device_initcall() because things like the RTC driver
+  * need to see the clock registers.
+  */
+ fs_initcall(clock_init);
  
- 	if (unlikely(!PageUptodate(page))) {
-@@ -2844,7 +2851,7 @@ static int __do_fault(struct mm_struct *
- 	 * handle that later.
- 	 */
- 	/* Only go through if we didn't race with anybody else... */
--	if (likely(pte_same(*page_table, orig_pte))) {
-+	if (likely(test_valid_pte(mm, *page_table, orig_pte))) {
- 		flush_icache_page(vma, page);
- 		entry = mk_pte(page, vma->vm_page_prot);
- 		if (flags & FAULT_FLAG_WRITE)
-@@ -2991,7 +2998,7 @@ static inline int handle_pte_fault(struc
+-static void __init sbus_time_init(void)
+-{
+-
+-	BTFIXUPSET_CALL(bus_do_settimeofday, sbus_do_settimeofday, BTFIXUPCALL_NORM);
+-	btfixup();
+-
+-	sparc_init_timers(timer_interrupt);
+-}
+-
+-void __init time_init(void)
+-{
+-#ifdef CONFIG_PCI
+-	extern void pci_time_init(void);
+-	if (pcic_present()) {
+-		pci_time_init();
+-		return;
+-	}
+-#endif
+-	sbus_time_init();
+-}
  
- 	ptl = pte_lockptr(mm, pmd);
- 	spin_lock(ptl);
--	if (unlikely(!pte_same(*pte, entry)))
-+	if (unlikely(!test_valid_pte(mm, *pte, entry)))
- 		goto unlock;
- 	if (flags & FAULT_FLAG_WRITE) {
- 		if (!pte_write(entry))
+-static inline unsigned long do_gettimeoffset(void)
++u32 sbus_do_gettimeoffset(void)
+ {
+ 	unsigned long val = *master_l10_counter;
+ 	unsigned long usec = (val >> 10) & 0x1fffff;
+@@ -233,86 +213,39 @@ static inline unsigned long do_gettimeoffset(void)
+ 	if (val & 0x80000000)
+ 		usec += 1000000 / HZ;
+ 
+-	return usec;
++	return usec * 1000;
+ }
+ 
+-/* Ok, my cute asm atomicity trick doesn't work anymore.
+- * There are just too many variables that need to be protected
+- * now (both members of xtime, et al.)
+- */
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-	unsigned long max_ntp_tick = tick_usec - tickadj;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-		usec = do_gettimeoffset();
+-
+-		/*
+-		 * If time_adjust is negative then NTP is slowing the clock
+-		 * so make sure not to go into next possible interval.
+-		 * Better to lose some accuracy than have time go backwards..
+-		 */
+-		if (unlikely(time_adjust < 0))
+-			usec = min(usec, max_ntp_tick);
+-
+-		sec = xtime.tv_sec;
+-		usec += (xtime.tv_nsec / 1000);
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+ 
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
++u32 arch_gettimeoffset(void)
+ {
+-	int ret;
+-
+-	write_seqlock_irq(&xtime_lock);
+-	ret = bus_do_settimeofday(tv);
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-	return ret;
++	if (unlikely(!do_arch_gettimeoffset))
++		return 0;
++	return do_arch_gettimeoffset();
+ }
+ 
+-EXPORT_SYMBOL(do_settimeofday);
+-
+-static int sbus_do_settimeofday(struct timespec *tv)
++static void __init sbus_time_init(void)
+ {
+-	time_t wtm_sec, sec = tv->tv_sec;
+-	long wtm_nsec, nsec = tv->tv_nsec;
++	do_arch_gettimeoffset = sbus_do_gettimeoffset;
+ 
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	/*
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
+-	 */
+-	nsec -= 1000 * do_gettimeoffset();
+-
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
++	btfixup();
+ 
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
++	sparc_init_timers(timer_interrupt);
++}
+ 
+-	ntp_clear();
+-	return 0;
++void __init time_init(void)
++{
++#ifdef CONFIG_PCI
++	extern void pci_time_init(void);
++	if (pcic_present()) {
++		pci_time_init();
++		return;
++	}
++#endif
++	sbus_time_init();
+ }
+ 
++
+ static int set_rtc_mmss(unsigned long secs)
+ {
+ 	struct rtc_device *rtc = rtc_class_open("rtc0");
+
 
