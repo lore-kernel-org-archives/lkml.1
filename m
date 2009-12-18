@@ -1,114 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZLRQBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbZLRQD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbZLRQBI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:01:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZLRQBG
+	id S932105AbZLRQD4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZLRQDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:01:06 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44886 "EHLO e2.ny.us.ibm.com"
+	Fri, 18 Dec 2009 11:03:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51134 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbZLRQBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:01:03 -0500
-Date: Fri, 18 Dec 2009 08:01:00 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Linux Kernel Maillist <linux-kernel@vger.kernel.org>
-Subject: Re: kernel/rcutree.h:301: sorry, unimplemented: inlining failed in
-	call to 'rcu_bootup_announce': function body not available
-Message-ID: <20091218160100.GA6712@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.LNX.2.01.0912172037570.9874@filesrv1.baby-dragons.com> <2375c9f90912180152p2189aa60o96c1c0ec97c30b83@mail.gmail.com>
+	id S1751000AbZLRQDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:03:54 -0500
+Date: Fri, 18 Dec 2009 11:01:40 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com, Alan.Brunelle@hp.com
+Subject: Re: [RFC] CFQ group scheduling structure organization
+Message-ID: <20091218160140.GE3123@redhat.com>
+References: <1261003980-10115-1-git-send-email-vgoyal@redhat.com> <4e5e476b0912170341h7ba632akddb921c996a36f73@mail.gmail.com> <4B2AC59D.2010004@ds.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2375c9f90912180152p2189aa60o96c1c0ec97c30b83@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <4B2AC59D.2010004@ds.jp.nec.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 05:52:51PM +0800, Américo Wang wrote:
-> On Fri, Dec 18, 2009 at 1:45 PM, Mr. James W. Laferriere
-> <babydr@baby-dragons.com> wrote:
-> >        Hello All ,
-> >
-> >  gcc -Wp,-MD,kernel/.rcutree.o.d  -nostdinc -isystem
-> > /usr/lib/gcc/i486-slackware-linux/3.4.6/include -Iinclude
-> > -I/usr/src/linux-2.6.32.1/arch/x86/include -include include/linux/autoconf.h
-> > -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
-> > -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration
-> > -Wno-format-security -fno-delete-null-pointer-checks -O2 -m32 -msoft-float
-> > -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2
-> > -fno-unit-at-a-time -march=i686 -ffreestanding -DCONFIG_AS_CFI=1 -pipe
-> > -Wno-sign-compare -fno-asynchronous-unwind-tables -mno-sse -mno-mmx
-> > -mno-sse2 -mno-3dnow -fno-omit-frame-pointer -fno-optimize-sibling-calls -g
-> > -Wdeclaration-after-statement   -D"KBUILD_STR(s)=#s"
-> > -D"KBUILD_BASENAME=KBUILD_STR(rcutree)"
-> >  -D"KBUILD_MODNAME=KBUILD_STR(rcutree)" -c -o kernel/rcutree.o
-> > kernel/rcutree.c
-> > kernel/rcutree.c: In function `__rcu_init':
-> > kernel/rcutree.h:301: sorry, unimplemented: inlining failed in call to
-> > 'rcu_bootup_announce': function body not available
-> > kernel/rcutree.c:1740: sorry, unimplemented: called from here
-> > make[1]: *** [kernel/rcutree.o] Error 1
-> > make: *** [kernel] Error 2
-> >
-> >        There is no way ,  thru the 'make *config' methods to disable this
-> > broken stuff ,  So How may I get past this brokeness ?
-> >        And looking the posts for the 2.6.32-pre/rc the old rcu has been
-> > trashed completely .  So I am not able to even try using that .
-> >
-> >        Would someone please shed some light on this .  I really need the
-> > updates for the Fusion/mpt driver & the changes in the /md/ tree as well .
-> 
-> Hmm, I see the problem, but not sure how to fix it...
-> 
-> Paul, why do we have #include "rcutree_plugin.h" at the bottom
-> of rcutree.c? This looks strange for me...
-> 
-> How about moving it up? At least just move upper to rcu_init().
+On Thu, Dec 17, 2009 at 06:58:21PM -0500, Munehiro Ikeda wrote:
+> Hello,
+>
+> Corrado Zoccolo wrote, on 12/17/2009 06:41 AM:
+>> Hi,
+>> On Wed, Dec 16, 2009 at 11:52 PM, Vivek Goyal<vgoyal@redhat.com>  wrote:
+>>> Hi All,
+>>>
+>>> With some basic group scheduling support in CFQ, there are few questions
+>>> regarding how group structure should look like in CFQ.
+>>>
+>>> Currently, grouping looks as follows. A, and B are two cgroups created by
+>>> user.
+>>>
+>>> [snip]
+>>>
+>>> Proposal 4:
+>>> ==========
+>>> Treat task and group at same level. Currently groups are at top level and
+>>> at second level are tasks. View the whole hierarchy as follows.
+>>>
+>>>
+>>>                         service-tree
+>>>                         /   |  \  \
+>>>                        T1   T2  G1 G2
+>>>
+>>> Here T1 and T2 are two tasks in root group and G1 and G2 are two cgroups
+>>> created under root.
+>>>
+>>> In this kind of scheme, any RT task in root group will still be system
+>>> wide RT even if we create groups G1 and G2.
+>>>
+>>> So what are the issues?
+>>>
+>>> - I talked to few folks and everybody found this scheme not so intutive.
+>>>   Their argument was that once I create a cgroup, say A,  under root, then
+>>>   bandwidth should be divided between "root" and "A" proportionate to
+>>>   the weight.
+>>>
+>>>   It is not very intutive that group is competing with all the tasks
+>>>   running in root group. And disk share of newly created group will change
+>>>   if more tasks fork in root group. So it is highly dynamic and not
+>>>   static hence un-intutive.
+>
+> I agree it might be dynamic but I don't think it's un-intuitive.
+> I think it's reasonable that disk share of a group is
+> influenced by the number of tasks running in root group,
+> because the root group is shared by the tasks and groups from
+> the viewpoint of cgroup I/F, and they really share disk bandwidth.
+>
 
-Could you please apply commit #dbe01350fa8ce0c11948ab7d6be71a4d901be151
-from Linus's git tree?  Corresponding diff attached.
+That's true that it becomes more natural to view it that way. That's a
+different thing that it might become little more work in user space to
+then move root tasks into a sub group otherwise, the effective share of
+a newly created group might be really less. All the tasks in a group are
+effectively a single task when it comes to top level.
 
-							Thanx, Paul
+>
+>>>   To emulate the behavior of previous proposals, root shall have to create
+>>>   a new group and move all root tasks there. But admin shall have to still
+>>>   keep RT tasks in root group so that they still remain system-wide.
+>>>
+>>>                         service-tree
+>>>                         /   |    \  \
+>>>                        T1  root  G1 G2
+>>>                             |
+>>>                             T2
+>>>
+>>>   Now admin has specifically created a group "root" along side G1 and G2
+>>>   and moved T2 under root. T1 is still left in top level group as it might
+>>>   be an RT task and we want it to remain RT task systemwide.
+>>>
+>>>   So to some people this scheme is un-intutive and requires more work in
+>>>   user space to achive desired behavior. I am kind of 50:50 between two
+>>>   kind of arrangements.
+>>>
+>> This is the one I prefer: it is the most natural one if you see that
+>> groups are scheduling entities like any other task.
+>> I think it becomes intuitive with an analogy with a qemu (e.g. kvm)
+>> virtual machine model. If you think a group like a virtual machine, it
+>> is clear that for the normal system, the whole virtual machine is a
+>> single scheduling entity, and that it has to compete with other
+>> virtual machines (as other single entities) and every process in the
+>> real system (those are inherently more important, since without the
+>> real system, the VMs cannot simply exist).
+>> Having a designated root group, instead, resembles the xen VM model,
+>> where you have a separated domain for each VM and for the real system.
+>>
+>> I think the implementation of this approach can make the code simpler
+>> and modular (CFQ could be abstracted to deal with scheduling entities,
+>> and each scheduling entity could be defined in a separate file).
+>> Within each group, you will now have the choice of how to schedule its
+>> queues. This means that you could possibly have different I/O
+>> schedulers within each group, and even have sub-groups within groups.
+>
+> Corrado exactly says my preference.
+>
+> I understand current implementation, like proposal 1, was
+> employed to make code simple and I believe it succeeded.
+> However, rather I feel it's un-intuitive because it's
+> inconsistent with cgroup I/F.  Behavior which is inconsistent
+> with the I/F can lead to misconfiguration of sys-admins.
+> This might be problematic, IMHO.
 
-------------------------------------------------------------------------
+Thanks Muuhh. It helps to get perspective from various folks before I
+start implementing it.
 
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index c1891c3..ddb79ec 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -301,7 +301,7 @@ DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
- #else /* #ifdef RCU_TREE_NONCORE */
- 
- /* Forward declarations for rcutree_plugin.h */
--static inline void rcu_bootup_announce(void);
-+static void rcu_bootup_announce(void);
- long rcu_batches_completed(void);
- static void rcu_preempt_note_context_switch(int cpu);
- static int rcu_preempted_readers(struct rcu_node *rnp);
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index ef2a58c..c03edf7 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
- /*
-  * Tell them what RCU they are running.
-  */
--static inline void rcu_bootup_announce(void)
-+static void rcu_bootup_announce(void)
- {
- 	printk(KERN_INFO
- 	       "Experimental preemptable hierarchical RCU implementation.\n");
-@@ -481,7 +481,7 @@ void exit_rcu(void)
- /*
-  * Tell them what RCU they are running.
-  */
--static inline void rcu_bootup_announce(void)
-+static void rcu_bootup_announce(void)
- {
- 	printk(KERN_INFO "Hierarchical RCU implementation.\n");
- }
+Thanks
+Vivek
