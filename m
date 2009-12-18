@@ -1,102 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZLRJ5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbZLRKBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbZLRJ5P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 04:57:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZLRJ5O
+	id S1753580AbZLRKBw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 05:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZLRKBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 04:57:14 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:40403 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbZLRJ5N convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 04:57:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=orXE5HJhn8z7pPFFzcx9Bqe559qBCRw5zRcAT6BFR7FoIgE0JqH6agKkw8e0eF/4By
-         gfJL5qO5OblJfBCR5byd2KCOYrLuSKHtT93gdGoEXpN1lBI1wStJEZXOU5rBqKph1/X8
-         dKYoWGdlDI68UTFmZDKVzNVKk7zY93En24EWI=
-MIME-Version: 1.0
-In-Reply-To: <696f7f5e0912180144j27a6fd7cj2492b57259314871@mail.gmail.com>
-References: <696f7f5e0912180141n23658a18l428157b0ea1d8f47@mail.gmail.com>
-	 <696f7f5e0912180144j27a6fd7cj2492b57259314871@mail.gmail.com>
-Date: Fri, 18 Dec 2009 13:57:09 +0400
-Message-ID: <1a297b360912180157m24da5eb2q2df4508e7280e521@mail.gmail.com>
-Subject: Re: Technotrend S2-1600 - initialization bug
-From: Manu Abraham <abraham.manu@gmail.com>
-To: Andrey Gangan <a.gangan@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 18 Dec 2009 05:01:50 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47378 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbZLRKBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 05:01:47 -0500
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+From: James Bottomley <James.Bottomley@suse.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jens.axboe@oracle.com, torvalds@linux-foundation.org, tytso@mit.edu,
+       kyle@mcmartin.ca, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@infradead.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20091218183353I.fujita.tomonori@lab.ntt.co.jp>
+References: <1261094220.2752.27.camel@mulgrave.site>
+	 <20091218095944G.fujita.tomonori@lab.ntt.co.jp>
+	 <1261120128.3013.8.camel@mulgrave.site>
+	 <20091218183353I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 18 Dec 2009 11:01:29 +0100
+Message-Id: <1261130489.3013.41.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2009-12-18 at 18:34 +0900, FUJITA Tomonori wrote:
+> On Fri, 18 Dec 2009 08:08:48 +0100
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > > Even if we have some potential users, I'm not sure that supporting
+> > > vmalloc in the block layer officially is a good idea. IMO, it needs
+> > > too many tricks for generic code.
+> > 
+> > So far, there's only xfs that I know of.
+> > 
+> > Given the way journalling works, it's not an unusual requirement to use
+> > a large buffer for operations.  It's a bit of a waste of kernel
+> > resources to have this physically contiguous, but it is a waste of
+> > resources (and for buffers over our kmalloc max, it would even have to
+> > be allocated at start of day), so I think large kernel virtual areas
+> > (like vmap/vmalloc) have a part to play in fs operations.
+> 
+> Yeah, but now only XFS passes vmap'ed pages to the block layer. Isn't
+> it better to wait until we have real users of the API?
 
-On Fri, Dec 18, 2009 at 1:44 PM, Andrey Gangan <a.gangan@gmail.com> wrote:
-> Hello!
->
-> I have Technotrend S2-1600 satellite tv tuner. Fedora 11 used kernel,
-> which do not support this tuner.
-> I have installed Fedora 12 x64 kernel 2.6.31-14
-> When booting I have to wait very long and did not get login screen.
-> I pressed ESC and I
-> and saw the error connected with this tuner.
-> I made a picture of the screen by digital camera, and type it below:
->
-> udev: BUG: unable to handle kernel NULL pointer dereference at 00000000000000b0
-> IP: [<ffffffffa01220d6>] dvb_frontend_detach+0xc/0x82 [dvb_core]
-> PGD 0
-> Oops: 0000 [#1] SMP
-> last sysfs file: /sys/module/snd_timer/initstate
-> CPU 0
-> Modules linked in: ath5k(+) snd_hwdep mac80211 firewire_ohci(+)
-> snd_seq snd_seq_device budget(+) snd_pcm atl1e budget_core ath
-> firewire_core saa7146 snd_timer cfg80211 iTCO_vendor_support
-> ttpci_eeprom crc_itu_t snd dvb_core soundcore rfkill serio_raw
-> i2c_i801 sbnd_page_alloc asus_atk0110 nouveau ttm drm_kms_helper drm
-> i2c_algo_bit i2c_core [last unloaded: scsi_wait_scan]
-> Pid: 578, comm: work_for_cpu Not tainted 2.6.31.6-166.fc12.x86_64 #1 P5Q PRO
-> RIP: 0010:[<ffffffffa01220d6>]dvb_frontend_detach+0xc/0x82 [dvb_core]
-> RSP: 0018:ffff88012a4f3de0  EFLAGS: 00010246
-> RAX: 0000000000000000 RBX: ffff880126582000 RCX: 0000000000000891
-> RDX: 0000000000000000 RSI: 0000000000000046 RDI: 0000000000000000
-> RBP: ffff88012a4f3df0 R08: ffffffff815f61c0 R09: 0000000000000000
-> R10: 0000000000000000 R11: ffff880124e361c8 R12: 0000000000000000
-> R13: ffff880128984800 R14: ffffffffa01c7f20 R15: 0000000000001000
-> FS:  0000000000000000(0000) GS: ffff880028022000(0000) knlGS: 0000000000000000
-> CS:   0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 0000000001001000 CR4: 00000000000006f0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process work_for_cpu (pid: 578, threadinfo ffff88012a4f2000, task
-> ffff880124e35e00)
-> Stack:
->  ffff880126582000 0000000000000000 ffff88012a4f3e60 ffffffffa01c5913
-> [<ffffffffa01c5913>] budget_attach+0xc87/0xd50 [budget]
-> [<ffffffff81418c2f>] ? printk+0x41/0x4a
-> [<ffffffff8102ee3e>] ? x86_swiotlb_alloc_coherent+0x21/0x40
-> [<ffffffffa0183960>] saa7146_init_one+0x44f/0x563 [saa7146]
-> [<ffffffff81063b56>] ? do_work_for_cpu+0x0/0x2a
-> [<ffffffff81210311>] local_pci_probe+0x17/0x1b
-> [<ffffffff81063b6e>] do_work_for_cpu+0x18/0x2a
-> [<ffffffff81067781>] kthread+0x91/0x99
-> [<ffffffff81012daa>] child_rip+0xa/0x20
-> [<ffffffff810676f0>] ? kthread+0x0/0x99
-> [<ffffffff81012da0>] ? child_rip+0x0/0x20
-> Code: 90 55 48 89 e5 48 83 ec 20 0f 1f 44 00 00 48 39 f1 8d 81 40 42
-> 0f 00 7c 02 89 c8 29 f0 c9 c3 55 48 89 e5 41 54 53 0f 1f 44 00 00 <48>
-> 8b 87 b0 00 00 00 48 89 fb 48 85 c0 74 0e ff d0 48 8b bb b0
-> RIP [<ffffffffa01220d6>] dvb_frontend_detach+0xc/0x82 [dvb_core]
->  RSP <ffff88012a4f3de0>
-> CR2: 0000000000000000
-> ---[ end trace b0f11a44bf3a4233 ]---
+XFS is a real user ... the XFS filesystem is our most trusted code base
+that can break the 8TB limit, which hard disks are already at.  Ext4 may
+be ready, but it's not universally present in enterprise distros like
+XFS.
 
-Are you able to reproduce the same issue, when you this repository:
-http://linuxtv.org/hg/v4l-dvb
+> > As to the API, the specific problem is that the block and lower arch
+> > layers are specifically programmed to think any kernel address has only
+> > a single alias and that it's offset mapped, which is why we get the
+> > failure.
+> 
+> Yeah, however we can make a rule that you can't pass a vmap area
+> (including vmap'ed pages) to the block layer. We can't make the rule
+> effective for the past so XFS is the only exception.
+
+We need something that works for XFS.  The next proposal works for the
+current block API because the vunmap makes the xfs pages look like
+standard kernel pages, which blk_rq_map_kern() will process correctly.
+
+But, in principle, I think whatever fix is chosen, we shouldn't
+necessarily discourage others from using it.
+
+> > An alternative proposal to modifying the block layer to do coherency,
+> > might be simply to have the fs layer do a vunmap before doing I/O and
+> > re-vmap when it's completed. 
+> 
+> I'm not sure it's worth making the whole block layer compatible to
+> vmap (adding complexity and possibly performance penalty).
+
+This proposal has no block layer changes.  It just makes the XFS vmap
+area look like a standard set of kernel pages ... with the overhead of
+the page table manipulations on unmap and remap.
+
+> If we really need to support this, I like helper APIs that the callers
+> must use before and after I/Os.
+
+If it's just this route, they already exist ... they're vmap and vunmap.
+
+> > That would ensure the architecturally
+> > correct flushing of the aliases, and would satisfy the expectations of
+> > blk_rq_map_kern().  The down side is that vmap/vmalloc set up and clear
+> > page tables, which isn't necessary and might impact performance (xfs
+> > people?)
+> 
+> btw, I'm not sure that the existing blk_rq_map_* API isn't fit well to
+> file systems since blk_rq_map_user and blk_rq_map_kern takes a request
+> structure.
+
+OK, so that was illustrative.  The meat of the change is at the bio
+layer anyway (fss tend to speak bios).  But the point of *this*
+particular proposal is that it requires no changes either in the blk_ or
+bio_ routines.
+
+James
 
 
-Regards,
-Manu
