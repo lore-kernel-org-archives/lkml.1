@@ -1,74 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbZLRKaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbZLRKdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752609AbZLRKaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 05:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZLRKaV
+	id S1752665AbZLRKdL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 05:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZLRKdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 05:30:21 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48239 "EHLO mx1.suse.de"
+	Fri, 18 Dec 2009 05:33:09 -0500
+Received: from sh.osrg.net ([192.16.179.4]:38252 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbZLRKaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 05:30:18 -0500
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-From: James Bottomley <James.Bottomley@suse.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jens.axboe@oracle.com, torvalds@linux-foundation.org, tytso@mit.edu,
-       kyle@mcmartin.ca, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20091218192401D.fujita.tomonori@lab.ntt.co.jp>
-References: <1261120128.3013.8.camel@mulgrave.site>
-	 <20091218183353I.fujita.tomonori@lab.ntt.co.jp>
-	 <1261130489.3013.41.camel@mulgrave.site>
-	 <20091218192401D.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Dec 2009 11:30:12 +0100
-Message-Id: <1261132212.3013.45.camel@mulgrave.site>
+	id S1752246AbZLRKdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 05:33:07 -0500
+Date: Fri, 18 Dec 2009 19:33:00 +0900
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] block: remove Documentation/block/as-iosched.txt
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20091218192457G.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 18 Dec 2009 19:33:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 19:24 +0900, FUJITA Tomonori wrote:
-> On Fri, 18 Dec 2009 11:01:29 +0100
-> James Bottomley <James.Bottomley@suse.de> wrote:
-> 
-> > > Yeah, but now only XFS passes vmap'ed pages to the block layer. Isn't
-> > > it better to wait until we have real users of the API?
-> > 
-> > XFS is a real user ... the XFS filesystem is our most trusted code base
-> > that can break the 8TB limit, which hard disks are already at.  Ext4 may
-> > be ready, but it's not universally present in enterprise distros like
-> > XFS.
-> 
-> XFS already has the own code to handle that, which works fine (with
-> your patchset except for 5/6 for the block layer). Not much motivation
-> for XFS to move to the generic API?
 
-Right, but it's for completeness.  If we decide to allow vmap buffers,
-then only supporting them on certain paths is a recipe for confusion in
-a year's time when someone assumes we support vmap buffers on all block
-paths; a bit like the current confusion over what we support ....
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ Documentation/block/00-INDEX       |    2 -
+ Documentation/block/as-iosched.txt |  172 ------------------------------------
+ 2 files changed, 0 insertions(+), 174 deletions(-)
+ delete mode 100644 Documentation/block/as-iosched.txt
 
-> > > > That would ensure the architecturally
-> > > > correct flushing of the aliases, and would satisfy the expectations of
-> > > > blk_rq_map_kern().  The down side is that vmap/vmalloc set up and clear
-> > > > page tables, which isn't necessary and might impact performance (xfs
-> > > > people?)
-> > > 
-> > > btw, I'm not sure that the existing blk_rq_map_* API isn't fit well to
-> > > file systems since blk_rq_map_user and blk_rq_map_kern takes a request
-> > > structure.
-> > 
-> > OK, so that was illustrative.  The meat of the change is at the bio
-> > layer anyway (fss tend to speak bios).
-> 
-> Yeah, I think so, it's up to Jens to add new APIs for vmap there.
-
-Agreed.
-
-James
-
+diff --git a/Documentation/block/00-INDEX b/Documentation/block/00-INDEX
+index 961a051..a406286 100644
+--- a/Documentation/block/00-INDEX
++++ b/Documentation/block/00-INDEX
+@@ -1,7 +1,5 @@
+ 00-INDEX
+ 	- This file
+-as-iosched.txt
+-	- Anticipatory IO scheduler
+ barrier.txt
+ 	- I/O Barriers
+ biodoc.txt
+diff --git a/Documentation/block/as-iosched.txt b/Documentation/block/as-iosched.txt
+deleted file mode 100644
+index 738b72b..0000000
+--- a/Documentation/block/as-iosched.txt
++++ /dev/null
+@@ -1,172 +0,0 @@
+-Anticipatory IO scheduler
+--------------------------
+-Nick Piggin <piggin@cyberone.com.au>    13 Sep 2003
+-
+-Attention! Database servers, especially those using "TCQ" disks should
+-investigate performance with the 'deadline' IO scheduler. Any system with high
+-disk performance requirements should do so, in fact.
+-
+-If you see unusual performance characteristics of your disk systems, or you
+-see big performance regressions versus the deadline scheduler, please email
+-me. Database users don't bother unless you're willing to test a lot of patches
+-from me ;) its a known issue.
+-
+-Also, users with hardware RAID controllers, doing striping, may find
+-highly variable performance results with using the as-iosched. The
+-as-iosched anticipatory implementation is based on the notion that a disk
+-device has only one physical seeking head.  A striped RAID controller
+-actually has a head for each physical device in the logical RAID device.
+-
+-However, setting the antic_expire (see tunable parameters below) produces
+-very similar behavior to the deadline IO scheduler.
+-
+-Selecting IO schedulers
+------------------------
+-Refer to Documentation/block/switching-sched.txt for information on
+-selecting an io scheduler on a per-device basis.
+-
+-Anticipatory IO scheduler Policies
+-----------------------------------
+-The as-iosched implementation implements several layers of policies
+-to determine when an IO request is dispatched to the disk controller.
+-Here are the policies outlined, in order of application.
+-
+-1. one-way Elevator algorithm.
+-
+-The elevator algorithm is similar to that used in deadline scheduler, with
+-the addition that it allows limited backward movement of the elevator
+-(i.e. seeks backwards).  A seek backwards can occur when choosing between
+-two IO requests where one is behind the elevator's current position, and
+-the other is in front of the elevator's position. If the seek distance to
+-the request in back of the elevator is less than half the seek distance to
+-the request in front of the elevator, then the request in back can be chosen.
+-Backward seeks are also limited to a maximum of MAXBACK (1024*1024) sectors.
+-This favors forward movement of the elevator, while allowing opportunistic
+-"short" backward seeks.
+-
+-2. FIFO expiration times for reads and for writes.
+-
+-This is again very similar to the deadline IO scheduler.  The expiration
+-times for requests on these lists is tunable using the parameters read_expire
+-and write_expire discussed below.  When a read or a write expires in this way,
+-the IO scheduler will interrupt its current elevator sweep or read anticipation
+-to service the expired request.
+-
+-3. Read and write request batching
+-
+-A batch is a collection of read requests or a collection of write
+-requests.  The as scheduler alternates dispatching read and write batches
+-to the driver.  In the case a read batch, the scheduler submits read
+-requests to the driver as long as there are read requests to submit, and
+-the read batch time limit has not been exceeded (read_batch_expire).
+-The read batch time limit begins counting down only when there are
+-competing write requests pending.
+-
+-In the case of a write batch, the scheduler submits write requests to
+-the driver as long as there are write requests available, and the
+-write batch time limit has not been exceeded (write_batch_expire).
+-However, the length of write batches will be gradually shortened
+-when read batches frequently exceed their time limit.
+-
+-When changing between batch types, the scheduler waits for all requests
+-from the previous batch to complete before scheduling requests for the
+-next batch.
+-
+-The read and write fifo expiration times described in policy 2 above
+-are checked only when in scheduling IO of a batch for the corresponding
+-(read/write) type.  So for example, the read FIFO timeout values are
+-tested only during read batches.  Likewise, the write FIFO timeout
+-values are tested only during write batches.  For this reason,
+-it is generally not recommended for the read batch time
+-to be longer than the write expiration time, nor for the write batch
+-time to exceed the read expiration time (see tunable parameters below).
+-
+-When the IO scheduler changes from a read to a write batch,
+-it begins the elevator from the request that is on the head of the
+-write expiration FIFO.  Likewise, when changing from a write batch to
+-a read batch, scheduler begins the elevator from the first entry
+-on the read expiration FIFO.
+-
+-4. Read anticipation.
+-
+-Read anticipation occurs only when scheduling a read batch.
+-This implementation of read anticipation allows only one read request
+-to be dispatched to the disk controller at a time.  In
+-contrast, many write requests may be dispatched to the disk controller
+-at a time during a write batch.  It is this characteristic that can make
+-the anticipatory scheduler perform anomalously with controllers supporting
+-TCQ, or with hardware striped RAID devices. Setting the antic_expire
+-queue parameter (see below) to zero disables this behavior, and the 
+-anticipatory scheduler behaves essentially like the deadline scheduler.
+-
+-When read anticipation is enabled (antic_expire is not zero), reads
+-are dispatched to the disk controller one at a time.
+-At the end of each read request, the IO scheduler examines its next
+-candidate read request from its sorted read list.  If that next request
+-is from the same process as the request that just completed,
+-or if the next request in the queue is "very close" to the
+-just completed request, it is dispatched immediately.  Otherwise,
+-statistics (average think time, average seek distance) on the process
+-that submitted the just completed request are examined.  If it seems
+-likely that that process will submit another request soon, and that
+-request is likely to be near the just completed request, then the IO
+-scheduler will stop dispatching more read requests for up to (antic_expire)
+-milliseconds, hoping that process will submit a new request near the one
+-that just completed.  If such a request is made, then it is dispatched
+-immediately.  If the antic_expire wait time expires, then the IO scheduler
+-will dispatch the next read request from the sorted read queue.
+-
+-To decide whether an anticipatory wait is worthwhile, the scheduler
+-maintains statistics for each process that can be used to compute
+-mean "think time" (the time between read requests), and mean seek
+-distance for that process.  One observation is that these statistics
+-are associated with each process, but those statistics are not associated
+-with a specific IO device.  So for example, if a process is doing IO
+-on several file systems on separate devices, the statistics will be
+-a combination of IO behavior from all those devices.
+-
+-
+-Tuning the anticipatory IO scheduler
+-------------------------------------
+-When using 'as', the anticipatory IO scheduler there are 5 parameters under
+-/sys/block/*/queue/iosched/. All are units of milliseconds.
+-
+-The parameters are:
+-* read_expire
+-    Controls how long until a read request becomes "expired". It also controls the
+-    interval between which expired requests are served, so set to 50, a request
+-    might take anywhere < 100ms to be serviced _if_ it is the next on the
+-    expired list. Obviously request expiration strategies won't make the disk
+-    go faster. The result basically equates to the timeslice a single reader
+-    gets in the presence of other IO. 100*((seek time / read_expire) + 1) is
+-    very roughly the % streaming read efficiency your disk should get with
+-    multiple readers.
+-
+-* read_batch_expire
+-    Controls how much time a batch of reads is given before pending writes are
+-    served. A higher value is more efficient. This might be set below read_expire
+-    if writes are to be given higher priority than reads, but reads are to be
+-    as efficient as possible when there are no writes. Generally though, it
+-    should be some multiple of read_expire.
+-
+-* write_expire, and
+-* write_batch_expire are equivalent to the above, for writes.
+-
+-* antic_expire
+-    Controls the maximum amount of time we can anticipate a good read (one
+-    with a short seek distance from the most recently completed request) before
+-    giving up. Many other factors may cause anticipation to be stopped early,
+-    or some processes will not be "anticipated" at all. Should be a bit higher
+-    for big seek time devices though not a linear correspondence - most
+-    processes have only a few ms thinktime.
+-
+-In addition to the tunables above there is a read-only file named est_time
+-which, when read, will show:
+-
+-    - The probability of a task exiting without a cooperating task
+-      submitting an anticipated IO.
+-
+-    - The current mean think time.
+-
+-    - The seek distance used to determine if an incoming IO is better.
+-
+-- 
+1.5.6.5
 
