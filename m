@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932175AbZLRQcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZLRQby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932175AbZLRQcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZLRQcP
+	id S1754967AbZLRQby (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbZLRQbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:32:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20090 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754975AbZLRQcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:32:13 -0500
-Date: Fri, 18 Dec 2009 11:32:00 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
-       dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-In-Reply-To: <alpine.LFD.2.00.0912170816210.15740@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0912181118390.23738@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
- <200912171618.32882.bzolnier@gmail.com> <alpine.LFD.2.00.0912170726230.17868@localhost.localdomain>
- <200912171708.07899.bzolnier@gmail.com> <alpine.LFD.2.00.0912170816210.15740@localhost.localdomain>
+	Fri, 18 Dec 2009 11:31:52 -0500
+Received: from lists.laptop.org ([18.85.2.145]:33336 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750888AbZLRQbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:31:51 -0500
+Date: Fri, 18 Dec 2009 11:33:48 -0500
+From: Michael Stone <michael@laptop.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK)
+Message-ID: <20091218163348.GA24269@heat>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20091218154634.79decdc4@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Linus Torvalds wrote:
+Alan Cox wrote:
 
-> On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Well, it could have been done in the other way:
-> > 
-> > -			ret = sscanf (buf, "0x%lx - 0x%lx", &start_addr, &end_addr);
-> > +			ret = sscanf(buf, "0x%lx - 0x%lx",
-> > +				     &start_addr, &end_addr);
-> > 
-> > Just an example that the limit itself is usually not a problem
-> > but its literal interpretation is..
-> 
-> What? Your version is no better.
-> 
-> In the above case it doesn't matter, but I've had grep's that fail due to 
-> people splitting the actual string etc, which just drives me wild. We 
-> fixed that to allow checkpatch to skip those warnings, but the fact is, 
-> the fundamnetal problem has always been the "80 character" part.
-> 
-> I don't think any kernel developers use a vt100 any more. And even if they 
-> do, I bet they curse the "24 lines" more than they curse the occasional 
-> 80+ character lines.
-> 
-> I'd be ok with changing the warning to 132 characters, which is another 
-> perfectly fine historical limit. Or we can split the difference, and say 
-> "ok, 106 characters is too much". I don't care. But 80 characters is 
-> causing too many idiotic changes.
+> This is a security model, it belongs as a security model using LSM. 
 
-The problem with 106 character --- I have 100-character display on one 
-computer. If the code were be formatted for 106 characters, it would look 
-like
-					bla - bla - bla - bla - bla -
-bla -
-					bla - bla - bla - bla - bla - 
-bla;
+I'll see what I can cook up for you.
 
---- i.e. every second line wasted.
+However, please don't be surprised when the resulting cover letter states that
+the LSM-based version *does not* resolve the situation to my satisfaction as a
+userland hacker due to the well-known and long-standing adoption and
+compositionality problems facing small LSMs. ;)
 
-On the other hand, if you go without limit, it will be
-					bla - bla - bla - bla -
-bla - bla - bla - bla - bla - bla - bla - bla;
+Regards,
 
---- much better.
+Michael
 
-The same problem comes for 132 chatacters --- many people have 
-128-character display (1024x768 framebuffer) and they see spurious 
-wrapping with 132 character text.
-
-In general, if you select "n" as a line width, you find someone with 
-"n - delta" column display who will have problems.
-
-It would be best to keep line length is unlimited and say that it is the 
-responsibility of the viewer to wrap it.
-
-And make limit of 80 characters only for block comments --- the reader 
-doesn't want to read wrapped words in comments.
-
-Mikulas
-
-> There are way worse problems in many patches than long lines. Too complex 
-> expressions. Too deep indentation. Pure crap code. People seem to get way 
-> too hung up on ".. but at least it passes checkpatch". 
-> 
-> 		Linus
-> 
+P.S. - Dan is cited in my patch because I wish to honor him for anticipating my
+desires early, clearly, and in writing. However, if you know of an earlier
+citation, then I'll be happy to include that one too.
