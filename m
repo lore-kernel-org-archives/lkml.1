@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932504AbZLRSMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZLRSNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932504AbZLRSMb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 13:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932480AbZLRSMJ
+	id S1755343AbZLRSNA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 13:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932461AbZLRSML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 13:12:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53306 "EHLO mx1.redhat.com"
+	Fri, 18 Dec 2009 13:12:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932431AbZLRSMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 13:12:06 -0500
+	id S932377AbZLRSMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 13:12:02 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v7 05/11] kprobes/x86: Boost probes when reentering
+Subject: [PATCH -tip v7 06/11] kprobes/x86: Cleanup save/restore registers
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -27,8 +27,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
        Jason Baron <jbaron@redhat.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Date: Fri, 18 Dec 2009 13:16:05 -0500
-Message-ID: <20091218181605.21350.54175.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Fri, 18 Dec 2009 13:16:12 -0500
+Message-ID: <20091218181612.21350.66802.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091218181527.21350.45287.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091218181527.21350.45287.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -39,8 +39,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Integrate prepare_singlestep() into setup_singlestep() to boost up reenter
-probes, if possible.
+Introduce SAVE/RESOTRE_REGS_STRING for cleanup kretprobe-trampoline asm
+code. These macros will be used for emulating interruption.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -58,104 +58,169 @@ Cc: Jason Baron <jbaron@redhat.com>
 Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 ---
 
- arch/x86/kernel/kprobes.c |   48 ++++++++++++++++++++++++---------------------
- 1 files changed, 26 insertions(+), 22 deletions(-)
+ arch/x86/kernel/kprobes.c |  128 ++++++++++++++++++++++++---------------------
+ 1 files changed, 67 insertions(+), 61 deletions(-)
 
 diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 7039e6e..57de6ca 100644
+index 57de6ca..f848984 100644
 --- a/arch/x86/kernel/kprobes.c
 +++ b/arch/x86/kernel/kprobes.c
-@@ -403,18 +403,6 @@ static void __kprobes restore_btf(void)
- 		update_debugctlmsr(current->thread.debugctlmsr);
+@@ -551,6 +551,69 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
+ 	return 0;
  }
  
--static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
--{
--	clear_btf();
--	regs->flags |= X86_EFLAGS_TF;
--	regs->flags &= ~X86_EFLAGS_IF;
--	/* single step inline if the instruction is an int3 */
--	if (p->opcode == BREAKPOINT_INSTRUCTION)
--		regs->ip = (unsigned long)p->addr;
--	else
--		regs->ip = (unsigned long)p->ainsn.insn;
--}
--
- void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
- 				      struct pt_regs *regs)
- {
-@@ -427,19 +415,38 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
- }
- 
- static void __kprobes setup_singlestep(struct kprobe *p, struct pt_regs *regs,
--				       struct kprobe_ctlblk *kcb)
-+				       struct kprobe_ctlblk *kcb, int reenter)
- {
- #if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
- 	if (p->ainsn.boostable == 1 && !p->post_handler) {
- 		/* Boost up -- we can execute copied instructions directly */
--		reset_current_kprobe();
-+		if (!reenter)
-+			reset_current_kprobe();
-+		/*
-+		 * Reentering boosted probe doesn't reset current_kprobe,
-+		 * nor set current_kprobe, because it doesn't use single
-+		 * stepping.
-+		 */
- 		regs->ip = (unsigned long)p->ainsn.insn;
- 		preempt_enable_no_resched();
- 		return;
- 	}
- #endif
--	prepare_singlestep(p, regs);
--	kcb->kprobe_status = KPROBE_HIT_SS;
-+	if (reenter) {
-+		save_previous_kprobe(kcb);
-+		set_current_kprobe(p, regs, kcb);
-+		kcb->kprobe_status = KPROBE_REENTER;
-+	} else
-+		kcb->kprobe_status = KPROBE_HIT_SS;
-+	/* Prepare real single stepping */
-+	clear_btf();
-+	regs->flags |= X86_EFLAGS_TF;
-+	regs->flags &= ~X86_EFLAGS_IF;
-+	/* single step inline if the instruction is an int3 */
-+	if (p->opcode == BREAKPOINT_INSTRUCTION)
-+		regs->ip = (unsigned long)p->addr;
-+	else
-+		regs->ip = (unsigned long)p->ainsn.insn;
- }
- 
++#ifdef CONFIG_X86_64
++#define SAVE_REGS_STRING		\
++	/* Skip cs, ip, orig_ax. */	\
++	"	subq $24, %rsp\n"	\
++	"	pushq %rdi\n"		\
++	"	pushq %rsi\n"		\
++	"	pushq %rdx\n"		\
++	"	pushq %rcx\n"		\
++	"	pushq %rax\n"		\
++	"	pushq %r8\n"		\
++	"	pushq %r9\n"		\
++	"	pushq %r10\n"		\
++	"	pushq %r11\n"		\
++	"	pushq %rbx\n"		\
++	"	pushq %rbp\n"		\
++	"	pushq %r12\n"		\
++	"	pushq %r13\n"		\
++	"	pushq %r14\n"		\
++	"	pushq %r15\n"
++#define RESTORE_REGS_STRING		\
++	"	popq %r15\n"		\
++	"	popq %r14\n"		\
++	"	popq %r13\n"		\
++	"	popq %r12\n"		\
++	"	popq %rbp\n"		\
++	"	popq %rbx\n"		\
++	"	popq %r11\n"		\
++	"	popq %r10\n"		\
++	"	popq %r9\n"		\
++	"	popq %r8\n"		\
++	"	popq %rax\n"		\
++	"	popq %rcx\n"		\
++	"	popq %rdx\n"		\
++	"	popq %rsi\n"		\
++	"	popq %rdi\n"		\
++	/* Skip orig_ax, ip, cs */	\
++	"	addq $24, %rsp\n"
++#else
++#define SAVE_REGS_STRING		\
++	/* Skip cs, ip, orig_ax and gs. */	\
++	"	subl $16, %esp\n"	\
++	"	pushl %fs\n"		\
++	"	pushl %ds\n"		\
++	"	pushl %es\n"		\
++	"	pushl %eax\n"		\
++	"	pushl %ebp\n"		\
++	"	pushl %edi\n"		\
++	"	pushl %esi\n"		\
++	"	pushl %edx\n"		\
++	"	pushl %ecx\n"		\
++	"	pushl %ebx\n"
++#define RESTORE_REGS_STRING		\
++	"	popl %ebx\n"		\
++	"	popl %ecx\n"		\
++	"	popl %edx\n"		\
++	"	popl %esi\n"		\
++	"	popl %edi\n"		\
++	"	popl %ebp\n"		\
++	"	popl %eax\n"		\
++	/* Skip ds, es, fs, gs, orig_ax, and ip. Note: don't pop cs here*/\
++	"	addl $24, %esp\n"
++#endif
++
  /*
-@@ -453,11 +460,8 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
- 	switch (kcb->kprobe_status) {
- 	case KPROBE_HIT_SSDONE:
- 	case KPROBE_HIT_ACTIVE:
--		save_previous_kprobe(kcb);
--		set_current_kprobe(p, regs, kcb);
- 		kprobes_inc_nmissed_count(p);
--		prepare_singlestep(p, regs);
--		kcb->kprobe_status = KPROBE_REENTER;
-+		setup_singlestep(p, regs, kcb, 1);
- 		break;
- 	case KPROBE_HIT_SS:
- 		/* A probe has been hit in the codepath leading up to, or just
-@@ -532,13 +536,13 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 			 * more here.
- 			 */
- 			if (!p->pre_handler || !p->pre_handler(p, regs))
--				setup_singlestep(p, regs, kcb);
-+				setup_singlestep(p, regs, kcb, 0);
- 			return 1;
- 		}
- 	} else if (kprobe_running()) {
- 		p = __get_cpu_var(current_kprobe);
- 		if (p->break_handler && p->break_handler(p, regs)) {
--			setup_singlestep(p, regs, kcb);
-+			setup_singlestep(p, regs, kcb, 0);
- 			return 1;
- 		}
- 	} /* else: not a kprobe fault; let the kernel handle it */
+  * When a retprobed function returns, this code saves registers and
+  * calls trampoline_handler() runs, which calls the kretprobe's handler.
+@@ -564,65 +627,16 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+ 			/* We don't bother saving the ss register */
+ 			"	pushq %rsp\n"
+ 			"	pushfq\n"
+-			/*
+-			 * Skip cs, ip, orig_ax.
+-			 * trampoline_handler() will plug in these values
+-			 */
+-			"	subq $24, %rsp\n"
+-			"	pushq %rdi\n"
+-			"	pushq %rsi\n"
+-			"	pushq %rdx\n"
+-			"	pushq %rcx\n"
+-			"	pushq %rax\n"
+-			"	pushq %r8\n"
+-			"	pushq %r9\n"
+-			"	pushq %r10\n"
+-			"	pushq %r11\n"
+-			"	pushq %rbx\n"
+-			"	pushq %rbp\n"
+-			"	pushq %r12\n"
+-			"	pushq %r13\n"
+-			"	pushq %r14\n"
+-			"	pushq %r15\n"
++			SAVE_REGS_STRING
+ 			"	movq %rsp, %rdi\n"
+ 			"	call trampoline_handler\n"
+ 			/* Replace saved sp with true return address. */
+ 			"	movq %rax, 152(%rsp)\n"
+-			"	popq %r15\n"
+-			"	popq %r14\n"
+-			"	popq %r13\n"
+-			"	popq %r12\n"
+-			"	popq %rbp\n"
+-			"	popq %rbx\n"
+-			"	popq %r11\n"
+-			"	popq %r10\n"
+-			"	popq %r9\n"
+-			"	popq %r8\n"
+-			"	popq %rax\n"
+-			"	popq %rcx\n"
+-			"	popq %rdx\n"
+-			"	popq %rsi\n"
+-			"	popq %rdi\n"
+-			/* Skip orig_ax, ip, cs */
+-			"	addq $24, %rsp\n"
++			RESTORE_REGS_STRING
+ 			"	popfq\n"
+ #else
+ 			"	pushf\n"
+-			/*
+-			 * Skip cs, ip, orig_ax and gs.
+-			 * trampoline_handler() will plug in these values
+-			 */
+-			"	subl $16, %esp\n"
+-			"	pushl %fs\n"
+-			"	pushl %es\n"
+-			"	pushl %ds\n"
+-			"	pushl %eax\n"
+-			"	pushl %ebp\n"
+-			"	pushl %edi\n"
+-			"	pushl %esi\n"
+-			"	pushl %edx\n"
+-			"	pushl %ecx\n"
+-			"	pushl %ebx\n"
++			SAVE_REGS_STRING
+ 			"	movl %esp, %eax\n"
+ 			"	call trampoline_handler\n"
+ 			/* Move flags to cs */
+@@ -630,15 +644,7 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+ 			"	movl %edx, 52(%esp)\n"
+ 			/* Replace saved flags with true return address. */
+ 			"	movl %eax, 56(%esp)\n"
+-			"	popl %ebx\n"
+-			"	popl %ecx\n"
+-			"	popl %edx\n"
+-			"	popl %esi\n"
+-			"	popl %edi\n"
+-			"	popl %ebp\n"
+-			"	popl %eax\n"
+-			/* Skip ds, es, fs, gs, orig_ax and ip */
+-			"	addl $24, %esp\n"
++			RESTORE_REGS_STRING
+ 			"	popf\n"
+ #endif
+ 			"	ret\n");
 
 
 -- 
