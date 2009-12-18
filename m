@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZLRRBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZLRRBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZLRRBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZLRRBA
+	id S1753985AbZLRRBf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbZLRRBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:01:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30142 "EHLO mx1.redhat.com"
+	Fri, 18 Dec 2009 12:01:32 -0500
+Received: from www.sr71.net ([198.145.64.142]:54438 "EHLO blackbird.sr71.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbZLRRA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:00:59 -0500
-Message-ID: <4B2BB52A.7050103@redhat.com>
-Date: Fri, 18 Dec 2009 19:00:26 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
+	id S1753671AbZLRRBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 12:01:31 -0500
+Subject: Re: -tip: origin tree boot crash
+From: Dave Hansen <dave@sr71.net>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-References: <20091217084046.GA9804@basil.fritz.box> <1261039534.27920.67.camel@laptop> <20091217085430.GG9804@basil.fritz.box> <20091217144551.GA6819@linux.vnet.ibm.com> <20091217175338.GL9804@basil.fritz.box> <20091217190804.GB6788@linux.vnet.ibm.com> <20091217195530.GM9804@basil.fritz.box> <alpine.DEB.2.00.0912171356020.4640@router.home> <1261080855.27920.807.camel@laptop> <alpine.DEB.2.00.0912171439380.4640@router.home> <20091218051754.GC417@elte.hu>
-In-Reply-To: <20091218051754.GC417@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20091218164509.GA14574@elte.hu>
+References: <20091218164509.GA14574@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Dec 2009 09:01:29 -0800
+Message-Id: <1261155689.27372.1444.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/2009 07:17 AM, Ingo Molnar wrote:
->
->> It is not about naming. The accessors hide the locking mechanism for
->> mmap_sem. Then you can change the locking in a central place.
->>
->> The locking may even become configurable later. Maybe an embedded solution
->> will want the existing scheme but dual quad socket may want a distributed
->> reference counter to avoid bouncing cachelines on faults.
->>      
-> Hiding the locking is pretty much the worst design decision one can make.
->
->    
+On Fri, 2009-12-18 at 17:45 +0100, Ingo Molnar wrote:
+> Today's -tip crashes during bootup (x86 allyesconfig, 64-bit), due to this 
+> commit from yesterday's upstream -git tree:
+> 
+>  commit a328e95b82c1b8483ae5ab2f809140664d7f6c92
+>  Author: Dave Hansen <dave@sr71.net>
+>  Date:   Thu Oct 1 15:43:32 2009 -0700
+> 
+>     leds: LED driver for Intel NAS SS4200 series (v5)
+> 
+> The crash serial log is attached below. I suspect this driver was not booted 
+> on hardware that does not have that LED interface?
 
-It does allow incremental updates.  For example if we go with range 
-locks, the accessor turns into a range lock of the entire address space; 
-users can be converted one by one to use their true ranges in order of 
-importance.
+I just double-checked it again on a couple of my systems and it seems to
+deny loading the module correctly.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+What kind of hardware is this?  Could you send me 'dmidecode' output?
+
+I'm wondering if your hardware matched the "Intel" string somehow and
+the dmi code didn't bother to check anything else.  I'll also go try and
+run on a few more pieces of hardware and see if I can get it to trigger.
+
+-- Dave
 
