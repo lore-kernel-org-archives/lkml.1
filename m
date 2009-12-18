@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbZLRBT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbZLRBRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbZLRBT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 20:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZLRBRm
+	id S1753347AbZLRBRp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 20:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZLRBRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 20:17:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2542 "EHLO mx1.redhat.com"
+	Thu, 17 Dec 2009 20:17:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32205 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752519AbZLRBR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 20:17:29 -0500
-Date: Fri, 18 Dec 2009 02:11:20 +0100
+	id S1752549AbZLRBRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 20:17:36 -0500
+Date: Fri, 18 Dec 2009 02:11:24 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
@@ -19,8 +19,9 @@ Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
        utrace-devel@redhat.com
-Subject: [PATCH 1/7] tracehooks: kill some PT_PTRACED checks
-Message-ID: <20091218011120.GA29538@redhat.com>
+Subject: [PATCH 2/7] tracehooks: check PT_PTRACED before reporting the
+	single-step
+Message-ID: <20091218011124.GA29545@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,44 +32,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 No functional changes, preparation for utrace-ptrace.
 
-task_ptrace() != 0 if and only if PT_PTRACED bit is set, kill
-some PT_PTRACED checks in tracehook.h to ensure the result is
-the same with or without utrace which doesn't set PT_PTRACED.
+tracehook_report_syscall_exit() and tracehook_signal_handler() assume
+that only ptrace can set TIF_SINGLESTEP. Currently this is true but we
+are going to change this, the stepping logic will be moved into utrace
+layer.
+
+Change this code to check PT_PTRACED, ptrace-utrace doesn't set it.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- include/linux/tracehook.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/linux/tracehook.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- V1/include/linux/tracehook.h~1_TRACEHOOK_KILL_PTRACED_CHECKS	2009-12-18 00:20:50.000000000 +0100
-+++ V1/include/linux/tracehook.h	2009-12-18 00:38:09.000000000 +0100
-@@ -156,7 +156,7 @@ static inline int tracehook_unsafe_exec(
- {
- 	int unsafe = 0;
- 	int ptrace = task_ptrace(task);
--	if (ptrace & PT_PTRACED) {
-+	if (ptrace) {
- 		if (ptrace & PT_PTRACE_CAP)
- 			unsafe |= LSM_UNSAFE_PTRACE_CAP;
- 		else
-@@ -178,7 +178,7 @@ static inline int tracehook_unsafe_exec(
+--- V1/include/linux/tracehook.h~2_SIGNAL_HANDLER_CK_PTRACE	2009-12-18 00:38:09.000000000 +0100
++++ V1/include/linux/tracehook.h	2009-12-18 00:45:42.000000000 +0100
+@@ -134,7 +134,7 @@ static inline __must_check int tracehook
   */
- static inline struct task_struct *tracehook_tracer_task(struct task_struct *tsk)
+ static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
  {
--	if (task_ptrace(tsk) & PT_PTRACED)
-+	if (task_ptrace(tsk))
- 		return rcu_dereference(tsk->parent);
- 	return NULL;
- }
-@@ -492,7 +492,7 @@ static inline int tracehook_get_signal(s
-  */
- static inline int tracehook_notify_jctl(int notify, int why)
+-	if (step) {
++	if (step && (task_ptrace(current) & PT_PTRACED)) {
+ 		siginfo_t info;
+ 		user_single_step_siginfo(current, regs, &info);
+ 		force_sig_info(SIGTRAP, &info, current);
+@@ -386,7 +386,7 @@ static inline void tracehook_signal_hand
+ 					    const struct k_sigaction *ka,
+ 					    struct pt_regs *regs, int stepping)
  {
--	return notify ?: (current->ptrace & PT_PTRACED) ? why : 0;
-+	return notify ?: task_ptrace(current) ? why : 0;
+-	if (stepping)
++	if (stepping && (task_ptrace(current) & PT_PTRACED))
+ 		ptrace_notify(SIGTRAP);
  }
  
- /**
 
