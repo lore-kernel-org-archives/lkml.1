@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbZLRVv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbZLRVzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053AbZLRVv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 16:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932727AbZLRVv2
+	id S933109AbZLRVzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 16:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbZLRVzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 16:51:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44980 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Dec 2009 16:55:18 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47183 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753559AbZLRVv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 16:51:27 -0500
-Date: Fri, 18 Dec 2009 22:51:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-Message-ID: <20091218215107.GA14946@elte.hu>
-References: <4B1D4F29.8020309@gmail.com>
+	id S932923AbZLRVzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 16:55:17 -0500
+Date: Fri, 18 Dec 2009 13:55:16 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: Fw: Re: [kernel] Re: kernel/rcutree.h:301: sorry,
+	unimplemented: inlining failed in call to 'rcu_bootup_announce':
+	function body not available
+Message-ID: <20091218215516.GG6712@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091218200839.GF6712@linux.vnet.ibm.com> <20091218205456.GC6554@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B1D4F29.8020309@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091218205456.GC6554@suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Gregory Haskins <gregory.haskins@gmail.com> wrote:
-
-> Hi Linus,
+On Fri, Dec 18, 2009 at 12:54:56PM -0800, Greg KH wrote:
+> On Fri, Dec 18, 2009 at 12:08:39PM -0800, Paul E. McKenney wrote:
+> > Hello, Greg,
+> > 
+> > Could you please consider the following commit for 2.6.32-stable?
+> > It fixes a build error that some people are seeing.
+> > 
+> > 							Thanx, Paul
+> > 
+> > dbe01350fa8ce0c11948ab7d6be71a4d901be151 rcu: Remove inline from forward-referenced functions
 > 
-> Please pull AlacrityVM guest support for 2.6.33 from:
+> I'm guessing that you don't pay attention to the "now applied to the
+> staging..." emails that I send out when I apply patches to different
+> trees.  This patch is already queued up for the 2.6.32.2 release which
+> will happen in a few hours.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git
-> for-linus
-> 
-> All of these patches have stewed in linux-next for quite a while now:
-> 
-> Gregory Haskins (26):
+> {sigh}
 
-I think it would be fair to point out that these patches have been objected to 
-by the KVM folks quite extensively, on multiple technical grounds - as 
-basically this tree forks the KVM driver space for which no valid technical 
-reason could be offered by you in a 100+ mails long discussion.
+Color me oblivious, and apologies for the noise!
 
-(And yes, i've been Cc:-ed to much of that thread.)
-
-The result will IMO be pain for users because now we'll have two frameworks, 
-tooling incompatibilities, etc. etc.
-
-I've extended the Cc: for the KVM folks to have a chance to reply. Please try 
-_much_ harder to work with the KVM folks instead of ignoring their feedback 
-and de-facto forking their project. (and not mentioning any of this in your 
-pull request) We should unify, not fracture.
-
-	Ingo
+							Thanx, Paul
