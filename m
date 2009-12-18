@@ -1,253 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZLSARm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbZLRXSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZLSARm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 19:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZLSARl
+	id S1751346AbZLRXSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 18:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbZLRXSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 19:17:41 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:36925 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbZLSARk (ORCPT
+	Fri, 18 Dec 2009 18:18:38 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49989 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZLRXSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 19:17:40 -0500
-Message-ID: <4B2C0D7E.5030602@oracle.com>
-Date: Fri, 18 Dec 2009 15:17:18 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 18 Dec 2009 18:18:37 -0500
+Message-ID: <339143df87bf5d7afe89b9b2fe8af031.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20091218184504.GA675@elte.hu>
+References: <20091217175338.GL9804@basil.fritz.box>
+    <20091217190804.GB6788@linux.vnet.ibm.com>
+    <20091217195530.GM9804@basil.fritz.box>
+    <alpine.DEB.2.00.0912171356020.4640@router.home>
+    <1261080855.27920.807.camel@laptop>
+    <alpine.DEB.2.00.0912171439380.4640@router.home>
+    <20091218051754.GC417@elte.hu> <4B2BB52A.7050103@redhat.com>
+    <20091218171240.GB1354@elte.hu>
+    <alpine.DEB.2.00.0912181207010.26947@router.home>
+    <20091218184504.GA675@elte.hu>
+Date: Sat, 19 Dec 2009 08:18:33 +0900 (JST)
+Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Christoph Lameter" <cl@linux-foundation.org>,
+       "Avi Kivity" <avi@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: akpm <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 4/4] Documentation: update ring-buffer-design.txt
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B2C1B98.0066:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Ingo Molnar wrote:
+>
+> * Christoph Lameter <cl@linux-foundation.org> wrote:
+>
+>> > We've been through this many times in the past within the kernel: many
+>> > times when we hid some locking primitive within some clever wrapping
+>> > scheme the quality of locking started to deteriorate. In most of the
+>> > important cases we got rid of the indirection and went with an
+>> existing
+>> > core kernel locking primitive which are all well known and have clear
+>> > semantics and lead to more maintainable code.
+>>
+>> The existing locking APIs are all hiding lock details at various levels.
+>> We
+>> have various specific APIs for specialized locks already Page locking
+>> etc.
+>
+> You need to loo at the patches. This is simply a step backwards:
+>
+> -               up_read(&mm->mmap_sem);
+> +               mm_read_unlock(mm);
+>
+> because it hides the lock instance.
+>
+After rewriting speculative-page-fault patches, I feel I can do it
+without mm_accessor, by just skipping mmap_sem in fault.c. Then, original
+problem I tried to fix, false sharing at multithread page fault, can be
+fixed without this.
 
-Fix typos, grammos, spellos, hyphenation.
+Then, I myself stop this.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- Documentation/trace/ring-buffer-design.txt |   56 ++++++++++++++---------------
- 1 file changed, 28 insertions(+), 28 deletions(-)
+About range-locking of mm_struct, I don't find any good approach.
 
---- lnx-2633-rc1.orig/Documentation/trace/ring-buffer-design.txt
-+++ lnx-2633-rc1/Documentation/trace/ring-buffer-design.txt
-@@ -33,9 +33,9 @@ head_page - a pointer to the page that t
- 
- tail_page - a pointer to the page that will be written to next
- 
--commit_page - a pointer to the page with the last finished non nested write.
-+commit_page - a pointer to the page with the last finished non-nested write.
- 
--cmpxchg - hardware assisted atomic transaction that performs the following:
-+cmpxchg - hardware-assisted atomic transaction that performs the following:
- 
-    A = B iff previous A == C
- 
-@@ -52,15 +52,15 @@ The Generic Ring Buffer
- The ring buffer can be used in either an overwrite mode or in
- producer/consumer mode.
- 
--Producer/consumer mode is where the producer were to fill up the
-+Producer/consumer mode is where if the producer were to fill up the
- buffer before the consumer could free up anything, the producer
- will stop writing to the buffer. This will lose most recent events.
- 
--Overwrite mode is where the produce were to fill up the buffer
-+Overwrite mode is where if the producer were to fill up the buffer
- before the consumer could free up anything, the producer will
- overwrite the older data. This will lose the oldest events.
- 
--No two writers can write at the same time (on the same per cpu buffer),
-+No two writers can write at the same time (on the same per-cpu buffer),
- but a writer may interrupt another writer, but it must finish writing
- before the previous writer may continue. This is very important to the
- algorithm. The writers act like a "stack". The way interrupts works
-@@ -79,16 +79,16 @@ the interrupt doing a write as well.
- 
- Readers can happen at any time. But no two readers may run at the
- same time, nor can a reader preempt/interrupt another reader. A reader
--can not preempt/interrupt a writer, but it may read/consume from the
-+cannot preempt/interrupt a writer, but it may read/consume from the
- buffer at the same time as a writer is writing, but the reader must be
- on another processor to do so. A reader may read on its own processor
- and can be preempted by a writer.
- 
--A writer can preempt a reader, but a reader can not preempt a writer.
-+A writer can preempt a reader, but a reader cannot preempt a writer.
- But a reader can read the buffer at the same time (on another processor)
- as a writer.
- 
--The ring buffer is made up of a list of pages held together by a link list.
-+The ring buffer is made up of a list of pages held together by a linked list.
- 
- At initialization a reader page is allocated for the reader that is not
- part of the ring buffer.
-@@ -102,7 +102,7 @@ the head page.
- 
- The reader has its own page to use. At start up time, this page is
- allocated but is not attached to the list. When the reader wants
--to read from the buffer, if its page is empty (like it is on start up)
-+to read from the buffer, if its page is empty (like it is on start-up),
- it will swap its page with the head_page. The old reader page will
- become part of the ring buffer and the head_page will be removed.
- The page after the inserted page (old reader_page) will become the
-@@ -206,7 +206,7 @@ The main pointers:
- 
-   commit page - the page that last finished a write.
- 
--The commit page only is updated by the outer most writer in the
-+The commit page only is updated by the outermost writer in the
- writer stack. A writer that preempts another writer will not move the
- commit page.
- 
-@@ -281,7 +281,7 @@ with the previous write.
- The commit pointer points to the last write location that was
- committed without preempting another write. When a write that
- preempted another write is committed, it only becomes a pending commit
--and will not be a full commit till all writes have been committed.
-+and will not be a full commit until all writes have been committed.
- 
- The commit page points to the page that has the last full commit.
- The tail page points to the page with the last write (before
-@@ -292,7 +292,7 @@ be several pages ahead. If the tail page
- page then no more writes may take place (regardless of the mode
- of the ring buffer: overwrite and produce/consumer).
- 
--The order of pages are:
-+The order of pages is:
- 
-  head page
-  commit page
-@@ -311,7 +311,7 @@ Possible scenario:
- There is a special case that the head page is after either the commit page
- and possibly the tail page. That is when the commit (and tail) page has been
- swapped with the reader page. This is because the head page is always
--part of the ring buffer, but the reader page is not. When ever there
-+part of the ring buffer, but the reader page is not. Whenever there
- has been less than a full page that has been committed inside the ring buffer,
- and a reader swaps out a page, it will be swapping out the commit page.
- 
-@@ -338,7 +338,7 @@ and a reader swaps out a page, it will b
- In this case, the head page will not move when the tail and commit
- move back into the ring buffer.
- 
--The reader can not swap a page into the ring buffer if the commit page
-+The reader cannot swap a page into the ring buffer if the commit page
- is still on that page. If the read meets the last commit (real commit
- not pending or reserved), then there is nothing more to read.
- The buffer is considered empty until another full commit finishes.
-@@ -395,7 +395,7 @@ The main idea behind the lockless algori
- of the head_page pointer with the swapping of pages with the reader.
- State flags are placed inside the pointer to the page. To do this,
- each page must be aligned in memory by 4 bytes. This will allow the 2
--least significant bits of the address to be used as flags. Since
-+least significant bits of the address to be used as flags, since
- they will always be zero for the address. To get the address,
- simply mask out the flags.
- 
-@@ -460,7 +460,7 @@ When the reader tries to swap the page w
- will also use cmpxchg. If the flag bit in the pointer to the
- head page does not have the HEADER flag set, the compare will fail
- and the reader will need to look for the new head page and try again.
--Note, the flag UPDATE and HEADER are never set at the same time.
-+Note, the flags UPDATE and HEADER are never set at the same time.
- 
- The reader swaps the reader page as follows:
- 
-@@ -539,7 +539,7 @@ updated to the reader page.
-     |  +-----------------------------+   |
-     +------------------------------------+
- 
--Another important point. The page that the reader page points back to
-+Another important point: The page that the reader page points back to
- by its previous pointer (the one that now points to the new head page)
- never points back to the reader page. That is because the reader page is
- not part of the ring buffer. Traversing the ring buffer via the next pointers
-@@ -572,7 +572,7 @@ not be able to swap the head page from t
- move the head page, until the writer is finished with the move.
- 
- This eliminates any races that the reader can have on the writer. The reader
--must spin, and this is why the reader can not preempt the writer.
-+must spin, and this is why the reader cannot preempt the writer.
- 
-             tail page
-                |
-@@ -659,9 +659,9 @@ before pushing the head page. If it is,
- tail page wrapped the buffer, and we must drop new writes.
- 
- This is not a race condition, because the commit page can only be moved
--by the outter most writer (the writer that was preempted).
-+by the outermost writer (the writer that was preempted).
- This means that the commit will not move while a writer is moving the
--tail page. The reader can not swap the reader page if it is also being
-+tail page. The reader cannot swap the reader page if it is also being
- used as the commit page. The reader can simply check that the commit
- is off the reader page. Once the commit page leaves the reader page
- it will never go back on it unless a reader does another swap with the
-@@ -733,7 +733,7 @@ The write converts the head page pointer
- --->|   |<---|   |<---|   |<---|   |<---
-     +---+    +---+    +---+    +---+
- 
--But if a nested writer preempts here. It will see that the next
-+But if a nested writer preempts here, it will see that the next
- page is a head page, but it is also nested. It will detect that
- it is nested and will save that information. The detection is the
- fact that it sees the UPDATE flag instead of a HEADER or NORMAL
-@@ -761,7 +761,7 @@ to NORMAL.
- --->|   |<---|   |<---|   |<---|   |<---
-     +---+    +---+    +---+    +---+
- 
--After the nested writer finishes, the outer most writer will convert
-+After the nested writer finishes, the outermost writer will convert
- the UPDATE pointer to NORMAL.
- 
- 
-@@ -812,7 +812,7 @@ head page.
-     +---+    +---+    +---+    +---+
- 
- The nested writer moves the tail page forward. But does not set the old
--update page to NORMAL because it is not the outer most writer.
-+update page to NORMAL because it is not the outermost writer.
- 
-                     tail page
-                         |
-@@ -892,7 +892,7 @@ It will return to the first writer.
- --->|   |<---|   |<---|   |<---|   |<---
-     +---+    +---+    +---+    +---+
- 
--The first writer can not know atomically test if the tail page moved
-+The first writer cannot know atomically if the tail page moved
- while it updates the HEAD page. It will then update the head page to
- what it thinks is the new head page.
- 
-@@ -923,9 +923,9 @@ if the tail page is either where it use
- --->|   |<---|   |<---|   |<---|   |<---
-     +---+    +---+    +---+    +---+
- 
--If tail page != A and tail page does not equal B, then it must reset the
--pointer back to NORMAL. The fact that it only needs to worry about
--nested writers, it only needs to check this after setting the HEAD page.
-+If tail page != A and tail page != B, then it must reset the pointer
-+back to NORMAL. The fact that it only needs to worry about nested
-+writers means that it only needs to check this after setting the HEAD page.
- 
- 
- (first writer)
-@@ -939,7 +939,7 @@ nested writers, it only needs to check t
-     +---+    +---+    +---+    +---+
- 
- Now the writer can update the head page. This is also why the head page must
--remain in UPDATE and only reset by the outer most writer. This prevents
-+remain in UPDATE and only reset by the outermost writer. This prevents
- the reader from seeing the incorrect head page.
- 
- 
+Sorry for annoying and thank you all.
+-Kame
+
+
+
+
+
 
