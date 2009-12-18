@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZLRPBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZLRPCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754162AbZLRPBo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZLRPBl
+	id S1754192AbZLRPCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZLRPCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:01:41 -0500
-Received: from mga09.intel.com ([134.134.136.24]:32569 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754111AbZLRPBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:01:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,418,1257148800"; 
-   d="scan'208";a="580220070"
-Message-ID: <4B2B9949.1000608@linux.intel.com>
-Date: Fri, 18 Dec 2009 07:01:29 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Fri, 18 Dec 2009 10:02:45 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:62428 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753944AbZLRPCn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:02:43 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>,
-       torvalds@linux-foundation.org, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box>
-In-Reply-To: <20091218135033.GB8678@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+Date: Fri, 18 Dec 2009 23:02:22 +0800
+Message-ID: <3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4B2A6DFA.6000504@intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR offload
+Thread-Index: Acp/QJjbCvSWhk0cRXm3DFSA88fqVgAsgd9A
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com> <20091216164144.daff5468.kim.phillips@freescale.com> <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org> <4B296394.9010709@intel.com> <20091217170958.GE18271@ovro.caltech.edu> <4B2A6DFA.6000504@intel.com>
+From: "Li Yang-R58472" <r58472@freescale.com>
+To: "Dan Williams" <dan.j.williams@intel.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+Cc: "Kumar Gala" <galak@kernel.crashing.org>, <herbert@gondor.apana.org.au>,
+       "Tabi Timur-B04825" <B04825@freescale.com>,
+       <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>,
+       "Suresh Vishnu-B05022" <B05022@freescale.com>,
+       <linux-crypto@vger.kernel.org>,
+       "Dudhat Dipen-B09055" <B09055@freescale.com>,
+       "Gupta Maneesh-B18878" <B18878@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/2009 5:50, Andi Kleen wrote:
->> The only way something can be not cpu intensive and long 'running' is if
->> it got blocked that long, and the right solution is to fix that
->> contention, things should not be blocked for seconds.
->
-> Work queue items shouldn't be blocking for seconds in the normal case, but it might
-> always happen in the exceptional case (e.g. handling some error condition).
-> In this case it would be good if the other jobs wouldn't be too
-> disrupted and the whole setup degrades gracefully.
 
-in addition, threads are cheap. Linux has no technical problem with running 100's of kernel threads
-(if not 1000s); they cost basically a task struct and a stack (2 pages) each and that's about it.
-making an elaborate-and-thus-fragile design to save a few kernel threads is likely a bad design direction...
+>Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for 
+>Async_tx XOR offload
+>
+>Ira W. Snyder wrote:
+>> Yes, I have used the device_prep_dma_interrupt() 
+>functionality quite a 
+>> while back. However, I found it to be pretty much useless.
+>
+>The specific case it is needed for Talitos/raid is a channel 
+>switch interrupt.  The interrupt causes the cleanup operation 
+>to be run which will kick off any pending dependent operations 
+>on the xor channel.  In the raid case we only have callbacks 
+>at the end of a chain, so we need the interrupt to kick the 
+>engine in an operation chain like 
+>xor->copy->xor->callback.
+
+I am wondering if can use more callbacks to kick off pending dependent operations?
+Like xor->callback->copy->callback->xor->callback?
+
+- Leo
