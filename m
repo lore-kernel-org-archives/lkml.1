@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZLRNtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZLRNul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbZLRNtW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbZLRNtV
+	id S1753665AbZLRNul (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZLRNuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 08:49:21 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:48235 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753422AbZLRNtU (ORCPT
+	Fri, 18 Dec 2009 08:50:40 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58767 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510AbZLRNuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 08:49:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=kTrbylrh+TCgm7ctg0olK3Iwb+3DIee6D6exznSACn/wJCe0xh1dBhyF1uSilSmYw2
-         62GCfZOzTdeJMXhrU3yLN9hgwexntivl+rosRPtsD7Xb9/5PeWQSd3b1QpL9GbOVHA7i
-         K4/pt2Z57Veji3QAYPQMboBChSTgUdiSDvV5Q=
+	Fri, 18 Dec 2009 08:50:39 -0500
+Date: Fri, 18 Dec 2009 14:50:33 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Tejun Heo <tj@kernel.org>, torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: workqueue thing
+Message-ID: <20091218135033.GB8678@basil.fritz.box>
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop>
 MIME-Version: 1.0
-Date: Fri, 18 Dec 2009 15:49:18 +0200
-Message-ID: <b6fcc0a0912180549u6970ceden53dc919bae52452e@mail.gmail.com>
-Subject: intelligent CLS kills qemu's 8139cp
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: jbarnes@virtuousgeek.org, tj@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261143924.20899.169.camel@laptop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After this patch qemu's 8139cp won't be initialized resulting in no network.
-It einvals in pci_set_cacheline_size() where pci_cache_line_size=0
+> The only way something can be not cpu intensive and long 'running' is if
+> it got blocked that long, and the right solution is to fix that
+> contention, things should not be blocked for seconds.
 
-PCI: CLS 0 bytes, default 32
+Work queue items shouldn't be blocking for seconds in the normal case, but it might
+always happen in the exceptional case (e.g. handling some error condition).
+In this case it would be good if the other jobs wouldn't be too 
+disrupted and the whole setup degrades gracefully.
 
-ac1aa47b131416a6ff37eb1005a0a1d2541aad6c is first bad commit
-commit ac1aa47b131416a6ff37eb1005a0a1d2541aad6c
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Mon Oct 26 13:20:44 2009 -0700
+-Andi
 
-    PCI: determine CLS more intelligently
+-- 
+ak@linux.intel.com -- Speaking for myself only.
