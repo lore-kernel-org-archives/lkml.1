@@ -1,108 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbZLSPz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZLRXpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbZLSPz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 10:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZLSPz2
+	id S1755525AbZLRXpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 18:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZLRXo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 10:55:28 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34744 "EHLO ogre.sisk.pl"
+	Fri, 18 Dec 2009 18:44:59 -0500
+Received: from mail1.radix.net ([207.192.128.31]:41826 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbZLSPz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 10:55:27 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Sat, 19 Dec 2009 00:42:28 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912170249.00676.rjw@sisk.pl> <200912180251.22655.rjw@sisk.pl>
-In-Reply-To: <200912180251.22655.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1753132AbZLRXo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 18:44:58 -0500
+Subject: Re: [patch] media video cx23888 driver: fix possible races using
+ new kfifo_API kfifo_reset()
+From: Andy Walls <awalls@radix.net>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>
+In-Reply-To: <1261174870.13019.24.camel@wall-e>
+References: <1261174870.13019.24.camel@wall-e>
+Content-Type: text/plain
+Date: Fri, 18 Dec 2009 18:43:48 -0500
+Message-Id: <1261179828.3060.15.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912190042.28884.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 December 2009, Rafael J. Wysocki wrote:
-> On Thursday 17 December 2009, Rafael J. Wysocki wrote:
-> ...
-> > Tomorrow I'll try to mark as many devices as reasonably possible as async
-> > and see how the total suspend-resume times change.
+On Fri, 2009-12-18 at 23:21 +0100, Stefani Seibold wrote:
+> Fix the cx23888 driver to use the new kfifo API. Using kfifo_reset() may
+> result in a possible race conditions. This patch fix it by using
+> spinlock around the kfifo_reset() function.
 > 
-> I didn't manage to do that, but I was able to mark sd and i8042 as async and
-> see the impact of this.
+> The patch-set is against mm tree from 11-Dec-2009
 > 
-> The raw data are in the usual place:
+> Greetings,
+> Stefani
 > 
-> http://www.sisk.pl/kernel/data/async-suspend-resume.pdf
-> 
-> and the individual device timings and logs are in:
-> 
-> http://www.sisk.pl/kernel/data/nx6325/
-> http://www.sisk.pl/kernel/data/wind/
-> 
-> This is the summary (previous results are inculded for easier reference):
-> 
-> 			HP nx6325	MSI Wind U100
-> 
-> sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> sync resume		2955 (+/- 2)	3597 (+/- 25)
-> 
-> async suspend		1553 (+/- 49)	1177 (+/- 32)
-> async resume		2692 (+/- 326)	3556 (+/- 33)
-> 
-> async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> 
-> async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> 
-> with "async" i8042 and sd:
-> 
-> async suspend		1319 (+/- 51)	1045 (+/- 41)
-> async resume		2929 (+/- 3)	3546 (+/- 27)
-> 
-> async+extra suspend	1327 (+/- 36)	(didn't work)
-> async+extra resume	1742 (+/- 164)	1896 (+/- 28)
-> 
-> (the summary is also available at: http://www.sisk.pl/kernel/data/results.txt).
-> 
-> So, it actually makes the case for async suspend!  Although it's not very
-> strong, with these two additional devices marked as "async" we get noticeable
-> suspend time improvement.
-> 
-> Still, the "extra" patch doesn't help on suspend at all and on the Wind the
-> suspend part of it didn't even work (I'm yet to figure out which of the two
-> devices crashed the suspend).
+> Signed-off-by: Stefani Seibold <stefani@seibold.net>
 
-Small update.  I've just verified that sd was the failing device, although I'm
-not sure about the reason.
+For both this patch together with your previous patch:
 
-Apart from this, I ran some tests on the Wind with i8042 marked as "async"
-and sd marked as "sync".  In that case all of the tests succeeded and I got
-the following numbers:
+Reviewed-by: Andy Walls <awalls@radix.net>
+Acked-by: Andy Walls <awalls@radix.net>
 
-suspend (i8042 async, full extra patch applied): 1070 (+/- 40)
-resume (i8042 async, full extra patch applied): 1915,84 (+/- 27)
-suspend (i8042 async, resume part of extra patch applied): 1050 (+/- 34)
+Thanks Stefani.
 
-First, It looks like the suspend speedup was related to marking i8042 as
-"async".  Since the serio devices, which are the i8042's children, were also
-"async" (just like in all of the tests before), this means that the speedup
-resulted from removing a suspend stall caused by a sync parent of async
-children (i8042 and serio, respectively, in this case).
+Regards,
+Andy
 
-However, the suspend part of the extra patch doesn't help really.  In fact it
-even makes things worse.
+> ---
+>  cx23888-ir.c |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> --- mmotm.orig/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 22:57:13.588337402 +0100
+> +++ mmotm/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 23:15:14.651365720 +0100
+> @@ -519,6 +519,7 @@ static int cx23888_ir_irq_handler(struct
+>  {
+>  	struct cx23888_ir_state *state = to_state(sd);
+>  	struct cx23885_dev *dev = state->dev;
+> +	unsigned long flags;
+>  
+>  	u32 cntrl = cx23888_ir_read4(dev, CX23888_IR_CNTRL_REG);
+>  	u32 irqen = cx23888_ir_read4(dev, CX23888_IR_IRQEN_REG);
+> @@ -629,8 +630,11 @@ static int cx23888_ir_irq_handler(struct
+>  		cx23888_ir_write4(dev, CX23888_IR_CNTRL_REG, cntrl);
+>  		*handled = true;
+>  	}
+> +
+> +	spin_lock_irqsave(&state->rx_kfifo_lock, flags);
+>  	if (kfifo_len(&state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+>  		events |= V4L2_SUBDEV_IR_RX_FIFO_SERVICE_REQ;
+> +	spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
+>  
+>  	if (events)
+>  		v4l2_subdev_notify(sd, V4L2_SUBDEV_IR_RX_NOTIFY, &events);
+> @@ -783,7 +787,12 @@ static int cx23888_ir_rx_s_parameters(st
+>  	o->interrupt_enable = p->interrupt_enable;
+>  	o->enable = p->enable;
+>  	if (p->enable) {
+> +		unsigned long flags;
+> +
+> +		spin_lock_irqsave(&state->rx_kfifo_lock, flags);
+>  		kfifo_reset(&state->rx_kfifo);
+> +		/* reset tx_fifo too if there is one... */
+> +		spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
+>  		if (p->interrupt_enable)
+>  			irqenable_rx(dev, IRQEN_RSE | IRQEN_RTE | IRQEN_ROE);
+>  		control_rx_enable(dev, p->enable);
+> 
+> 
 
-So, I still think the resume part of the extra patch is definitely useful, but
-the suspend part of it is not.  IOW, it's worth running async resumes upfront,
-but it's not worth running async suspends upfront.
-
-Rafael
