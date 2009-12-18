@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbZLRHZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbZLRHfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbZLRHZz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 02:25:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZLRHZy
+	id S1752515AbZLRHfW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 02:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZLRHfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 02:25:54 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56477 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbZLRHZx (ORCPT
+	Fri, 18 Dec 2009 02:35:21 -0500
+Received: from webmail.olin.edu ([209.94.128.49]:9170 "EHLO EXCAS01.olin.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752276AbZLRHfV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 02:25:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=kiYi7ZwfXNAuLNhm10aqazryOiyzaqq+5VCmtjP0ARy4IjWueqdtJ1k3mXqmtMbSAX
-         bhijRrFkczWphInBpAtHSXD+BtloS9f/ITM8JI0XpHFonq+dXsppGkO7EuaLFjZkq0nk
-         l0cEqzRiMe7ZEXEKpg+nR9oMKgU6IrS9WiG7o=
+	Fri, 18 Dec 2009 02:35:21 -0500
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Dec 2009 02:35:21 EST
+From: James Getzendanner <James.Getzendanner@students.olin.edu>
+To: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>
+CC: "trivial@kernel.org" <trivial@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 18 Dec 2009 02:29:51 -0500
+Subject: [PATCH] Userspace pointer dereference in drivers/gpu/vga/vgaarb.c
+Thread-Topic: [PATCH] Userspace pointer dereference in
+ drivers/gpu/vga/vgaarb.c
+Thread-Index: Acp/s+KbX1YZOJKZT3+37xA1ROiIaA==
+Message-ID: <DA80C3E6C10BE94E8FCACEB239C2FEE46645317E76@EXVS01.olin.edu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-In-Reply-To: <4B2AFF4C.5010100@ct.jp.nec.com>
-References: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>
-	 <4B2AFF4C.5010100@ct.jp.nec.com>
-Date: Fri, 18 Dec 2009 09:25:51 +0200
-Message-ID: <b6fcc0a0912172325i34d214d3r11b3bfae7381547f@mail.gmail.com>
-Subject: Re: revert "config FS_JOURNAL_INFO"
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/09, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> So we never allow to make memory usage small with providing an option
-> to remove unused area, right?
+From: Andy Getzendanner <james.getzendanner@students.olin.edu>
 
-We certainly allow this if it results in zero loss in functionality.
-
-> If I want to reduce memory usage by this way, should I keep
-> this kind of patches out of tree?
-
-Certainly nobody can prohibit you from keeping patch out of tree.
-But if you want something mainlinable, moving ->journal_info
-to fs-specific data structures should do the trick. Or something.
+This patch corrects a userspace pointer dereference in the VGA arbiter
+in 2.6.32.1.
+Signed-off-by: Andy Getzendanner <james.getzendanner@students.olin.edu>
+---
+copy_from_user() is used at line 822 to copy the contents of buf into
+kbuf, but a call to strncmp() on line 964 uses buf rather than kbuf.
+This problem led to a GPF in strncmp() when X was started on my x86_32
+systems.  X triggered the behavior with a write of
+"target PCI:0000:01:00.0" to /dev/vga_arbiter.
+The patch has been tested against 2.6.32.1 and observed to correct the
+GPF observed when starting X or manually writing the string
+"target PCI:0000:01:00.0" to /dev/vga_arbiter.
+Please CC me at james.getzendanner@students.olin.edu in any replies as I
+am not on the list.
+--- linux-2.6.32.1/drivers/gpu/vga/vgaarb.c.orig	2009-12-18 00:26:31.000000000 -0500
++++ linux-2.6.32.1/drivers/gpu/vga/vgaarb.c	2009-12-18 00:27:14.000000000 -0500
+@@ -961,7 +961,7 @@ static ssize_t vga_arb_write(struct file
+ 		remaining -= 7;
+ 		pr_devel("client 0x%p called 'target'\n", priv);
+ 		/* if target is default */
+-		if (!strncmp(buf, "default", 7))
++		if (!strncmp(kbuf, "default", 7))
+ 			pdev = pci_dev_get(vga_default_device());
+ 		else {
+ 			if (!vga_pci_str_to_vars(curr_pos, remaining,
