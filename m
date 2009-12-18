@@ -1,34 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZLRTGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZLRBgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbZLRTGF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 14:06:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZLRTF7
+	id S1755891AbZLRBgN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 20:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZLRBgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 14:05:59 -0500
-Received: from kolfe.aau.edu.et ([213.55.95.16]:51141 "EHLO demera.aau.edu.et"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754522AbZLRTF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 14:05:57 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -0.902
-Date: Fri, 18 Dec 2009 04:32:04 +0300 (EAT)
-From: Mr Su Ning <rajuvjt@chem.aau.edu.et>
-Reply-To: Mr Su Ning <ningsu12@yahoo.com.hk>
-Message-ID: <25484440.31431261099924215.JavaMail.root@buhe.aau.edu.et>
-Subject: Matter of Urgency (GET BACK TO ME)
+	Thu, 17 Dec 2009 20:36:07 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53128 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755137AbZLRBgC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 20:36:02 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH v2] mm: introduce dump_page() and print symbolic flag names
+Cc: kosaki.motohiro@jp.fujitsu.com, Americo Wang <xiyou.wangcong@gmail.com>,
+       Mel Gorman <mel@csn.ul.ie>, Alex Chiang <achiang@hp.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Li, Haicheng" <haicheng.li@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20091218012324.GA7953@localhost>
+References: <20091216153513.GC2804@hack> <20091218012324.GA7953@localhost>
+Message-Id: <20091218102711.6532.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.90.20.25]
-X-Mailer: Zimbra 5.0.5_GA_2201.F7 (zclient/5.0.5_GA_2201.F7)
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 18 Dec 2009 10:35:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings
+> On Wed, Dec 16, 2009 at 11:35:13PM +0800, Américo Wang wrote:
+> > On Wed, Dec 16, 2009 at 08:33:10PM +0800, Wu Fengguang wrote:
+> > >On Wed, Dec 16, 2009 at 08:26:40PM +0800, Wu Fengguang wrote:
+> > >> - introduce dump_page() to print the page info for debugging some error condition.
+> > >> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
+> > >> - print an extra field: the symbolic names of page->flags
+> > >> 
+> > >> Example dump_page() output:
+> > >> 
+> > >> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1
+> > >> mapping:ffff88001c901791 index:147
+> > >                                 ~~~ this is in fact 0x147
+> > >
+> > >The index value may sometimes be misread as decimal number, shall this
+> > >be fixed by adding a "0x" prefix?
+> > 
+> > 
+> > Using '%#x' will do.
+> 
+> Thanks, here is the updated patch.
+> ---
+> mm: introduce dump_page()
+> 
+> - introduce dump_page() to print the page info for debugging some error condition.
+> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
+> - print an extra field: the symbolic names of page->flags
+> 
+> Example dump_page() output:
+> 
+> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1 mapping:ffff88001c901791 index:0x147
+> [  157.525570] page flags: 100000000100068(uptodate|lru|active|swapbacked)
+> 
+> CC: Ingo Molnar <mingo@elte.hu> 
+> CC: Alex Chiang <achiang@hp.com>
+> CC: Rik van Riel <riel@redhat.com>
+> CC: Andi Kleen <andi@firstfloor.org> 
+> CC: Mel Gorman <mel@linux.vnet.ibm.com> 
+> CC: Christoph Lameter <cl@linux-foundation.org> 
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/mm.h  |    2 +
+>  mm/memory.c         |    8 +---
+>  mm/memory_hotplug.c |    6 +--
+>  mm/page_alloc.c     |   83 +++++++++++++++++++++++++++++++++++++++---
+>  4 files changed, 86 insertions(+), 13 deletions(-)
+> 
+> --- linux-mm.orig/mm/page_alloc.c	2009-12-11 10:01:25.000000000 +0800
+> +++ linux-mm/mm/page_alloc.c	2009-12-16 20:33:35.000000000 +0800
+> @@ -49,6 +49,7 @@
+>  #include <linux/debugobjects.h>
+>  #include <linux/kmemleak.h>
+>  #include <trace/events/kmem.h>
+> +#include <linux/ftrace_event.h>
+>  
+>  #include <asm/tlbflush.h>
+>  #include <asm/div64.h>
+> @@ -262,10 +263,7 @@ static void bad_page(struct page *page)
+>  
+>  	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
+>  		current->comm, page_to_pfn(page));
+> -	printk(KERN_ALERT
+> -		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+> -		page, (void *)page->flags, page_count(page),
+> -		page_mapcount(page), page->mapping, page->index);
+> +	dump_page(page);
+>  
+>  	dump_stack();
+>  out:
+> @@ -5106,3 +5104,80 @@ bool is_free_buddy_page(struct page *pag
+>  	return order < MAX_ORDER;
+>  }
+>  #endif
+> +
+> +static struct trace_print_flags pageflag_names[] = {
+> +	{1UL << PG_locked,		"locked"	},
+> +	{1UL << PG_error,		"error"		},
+> +	{1UL << PG_referenced,		"referenced"	},
+> +	{1UL << PG_uptodate,		"uptodate"	},
+> +	{1UL << PG_dirty,		"dirty"		},
+> +	{1UL << PG_lru,			"lru"		},
+> +	{1UL << PG_active,		"active"	},
+> +	{1UL << PG_slab,		"slab"		},
+> +	{1UL << PG_owner_priv_1,	"owner_priv_1"	},
+> +	{1UL << PG_arch_1,		"arch_1"	},
+> +	{1UL << PG_reserved,		"reserved"	},
+> +	{1UL << PG_private,		"private"	},
+> +	{1UL << PG_private_2,		"private_2"	},
+> +	{1UL << PG_writeback,		"writeback"	},
+> +#ifdef CONFIG_PAGEFLAGS_EXTENDED
+> +	{1UL << PG_head,		"head"		},
+> +	{1UL << PG_tail,		"tail"		},
+> +#else
+> +	{1UL << PG_compound,		"compound"	},
+> +#endif
+> +	{1UL << PG_swapcache,		"swapcache"	},
+> +	{1UL << PG_mappedtodisk,	"mappedtodisk"	},
+> +	{1UL << PG_reclaim,		"reclaim"	},
+> +	{1UL << PG_buddy,		"buddy"		},
+> +	{1UL << PG_swapbacked,		"swapbacked"	},
+> +	{1UL << PG_unevictable,		"unevictable"	},
+> +#ifdef CONFIG_MMU
+> +	{1UL << PG_mlocked,		"mlocked"	},
+> +#endif
+> +#ifdef CONFIG_ARCH_USES_PG_UNCACHED
+> +	{1UL << PG_uncached,		"uncached"	},
+> +#endif
+> +#ifdef CONFIG_MEMORY_FAILURE
+> +	{1UL << PG_hwpoison,		"hwpoison"	},
+> +#endif
+> +	{-1UL,				NULL		},
+> +};
+> +
+> +static void dump_page_flags(unsigned long flags)
+> +{
+> +	const char *delim = "";
+> +	unsigned long mask;
+> +	int i;
+> +
+> +	printk(KERN_ALERT "page flags: %lx(", flags);
 
-I am  Mr Su Ning, The deputy governor of peoples bank of china. I have a very urgent business proposal worth 21.5 million dollars for your Consideration. If willing, please email me at ningsu11@live.hk  for details and modalities.
+nit.
+Now, you append 0x prefix to index. why don't you appent 0x prefix to this?
+I mean we have to keep consist prefix printing rule in the same printk.
 
-Thank you
-Su Ning
+
+
