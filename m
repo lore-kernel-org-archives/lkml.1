@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbZLRUM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZLRUQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932693AbZLRUM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 15:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932653AbZLRUMZ
+	id S1755668AbZLRUQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 15:16:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZLRUQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 15:12:25 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37639 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932636AbZLRUMX (ORCPT
+	Fri, 18 Dec 2009 15:16:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40526 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750799AbZLRUQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 15:12:23 -0500
-Message-ID: <4B2BE1BF.60803@zytor.com>
-Date: Fri, 18 Dec 2009 12:10:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Fri, 18 Dec 2009 15:16:08 -0500
+Date: Fri, 18 Dec 2009 12:15:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mark Hounschell <markh@compro.net>
+cc: Mark Hounschell <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
+       linux-kernel@vger.kernel.org, fdutils@fdutils.linux.lu
+Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28 (Was:
+ Re: Cannot format floppies under kernel 2.6.*?)
+In-Reply-To: <4B2BE05B.9050006@compro.net>
+Message-ID: <alpine.LFD.2.00.0912181213540.3712@localhost.localdomain>
+References: <4AFB3962.2020106@ntlworld.com> <4B292D84.5040306@compro.net> <4B29624F.2080109@knaff.lu> <4B2A3805.8040707@compro.net> <4B2A3E3E.8060405@knaff.lu> <4B2A4975.8020809@compro.net> <4B2A49F4.6070402@compro.net> <4B2A4B86.8060307@knaff.lu>
+ <4B2A4C78.10107@compro.net> <4B2A4CF7.6040000@knaff.lu> <4B2A4EC9.2030902@compro.net> <4B2A4FA5.5000701@knaff.lu> <4B2A5192.6090602@compro.net> <4B2A530D.3080606@knaff! .lu> <4B2A6394.3080705@knaff.lu> <alpine.LFD.2.00.0912170916420.15740@localhost.locald!
+ omain> <4B2A98BB.5080406@knaff.lu> <alpine.LFD.2.00.0912171256560.15740@localhost.localdomain> <4B2AAC87.5000703@knaff.lu> <alpine.LFD.2.00.0912171440420.15740@localhost.localdomain> <4B2ABDC8.6090104@knaff.lu> <4B2B4485.6000305@cfl.rr.com>
+ <4B2B5F86.1090403@cfl.rr.com> <alpine.LFD.2.00.0912180716400.3712@localhost.localdomain> <4B2B9F9F.7040802@compro.net> <alpine.LFD.2.00.0912180734220.3712@localhost.localdomain> <4B2BE05B.9050006@compro.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/9] x86: move range related operation to one file
-References: <4B2B4C19.6010402@kernel.org> <4B2B4F85.5030901@kernel.org>
-In-Reply-To: <4B2B4F85.5030901@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/2009 01:46 AM, Yinghai Lu wrote:
-> +
-> +struct range {
-> +	u64   start;
-> +	u64   end;
-> +};
 
-Okay, this does bring up two things that I have long griped about.
 
-Firstly, I don't think this is the proper data structure.  Even worse,
-the range operations take *inclusive* ranges (e.g. 0x0000 to 0xffff is
-64K, not 0x0000 to 0x10000).  It would be one thing if it only affected
-the internal representation, but as written, this is exposed through the
-interfaces, too.
+On Fri, 18 Dec 2009, Mark Hounschell wrote:
+> 
+> It looks like I may have to back up and first find the points that, let me,
+> and stop me,  booting with the HPET enabled. Before I change direction, can
+> the git-bisect start sequence use the SHA1 id for the starting 'goods' and
+> 'bads'? I don't see reference to that in the doc.
 
-As far as the choice of data structures, I have used in other places,
-with very good success, a data structure which looks like:
+You can always use a SHA1 id instead of a tag. So when you did
 
-struct {
-	u64	start;
-	u32	attr;
-};
+	git bisect good v2.6.17.4
 
-Note that there is no end: the end is always given by an end token.  The
-"attr" here was an e820 attribute (or 0 for no attribute), but the
-payload can be almost anything -- for a simple include/exclude it can
-just be boolean.
+you could always have replaced that "v2.6.17.4" with the SHA1 of the 
+commit.
 
-This data structures doesn't permit things like out-of-order ranges,
-overlapping ranges, and so on, and that's a good thing; it means the
-data structure itself can never be ambiguous, and the interfaces clean
-out most errors inherently.
+In git, the SHA1 ID's are the "real" names - the tags and branch names are 
+purely for human-readable decoration. Git always turns them into SHA1 id's 
+internally.
 
-http://git.kernel.org/?p=boot/syslinux/syslinux.git;a=blob;f=com32/lib/syslinux/zonelist.c;hb=HEAD
-
-... contains an implementation of this data structure using linked lists
-for internal storage, and
-
-http://git.kernel.org/?p=boot/syslinux/syslinux.git;a=blob;f=memdisk/e820func.c;hb=HEAD
-
-... contains one based on arrays.  I'm not saying these should be
-applied directly, but I think the equivalent concept might be
-worthwhile, not just for this but also for the e820 memrange code.
-
-	-hpa
+		Linus
