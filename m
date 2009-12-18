@@ -1,164 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZLRBgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZLRBke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbZLRBgN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 20:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZLRBgH
+	id S1755991AbZLRBke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 20:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZLRBkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 20:36:07 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53128 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755137AbZLRBgC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 20:36:02 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v2] mm: introduce dump_page() and print symbolic flag names
-Cc: kosaki.motohiro@jp.fujitsu.com, Americo Wang <xiyou.wangcong@gmail.com>,
-       Mel Gorman <mel@csn.ul.ie>, Alex Chiang <achiang@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Li, Haicheng" <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20091218012324.GA7953@localhost>
-References: <20091216153513.GC2804@hack> <20091218012324.GA7953@localhost>
-Message-Id: <20091218102711.6532.A69D9226@jp.fujitsu.com>
+	Thu, 17 Dec 2009 20:40:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53875 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755953AbZLRBkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 20:40:32 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 18 Dec 2009 10:35:59 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
+	08d68323d1f0c34452e614263b212ca556dae47f
+In-Reply-To: Oleg Nesterov's message of  Friday, 18 December 2009 01:56:50 +0100 <20091218005650.GA20667@redhat.com>
+References: <20091218005650.GA20667@redhat.com>
+X-Windows: garbage at your fingertips.
+Message-Id: <20091218014021.CB474135F@magilla.sf.frob.com>
+Date: Thu, 17 Dec 2009 17:40:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Dec 16, 2009 at 11:35:13PM +0800, Américo Wang wrote:
-> > On Wed, Dec 16, 2009 at 08:33:10PM +0800, Wu Fengguang wrote:
-> > >On Wed, Dec 16, 2009 at 08:26:40PM +0800, Wu Fengguang wrote:
-> > >> - introduce dump_page() to print the page info for debugging some error condition.
-> > >> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
-> > >> - print an extra field: the symbolic names of page->flags
-> > >> 
-> > >> Example dump_page() output:
-> > >> 
-> > >> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1
-> > >> mapping:ffff88001c901791 index:147
-> > >                                 ~~~ this is in fact 0x147
-> > >
-> > >The index value may sometimes be misread as decimal number, shall this
-> > >be fixed by adding a "0x" prefix?
-> > 
-> > 
-> > Using '%#x' will do.
-> 
-> Thanks, here is the updated patch.
-> ---
-> mm: introduce dump_page()
-> 
-> - introduce dump_page() to print the page info for debugging some error condition.
-> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
-> - print an extra field: the symbolic names of page->flags
-> 
-> Example dump_page() output:
-> 
-> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1 mapping:ffff88001c901791 index:0x147
-> [  157.525570] page flags: 100000000100068(uptodate|lru|active|swapbacked)
-> 
-> CC: Ingo Molnar <mingo@elte.hu> 
-> CC: Alex Chiang <achiang@hp.com>
-> CC: Rik van Riel <riel@redhat.com>
-> CC: Andi Kleen <andi@firstfloor.org> 
-> CC: Mel Gorman <mel@linux.vnet.ibm.com> 
-> CC: Christoph Lameter <cl@linux-foundation.org> 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  include/linux/mm.h  |    2 +
->  mm/memory.c         |    8 +---
->  mm/memory_hotplug.c |    6 +--
->  mm/page_alloc.c     |   83 +++++++++++++++++++++++++++++++++++++++---
->  4 files changed, 86 insertions(+), 13 deletions(-)
-> 
-> --- linux-mm.orig/mm/page_alloc.c	2009-12-11 10:01:25.000000000 +0800
-> +++ linux-mm/mm/page_alloc.c	2009-12-16 20:33:35.000000000 +0800
-> @@ -49,6 +49,7 @@
->  #include <linux/debugobjects.h>
->  #include <linux/kmemleak.h>
->  #include <trace/events/kmem.h>
-> +#include <linux/ftrace_event.h>
->  
->  #include <asm/tlbflush.h>
->  #include <asm/div64.h>
-> @@ -262,10 +263,7 @@ static void bad_page(struct page *page)
->  
->  	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
->  		current->comm, page_to_pfn(page));
-> -	printk(KERN_ALERT
-> -		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
-> -		page, (void *)page->flags, page_count(page),
-> -		page_mapcount(page), page->mapping, page->index);
-> +	dump_page(page);
->  
->  	dump_stack();
->  out:
-> @@ -5106,3 +5104,80 @@ bool is_free_buddy_page(struct page *pag
->  	return order < MAX_ORDER;
->  }
->  #endif
-> +
-> +static struct trace_print_flags pageflag_names[] = {
-> +	{1UL << PG_locked,		"locked"	},
-> +	{1UL << PG_error,		"error"		},
-> +	{1UL << PG_referenced,		"referenced"	},
-> +	{1UL << PG_uptodate,		"uptodate"	},
-> +	{1UL << PG_dirty,		"dirty"		},
-> +	{1UL << PG_lru,			"lru"		},
-> +	{1UL << PG_active,		"active"	},
-> +	{1UL << PG_slab,		"slab"		},
-> +	{1UL << PG_owner_priv_1,	"owner_priv_1"	},
-> +	{1UL << PG_arch_1,		"arch_1"	},
-> +	{1UL << PG_reserved,		"reserved"	},
-> +	{1UL << PG_private,		"private"	},
-> +	{1UL << PG_private_2,		"private_2"	},
-> +	{1UL << PG_writeback,		"writeback"	},
-> +#ifdef CONFIG_PAGEFLAGS_EXTENDED
-> +	{1UL << PG_head,		"head"		},
-> +	{1UL << PG_tail,		"tail"		},
-> +#else
-> +	{1UL << PG_compound,		"compound"	},
-> +#endif
-> +	{1UL << PG_swapcache,		"swapcache"	},
-> +	{1UL << PG_mappedtodisk,	"mappedtodisk"	},
-> +	{1UL << PG_reclaim,		"reclaim"	},
-> +	{1UL << PG_buddy,		"buddy"		},
-> +	{1UL << PG_swapbacked,		"swapbacked"	},
-> +	{1UL << PG_unevictable,		"unevictable"	},
-> +#ifdef CONFIG_MMU
-> +	{1UL << PG_mlocked,		"mlocked"	},
-> +#endif
-> +#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-> +	{1UL << PG_uncached,		"uncached"	},
-> +#endif
-> +#ifdef CONFIG_MEMORY_FAILURE
-> +	{1UL << PG_hwpoison,		"hwpoison"	},
-> +#endif
-> +	{-1UL,				NULL		},
-> +};
-> +
-> +static void dump_page_flags(unsigned long flags)
-> +{
-> +	const char *delim = "";
-> +	unsigned long mask;
-> +	int i;
-> +
-> +	printk(KERN_ALERT "page flags: %lx(", flags);
-
-nit.
-Now, you append 0x prefix to index. why don't you appent 0x prefix to this?
-I mean we have to keep consist prefix printing rule in the same printk.
+Comparing to the old (2.6.32) logic, I think it might be this (untested).
+I also note this is the sole use of get_si_code, seems like it should
+just be rolled in here.
 
 
+Thanks,
+Roland
 
+
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 3339917..16a88f5 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -530,7 +530,6 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
+ 	unsigned long dr6;
+-	int si_code;
+ 
+ 	get_debugreg(dr6, 6);
+ 
+@@ -569,14 +568,15 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ 	 * We already checked v86 mode above, so we can check for kernel mode
+ 	 * by just checking the CPL of CS.
+ 	 */
++	dr6 = tsk->thread.debugreg6;
+ 	if ((dr6 & DR_STEP) && !user_mode(regs)) {
+ 		tsk->thread.debugreg6 &= ~DR_STEP;
+ 		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
+ 		regs->flags &= ~X86_EFLAGS_TF;
++	} else if (dr6 & (DR_STEP | DR_TRAP_BITS)) {
++		send_sigtrap(tsk, regs, error_code, get_si_code(dr6));
+ 	}
+-	si_code = get_si_code(tsk->thread.debugreg6);
+-	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
+-		send_sigtrap(tsk, regs, error_code, si_code);
++
+ 	preempt_conditional_cli(regs);
+ 
+ 	return;
