@@ -1,37 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbZLRTfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZLRScH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751254AbZLRTfW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 14:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZLRTfV
+	id S1755324AbZLRScH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 13:32:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZLRScB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 14:35:21 -0500
-Received: from kroah.org ([198.145.64.141]:47501 "EHLO coco.kroah.org"
+	Fri, 18 Dec 2009 13:32:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54741 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbZLRTfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 14:35:21 -0500
-Date: Fri, 18 Dec 2009 10:20:16 -0800
-From: Greg KH <greg@kroah.com>
-To: Joe Perches <joe@perches.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel <devel@driverdev.osuosl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/staging/rtl8187x: Use %pM for mac address
- output
-Message-ID: <20091218182016.GC2909@kroah.com>
-References: <1260128092.11126.119.camel@Joe-Laptop.home>
+	id S1755053AbZLRScA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 13:32:00 -0500
+Date: Fri, 18 Dec 2009 19:24:24 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
+	08d68323d1f0c34452e614263b212ca556dae47f
+Message-ID: <20091218182424.GA24180@redhat.com>
+References: <20091218005650.GA20667@redhat.com> <20091218030601.GB16470@nowhere> <20091218172747.GA10924@redhat.com> <20091218175842.GA10666@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260128092.11126.119.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091218175842.GA10666@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 11:34:52AM -0800, Joe Perches wrote:
-> Uncompiled.  Doesn't currently build anyway.
+On 12/18, K.Prasad wrote:
+>
+> On Fri, Dec 18, 2009 at 06:27:47PM +0100, Oleg Nesterov wrote:
+> > On 12/18, Frederic Weisbecker wrote:
+> > >
+> > > On Fri, Dec 18, 2009 at 01:56:50AM +0100, Oleg Nesterov wrote:
+> > > > Hi.
+>
+> <snipped>
+>
+> > > Single stepping works well for me, after a quick check on
+> > > gdb. How did you trigger the bug?
+> >
+> > Please find the trivial test-case below. It hangs, because
+> > PTRACE_SINGLESTEP doesn't trigger the trap.
+> >
+>
+> aah...my other mail just criss-crossed yours.
+>
+> I quickly ran on the said x86 box, loaded with -tip (commit
+> 7818b3d0fc68f5c2a85fed86d9fa37131c5a3068) and it runs fine.
 
-Builds here for me :)
+Hmm. Just re-tested 2.6.33-rc1 under kvm, it hangs...
 
-Looks good, thanks.
+Oleg.
 
-greg k-h
+> [root@llm05 prasadkr]# cat oleg.c
+> #include <stdio.h>
+> #include <unistd.h>
+> #include <signal.h>
+> #include <sys/ptrace.h>
+> #include <sys/wait.h>
+> #include <assert.h>
+>
+> int main(void)
+> {
+>         int pid, status, i;
+>
+>         pid = fork();
+>         if (!pid)
+>                 for (;;);
+>
+>         sleep(1);
+>         assert(ptrace(PTRACE_ATTACH, pid, 0,0) == 0);
+>
+>         assert(pid == wait(&status));
+>         assert(WIFSTOPPED(status));
+>
+>         for (i = 0; i < 10; ++i) {
+>                 assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
+>
+>                 printf("wait %d ...\n", i);
+>                 assert(pid == wait(&status));
+>
+>                 assert(WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP);
+>        	}
+>
+>         kill(pid, SIGKILL);
+>         return 0;
+> }
+>
+> [root@llm05 prasadkr]# gcc -o oleg oleg.c -g -Wall
+> [root@llm05 prasadkr]# ./oleg
+> wait 0 ...
+> wait 1 ...
+> wait 2 ...
+> wait 3 ...
+> wait 4 ...
+> wait 5 ...
+> wait 6 ...
+> wait 7 ...
+> wait 8 ...
+> wait 9 ...
+> [root@llm05 prasadkr]#
+>
+> Am I missing something here?
+>
+> Thanks,
+> K.Prasad
+>
+
