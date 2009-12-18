@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751069AbZLRFLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbZLRFM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751069AbZLRFLN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 00:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbZLRFLM
+	id S1751131AbZLRFM2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 00:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZLRFM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 00:11:12 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:26815 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZLRFLL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 00:11:11 -0500
-Date: Thu, 17 Dec 2009 21:10:40 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Sunil Mushran <sunil.mushran@oracle.com>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] Add FIEMAP_EXTENT_SHARED flag
-Message-ID: <20091218051040.GB20149@mail.oracle.com>
-Mail-Followup-To: Sunil Mushran <sunil.mushran@oracle.com>,
-	akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1259873212-20107-1-git-send-email-sunil.mushran@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259873212-20107-1-git-send-email-sunil.mushran@oracle.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Auth-Type: Internal IP
-X-Source-IP: rcsinet13.oracle.com [148.87.113.125]
-X-CT-RefId: str=0001.0A090201.4B2B0EE5.0167:SCFMA4539811,ss=1,fgs=0
+	Fri, 18 Dec 2009 00:12:27 -0500
+Received: from mail.perches.com ([173.55.12.10]:1266 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750781AbZLRFM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 00:12:27 -0500
+Subject: [PATCH] scripts/checkpatch.pl: Change long line warning to 105
+ chars
+From: Joe Perches <joe@perches.com>
+To: Valdis.Kletnieks@vt.edu, Andy Whitcroft <apw@canonical.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+In-Reply-To: <24653.1261110557@localhost>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+	 <20091217061229.GD3946@linux-sh.org> <m3tyvqgfs4.fsf@intrepid.localdomain>
+	 <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>
+	 <24653.1261110557@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 21:12:24 -0800
+Message-ID: <1261113144.13734.317.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 12:46:50PM -0800, Sunil Mushran wrote:
-> Please could you Ack this patch. This adds a new FIEMAP flag to denote
-> shared extents which we are using to identify such exents in reflinked
-> files.
+On Thu, 2009-12-17 at 23:29 -0500, Valdis.Kletnieks@vt.edu wrote:
+> Yeah, but I respectfully submit that if the regexp '^\t{6}' matches a non-
+> continuation line, it's probably in its rights to whinge. 
+> 	grep -r -P '^\t{7:}(?!(.*,$|.*\);$))' . | more
+> produces a whole lot of "this can't end well" output.
 
-	These patches are now in ocfs2.git.  If anyone has any concerns,
-let me know.
+I think this is a good test to add to checkpatch.
 
-Joel
+Add 105 character long line WARN test
+Add 80 character long line STRICT test
+Add 6+ leading indent tabs test, consider restructuring
 
--- 
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Life's Little Instruction Book #464
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index bc4114f..c358251 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1374,13 +1374,20 @@ sub process {
+ # check we are in a valid source file if not then ignore this hunk
+ 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
+ 
+-#80 column limit
++#Line too long
+ 		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
+ 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
+-		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
+-		    $length > 80)
+-		{
+-			WARN("line over 80 characters\n" . $herecurr);
++		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/) {
++			if ($length > 105) {
++				WARN("line over 105 characters\n" . $herecurr);
++			} elsif ($length > 80) {
++				CHK("line over 80 characters\n" . $herecurr);
++			}
++		}
++
++#too many leading tabs - deep leading indent
++		if ($line =~ /^\+	{6,}(?!(.*,$|.*\);$))/) {
++			CHK("Too many leading tabs.  Consider restructuring code\n" . $herecurr);
+ 		}
+ 
+ # check for adding lines without a newline.
 
-	"Don't miss the magic of the moment by focusing on what's
-	 to come."
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
