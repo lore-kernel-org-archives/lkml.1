@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbZLRFM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbZLRFPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751131AbZLRFM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 00:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZLRFM1
+	id S1751243AbZLRFPT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 00:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbZLRFPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 00:12:27 -0500
-Received: from mail.perches.com ([173.55.12.10]:1266 "EHLO mail.perches.com"
+	Fri, 18 Dec 2009 00:15:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40886 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750781AbZLRFM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 00:12:27 -0500
-Subject: [PATCH] scripts/checkpatch.pl: Change long line warning to 105
- chars
-From: Joe Perches <joe@perches.com>
-To: Valdis.Kletnieks@vt.edu, Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Mikulas Patocka <mpatocka@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+	id S1751060AbZLRFPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 00:15:15 -0500
+Date: Fri, 18 Dec 2009 06:14:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Len Brown <lenb@kernel.org>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-In-Reply-To: <24653.1261110557@localhost>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
-	 <20091217061229.GD3946@linux-sh.org> <m3tyvqgfs4.fsf@intrepid.localdomain>
-	 <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>
-	 <24653.1261110557@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 21:12:24 -0800
-Message-ID: <1261113144.13734.317.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
+Message-ID: <20091218051457.GB417@elte.hu>
+References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
+ <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com>
+ <20091218022112.GA30333@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091218022112.GA30333@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-17 at 23:29 -0500, Valdis.Kletnieks@vt.edu wrote:
-> Yeah, but I respectfully submit that if the regexp '^\t{6}' matches a non-
-> continuation line, it's probably in its rights to whinge. 
-> 	grep -r -P '^\t{7:}(?!(.*,$|.*\);$))' . | more
-> produces a whole lot of "this can't end well" output.
 
-I think this is a good test to add to checkpatch.
+* Shaohua Li <shaohua.li@intel.com> wrote:
 
-Add 105 character long line WARN test
-Add 80 character long line STRICT test
-Add 6+ leading indent tabs test, consider restructuring
+> On Fri, Dec 18, 2009 at 09:28:50AM +0800, Yinghai Lu wrote:
+> > On Wed, Dec 16, 2009 at 12:06 PM, Len Brown <lenb@kernel.org> wrote:
+> > > Hi Linus,
+> > >
+> > > please pull from:
+> > >
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> > >
+> > ;..
+> > >
+> > > Shaohua Li (3):
+> > > ? ? ?ACPI: Add a generic API for _OSC -v2
+> > > ? ? ?ACPI: cleanup pci_root _OSC code.
+> > > ? ? ?ACPI: Add platform-wide _OSC support.
+> > 
+> > it seems these three patches broke the _OSC on my intel new systems.
+> > 
+> > revert them fix the problem with AER and pciehp and etc
+>
+> can you give more details? I just cleaned up the _OSC code for AER and 
+> pciehp, no function changes.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Famous last words ;-)
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index bc4114f..c358251 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1374,13 +1374,20 @@ sub process {
- # check we are in a valid source file if not then ignore this hunk
- 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
- 
--#80 column limit
-+#Line too long
- 		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
- 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
--		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
--		    $length > 80)
--		{
--			WARN("line over 80 characters\n" . $herecurr);
-+		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/) {
-+			if ($length > 105) {
-+				WARN("line over 105 characters\n" . $herecurr);
-+			} elsif ($length > 80) {
-+				CHK("line over 80 characters\n" . $herecurr);
-+			}
-+		}
-+
-+#too many leading tabs - deep leading indent
-+		if ($line =~ /^\+	{6,}(?!(.*,$|.*\);$))/) {
-+			CHK("Too many leading tabs.  Consider restructuring code\n" . $herecurr);
- 		}
- 
- # check for adding lines without a newline.
+Yinghai, i suspect Shaohua needs the kind of info you'd need if you tried to 
+fix it: acpidump, before/after debug boot log, a description of what goes bad, 
+etc.
 
+Thanks,
 
+	Ingo
