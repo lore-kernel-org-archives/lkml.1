@@ -1,156 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZLSA1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZLSA2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbZLSA1d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 19:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbZLSA1G
+	id S1755604AbZLSA2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 19:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZLSA06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 19:27:06 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40067 "EHLO
+	Fri, 18 Dec 2009 19:26:58 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40059 "EHLO
 	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755856AbZLSA0A (ORCPT
+	with ESMTP id S1755837AbZLSA0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Dec 2009 19:26:00 -0500
-Message-Id: <20091218222654.666395441@quilx.com>
+Message-Id: <20091218222655.192407545@quilx.com>
 References: <20091218222617.384355422@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Dec 2009 16:26:30 -0600
+Date: Fri, 18 Dec 2009 16:26:31 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Tejun Heo <tj@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 CC: Mel Gorman <mel@csn.ul.ie>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [this_cpu_xx V8 13/16] Generic support for this_cpu_xchg
-Content-Disposition: inline; filename=percpu_add_xchg
+Subject: [this_cpu_xx V8 14/16] x86 percpu xchg operation
+Content-Disposition: inline; filename=percpu_add_xchg_x86
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide generic this_cpu_xchg() and all fallbacks.
+Xchg on x86 implies LOCK semantics and therefore is slow. Approximate it
+using this_cpu_cmpxchg().
 
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- include/linux/percpu.h |   95 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
+ arch/x86/include/asm/percpu.h |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-Index: linux-2.6/include/linux/percpu.h
+Index: linux-2.6/arch/x86/include/asm/percpu.h
 ===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2009-12-18 15:33:12.000000000 -0600
-+++ linux-2.6/include/linux/percpu.h	2009-12-18 15:34:15.000000000 -0600
-@@ -499,6 +499,58 @@ static inline unsigned long this_cpu_cmp
- # define this_cpu_cmpxchg(pcp, old, new) __pcpu_size_call_return(__this_cpu_cmpxchg_, (old), (new))
- #endif
+--- linux-2.6.orig/arch/x86/include/asm/percpu.h	2009-12-18 15:49:09.000000000 -0600
++++ linux-2.6/arch/x86/include/asm/percpu.h	2009-12-18 15:50:12.000000000 -0600
+@@ -156,6 +156,15 @@ do {							\
+ 	}						\
+ })
  
-+static inline unsigned long __this_cpu_xchg_generic(volatile void *pptr,
-+		unsigned long new, int size)
-+{
-+	unsigned long prev;
-+	volatile void *ptr = __this_cpu_ptr(pptr);
-+
-+	switch (size) {
-+	case 1: prev = *(u8 *)ptr;
-+		*(u8 *)ptr = (u8)new;
-+		break;
-+	case 2: prev = *(u16 *)ptr;
-+		*(u16 *)ptr = (u16)new;
-+		break;
-+	case 4: prev = *(u32 *)ptr;
-+		*(u32 *)ptr = (u32)new;
-+		break;
-+	case 8: prev = *(u64 *)ptr;
-+		*(u64 *)ptr = (u64)new;
-+		break;
-+	default:
-+		__bad_size_call_parameter();
-+	}
-+	return prev;
-+}
-+
-+static inline unsigned long this_cpu_xchg_generic(volatile void *ptr,
-+		unsigned long new, int size)
-+{
-+	unsigned long prev;
-+
-+	preempt_disable();
-+	prev = __this_cpu_xchg_generic(ptr, new, size);
-+	preempt_enable();
-+	return prev;
-+}
-+
-+#ifndef this_cpu_xchg
-+# ifndef this_cpu_xchg_1
-+#  define this_cpu_xchg_1(pcp, new) this_cpu_xchg_generic((pcp), (new), 1)
-+# endif
-+# ifndef this_cpu_xchg_2
-+#  define this_cpu_xchg_2(pcp, new) this_cpu_xchg_generic((pcp), (new), 2)
-+# endif
-+# ifndef this_cpu_xchg_4
-+#  define this_cpu_xchg_4(pcp, new) this_cpu_xchg_generic((pcp), (new), 4)
-+# endif
-+# ifndef this_cpu_xchg_8
-+#  define this_cpu_xchg_8(pcp, new) this_cpu_xchg_generic((pcp), (new), 8)
-+# endif
-+# define this_cpu_xchg(pcp, new) __pcpu_size_call_return(__this_cpu_xchg_, (new))
-+#endif
++#define this_cpu_xchg_x86(var, new)						\
++({	__typeof(*var) __tmp_var,__tmp_old;				\
++	do {								\
++		__tmp_old = __this_cpu_read(var);			\
++		__tmp_var = __this_cpu_cmpxchg(var, __tmp_old, new);	\
++	} while (__tmp_var != __tmp_old);				\
++	__tmp_old;							\
++})
 +
  /*
-  * Generic percpu operations that do not require preemption handling.
-  * Either we do not care about races or the caller has the
-@@ -666,6 +718,22 @@ do {									\
- # define __this_cpu_cmpxchg(pcp, old, new) __pcpu_size_call_return(__this_cpu_cmpxchg_, (old), (new))
- #endif
+  * percpu_read() makes gcc load the percpu variable every time it is
+  * accessed while percpu_read_stable() allows the value to be cached.
+@@ -204,6 +213,9 @@ do {							\
+ #define __this_cpu_cmpxchg_1(pcp, old,new)	cmpxchg_local(__this_cpu_ptr(pcp), old, new)
+ #define __this_cpu_cmpxchg_2(pcp, old,new)	cmpxchg_local(__this_cpu_ptr(pcp), old, new)
+ #define __this_cpu_cmpxchg_4(pcp, old,new)	cmpxchg_local(__this_cpu_ptr(pcp), old, new)
++#define __this_cpu_xchg_1(pcp, new)	this_cpu_xchg_x86((pcp), new)
++#define __this_cpu_xchg_2(pcp, new)	this_cpu_xchg_x86((pcp), new)
++#define __this_cpu_xchg_4(pcp, new)	this_cpu_xchg_x86((pcp), new)
  
-+#ifndef __this_cpu_xchg
-+# ifndef __this_cpu_xchg_1
-+#  define __this_cpu_xchg_1(pcp, new) __this_cpu_xchg_generic((pcp), (new), 1)
-+# endif
-+# ifndef __this_cpu_xchg_2
-+#  define __this_cpu_xchg_2(pcp, new) __this_cpu_xchg_generic((pcp), (new), 2)
-+# endif
-+# ifndef __this_cpu_xchg_4
-+#  define __this_cpu_xchg_4(pcp, new) __this_cpu_xchg_generic((pcp), (new), 4)
-+# endif
-+# ifndef __this_cpu_xchg_8
-+#  define __this_cpu_xchg_8(pcp, new) __this_cpu_xchg_generic((pcp), (new), 8)
-+# endif
-+# define __this_cpu_xchg(pcp, new) __pcpu_size_call_return(__this_cpu_xchg_, (new))
-+#endif
-+
+ #define this_cpu_read_1(pcp)		percpu_from_op("mov", (pcp), "m"(pcp))
+ #define this_cpu_read_2(pcp)		percpu_from_op("mov", (pcp), "m"(pcp))
+@@ -232,6 +244,9 @@ do {							\
+ #define this_cpu_cmpxchg_1(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
+ #define this_cpu_cmpxchg_2(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
+ #define this_cpu_cmpxchg_4(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
++#define this_cpu_xchg_1(pcp, new)	this_cpu_xchg_x86((pcp), new)
++#define this_cpu_xchg_2(pcp, new)	this_cpu_xchg_x86((pcp), new)
++#define this_cpu_xchg_4(pcp, new)	this_cpu_xchg_x86((pcp), new)
+ 
+ #define irqsafe_cpu_add_1(pcp, val)	percpu_to_op("add", (pcp), val)
+ #define irqsafe_cpu_add_2(pcp, val)	percpu_to_op("add", (pcp), val)
+@@ -254,6 +269,9 @@ do {							\
+ #define irqsafe_cpu_cmpxchg_1(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
+ #define irqsafe_cpu_cmpxchg_2(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
+ #define irqsafe_cpu_cmpxchg_4(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
++#define irqsafe_cpu_xchg_1(pcp, new)	this_cpu_xchg_x86((pcp), new)
++#define irqsafe_cpu_xchg_2(pcp, new)	this_cpu_xchg_x86((pcp), new)
++#define irqsafe_cpu_xchg_4(pcp, new)	this_cpu_xchg_x86((pcp), new)
+ 
  /*
-  * IRQ safe versions of the per cpu RMW operations. Note that these operations
-  * are *not* safe against modification of the same variable from another
-@@ -808,4 +876,31 @@ static inline unsigned long irqsafe_cpu_
- # define irqsafe_cpu_cmpxchg(pcp, old, new) __pcpu_size_call_return(irqsafe_cpu_cmpxchg_, (old), (new))
+  * Per cpu atomic 64 bit operations are only available under 64 bit.
+@@ -269,6 +287,7 @@ do {							\
+ #define __this_cpu_or_8(pcp, val)	percpu_to_op("or", (pcp), val)
+ #define __this_cpu_xor_8(pcp, val)	percpu_to_op("xor", (pcp), val)
+ #define __this_cpu_cmpxchg_8(pcp, old,new)	cmpxchg_local(__this_cpu_ptr(pcp), old, new)
++#define __this_cpu_xchg_8(pcp, new)	this_cpu_xchg_x86((pcp), new)
+ 
+ #define this_cpu_read_8(pcp)		percpu_from_op("mov", (pcp), "m"(pcp))
+ #define this_cpu_write_8(pcp, val)	percpu_to_op("mov", (pcp), val)
+@@ -279,6 +298,7 @@ do {							\
+ #define this_cpu_or_8(pcp, val)		percpu_to_op("or", (pcp), val)
+ #define this_cpu_xor_8(pcp, val)	percpu_to_op("xor", (pcp), val)
+ #define this_cpu_cmpxchg_8(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
++#define this_cpu_xchg_8(pcp, new)	this_cpu_xchg_x86((pcp), new)
+ 
+ #define irqsafe_cpu_add_8(pcp, val)	percpu_to_op("add", (pcp), val)
+ #define irqsafe_cpu_inc_8(pcp)		percpu_var_op("inc", (pcp))
+@@ -287,6 +307,7 @@ do {							\
+ #define irqsafe_cpu_or_8(pcp, val)	percpu_to_op("or", (pcp), val)
+ #define irqsafe_cpu_xor_8(pcp, val)	percpu_to_op("xor", (pcp), val)
+ #define irqsafe_cpu_cmpxchg_8(pcp, old,new)	cmpxchg_local(this_cpu_ptr(pcp), old, new)
++#define irqsafe_cpu_xchg_8(pcp, new)	this_cpu_xchg_x86((pcp), new)
+ 
  #endif
  
-+static inline unsigned long irqsafe_cpu_xchg_generic(volatile void *ptr,
-+		unsigned long new, int size)
-+{
-+	unsigned long flags, prev;
-+
-+	local_irq_save(flags);
-+	prev = __this_cpu_xchg_generic(ptr, new, size);
-+	local_irq_restore(flags);
-+	return prev;
-+}
-+
-+#ifndef irqsafe_cpu_xchg
-+# ifndef irqsafe_cpu_xchg_1
-+#  define irqsafe_cpu_xchg_1(pcp, new) irqsafe_cpu_xchg_generic(((pcp), (new), 1)
-+# endif
-+# ifndef irqsafe_cpu_xchg_2
-+#  define irqsafe_cpu_xchg_2(pcp, new) irqsafe_cpu_xchg_generic(((pcp), (new), 2)
-+# endif
-+# ifndef irqsafe_cpu_xchg_4
-+#  define irqsafe_cpu_xchg_4(pcp, new) irqsafe_cpu_xchg_generic(((pcp), (new), 4)
-+# endif
-+# ifndef irqsafe_cpu_xchg_8
-+#  define irqsafe_cpu_xchg_8(pcp, new) irqsafe_cpu_xchg_generic(((pcp), (new), 8)
-+# endif
-+# define irqsafe_cpu_xchg(pcp, new) __pcpu_size_call_return(irqsafe_cpu_xchg_, (new))
-+#endif
-+
- #endif /* __LINUX_PERCPU_H */
 
 -- 
