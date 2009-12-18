@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZLRNBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZLRNEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbZLRNBQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZLRM7x
+	id S1753276AbZLRNEW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZLRM5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 07:59:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45238 "EHLO hera.kernel.org"
+	Fri, 18 Dec 2009 07:57:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45159 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbZLRM5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 07:57:16 -0500
+	id S1751466AbZLRM5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 07:57:07 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, awalls@radix.net,
        linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
@@ -17,9 +17,9 @@ To: torvalds@linux-foundation.org, awalls@radix.net,
        avi@redhat.com, peterz@infradead.org, johannes@sipsolutions.net,
        andi@firstfloor.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 18/27] workqueue: reimplement work flushing using linked works
-Date: Fri, 18 Dec 2009 21:57:59 +0900
-Message-Id: <1261141088-2014-19-git-send-email-tj@kernel.org>
+Subject: [PATCH 19/27] workqueue: implement per-cwq active work limit
+Date: Fri, 18 Dec 2009 21:58:00 +0900
+Message-Id: <1261141088-2014-20-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1261141088-2014-1-git-send-email-tj@kernel.org>
 References: <1261141088-2014-1-git-send-email-tj@kernel.org>
@@ -27,293 +27,179 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A work is linked to the next one by having WORK_STRUCT_LINKED bit set
-and these links can be chained.  When a linked work is dispatched to a
-worker, all linked works are dispatched to the worker's newly added
-->scheduled queue and processed back-to-back.
+Add cwq->nr_active, cwq->max_active and cwq->delayed_work.  nr_active
+counts the number of active works per cwq.  A work is active if it's
+flushable (colored) and is on cwq's worklist.  If nr_active reaches
+max_active, new works are queued on cwq->delayed_work and activated
+later as works on the cwq complete and decrement nr_active.
 
-Currently, as there's only single worker per cwq, having linked works
-doesn't make any visible behavior difference.  This change is to
-prepare for multiple shared workers per cpu.
+cwq->max_active can be specified via the new @max_active parameter to
+__create_workqueue() and is set to 1 for all workqueues for now.  As
+each cwq has only single worker now, this double queueing doesn't
+cause any behavior difference visible to its users.
+
+This will be used to reimplement freeze/thaw and implement shared
+worker pool.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/workqueue.h |    2 +
- kernel/workqueue.c        |  152 ++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 133 insertions(+), 21 deletions(-)
+ include/linux/workqueue.h |   18 +++++++++---------
+ kernel/workqueue.c        |   39 +++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 46 insertions(+), 11 deletions(-)
 
 diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 316cc48..a6650f1 100644
+index a6650f1..974a232 100644
 --- a/include/linux/workqueue.h
 +++ b/include/linux/workqueue.h
-@@ -25,9 +25,11 @@ typedef void (*work_func_t)(struct work_struct *work);
- enum {
- 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
- 	WORK_STRUCT_STATIC_BIT	= 1,	/* static initializer (debugobjects) */
-+	WORK_STRUCT_LINKED_BIT	= 2,	/* next work is linked to this one */
+@@ -216,11 +216,11 @@ enum {
+ };
  
- 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
- 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
-+	WORK_STRUCT_LINKED	= 1 << WORK_STRUCT_LINKED_BIT,
+ extern struct workqueue_struct *
+-__create_workqueue_key(const char *name, unsigned int flags,
++__create_workqueue_key(const char *name, unsigned int flags, int max_active,
+ 		       struct lock_class_key *key, const char *lock_name);
  
- 	WORK_STRUCT_COLOR_SHIFT	= 3,	/* color for workqueue flushing */
- 	WORK_STRUCT_COLOR_BITS	= 4,
+ #ifdef CONFIG_LOCKDEP
+-#define __create_workqueue(name, flags)				\
++#define __create_workqueue(name, flags, max_active)		\
+ ({								\
+ 	static struct lock_class_key __key;			\
+ 	const char *__lock_name;				\
+@@ -230,20 +230,20 @@ __create_workqueue_key(const char *name, unsigned int flags,
+ 	else							\
+ 		__lock_name = #name;				\
+ 								\
+-	__create_workqueue_key((name), (flags), &__key,		\
+-			       __lock_name);			\
++	__create_workqueue_key((name), (flags), (max_active),	\
++				&__key, __lock_name);		\
+ })
+ #else
+-#define __create_workqueue(name, flags)				\
+-	__create_workqueue_key((name), (flags), NULL, NULL)
++#define __create_workqueue(name, flags, max_active)		\
++	__create_workqueue_key((name), (flags), (max_active), NULL, NULL)
+ #endif
+ 
+ #define create_workqueue(name)					\
+-	__create_workqueue((name), 0)
++	__create_workqueue((name), 0, 1)
+ #define create_freezeable_workqueue(name)			\
+-	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD)
++	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD, 1)
+ #define create_singlethread_workqueue(name)			\
+-	__create_workqueue((name), WQ_SINGLE_THREAD)
++	__create_workqueue((name), WQ_SINGLE_THREAD, 1)
+ 
+ extern void destroy_workqueue(struct workqueue_struct *wq);
+ 
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 17d270b..2ac1624 100644
+index 2ac1624..0c9c01d 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -51,6 +51,7 @@ struct cpu_workqueue_struct;
+@@ -77,6 +77,9 @@ struct cpu_workqueue_struct {
+ 	int			flush_color;	/* L: flushing color */
+ 	int			nr_in_flight[WORK_NR_COLORS];
+ 						/* L: nr of in_flight works */
++	int			nr_active;	/* L: nr of active works */
++	int			max_active;	/* I: max active works */
++	struct list_head	delayed_works;	/* L: delayed works */
+ };
  
- struct worker {
- 	struct work_struct	*current_work;	/* L: work being processed */
-+	struct list_head	scheduled;	/* L: scheduled works */
- 	struct task_struct	*task;		/* I: worker task */
- 	struct cpu_workqueue_struct *cwq;	/* I: the associated cwq */
- 	int			id;		/* I: worker id */
-@@ -438,6 +439,8 @@ static struct worker *alloc_worker(void)
- 	struct worker *worker;
+ /*
+@@ -314,14 +317,24 @@ static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
+ 			 struct work_struct *work)
+ {
+ 	struct cpu_workqueue_struct *cwq = target_cwq(cpu, wq);
++	struct list_head *worklist;
+ 	unsigned long flags;
  
- 	worker = kzalloc(sizeof(*worker), GFP_KERNEL);
-+	if (worker)
-+		INIT_LIST_HEAD(&worker->scheduled);
- 	return worker;
+ 	debug_work_activate(work);
++
+ 	spin_lock_irqsave(&cwq->lock, flags);
+ 	BUG_ON(!list_empty(&work->entry));
++
+ 	cwq->nr_in_flight[cwq->work_color]++;
+-	insert_work(cwq, work, &cwq->worklist,
+-		    work_color_to_flags(cwq->work_color));
++
++	if (likely(cwq->nr_active < cwq->max_active)) {
++		cwq->nr_active++;
++		worklist = &cwq->worklist;
++	} else
++		worklist = &cwq->delayed_works;
++
++	insert_work(cwq, work, worklist, work_color_to_flags(cwq->work_color));
++
+ 	spin_unlock_irqrestore(&cwq->lock, flags);
  }
  
-@@ -523,6 +526,7 @@ static void destroy_worker(struct worker *worker)
- 
- 	/* sanity check frenzy */
- 	BUG_ON(worker->current_work);
-+	BUG_ON(!list_empty(&worker->scheduled));
- 
- 	kthread_stop(worker->task);
- 	kfree(worker);
-@@ -533,6 +537,48 @@ static void destroy_worker(struct worker *worker)
+@@ -578,6 +591,15 @@ static void move_linked_works(struct work_struct *work, struct list_head *head,
+ 		*nextp = n;
  }
  
- /**
-+ * move_linked_works - move linked works to a list
-+ * @work: start of series of works to be scheduled
-+ * @head: target list to append @work to
-+ * @nextp: out paramter for nested worklist walking
-+ *
-+ * Schedule linked works starting from @work to @head.  Work series to
-+ * be scheduled starts at @work and includes any consecutive work with
-+ * WORK_STRUCT_LINKED set in its predecessor.
-+ *
-+ * If @nextp is not NULL, it's updated to point to the next work of
-+ * the last scheduled work.  This allows move_linked_works() to be
-+ * nested inside outer list_for_each_entry_safe().
-+ *
-+ * CONTEXT:
-+ * spin_lock_irq(cwq->lock).
-+ */
-+static void move_linked_works(struct work_struct *work, struct list_head *head,
-+			      struct work_struct **nextp)
++static void cwq_activate_first_delayed(struct cpu_workqueue_struct *cwq)
 +{
-+	struct work_struct *n;
++	struct work_struct *work = list_first_entry(&cwq->delayed_works,
++						    struct work_struct, entry);
 +
-+	/*
-+	 * Linked worklist will always end before the end of the list,
-+	 * use NULL for list head.
-+	 */
-+	work = list_entry(work->entry.prev, struct work_struct, entry);
-+	list_for_each_entry_safe_continue(work, n, NULL, entry) {
-+		list_move_tail(&work->entry, head);
-+		if (!(*work_data_bits(work) & WORK_STRUCT_LINKED))
-+			break;
-+	}
-+
-+	/*
-+	 * If we're already inside safe list traversal and have moved
-+	 * multiple works to the scheduled queue, the next position
-+	 * needs to be updated.
-+	 */
-+	if (nextp)
-+		*nextp = n;
++	move_linked_works(work, &cwq->worklist, NULL);
++	cwq->nr_active++;
 +}
 +
-+/**
+ /**
   * cwq_dec_nr_in_flight - decrement cwq's nr_in_flight
   * @cwq: cwq of interest
-  * @color: color of work which left the queue
-@@ -632,17 +678,25 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
- 	cwq_dec_nr_in_flight(cwq, work_color);
- }
+@@ -596,6 +618,12 @@ static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
+ 		return;
  
--static void run_workqueue(struct worker *worker)
-+/**
-+ * process_scheduled_works - process scheduled works
-+ * @worker: self
-+ *
-+ * Process all scheduled works.  Please note that the scheduled list
-+ * may change while processing a work, so this function repeatedly
-+ * fetches a work from the top and executes it.
-+ *
-+ * CONTEXT:
-+ * spin_lock_irq(cwq->lock) which may be released and regrabbed
-+ * multiple times.
-+ */
-+static void process_scheduled_works(struct worker *worker)
+ 	cwq->nr_in_flight[color]--;
++	cwq->nr_active--;
++
++	/* one down, submit a delayed one */
++	if (!list_empty(&cwq->delayed_works) &&
++	    cwq->nr_active < cwq->max_active)
++		cwq_activate_first_delayed(cwq);
+ 
+ 	/* is flush in progress and are we at the flushing tip? */
+ 	if (likely(cwq->flush_color != color))
+@@ -1456,6 +1484,7 @@ static void free_cwqs(struct cpu_workqueue_struct *cwqs)
+ 
+ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 						unsigned int flags,
++						int max_active,
+ 						struct lock_class_key *key,
+ 						const char *lock_name)
  {
--	struct cpu_workqueue_struct *cwq = worker->cwq;
--
--	spin_lock_irq(&cwq->lock);
--	while (!list_empty(&cwq->worklist)) {
--		struct work_struct *work = list_entry(cwq->worklist.next,
-+	while (!list_empty(&worker->scheduled)) {
-+		struct work_struct *work = list_first_entry(&worker->scheduled,
- 						struct work_struct, entry);
- 		process_one_work(worker, work);
- 	}
--	spin_unlock_irq(&cwq->lock);
- }
+@@ -1464,6 +1493,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	bool failed = false;
+ 	unsigned int cpu;
  
- /**
-@@ -673,7 +727,27 @@ static int worker_thread(void *__worker)
- 		if (kthread_should_stop())
- 			break;
++	max_active = clamp_val(max_active, 1, INT_MAX);
++
+ 	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
+ 	if (!wq)
+ 		goto err;
+@@ -1495,8 +1526,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 		cwq->cpu = cpu;
+ 		cwq->wq = wq;
+ 		cwq->flush_color = -1;
++		cwq->max_active = max_active;
+ 		spin_lock_init(&cwq->lock);
+ 		INIT_LIST_HEAD(&cwq->worklist);
++		INIT_LIST_HEAD(&cwq->delayed_works);
+ 		init_waitqueue_head(&cwq->more_work);
  
--		run_workqueue(worker);
-+		spin_lock_irq(&cwq->lock);
-+
-+		while (!list_empty(&cwq->worklist)) {
-+			struct work_struct *work =
-+				list_first_entry(&cwq->worklist,
-+						 struct work_struct, entry);
-+
-+			if (likely(!(*work_data_bits(work) &
-+				     WORK_STRUCT_LINKED))) {
-+				/* optimization path, not strictly necessary */
-+				process_one_work(worker, work);
-+				if (unlikely(!list_empty(&worker->scheduled)))
-+					process_scheduled_works(worker);
-+			} else {
-+				move_linked_works(work, &worker->scheduled,
-+						  NULL);
-+				process_scheduled_works(worker);
-+			}
-+		}
-+
-+		spin_unlock_irq(&cwq->lock);
+ 		if (failed)
+@@ -1556,6 +1589,8 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 
+ 		for (i = 0; i < WORK_NR_COLORS; i++)
+ 			BUG_ON(cwq->nr_in_flight[i]);
++		BUG_ON(cwq->nr_active);
++		BUG_ON(!list_empty(&cwq->delayed_works));
  	}
  
- 	return 0;
-@@ -694,16 +768,33 @@ static void wq_barrier_func(struct work_struct *work)
-  * insert_wq_barrier - insert a barrier work
-  * @cwq: cwq to insert barrier into
-  * @barr: wq_barrier to insert
-- * @head: insertion point
-+ * @target: target work to attach @barr to
-+ * @worker: worker currently executing @target, NULL if @target is not executing
-  *
-- * Insert barrier @barr into @cwq before @head.
-+ * @barr is linked to @target such that @barr is completed only after
-+ * @target finishes execution.  Please note that the ordering
-+ * guarantee is observed only with respect to @target and on the local
-+ * cpu.
-+ *
-+ * Currently, a queued barrier can't be canceled.  This is because
-+ * try_to_grab_pending() can't determine whether the work to be
-+ * grabbed is at the head of the queue and thus can't clear LINKED
-+ * flag of the previous work while there must be a valid next work
-+ * after a work with LINKED flag set.
-+ *
-+ * Note that when @worker is non-NULL, @target may be modified
-+ * underneath us, so we can't reliably determine cwq from @target.
-  *
-  * CONTEXT:
-  * spin_lock_irq(cwq->lock).
-  */
- static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
--			struct wq_barrier *barr, struct list_head *head)
-+			      struct wq_barrier *barr,
-+			      struct work_struct *target, struct worker *worker)
- {
-+	struct list_head *head;
-+	unsigned int linked = 0;
-+
- 	/*
- 	 * debugobject calls are safe here even with cwq->lock locked
- 	 * as we know for sure that this will not trigger any of the
-@@ -714,8 +805,24 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
- 	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
- 	init_completion(&barr->done);
- 
-+	/*
-+	 * If @target is currently being executed, schedule the
-+	 * barrier to the worker; otherwise, put it after @target.
-+	 */
-+	if (worker)
-+		head = worker->scheduled.next;
-+	else {
-+		unsigned long *bits = work_data_bits(target);
-+
-+		head = target->entry.next;
-+		/* there can already be other linked works, inherit and set */
-+		linked = *bits & WORK_STRUCT_LINKED;
-+		*bits |= WORK_STRUCT_LINKED;
-+	}
-+
- 	debug_work_activate(&barr->work);
--	insert_work(cwq, &barr->work, head, work_color_to_flags(WORK_NO_COLOR));
-+	insert_work(cwq, &barr->work, head,
-+		    work_color_to_flags(WORK_NO_COLOR) | linked);
- }
- 
- /**
-@@ -948,8 +1055,8 @@ EXPORT_SYMBOL_GPL(flush_workqueue);
-  */
- int flush_work(struct work_struct *work)
- {
-+	struct worker *worker = NULL;
- 	struct cpu_workqueue_struct *cwq;
--	struct list_head *prev;
- 	struct wq_barrier barr;
- 
- 	might_sleep();
-@@ -969,14 +1076,14 @@ int flush_work(struct work_struct *work)
- 		smp_rmb();
- 		if (unlikely(cwq != get_wq_data(work)))
- 			goto already_gone;
--		prev = &work->entry;
- 	} else {
--		if (!cwq->worker || cwq->worker->current_work != work)
-+		if (cwq->worker && cwq->worker->current_work == work)
-+			worker = cwq->worker;
-+		if (!worker)
- 			goto already_gone;
--		prev = &cwq->worklist;
- 	}
--	insert_wq_barrier(cwq, &barr, prev->next);
- 
-+	insert_wq_barrier(cwq, &barr, work, worker);
- 	spin_unlock_irq(&cwq->lock);
- 	wait_for_completion(&barr.done);
- 	destroy_work_on_stack(&barr.work);
-@@ -1033,16 +1140,19 @@ static void wait_on_cpu_work(struct cpu_workqueue_struct *cwq,
- 				struct work_struct *work)
- {
- 	struct wq_barrier barr;
--	int running = 0;
-+	struct worker *worker;
- 
- 	spin_lock_irq(&cwq->lock);
-+
-+	worker = NULL;
- 	if (unlikely(cwq->worker && cwq->worker->current_work == work)) {
--		insert_wq_barrier(cwq, &barr, cwq->worklist.next);
--		running = 1;
-+		worker = cwq->worker;
-+		insert_wq_barrier(cwq, &barr, work, worker);
- 	}
-+
- 	spin_unlock_irq(&cwq->lock);
- 
--	if (unlikely(running)) {
-+	if (unlikely(worker)) {
- 		wait_for_completion(&barr.done);
- 		destroy_work_on_stack(&barr.work);
- 	}
+ 	free_cwqs(wq->cpu_wq);
 -- 
 1.6.4.2
 
