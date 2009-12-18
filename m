@@ -1,53 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbZLRWgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZLSPzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933190AbZLRWgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 17:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932737AbZLRWgb
+	id S1752764AbZLSPzk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 10:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZLSPzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 17:36:31 -0500
-Received: from khc.piap.pl ([195.187.100.11]:37099 "EHLO khc.piap.pl"
+	Sat, 19 Dec 2009 10:55:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34752 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932558AbZLRWg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 17:36:28 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Joe Perches <joe@perches.com>, Valdis.Kletnieks@vt.edu,
-       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [dm-devel] Re: [PATCH] scripts/checkpatch.pl: Change long line warning to 105 chars
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
-	<20091217061229.GD3946@linux-sh.org>
-	<m3tyvqgfs4.fsf@intrepid.localdomain>
-	<Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com>
-	<24653.1261110557@localhost>
-	<1261113144.13734.317.camel@Joe-Laptop.home>
-	<m3iqc41h83.fsf@intrepid.localdomain>
-	<20091218151241.GD9334@agk-dp.fab.redhat.com>
-	<20091218085858.029c5660.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0912181210130.3223@hs20-bc2-1.build.redhat.com>
-Date: Fri, 18 Dec 2009 23:36:25 +0100
-In-Reply-To: <Pine.LNX.4.64.0912181210130.3223@hs20-bc2-1.build.redhat.com>
-	(Mikulas Patocka's message of "Fri, 18 Dec 2009 12:12:34 -0500 (EST)")
-Message-ID: <m3oclvzz86.fsf@intrepid.localdomain>
+	id S1752651AbZLSPzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 10:55:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Fri, 18 Dec 2009 23:43:29 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912160311.05915.rjw@sisk.pl> <20091216064025.GB2699@core.coreip.homeip.net>
+In-Reply-To: <20091216064025.GB2699@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912182343.29190.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikulas Patocka <mpatocka@redhat.com> writes:
+On Wednesday 16 December 2009, Dmitry Torokhov wrote:
+> On Wed, Dec 16, 2009 at 03:11:05AM +0100, Rafael J. Wysocki wrote:
+> > On Tuesday 15 December 2009, Linus Torvalds wrote:
+> > > 
+> > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
+> > > > > 
+> > > > > Give a real example that matters.
+> > > > 
+> > > > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
+> > > > like this:
+> > > 
+> > > No. 
+> > > 
+> > > I mean something real - something like
+> > > 
+> > >  - if you run on a non-PC with two USB buses behind non-PCI controllers.
+> > > 
+> > >  - device xyz.
+> > > 
+> > > > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
+> > > > show that serio devices take much more time to suspend than USB.
+> > > 
+> > > I mean in general - something where you actually have hard data that some 
+> > > device really needs anythign more than my one-liner, and really _needs_ 
+> > > some complex infrastructure.
+> > > 
+> > > Not "let's imagine a case like xyz".
+> > 
+> > As I said I would, I made some measurements.
+> > 
+> > I measured the total time of suspending and resuming devices as shown by the
+> > code added by this patch:
+> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
+> > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
+> > different and the HP was running 64-bit kernel and user space).
+> > 
+> > I took four cases into consideration:
+> > (1) synchronous suspend and resume (/sys/power/pm_async = 0)
+> > (2) asynchronous suspend and resume as introduced by the async branch at:
+> >     http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
+> > (3) asynchronous suspend and resume like in (2), but with your one-liner setting
+> >     the power.async_suspend flag for PCI bridges on top
+> > (4) asynchronous suspend and resume like in (2), but with an extra patch that
+> >     is appended on top
+> > 
+> > For those tests I set power.async_suspend for all USB devices, all serio input
+> > devices, the ACPI battery and the USB PCI controllers (to see the impact of the
+> > one-liner, if any).
+> > 
+> > I carried out 5 consecutive suspend-resume cycles (started from under X) on
+> > each box in each case, and the raw data are here (all times in milliseconds):
+> > http://www.sisk.pl/kernel/data/async-suspend.pdf
+> > 
+> > The summarized data are below (the "big" numbers are averages and the +/-
+> > numbers are standard deviations, all in milliseconds):
+> > 
+> > 			HP nx6325		MSI Wind U100
+> > 
+> > sync suspend		1482 (+/- 40)	1180 (+/- 24)
+> > sync resume		2955 (+/- 2)	3597 (+/- 25)
+> > 
+> > async suspend		1553 (+/- 49)	1177 (+/- 32)
+> > async resume		2692 (+/- 326)	3556  (+/- 33)
+> > 
+> > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+> > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+> > 
+> > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+> > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+> > 
+> > So, in my opinion, with the above set of "async" devices, it doesn't
+> > make sense to do async suspend at all, because the sync suspend is actually
+> > the fastest on both machines.
+> 
+> I think the async suspend is not asynchronous enough then - what kind of
+> time do you get if you simply comment out call to psmouse_reset() in
+> drivers/input/mouse/psmouse-base.c:psmouse_cleanup()?  (Just for testing
+> purposes only, I don't think we want to do that by default.)
 
-> I don't like scrolling too but most viewers and editors wrap it 
-> automatically to screen width. For example, restrict your terminal to 50 
-> columnts and try using "less".
+The problem apparently is that the i8042 suspend/resume is synchronous.
 
-It's the tools.
+Do you think it's safe to mark it as asynchronous?
 
-I think it's much easier to fix tools ("smart wrap") than to rewrite the
-source.
--- 
-Krzysztof Halasa
+Rafael
