@@ -1,77 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751345AbZLRV4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbZLRV5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751345AbZLRV4x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 16:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbZLRV4w
+	id S1752563AbZLRV5b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 16:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZLRV53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 16:56:52 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40657 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbZLRV4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 16:56:51 -0500
-Date: Sat, 19 Dec 2009 08:56:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Bob Copeland <me@bobcopeland.com>
-Subject: Re: git pull on linux-next makes my system crawl to its knees and
- beg for  mercy
-Message-Id: <20091219085640.c3414f51.sfr@canb.auug.org.au>
-In-Reply-To: <43e72e890912180926oad3b09fl6b7951864a836700@mail.gmail.com>
-References: <43e72e890912180926oad3b09fl6b7951864a836700@mail.gmail.com>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Fri, 18 Dec 2009 16:57:29 -0500
+Received: from www84.your-server.de ([213.133.104.84]:52171 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbZLRV52 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 16:57:28 -0500
+Subject: Re: [Fwd: [patch] media video cx23888 driver: ported to new kfifo
+ API]
+From: Stefani Seibold <stefani@seibold.net>
+To: Andy Walls <awalls@radix.net>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1261172359.3060.11.camel@palomino.walls.org>
+References: <4B2B5622.80604@infradead.org>
+	 <1261137648.3080.36.camel@palomino.walls.org>
+	 <1261138265.8293.2.camel@wall-e>
+	 <1261172359.3060.11.camel@palomino.walls.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 18 Dec 2009 22:57:22 +0100
+Message-ID: <1261173442.13019.13.camel@wall-e>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__19_Dec_2009_08_56_40_+1100_9Li+QtiSlJlAcYMO"
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__19_Dec_2009_08_56_40_+1100_9Li+QtiSlJlAcYMO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Freitag, den 18.12.2009, 16:39 -0500 schrieb Andy Walls:
+> On Fri, 2009-12-18 at 13:11 +0100, Stefani Seibold wrote:
+> > Am Freitag, den 18.12.2009, 07:00 -0500 schrieb Andy Walls:
+> > > On Fri, 2009-12-18 at 08:14 -0200, Mauro Carvalho Chehab wrote:
+> 
+> > > 
+> > > Stefani and Mauro,
+> > > 
+> > > My comments/concerns are in line:
+> > > 
+> > > > -------- Mensagem original --------
+> > > > Assunto: [patch] media video cx23888 driver: ported to new kfifo API
+> > > > Data: Fri, 18 Dec 2009 09:12:34 +0100
+> > > > De: Stefani Seibold <stefani@seibold.net>
+> > > > Para: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,  Mauro Carvalho Chehab <mchehab@infradead.org>
+> > > > 
+> > > > This patch will fix the cx23888 driver to use the new kfifo API.
+> > > > 
+> > > > The patch-set is against current mm tree from 11-Dec-2009
+> > > > 
+> > > > Greetings,
+> > > > Stefani
+> > > > 
+> > > > Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> > > > ---
+> > > >  cx23888-ir.c |   35 ++++++++++-------------------------
+> > > >  1 file changed, 10 insertions(+), 25 deletions(-)
+> > > > 
+> > > > --- mmotm.orig/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 08:42:53.936778002 +0100
+> > > > +++ mmotm/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 09:03:04.808703259 +0100
+> 
+> > > > @@ -631,7 +629,7 @@ static int cx23888_ir_irq_handler(struct
+> > > >  		cx23888_ir_write4(dev, CX23888_IR_CNTRL_REG, cntrl);
+> > > >  		*handled = true;
+> > > >  	}
+> > > > -	if (kfifo_len(state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+> > > > +	if (kfifo_len(&state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+> > > >  		events |= V4L2_SUBDEV_IR_RX_FIFO_SERVICE_REQ;
+> > > >  
+> > > >  	if (events)
+> > > 
+> > > I am concerned about reading the kfifo_len() without taking the lock,
+> > > since another thread on another CPU may be reading from the kfifo at the
+> > > same time.
+> > > 
+> > > If the new kfifo implementation has an atomic_read() or something behind
+> > > the kfifo_len() call, then OK.
+> > > 
+> > > 
+> > > > @@ -657,7 +655,7 @@ static int cx23888_ir_rx_read(struct v4l
+> > > >  		return 0;
+> > > >  	}
+> > > >  
+> > > > -	n = kfifo_get(state->rx_kfifo, buf, n);
+> > > > +	n = kfifo_out_locked(&state->rx_kfifo, buf, n, &state->rx_kfifo_lock);
+> > > >  
+> > > >  	n /= sizeof(u32);
+> > > >  	*num = n * sizeof(u32);
+> > > > @@ -785,7 +783,7 @@ static int cx23888_ir_rx_s_parameters(st
+> > > >  	o->interrupt_enable = p->interrupt_enable;
+> > > >  	o->enable = p->enable;
+> > > >  	if (p->enable) {
+> > > > -		kfifo_reset(state->rx_kfifo);
+> > > > +		kfifo_reset(&state->rx_kfifo);
+> > > >  		if (p->interrupt_enable)
+> > > >  			irqenable_rx(dev, IRQEN_RSE | IRQEN_RTE | IRQEN_ROE);
+> > > >  		control_rx_enable(dev, p->enable);
+> > > 
+> > > Same concern about kfifo_reset() not taking the lock, and another thread
+> > > reading data from the kfifo at the same time.  In the cx23885 module,
+> > > this would mostly likely happen only during module unload as things are
+> > > being shut down.
+> > > 
+> 
+> > Sorry, i ported it only to the new API. I did not touch the
+> > functionality.
+> 
+> Stefani,
+> 
+> Huh?  The new kfifo implementation you wrote removed the locks from
+> kfifo_len() and kfifo_reset().  By changing those two functions to not
+> provide locking, you changed the functionality.
 
-Hi Luis,
+You are right. Brain was temporary switch off. But kfifo_len() did not
+requiere a lock in my opinion. It is save to use without a look. 
 
-On Fri, 18 Dec 2009 09:26:29 -0800 "Luis R. Rodriguez" <mcgrof@gmail.com> w=
-rote:
->
-> I tend to always be on a 2.6.32 kernel + John's queued up patches for
-> wireless for the next kernel release (I use wireless-testing). My
-> system is a Thinkpad T61, userspace is Ubuntu 9.10 based (ships with
-> git 1.6.3.3) and I kept an ext3 filesystem to be able to go back in
-> time to 2.6.27 at will without issues.  I git clone'd linux-next a few
-> weeks ago. After a few days I then tried to git pull and my system
-> became completely unusable, It took *ages* to open up a terminal and
+But the use of kfifo_reset() is without locking dangerous. 
 
-The start of the daily linux-next boilerplate says:
+I will write a path to lock your operations and send it to andrew.
 
-> If you are tracking the linux-next tree using git, you should not use
-> "git pull" to do so as that will try to merge the new linux-next release
-> with the old one.  You should use "git fetch" as mentioned in the FAQ on
-> the wiki (see below).
+Stefani
 
-(Unfortunately, the wiki seems to be unavailable at the moment)
 
-I am guessing that the merge that git is attempting is killing your
-laptop (though besides the number of common commits I am not sure why).
-Please try using "get fetch" instead.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__19_Dec_2009_08_56_40_+1100_9Li+QtiSlJlAcYMO
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksr+pgACgkQjjKRsyhoI8wH3gCfejvqDRVQt1+FYNTp1VPG0lHO
-5X0AnjtcBHhBPkw9CcznM4XEcRuOqroH
-=AYM1
------END PGP SIGNATURE-----
-
---Signature=_Sat__19_Dec_2009_08_56_40_+1100_9Li+QtiSlJlAcYMO--
