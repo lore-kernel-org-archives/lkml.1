@@ -1,283 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbZLRA2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZLRAiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752765AbZLRA2t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 19:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZLRA2s
+	id S1753265AbZLRAiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 19:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbZLRAiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 19:28:48 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:32978 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZLRA2r (ORCPT
+	Thu, 17 Dec 2009 19:38:22 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:28832 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZLRAiU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 19:28:47 -0500
-Date: Thu, 17 Dec 2009 18:27:23 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [this_cpu_xx V7 0/8] Per cpu atomics in core allocators and
- cleanup
-In-Reply-To: <20091218001357.GA30450@Krystal>
-Message-ID: <alpine.DEB.2.00.0912171823120.6885@router.home>
-References: <20091214220320.665065925@quilx.com> <20091215174302.GA3928@Krystal> <4B2830CC.7040309@kernel.org> <20091216014031.GA12282@Krystal> <4B283BFE.2040005@kernel.org> <20091217133958.GA21618@Krystal> <alpine.DEB.2.00.0912171327220.3638@router.home>
- <20091217202558.GA21713@Krystal> <alpine.DEB.2.00.0912171443080.5819@router.home> <20091218001357.GA30450@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 17 Dec 2009 19:38:20 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <23e2d3ad-2611-4422-9349-50e4d3d8377f@default>
+Date: Thu, 17 Dec 2009 16:36:58 -0800 (PST)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: dan.magenheimer@oracle.com, npiggin@suse.de, akpm@osdl.org,
+       jeremy@goop.org, xen-devel@lists.xensource.com,
+       tmem-devel@oss.oracle.com, kurt.hackel@oracle.com,
+       Russell <rusty@rustcorp.com.au>, Rik van Riel <riel@redhat.com>,
+       dave.mccracken@oracle.com, linux-mm@kvack.org,
+       Rusty@rcsinet15.oracle.com, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       chris.mason@oracle.com, Pavel Machek <pavel@ucw.cz>
+Subject: Tmem [PATCH 0/5] (Take 3): Transcendent memory
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B2ACEC0.0159:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Mathieu Desnoyers wrote:
+Tmem [PATCH 0/5] (Take 3): Transcendent memory
+Transcendent memory
 
-> Sure, can you point me to a git tree I should work on top of which
-> includes the per cpu infrastructure to extend ?
+Changes since RFC "Take 2" posting (7 July 2009) reviewed at
+http://lwn.net/Articles/340080/
 
-Linus' git tree contains what yoou need. I have a early draft here of a
-patch to implement the generic portions. Unfinished. I hope I have time to
-complete this. Feel free to complete it but keep me posted so that I wont
-repeat anything you do.
+1) Refreshed to 2.6.32
+2) Support added for btrfs and ext4
+3) "Precache" and "preswap" renamed to "cleancache" and "frontswap"
+   in response to feedback that "pre" is overloaded and too generic.
+4) Most important usage statistics now provided via sysfs, under
+   /sys/vm/tmem/cleancache and /sys/vm/tmem/frontswap.
+5) Shared pools security issue resolved by external administrative
+   tools; shared pool support and ocfs2 support added back again.
+6) Some performance measurement done (on a linux-compile workload)
+   and presented at OLS; in short, showed savings of ~300 IO/sec
+   at an approximate cost of 0.1%-0.2% of one CPU.
+And FYI, tmem support is now released as a technology preview in Oracle's
+Xen-based Oracle VM 2.2 product and will be released with Xen 4.0
+early in 2010.  Both of these provide full save/restore/live migration
+support for tmem-enabled VMs and a small set of console-oriented
+management tools to view detailed tmem usage across all domains
+that use tmem.
 
-The modifications to asm-generic/cmpxchg-local wont work since we need to
-do this_cpu_ptr() pointer calculations within the protected sections. I
-was in the middle of getting rid of it when I found it was time to go
-home...
+(Transcendent memory documentation follows below diffstats.)
 
+Signed-off-by: Dan Magenheimer <dan.magenheimer@oracle.com>
 
----
- include/asm-generic/cmpxchg-local.h |   24 ++++-
- include/linux/percpu.h              |  151 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 169 insertions(+), 6 deletions(-)
+Changed core kernel files:
+ fs/btrfs/extent_io.c                     |    9 +++
+ fs/btrfs/super.c                         |    2 
+ fs/buffer.c                              |    5 ++
+ fs/ext3/super.c                          |    2 
+ fs/ext4/super.c                          |    2 
+ fs/mpage.c                               |    8 +++
+ fs/ocfs2/super.c                         |    2 
+ fs/super.c                               |    6 ++
+ include/linux/fs.h                       |    7 ++
+ include/linux/swap.h                     |   51 +++++++++++++++++++++
+ include/linux/sysctl.h                   |    1 
+ kernel/sysctl.c                          |   11 ++++
+ mm/Kconfig                               |   26 ++++++++++
+ mm/Makefile                              |    3 +
+ mm/filemap.c                             |   11 ++++
+ mm/page_io.c                             |   12 ++++
+ mm/swapfile.c                            |   43 +++++++++++++++--
+ mm/truncate.c                            |   10 ++++
+ 18 files changed, 204 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/include/asm-generic/cmpxchg-local.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/cmpxchg-local.h	2009-12-17 17:44:01.000000000 -0600
-+++ linux-2.6/include/asm-generic/cmpxchg-local.h	2009-12-17 17:46:31.000000000 -0600
-@@ -6,13 +6,12 @@
- extern unsigned long wrong_size_cmpxchg(volatile void *ptr);
+Newly added core kernel files:
+ Documentation/transcendent-memory.txt    |  176 +++++++++++
+ include/linux/tmem.h                     |   88 +++++
+ mm/cleancache.c                          |  184 ++++++++++++
+ mm/frontswap.c                           |  319 +++++++++++++++++++++
+ 4 files changed, 767 insertions(+)
 
- /*
-- * Generic version of __cmpxchg_local (disables interrupts). Takes an unsigned
-- * long parameter, supporting various types of architectures.
-+ * Generic version of __cmpxchg_local.
-  */
--static inline unsigned long __cmpxchg_local_generic(volatile void *ptr,
-+static inline unsigned long ____cmpxchg_local_generic(volatile void *ptr,
- 		unsigned long old, unsigned long new, int size)
- {
--	unsigned long flags, prev;
-+	unsigned long prev;
+Changed xen-specific files:
+ arch/x86/include/asm/xen/hypercall.h     |    8 +++
+ drivers/xen/Makefile                     |    1 
+ include/xen/interface/tmem.h             |   43 +++++++++++++++++++++
+ include/xen/interface/xen.h              |   22 ++++++++++
+ 4 files changed, 74 insertions(+)
 
- 	/*
- 	 * Sanity checking, compile-time.
-@@ -20,7 +19,6 @@ static inline unsigned long __cmpxchg_lo
- 	if (size == 8 && sizeof(unsigned long) != 8)
- 		wrong_size_cmpxchg(ptr);
+Newly added xen-specific files:
+ drivers/xen/tmem.c                       |   97 +++++++++++++++++++++
+ include/xen/interface/tmem.h             |   43 +++++++++
+ 2 files changed, 140 insertions(+)
 
--	local_irq_save(flags);
- 	switch (size) {
- 	case 1: prev = *(u8 *)ptr;
- 		if (prev == old)
-@@ -41,11 +39,25 @@ static inline unsigned long __cmpxchg_lo
- 	default:
- 		wrong_size_cmpxchg(ptr);
- 	}
--	local_irq_restore(flags);
- 	return prev;
- }
+Normal memory is directly addressable by the kernel, of a known
+normally-fixed size, synchronously accessible, and persistent (though
+not across a reboot).
 
- /*
-+ * Generic version of __cmpxchg_local (disables interrupts). Takes an unsigned
-+ * long parameter, supporting various types of architectures.
-+ */
-+static inline unsigned long __cmpxchg_local_generic(volatile void *ptr,
-+		unsigned long old, unsigned long new, int size)
-+{
-+	unsigned long flags, r;
-+
-+	local_irq_save(flags);
-+	r = ____cmpxchg_local_generic(ptr, old, new ,size);
-+	local_irq_restore(flags);
-+	return r;
-+}
-+
-+/*
-  * Generic version of __cmpxchg64_local. Takes an u64 parameter.
-  */
- static inline u64 __cmpxchg64_local_generic(volatile void *ptr,
-Index: linux-2.6/include/linux/percpu.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2009-12-17 17:31:10.000000000 -0600
-+++ linux-2.6/include/linux/percpu.h	2009-12-17 18:23:02.000000000 -0600
-@@ -443,6 +443,48 @@ do {									\
- # define this_cpu_xor(pcp, val)		__pcpu_size_call(this_cpu_or_, (pcp), (val))
- #endif
+What if there was a class of memory that is of unknown and dynamically
+variable size, is addressable only indirectly by the kernel, can be
+configured either as persistent or as "ephemeral" (meaning it will be
+around for awhile, but might disappear without warning), and is still
+fast enough to be synchronously accessible?
 
-+#ifndef this_cpu_cmpxchg
-+# ifndef this_cpu_cmpxchg_1
-+#  define this_cpu_cmpxchg_1(pcp, old, new) this_cpu_cmpxchg_generic(((pcp), (old), (new), 1)
-+# endif
-+# ifndef this_cpu_cmpxchg_2
-+#  define this_cpu_cmpxchg_2(pcp, old, new) this_cpu_cmpxchg_generic(((pcp), (old), (new), 2)
-+# endif
-+# ifndef this_cpu_cmpxchg_4
-+#  define this_cpu_cmpxchg_4(pcp, old, new) this_cpu_cmpxchg_generic(((pcp), (old), (new), 4)
-+# endif
-+# ifndef this_cpu_cmpxchg_8
-+#  define this_cpu_cmpxchg_8(pcp, old, new) this_cpu_cmpxchg_generic(((pcp), (old), (new), 8)
-+# endif
-+# define this_cpu_cmpxchg(pcp, old, new) __pcpu_size_call_return(this_cpu_cmpxchg_, (old), (new))
-+#endif
-+
-+#define _this_cpu_generic_xchg_op(pcp, val)				\
-+  ({									\
-+	typeof(*(var)) __tmp_var__;					\
-+	preempt_disable();						\
-+	__tmp_var = __this_cpu_read(pcp);				\
-+	__this_cpu_read(pcp) = (val);					\
-+	preemt_enable();						\
-+	__tmp_var__;							\
-+  })
-+
-+#ifndef this_cpu_xchg
-+# ifndef this_cpu_xchg_1
-+#  define this_cpu_xchg_1(pcp, val) _this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef this_cpu_xchg_2
-+#  define this_cpu_xchg_2(pcp, val) _this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef this_cpu_xchg_4
-+#  define this_cpu_xchg_4(pcp, val) _this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef this_cpu_xchg_8
-+#  define this_cpu_xchg_8(pcp, val) _this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# define this_cpu_xchg(pcp, val) __pcpu_size_call_return(this_cpu_xchg_, (val))
-+#endif
-+
- /*
-  * Generic percpu operations that do not require preemption handling.
-  * Either we do not care about races or the caller has the
-@@ -594,6 +636,46 @@ do {									\
- # define __this_cpu_xor(pcp, val)	__pcpu_size_call(__this_cpu_xor_, (pcp), (val))
- #endif
+We call this latter class "transcendent memory" and it provides an
+interesting opportunity to more efficiently utilize RAM in a virtualized
+environment.  However this "memory but not really memory" may also have
+applications in NON-virtualized environments, such as hotplug-memory
+deletion, SSDs, and page cache compression.  Others have suggested ideas
+such as allowing use of highmem memory without a highmem kernel, or use
+of spare video memory.
 
-+#ifndef __this_cpu_cmpxchg
-+# ifndef __this_cpu_cmpxchg_1
-+#  define __this_cpu_cmpxchg _1(pcp, old, new) ____cmpxchg_local_generic(__this_cpu_ptr(pcp), (old), (new), 1)
-+# endif
-+# ifndef __this_cpu_cmpxchg_2
-+#  define __this_cpu_cmpxchg_2(pcp, old, new) ____cmpxchg_local_generic(__this_cpu_ptr(pcp), (old), (new), 2)
-+# endif
-+# ifndef __this_cpu_cmpxchg_4
-+#  define __this_cpu_cmpxchg_4(pcp, old, new) ____cmpxchg_local_generic(__this_cpu_ptr(pcp), (old), (new), 4)
-+# endif
-+# ifndef __this_cpu_cmpxchg_8
-+#  define __this_cpu_cmpxchg_8(pcp, old, new) ____cmpxchg_local_generic(__this_cpu_ptr(pcp), (old), (new), 8)
-+# endif
-+# define __this_cpu_cmpxchg(pcp, old, new) __pcpu_size_call_return(__this_cpu_cmpxchg_, (old), (new))
-+#endif
-+
-+#define _this_cpu_generic_xchg_op(pcp, val)				\
-+  ({									\
-+	typeof(*(var)) __tmp_var__;					\
-+	__tmp_var = __this_cpu_read(pcp);				\
-+	__this_cpu_write((pcp), val);					\
-+	__tmp_var__;							\
-+  })
-+
-+#ifndef __this_cpu_xchg
-+# ifndef __this_cpu_xchg_1
-+#  define __this_cpu_xchg_1(pcp, val) __this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef __this_cpu_xchg_2
-+#  define __this_cpu_xchg_2(pcp, val) __this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef __this_cpu_xchg_4
-+#  define __this_cpu_xchg_4(pcp, val) __this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef __this_cpu_xchg_8
-+#  define __this_cpu_xchg_8(pcp, val) __this_cpu_generic_xchg_op((pcp), (val))
-+# endif
-+# define __this_cpu_xchg(pcp, val) __pcpu_size_call_return(__this_cpu_xchg_, (val))
-+#endif
-+
- /*
-  * IRQ safe versions of the per cpu RMW operations. Note that these operations
-  * are *not* safe against modification of the same variable from another
-@@ -709,4 +791,73 @@ do {									\
- # define irqsafe_cpu_xor(pcp, val) __pcpu_size_call(irqsafe_cpu_xor_, (val))
- #endif
+Transcendent memory, or "tmem" for short, provides a well-defined API to
+access this unusual class of memory.  (A summary of the API is provided
+below.)  The basic operations are page-copy-based and use a flexible
+object-oriented addressing mechanism.  Tmem assumes that some "privileged
+entity" is capable of executing tmem requests and storing pages of data;
+this entity is currently a hypervisor and operations are performed via
+hypercalls, but the entity could be a kernel policy, or perhaps a
+"memory node" in a cluster of blades connected by a high-speed
+interconnect such as hypertransport or QPI.
 
-+#ifndef irqsafe_cpu_cmpxchg
-+# ifndef irqsafe_cpu_cmpxchg_1
-+#  define irqsafe_cpu_cmpxchg_1(pcp, old, new) __cmpxchg_local_generic(((pcp), (old), (new), 1)
-+# endif
-+# ifndef irqsafe_cpu_cmpxchg_2
-+#  define irqsafe_cpu_cmpxchg_2(pcp, old, new) __cmpxchg_local_generic(((pcp), (old), (new), 2)
-+# endif
-+# ifndef irqsafe_cpu_cmpxchg_4
-+#  define irqsafe_cpu_cmpxchg_4(pcp, old, new) __cmpxchg_local_generic(((pcp), (old), (new), 4)
-+# endif
-+# ifndef irqsafe_cpu_cmpxchg_8
-+#  define irqsafe_cpu_cmpxchg_8(pcp, old, new) __cmpxchg_local_generic(((pcp), (old), (new), 8)
-+# endif
-+# define irqsafe_cpu_cmpxchg(pcp, old, new) __pcpu_size_call_return(irqsafe_cpu_cmpxchg_, (old), (new))
-+#endif
-+
-+#define irqsafe_generic_xchg_op(pcp, val)				\
-+  ({									\
-+	typeof(*(var)) __tmp_var__;					\
-+	unsigned long flags;						\
-+	local_irq_disable(flags);					\
-+	__tmp_var = __this_cpu_read(pcp);				\
-+	__this_cpu_write(pcp, val);					\
-+	local_irq_enable(flags);					\
-+	__tmp_var__;							\
-+  })
-+
-+#ifndef irqsafe_cpu_xchg
-+# ifndef irqsafe_cpu_xchg_1
-+#  define irqsafe_cpu_xchg_1(pcp, val) irqsafe_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef irqsafe_cpu_xchg_2
-+#  define irqsafe_cpu_xchg_2(pcp, val) irqsafe_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef irqsafe_cpu_xchg_4
-+#  define irqsafe_cpu_xchg_4(pcp, val) irqsafe_generic_xchg_op((pcp), (val))
-+# endif
-+# ifndef irqsafe_cpu_xchg_8
-+#  define irqsafe_cpu_xchg_8(pcp, val) irqsafe_generic_xchg_op((pcp), (val))
-+# endif
-+# define irqsafe_cpu_xchg(pcp, val) __pcpu_size_call_return(irqsafe_cpu_xchg_, (val))
-+#endif
-+
-+#define _this_cpu_generic_add_return_op(pcp, val)			\
-+do {									\
-+	preempt_disable();						\
-+	*__this_cpu_ptr(&pcp) op val;					\
-+	preempt_enable();						\
-+} while (0)
-+
-+
-+#ifndef this_cpu_add_return
-+# ifndef this_cpu_add_return_1
-+#  define this_cpu_add_return_1(pcp, val) _this_cpu_generic_add_return_op((pcp), (val))
-+# endif
-+# ifndef this_cpu_ _2
-+#  define this_cpu_add_return_2(pcp, val) _this_cpu_generic_add_return_op((pcp), (val))
-+# endif
-+# ifndef this_cpu_add_return_4
-+#  define this_cpu_add_return_4(pcp, val) _this_cpu_generic_add_return_op((pcp), (val))
-+# endif
-+# ifndef this_cpu_add_return_8
-+#  define this_cpu_add_return_8(pcp, val) _this_cpu_generic_add_return_op((pcp), (val))
-+# endif
-+# define this_cpu_add_return(pcp, val) __pcpu_size_call_return(_cpu_ _, (val))
-+#endif
-+
-+#ifndef irqsafe_cpu_add_return
-+
- #endif /* __LINUX_PERCPU_H */
+Since tmem is not directly accessible and because page copying is done
+to/from physical pageframes, it more suitable for in-kernel memory needs
+than for userland applications.  However, there may be yet undiscovered
+userland possibilities.
+
+With the tmem concept outlined vaguely and its broader potential hinted,
+we will overview two existing examples of how tmem can be used by the
+kernel.
+
+"Cleancache" can be thought of as a page-granularity victim cache for clean
+pages that the kernel's pageframe replacement algorithm (PFRA) would like
+to keep around, but can't since there isn't enough memory.   So when the
+PFRA "evicts" a page, it first puts it into the cleancache via a call to
+tmem.  And any time a filesystem reads a page from disk, it first attempts
+to get the page from cleancache.  If it's there, a disk access is eliminated.
+If not, the filesystem just goes to the disk like normal.  Cleancache is
+"ephemeral" so whether a page is kept in cleancache (between the "put" and
+the "get") is dependent on a number of factors that are invisible to
+the kernel.
+
+"Frontswap" is so named because it can be thought of as the opposite of
+a "backing store". Frontswap IS persistent, but for various reasons may not
+always be available for use, again due to factors that may not be visible to
+the kernel. (But, briefly, if the kernel is being "good" and has shared its
+resources nicely, then it will be able to use frontswap, else it will not.)
+Once a page is put, a get on the page will always succeed.  So when the
+kernel finds itself in a situation where it needs to swap out a page, it
+first attempts to use frontswap.  If the put works, a disk write and
+(usually) a disk read are avoided.  If it doesn't, the page is written
+to swap as usual.  Unlike cleancache, whether a page is stored in frontswap
+vs swap is recorded in kernel data structures, so when a page needs to
+be fetched, the kernel does a get if it is in frontswap and reads from
+swap if it is not in frontswap.
+
+Both cleancache and frontswap may be optionally compressed, trading off 2x
+space reduction vs 10x performance for access.  Cleancache also has a
+sharing feature, which allows different nodes in a "virtual cluster"
+to share a local page cache.
+
+Tmem has some similarity to IBM's Collaborative Memory Management, but
+creates more of a partnership between the kernel and the "privileged
+entity" and is not very invasive.  Tmem may be applicable for KVM and
+containers; there is some disagreement on the extent of its value.
+Tmem is highly complementary to ballooning (aka page granularity hot
+plug) and memory deduplication (aka transparent content-based page
+sharing) but still has value when neither are present.
+
+Performance is difficult to quantify because some benchmarks respond
+very favorably to increases in memory and tmem may do quite well on
+those, depending on how much tmem is available which may vary widely
+and dynamically, depending on conditions completely outside of the
+system being measured.  Ideas on how best to provide useful metrics
+would be appreciated.
+
+Tmem is supported starting in Xen 4.0 and is in Xen's Linux 2.6.18-xen
+source tree.  It is also released as a technology preview in Oracle's
+Xen-based virtualization product, Oracle VM 2.2.  Again, Xen is not
+necessarily a requirement, but currently provides the only existing
+implementation of tmem.
+
+Lots more information about tmem can be found at:
+  http://oss.oracle.com/projects/tmem
+and there was a talk about it on the first day of Linux Symposium in
+July 2009; an updated talk is planned at linux.conf.au in January 2010.
+Tmem is the result of a group effort, including Dan Magenheimer,
+Chris Mason, Dave McCracken, Kurt Hackel and Zhigang Wang, with helpful
+input from Jeremy Fitzhardinge, Keir Fraser, Ian Pratt, Sunil Mushran,
+Joel Becker, and Jan Beulich.
+
+THE TRANSCENDENT MEMORY API
+
+Transcendent memory is made up of a set of pools.  Each pool is made
+up of a set of objects.  And each object contains a set of pages.
+The combination of a 32-bit pool id, a 64-bit object id, and a 32-bit
+page id, uniquely identify a page of tmem data, and this tuple is called
+a "handle." Commonly, the three parts of a handle are used to address
+a filesystem, a file within that filesystem, and a page within that file;
+however an OS can use any values as long as they uniquely identify
+a page of data.
+
+When a tmem pool is created, it is given certain attributes: It can
+be private or shared, and it can be persistent or ephemeral.  Each
+combination of these attributes provides a different set of useful
+functionality and also defines a slightly different set of semantics
+for the various operations on the pool.  Other pool attributes include
+the size of the page and a version number.
+
+Once a pool is created, operations are performed on the pool.  Pages
+are copied between the OS and tmem and are addressed using a handle.
+Pages and/or objects may also be flushed from the pool.  When all
+operations are completed, a pool can be destroyed.
+
+The specific tmem functions are called in Linux through a set of
+accessor functions:
+
+int (*new_pool)(struct tmem_pool_uuid uuid, u32 flags);
+int (*destroy_pool)(u32 pool_id);
+int (*put_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
+int (*get_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
+int (*flush_page)(u32 pool_id, u64 object, u32 index);
+int (*flush_object)(u32 pool_id, u64 object);
+
+The new_pool accessor creates a new pool and returns a pool id
+which is a non-negative 32-bit integer.  If the flags parameter
+specifies that the pool is to be shared, the uuid is a 128-bit "shared
+secret" else it is ignored.  The destroy_pool accessor destroys the pool.
+(Note: shared pools are not supported until security implications
+are better understood.)
+
+The put_page accessor copies a page of data from the specified pageframe
+and associates it with the specified handle.
+
+The get_page accessor looks up a page of data in tmem associated with
+the specified handle and, if found, copies it to the specified pageframe.
+
+The flush_page accessor ensures that subsequent gets of a page with
+the specified handle will fail.  The flush_object accessor ensures
+that subsequent gets of any page matching the pool id and object
+will fail.
+
+There are many subtle but critical behaviors for get_page and put_page:
+- Any put_page (with one notable exception) may be rejected and the client
+  must be prepared to deal with that failure.  A put_page copies, NOT moves,
+  data; that is the data exists in both places.  Linux is responsible for
+  destroying or overwriting its own copy, or alternately managing any
+  coherency between the copies.
+- Every page successfully put to a persistent pool must be found by a
+  subsequent get_page that specifies the same handle.  A page successfully
+  put to an ephemeral pool has an indeterminate lifetime and even an
+  immediately subsequent get_page may fail.
+- A get_page to a private pool is destructive, that is it behaves as if
+  the get_page were atomically followed by a flush_page.  A get_page
+  to a shared pool is non-destructive.  A flush_page behaves just like
+  a get_page to a private pool except the data is thrown away.
+- Put-put-get coherency is guaranteed.  For example, after the sequence:
+        put_page(ABC,D1);
+        put_page(ABC,D2);
+        get_page(ABC,E)
+  E may never contain the data from D1.  However, even for a persistent
+  pool, the get_page may fail if the second put_page indicates failure.
+- Get-get coherency is guaranteed.  For example, in the sequence:
+        put_page(ABC,D);
+        get_page(ABC,E1);
+        get_page(ABC,E2)
+  if the first get_page fails, the second must also fail.
+- A tmem implementation provides no serialization guarantees (e.g. to
+  an SMP Linux).  So if different Linux threads are putting and flushing
+  the same page, the results are indeterminate.
