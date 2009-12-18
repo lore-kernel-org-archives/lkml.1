@@ -1,130 +1,384 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZLRApT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZLRAsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZLRApT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 19:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZLRApP
+	id S1755299AbZLRAsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 19:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbZLRAsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 19:45:15 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:42059 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbZLRApL convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 19:48:21 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50630 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbZLRAsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 19:45:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jZQJlBhjAcVNWEYTNPs4pUXMG5GIde1M2QJRwR3GBOjnb+p/cM7cAhjL9lugkqdxSE
-         JfjG4RHVtgpUTjd2KvH66tC59lXKRK/xxrkIi1bH5+t3B4dqsXzyVvbGhlK2OCAjHnDf
-         AOft+VJF1+7+CZSGT5OTuhGsqznLDQU7OmudE=
-MIME-Version: 1.0
-In-Reply-To: <fa686aa40912170840h6bd921b4me244cb83c31cab7f@mail.gmail.com>
-References: <fa686aa40912170840h6bd921b4me244cb83c31cab7f@mail.gmail.com>
-Date: Fri, 18 Dec 2009 09:45:08 +0900
-Message-ID: <1b68c6790912171645m4de68ac9i6f31346249147bd1@mail.gmail.com>
-Subject: Re: [spi-devel-general] [git pull] 2nd batch of SPI changes
-From: jassi brar <jassisinghbrar@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: spi-devel-general@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 17 Dec 2009 19:48:19 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 18 Dec 2009 09:45:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Subject: [RFC 3/4] lockless vma caching
+Message-Id: <20091218094513.490f27b4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091218093849.8ba69ad9.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091216101107.GA15031@basil.fritz.box>
+	<20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091216102806.GC15031@basil.fritz.box>
+	<28c262360912160231r18db8478sf41349362360cab8@mail.gmail.com>
+	<20091216193315.14a508d5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091218093849.8ba69ad9.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 1:40 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> Hi Linus,
->
-> This is later than I'd like it to be, and I hope it gets to you before
-> you cut -rc1.  There was some slack between Andrew and I on handing
-> off SPI maintainership.  Patches I had picked up in the last batch
-> conflicted with his stack and we decided it was best if I just take
-> the remainder of his SPI queue and commit them to my tree.
-> (Basically, I made the mess, so I got to clean it up).  It took me a
-> bit to get sorted out.
->
-> Commits in this batch are either a) from Andrew's tree, b) trivial
-> fixes from the list, or c) new drivers.
->
-> The following changes since commit 718deb6b61e34c200c1f2b706176d9aac334cb2d:
->  Al Viro (1):
->        Fix breakage in shmem.c
->
-> are available in the git repository at:
->
->  git://git.secretlab.ca/git/linux-2.6 next-spi
->
-> Ben Dooks (1):
->      spi_s3c24xx: add FIQ pseudo-DMA support
->
-> Ben Nizette (1):
->      atmel_spi: fix dma addr calculation for len > BUFFER_SIZE
->
-> Feng Tang (1):
->      spi: controller driver for Designware SPI core
->
-> Jassi Brar (1):
->      spi: Add s3c64xx SPI Controller driver
-IIRC, I didn't get any final ack of acceptance from you or any other maintainer.
-I thought perhaps the patch is lost and was preparing to resend after
-including some minor changes suggested by my ARCH maintainer(Ben Dooks).
-Though I can just as well send those changes as patches right away.
-I apologize, if i messed up.
+For accessing vma in lockless style, some modification for vma lookup is
+required. Now, rb-tree is used and it doesn't allow read while modification.
 
-> Mike Frysinger (1):
->      spidev: add proper section markers
->
-> Thadeu Lima de Souza Cascardo (1):
->      spidev: use DECLARE_BITMAP instead of declaring the array
->
-> hartleys (5):
->      spi: atmel_spi.c: use resource_size()
->      spi: spi_bfin5xx.c: use resource_size()
->      spi: spi_mpc8xxx.c: use resource_size()
->      spi: spi_sh_sci.c: use resource_size()
->      spi: spi_txx9.c: use resource_size()
->
->  arch/arm/mach-s3c2410/include/mach/spi.h |    2 +
->  drivers/spi/Kconfig                      |   28 +
->  drivers/spi/Makefile                     |   10 +-
->  drivers/spi/atmel_spi.c                  |    6 +-
->  drivers/spi/dw_spi.c                     |  944 +++++++++++++++++++++++
->  drivers/spi/dw_spi_pci.c                 |  169 +++++
->  drivers/spi/spi_bfin5xx.c                |    2 +-
->  drivers/spi/spi_mpc8xxx.c                |    2 +-
->  drivers/spi/spi_s3c24xx.c                |  244 ++++++-
->  drivers/spi/spi_s3c24xx_fiq.S            |  116 +++
->  drivers/spi/spi_s3c24xx_fiq.h            |   26 +
->  drivers/spi/spi_s3c64xx.c                | 1196 ++++++++++++++++++++++++++++++
->  drivers/spi/spi_sh_sci.c                 |    2 +-
->  drivers/spi/spi_txx9.c                   |    6 +-
->  drivers/spi/spidev.c                     |   18 +-
->  include/linux/spi/dw_spi.h               |  212 ++++++
->  16 files changed, 2950 insertions(+), 33 deletions(-)
->  create mode 100644 drivers/spi/dw_spi.c
->  create mode 100644 drivers/spi/dw_spi_pci.c
->  create mode 100644 drivers/spi/spi_s3c24xx_fiq.S
->  create mode 100644 drivers/spi/spi_s3c24xx_fiq.h
->  create mode 100644 drivers/spi/spi_s3c64xx.c
->  create mode 100644 include/linux/spi/dw_spi.h
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
-> ------------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Verizon Developer Community
-> Take advantage of Verizon's best-in-class app development support
-> A streamlined, 14 day to market process makes app distribution fast and easy
-> Join now and get one step closer to millions of Verizon customers
-> http://p.sf.net/sfu/verizon-dev2dev
-> _______________________________________________
-> spi-devel-general mailing list
-> spi-devel-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/spi-devel-general
->
+This is a trial to caching vma rather than diving into rb-tree. The last
+fault vma is cached to pgd's page->cached_vma field. And, add reference count
+and waitqueue to vma.
+
+The accessor will have to do
+
+	vma = lookup_vma_cache(mm, address);
+	if (vma) {
+		if (mm_check_version(mm) && /* no write lock at this point ? */
+		    (vma->vm_start <= address) && (vma->vm_end > address))
+			goto found_vma; /* start speculative job */
+		else
+			vma_release_cache(vma);
+		vma = NULL;
+	}
+	vma = find_vma();
+found_vma:
+	....do some jobs....
+	vma_release_cache(vma);
+
+Maybe some more consideration for invalidation point is necessary.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/mm.h       |   20 +++++++++
+ include/linux/mm_types.h |    5 ++
+ mm/memory.c              |   14 ++++++
+ mm/mmap.c                |  102 +++++++++++++++++++++++++++++++++++++++++++++--
+ mm/page_alloc.c          |    1 
+ 5 files changed, 138 insertions(+), 4 deletions(-)
+
+Index: mmotm-mm-accessor/include/linux/mm.h
+===================================================================
+--- mmotm-mm-accessor.orig/include/linux/mm.h
++++ mmotm-mm-accessor/include/linux/mm.h
+@@ -763,6 +763,26 @@ unsigned long unmap_vmas(struct mmu_gath
+ 		unsigned long end_addr, unsigned long *nr_accounted,
+ 		struct zap_details *);
+ 
++struct vm_area_struct *lookup_vma_cache(struct mm_struct *mm,
++		unsigned long address);
++void invalidate_vma_cache(struct mm_struct *mm,
++		struct vm_area_struct *vma);
++void wait_vmas_cache_range(struct vm_area_struct *vma, unsigned long end);
++
++static inline void vma_hold(struct vm_area_struct *vma)
++{
++	atomic_inc(&vma->cache_access);
++}
++
++void __vma_release(struct vm_area_struct *vma);
++static inline void vma_release(struct vm_area_struct *vma)
++{
++	if (atomic_dec_and_test(&vma->cache_access)) {
++		if (waitqueue_active(&vma->cache_wait))
++			__vma_release(vma);
++	}
++}
++
+ /**
+  * mm_walk - callbacks for walk_page_range
+  * @pgd_entry: if set, called for each non-empty PGD (top-level) entry
+Index: mmotm-mm-accessor/include/linux/mm_types.h
+===================================================================
+--- mmotm-mm-accessor.orig/include/linux/mm_types.h
++++ mmotm-mm-accessor/include/linux/mm_types.h
+@@ -12,6 +12,7 @@
+ #include <linux/completion.h>
+ #include <linux/cpumask.h>
+ #include <linux/page-debug-flags.h>
++#include <linux/wait.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ 
+@@ -77,6 +78,7 @@ struct page {
+ 	union {
+ 		pgoff_t index;		/* Our offset within mapping. */
+ 		void *freelist;		/* SLUB: freelist req. slab lock */
++		void *cache;
+ 	};
+ 	struct list_head lru;		/* Pageout list, eg. active_list
+ 					 * protected by zone->lru_lock !
+@@ -180,6 +182,9 @@ struct vm_area_struct {
+ 	void * vm_private_data;		/* was vm_pte (shared mem) */
+ 	unsigned long vm_truncate_count;/* truncate_count or restart_addr */
+ 
++	atomic_t cache_access;
++	wait_queue_head_t cache_wait;
++
+ #ifndef CONFIG_MMU
+ 	struct vm_region *vm_region;	/* NOMMU mapping region */
+ #endif
+Index: mmotm-mm-accessor/mm/memory.c
+===================================================================
+--- mmotm-mm-accessor.orig/mm/memory.c
++++ mmotm-mm-accessor/mm/memory.c
+@@ -145,6 +145,14 @@ void pmd_clear_bad(pmd_t *pmd)
+ 	pmd_clear(pmd);
+ }
+ 
++static void update_vma_cache(pmd_t *pmd, struct vm_area_struct *vma)
++{
++	struct page *page;
++	/* ptelock is held */
++	page = pmd_page(*pmd);
++	page->cache = vma;
++}
++
+ /*
+  * Note: this doesn't free the actual pages themselves. That
+  * has been handled earlier when unmapping all the memory regions.
+@@ -2118,6 +2126,7 @@ reuse:
+ 		if (ptep_set_access_flags(vma, address, page_table, entry,1))
+ 			update_mmu_cache(vma, address, entry);
+ 		ret |= VM_FAULT_WRITE;
++		update_vma_cache(pmd, vma);
+ 		goto unlock;
+ 	}
+ 
+@@ -2186,6 +2195,7 @@ gotten:
+ 		 */
+ 		set_pte_at_notify(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
++		update_vma_cache(pmd, vma);
+ 		if (old_page) {
+ 			/*
+ 			 * Only after switching the pte to the new page may
+@@ -2626,6 +2636,7 @@ static int do_swap_page(struct mm_struct
+ 
+ 	/* No need to invalidate - it was non-present before */
+ 	update_mmu_cache(vma, address, pte);
++	update_vma_cache(pmd, vma);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ out:
+@@ -2691,6 +2702,7 @@ setpte:
+ 
+ 	/* No need to invalidate - it was non-present before */
+ 	update_mmu_cache(vma, address, entry);
++	update_vma_cache(pmd, vma);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	return 0;
+@@ -2852,6 +2864,7 @@ static int __do_fault(struct mm_struct *
+ 
+ 		/* no need to invalidate: a not-present page won't be cached */
+ 		update_mmu_cache(vma, address, entry);
++		update_vma_cache(pmd, vma);
+ 	} else {
+ 		if (charged)
+ 			mem_cgroup_uncharge_page(page);
+@@ -2989,6 +3002,7 @@ static inline int handle_pte_fault(struc
+ 	entry = pte_mkyoung(entry);
+ 	if (ptep_set_access_flags(vma, address, pte, entry, flags & FAULT_FLAG_WRITE)) {
+ 		update_mmu_cache(vma, address, entry);
++		update_vma_cache(pmd, vma);
+ 	} else {
+ 		/*
+ 		 * This is needed only for protection faults but the arch code
+Index: mmotm-mm-accessor/mm/mmap.c
+===================================================================
+--- mmotm-mm-accessor.orig/mm/mmap.c
++++ mmotm-mm-accessor/mm/mmap.c
+@@ -187,6 +187,94 @@ error:
+ 	return -ENOMEM;
+ }
+ 
++struct vm_area_struct *
++lookup_vma_cache(struct mm_struct *mm, unsigned long address)
++{
++	struct page *page;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	struct vm_area_struct *ret = NULL;
++
++	if (!mm)
++		return NULL;
++
++	preempt_disable();
++	pgd = pgd_offset(mm, address);
++	if (!pgd_present(*pgd))
++		goto out;
++	pud = pud_offset(pgd, address);
++	if (!pud_present(*pud))
++		goto out;
++	pmd = pmd_offset(pud, address);
++	if (!pmd_present(*pmd))
++		goto out;
++	page = pmd_page(*pmd);
++	if (PageReserved(page))
++		goto out;
++	ret = (struct vm_area_struct *)page->cache;
++	if (ret)
++		vma_hold(ret);
++out:
++	preempt_enable();
++	return ret;
++}
++
++void invalidate_vma_cache_range(struct mm_struct *mm,
++	unsigned long start, unsigned long end)
++{
++	struct page *page;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	unsigned long address = start;
++	spinlock_t *lock;
++
++	if (!mm)
++		return;
++
++	while (address < end) {
++		pgd = pgd_offset(mm, address);
++		if (!pgd_present(*pgd)) {
++			address = pgd_addr_end(address, end);
++			continue;
++		}
++		pud = pud_offset(pgd, address);
++		if (!pud_present(*pud)) {
++			address = pud_addr_end(address, end);
++			continue;
++		}
++		pmd = pmd_offset(pud, address);
++		if (pmd_present(*pmd)) {
++			page = pmd_page(*pmd);
++			/*
++ 			 * this spinlock guarantee no race with speculative
++			 * page fault, finally.
++			 */
++			lock = pte_lockptr(mm, pmd);
++			spin_lock(lock);
++			page->cache = NULL;
++			spin_unlock(lock);
++		}
++		address = pmd_addr_end(address, end);
++	}
++}
++
++/* called under mm_write_lock() */
++void wait_vmas_cache_access(struct vm_area_struct *vma, unsigned long end)
++{
++	while (vma && (vma->vm_start < end)) {
++		wait_event_interruptible(vma->cache_wait,
++				atomic_read(&vma->cache_access) == 0);
++		vma = vma->vm_next;
++	}
++}
++
++void __vma_release(struct vm_area_struct *vma)
++{
++	wake_up(&vma->cache_wait);
++}
++
+ /*
+  * Requires inode->i_mapping->i_mmap_lock
+  */
+@@ -406,6 +494,8 @@ void __vma_link_rb(struct mm_struct *mm,
+ {
+ 	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
+ 	rb_insert_color(&vma->vm_rb, &mm->mm_rb);
++	atomic_set(&vma->cache_access, 0);
++	init_waitqueue_head(&vma->cache_wait);
+ }
+ 
+ static void __vma_link_file(struct vm_area_struct *vma)
+@@ -774,7 +864,8 @@ struct vm_area_struct *vma_merge(struct 
+ 	area = next;
+ 	if (next && next->vm_end == end)		/* cases 6, 7, 8 */
+ 		next = next->vm_next;
+-
++	invalidate_vma_cache_range(mm, addr, end);
++	wait_vmas_cache_access(next, end);
+ 	/*
+ 	 * Can it merge with the predecessor?
+ 	 */
+@@ -1162,7 +1253,6 @@ munmap_back:
+ 			return -ENOMEM;
+ 		vm_flags |= VM_ACCOUNT;
+ 	}
+-
+ 	/*
+ 	 * Can we just expand an old mapping?
+ 	 */
+@@ -1930,7 +2020,9 @@ int do_munmap(struct mm_struct *mm, unsi
+ 	end = start + len;
+ 	if (vma->vm_start >= end)
+ 		return 0;
+-
++	/* Before going further, clear vma cache */
++	invalidate_vma_cache_range(mm, start, end);
++	wait_vmas_cache_access(vma, end);
+ 	/*
+ 	 * If we need to split any vma, do it now to save pain later.
+ 	 *
+@@ -1940,7 +2032,6 @@ int do_munmap(struct mm_struct *mm, unsi
+ 	 */
+ 	if (start > vma->vm_start) {
+ 		int error;
+-
+ 		/*
+ 		 * Make sure that map_count on return from munmap() will
+ 		 * not exceed its limit; but let map_count go just above
+@@ -2050,6 +2141,7 @@ unsigned long do_brk(unsigned long addr,
+ 	if (error)
+ 		return error;
+ 
++
+ 	/*
+ 	 * mlock MCL_FUTURE?
+ 	 */
+@@ -2069,6 +2161,7 @@ unsigned long do_brk(unsigned long addr,
+ 	 */
+ 	verify_mm_writelocked(mm);
+ 
++	invalidate_vma_cache_range(mm, addr,addr+len);
+ 	/*
+ 	 * Clear old maps.  this also does some error checking for us
+ 	 */
+@@ -2245,6 +2338,7 @@ struct vm_area_struct *copy_vma(struct v
+ 				kmem_cache_free(vm_area_cachep, new_vma);
+ 				return NULL;
+ 			}
++			atomic_set(&new_vma->cache_access, 0);
+ 			vma_set_policy(new_vma, pol);
+ 			new_vma->vm_start = addr;
+ 			new_vma->vm_end = addr + len;
+Index: mmotm-mm-accessor/mm/page_alloc.c
+===================================================================
+--- mmotm-mm-accessor.orig/mm/page_alloc.c
++++ mmotm-mm-accessor/mm/page_alloc.c
+@@ -698,6 +698,7 @@ static int prep_new_page(struct page *pa
+ 
+ 	set_page_private(page, 0);
+ 	set_page_refcounted(page);
++	page->cache = NULL;
+ 
+ 	arch_alloc_page(page, order);
+ 	kernel_map_pages(page, 1 << order, 1);
+
