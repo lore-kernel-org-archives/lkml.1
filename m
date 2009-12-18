@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZLRNE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZLRNG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbZLRNE5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:04:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZLRNEs
+	id S1753179AbZLRNG4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZLRNGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 08:04:48 -0500
-Received: from cantor.suse.de ([195.135.220.2]:54300 "EHLO mx1.suse.de"
+	Fri, 18 Dec 2009 08:06:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47986 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbZLRNEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 08:04:45 -0500
-Date: Fri, 18 Dec 2009 14:04:37 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-In-Reply-To: <200912171618.32882.bzolnier@gmail.com>
-Message-ID: <alpine.LRH.2.00.0912181400130.21496@twin.jikos.cz>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com> <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain> <200912171618.32882.bzolnier@gmail.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1751165AbZLRNGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 08:06:53 -0500
+Date: Fri, 18 Dec 2009 14:06:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jason Garrett-Glaser <darkshikari@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x264 benchmarks BFS vs CFS
+Message-ID: <20091218130642.GA17033@elte.hu>
+References: <1261042383.14314.0.camel@localhost>
+ <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
+ <20091217105316.GB26010@elte.hu>
+ <1261047618.14314.6.camel@localhost>
+ <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
+ <20091218052344.GD417@elte.hu>
+ <1261121405.30469.8.camel@marge.simson.net>
+ <28f2fcbc0912180211we599252v39cb94d113537eb5@mail.gmail.com>
+ <1261140546.15591.5.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261140546.15591.5.camel@marge.simson.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
 
-> > > I like this patch, this is actually what I wanted to do.
-> > 
-> > I have nothing against a switch, but it had better default to off.
-> > 
-> > The whole 80-char limit is insane. It results in insane "fixes". Just 
-> > about every time somebody "improves" a patch due to the warning, the 
-> > result is worse than the original patch.
+* Mike Galbraith <efault@gmx.de> wrote:
+
+> > I'm personally curious as to what kind of scheduler issues this results 
+> > in--I haven't done any BFS vs CFS tests with this option enabled yet.
 > 
-> Examples? :)
+> I'll look for x264 source, and patch/piddle.
 
-balance_leaf() in fs/reiserfs/do_balan.c
+btw., would be nice to look at it via tools/perf/ as well:
 
-Example picked totally at random:
+  perf stat --repeat 3 ...
 
-	set_le_ih_k_offset(ih,
-			   le_ih_k_offset(ih) +
-			   (tb->
-			    lbytes <<
-			    (is_indirect_le_ih
-			     (ih) ? tb->tb_sb->
-			     s_blocksize_bits -
-			     UNFM_P_SHIFT :
-			     0)));
+to see the basic hardware utilization (cycles/cache-misses, branch execution 
+rate, instructions, etc.) and the basic parallelism metrics, at a glance.
 
-See how everything is nicely aligned to 80 cols?
+i suspect "perf stat -e L1-icache-loads -e L1-icache-load-misses" would give 
+us an even more detailed picture.
 
-
-Generally, don't look at this function after having a good lunch you want 
-to keep. You have been warned.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+	Ingo
