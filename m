@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932894AbZLRVUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933077AbZLRVVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932894AbZLRVUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 16:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932675AbZLRVUQ
+	id S933077AbZLRVVk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 16:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbZLRVVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 16:20:16 -0500
-Received: from mail.nec-labs.com ([138.15.200.209]:50382 "EHLO
-	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932608AbZLRVUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 16:20:15 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-From: Steve Rago <sar@nec-labs.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       "jens.axboe" <jens.axboe@oracle.com>
-In-Reply-To: <20091218194129.GB6153@elte.hu>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <1261164799.1947.123.camel@serenity>
-	 <20091218194129.GB6153@elte.hu>
-Content-Type: text/plain
-Date: Fri, 18 Dec 2009 16:20:11 -0500
-Message-Id: <1261171211.1947.135.camel@serenity>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Dec 2009 16:21:39 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42872 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932675AbZLRVVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 16:21:38 -0500
+Date: Fri, 18 Dec 2009 13:20:48 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [kernel] Re: Fw: Re: [kernel] Re: kernel/rcutree.h:301: sorry,
+ unimplemented: inlining failed in call to 'rcu_bootup_announce': function
+ body not available
+Message-ID: <20091218212048.GA17834@suse.de>
+References: <20091218200839.GF6712@linux.vnet.ibm.com>
+ <20091218205456.GC6554@suse.de>
+ <alpine.LNX.2.01.0912181202320.9874@filesrv1.baby-dragons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.01.0912181202320.9874@filesrv1.baby-dragons.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 18, 2009 at 12:08:12PM -0900, Mr. James W. Laferriere wrote:
+>  	Fyi ,  There is another driver that has this issue as well , 
+> fusion/mptsas ,  has a 'inline' in drivers/message/fusion/mptsas.c at line 
+> 105 that causes compile time failure in the same vein .
+>  	See email to linux-scsi , Subject: linux-2.6.32.1 drivers/message/fusion/mptsas.c:106: sorry, unimplemented: inlining failed in call to 'mptsas_set_rphy': function body not available
 
-On Fri, 2009-12-18 at 20:41 +0100, Ingo Molnar wrote:
-> * Steve Rago <sar@nec-labs.com> wrote:
-> 
-> > > Also, I don't think this needs to have a sysctl, it should just work.
-> > 
-> > The sysctl is a *good thing* in that it allows the eager writeback behavior 
-> > to be tuned and shut off if need be.  I can only test the changes on a 
-> > finite set of systems, so better safe than sorry.
-> 
-> This issue has been settled many years ago and that's not what we do in the 
-> Linux kernel. We prefer patches to core code where we are reasonably sure they 
-> result in good behavior - and then we fix bugs in the new behavior, if any. 
-> 
-> (Otherwise odd sysctls would mushroom quickly and the system would become 
-> untestable in practice.)
-> 
-> 	Ingo
+Is there a patch in Linus's tree that solves this problem already?  If
+so, what is the git commit id of it?
 
-I don't disagree, but "that's not what we do" hardly provides insight
-into making the judgment call.  In this case, the variety of
-combinations of NFS server speed, NFS client speed, transmission link
-speed, client memory size, and server memory size argues for a tunable
-parameter, because one value probably won't work well in all
-combinations.  Making it change dynamically based on these parameters is
-more complicated than these circumstances call for, IMHO.
+>  	I am also having 'ld' time troubles with 
+> drivers/gpu/drm/radeon/radeon_test.c:45: undefined reference to `__udivdi3' and 
+> have sent emails to the appropriate lists & maintainers(I hope) .
 
-Steve
+When that gets fixed, let the stable@kernel.org address know the git
+commit id that needs to be applied.
 
+>  	Don't know if any of these would/should hold up the push of 32.2 or not 
 
+Don't worry, it will not :)
+
+thanks,
+
+greg k-h
