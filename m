@@ -1,108 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbZLRKBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZLRKFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753580AbZLRKBw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 05:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZLRKBu
+	id S1753271AbZLRKFK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 05:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZLRKFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 05:01:50 -0500
-Received: from cantor.suse.de ([195.135.220.2]:47378 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751880AbZLRKBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 05:01:47 -0500
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-From: James Bottomley <James.Bottomley@suse.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jens.axboe@oracle.com, torvalds@linux-foundation.org, tytso@mit.edu,
-       kyle@mcmartin.ca, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20091218183353I.fujita.tomonori@lab.ntt.co.jp>
-References: <1261094220.2752.27.camel@mulgrave.site>
-	 <20091218095944G.fujita.tomonori@lab.ntt.co.jp>
-	 <1261120128.3013.8.camel@mulgrave.site>
-	 <20091218183353I.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Dec 2009 11:01:29 +0100
-Message-Id: <1261130489.3013.41.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Dec 2009 05:05:08 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:35475 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbZLRKFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 05:05:06 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=g+0PzuKy51y3Dlmle40w7EUy2RrUPcGckorPRvB6zZl9Yaaq3WD5iSYXJkDVIFc9+
+	Q7zlfrFaM6kwEKn1mSEeA==
+Date: Fri, 18 Dec 2009 02:04:52 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v4.2
+In-Reply-To: <20091218094359.652F.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0912180158040.26019@chino.kir.corp.google.com>
+References: <20091215135902.CDD6.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0912171412280.4089@chino.kir.corp.google.com> <20091218094359.652F.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 18:34 +0900, FUJITA Tomonori wrote:
-> On Fri, 18 Dec 2009 08:08:48 +0100
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Fri, 18 Dec 2009, KOSAKI Motohiro wrote:
+
+> > That is contrast to using rss as a baseline where we prefer on killing the 
+> > application with the most resident RAM.  It is not always ideal to kill a 
+> > task with 8GB of rss when we fail to allocate a single page for a low 
+> > priority task.
 > 
-> > > Even if we have some potential users, I'm not sure that supporting
-> > > vmalloc in the block layer officially is a good idea. IMO, it needs
-> > > too many tricks for generic code.
-> > 
-> > So far, there's only xfs that I know of.
-> > 
-> > Given the way journalling works, it's not an unusual requirement to use
-> > a large buffer for operations.  It's a bit of a waste of kernel
-> > resources to have this physically contiguous, but it is a waste of
-> > resources (and for buffers over our kmalloc max, it would even have to
-> > be allocated at start of day), so I think large kernel virtual areas
-> > (like vmap/vmalloc) have a part to play in fs operations.
+> VSZ has the same problem if low priority task allocate last single page.
 > 
-> Yeah, but now only XFS passes vmap'ed pages to the block layer. Isn't
-> it better to wait until we have real users of the API?
 
-XFS is a real user ... the XFS filesystem is our most trusted code base
-that can break the 8TB limit, which hard disks are already at.  Ext4 may
-be ready, but it's not universally present in enterprise distros like
-XFS.
+I don't understand what you're trying to say, sorry.  Why, in your mind, 
+do we always want to prefer to kill the application with the largest 
+amount of memory present in physical RAM for a single, failed order-0 
+allocation attempt from a lower priority task?
 
-> > As to the API, the specific problem is that the block and lower arch
-> > layers are specifically programmed to think any kernel address has only
-> > a single alias and that it's offset mapped, which is why we get the
-> > failure.
+Additionally, when would it be sufficient to simply fail a ~__GFP_NOFAIL 
+allocation instead of killing anything?
+
+> yes, possible. however its heuristic is intensional. the code comment says:
 > 
-> Yeah, however we can make a rule that you can't pass a vmap area
-> (including vmap'ed pages) to the block layer. We can't make the rule
-> effective for the past so XFS is the only exception.
-
-We need something that works for XFS.  The next proposal works for the
-current block API because the vunmap makes the xfs pages look like
-standard kernel pages, which blk_rq_map_kern() will process correctly.
-
-But, in principle, I think whatever fix is chosen, we shouldn't
-necessarily discourage others from using it.
-
-> > An alternative proposal to modifying the block layer to do coherency,
-> > might be simply to have the fs layer do a vunmap before doing I/O and
-> > re-vmap when it's completed. 
+>         /*
+>          * If p's nodes don't overlap ours, it may still help to kill p
+>          * because p may have allocated or otherwise mapped memory on
+>          * this node before. However it will be less likely.
+>          */
 > 
-> I'm not sure it's worth making the whole block layer compatible to
-> vmap (adding complexity and possibly performance penalty).
-
-This proposal has no block layer changes.  It just makes the XFS vmap
-area look like a standard set of kernel pages ... with the overhead of
-the page table manipulations on unmap and remap.
-
-> If we really need to support this, I like helper APIs that the callers
-> must use before and after I/Os.
-
-If it's just this route, they already exist ... they're vmap and vunmap.
-
-> > That would ensure the architecturally
-> > correct flushing of the aliases, and would satisfy the expectations of
-> > blk_rq_map_kern().  The down side is that vmap/vmalloc set up and clear
-> > page tables, which isn't necessary and might impact performance (xfs
-> > people?)
+> do you have alternative plan? How do we know the task don't have any
+> page in memory busted node? we can't add any statistics for oom because
+> almost systems never ever use oom. thus, many developer oppose such slowdown.
 > 
-> btw, I'm not sure that the existing blk_rq_map_* API isn't fit well to
-> file systems since blk_rq_map_user and blk_rq_map_kern takes a request
-> structure.
 
-OK, so that was illustrative.  The meat of the change is at the bio
-layer anyway (fss tend to speak bios).  But the point of *this*
-particular proposal is that it requires no changes either in the blk_ or
-bio_ routines.
+There's nothing wrong with that currently (except it doesn't work for 
+mempolicies), I'm stating that it is a requirement that we keep such a 
+penalization in our heuristic if we plan on rewriting it.  I was 
+attempting to get a list of requirements for oom killing decisions so that 
+we can write a sane heuristic and you're simply defending the status quo 
+which you insist we should change.
 
-James
+> > We need to be able to polarize tasks so they are always killed regardless 
+> > of any kernel heuristic (/proc/pid/oom_adj of +15, currently) or always 
+> > chosen last (-16, currently).  We also need a way of completely disabling 
+> > oom killing for certain tasks such as with OOM_DISABLE.
+> 
+> afaik, when admin use +15 or -16 adjustment, usually they hope to don't use
+> kernel heuristic.
 
+That's exactly what I said above.
 
+> This is the reason that I proposed /proc/pid/oom_priority
+> new tunable knob.
+> 
+
+In addition to /proc/pid/oom_adj??  oom_priority on it's own does not 
+allow us to define when a task is a memory leaker based on the expected 
+memory consumption of a single application.  That should be the single 
+biggest consideration in the new badness heuristic: to define when a task 
+should be killed because it is rogue.
