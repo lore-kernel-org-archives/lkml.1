@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZLRBke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZLRBlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbZLRBke (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 20:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZLRBkd
+	id S1756034AbZLRBlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 20:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZLRBlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 20:40:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53875 "EHLO mx1.redhat.com"
+	Thu, 17 Dec 2009 20:41:49 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:1798 "EHLO MMS3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755953AbZLRBkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 20:40:32 -0500
+	id S1751003AbZLRBls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 20:41:48 -0500
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Date: Thu, 17 Dec 2009 17:41:39 -0800
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: "Roel Kluin" <roel.kluin@gmail.com>
+cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Matthew Carlson" <mcarlson@broadcom.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "davem@davemloft.net" <davem@davemloft.net>
+Subject: Re: [PATCH] broadcom: bcm54xx_shadow_read() errors ignored in
+ bcm54xx_adjust_rxrefclk()
+Message-ID: <20091218014138.GA22080@xw6200.broadcom.net>
+References: <4B28DA62.40909@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4B28DA62.40909@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-WSS-ID: 673402593J836500024-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
-	08d68323d1f0c34452e614263b212ca556dae47f
-In-Reply-To: Oleg Nesterov's message of  Friday, 18 December 2009 01:56:50 +0100 <20091218005650.GA20667@redhat.com>
-References: <20091218005650.GA20667@redhat.com>
-X-Windows: garbage at your fingertips.
-Message-Id: <20091218014021.CB474135F@magilla.sf.frob.com>
-Date: Thu, 17 Dec 2009 17:40:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing to the old (2.6.32) logic, I think it might be this (untested).
-I also note this is the sole use of get_si_code, seems like it should
-just be rolled in here.
+On Wed, Dec 16, 2009 at 05:02:26AM -0800, Roel Kluin wrote:
+> If not signed read errors are ignored.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
+Acked-by: Matt Carlson <mcarlson@broadcom.com>
 
-Thanks,
-Roland
+> ---
+> Found using coccinelle: http://coccinelle.lip6.fr/
+> 
+> diff --git a/drivers/net/phy/broadcom.c b/drivers/net/phy/broadcom.c
+> index f63c96a..c13cf64 100644
+> --- a/drivers/net/phy/broadcom.c
+> +++ b/drivers/net/phy/broadcom.c
+> @@ -326,7 +326,8 @@ error:
+>  
+>  static void bcm54xx_adjust_rxrefclk(struct phy_device *phydev)
+>  {
+> -	u32 val, orig;
+> +	u32 orig;
+> +	int val;
+>  	bool clk125en = true;
+>  
+>  	/* Abort if we are using an untested phy. */
+> 
 
-
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 3339917..16a88f5 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -530,7 +530,6 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
- {
- 	struct task_struct *tsk = current;
- 	unsigned long dr6;
--	int si_code;
- 
- 	get_debugreg(dr6, 6);
- 
-@@ -569,14 +568,15 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
- 	 * We already checked v86 mode above, so we can check for kernel mode
- 	 * by just checking the CPL of CS.
- 	 */
-+	dr6 = tsk->thread.debugreg6;
- 	if ((dr6 & DR_STEP) && !user_mode(regs)) {
- 		tsk->thread.debugreg6 &= ~DR_STEP;
- 		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
- 		regs->flags &= ~X86_EFLAGS_TF;
-+	} else if (dr6 & (DR_STEP | DR_TRAP_BITS)) {
-+		send_sigtrap(tsk, regs, error_code, get_si_code(dr6));
- 	}
--	si_code = get_si_code(tsk->thread.debugreg6);
--	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
--		send_sigtrap(tsk, regs, error_code, si_code);
-+
- 	preempt_conditional_cli(regs);
- 
- 	return;
