@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbZLRAON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751946AbZLRAR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927AbZLRAON (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 19:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZLRAOK
+	id S1751946AbZLRAR0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 19:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbZLRARZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 19:14:10 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:35351 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751288AbZLRAOI (ORCPT
+	Thu, 17 Dec 2009 19:17:25 -0500
+Received: from mga09.intel.com ([134.134.136.24]:34059 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750829AbZLRARY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 19:14:08 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmQHABpUKkuuWOl3/2dsb2JhbACBS9R9hC0E
-Date: Thu, 17 Dec 2009 19:13:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [this_cpu_xx V7 0/8] Per cpu atomics in core allocators and
-	cleanup
-Message-ID: <20091218001357.GA30450@Krystal>
-References: <20091214220320.665065925@quilx.com> <20091215174302.GA3928@Krystal> <4B2830CC.7040309@kernel.org> <20091216014031.GA12282@Krystal> <4B283BFE.2040005@kernel.org> <20091217133958.GA21618@Krystal> <alpine.DEB.2.00.0912171327220.3638@router.home> <20091217202558.GA21713@Krystal> <alpine.DEB.2.00.0912171443080.5819@router.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0912171443080.5819@router.home>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 19:12:39 up 1 day,  8:31,  3 users,  load average: 0.29, 0.16,
-	0.05
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 17 Dec 2009 19:17:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,415,1257148800"; 
+   d="scan'208";a="477219363"
+From: "Smith, GeoffX" <geoffx.smith@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 17 Dec 2009 16:17:15 -0800
+Subject: [PATCH] prctl: return timerslack through pointer
+Thread-Topic: [PATCH] prctl: return timerslack through pointer
+Thread-Index: Acp/d3QE6Iz9s5c3S5uq4VZygLlEQw==
+Message-ID: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE12F3@orsmsx510.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> On Thu, 17 Dec 2009, Mathieu Desnoyers wrote:
-> 
-> > Some quick test on my Intel Xeon E5405:
-> >
-> > local cmpxchg:  14 cycles
-> > xchg:           18 cycles
-> >
-> > So yes, indeed, the non-LOCK prefixed local cmpxchg seems a bit faster
-> > than the xchg, given the latter has an implied LOCK prefix.
-> >
-> > Code used for local cmpxchg:
-> >                 old = var;
-> >                 do {
-> >                         ret = cmpxchg_local(&var, old, 4);
-> >                         if (likely(ret == old))
-> >                                 break;
-> >                         old = ret;
-> >                 } while (1);
-> >
-> 
-> Great. Could you also put that into "patch-format"?
-> 
+This patch fixes the semantics of prctl() option PR_GET_TIMERSLACK
+to pass the return value through *arg2.
 
-Sure, can you point me to a git tree I should work on top of which
-includes the per cpu infrastructure to extend ?
+With this change, the option now follows the same conventions as the
+other "get" options added since 2.6.0, and also brings it into
+conformance with the advice in chapter 16 of Documentation/CodingStyle.
 
-Mathieu
+In addition, it effectively doubles the range of time slack to 4.29
+seconds (on a 32-bit architecture).
+
+The timer slack feature was only added in Sep 2009 (new in 2.6.32.1), 
+so there are not any production applications to break.  I have also 
+repaired some unmatched signed/unsigned mismatches in timer slack
+calculations.
 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 20ccfb5..e01da12 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1531,7 +1531,8 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+ 			error = perf_event_task_enable();
+ 			break;
+ 		case PR_GET_TIMERSLACK:
+-			error = current->timer_slack_ns;
++			error = put_user(current->timer_slack_ns, 
++				(unsigned long __user *)arg2);
+ 			break;
+ 		case PR_SET_TIMERSLACK:
+ 			if (arg2 <= 0)
+diff --git a/fs/select.c b/fs/select.c
+index fd38ce2..5122364 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -44,10 +44,10 @@
+ 
+ #define MAX_SLACK	(100 * NSEC_PER_MSEC)
+ 
+-static long __estimate_accuracy(struct timespec *tv)
++static unsigned long __estimate_accuracy(struct timespec *tv)
+ {
+-	long slack;
+-	int divfactor = 1000;
++	unsigned long slack;
++	unsigned int divfactor = 1000;
+ 
+ 	if (tv->tv_sec < 0)
+ 		return 0;
+@@ -67,7 +67,7 @@ static long __estimate_accuracy(struct timespec *tv)
+ 	return slack;
+ }
+ 
+-static long estimate_accuracy(struct timespec *tv)
++static unsigned long estimate_accuracy(struct timespec *tv)
+ {
+ 	unsigned long ret;
+ 	struct timespec now;
+
+
