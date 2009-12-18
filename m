@@ -1,117 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZLRHij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751665AbZLRHtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbZLRHij (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 02:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZLRHij
+	id S1751665AbZLRHtN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 02:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZLRHtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 02:38:39 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:45847 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbZLRHii convert rfc822-to-8bit (ORCPT
+	Fri, 18 Dec 2009 02:49:12 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61821 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbZLRHtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 02:38:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xoNvpVLnTx6Fb9XJM4HEAv0MUkRiITex3J/VnIYi3aTB34WazmHg4YRMpAfhRVXBWW
-         gLSWjP5/M5HDnpY5WCT311jp7m3RYg4h9UfCV/DGeU1TBgM8LUQpn2uvfl4d2tI/ARiD
-         oYNu+OlkiNRRj+pe/GwWzRL01VslLyVuR/fjE=
+	Fri, 18 Dec 2009 02:49:12 -0500
+Message-ID: <4B2B33B2.9080900@ct.jp.nec.com>
+Date: Fri, 18 Dec 2009 16:48:02 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
-References: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
-	 <2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
-Date: Fri, 18 Dec 2009 15:38:37 +0800
-Message-ID: <b1e768440912172338k8849393ye23f5e277f554caf@mail.gmail.com>
-Subject: Re: 2.6.32 Kernel panic - not syncing: Attempted to kill init! 
-	Rebooting in 180 seconds..
-From: Zhiyong Wu <zwu.kernel@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Herbert Xu <herbert@gondor.apana.org.au>, llim@redhat.com,
-       agraf@suse.de
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: revert "config FS_JOURNAL_INFO"
+References: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>	 <4B2AFF4C.5010100@ct.jp.nec.com> <b6fcc0a0912172325i34d214d3r11b3bfae7381547f@mail.gmail.com>
+In-Reply-To: <b6fcc0a0912172325i34d214d3r11b3bfae7381547f@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It does'nt still work based on your method.
+Alexey Dobriyan wrote:
+> On 12/18/09, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+>> So we never allow to make memory usage small with providing an option
+>> to remove unused area, right?
+> 
+> We certainly allow this if it results in zero loss in functionality.
 
+Thanks for clarifying this topic.
 
-Cheers,
+If you don't mind could you please tell me what zero loss is?
+I don't think I could get it exactly.
 
-Zhiyong Wu
+Is it OK that removing journal_info if !CONFIG_BLOCK?
 
-On Fri, Dec 18, 2009 at 3:12 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
-> On Fri, Dec 18, 2009 at 12:08 PM, Zhiyong Wu <zwu.kernel@gmail.com> wrote:
->> HI,
->>
->> linux-2.6.32 is compiled on a p6 machine with RH5.4 OS and KVM option is enable.
->>
->> When rebooting this machine, a crash takes place such as:
->>
->> Loading ramdisk...
->> ramdisk loaded at 01700000, size: 2700 Kbytes
->> OF stdout device is: /vdevice/vty@30000000
->> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
->> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
->> 06:53:27 EST 2009
->> Calling ibm,client-architecture-support.../
->> Elapsed time since release of system processors: 1212 mins 30 secs
->>
->> Config file read, 1024 bytes
->>
->> Welcome
->> Welcome to yaboot version 1.3.13 (Red Hat 1.3.13-8.el5)
->> Enter "help" to get some basic usage information
->> boot: linux-32
->> Please wait, loading kernel...
->>   Elf64 kernel loaded...
->> Loading ramdisk...
->> ramdisk loaded at 01700000, size: 2700 Kbytes
->> OF stdout device is: /vdevice/vty@30000000
->> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
->> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
->> 06:53:27 EST 2009
->> Calling ibm,client-architecture-support... done
->> command line: ro console=hvc0 rhgb quiet root=LABEL=/
->> memory layout at init:
->>  memory_limit : 0000000000000000 (16 MB aligned)
->>  alloc_bottom : 00000000019b0000
->>  alloc_top    : 0000000008000000
->>  alloc_top_hi : 0000000008000000
->>  rmo_top      : 0000000008000000
->>  ram_top      : 0000000008000000
->> instantiating rtas at 0x0000000006e10000... done
->> boot cpu hw idx 0000000000000000
->> copying OF device tree...
->> Building dt strings...
->> Building dt structure...
->> Device tree strings 0x0000000001bc0000 -> 0x0000000001bc15bb
->> Device tree struct  0x0000000001bd0000 -> 0x0000000001bf0000
->> Calling quiesce...
->> returning from prom_init
->> Red Hat nash version 5.1.19.6 starting
->> ibmvscsi 30000002: fast_fail not supported in server
->> sd 0:0:1:0: [sda] Assuming drive cache: write through
->> sd 0:0:1:0: [sda] Assuming drive cache: write through
->> sd 0:0:1:0: [sda] Assuming drive cache: write through
->> insmod: error inserting '/lib/dm-region-hash.ko': -1 File exists
->> mount: could not find filesystem '/dev/root'
->> setuproot: moving /dev failed: No such file or directory
->> setuproot: error mounting /proc: No such file or directory
->> setuproot: error mounting /sys: No such file or directory
->> switchroot: mount failed: No such file or directory
->> Kernel panic - not syncing: Attempted to kill init!
->> Rebooting in 180 seconds..[disconnect]
->>
->> Can anyone give me a warm hand?
->
-> Probably this is not a problem of kernel, maybe it's
-> a problem of your initial ramdisk, or something wrong with
-> your root filesystem.
->
-> Does changing "root=LABEL=/" to "root=/dev/XXX" help?
-> Where "/dev/XXX" is your root filesystem.
->
+> 
+>> If I want to reduce memory usage by this way, should I keep
+>> this kind of patches out of tree?
+> 
+> Certainly nobody can prohibit you from keeping patch out of tree.
+> But if you want something mainlinable, moving ->journal_info
+> to fs-specific data structures should do the trick. Or something.
+
+Thanks for the advice, I'll look at this.
+
+Thanks,
+Hiroshi
