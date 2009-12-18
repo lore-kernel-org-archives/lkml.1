@@ -1,117 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbZLREaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZLREjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbZLREaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 23:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZLREao
+	id S1756361AbZLREjz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 23:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbZLREjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 23:30:44 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49040 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbZLREan (ORCPT
+	Thu, 17 Dec 2009 23:39:54 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:56449 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755293AbZLREjw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 23:30:43 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask v4.2
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0912171412280.4089@chino.kir.corp.google.com>
-References: <20091215135902.CDD6.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0912171412280.4089@chino.kir.corp.google.com>
-Message-Id: <20091218094359.652F.A69D9226@jp.fujitsu.com>
+	Thu, 17 Dec 2009 23:39:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HyJENcqfEsOKjsGMOfWflwa+s72WMwDhFOIMQAz9pZJcY/Cj0jW20TCsD0nyBud1tS
+         HZjfXJvM5hmxpHEhbSvvPXEkA1LqeEYnapPGDJYDdf9Bw1GhF/YuHwY+ClEG0pYNYae7
+         aU9nCFwVW31YQQAyccjtPZjEOwzkn2urT9Mt4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 18 Dec 2009 13:30:40 +0900 (JST)
+In-Reply-To: <4B2ADB4C.7010900@cn.fujitsu.com>
+References: <4B2ADB4C.7010900@cn.fujitsu.com>
+Date: Fri, 18 Dec 2009 12:39:50 +0800
+Message-ID: <9bd6b5360912172039y432361fu243d0f05bf75b7b7@mail.gmail.com>
+Subject: Re: [PATCH] btrfs: Simplify offset calculation method for ctree.h
+From: sniper <s3c24xx@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 15 Dec 2009, KOSAKI Motohiro wrote:
-> 
-> > > A few requirements that I have:
-> > 
-> > Um, good analysis! really.
-> > 
-> > >
-> > >  - we must be able to define when a task is a memory hogger; this is
-> > >    currently done by /proc/pid/oom_adj relying on the overall total_vm
-> > >    size of the task as a baseline.  Most users should have a good sense
-> > >    of when their task is using more memory than expected and killing a
-> > >    memory leaker should always be the optimal oom killer result.  A better 
-> > >    set of units other than a shift on total_vm would be helpful, though.
-> > 
-> > nit: What's mean "Most users"? desktop user(one of most majority users)
-> > don't have any expection of memory usage.
-> > 
-> > but, if admin have memory expection, they should be able to tune
-> > optimal oom result.
-> > 
-> > I think you pointed right thing.
-> > 
-> 
-> This is mostly referring to production server users where memory 
-> consumption by particular applications can be estimated, which allows the 
-> kernel to determine when a task is using a wildly unexpected amount that 
-> happens to become egregious enough to force the oom killer into killing a 
-> task.
-> 
-> That is contrast to using rss as a baseline where we prefer on killing the 
-> application with the most resident RAM.  It is not always ideal to kill a 
-> task with 8GB of rss when we fail to allocate a single page for a low 
-> priority task.
+No, many pointers in btrfs function arguments are not pointing to an
+absolute address, but relative to the start address of extent.
 
-VSZ has the same problem if low priority task allocate last single page.
+Take following function as example, argument inode_item is an offset
+value to the beginning of leaf. So we can't reach its member with
+&inode_item->xxx
 
-
-> > >  - we must prefer tasks that run on a cpuset or mempolicy's nodes if the 
-> > >    oom condition is constrained by that cpuset or mempolicy and its not a
-> > >    system-wide issue.
-> > 
-> > agreed. (who disagree it?)
-> > 
-> 
-> It's possible to nullify the current penalization in the badness heuristic 
-> (order 3 reduction) if a candidate task does not share nodes with 
-> current's allowed set either by way of cpusets or mempolicies.  For 
-> example, an oom caused by an application with an MPOL_BIND on a single 
-> node can easily kill a task that has no memory resident on that node if 
-> its usage (or rss) is 3 orders higher than any candidate that is allowed 
-> on my bound node.
-
-yes, possible. however its heuristic is intensional. the code comment says:
-
-        /*
-         * If p's nodes don't overlap ours, it may still help to kill p
-         * because p may have allocated or otherwise mapped memory on
-         * this node before. However it will be less likely.
-         */
-
-do you have alternative plan? How do we know the task don't have any
-page in memory busted node? we can't add any statistics for oom because
-almost systems never ever use oom. thus, many developer oppose such slowdown.
-
-
-> > >  - we must be able to polarize the badness heuristic to always select a
-> > >    particular task is if its very low priority or disable oom killing for
-> > >    a task if its must-run.
-> > 
-> > Probably I haven't catch your point. What's mean "polarize"? Can you
-> > please describe more?
-> 
-> We need to be able to polarize tasks so they are always killed regardless 
-> of any kernel heuristic (/proc/pid/oom_adj of +15, currently) or always 
-> chosen last (-16, currently).  We also need a way of completely disabling 
-> oom killing for certain tasks such as with OOM_DISABLE.
-
-afaik, when admin use +15 or -16 adjustment, usually they hope to don't use
-kernel heuristic. This is the reason that I proposed /proc/pid/oom_priority
-new tunable knob.
-
-
-
+>  static inline struct btrfs_timespec *
+>  btrfs_inode_mtime(struct btrfs_inode_item *inode_item)
+>  {
+> -       unsigned long ptr = (unsigned long)inode_item;
+> -       ptr += offsetof(struct btrfs_inode_item, mtime);
+> -       return (struct btrfs_timespec *)ptr;
+> +       return &inode_item->mtime;
+>  }
