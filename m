@@ -1,75 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbZLRQDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZLRQEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbZLRQDb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZLRQDa
+	id S1754890AbZLRQEy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZLRQEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:03:30 -0500
-Received: from www.tglx.de ([62.245.132.106]:57231 "EHLO www.tglx.de"
+	Fri, 18 Dec 2009 11:04:53 -0500
+Received: from lo.gmane.org ([80.91.229.12]:53129 "EHLO lo.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbZLRQD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:03:29 -0500
-Date: Fri, 18 Dec 2009 17:02:35 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-cc: "H. Peter Anvin" <hpa@linux.intel.com>, "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] x86: initialize stack canary in secondary start
-In-Reply-To: <43F901BD926A4E43B106BF17856F07559A257B5F@orsmsx508.amr.corp.intel.com>
-Message-ID: <alpine.LFD.2.00.0912181701470.2755@localhost.localdomain>
-References: <43F901BD926A4E43B106BF17856F07559A257B5F@orsmsx508.amr.corp.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751563AbZLRQEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:04:53 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Andres Salomon <dilinger@collabora.co.uk>
+Subject: Re: 2.6.33-rc1 compile error (geode watchdog / mfgpt related)
+Date: Fri, 18 Dec 2009 11:03:58 -0500
+Message-ID: <20091218110358.66c4ec17@mycelium.queued.net>
+References: <4B2B79D3.1070706@nets.rwth-aachen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: wireless.queued.net
+In-Reply-To: <4B2B79D3.1070706@nets.rwth-aachen.de>
+X-Newsreader: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Cc: linux-geode@bombadil.infradead.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Pan, Jacob jun wrote:
-> >From 06503838368350268a46528e134c1dad9f4f8c93 Mon Sep 17 00:00:00 2001
-> From: Jacob Pan <jacob.jun.pan@intel.com>
-> Date: Thu, 17 Sep 2009 07:36:43 -0700
-> Subject: [PATCH 1/2] x86: initialize stack canary in secondary start
-> 
-> some secondary clockevent setup code needs to call request_irq, which will
-> cause fake stack check failure in schedule() if voluntary preemption
-> model is chosen, it is safe to have stack canary initialized here early,
-> since start_secondary() does not return.
+On Fri, 18 Dec 2009 13:47:15 +0100
+Arnd Hannemann
+<hannemann@nets.rwth-aachen.de> wrote:
 
-Where is it initialized now ? Shouldnt the current init be removed ?
-
-Thanks,
-
-	tglx
-
-> Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
-> ---
->  arch/x86/kernel/smpboot.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
+> Hi,
 > 
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index 678d0b8..56ce974 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -48,6 +48,7 @@
->  #include <linux/err.h>
->  #include <linux/nmi.h>
->  #include <linux/tboot.h>
-> +#include <linux/stackprotector.h>
->  
->  #include <asm/acpi.h>
->  #include <asm/desc.h>
-> @@ -324,6 +325,9 @@ notrace static void __cpuinit start_secondary(void *unused)
->  	/* enable local interrupts */
->  	local_irq_enable();
->  
-> +	/* to prevent fake stack check failure in clock setup */
-> +	boot_init_stack_canary();
-> +
->  	x86_cpuinit.setup_percpu_clockev();
->  
->  	wmb();
-> -- 
-> 1.6.5.3
+> 2.6.33-rc1 does not compile for me:
 > 
+>   CC      drivers/watchdog/geodewdt.o
+> drivers/watchdog/geodewdt.c: In function 'geodewdt_ping':
+> drivers/watchdog/geodewdt.c:55: error: implicit declaration of
+> function 'geode_mfgpt_write' drivers/watchdog/geodewdt.c: In function
+> 'geodewdt_probe': drivers/watchdog/geodewdt.c:220: error: implicit
+> declaration of function 'geode_mfgpt_alloc_timer'
+> drivers/watchdog/geodewdt.c:235: error: implicit declaration of
+> function 'geode_mfgpt_toggle_event' make[2]: ***
+> [drivers/watchdog/geodewdt.o] Error 1 make[1]: *** [drivers/watchdog]
+> Error 2 make: *** [drivers] Error 2
 > 
+
+Whoops, I missed that driver; sorry about that.
+
+The patch below should fix it..
+
+
+
+Subject: [PATCH] watchdog: update geodewdt for new MFGPT API
+
+Update to the new cs5535_mfgpt* API.  The geode-specific wording should
+eventually be dropped from this driver...
+
+Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
+---
+ drivers/watchdog/Kconfig    |    2 +-
+ drivers/watchdog/geodewdt.c |   40 +++++++++++++++++++---------------------
+ 2 files changed, 20 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index da84fd0..088f32f 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -368,7 +368,7 @@ config ALIM7101_WDT
+ 
+ config GEODE_WDT
+ 	tristate "AMD Geode CS5535/CS5536 Watchdog"
+-	depends on MGEODE_LX
++	depends on CS5535_MFGPT
+ 	help
+ 	  This driver enables a watchdog capability built into the
+ 	  CS5535/CS5536 companion chips for the AMD Geode GX and LX
+diff --git a/drivers/watchdog/geodewdt.c b/drivers/watchdog/geodewdt.c
+index 9acf001..38252ff 100644
+--- a/drivers/watchdog/geodewdt.c
++++ b/drivers/watchdog/geodewdt.c
+@@ -1,6 +1,7 @@
+-/* Watchdog timer for the Geode GX/LX with the CS5535/CS5536 companion chip
++/* Watchdog timer for machines with the CS5535/CS5536 companion chip
+  *
+  * Copyright (C) 2006-2007, Advanced Micro Devices, Inc.
++ * Copyright (C) 2009  Andres Salomon <dilinger@collabora.co.uk>
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -19,7 +20,7 @@
+ #include <linux/reboot.h>
+ #include <linux/uaccess.h>
+ 
+-#include <asm/geode.h>
++#include <linux/cs5535.h>
+ 
+ #define GEODEWDT_HZ 500
+ #define GEODEWDT_SCALE 6
+@@ -46,25 +47,25 @@ MODULE_PARM_DESC(nowayout,
+ 
+ static struct platform_device *geodewdt_platform_device;
+ static unsigned long wdt_flags;
+-static int wdt_timer;
++static struct cs5535_mfgpt_timer *wdt_timer;
+ static int safe_close;
+ 
+ static void geodewdt_ping(void)
+ {
+ 	/* Stop the counter */
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
+ 
+ 	/* Reset the counter */
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
+ 
+ 	/* Enable the counter */
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
+ }
+ 
+ static void geodewdt_disable(void)
+ {
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
+ }
+ 
+ static int geodewdt_set_heartbeat(int val)
+@@ -72,10 +73,10 @@ static int geodewdt_set_heartbeat(int val)
+ 	if (val < 1 || val > GEODEWDT_MAX_SECONDS)
+ 		return -EINVAL;
+ 
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2, val * GEODEWDT_HZ);
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_CMP2, val * GEODEWDT_HZ);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
+ 
+ 	timeout = val;
+ 	return 0;
+@@ -215,28 +216,25 @@ static struct miscdevice geodewdt_miscdev = {
+ 
+ static int __devinit geodewdt_probe(struct platform_device *dev)
+ {
+-	int ret, timer;
+-
+-	timer = geode_mfgpt_alloc_timer(MFGPT_TIMER_ANY, MFGPT_DOMAIN_WORKING);
++	int ret;
+ 
+-	if (timer == -1) {
++	wdt_timer = cs5535_mfgpt_alloc_timer(MFGPT_TIMER_ANY, MFGPT_DOMAIN_WORKING);
++	if (!wdt_timer) {
+ 		printk(KERN_ERR "geodewdt:  No timers were available\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	wdt_timer = timer;
+-
+ 	/* Set up the timer */
+ 
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP,
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP,
+ 			  GEODEWDT_SCALE | (3 << 8));
+ 
+ 	/* Set up comparator 2 to reset when the event fires */
+-	geode_mfgpt_toggle_event(wdt_timer, MFGPT_CMP2, MFGPT_EVENT_RESET, 1);
++	cs5535_mfgpt_toggle_event(wdt_timer, MFGPT_CMP2, MFGPT_EVENT_RESET, 1);
+ 
+ 	/* Set up the initial timeout */
+ 
+-	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2,
++	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_CMP2,
+ 		timeout * GEODEWDT_HZ);
+ 
+ 	ret = misc_register(&geodewdt_miscdev);
+-- 
+1.5.6.5
+
+
+
+
+
