@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZLRPNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbZLRPNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbZLRPNb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZLRPN3
+	id S1754465AbZLRPNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbZLRPNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:13:29 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:63647 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754477AbZLRPN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:13:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=Tyu611+WiW32bFNHX6SOOrVasDFMROAYjU2WAyXHhzEt0MlWqb/yDcUCJMoGUspAVX
-         2JZK0fd4bwI0PXEZxqqAToqa8NVwNxoSFjtmqX1wK6/VV79AoZL1a1dA+F8aILcdmHaY
-         DaK7D9QQZdodgr3dzqTWCqCeFqQKUt3vVaIdw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
-Date: Fri, 18 Dec 2009 16:11:50 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Valdis.Kletnieks@vt.edu, Mikulas Patocka <mpatocka@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <24653.1261110557@localhost> <m3my1g1hmr.fsf@intrepid.localdomain>
-In-Reply-To: <m3my1g1hmr.fsf@intrepid.localdomain>
+	Fri, 18 Dec 2009 10:13:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40504 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754244AbZLRPNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:13:18 -0500
+Date: Fri, 18 Dec 2009 15:12:41 +0000
+From: Alasdair G Kergon <agk@redhat.com>
+To: device-mapper development <dm-devel@redhat.com>,
+       Joe Perches <joe@perches.com>, Valdis.Kletnieks@vt.edu,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Andy Whitcroft <apw@canonical.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [dm-devel] Re: [PATCH] scripts/checkpatch.pl: Change long line
+	warning to 105 chars
+Message-ID: <20091218151241.GD9334@agk-dp.fab.redhat.com>
+Mail-Followup-To: device-mapper development <dm-devel@redhat.com>,
+	Joe Perches <joe@perches.com>, Valdis.Kletnieks@vt.edu,
+	linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Andy Whitcroft <apw@canonical.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <20091217061229.GD3946@linux-sh.org> <m3tyvqgfs4.fsf@intrepid.localdomain> <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com> <24653.1261110557@localhost> <1261113144.13734.317.camel@Joe-Laptop.home> <m3iqc41h83.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Message-Id: <200912181611.50871.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3iqc41h83.fsf@intrepid.localdomain>
+Organization: Red Hat UK Ltd. Registered in England and Wales, number
+	03798903. Registered Office: Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 1TE.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 December 2009 03:28:12 pm Krzysztof Halasa wrote:
-> Valdis.Kletnieks@vt.edu writes:
-> 
-> > Yeah, but I respectfully submit that if the regexp '^\t{6}' matches a non-
-> > continuation line, it's probably in its rights to whinge.
-> 
-> Yes, but don't make it a hard error, only a suggestion that something is
-> probably really wrong.
-> 
-> > fs/reisersfs/do_balan.c, lines 460-477 (note: 3 leading tabs elided)
-> >
-> > 				leaf_paste_entries(&bi,
-> > 						   n +
-> > 						   item_pos
-> > 						   -
-> > 						   ret_val,
-> > 						   l_pos_in_item,
-> > 						   1,
-> > 						   (struct
-> > 						    reiserfs_de_head
-> > 						    *)
-> > 						   body,
-> > 						   body
-> > 						   +
-> > 						   DEH_SIZE,
-> > 						   tb->
-> > 						   insert_size
-> > 						   [0]
-> > 				    );
-> >
-> > Yes, that used to be 24 more columns to the right.  Gaak.
-> 
-> Precisely. It's a clear show of the damage hard rules like that do.
+On Fri, Dec 18, 2009 at 03:37:00PM +0100, Krzysztof Halasa wrote:
+> Not sure if that's long enough (maybe it is).
+> 132 looks like the next "natural" number.
 
-It is not a hard rule and the above damage was done in 2005 when some
-random developer (Linus Torvalds?  Is this even a real name? ;-) decided
-to mindlessly pass do_balan.c file through Lindent script and later
-didn't finish the task of cleaning the code properly (see commit bd4c625
-for details).
+Well it's good that this thread has produced more examples where it's
+reasonable and acceptable to exceed 80 characters.
 
-We didn't even have checkpatch.pl back then (it was added in 2007).
+What do people feel about files where the policy is to place all the
+parameters passed into a function on the same line, regardless of its
+consequent length?  
 
-> I can't even tell how the code should be fixed and if the simple merging
-> would do, since I can't really imagine how it would look like :-)
+(What kicked this all off was a patch Mikulas submitted containing many
+long lines, one of which hits column 264.  Personally, I dislike reading
+code with lines that wrap, but using a 132-column terminal width is
+fine.)
 
-The old code [ no tabs removed ]:
+Alasdair
 
--                           leaf_paste_entries (bi.bi_bh, n + item_pos - ret_val, l_pos_in_item, 1,
--                                               (struct reiserfs_de_head *)body,
--                                               body + DEH_SIZE, tb->insert_size[0]
--                               );
-
---
-Bartlomiej Zolnierkiewicz
