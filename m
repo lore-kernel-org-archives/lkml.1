@@ -1,120 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbZLRHKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbZLRHMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752256AbZLRHKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 02:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbZLRHKq
+	id S1752323AbZLRHMZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 02:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZLRHMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 02:10:46 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:35830 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750986AbZLRHKp (ORCPT
+	Fri, 18 Dec 2009 02:12:23 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:26827 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZLRHMW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 02:10:45 -0500
-Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       torvalds@linux-foundation.org, tytso@mit.edu, kyle@mcmartin.ca,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hch@infradead.org, linux-arch@vger.kernel.org
-In-Reply-To: <20091218024440.GG4850@discord.disaster>
-References: <alpine.LFD.2.00.0912170950330.15740@localhost.localdomain>
-	 <20091217193648.GI4489@kernel.dk> <1261094220.2752.27.camel@mulgrave.site>
-	 <20091218095944G.fujita.tomonori@lab.ntt.co.jp>
-	 <20091218024440.GG4850@discord.disaster>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Dec 2009 08:10:39 +0100
-Message-Id: <1261120239.3013.10.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Dec 2009 02:12:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UEYG3e2bGWJEaykiC3UyNV9mMPOveAvZ+gH54k60skwvcFD4sxt/lkEjcfQ54YueDt
+         4mP+NjVYJ8DrY5AnQ44s/K/IYf84AbH2877RBVJU3R+aaTsKBKmzfYVdK6OUxejeoGK4
+         DuPXXCXJJugo+/gDTZHI52GZXUF9QOhY40TOM=
+MIME-Version: 1.0
+In-Reply-To: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
+References: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
+Date: Fri, 18 Dec 2009 15:12:21 +0800
+Message-ID: <2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
+Subject: Re: 2.6.32 Kernel panic - not syncing: Attempted to kill init! 
+	Rebooting in 180 seconds..
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Zhiyong Wu <zwu.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Herbert Xu <herbert@gondor.apana.org.au>, llim@redhat.com,
+       agraf@suse.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 13:44 +1100, Dave Chinner wrote:
-> On Fri, Dec 18, 2009 at 10:00:21AM +0900, FUJITA Tomonori wrote:
-> > On Fri, 18 Dec 2009 00:57:00 +0100
-> > James Bottomley <James.Bottomley@suse.de> wrote:
-> > 
-> > > On Thu, 2009-12-17 at 20:36 +0100, Jens Axboe wrote:
-> > > > On Thu, Dec 17 2009, Linus Torvalds wrote:
-> > > > > 
-> > > > > 
-> > > > > On Thu, 17 Dec 2009, tytso@mit.edu wrote:
-> > > > > > 
-> > > > > > Sure, but there's some rumors/oral traditions going around that some
-> > > > > > block devices want bio address which are page aligned, because they
-> > > > > > want to play some kind of refcounting game,
-> > > > > 
-> > > > > Yeah, you might be right at that.
-> > > > > 
-> > > > > > And it's Weird Shit(tm) (aka iSCSI, AoE) type drivers, that most of us 
-> > > > > > don't have access to, so just because it works Just Fine on SATA doesn't 
-> > > > > > mean anything.
-> > > > > > 
-> > > > > > And none of this is documented anywhere, which is frustrating as hell.
-> > > > > > Just rumors that "if you do this, AoE/iSCSI will corrupt your file
-> > > > > > systems".
-> > > > > 
-> > > > > ACK. Jens? 
-> > > > 
-> > > > I've heard those rumours too, and I don't even know if they are true.
-> > > > Who has a pointer to such a bug report and/or issue? The block layer
-> > > > itself doesn't not have any such requirements, and the only places where
-> > > > we play page games is for bio's that were explicitly mapped with pages
-> > > > by itself (like mapping user data).o
-> > > 
-> > > OK, so what happened is that prior to the map single fix
-> > > 
-> > > commit df46b9a44ceb5af2ea2351ce8e28ae7bd840b00f
-> > > Author: Mike Christie  <michaelc@cs.wisc.edu>
-> > > Date:   Mon Jun 20 14:04:44 2005 +0200
-> > > 
-> > >     [PATCH] Add blk_rq_map_kern()
-> > > 
-> > > 
-> > > bio could only accept user space buffers, so we had a special path for
-> > > kernel allocated buffers.  That commit unified the path (with a separate
-> > > block API) so we could now submit kmalloc'd buffers via block APIs.
-> > > 
-> > > So the rule now is we can accept any user mapped area via
-> > > blk_rq_map_user and any kmalloc'd area via blk_rq_map_kern().  We might
-> > > not be able to do a stack area (depending on how the arch maps the
-> > > stack) and we definitely cannot do a vmalloc'd area.
-> > > 
-> > > So it sounds like we only need a blk_rq_map_vmalloc() using the same
-> > > techniques as the patch set and we're good to go.
-> > 
-> > I'm not sure about it.
-> > 
-> > As I said before (when I was against this 'adding vmalloc support to
-> > the block layer' stuff), are there potential users of this except for
-> > XFS? Are there anyone who does such a thing now?
-> 
-> As Christoph already mentioned, XFS is not passing the vmalloc'd
-> range to the block layer - it passes the underlying pages to the
-> block layer. Hence I'm not sure there actually is anyone who is
-> passing vmalloc'd addresses to the block layer. Perhaps we should
-> put a WARN_ON() in the block layer to catch anyone doing such a
-> thing before considering supporting vmalloc'd addresses in the block
-> layer?
+On Fri, Dec 18, 2009 at 12:08 PM, Zhiyong Wu <zwu.kernel@gmail.com> wrote:
+> HI,
+>
+> linux-2.6.32 is compiled on a p6 machine with RH5.4 OS and KVM option is enable.
+>
+> When rebooting this machine, a crash takes place such as:
+>
+> Loading ramdisk...
+> ramdisk loaded at 01700000, size: 2700 Kbytes
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
+> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
+> 06:53:27 EST 2009
+> Calling ibm,client-architecture-support.../
+> Elapsed time since release of system processors: 1212 mins 30 secs
+>
+> Config file read, 1024 bytes
+>
+> Welcome
+> Welcome to yaboot version 1.3.13 (Red Hat 1.3.13-8.el5)
+> Enter "help" to get some basic usage information
+> boot: linux-32
+> Please wait, loading kernel...
+>   Elf64 kernel loaded...
+> Loading ramdisk...
+> ramdisk loaded at 01700000, size: 2700 Kbytes
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
+> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
+> 06:53:27 EST 2009
+> Calling ibm,client-architecture-support... done
+> command line: ro console=hvc0 rhgb quiet root=LABEL=/
+> memory layout at init:
+>  memory_limit : 0000000000000000 (16 MB aligned)
+>  alloc_bottom : 00000000019b0000
+>  alloc_top    : 0000000008000000
+>  alloc_top_hi : 0000000008000000
+>  rmo_top      : 0000000008000000
+>  ram_top      : 0000000008000000
+> instantiating rtas at 0x0000000006e10000... done
+> boot cpu hw idx 0000000000000000
+> copying OF device tree...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x0000000001bc0000 -> 0x0000000001bc15bb
+> Device tree struct  0x0000000001bd0000 -> 0x0000000001bf0000
+> Calling quiesce...
+> returning from prom_init
+> Red Hat nash version 5.1.19.6 starting
+> ibmvscsi 30000002: fast_fail not supported in server
+> sd 0:0:1:0: [sda] Assuming drive cache: write through
+> sd 0:0:1:0: [sda] Assuming drive cache: write through
+> sd 0:0:1:0: [sda] Assuming drive cache: write through
+> insmod: error inserting '/lib/dm-region-hash.ko': -1 File exists
+> mount: could not find filesystem '/dev/root'
+> setuproot: moving /dev failed: No such file or directory
+> setuproot: error mounting /proc: No such file or directory
+> setuproot: error mounting /sys: No such file or directory
+> switchroot: mount failed: No such file or directory
+> Kernel panic - not syncing: Attempted to kill init!
+> Rebooting in 180 seconds..[disconnect]
+>
+> Can anyone give me a warm hand?
 
-vmalloc is just an alias for vmap/vmalloc in the above statements
-(basically anything with an additional kernel virtual mapping which
-causes aliases).  If we support vmap, we naturally support vmalloc as
-well.
+Probably this is not a problem of kernel, maybe it's
+a problem of your initial ramdisk, or something wrong with
+your root filesystem.
 
-> > This API might be useful for only journaling file systems using log
-> > formats that need large contiguous buffer. Sound like only XFS?
-> 
-> FWIW, mapped buffers larger than PAGE_SIZE are used for more than just log
-> recovery in XFS. e.g. filesystems with directory block size larger
-> than page size uses mapped buffers.
-
-However, XFS is the only fs that actually uses kernel virtual mapping to
-solve this problem.
-
-James
-
-
+Does changing "root=LABEL=/" to "root=/dev/XXX" help?
+Where "/dev/XXX" is your root filesystem.
