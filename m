@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbZLRPNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZLRPNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbZLRPNU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbZLRPNT
+	id S1754526AbZLRPNq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZLRPNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:13:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40504 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754244AbZLRPNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:13:18 -0500
-Date: Fri, 18 Dec 2009 15:12:41 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: device-mapper development <dm-devel@redhat.com>,
-       Joe Perches <joe@perches.com>, Valdis.Kletnieks@vt.edu,
-       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [dm-devel] Re: [PATCH] scripts/checkpatch.pl: Change long line
-	warning to 105 chars
-Message-ID: <20091218151241.GD9334@agk-dp.fab.redhat.com>
-Mail-Followup-To: device-mapper development <dm-devel@redhat.com>,
-	Joe Perches <joe@perches.com>, Valdis.Kletnieks@vt.edu,
-	linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Andy Whitcroft <apw@canonical.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <20091217061229.GD3946@linux-sh.org> <m3tyvqgfs4.fsf@intrepid.localdomain> <Pine.LNX.4.64.0912171744070.21142@hs20-bc2-1.build.redhat.com> <24653.1261110557@localhost> <1261113144.13734.317.camel@Joe-Laptop.home> <m3iqc41h83.fsf@intrepid.localdomain>
-MIME-Version: 1.0
+	Fri, 18 Dec 2009 10:13:42 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:35068 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754279AbZLRPNl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:13:41 -0500
+Date: Fri, 18 Dec 2009 09:15:39 -0600
+From: scameron@beardog.cce.hp.com
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mikem@beardog.cce.hp.com,
+       linux-scsi@vger.kernel.org, smcameron@yahoo.com
+Subject: Re: [PATCH] cciss: fix reporting of scsi status again.
+Message-ID: <20091218151539.GI8515@beardog.cce.hp.com>
+References: <20091217142253.10824.4149.stgit@beardog.cce.hp.com> <20091218114137.GP4489@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m3iqc41h83.fsf@intrepid.localdomain>
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091218114137.GP4489@kernel.dk>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 03:37:00PM +0100, Krzysztof Halasa wrote:
-> Not sure if that's long enough (maybe it is).
-> 132 looks like the next "natural" number.
+On Fri, Dec 18, 2009 at 12:41:37PM +0100, Jens Axboe wrote:
+> On Thu, Dec 17 2009, Stephen M. Cameron wrote:
+> > From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+> > 
+> > cciss: fix reporting of scsi status again.  This reverts an earlier
+> > attempt to fix the status byte reporting.  The status byte does
+> > not need to be shifted << 1.  Code like "scp-result |= CHECK_CONDITION << 1"
+> > in other drivers works because CHECK_CONDITION is 0x01, not 0x02 --
+> > CHECK_CONDITION is pre-shifted to the right 1 bit for some reason.
+> 
+> What's this against? Current -git (2.6.33-rc1) already looks correct.
 
-Well it's good that this thread has produced more examples where it's
-reasonable and acceptable to exceed 80 characters.
+Oh, hmm.  Well, I guess that's good.
 
-What do people feel about files where the policy is to place all the
-parameters passed into a function on the same line, regardless of its
-consequent length?  
+I had sent up a patch previously which "fixed" this (botched it).
+Maybe my botched patch was recognized as crap and not picked up.
 
-(What kicked this all off was a patch Mikulas submitted containing many
-long lines, one of which hits column 264.  Personally, I dislike reading
-code with lines that wrap, but using a 132-column terminal width is
-fine.)
+-- steve
 
-Alasdair
-
+> 
+> > 
+> > Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+> > ---
+> >  drivers/block/cciss_scsi.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
+> > index 75a9ca9..0634ec7 100644
+> > --- a/drivers/block/cciss_scsi.c
+> > +++ b/drivers/block/cciss_scsi.c
+> > @@ -728,7 +728,7 @@ complete_scsi_command( CommandList_struct *cp, int timeout, __u32 tag)
+> >  
+> >  	cmd->result = (DID_OK << 16); 		/* host byte */
+> >  	cmd->result |= (COMMAND_COMPLETE << 8);	/* msg byte */
+> > -	cmd->result |= (ei->ScsiStatus << 1);
+> > +	cmd->result |= ei->ScsiStatus;
+> >  	/* printk("Scsistatus is 0x%02x\n", ei->ScsiStatus);  */
+> >  
+> >  	/* copy the sense data whether we need to or not. */
+> > 
+> 
+> -- 
+> Jens Axboe
