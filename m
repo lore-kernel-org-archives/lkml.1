@@ -1,218 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbZLRW3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZLSA06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933194AbZLRW3J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 17:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZLRW16
+	id S1755831AbZLSA06 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 19:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZLSA0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 17:27:58 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:54421 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754019AbZLRW1y (ORCPT
+	Fri, 18 Dec 2009 19:26:55 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40053 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755798AbZLSAZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 17:27:54 -0500
-Message-Id: <20091218222650.676681649@quilx.com>
+	Fri, 18 Dec 2009 19:25:59 -0500
+Message-Id: <20091218222651.319887863@quilx.com>
 References: <20091218222617.384355422@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Dec 2009 16:26:23 -0600
+Date: Fri, 18 Dec 2009 16:26:24 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
 CC: Mel Gorman <mel@csn.ul.ie>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [this_cpu_xx V8 06/16] Make slub statistics use this_cpu_inc
-Content-Disposition: inline; filename=percpu_slub_cleanup_stat
+Subject: [this_cpu_xx V8 07/16] Module handling: Use this_cpu_xx to dynamically allocate counters
+Content-Disposition: inline; filename=percpu_local_t_remove_modules
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this_cpu_inc() translates into a single instruction on x86 and does not
-need any register. So use it in stat(). We also want to avoid the
-calculation of the per cpu kmem_cache_cpu structure pointer. So pass
-a kmem_cache pointer instead of a kmem_cache_cpu pointer.
+Use cpu ops to deal with the per cpu data instead of a local_t. Reduces memory
+requirements, cache footprint and decreases cycle counts.
 
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org?
+The this_cpu_xx operations are also used for !SMP mode. Otherwise we could
+not drop the use of __module_ref_addr() which would make per cpu data handling
+complicated. this_cpu_xx operations have their own fallback for !SMP.
+
+The last hold out of users of local_t is the tracing ringbuffer after this patch
+has been applied.
+
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- mm/slub.c |   43 ++++++++++++++++++++-----------------------
- 1 file changed, 20 insertions(+), 23 deletions(-)
+ include/linux/module.h     |   38 ++++++++++++++------------------------
+ kernel/module.c            |   30 ++++++++++++++++--------------
+ kernel/trace/ring_buffer.c |    1 +
+ 3 files changed, 31 insertions(+), 38 deletions(-)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-2.6/include/linux/module.h
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2009-09-29 11:44:35.000000000 -0500
-+++ linux-2.6/mm/slub.c	2009-09-29 11:44:49.000000000 -0500
-@@ -217,10 +217,10 @@ static inline void sysfs_slab_remove(str
+--- linux-2.6.orig/include/linux/module.h	2009-12-18 13:13:24.000000000 -0600
++++ linux-2.6/include/linux/module.h	2009-12-18 14:16:17.000000000 -0600
+@@ -16,8 +16,7 @@
+ #include <linux/kobject.h>
+ #include <linux/moduleparam.h>
+ #include <linux/tracepoint.h>
+-
+-#include <asm/local.h>
++#include <linux/percpu.h>
+ #include <asm/module.h>
  
+ #include <trace/events/module.h>
+@@ -363,11 +362,9 @@ struct module
+ 	/* Destruction function. */
+ 	void (*exit)(void);
+ 
+-#ifdef CONFIG_SMP
+-	char *refptr;
+-#else
+-	local_t ref;
+-#endif
++	struct module_ref {
++		int count;
++	} *refptr;
  #endif
  
--static inline void stat(struct kmem_cache_cpu *c, enum stat_item si)
-+static inline void stat(struct kmem_cache *s, enum stat_item si)
+ #ifdef CONFIG_CONSTRUCTORS
+@@ -454,25 +451,16 @@ void __symbol_put(const char *symbol);
+ #define symbol_put(x) __symbol_put(MODULE_SYMBOL_PREFIX #x)
+ void symbol_put_addr(void *addr);
+ 
+-static inline local_t *__module_ref_addr(struct module *mod, int cpu)
+-{
+-#ifdef CONFIG_SMP
+-	return (local_t *) (mod->refptr + per_cpu_offset(cpu));
+-#else
+-	return &mod->ref;
+-#endif
+-}
+-
+ /* Sometimes we know we already have a refcount, and it's easier not
+    to handle the error case (which only happens with rmmod --wait). */
+ static inline void __module_get(struct module *module)
  {
- #ifdef CONFIG_SLUB_STATS
--	c->stat[si]++;
-+	__this_cpu_inc(s->cpu_slab->stat[si]);
+ 	if (module) {
+-		unsigned int cpu = get_cpu();
+-		local_inc(__module_ref_addr(module, cpu));
++		preempt_disable();
++		__this_cpu_inc(module->refptr->count);
+ 		trace_module_get(module, _THIS_IP_,
+-				 local_read(__module_ref_addr(module, cpu)));
+-		put_cpu();
++				 __this_cpu_read(module->refptr->count));
++		preempt_enable();
+ 	}
+ }
+ 
+@@ -481,15 +469,17 @@ static inline int try_module_get(struct 
+ 	int ret = 1;
+ 
+ 	if (module) {
+-		unsigned int cpu = get_cpu();
++		preempt_disable();
++
+ 		if (likely(module_is_live(module))) {
+-			local_inc(__module_ref_addr(module, cpu));
++			__this_cpu_inc(module->refptr->count);
+ 			trace_module_get(module, _THIS_IP_,
+-				local_read(__module_ref_addr(module, cpu)));
++				__this_cpu_read(module->refptr->count));
+ 		}
+ 		else
+ 			ret = 0;
+-		put_cpu();
++
++		preempt_enable();
+ 	}
+ 	return ret;
+ }
+Index: linux-2.6/kernel/module.c
+===================================================================
+--- linux-2.6.orig/kernel/module.c	2009-12-18 13:13:24.000000000 -0600
++++ linux-2.6/kernel/module.c	2009-12-18 14:15:57.000000000 -0600
+@@ -474,9 +474,10 @@ static void module_unload_init(struct mo
+ 
+ 	INIT_LIST_HEAD(&mod->modules_which_use_me);
+ 	for_each_possible_cpu(cpu)
+-		local_set(__module_ref_addr(mod, cpu), 0);
++		per_cpu_ptr(mod->refptr, cpu)->count = 0;
++
+ 	/* Hold reference count during initialization. */
+-	local_set(__module_ref_addr(mod, raw_smp_processor_id()), 1);
++	__this_cpu_write(mod->refptr->count, 1);
+ 	/* Backwards compatibility macros put refcount during init. */
+ 	mod->waiter = current;
+ }
+@@ -555,6 +556,7 @@ static void module_unload_free(struct mo
+ 				kfree(use);
+ 				sysfs_remove_link(i->holders_dir, mod->name);
+ 				/* There can be at most one match. */
++				free_percpu(i->refptr);
+ 				break;
+ 			}
+ 		}
+@@ -619,7 +621,7 @@ unsigned int module_refcount(struct modu
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu)
+-		total += local_read(__module_ref_addr(mod, cpu));
++		total += per_cpu_ptr(mod->refptr, cpu)->count;
+ 	return total;
+ }
+ EXPORT_SYMBOL(module_refcount);
+@@ -796,14 +798,15 @@ static struct module_attribute refcnt = 
+ void module_put(struct module *module)
+ {
+ 	if (module) {
+-		unsigned int cpu = get_cpu();
+-		local_dec(__module_ref_addr(module, cpu));
++		preempt_disable();
++		__this_cpu_dec(module->refptr->count);
++
+ 		trace_module_put(module, _RET_IP_,
+-				 local_read(__module_ref_addr(module, cpu)));
++				 __this_cpu_read(module->refptr->count));
+ 		/* Maybe they're waiting for us to drop reference? */
+ 		if (unlikely(!module_is_live(module)))
+ 			wake_up_process(module->waiter);
+-		put_cpu();
++		preempt_enable();
+ 	}
+ }
+ EXPORT_SYMBOL(module_put);
+@@ -1394,9 +1397,9 @@ static void free_module(struct module *m
+ 	kfree(mod->args);
+ 	if (mod->percpu)
+ 		percpu_modfree(mod->percpu);
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
++#if defined(CONFIG_MODULE_UNLOAD)
+ 	if (mod->refptr)
+-		percpu_modfree(mod->refptr);
++		free_percpu(mod->refptr);
  #endif
- }
+ 	/* Free lock-classes: */
+ 	lockdep_free_key_range(mod->module_core, mod->core_size);
+@@ -2159,9 +2162,8 @@ static noinline struct module *load_modu
+ 	mod = (void *)sechdrs[modindex].sh_addr;
+ 	kmemleak_load_module(mod, hdr, sechdrs, secstrings);
  
-@@ -1108,7 +1108,7 @@ static struct page *allocate_slab(struct
- 		if (!page)
- 			return NULL;
- 
--		stat(this_cpu_ptr(s->cpu_slab), ORDER_FALLBACK);
-+		stat(s, ORDER_FALLBACK);
- 	}
- 
- 	if (kmemcheck_enabled
-@@ -1406,23 +1406,22 @@ static struct page *get_partial(struct k
- static void unfreeze_slab(struct kmem_cache *s, struct page *page, int tail)
- {
- 	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
--	struct kmem_cache_cpu *c = this_cpu_ptr(s->cpu_slab);
- 
- 	__ClearPageSlubFrozen(page);
- 	if (page->inuse) {
- 
- 		if (page->freelist) {
- 			add_partial(n, page, tail);
--			stat(c, tail ? DEACTIVATE_TO_TAIL : DEACTIVATE_TO_HEAD);
-+			stat(s, tail ? DEACTIVATE_TO_TAIL : DEACTIVATE_TO_HEAD);
- 		} else {
--			stat(c, DEACTIVATE_FULL);
-+			stat(s, DEACTIVATE_FULL);
- 			if (SLABDEBUG && PageSlubDebug(page) &&
- 						(s->flags & SLAB_STORE_USER))
- 				add_full(n, page);
- 		}
- 		slab_unlock(page);
- 	} else {
--		stat(c, DEACTIVATE_EMPTY);
-+		stat(s, DEACTIVATE_EMPTY);
- 		if (n->nr_partial < s->min_partial) {
- 			/*
- 			 * Adding an empty slab to the partial slabs in order
-@@ -1438,7 +1437,7 @@ static void unfreeze_slab(struct kmem_ca
- 			slab_unlock(page);
- 		} else {
- 			slab_unlock(page);
--			stat(__this_cpu_ptr(s->cpu_slab), FREE_SLAB);
-+			stat(s, FREE_SLAB);
- 			discard_slab(s, page);
- 		}
- 	}
-@@ -1453,7 +1452,7 @@ static void deactivate_slab(struct kmem_
- 	int tail = 1;
- 
- 	if (page->freelist)
--		stat(c, DEACTIVATE_REMOTE_FREES);
-+		stat(s, DEACTIVATE_REMOTE_FREES);
- 	/*
- 	 * Merge cpu freelist into slab freelist. Typically we get here
- 	 * because both freelists are empty. So this is unlikely
-@@ -1479,7 +1478,7 @@ static void deactivate_slab(struct kmem_
- 
- static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
- {
--	stat(c, CPUSLAB_FLUSH);
-+	stat(s, CPUSLAB_FLUSH);
- 	slab_lock(c->page);
- 	deactivate_slab(s, c);
- }
-@@ -1619,7 +1618,7 @@ static void *__slab_alloc(struct kmem_ca
- 	if (unlikely(!node_match(c, node)))
- 		goto another_slab;
- 
--	stat(c, ALLOC_REFILL);
-+	stat(s, ALLOC_REFILL);
- 
- load_freelist:
- 	object = c->page->freelist;
-@@ -1634,7 +1633,7 @@ load_freelist:
- 	c->node = page_to_nid(c->page);
- unlock_out:
- 	slab_unlock(c->page);
--	stat(c, ALLOC_SLOWPATH);
-+	stat(s, ALLOC_SLOWPATH);
- 	return object;
- 
- another_slab:
-@@ -1644,7 +1643,7 @@ new_slab:
- 	new = get_partial(s, gfpflags, node);
- 	if (new) {
- 		c->page = new;
--		stat(c, ALLOC_FROM_PARTIAL);
-+		stat(s, ALLOC_FROM_PARTIAL);
- 		goto load_freelist;
- 	}
- 
-@@ -1658,7 +1657,7 @@ new_slab:
- 
- 	if (new) {
- 		c = __this_cpu_ptr(s->cpu_slab);
--		stat(c, ALLOC_SLAB);
-+		stat(s, ALLOC_SLAB);
- 		if (c->page)
- 			flush_slab(s, c);
- 		slab_lock(new);
-@@ -1713,7 +1712,7 @@ static __always_inline void *slab_alloc(
- 
- 	else {
- 		c->freelist = get_freepointer(s, object);
--		stat(c, ALLOC_FASTPATH);
-+		stat(s, ALLOC_FASTPATH);
- 	}
- 	local_irq_restore(flags);
- 
-@@ -1780,10 +1779,8 @@ static void __slab_free(struct kmem_cach
- {
- 	void *prior;
- 	void **object = (void *)x;
--	struct kmem_cache_cpu *c;
- 
--	c = __this_cpu_ptr(s->cpu_slab);
--	stat(c, FREE_SLOWPATH);
-+	stat(s, FREE_SLOWPATH);
- 	slab_lock(page);
- 
- 	if (unlikely(SLABDEBUG && PageSlubDebug(page)))
-@@ -1796,7 +1793,7 @@ checks_ok:
- 	page->inuse--;
- 
- 	if (unlikely(PageSlubFrozen(page))) {
--		stat(c, FREE_FROZEN);
-+		stat(s, FREE_FROZEN);
- 		goto out_unlock;
- 	}
- 
-@@ -1809,7 +1806,7 @@ checks_ok:
- 	 */
- 	if (unlikely(!prior)) {
- 		add_partial(get_node(s, page_to_nid(page)), page, 1);
--		stat(c, FREE_ADD_PARTIAL);
-+		stat(s, FREE_ADD_PARTIAL);
- 	}
- 
- out_unlock:
-@@ -1822,10 +1819,10 @@ slab_empty:
- 		 * Slab still on the partial list.
- 		 */
- 		remove_partial(s, page);
--		stat(c, FREE_REMOVE_PARTIAL);
-+		stat(s, FREE_REMOVE_PARTIAL);
- 	}
- 	slab_unlock(page);
--	stat(c, FREE_SLAB);
-+	stat(s, FREE_SLAB);
- 	discard_slab(s, page);
- 	return;
- 
-@@ -1863,7 +1860,7 @@ static __always_inline void slab_free(st
- 	if (likely(page == c->page && c->node >= 0)) {
- 		set_freepointer(s, object, c->freelist);
- 		c->freelist = object;
--		stat(c, FREE_FASTPATH);
-+		stat(s, FREE_FASTPATH);
- 	} else
- 		__slab_free(s, page, x, addr);
- 
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+-	mod->refptr = percpu_modalloc(sizeof(local_t), __alignof__(local_t),
+-				      mod->name);
++#if defined(CONFIG_MODULE_UNLOAD)
++	mod->refptr = alloc_percpu(struct module_ref);
+ 	if (!mod->refptr) {
+ 		err = -ENOMEM;
+ 		goto free_init;
+@@ -2393,8 +2395,8 @@ static noinline struct module *load_modu
+ 	kobject_put(&mod->mkobj.kobj);
+  free_unload:
+ 	module_unload_free(mod);
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+-	percpu_modfree(mod->refptr);
++#if defined(CONFIG_MODULE_UNLOAD)
++	free_percpu(mod->refptr);
+  free_init:
+ #endif
+ 	module_free(mod, mod->module_init);
+Index: linux-2.6/kernel/trace/ring_buffer.c
+===================================================================
+--- linux-2.6.orig/kernel/trace/ring_buffer.c	2009-12-18 13:13:24.000000000 -0600
++++ linux-2.6/kernel/trace/ring_buffer.c	2009-12-18 14:15:57.000000000 -0600
+@@ -12,6 +12,7 @@
+ #include <linux/hardirq.h>
+ #include <linux/kmemcheck.h>
+ #include <linux/module.h>
++#include <asm/local.h>
+ #include <linux/percpu.h>
+ #include <linux/mutex.h>
+ #include <linux/init.h>
 
 -- 
