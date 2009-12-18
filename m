@@ -1,314 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751295AbZLRMSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751392AbZLRMVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751295AbZLRMSU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 07:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZLRMSS
+	id S1751392AbZLRMVb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 07:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZLRMVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 07:18:18 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41359 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbZLRMSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 07:18:16 -0500
-Date: Fri, 18 Dec 2009 23:18:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for December 18
-Message-Id: <20091218231804.feb5ebd1.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__18_Dec_2009_23_18_04_+1100_3oqOUngp1cHCF+DX"
+	Fri, 18 Dec 2009 07:21:30 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:56501 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbZLRMV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 07:21:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=CYe8HjphK0ym651279kTFzEkcvOAQCX2TiWwnoqjfaeLwr6mbuzeZRbHJStnV8KCjZ
+         5OSUzFt4//D9DBCZBHKigFYi8mIZdVwJEXuV/nIGIihYjtG+3u09OG06Zd6yuozcI+G2
+         p1PCE+GmvLrlmCJS0OkYGFDiEVFBi7ZM7Ccto=
+Message-ID: <4B2B743B.7010004@gmail.com>
+Date: Fri, 18 Dec 2009 20:23:23 +0800
+From: "Helight.Xu" <helight.xu@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: Xiaotian Feng <xtfeng@gmail.com>, Amerigo Wang <amwang@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Corentin Chary <corentincj@iksaif.net>,
+       ibm-acpi-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, akpm@linux-foundation.org
+Subject: Re: [Patch] thinkpad_acpi: fix a build error
+References: <20091218093132.4415.23424.sendpatchset@localhost.localdomain>	<7b6bb4a50912180142u5e66fa88odb7cd3b6fa1a2ba2@mail.gmail.com> <s5hhbrowpty.wl%tiwai@suse.de>
+In-Reply-To: <s5hhbrowpty.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__18_Dec_2009_23_18_04_+1100_3oqOUngp1cHCF+DX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Takashi Iwai wrote:
+> At Fri, 18 Dec 2009 17:42:34 +0800,
+> Xiaotian Feng wrote:
+>   
+>> Ingo already sent this patch yesterday.
+>> http://lkml.org/lkml/2009/12/17/25
+>>
+>>
+>> On Fri, Dec 18, 2009 at 5:28 PM, Amerigo Wang <amwang@redhat.com> wrote:
+>>     
+>>> This patch fixes the following build error:
+>>>
+>>>  Building modules, stage 2.
+>>>  MODPOST 1834 modules
+>>> ERROR: "snd_card_create" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>> ERROR: "snd_ctl_notify" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>> ERROR: "snd_ctl_boolean_mono_info" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>> ERROR: "snd_ctl_new1" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>> ERROR: "snd_card_free" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>> ERROR: "snd_card_register" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>> ERROR: "snd_ctl_add" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+>>>
+>>> Cc: Len Brown <len.brown@intel.com>
+>>> Cc: Corentin Chary <corentincj@iksaif.net>
+>>> Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+>>> Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+>>> Reported-by: Helight.Xu <helight.xu@gmail.com>
+>>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>>> Tested-by: Helight.Xu <helight.xu@gmail.com>
+>>>
+>>> ---
+>>> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+>>> index fc5bf9d..596966c 100644
+>>> --- a/drivers/platform/x86/Kconfig
+>>> +++ b/drivers/platform/x86/Kconfig
+>>> @@ -215,6 +215,7 @@ config THINKPAD_ACPI
+>>>        depends on ACPI
+>>>        depends on INPUT
+>>>        depends on RFKILL || RFKILL = n
+>>> +       depends on SOUND
+>>>       
+>
+> The patch isn't correct (I guess the upstream fix is same?).
+>
+> CONFIG_SOUND is a global config for sound subsystem.  The relevant
+> functions are ALSA core part, which is CONFIG_SND.
+> So, the fix should be:
+>
+> 	depends on SND
+>   
+yes, I think so ! It should be "depends on SND", and I am testing now!
+> instead.
+>
+>
+> Takashi
+>
+>   
 
-Hi all,
 
-News:  there will be no linux-next releases until at least Dec 24 and,
-more likely, Dec 29.  Have a Merry Christmas and take a break.  :-)
+-- 
+Zhenwen Xu - Seven Helight
+Home Page: http://zhwen.org
 
-My usual call for calm: please do not put stuff destined for 2.6.34 into
-linux-next trees until after 2.6.33-rc1.
-
-Changes since 20091217:
-
-The m68knommu tree lost its conflict.
-
-The ocfs2 tree gained a conflict against Linus' tree.
-
-The build tree lost its merge fix.
-
-The fsnotify tree still has a build failure for which I applied a merge
-fixup patch (and it seems to be inheriting all the merge conflicts).
-
-The tip tree lost its conflict.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 155 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (delete/modify): drivers/mtd/nand/excite_nandflash.c deleted in mi=
-ps/mips-for-linux-next and modified in HEAD. Version HEAD of drivers/mtd/na=
-nd/excite_nandflash.c left in tree.
-CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
-CONFLICT (content): Merge conflict in scripts/recordmcount.pl
-$ git rm -f drivers/mtd/nand/excite_nandflash.c
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-CONFLICT (content): Merge conflict in fs/ocfs2/file.c
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (add/add): Merge conflict in fs/xfs/linux-2.6/xfs_trace.h
-CONFLICT (content): Merge conflict in include/linux/fs.h
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-13=
-94.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-av=
-c.c
-CONFLICT (add/add): Merge conflict in drivers/media/dvb/firewire/firedtv-fw=
-.c
-CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv.h
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in kernel/perf_event.c
-CONFLICT (content): Merge conflict in scripts/mod/modpost.c
-Applying: rr: cpufreq: fix up for api name change
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-CONFLICT (content): Merge conflict in Documentation/laptops/thinkpad-acpi.t=
-xt
-CONFLICT (content): Merge conflict in drivers/platform/x86/thinkpad_acpi.c
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_fb_helper.c
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in arch/alpha/include/asm/fcntl.h
-CONFLICT (content): Merge conflict in arch/mips/include/asm/fcntl.h
-CONFLICT (content): Merge conflict in arch/sparc/include/asm/fcntl.h
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-CONFLICT (content): Merge conflict in fs/afs/write.c
-CONFLICT (content): Merge conflict in fs/cifs/dir.c
-CONFLICT (content): Merge conflict in fs/ocfs2/file.c
-CONFLICT (content): Merge conflict in fs/ubifs/file.c
-CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
-CONFLICT (content): Merge conflict in include/net/compat.h
-CONFLICT (content): Merge conflict in net/compat.c
-CONFLICT (content): Merge conflict in net/socket.c
-Applying: fsnotify: fixup for ima_path_check API change
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-Merging tip/auto-latest
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Fri__18_Dec_2009_23_18_04_+1100_3oqOUngp1cHCF+DX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksrcvwACgkQjjKRsyhoI8wBNgCeMcGJxIBtTj7DUDoLpEA2X8WE
-DA8Aniyu9B5iNFnebMFgsGq5iRf3PjtZ
-=Jofj
------END PGP SIGNATURE-----
-
---Signature=_Fri__18_Dec_2009_23_18_04_+1100_3oqOUngp1cHCF+DX--
