@@ -1,136 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbZLRABR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZLRApz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbZLRABR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 19:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZLRABO
+	id S1755075AbZLRApz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 19:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbZLRApy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 19:01:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26299 "EHLO mx1.redhat.com"
+	Thu, 17 Dec 2009 19:45:54 -0500
+Received: from mail.digium.com ([216.207.245.2]:34017 "EHLO mail.digium.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751391AbZLRABN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 19:01:13 -0500
-Message-ID: <4B2AC59D.2010004@ds.jp.nec.com>
-Date: Thu, 17 Dec 2009 18:58:21 -0500
-From: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	id S1751479AbZLRApx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 19:45:53 -0500
+X-Greylist: delayed 2702 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Dec 2009 19:45:53 EST
+Message-ID: <4B2AC624.3080201@digium.com>
+Date: Thu, 17 Dec 2009 18:00:36 -0600
+From: Shaun Ruffell <sruffell@digium.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Corrado Zoccolo <czoccolo@gmail.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com, Alan.Brunelle@hp.com
-Subject: Re: [RFC] CFQ group scheduling structure organization
-References: <1261003980-10115-1-git-send-email-vgoyal@redhat.com> <4e5e476b0912170341h7ba632akddb921c996a36f73@mail.gmail.com>
-In-Reply-To: <4e5e476b0912170341h7ba632akddb921c996a36f73@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Joerg Roedel <joerg.roedel@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] dma-debug: Do not add notifier when dma debugging is disabled.
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+If CONFIG_HAVE_DMA_API_DEBUG is defined and "dma_debug=off" is
+specified on the kernel command line, when you detach a driver from a
+device you can cause the following NULL pointer dereference:
 
-Corrado Zoccolo wrote, on 12/17/2009 06:41 AM:
-> Hi,
-> On Wed, Dec 16, 2009 at 11:52 PM, Vivek Goyal<vgoyal@redhat.com>  wrote:
->> Hi All,
->>
->> With some basic group scheduling support in CFQ, there are few questions
->> regarding how group structure should look like in CFQ.
->>
->> Currently, grouping looks as follows. A, and B are two cgroups created by
->> user.
->>
->> [snip]
->>
->> Proposal 4:
->> ==========
->> Treat task and group at same level. Currently groups are at top level and
->> at second level are tasks. View the whole hierarchy as follows.
->>
->>
->>                         service-tree
->>                         /   |  \  \
->>                        T1   T2  G1 G2
->>
->> Here T1 and T2 are two tasks in root group and G1 and G2 are two cgroups
->> created under root.
->>
->> In this kind of scheme, any RT task in root group will still be system
->> wide RT even if we create groups G1 and G2.
->>
->> So what are the issues?
->>
->> - I talked to few folks and everybody found this scheme not so intutive.
->>   Their argument was that once I create a cgroup, say A,  under root, then
->>   bandwidth should be divided between "root" and "A" proportionate to
->>   the weight.
->>
->>   It is not very intutive that group is competing with all the tasks
->>   running in root group. And disk share of newly created group will change
->>   if more tasks fork in root group. So it is highly dynamic and not
->>   static hence un-intutive.
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: [<c0580d35>] dma_debug_device_change+0x5d/0x117
 
-I agree it might be dynamic but I don't think it's un-intuitive.
-I think it's reasonable that disk share of a group is
-influenced by the number of tasks running in root group,
-because the root group is shared by the tasks and groups from
-the viewpoint of cgroup I/F, and they really share disk bandwidth.
+The problem is that the dma_debug_device_change notifier function is
+added to the bus notifier chain even though the dma_entry_hash array
+was never initialized.  If dma debugging is disabled, this patch both
+prevents dma_debug_device_change notifiers from being added to the
+chain, and additionally ensures that the dma_entry_hash array is always
+initialized to a valid state.
 
+Signed-off-by: Shaun Ruffell <sruffell@digium.com>
+---
+ lib/dma-debug.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
->>   To emulate the behavior of previous proposals, root shall have to create
->>   a new group and move all root tasks there. But admin shall have to still
->>   keep RT tasks in root group so that they still remain system-wide.
->>
->>                         service-tree
->>                         /   |    \  \
->>                        T1  root  G1 G2
->>                             |
->>                             T2
->>
->>   Now admin has specifically created a group "root" along side G1 and G2
->>   and moved T2 under root. T1 is still left in top level group as it might
->>   be an RT task and we want it to remain RT task systemwide.
->>
->>   So to some people this scheme is un-intutive and requires more work in
->>   user space to achive desired behavior. I am kind of 50:50 between two
->>   kind of arrangements.
->>
-> This is the one I prefer: it is the most natural one if you see that
-> groups are scheduling entities like any other task.
-> I think it becomes intuitive with an analogy with a qemu (e.g. kvm)
-> virtual machine model. If you think a group like a virtual machine, it
-> is clear that for the normal system, the whole virtual machine is a
-> single scheduling entity, and that it has to compete with other
-> virtual machines (as other single entities) and every process in the
-> real system (those are inherently more important, since without the
-> real system, the VMs cannot simply exist).
-> Having a designated root group, instead, resembles the xen VM model,
-> where you have a separated domain for each VM and for the real system.
->
-> I think the implementation of this approach can make the code simpler
-> and modular (CFQ could be abstracted to deal with scheduling entities,
-> and each scheduling entity could be defined in a separate file).
-> Within each group, you will now have the choice of how to schedule its
-> queues. This means that you could possibly have different I/O
-> schedulers within each group, and even have sub-groups within groups.
-
-Corrado exactly says my preference.
-
-I understand current implementation, like proposal 1, was
-employed to make code simple and I believe it succeeded.
-However, rather I feel it's un-intuitive because it's
-inconsistent with cgroup I/F.  Behavior which is inconsistent
-with the I/F can lead to misconfiguration of sys-admins.
-This might be problematic, IMHO.
-
-
-
-Thanks,
-Muuhh
-
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index d9b08e0..a504ead 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -697,6 +697,9 @@ void dma_debug_add_bus(struct bus_type *bus)
+ {
+ 	struct notifier_block *nb;
+ 
++	if (global_disable)
++		return;
++
+ 	nb = kzalloc(sizeof(struct notifier_block), GFP_KERNEL);
+ 	if (nb == NULL) {
+ 		pr_err("dma_debug_add_bus: out of memory\n");
+@@ -715,14 +718,14 @@ void dma_debug_init(u32 num_entries)
+ {
+ 	int i;
+ 
+-	if (global_disable)
+-		return;
+-
+ 	for (i = 0; i < HASH_SIZE; ++i) {
+ 		INIT_LIST_HEAD(&dma_entry_hash[i].list);
+ 		spin_lock_init(&dma_entry_hash[i].lock);
+ 	}
+ 
++	if (global_disable)
++		return;
++
+ 	if (dma_debug_fs_init() != 0) {
+ 		pr_err("DMA-API: error creating debugfs entries - disabling\n");
+ 		global_disable = true;
 -- 
-IKEDA, Munehiro
-   NEC Corporation of America
-     m-ikeda@ds.jp.nec.com
+1.6.5.2
 
