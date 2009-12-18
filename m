@@ -1,71 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZLRCrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZLRC4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbZLRCrW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 21:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZLRCrV
+	id S1755814AbZLRC4i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbZLRC4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 21:47:21 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:55554 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbZLRCrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 21:47:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=Riu+AhRDgJVnWlvbq6sMNVaEz6jTho1OsHX98NgGO77m3KM0YBiXDGft/34Ba2epse
-         Aorw27jG8tODazR1ik3aZC+503K+HkxV8BjbwiHBK6pq81+3KchhVNrkHwszGHTJPsRq
-         TnQpFl0si3CwoF4BqOdAi6U/6FSu6ivdQxBr4=
-MIME-Version: 1.0
-Date: Thu, 17 Dec 2009 18:47:19 -0800
-Message-ID: <23986fd90912171847w6d46ba2bx9d8763a63fc758c3@mail.gmail.com>
-Subject: Is splice() useful without page stealing?
-From: "Patrick J. LoPresti" <lopresti@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Dec 2009 21:56:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23789 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbZLRC4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:56:36 -0500
+Subject: [GIT -maybe- PULL] notification - fanotify
+From: Eric Paris <eparis@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, hch@infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 17 Dec 2009 21:56:24 -0500
+Message-Id: <1261104984.2868.39.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just spent a couple of hours tracking down documentation and
-discussion on splice().  I apologize in advance if I missed something.
+This pull is the basics of fanotify as a notification mechanism.  It has
+been in linux-next for months without any complaints.  I know both viro
+and hch have concerns that neither of them have reviewed the code.  I'm
+putting it out because code has been available in some similar (although
+with a changing user interface) for more than 2 years or so at this
+point and without me asking it to be pulled I assume it will continue to
+be ignored.  If either would like to NAK the code and publicly agree to
+review in the next cycle that seems reasonable.  The user interface has
+seen many comments which have all (it appears) been addresses, but the
+internals are admittedly lacking in intelligent review.  Getting
+notification in order is my highest priority for my paying job and I'm
+willing to address any issues anyone have.  But after years of hoping
+and having gone an entire cycle on list and in linux-next with neither a
+single suggestion nor problem I put it forth to the list for acceptance.
+(there are some known feature requests though)
 
-As near as I can tell, SPLICE_F_MOVE (aka. "page stealing") was
-removed in 2.6.21
-(http://lkml.indiana.edu/hypermail/linux/kernel/0703.1/2592.html) and
-never reinstated.
+This code does NOT do any kind of permissions checking.  It is purely a
+novel notification system which includes an fd with the event.  I have
+another branch with permissions and blocking which makes this usable to
+AV, HSM, and other 3rd party vendors.  I am not proposing that for this
+cycle.  The main issue of this patch is that it adds two syscalls.
 
-My question is, doesn't this make splice() nearly useless from a
-performance perspective?
+SYSCALL_DEFINE3(fanotify_init, unsigned int, flags, unsigned int,
+		event_f_flags, unsigned int, priority)
+SYSCALL_DEFINE(fanotify_mark)(int fanotify_fd, unsigned int flags,
+			      __u64 mask, int dfd,
+			      const char  __user * pathname)
 
-For example, consider implementing a simple file copy.  You might
-argue that even without SPLICE_F_MOVE, splice() can be used to avoid
-one copy of the data:  The standard/portable "read() into a user
-buffer and write() from that buffer" is two copies, whereas splice()
-to and from a pipe would be one copy.
+These are the only 2 syscalls needed to implement all of the fanotify
+requests to date (including permissions and blocking)
 
-But that argument is bogus, because modern processors have sizable
-caches.  If you simply write the portable code to read() into a small
-buffer (16K or so) and write() from that buffer, and you use the same
-buffer over and over, the data in the buffer should get overwritten in
-the L1 cache before it ever gets flushed to the RAM behind it.  In
-effect, this simple loop would move data into the L1 cache (on read())
-and then back into the page cache (on write()), for a net of ONE
-round-trip to physical memory.
+Please, if people object speak up.  This has gone on long enough.
 
-Similarly for copying data from a socket to a file in an attempt to
-implement "recvfile()".
+---
 
-Now, if splice() actually let you do things like flip pages from the
-network stack into the page cache with zero copies, then I could see
-the point.  As it is, I am curious to know:
+The following changes since commit aa7e943209e021545632d7057ad47923725aac11:
+  Eric Paris (1):
+        inotify: remove inotify in kernel interface
 
-1) Does anybody have any actual benchmarks showing performance
-advantages for splice() over read()/write()?   If so, can I obtain the
-benchmark code?
+are available in the git repository at:
 
-2) Are there any plans to reinstate SPLICE_F_MOVE or something equivalent?
+  git://git.infradead.org/users/eparis/notify.git for-linus-fanotify
 
-Thank you.
+Andreas Gruenbacher (15):
+      fsnotify: kill FSNOTIFY_EVENT_FILE
+      fsnotify: take inode->i_lock inside fsnotify_find_mark_entry()
+      fanotify: create_fd cleanup
+      fanotify: Add pids to events
+      fsnotify/vfsmount: add fsnotify fields to struct vfsmount
+      fsnotify: Infrastructure for per-mount watches
+      fanotify: remove fanotify_update_mark
+      fanotify: do not call fanotify_update_object_mask in fanotify_remove_mark
+      fanotify: do not call fanotify_update_object_mask in fanotify_add_mark
+      fanotify: do not return pointer from fanotify_add_*_mark
+      fanotify: remove fanotify_add_mark
+      fanotify: rename FAN_MARK_ON_VFSMOUNT to FAN_MARK_MOUNT
+      fanotify: split fanotify_remove_mark
+      fanotify: remove fanotify.h declarations
+      fanotify: remove outgoing function checks in fanotify.h
 
- - Pat
+Eric Paris (42):
+      fsnotify: provide the data type to should_send_event
+      fsnotify: include data in should_send calls
+      fsnotify: pass a file instead of an inode to open, read, and write
+      fsnotify: send struct file when sending events to parents when possible
+      fsnotify: per group notification queue merge types
+      fsnotify: clone existing events
+      fsnotify: replace an event on a list
+      fsnotify: lock annotation for event replacement
+      fsnotify: remove group_num altogether
+      fsnotify: fsnotify_obtain_group kzalloc cleanup
+      fsnotify: fsnotify_obtain_group should be fsnotify_alloc_group
+      Audit: only set group mask when something is being watched
+      fsnotify: drop mask argument from fsnotify_alloc_group
+      fsnotify: rename fsnotify_groups to fsnotify_inode_groups
+      fsnotify: initialize the group->num_marks in a better place
+      fsnotify: add groups to fsnotify_inode_groups when registering inode watch
+      fsnotify: mount point listeners list and global mask
+      fsnotify: include vfsmount in should_send_event when appropriate
+      fsnotify: put inode specific fields in an fsnotify_mark in a union
+      fsnotify: add vfsmount specific fields to the fsnotify_mark_entry union
+      fsnotify: add flags to fsnotify_mark_entries
+      fsnotify: rename fsnotify_mark_entry to just fsnotify_mark
+      fsnotify: rename fsnotify_find_mark_entry to fsnotify_find_mark
+      fsnotify: rename mark_entry to just mark
+      inotify: rename mark_entry to just mark
+      dnotify: rename mark_entry to mark
+      vfs: introduce FMODE_NONOTIFY
+      fanotify: fscking all notification system
+      fanotify:drop notification if they exist in the outgoing queue
+      fanotify: merge notification events with different masks
+      fanotify: do not clone on merge unless needed
+      fanotify: fanotify_init syscall declaration
+      fanotify: fanotify_init syscall implementation
+      fanotify: sys_fanotify_mark declartion
+      fanotify: fanotify_mark syscall implementation
+      fanotify: send events using read
+      fsnotify: split generic and inode specific mark code
+      fsnotify: clear marks to 0 in fsnotify_init_mark
+      fsnotify: vfsmount marks generic functions
+      fanotify: should_send_event needs to handle vfsmounts
+      fanotify: infrastructure to add an remove marks on vfsmounts
+      fanotify: hooks the fanotify_mark syscall to the vfsmount code
+
+Heiko Carstens (1):
+      fanotify: CONFIG_HAVE_SYSCALL_WRAPPERS for sys_fanotify_mark
+
+Paul Mundt (1):
+      fanotify: select ANON_INODES.
+
+ arch/x86/ia32/ia32entry.S            |    2 +
+ arch/x86/ia32/sys_ia32.c             |    9 +
+ arch/x86/include/asm/sys_ia32.h      |    3 +
+ arch/x86/include/asm/unistd_32.h     |    4 +-
+ arch/x86/include/asm/unistd_64.h     |    4 +
+ arch/x86/kernel/syscall_table_32.S   |    2 +
+ fs/compat.c                          |    5 +-
+ fs/exec.c                            |    4 +-
+ fs/inode.c                           |    2 +-
+ fs/namespace.c                       |    5 +
+ fs/nfsd/vfs.c                        |    4 +-
+ fs/notify/Kconfig                    |    1 +
+ fs/notify/Makefile                   |    4 +-
+ fs/notify/dnotify/dnotify.c          |  198 ++++++-------
+ fs/notify/fanotify/Kconfig           |   12 +
+ fs/notify/fanotify/Makefile          |    1 +
+ fs/notify/fanotify/fanotify.c        |  184 +++++++++++
+ fs/notify/fanotify/fanotify_user.c   |  573 ++++++++++++++++++++++++++++++++++
+ fs/notify/fsnotify.c                 |  104 +++++--
+ fs/notify/fsnotify.h                 |   31 ++-
+ fs/notify/group.c                    |  140 ++++-----
+ fs/notify/inode_mark.c               |  282 +++--------------
+ fs/notify/inotify/inotify.h          |    7 +-
+ fs/notify/inotify/inotify_fsnotify.c |  112 +++++--
+ fs/notify/inotify/inotify_user.c     |  209 ++++++-------
+ fs/notify/mark.c                     |  293 +++++++++++++++++
+ fs/notify/notification.c             |  155 ++++++----
+ fs/notify/vfsmount_mark.c            |  171 ++++++++++
+ fs/open.c                            |    9 +-
+ fs/read_write.c                      |    8 +-
+ include/asm-generic/fcntl.h          |    8 +
+ include/linux/Kbuild                 |    1 +
+ include/linux/fanotify.h             |   77 +++++
+ include/linux/fs.h                   |    5 +-
+ include/linux/fsnotify.h             |   87 ++++--
+ include/linux/fsnotify_backend.h     |  122 +++++---
+ include/linux/mount.h                |    6 +-
+ include/linux/syscalls.h             |    5 +
+ kernel/audit_tree.c                  |   53 ++--
+ kernel/audit_watch.c                 |   38 ++-
+ kernel/auditsc.c                     |    4 +-
+ kernel/sys_ni.c                      |    4 +
+ 42 files changed, 2151 insertions(+), 797 deletions(-)
+ create mode 100644 fs/notify/fanotify/Kconfig
+ create mode 100644 fs/notify/fanotify/Makefile
+ create mode 100644 fs/notify/fanotify/fanotify.c
+ create mode 100644 fs/notify/fanotify/fanotify_user.c
+ create mode 100644 fs/notify/mark.c
+ create mode 100644 fs/notify/vfsmount_mark.c
+ create mode 100644 include/linux/fanotify.h
+
