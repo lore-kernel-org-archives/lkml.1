@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZLRQXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZLRQY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbZLRQXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbZLRQXp
+	id S1754928AbZLRQY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbZLRQY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:23:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3864 "EHLO mx1.redhat.com"
+	Fri, 18 Dec 2009 11:24:56 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:42611 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbZLRQXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:23:44 -0500
-Date: Fri, 18 Dec 2009 17:23:32 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: FWD:  [PATCH v2] vmscan: limit concurrent reclaimers in
- shrink_zone
-Message-ID: <20091218162332.GR29790@random.random>
-References: <20091211164651.036f5340@annuminas.surriel.com>
- <1260810481.6666.13.camel@dhcp-100-19-198.bos.redhat.com>
- <20091217193818.9FA9.A69D9226@jp.fujitsu.com>
- <4B2A22C0.8080001@redhat.com>
- <4B2A8CA8.6090704@redhat.com>
- <Pine.LNX.4.64.0912172055570.15788@sister.anvils>
+	id S1754714AbZLRQYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:24:55 -0500
+Message-ID: <4B2BACD3.7010903@austin.ibm.com>
+Date: Fri, 18 Dec 2009 10:24:51 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0912172055570.15788@sister.anvils>
+To: Andreas Schwab <schwab@linux-m68k.org>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6 v5] CPU probe/release files
+References: <4AE8ADCF.6090104@austin.ibm.com>	<4AE8B072.1070603@austin.ibm.com> <m2oclw9wt4.fsf@igel.home>
+In-Reply-To: <m2oclw9wt4.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 09:05:23PM +0000, Hugh Dickins wrote:
-> Please first clarify whether what Larry is running is actually
-> a workload that people need to behave well in real life.
+Andreas Schwab wrote:
+> Nathan Fontenot <nfont@austin.ibm.com> writes:
+> 
+>> Index: powerpc/arch/powerpc/Kconfig
+>> ===================================================================
+>> --- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
+>> +++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
+>> @@ -320,6 +320,10 @@
+>>  
+>>  	  Say N if you are unsure.
+>>  
+>> +config ARCH_CPU_PROBE_RELEASE
+>> +	def_bool y
+>> +	depends on HOTPLUG_CPU
+>> +
+> 
+> That does not work.
+> 
+> drivers/built-in.o: In function `.store_online':
+> cpu.c:(.ref.text+0xf5c): undefined reference to `.cpu_hotplug_driver_lock'
+> cpu.c:(.ref.text+0xfc8): undefined reference to `.cpu_hotplug_driver_unlock'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> cpu_hotplug_driver_lock is only defined on pseries, but HOTPLUG_CPU is
+> also defined on pmac.
 
-Anything with 10000 connections using a connection-per-thread/process
-model, should use threads if good performance are expected, processes
-not. Most things that are using multi-process design will never use
-one-connection-per-process design (yes there are exceptions and
-no we can't expect to fix those as they're proprietary ;). So I'm not
-particularly worried.
+These two routines should be defined as a no-op if CONFIG_ARCH_CPU_PROBE_RELEASE
+is not defined in linux/cpu.h.  The update below should be in the patch set
+you are looking at. 
 
-Also make sure this also happens on older kernels, newer kernels uses
-rmap chains and mangle over ptes even when there's no VM pressure for
-no good reason. Older kernels would only hit on the anon_vma chain on
-any anon page, only after this anon page was converted to swapcache
-and swap was hit, so it makes a whole lot of difference. Anon_vma
-chains should only be touched after we are I/O bound if anybody is to
-expect decent performance out of the kernel.
+from linux/cpu.h:
 
-> I'm not asserting that this one is purely academic, but I do
-> think we need more than an artificial case to worry much about it.
+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+extern void cpu_hotplug_driver_lock(void);
+extern void cpu_hotplug_driver_unlock(void);
+#else
+static inline void cpu_hotplug_driver_lock(void)
+{
+}
 
-Tend to agree.
+static inline void cpu_hotplug_driver_unlock(void)
+{
+}
+#endif
 
-> An rwlock there has been proposed on several occasions, but
-> we resist because that change benefits this case but performs
-> worse on more common cases (I believe: no numbers to back that up).
-
-I think rwlock for anon_vma is a must. Whatever higher overhead of the
-fast path with no contention is practically zero, and in large smp it
-allows rmap on long chains to run in parallel, so very much worth it
-because downside is practically zero and upside may be measurable
-instead in certain corner cases. I don't think it'll be enough, but I
-definitely like it.
-
-> Substitute a MAP_SHARED file underneath those 10000 vmas,
-> and don't you have an equal problem with the prio_tree,
-> which would be harder to solve than the anon_vma case?
-
-That is a very good point.
-
-Rik suggested to me to have a cowed newly allocated page to use its
-own anon_vma. Conceptually Rik's idea is fine one, but the only
-complication then is how to chain the same vma into multiple anon_vma
-(in practice insert/removal will be slower and more metadata will be
-needed for additional anon_vmas and vams queued in more than
-anon_vma). But this only will help if the mapcount of the page is 1,
-if the mapcount is 10000 no change to anon_vma or prio_tree will solve
-this, and we've to start breaking the rmap loop after 64
-test_and_clear_young instead to mitigate the inefficiency on pages
-that are used and never will go into swap and so where wasting 10000
-cachelines just because this used page eventually is in the tail
-position of the lru uis entirely wasted.
+-Nathan Fontenot
