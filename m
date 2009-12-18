@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933196AbZLRWip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933139AbZLRWdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933196AbZLRWip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 17:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932882AbZLRWio
+	id S933139AbZLRWdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 17:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933101AbZLRWdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 17:38:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58063 "EHLO mx1.redhat.com"
+	Fri, 18 Dec 2009 17:33:43 -0500
+Received: from khc.piap.pl ([195.187.100.11]:43247 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932737AbZLRWio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 17:38:44 -0500
-Date: Fri, 18 Dec 2009 23:32:30 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
-	08d68323d1f0c34452e614263b212ca556dae47f
-Message-ID: <20091218223230.GA1853@redhat.com>
-References: <20091218005650.GA20667@redhat.com> <20091218030601.GB16470@nowhere> <20091218172747.GA10924@redhat.com> <20091218200503.2CA0DF9A4@magilla.sf.frob.com>
+	id S932735AbZLRWdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 17:33:42 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+	<200912171618.32882.bzolnier@gmail.com>
+	<alpine.LFD.2.00.0912170726230.17868@localhost.localdomain>
+	<200912171708.07899.bzolnier@gmail.com>
+	<alpine.LFD.2.00.0912170816210.15740@localhost.localdomain>
+	<Pine.LNX.4.64.0912181118390.23738@hs20-bc2-1.build.redhat.com>
+Date: Fri, 18 Dec 2009 23:33:39 +0100
+In-Reply-To: <Pine.LNX.4.64.0912181118390.23738@hs20-bc2-1.build.redhat.com>
+	(Mikulas Patocka's message of "Fri, 18 Dec 2009 11:32:00 -0500 (EST)")
+Message-ID: <m3skb7zzcs.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091218200503.2CA0DF9A4@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18, Roland McGrath wrote:
->
-> > Please find the trivial test-case below. It hangs, because
-> > PTRACE_SINGLESTEP doesn't trigger the trap.
->
-> 2.6.33-rc1 x86-64 works for me with either -m64 or -m32 version of that test.
->
-> > (not sure this matters, but I did the testing under kvm)
->
-> Apparently it does.  You should hack some printks into do_debug() and see
-> how kvm is differing from real hardware.  (Actually you can probably do
-> this with a notifier added by a module, not that you are shy about
-> recompiling!)
->
-> Probably kvm's emulation of the hardware behavior wrt the DR6 bits is not
-> sufficiently faithful.  Conceivably, kvm is being consistent with some
-> older hardware and we have encoded assumptions that only newer hardware
-> meets.  But I'd guess it's just a plain kvm bug.
+Mikulas Patocka <mpatocka@redhat.com> writes:
 
-OK, thanks.
+> It would be best to keep line length is unlimited and say that it is the 
+> responsibility of the viewer to wrap it.
 
-Hmm. Now I see how wrong I was when I said this code is "obviously wrong" ;)
-
-I'll add the debugging printk's and report the output. Sorry for delay,
-can't do this today.
-
-Oleg.
-
+It would mean no continuation lines due to length at all.
+Perhaps it's the way to go.
+-- 
+Krzysztof Halasa
