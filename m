@@ -1,81 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbZLRROm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZLRRQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755082AbZLRROm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZLRROl
+	id S1755096AbZLRRQw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZLRRQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:14:41 -0500
-Received: from www.tglx.de ([62.245.132.106]:57694 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753807AbZLRROl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:14:41 -0500
-Date: Fri, 18 Dec 2009 18:14:29 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Miquel van Smoorenburg <miquels@cistron.nl>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: spinlock which can morph into a mutex
-In-Reply-To: <20091218143032.GA16595@xs4all.net>
-Message-ID: <alpine.LFD.2.00.0912181804360.2755@localhost.localdomain>
-References: <20091218143032.GA16595@xs4all.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Dec 2009 12:16:51 -0500
+Received: from outbound-mail-27.bluehost.com ([69.89.17.193]:37551 "HELO
+	outbound-mail-27.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753331AbZLRRQu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 12:16:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=XiqPuGVL7TEgD2Mgp7NoDufD5nKhYmtVZGL0ZWWSMZp0GzC01SlUXBGTMpModc8jhuXqOS90ewJucWS9/42ADbNFIUw5JDTMnOHjXmaz7egqcW9b1nTWOWnOwRfSSLVA;
+Date: Fri, 18 Dec 2009 09:16:11 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Emmanuel Benisty <benisty.e@gmail.com>
+Cc: Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+       luto@myrealbox.com, eric@anholt.net
+Subject: Re: 2.6.31 -> 2.6.32 Sound and video regressions
+Message-ID: <20091218091611.74ab70c5@jbarnes-piketon>
+In-Reply-To: <c1f41c620912180910h412e5e84w6dff7e9d039c7296@mail.gmail.com>
+References: <4B1A6F78.8010408@myrealbox.com>
+	<50CA8D92EC%linux@youmustbejoking.demon.co.uk>
+	<20091206173222.4c2d5aaa@jbarnes-piketon>
+	<c1f41c620912061952k4945a7c8j4567ab17424e4d91@mail.gmail.com>
+	<c1f41c620912070538y4f865cechf21d2802ab237510@mail.gmail.com>
+	<c1f41c620912080520o7e0a69bdg7b885b4a17c6dbc@mail.gmail.com>
+	<20091210095422.3c5a75d1@jbarnes-piketon>
+	<20091217110556.0b103125@jbarnes-piketon>
+	<c1f41c620912180910h412e5e84w6dff7e9d039c7296@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009, Miquel van Smoorenburg wrote:
+On Sat, 19 Dec 2009 00:10:39 +0700
+Emmanuel Benisty <benisty.e@gmail.com> wrote:
 
-> I'm trying to implement a dynamically resizable hashtable, and
-> I have found that after resizing the table I need to call
-> synchronize_rcu() and finish up before letting other writers
-> (inserts, deletes) access the table.
+> On Fri, Dec 18, 2009 at 2:05 AM, Jesse Barnes
+> <jbarnes@virtuousgeek.org> wrote:
+> > On Thu, 10 Dec 2009 09:54:22 -0800
+> > Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> >
+> >> On Tue, 8 Dec 2009 20:20:07 +0700
+> >> Emmanuel Benisty <benisty.e@gmail.com> wrote:
+> >>
+> >> > On Mon, Dec 7, 2009 at 8:38 PM, Emmanuel Benisty
+> >> > <benisty.e@gmail.com> wrote:
+> >> > > On Mon, Dec 7, 2009 at 10:52 AM, Emmanuel Benisty
+> >> > > <benisty.e@gmail.com> wrote:
+> >> > >> On Mon, Dec 7, 2009 at 8:32 AM, Jesse Barnes
+> >> > >> <jbarnes@virtuousgeek.org> wrote:
+> >> > >>> On Sat, 05 Dec 2009 23:44:55 +0000
+> >> > >>> Darren Salt <linux@youmustbejoking.demon.co.uk> wrote:
+> >> > >>>
+> >> > >>>> I demand that Andy Lutomirski may or may not have written...
+> >> > >>>>
+> >> > >>>> > Emmanuel Benisty wrote:
+> >> > >>>> [snip]
+> >> > >>>> >> I just wanted to report 2 regressions I am having now
+> >> > >>>> >> with 2.6.32. Video
+> >> > >>>> >> Screen is flickering/glitching like crazy in X. It
+> >> > >>>> >> happens whether randomly or when conky is refreshed,
+> >> > >>>> >> when the mouse cursor moves and like hell when a page is
+> >> > >>>> >> loading in the browser. Not so easy to describe this
+> >> > >>>> >> issue.
+> >> > >>>> [snip]
+> >> > >>>>
+> >> > >>>> > That sounds like FIFO underruns, which (I think) were
+> >> > >>>> > introduced when self-refresh was enabled but should have
+> >> > >>>> > been fixed. I personally have no clue how to fix them,
+> >> > >>>> > but if you told the Intel people what kind of chip you
+> >> > >>>> > have (lspci output), they can probably fix it.
+> >> > >>>>
+> >> > >>>> It also sounds like what I'm seeing on my EeePC 901. It only
+> >> > >>>> happens after resume, which makes STR a little less than
+> >> > >>>> useful; the display will, sooner or later, show a single
+> >> > >>>> colour (which is, presumably, the result of a display engine
+> >> > >>>> hang, as described in the comment immediately before
+> >> > >>>> intel_calculate_wm) and, seemingly, be stuck like that until
+> >> > >>>> power-off or reboot.
+> >> > >>>>
+> >> > >>>> Whether it *is* the same problem, I couldn't say.
+> >> > >>>>
+> >> > >>>> Needless to say, this problem goes away if I disable KMS.
+> >> > >>>
+> >> > >>> Arg, there are a few reports of this now, but I haven't been
+> >> > >>> able to reproduce it.  I'll try harder...  (FYI the upstream
+> >> > >>> bugs.freedesktop.org # for it is 24314).
+> >> > >>
+> >> > >> It *seems* that we are facing two different issues here (I
+> >> > >> don't even use S2R and the problem is there since the very
+> >> > >> first second I start X). Anyway, I have bisected the problem
+> >> > >> on my box, it turns out to be this one:
+> >> > >>
+> >> > >> drm/i915: Fix render reclock availability detection
+> >> > >>
+> >> > >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=181a5336d6cc836f05507410d66988c483ad0154
+> >> > >>
+> >> > > So, I have reverted this commit and rebuilt 2.6.32. It
+> >> > > completely solved the issue described in my first post.
+> >> > >
+> >> >
+> >> > just FTR, it looks like I'm not alone:
+> >> > http://forums.gentoo.org/viewtopic-p-6087556.html#6087556
+> >>
+> >> Great, thanks for narrowing it down.  I'll see if I can come up
+> >> with a fix.
+> >
+> > Can you give this a try?
+> >
+> > --
+> > Jesse Barnes, Intel Open Source Technology Center
+> >
+> > diff --git a/drivers/gpu/drm/i915/intel_display.c
+> > b/drivers/gpu/drm/i915/intel_d index 279dc96..5bde801 100644
+> > --- a/drivers/gpu/drm/i915/intel_display.c
+> > +++ b/drivers/gpu/drm/i915/intel_display.c
+> > @@ -3808,6 +3808,8 @@ void intel_decrease_renderclock(struct
+> > drm_device *dev) {
+> >        drm_i915_private_t *dev_priv = dev->dev_private;
+> >
+> > +       return;
+> > +
+> >        if (IS_IRONLAKE(dev))
+> >                return;
+> >
+> >
 > 
-> Ofcourse during the hashtable update a spinlock is held to
-> exclude the other writers. But I cannot hold this spinlock over
-> synchronize_rcu(), yet the other writers still need to be excluded.
+> Thanks a lot Jesse, I have tried your bugzilla patch. Anyone
+> interested, it's here:
+> http://bugzilla.kernel.org/show_bug.cgi?id=14781
 > 
-> So I probably need a mutex instead of a spinlock, but I want to
-> keep minimal overhead for the common case (when no resizing is in
-> progress).  I think I need a spinlock that can morph into a mutex ..
 
-Is the writer frequency and the possible contention so high that you
-need a spinlock at all ?
- 
-> I was thinking about using something like the code below.
-> It is sortof like a spinlock, but it's ofcourse less fair
-> than actual ticketed spinlocks.
-> 
-> I'm working off 2.6.27 at the moment, but I noticed that in
-> 2.6.28 adaptive spinning was introduced for mutexes. Is the
-> approach below still worth it with adaptive spinning or could
-> I just convert the spinlocks to mutexes with minimal extra overhead ?
-
-Test it :)
-
-If the mutex is still to heavy weight for you, then you can solve it
-without implementing another weird concurrency control:
-
-writer side:
-
-       spin_lock(&hash_lock);
-
-       if (unlikely(hash_update_active)) {
-       	  spin_unlock(&hash_lock);
-       	  wait_event_(un)interruptible(&hash_wq, !hash_update_active);
-	  spin_lock(&hash_lock);
-       }
-
-resize side:
-
-       spin_lock(&hash_lock);
-       hash_update_active = 1;
-       ....
-       spin_unlock(&hash_lock);
-       synchronize_rcu();
-       hash_update_active = 0;
-       wake_up(&hash_wq);
+Ok, I'll follow further updates in the bug.  If anyone else has
+anything to report, please do it in the bug so it doesn't get lost.
 
 Thanks,
-
-	tglx
+-- 
+Jesse Barnes, Intel Open Source Technology Center
