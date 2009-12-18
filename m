@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbZLRQgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZLRQhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932169AbZLRQgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:36:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbZLRQge
+	id S932174AbZLRQhR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:37:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZLRQhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:36:34 -0500
-Received: from www.tglx.de ([62.245.132.106]:44898 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754772AbZLRQgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:36:33 -0500
-Date: Fri, 18 Dec 2009 17:35:41 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-cc: "H. Peter Anvin" <hpa@linux.intel.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>
-Subject: RE: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
- setup
-In-Reply-To: <43F901BD926A4E43B106BF17856F07559A257FE1@orsmsx508.amr.corp.intel.com>
-Message-ID: <alpine.LFD.2.00.0912181704360.2755@localhost.localdomain>
-References: <43F901BD926A4E43B106BF17856F07559A257B5C@orsmsx508.amr.corp.intel.com> <20091217194148.GB5414@lenovo> <43F901BD926A4E43B106BF17856F07559A257E3D@orsmsx508.amr.corp.intel.com> <4B2AB1F0.1020105@linux.intel.com>
- <43F901BD926A4E43B106BF17856F07559A257FE1@orsmsx508.amr.corp.intel.com>
+	Fri, 18 Dec 2009 11:37:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38613 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754772AbZLRQhM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:37:12 -0500
+Date: Fri, 18 Dec 2009 08:36:14 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jan Beulich <JBeulich@novell.com>
+cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: slightly shorten __ticket_spin_trylock() (v3)
+In-Reply-To: <4B2BB5830200007800026AC7@vpn.id2.novell.com>
+Message-ID: <alpine.LFD.2.00.0912180822380.3712@localhost.localdomain>
+References: <4B2BB5830200007800026AC7@vpn.id2.novell.com>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,70 +28,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009, Pan, Jacob jun wrote:
-> >-----Original Message-----
-> >From: H. Peter Anvin [mailto:hpa@linux.intel.com]
-> >Sent: Thursday, December 17, 2009 2:34 PM
-> >To: Pan, Jacob jun
-> >Cc: Cyrill Gorcunov; linux-kernel@vger.kernel.org; x86@kernel.org
-> >Subject: Re: [PATCH 2/2] x86/apic: check global clockevent in lapic timer setup
-> >
-> >On 12/17/2009 02:31 PM, Pan, Jacob jun wrote:
-> >>> Wouldn't be better to operate the same way as in case of "noapictimer"
-> >>> boot option. I guess the non-pc x86 midplatforms you're mentioning
-> >>> do not use SMP ever but just to be consistent in code.
-> >>>
-> >> [[JPAN]] We do use SMP with hyper threading in Moorestown.
-> >> In that case we have a per cpu platform timer without global clockevent.
-> >> so i think we don't want the dummy lapic event. we don't want to use the
-> >> broadcast mechanism as mentioned in the comments before disabling lapic
-> >> timer.
-> >>
-> >> For moorestown, I can use x86_init.timers.setup_percpu_clockev
-> >> abstraction function so that Moorestown platform does not need to call
-> >> setup_boot_APIC_clock() if per cpu platform timer is used. so many IFs :).
-> >>
-> >> But in the case of having constant and always on LAPIC timer, we still do
-> >> not want the dummy lapic clockevent and the broadcast. we will just have
-> >> per cpu always on local apic timers without global clockevent device.
-> >
-> >OK, I'm not entirely sure I follow this, and I'm not sure someone trying
-> >to understand the code in five years would, either.  I don't really see
-> >the above translating into "we don't have a global clockevent, therefore
-> >we shouldn't initialize (but should still not disable) the local APIC
-> >timer."
-> >
-> >	-hpa
-> [[JPAN]] There is some thing wrong in my logic.
-> 
-> If we have always running lapic timer, and per cpu platform timers, we would
-> still want to set up the lapic timer without global clockevent, just without
-> calibration. perhaps use a platform specific setup_percpu_clockev() function.
-> 
-> So i don't think we need this patch at the moment, maybe we only need to do a
-> sanity check for global clockevent in calibrate_APIC_clock().
 
-No, we need to fix the whole lapic timer calibration logic first.
 
-There is no reason why we don't calibrate the lapic at the same time
-as we calibrate the TSC.
+On Fri, 18 Dec 2009, Jan Beulich wrote:
+>
+> -static __always_inline int __ticket_spin_trylock(arch_spinlock_t *lock)
+> +static __always_inline u8 __ticket_spin_trylock(arch_spinlock_t *lock)
+>  {
+>  	int tmp, new;
+>  
+> @@ -87,8 +87,7 @@ static __always_inline int __ticket_spin
+>  		     "jne 1f\n\t"
+>  		     LOCK_PREFIX "cmpxchgw %w1,%2\n\t"
+>  		     "1:"
+> -		     "sete %b1\n\t"
+> -		     "movzbl %b1,%0\n\t"
+> +		     "sete %b0\n\t"
+>  		     : "=&a" (tmp), "=&q" (new), "+m" (lock->slock)
+>  		     :
+>  		     : "memory", "cc");
+> @@ -127,7 +126,7 @@ static __always_inline void __ticket_spi
 
-Another question is why there is no way to read out the lapic clock
-frequency from some config registers or wherever the chip designers
-decided to hide that. There is no real reason why the lapic timer
-calibration needs to be extremly precise.
+Btw, I looked at that earlier, and it's still pretty sub-optimal.
 
-> Honestly, i don't fully understand how the dummy lapic event device
-> is related to the broadcast mechanism. can someone explain why we
-> register the dummy lapic clockevent?
+There's two problems - nobody actually uses the low-level code directly, 
+it goes through a 
 
-The broadcast mechanism is there in the first place to work around the
-APIC stops in deeper C-states idiocy. 
+	if (__ticket_spinlock()) {
+		..
+		return 1;
+	}
+	return 0;
 
-Then we need to support the disable lapic timer command line option
-(even on SMP) so we make use of the existing broadcast mechanism and
-register the dummy device to have a per cpu clock event device.
+logic. Which means that regardless of what the asm does, the end result 
+will still be something like this _after_ the asm:
 
-Thanks,
+        1:sete %al      # tmp
 
-	tglx
+# 0 "" 2
+#NO_APP
+        testb   %al, %al        # tmp
+        leave
+        setne   %al     #, tmp66
+
+ie you have that "sete" (in the asm) being then followed by testb/setne 
+again (from the C code wrappers).
+
+The other problem is that the compiler could actually generate better code 
+if you leave it to it, so doing
+
+        int tmp, new;
+
+        tmp = ACCESS_ONCE(lock->slock);
+        new = tmp + 0x100;
+        asm volatile("cmpb %h0,%b0\n\t"
+                     "jne 1f\n\t"
+                     LOCK_PREFIX "cmpxchgw %w2,%1\n\t"
+                     "1:"
+                     "sete %b0\n\t"
+                     : "=a" (tmp), "+m" (lock->slock)
+                     : "r" (new), "0" (tmp)
+                     : "memory", "cc");
+
+        return tmp;
+
+actually seems to result in better code:
+
+	_raw_spin_trylock:
+	        pushq   %rbp    #
+	        movl    (%rdi), %eax    #* lock, D.17152
+	        movq    %rsp, %rbp      #,
+	        leal    256(%rax), %edx #, new
+	#APP
+	# 86 "/home/torvalds/v2.6/linux/arch/x86/include/asm/spinlock.h" 1
+	        cmpb %ah,%al    # tmp
+	        jne 1f
+	        .section .smp_locks,"a"
+	 .balign 8
+	 .quad 661f
+	.previous
+	661:
+	        lock; cmpxchgw %dx,(%rdi)       # new,* lock
+	        1:sete %al      # tmp
+	
+	# 0 "" 2
+	#NO_APP
+
+Look - no "movzwl" at all at the beginning, because it turns out that the 
+spinlock is a "unsigned int" and the "movl" to load the value pairs just 
+fine with the "leal" that the compiler can do too.  And we didn't 
+artificially constrain the second register to a byte register either (but 
+the compiler still picked %dx, of course).
+
+I dunno. I still don't get the feeling that any of this actually 
+_matters_.
+
+(Btw, the above isn't actually tested - I just edited the inline asm and 
+looked at what gcc generated, I didn't _run_ any of it).
+
+			Linus
