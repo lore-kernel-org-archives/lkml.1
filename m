@@ -1,132 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZLRDaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZLRDqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZLRDaP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 22:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZLRDaL
+	id S1756311AbZLRDqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 22:46:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZLRDqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 22:30:11 -0500
-Received: from lists.laptop.org ([18.85.2.145]:58071 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752721AbZLRDaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 22:30:09 -0500
-Date: Thu, 17 Dec 2009 22:32:01 -0500
-From: Michael Stone <michael@laptop.org>
-To: Mark Seaborn <mrs@mythic-beasts.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Michael Stone <michael@laptop.org>
-Subject: [PATCH 3/3] Security: Document prctl(PR_{GET,SET}_NETWORK). (v2)
-Message-ID: <20091218033201.GC23514@heat>
-References: <20091218030056.GC3047@heat>
+	Thu, 17 Dec 2009 22:46:51 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55259 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754118AbZLRDqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 22:46:50 -0500
+Message-ID: <4B2AFBB1.3040609@kernel.org>
+Date: Fri, 18 Dec 2009 12:49:05 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091218030056.GC3047@heat>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tim Blechmann <tim@klingt.org>
+CC: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, x86@kernel.org
+Subject: Re: 2.6.32 regression: unable to handle kernel paging request
+References: <4B269765.1070703@klingt.org> <4B2A2A7D.1050506@klingt.org> <4B2A93F2.3070407@klingt.org>
+In-Reply-To: <4B2A93F2.3070407@klingt.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Explain the purpose, interface, and semantics of the
-prctl(PR_{GET,SET}_network) facility.
+Hello,
 
-Also reference some example userland clients.
+On 12/18/2009 05:26 AM, Tim Blechmann wrote:
+>> trying to bisect the kernel tree,
+>> 405d967dc70002991f8fc35c20e0d3cbc7614f63 seems to be the first bad commit.
+>> during bisecting, i recorded several boot logs, which are attached.
+> 
+> removing module-common.lds from LDFLAGS_MODULE, my machine boots fine
+> and without any error messages:
 
-Signed-off-by: Michael Stone <michael@laptop.org>
----
-  Documentation/prctl/network.txt |   72 +++++++++++++++++++++++++++++++++++++++
-  1 files changed, 72 insertions(+), 0 deletions(-)
-  create mode 100644 Documentation/prctl/network.txt
+Looks like some necessary part of module image ends up in discarded
+sections.  Before the commit, the build process kept those sections so
+it worked.  The code has been there for some time now and you're the
+first one to report it, so I suppose your .config is a bit different
+from more usual ones.  Can you please attach it?
 
-diff --git a/Documentation/prctl/network.txt b/Documentation/prctl/network.txt
-new file mode 100644
-index 0000000..b337722
---- /dev/null
-+++ b/Documentation/prctl/network.txt
-@@ -0,0 +1,72 @@
-+Purpose
-+-------
-+
-+Daniel Bernstein has observed [1] that security-conscious userland processes
-+may benefit from the ability to irrevocably remove their ability to create,
-+bind, connect to, or send messages except in the case of previously connected
-+sockets or AF_UNIX filesystem sockets.
-+
-+This facility is particularly attractive to security platforms like OLPC
-+Bitfrost [2] and to isolation programs like Rainbow [3] and Plash [4] because:
-+
-+  * it integrates well with standard techniques for writing privilege-separated
-+    Unix programs
-+
-+  * it integrates well with the need to perform limited socket I/O, e.g., when
-+    running X clients
-+
-+  * it's available to unprivileged programs
-+
-+  * it's a discretionary feature available to all of distributors,
-+    administrators, authors, and users
-+
-+  * its effect is entirely local, rather than global (like netfilter)
-+
-+  * it's simple enough to have some hope of being used correctly
-+
-+Implementation
-+--------------
-+
-+After considering implementations based on the Linux Security Module (LSM)
-+framework, on SELinux in particular, on network namespaces (CLONE_NEWNET), and
-+on direct modification of the kernel syscall and task_struct APIs, we came to
-+the conclusion that the best way to implement this feature was to extend the
-+prctl() framework with a new pair of options named PR_{GET,SET}_NETWORK. These
-+options cause prctl() to read or modify "current->network".
-+
-+Semantics
-+---------
-+
-+current->network is a flags field which is preserved across all variants of
-+fork() and exec().
-+
-+Writes which attempt to clear bits in current->network return -EPERM.
-+
-+The default value for current->network is named PR_NETWORK_OFF and is defined
-+to be 0.
-+
-+Presently, only one flag is defined: PR_NETWORK_OFF.
-+
-+More flags may be defined in the future if they become needed.
-+
-+Attempts to set undefined flags result in -EINVAL.
-+
-+When PR_NETWORK_OFF is set, implementations of syscalls which may be used by
-+the current process to perform autonomous networking will return -EPERM. For
-+example, calls to socket(), bind(), connect(), sendmsg(), and ptrace() will
-+return -EPERM except for cases we are manipulating an AF_UNIX socket whose name
-+does not begin with \0 or, in the case of sendmsg(), unless we are manipulating
-+a previously connected socket, i.e. one with
-+
-+  msg.msg_name == NULL && msg.msg_namelen == 0
-+
-+or, in the case of ptrace(), we are ptracing() a process which has all of our
-+own networking restriction flags set.
-+
-+References
-+----------
-+
-+[1]: http://cr.yp.to/unix/disablenetwork.html
-+[2]: http://wiki.laptop.org/go/OLPC_Bitfrost
-+[3]: http://wiki.laptop.org/go/Rainbow
-+[4]: http://plash.beasts.org/
+Thanks.
+
 -- 
-1.6.6.rc1
+tejun
