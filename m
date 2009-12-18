@@ -1,40 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751257AbZLRFSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbZLRFXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751257AbZLRFSO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 00:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZLRFSN
+	id S1751383AbZLRFXy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 00:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZLRFXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 00:18:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58115 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Dec 2009 00:23:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46387 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbZLRFSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 00:18:11 -0500
-Date: Fri, 18 Dec 2009 06:17:54 +0100
+	id S1751165AbZLRFXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 00:23:52 -0500
+Date: Fri, 18 Dec 2009 06:23:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com
-Subject: Re: [mm][RFC][PATCH 0/11] mm accessor updates.
-Message-ID: <20091218051754.GC417@elte.hu>
-References: <20091217084046.GA9804@basil.fritz.box>
- <1261039534.27920.67.camel@laptop>
- <20091217085430.GG9804@basil.fritz.box>
- <20091217144551.GA6819@linux.vnet.ibm.com>
- <20091217175338.GL9804@basil.fritz.box>
- <20091217190804.GB6788@linux.vnet.ibm.com>
- <20091217195530.GM9804@basil.fritz.box>
- <alpine.DEB.2.00.0912171356020.4640@router.home>
- <1261080855.27920.807.camel@laptop>
- <alpine.DEB.2.00.0912171439380.4640@router.home>
+To: Jason Garrett-Glaser <darkshikari@gmail.com>
+Cc: Kasper Sandberg <lkml@metanurb.dk>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: x264 benchmarks BFS vs CFS
+Message-ID: <20091218052344.GD417@elte.hu>
+References: <1261042383.14314.0.camel@localhost>
+ <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
+ <20091217105316.GB26010@elte.hu>
+ <1261047618.14314.6.camel@localhost>
+ <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0912171439380.4640@router.home>
+In-Reply-To: <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -48,23 +40,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
+* Jason Garrett-Glaser <darkshikari@gmail.com> wrote:
 
-> On Thu, 17 Dec 2009, Peter Zijlstra wrote:
-> 
-> > > That is why I think that the accessors are a good first step.
+> On Thu, Dec 17, 2009 at 3:00 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+> > On Thu, 2009-12-17 at 11:53 +0100, Ingo Molnar wrote:
+> >> * Jason Garrett-Glaser <darkshikari@gmail.com> wrote:
+> >>
+> >> > On Thu, Dec 17, 2009 at 1:33 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
+> >> > > well well :) nothing quite speaks out like graphs..
+> >> > >
+> >> > > http://doom10.org/index.php?topic=78.0
+> >> > >
+> >> > >
+> >> > >
+> >> > > regards,
+> >> > > Kasper Sandberg
+> >> >
+> >> > Yeah, I sent this to Mike a bit ago. ?Seems that .32 has basically tied
+> >> > it--and given the strict thread-ordering expectations of x264, you basically
+> >> > can't expect it to do any better, though I'm curious what's responsible for
+> >> > the gap in "veryslow", even with SCHED_BATCH enabled.
+> >> >
+> >> > The most odd case is that of "ultrafast", in which CFS immediately ties BFS
+> >> > when we enable SCHED_BATCH. ?We're doing some further testing to see exactly
 > >
-> > They're not, they're daft, they operate on a global resource mm_struct, 
-> > that's the whole problem, giving it a different name isn't going to solve 
-> > anything.
+> > Thats kinda besides the point.
+> >
+> > all these tunables and weirdness is _NEVER_ going to work for people.
 > 
-> It is not about naming. The accessors hide the locking mechanism for 
-> mmap_sem. Then you can change the locking in a central place.
-> 
-> The locking may even become configurable later. Maybe an embedded solution 
-> will want the existing scheme but dual quad socket may want a distributed 
-> reference counter to avoid bouncing cachelines on faults.
+> Can't individually applications request SCHED_BATCH?  Our plan was to have 
+> x264 simply detect if it was necessary (once we figure out what encoding 
+> settings result in the large gap situation) and automatically enable it for 
+> the current application.
 
-Hiding the locking is pretty much the worst design decision one can make.
+Yeah, SCHED_BATCH can be requested at will by an app. It's an unprivileged 
+operation. It gets passed down to child tasks. (You can just do it 
+unconditionally - older kernels will ignore it and give you an error code for 
+setscheduler call.)
+
+Having said that, we generally try to make things perform well without apps 
+having to switch themselves to SCHED_BATCH. Mike, do you think we can make 
+x264 perform as well (or nearly as well) under SCHED_OTHER as under 
+SCHED_BATCH?
 
 	Ingo
