@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZLRWoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbZLRWqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbZLRWoh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 17:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZLRWof
+	id S933213AbZLRWqZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 17:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933111AbZLRWqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 17:44:35 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:62341 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbZLRWoe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 17:44:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tQQMiYuPPvciVSf7f37L7dLSSv1e/2OrIPvvvUiDV+TUFAFI3wsYUSJRFO6LxpQ0p+
-         wfdk4ia4GiDsL+cvdm8UVzi2W9ibeGltdAafkDrHv6iSYxEE6P72InI9HbdLgEAULkJM
-         v6i4am87TZDHjWVtMoxlcI8lf6rqx8ZgvXy5E=
-Date: Sat, 19 Dec 2009 01:44:31 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
-	setup
-Message-ID: <20091218224431.GA8489@lenovo>
-References: <43F901BD926A4E43B106BF17856F07559A257B5C@orsmsx508.amr.corp.intel.com> <20091217194148.GB5414@lenovo> <43F901BD926A4E43B106BF17856F07559A257E3D@orsmsx508.amr.corp.intel.com> <4B2AB1F0.1020105@linux.intel.com> <43F901BD926A4E43B106BF17856F07559A257FE1@orsmsx508.amr.corp.intel.com> <alpine.LFD.2.00.0912181704360.2755@localhost.localdomain> <43F901BD926A4E43B106BF17856F07559A25826A@orsmsx508.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43F901BD926A4E43B106BF17856F07559A25826A@orsmsx508.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 18 Dec 2009 17:46:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56387 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932612AbZLRWqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 17:46:23 -0500
+Date: Sat, 19 Dec 2009 09:46:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: linux-next: manual merge of the limits tree with the  tree
+Message-Id: <20091219094616.744fc1c1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 10:13:52AM -0800, Pan, Jacob jun wrote:
-...
-> >
-> >No, we need to fix the whole lapic timer calibration logic first.
-> >
-> >There is no reason why we don't calibrate the lapic at the same time
-> >as we calibrate the TSC.
-> [[JPAN]] that seems to be much more efficient and we can have platform specific
-> way of calibration too with the x86_init abstraction.
+--Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Good idea I think!
+Hi Jiri,
 
-> >
-> >Another question is why there is no way to read out the lapic clock
-> >frequency from some config registers or wherever the chip designers
-> >decided to hide that. There is no real reason why the lapic timer
-> >calibration needs to be extremly precise.
-> >
-> [[JPAN]] x86 does have MSR_FSB_FREQ to read bus frequency then the DCR to figure
-> out LAPIC timer freq. but i guess not all CPU models have that. so having
-> the abstraction would be a plus for those do have reliable reporting of lapic
-> freq.
+Today's linux-next merge of the limits tree got a conflict in fs/exec.c
+between commit f6151dfea21496d43dbaba32cfcd9c9f404769bc ("mm: introduce
+coredump parameter structure") from the  tree and commit
+1157605c47673fc63b052df4688697695a9873d5 ("FS: use helpers for rlimits")
+from the limits tree.
 
-IIRC old apics may use independent clock signal too, though I dont think that we
-ever switch (espec novadays) to use it due to obsolescense of such chips :)
+I fixed it up (see below - thanks Andrew) and can carry the fix for a
+while.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+diff --cc fs/exec.c
+index ac52447,8a160a1..0000000
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@@ -1772,11 -1763,6 +1772,11 @@@ void do_coredump(long signr, int exit_c
+  	int helper_argc =3D 0;
+  	int dump_count =3D 0;
+  	static atomic_t core_dump_count =3D ATOMIC_INIT(0);
+ +	struct coredump_params cprm =3D {
+ +		.signr =3D signr,
+ +		.regs =3D regs,
+- 		.limit =3D current->signal->rlim[RLIMIT_CORE].rlim_cur,
+++		.limit =3D rlimit(RLIMIT_CORE),
+ +	};
+ =20
+  	audit_core_dumps(signr);
+ =20
 
-> 
-> >> Honestly, i don't fully understand how the dummy lapic event device
-> >> is related to the broadcast mechanism. can someone explain why we
-> >> register the dummy lapic clockevent?
-> >
-> >The broadcast mechanism is there in the first place to work around the
-> >APIC stops in deeper C-states idiocy.
-> >
-> >Then we need to support the disable lapic timer command line option
-> >(even on SMP) so we make use of the existing broadcast mechanism and
-> >register the dummy device to have a per cpu clock event device.
-> >
-> [[JPAN]] thanks for the explanation. so if we have per cpu timer that is
-> always-on, and don't have a broadcast timer, then the dummy device would not
-> be needed, correct?
-> 
-> 
+--Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr
+Content-Type: application/pgp-signature
 
-Hmm... We may be using nmi detector, so I think we still need dummy clockevent
-device to send broadcast "time" IPI, or per-cpu timer interrupt handler have
-to call the local apic interrupt routine. At least that is how I imagine this
-scheme :)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> >Thanks,
-> >
-> >	tglx
-> 
-	-- Cyrill
+iEYEARECAAYFAkssBjgACgkQjjKRsyhoI8y/oACeKhKBPTmT+1fxvA7PVX9WsdOG
+0J0An1qtMihKhxYO8ajhnOY7RuJwTYWD
+=lyKk
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr--
