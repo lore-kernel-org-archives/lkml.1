@@ -1,114 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZLRNPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZLRNVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZLRNPO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:15:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZLRNPM
+	id S1753325AbZLRNVq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbZLRNVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 08:15:12 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:43505
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751050AbZLRNPJ (ORCPT
+	Fri, 18 Dec 2009 08:21:45 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:61477 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbZLRNVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 08:15:09 -0500
-X-SpamScore: -21
-X-BigFish: VPS-21(z34a4jzab9bh1432R98dN1447Rzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KUUNGY-01-3I8-02
-X-M-MSG: 
-Date: Fri, 18 Dec 2009 14:14:58 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Shaun Ruffell <sruffell@digium.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: Do not add notifier when dma debugging is
- disabled.
-Message-ID: <20091218131458.GA14679@amd.com>
-References: <4B2AC624.3080201@digium.com>
+	Fri, 18 Dec 2009 08:21:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=xf0Z1EuUnblNKP9IcFf0Ce1C+babfr4RMWEdlvUwBbMLzFyL9/Rn1lKFz4wFUKno1V
+         QX7xkxXw7ijQOsqdJxiussfQswzaNCwc3WUVVCV9z41XqqoyHbcWIOzU3NMr4K68dRM2
+         I114WkBvZsvGH/z8VJoYUzVBYAg52u9UnNIaA=
+Message-ID: <4B2B8261.9000105@gmail.com>
+Date: Fri, 18 Dec 2009 21:23:45 +0800
+From: "Helight.Xu" <helight.xu@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <4B2AC624.3080201@digium.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Dec 2009 13:14:58.0716 (UTC) FILETIME=[194BF5C0:01CA7FE4]
-X-Reverse-DNS: unknown
+To: ibm-acpi-devel@lists.sourceforge.net,
+       =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] thinkpad_acpi: fix a build error
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 06:00:36PM -0600, Shaun Ruffell wrote:
-> If CONFIG_HAVE_DMA_API_DEBUG is defined and "dma_debug=off" is
-> specified on the kernel command line, when you detach a driver from a
-> device you can cause the following NULL pointer dereference:
-> 
-> BUG: unable to handle kernel NULL pointer dereference at (null)
-> IP: [<c0580d35>] dma_debug_device_change+0x5d/0x117
-> 
-> The problem is that the dma_debug_device_change notifier function is
-> added to the bus notifier chain even though the dma_entry_hash array
-> was never initialized.  If dma debugging is disabled, this patch both
-> prevents dma_debug_device_change notifiers from being added to the
-> chain, and additionally ensures that the dma_entry_hash array is always
-> initialized to a valid state.
+This patch fixes the following build error:
 
-Thanks for the fix. I applied a slightly different version to
-dma-debug/fixes branch of my tree. See below for the patch I applied.
+ Building modules, stage 2.
+ MODPOST 1834 modules
+ERROR: "snd_card_create" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+ERROR: "snd_ctl_notify" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+ERROR: "snd_ctl_boolean_mono_info" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+ERROR: "snd_ctl_new1" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+ERROR: "snd_card_free" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+ERROR: "snd_card_register" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
+ERROR: "snd_ctl_add" [drivers/platform/x86/thinkpad_acpi.ko] undefined!
 
->From d9c18bf39cd45ff1e68b9b357eca08b4556d66c1 Mon Sep 17 00:00:00 2001
-From: Shaun Ruffell <sruffell@digium.com>
-Date: Thu, 17 Dec 2009 18:00:36 -0600
-Subject: [PATCH 123/123] dma-debug: Do not add notifier when dma debugging is disabled.
 
-If CONFIG_HAVE_DMA_API_DEBUG is defined and "dma_debug=off" is
-specified on the kernel command line, when you detach a driver from a
-device you can cause the following NULL pointer dereference:
 
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<c0580d35>] dma_debug_device_change+0x5d/0x117
-
-The problem is that the dma_debug_device_change notifier function is
-added to the bus notifier chain even though the dma_entry_hash array
-was never initialized.  If dma debugging is disabled, this patch both
-prevents dma_debug_device_change notifiers from being added to the
-chain, and additionally ensures that the dma_debug_device_change
-notifier function is a no-op.
-
-Signed-off-by: Shaun Ruffell <sruffell@digium.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Signed-off-by: Helight.Xu <helight.xu@gmail.com>
+Tested-by: Helight.Xu 
+<helight.xu@gmail.com>                                                    
 ---
- lib/dma-debug.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/platform/x86/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index d9b08e0..7399744 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -676,6 +676,8 @@ static int dma_debug_device_change(struct notifier_block *nb,
- 	struct device *dev = data;
- 	int count;
- 
-+	if (global_disable)
-+		return;
- 
- 	switch (action) {
- 	case BUS_NOTIFY_UNBOUND_DRIVER:
-@@ -697,6 +699,9 @@ void dma_debug_add_bus(struct bus_type *bus)
- {
- 	struct notifier_block *nb;
- 
-+	if (global_disable)
-+		return;
-+
- 	nb = kzalloc(sizeof(struct notifier_block), GFP_KERNEL);
- 	if (nb == NULL) {
- 		pr_err("dma_debug_add_bus: out of memory\n");
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index fc5bf9d..cda6fb6 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -215,6 +215,7 @@ config THINKPAD_ACPI
+        depends on ACPI
+        depends on INPUT
+        depends on RFKILL || RFKILL = n
++       depends on SND
+        select BACKLIGHT_LCD_SUPPORT
+        select BACKLIGHT_CLASS_DEVICE
+        select HWMON
 -- 
-1.6.5.4
+1.6.5.3
 
+-- 
+Zhenwen Xu - Seven Helight
+Home Page: http://zhwen.org
 
