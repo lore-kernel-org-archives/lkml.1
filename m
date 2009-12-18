@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbZLRU6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbZLRU5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932855AbZLRU6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 15:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932936AbZLRU6Z
+	id S932901AbZLRU5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 15:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932905AbZLRU5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 15:58:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57501 "EHLO hera.kernel.org"
+	Fri, 18 Dec 2009 15:57:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57535 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932825AbZLRU4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 15:56:42 -0500
-Message-ID: <4B2BEC48.8030903@kernel.org>
-Date: Fri, 18 Dec 2009 12:55:36 -0800
+	id S932921AbZLRU5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 15:57:02 -0500
+Message-ID: <4B2BEC4C.2010406@kernel.org>
+Date: Fri, 18 Dec 2009 12:55:40 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -21,7 +21,8 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: [PATCH 10/12] pci: pci_bridge_release_res -v2
+Subject: [PATCH 11/12] pciehp: add support for bridge resource reallocation
+ -v2
 References: <4B2BE9DD.3040504@kernel.org>
 In-Reply-To: <4B2BE9DD.3040504@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -31,84 +32,88 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-prepare for pciehp_realloc
+From:  Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
-it will clear the resource size for bridge
+With this patch, pciehp driver try to clear PCI bridge resources to
+parent bridge (root port or switch downstream port) of the slot
 
--v2: patrick Keller pointed out need to export it...
+so we can shrink pci bridge resource for those port
 
+This feature is enabled when 'pciehp_realloc' option is specified.
+
+-v2: make it could be appiled after Yinghai patchset that touch pci bridge resource
+     also remove poweron check, because pci_bridge_release_res will check child at first
+
+Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- drivers/pci/setup-bus.c |   43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci.h     |    1 +
- 2 files changed, 44 insertions(+)
+ drivers/pci/hotplug/pciehp.h      |    1 +
+ drivers/pci/hotplug/pciehp_core.c |    7 +++++++
+ drivers/pci/hotplug/pciehp_pci.c  |    4 ++++
+ 3 files changed, 12 insertions(+)
 
-Index: linux-2.6/drivers/pci/setup-bus.c
+Index: linux-2.6/drivers/pci/hotplug/pciehp.h
 ===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -737,6 +737,49 @@ static void __ref __pci_bridge_assign_re
- 		break;
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp.h
++++ linux-2.6/drivers/pci/hotplug/pciehp.h
+@@ -43,6 +43,7 @@ extern int pciehp_poll_mode;
+ extern int pciehp_poll_time;
+ extern int pciehp_debug;
+ extern int pciehp_force;
++extern int pciehp_realloc;
+ extern struct workqueue_struct *pciehp_wq;
+ 
+ #define dbg(format, arg...)						\
+Index: linux-2.6/drivers/pci/hotplug/pciehp_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_core.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_core.c
+@@ -41,6 +41,7 @@ int pciehp_debug;
+ int pciehp_poll_mode;
+ int pciehp_poll_time;
+ int pciehp_force;
++int pciehp_realloc;
+ struct workqueue_struct *pciehp_wq;
+ 
+ #define DRIVER_VERSION	"0.4"
+@@ -55,10 +56,12 @@ module_param(pciehp_debug, bool, 0644);
+ module_param(pciehp_poll_mode, bool, 0644);
+ module_param(pciehp_poll_time, int, 0644);
+ module_param(pciehp_force, bool, 0644);
++module_param(pciehp_realloc, bool, 0644);
+ MODULE_PARM_DESC(pciehp_debug, "Debugging mode enabled or not");
+ MODULE_PARM_DESC(pciehp_poll_mode, "Using polling mechanism for hot-plug events or not");
+ MODULE_PARM_DESC(pciehp_poll_time, "Polling mechanism frequency, in seconds");
+ MODULE_PARM_DESC(pciehp_force, "Force pciehp, even if _OSC and OSHP are missing");
++MODULE_PARM_DESC(pciehp_realloc, "Realloc resources for slot's parent bridge");
+ 
+ #define PCIE_MODULE_NAME "pciehp"
+ 
+@@ -297,6 +300,10 @@ static int pciehp_probe(struct pcie_devi
+ 	if (!occupied && poweron && POWER_CTRL(ctrl))
+ 		pciehp_power_off_slot(slot);
+ 
++	/* Release I/O window of the slots's parent bridge */
++	if (pciehp_realloc)
++		pci_bridge_release_res(dev->port->subordinate);
++
+ 	return 0;
+ 
+ err_out_free_ctrl_slot:
+Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
++++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+@@ -166,5 +166,9 @@ int pciehp_unconfigure_device(struct slo
+ 		pci_dev_put(temp);
  	}
+ 
++	/* Release I/O window of the slots's parent bridge */
++	if (pciehp_realloc)
++		pci_bridge_release_res(parent);
++
+ 	return rc;
  }
-+
-+void pci_bridge_release_res(struct pci_bus *bus)
-+{
-+	int idx;
-+	bool changed = false;
-+	struct pci_dev *dev;
-+	struct resource *r;
-+
-+	/* The root bus? */
-+	if (!bus->self)
-+		return;
-+
-+	/* for pci bridges res only */
-+	dev = bus->self;
-+	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
-+		return;
-+
-+	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES + 3;
-+	     idx++) {
-+		r = &dev->resource[idx];
-+		if (!r->parent)
-+			continue;
-+
-+		/* if there are children under that, we should not release it */
-+		if (r->child)
-+			continue;
-+
-+		if (!release_resource(r)) {
-+			dev_printk(KERN_DEBUG, &dev->dev,
-+				 "resource %d %pR released\n", idx, r);
-+			/* old size is not kept */
-+			r->start = 0;
-+			r->end   = 0;
-+			r->flags = 0;
-+			changed = true;
-+		}
-+	}
-+
-+	if (changed)
-+		pci_setup_bridge(bus);
-+}
-+EXPORT_SYMBOL_GPL(pci_bridge_release_res);
-+
- static void release_child_resources(struct resource *r)
- {
- 	struct resource *p;
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -770,6 +770,7 @@ int pci_vpd_truncate(struct pci_dev *dev
- void pci_bus_assign_resources(const struct pci_bus *bus);
- void pci_bus_size_bridges(struct pci_bus *bus);
- int pci_claim_resource(struct pci_dev *, int);
-+void pci_bridge_release_res(struct pci_bus *bus);
- void pci_assign_unassigned_resources(void);
- void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
- void pdev_enable_device(struct pci_dev *);
 
 
