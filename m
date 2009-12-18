@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZLRPwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbZLRPyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbZLRPwv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZLRPwt
+	id S1754371AbZLRPyt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZLRPyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:52:49 -0500
-Received: from bitwagon.com ([74.82.39.175]:59958 "HELO bitwagon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753030AbZLRPws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:52:48 -0500
-Message-ID: <4B2BA543.6070302@bitwagon.com>
-Date: Fri, 18 Dec 2009 07:52:35 -0800
-From: John Reiser <jreiser@bitwagon.com>
-Organization: -
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: tracing: gcc for x86 calling mcount with -fomit-frame-pointer
-References: <4B2A689D.2050202@bitwagon.com> <87vdg5s9tw.fsf@basil.nowhere.org>
-In-Reply-To: <87vdg5s9tw.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 18 Dec 2009 10:54:49 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47973 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbZLRPys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:54:48 -0500
+Subject: Re: workqueue thing
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tejun Heo <tj@kernel.org>, awalls@radix.net, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, mingo@elte.hu, akpm@linux-foundation.org,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org
+In-Reply-To: <alpine.LFD.2.00.0912180747030.3712@localhost.localdomain>
+References: <1261141088-2014-1-git-send-email-tj@kernel.org>
+	 <1261143924.20899.169.camel@laptop>
+	 <alpine.LFD.2.00.0912180724580.3712@localhost.localdomain>
+	 <1261150788.20899.299.camel@laptop>
+	 <alpine.LFD.2.00.0912180747030.3712@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 18 Dec 2009 16:53:20 +0100
+Message-ID: <1261151600.20899.316.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/17/2009 11:02 AM, Andi Kleen wrote:
-> John Reiser<jreiser@bitwagon.com>  writes:
->
->> On x86 and x86_64, current "gcc -pg -fomit-frame-pointer" is not allowed.
->> This experimental patch against:
->>    http://mirrors.kernel.org/fedora/releases/12/Fedora/source/SRPMS/gcc-4.4.2-7.fc12.src.rpm
+On Fri, 2009-12-18 at 07:47 -0800, Linus Torvalds wrote:
+> 
+> On Fri, 18 Dec 2009, Peter Zijlstra wrote:
+> > 
+> > That's exactly what it does..
+> > 
+> > 4e6045f134784f4b158b3c0f7a282b04bd816887
+> > eb13ba873881abd5e15af784756a61af635e665e
+> > a67da70dc0955580665f5444f318b92e69a3c272
+> 
+> Ahh. Never even triggered my "I've seen those patches".
 
-> I submitted a similar patch for all of this some time [ago] to gcc,
-> and also resubmitted it recently.  ...  they told me it's queued in some way
- > for the next stage 1.  ...
+Hehe, with the volume going through these days I'm amazed at the amount
+you do remember ;-)
 
-> I also have a glibc patch for this.
-
-I found  http://gcc.gnu.org/ml/gcc/2009-11/msg00565.html .
-Where is the glibc patch?  Reports by users of successful experiences
-can help shorten the cycle for official changes.
-
--- 
