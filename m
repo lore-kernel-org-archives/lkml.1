@@ -1,191 +1,384 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZLRRl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZLRRnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZLRRl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZLRRl1
+	id S1755345AbZLRRnA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZLRRm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:41:27 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:18871 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753963AbZLRRlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:41:25 -0500
-Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAD5NK0urR7Hu/2dsb2JhbAC+SJcnhC4E
-X-IronPort-AV: E=Sophos;i="4.47,419,1257120000"; 
-   d="scan'208";a="281410069"
-From: Roland Dreier <rdreier@cisco.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] anonfd: Make file read-only if fops->write is not set
-References: <adaws0k3kd8.fsf@roland-alpha.cisco.com>
-	<20091218061049.GI18217@ZenIV.linux.org.uk>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 18 Dec 2009 09:41:24 -0800
-In-Reply-To: <20091218061049.GI18217@ZenIV.linux.org.uk> (Al Viro's message of
-	"Fri, 18 Dec 2009 06:10:49 +0000")
-Message-ID: <adak4wk2n97.fsf_-_@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Fri, 18 Dec 2009 12:42:59 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:57105 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbZLRRm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 12:42:57 -0500
+Date: Fri, 18 Dec 2009 17:42:50 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+	due to "e084b - page-allocator: preserve PFN ordering when
+	__GFP_COLD is set"
+Message-ID: <20091218174250.GC21194@csn.ul.ie>
+References: <4B1D13B5.9020802@linux.vnet.ibm.com> <20091207150906.GC14743@csn.ul.ie> <4B1E93EE.60602@linux.vnet.ibm.com> <4B210754.2020601@linux.vnet.ibm.com> <20091211112009.GC30670@csn.ul.ie> <4B225B9E.2020702@linux.vnet.ibm.com> <4B2B85C7.80502@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Dec 2009 17:41:24.0596 (UTC) FILETIME=[519FAB40:01CA8009]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B2B85C7.80502@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems a couple places such as arch/ia64/kernel/perfmon.c and
-drivers/infiniband/core/uverbs_main.c could use anon_inode_getfile()
-instead of a private pseudo-fs + alloc_file(), if only there were a way
-to get a read-only file.  So provide this by having anon_inode_getfile()
-create a read-only file if the fops->write passed in is NULL.
+On Fri, Dec 18, 2009 at 02:38:15PM +0100, Christian Ehrhardt wrote:
+> Christian Ehrhardt wrote:
+>> Mel Gorman wrote:
+>> [...]
+>>>>  
+>>>
+>>> One way of finding out if cache hottness was the problem would be to  
+>>> profile
+>>> for cache misses and see if there are massive differences with and  
+>>> without
+>>> the patch. Is that an option?
+>>>   
+>> It is an option to verify things, but as mentioned above I would  
+>> expect an increase amounts of consumed cycles per kb which I don't see.
+>> I'll track caches anyway to be sure.
+>>
+>> My personal current assumption is that either there is some time lost  
+>> from the read syscall until the A event blocktrace tracks or I'm wrong  
+>> with my assumption about user processes and iozone runs "slower".
+>>
+>
+> After I was able to verify that the time is lost above the block device  
+> layer I ran further tests to check out where the additional latency due  
+> to commit e084b occurs.
+> With "strace -frT -e trace=open,close,read,write" I could isolate the  
+> continuous stream of read calls done by the iozone child process.
+> In those data two things were revealed:
+> a) The time is lost between read and Block device enter (not e.g. due to  
+> slow userspace execution or scheduling effects)
+>     Time spent in userspace until the next read call is almost the same, 
+> but the average time spent "inside" the read call increases  from 788µs 
+> to 3278µs
+> b) The time is lost in a few big peaks
+>    The majority of read calls are ~500-750µs in both cases, but there is 
+> a slight shift of approximately 8% that occur now as durations between 
+> 15000 and 60000µs
+>
+> As mentioned before there is no significant increase of spent cpu cycles  
+> - therefore I watched out how the read call could end up in sleeps  
+> (latency but not used cycles).
+> I found that there is a chance to run into "congestion_wait" in case  
+> __alloc_pages_direct_reclaim() was able to free some pages with  
+> try_to_free_pages() but doesn't get a page in the subsequent  
+> get_page_from_freelist().
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- > Good grief, what for?  We are already passing O_NDELAY in flags argument,
- > why not add O_RDWR/O_RDONLY to it?  It's not as if we had that many
- > callers, after all...
+This is true although it was also the case before the patch.
 
-fair enough, I wasn't sure if I really liked changing the meaning of the
-flags argument without any indication of that in the function signature,
-but definitely the code is nicer.
+> To get details about that I patched in some simple counters and  
+> ktime_get based timings. The results are impressive and point exactly  
+> towards the congestion_wait theory
+>
+> The following data is again taken with iozone 1 thread random read in a  
+> very low memory environment, the counters were zeroed before starting 
+> iozone
+> Bad = the kernel just with commit e084b, good = kernel one commit before  
+> e084b. The throughput in good case while taking this data was  
+> approximately ~168% of that of the bad case.
+>
+>                                         GOOD     BAD
+> perf_count_congestion_wait                245    1388
+> perf_count_pages_direct_reclaim         10993    5365
+> perf_count_failed_pages_direct_reclaim      0    1090
+> Note - the data also shows that the average time spent in the  
+> f_op->aio_read call issued by do_sync_read increases by 68.5% which is  
+> directly inversely proportional to the average loss in throughput.
+>
+> This lets me conclude that patch e084b causes the system to run into  
+> congestion_wait after the semi-failed call to 
+> __alloc_pages_direct_reclaim.
 
-so would something like this make sense?  if so I'll send follow-ups
-converting ia64 / perfmon and infiniband / uverbs to anon_inodes.
+You mention that the "GOOD" kernel is one commit before e084b but can
+you test with just that patch reverted please? As the patch is only
+about list manipulation, I'm failing to see how it can affect
+congestion_wait().
 
- fs/anon_inodes.c    |   12 ++++++++++--
- fs/eventfd.c        |    2 +-
- fs/eventpoll.c      |    2 +-
- fs/signalfd.c       |    2 +-
- fs/timerfd.c        |    2 +-
- kernel/perf_event.c |    2 +-
- virt/kvm/kvm_main.c |    4 ++--
- 7 files changed, 17 insertions(+), 9 deletions(-)
+> Unfortunately I don't understand memory management enough to find the  
+> relation between e084b actually changing the order and position of freed  
+> pages in the LRU list to __alloc_pages_direct_reclaim not getting pages  
+> as effectively as before.
 
-diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
-index 2c99459..598237e 100644
---- a/fs/anon_inodes.c
-+++ b/fs/anon_inodes.c
-@@ -89,11 +89,19 @@ struct file *anon_inode_getfile(const char *name,
- 	struct qstr this;
- 	struct path path;
- 	struct file *file;
-+	fmode_t mode;
- 	int error;
- 
- 	if (IS_ERR(anon_inode_inode))
- 		return ERR_PTR(-ENODEV);
- 
-+	switch (flags & O_ACCMODE) {
-+	case O_RDONLY: mode = FMODE_READ;		break;
-+	case O_WRONLY: mode = FMODE_WRITE;		break;
-+	case O_RDWR:   mode = FMODE_READ | FMODE_WRITE;	break;
-+	default:       return ERR_PTR(-EINVAL);
-+	}
-+
- 	if (fops->owner && !try_module_get(fops->owner))
- 		return ERR_PTR(-ENOENT);
- 
-@@ -121,13 +129,13 @@ struct file *anon_inode_getfile(const char *name,
- 	d_instantiate(path.dentry, anon_inode_inode);
- 
- 	error = -ENFILE;
--	file = alloc_file(&path, FMODE_READ | FMODE_WRITE, fops);
-+	file = alloc_file(&path, mode, fops);
- 	if (!file)
- 		goto err_dput;
- 	file->f_mapping = anon_inode_inode->i_mapping;
- 
- 	file->f_pos = 0;
--	file->f_flags = O_RDWR | (flags & O_NONBLOCK);
-+	file->f_flags = flags & (O_ACCMODE | O_NONBLOCK);
- 	file->f_version = 0;
- 	file->private_data = priv;
- 
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 8b47e42..d26402f 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -339,7 +339,7 @@ struct file *eventfd_file_create(unsigned int count, int flags)
- 	ctx->flags = flags;
- 
- 	file = anon_inode_getfile("[eventfd]", &eventfd_fops, ctx,
--				  flags & EFD_SHARED_FCNTL_FLAGS);
-+				  O_RDWR | (flags & EFD_SHARED_FCNTL_FLAGS));
- 	if (IS_ERR(file))
- 		eventfd_free_ctx(ctx);
- 
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index 366c503..bd056a5 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -1206,7 +1206,7 @@ SYSCALL_DEFINE1(epoll_create1, int, flags)
- 	 * a file structure and a free file descriptor.
- 	 */
- 	error = anon_inode_getfd("[eventpoll]", &eventpoll_fops, ep,
--				 flags & O_CLOEXEC);
-+				 O_RDWR | (flags & O_CLOEXEC));
- 	if (error < 0)
- 		ep_free(ep);
- 
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index b07565c..1dabe4e 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -236,7 +236,7 @@ SYSCALL_DEFINE4(signalfd4, int, ufd, sigset_t __user *, user_mask,
- 		 * anon_inode_getfd() will install the fd.
- 		 */
- 		ufd = anon_inode_getfd("[signalfd]", &signalfd_fops, ctx,
--				       flags & (O_CLOEXEC | O_NONBLOCK));
-+				       O_RDWR | (flags & (O_CLOEXEC | O_NONBLOCK)));
- 		if (ufd < 0)
- 			kfree(ctx);
- 	} else {
-diff --git a/fs/timerfd.c b/fs/timerfd.c
-index b042bd7..1bfc95a 100644
---- a/fs/timerfd.c
-+++ b/fs/timerfd.c
-@@ -200,7 +200,7 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
- 	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
- 
- 	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx,
--			       flags & TFD_SHARED_FCNTL_FLAGS);
-+			       O_RDWR | (flags & TFD_SHARED_FCNTL_FLAGS));
- 	if (ufd < 0)
- 		kfree(ctx);
- 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 97d1a3d..67eed80 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -4720,7 +4720,7 @@ SYSCALL_DEFINE5(perf_event_open,
- 	if (IS_ERR(event))
- 		goto err_put_context;
- 
--	err = anon_inode_getfd("[perf_event]", &perf_fops, event, 0);
-+	err = anon_inode_getfd("[perf_event]", &perf_fops, event, O_RDWR);
- 	if (err < 0)
- 		goto err_free_put_context;
- 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index e1f2bf8..b5af881 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1177,7 +1177,7 @@ static struct file_operations kvm_vcpu_fops = {
-  */
- static int create_vcpu_fd(struct kvm_vcpu *vcpu)
- {
--	return anon_inode_getfd("kvm-vcpu", &kvm_vcpu_fops, vcpu, 0);
-+	return anon_inode_getfd("kvm-vcpu", &kvm_vcpu_fops, vcpu, O_RDWR);
- }
- 
- /*
-@@ -1638,7 +1638,7 @@ static int kvm_dev_ioctl_create_vm(void)
- 	kvm = kvm_create_vm();
- 	if (IS_ERR(kvm))
- 		return PTR_ERR(kvm);
--	fd = anon_inode_getfd("kvm-vm", &kvm_vm_fops, kvm, 0);
-+	fd = anon_inode_getfd("kvm-vm", &kvm_vm_fops, kvm, O_RDWR);
- 	if (fd < 0)
- 		kvm_put_kvm(kvm);
- 
+Off-hand, neither can I. I regret that I'm going off-line for the
+Christmas very soon and I'll be in the middle of nowhere with no
+internet connection or test machines in the interim. It's going to be
+the new year before I get to look at this properly.
+
+Even if this patch is not the real problem, your instrumentation patches
+will help pin down the real problem. Thanks and sorry I'll be delayed in
+getting back to you properly.
+
+> Ideas and comments welcome!
+>
+> Kind regards,
+> Christian
+>
+> P.S: attached are the three patches I used to get those new numbers
+>
+>
+> -- 
+>
+> Grüsse / regards, Christian Ehrhardt
+> IBM Linux Technology Center, Linux Performance on System z 
+>
+
+> Index: linux-2.6-git-2.6.31-bisect2/fs/read_write.c
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/fs/read_write.c
+> +++ linux-2.6-git-2.6.31-bisect2/fs/read_write.c
+> @@ -249,25 +249,37 @@ static void wait_on_retry_sync_kiocb(str
+>  	__set_current_state(TASK_RUNNING);
+>  }
+>  
+> +unsigned long perf_count_do_sync_read_calls_aio_read = 0;
+> +unsigned long perf_tsum_do_sync_read_calls_aio_read = 0;
+> +unsigned long perf_count_do_sync_read_calls_wait_on_sync_kiocb = 0;
+> +unsigned long perf_tsum_do_sync_read_calls_wait_on_sync_kiocb = 0;
+>  ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
+>  {
+>  	struct iovec iov = { .iov_base = buf, .iov_len = len };
+>  	struct kiocb kiocb;
+>  	ssize_t ret;
+> +	ktime_t tv64_pre;
+>  
+>  	init_sync_kiocb(&kiocb, filp);
+>  	kiocb.ki_pos = *ppos;
+>  	kiocb.ki_left = len;
+>  
+>  	for (;;) {
+> +		perf_count_do_sync_read_calls_aio_read++;
+> +		tv64_pre = ktime_get();
+>  		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+> +		perf_tsum_do_sync_read_calls_aio_read += ktime_sub(ktime_get(),tv64_pre).tv64;
+>  		if (ret != -EIOCBRETRY)
+>  			break;
+>  		wait_on_retry_sync_kiocb(&kiocb);
+>  	}
+>  
+> -	if (-EIOCBQUEUED == ret)
+> +	if (-EIOCBQUEUED == ret) {
+> +		perf_count_do_sync_read_calls_wait_on_sync_kiocb++;
+> +		tv64_pre = ktime_get();
+>  		ret = wait_on_sync_kiocb(&kiocb);
+> +		perf_tsum_do_sync_read_calls_wait_on_sync_kiocb += ktime_sub(ktime_get(),tv64_pre).tv64;
+> +	}
+>  	*ppos = kiocb.ki_pos;
+>  	return ret;
+>  }
+> Index: linux-2.6-git-2.6.31-bisect2/kernel/sysctl.c
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/kernel/sysctl.c
+> +++ linux-2.6-git-2.6.31-bisect2/kernel/sysctl.c
+> @@ -257,6 +257,10 @@ extern unsigned long perf_count_pages_di
+>  extern unsigned long perf_count_failed_pages_direct_reclaim;
+>  extern unsigned long perf_count_do_generic_file_read_calls_page_cache_alloc_cold;
+>  extern unsigned long perf_tsum_do_generic_file_read_calls_page_cache_alloc_cold;
+> +extern unsigned long perf_count_do_sync_read_calls_aio_read;
+> +extern unsigned long perf_tsum_do_sync_read_calls_aio_read;
+> +extern unsigned long perf_count_do_sync_read_calls_wait_on_sync_kiocb;
+> +extern unsigned long perf_tsum_do_sync_read_calls_wait_on_sync_kiocb;
+>  static struct ctl_table perf_table[] = {
+>  	{
+>  		.ctl_name	= CTL_UNNUMBERED,
+> @@ -297,6 +301,38 @@ static struct ctl_table perf_table[] = {
+>  		.maxlen		= sizeof(unsigned long),
+>  		.mode           = 0666,
+>  		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_count_do_sync_read_calls_aio_read",
+> +		.data           = &perf_count_do_sync_read_calls_aio_read,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.mode           = 0666,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_tsum_do_sync_read_calls_aio_read",
+> +		.data           = &perf_tsum_do_sync_read_calls_aio_read,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.mode           = 0666,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_count_do_sync_read_calls_wait_on_sync_kiocb",
+> +		.data           = &perf_count_do_sync_read_calls_wait_on_sync_kiocb,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.mode           = 0666,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_tsum_do_sync_read_calls_wait_on_sync_kiocb",
+> +		.data           = &perf_tsum_do_sync_read_calls_wait_on_sync_kiocb,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.mode           = 0666,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+>  	},
+>  	{ .ctl_name = 0 }
+>  };
+
+> Index: linux-2.6-git-2.6.31-bisect2/include/linux/sysctl.h
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/include/linux/sysctl.h
+> +++ linux-2.6-git-2.6.31-bisect2/include/linux/sysctl.h
+> @@ -69,6 +69,7 @@ enum
+>  	CTL_BUS=8,		/* Busses */
+>  	CTL_ABI=9,		/* Binary emulation */
+>  	CTL_CPU=10,		/* CPU stuff (speed scaling, etc) */
+> +	CTL_PERF=11,		/* Performance counters and timer sums for debugging */
+>  	CTL_ARLAN=254,		/* arlan wireless driver */
+>  	CTL_S390DBF=5677,	/* s390 debug */
+>  	CTL_SUNRPC=7249,	/* sunrpc debug */
+> Index: linux-2.6-git-2.6.31-bisect2/kernel/sysctl.c
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/kernel/sysctl.c
+> +++ linux-2.6-git-2.6.31-bisect2/kernel/sysctl.c
+> @@ -177,6 +177,7 @@ static struct ctl_table_root sysctl_tabl
+>  	.default_set.list = LIST_HEAD_INIT(root_table_header.ctl_entry),
+>  };
+>  
+> +static struct ctl_table perf_table[];
+>  static struct ctl_table kern_table[];
+>  static struct ctl_table vm_table[];
+>  static struct ctl_table fs_table[];
+> @@ -230,6 +231,13 @@ static struct ctl_table root_table[] = {
+>  		.mode		= 0555,
+>  		.child		= dev_table,
+>  	},
+> +	{
+> +		.ctl_name	= CTL_PERF,
+> +		.procname	= "perf",
+> +		.mode		= 0555,
+> +		.child		= perf_table,
+> +	},
+> +
+>  /*
+>   * NOTE: do not add new entries to this table unless you have read
+>   * Documentation/sysctl/ctl_unnumbered.txt
+> @@ -244,6 +252,19 @@ static int min_wakeup_granularity_ns;
+>  static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
+>  #endif
+>  
+> +extern unsigned long perf_count_congestion_wait;
+> +static struct ctl_table perf_table[] = {
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_count_congestion_wait",
+> +		.data           = &perf_count_congestion_wait,
+> +		.mode           = 0666,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+> +	{ .ctl_name = 0 }
+> +};
+> +
+>  static struct ctl_table kern_table[] = {
+>  #ifdef CONFIG_SCHED_DEBUG
+>  	{
+> Index: linux-2.6-git-2.6.31-bisect2/mm/backing-dev.c
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/mm/backing-dev.c
+> +++ linux-2.6-git-2.6.31-bisect2/mm/backing-dev.c
+> @@ -305,6 +305,7 @@ void set_bdi_congested(struct backing_de
+>  }
+>  EXPORT_SYMBOL(set_bdi_congested);
+>  
+> +unsigned long perf_count_congestion_wait = 0;
+>  /**
+>   * congestion_wait - wait for a backing_dev to become uncongested
+>   * @sync: SYNC or ASYNC IO
+> @@ -320,6 +321,7 @@ long congestion_wait(int sync, long time
+>  	DEFINE_WAIT(wait);
+>  	wait_queue_head_t *wqh = &congestion_wqh[sync];
+>  
+> +	perf_count_congestion_wait++;
+>  	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
+>  	ret = io_schedule_timeout(timeout);
+>  	finish_wait(wqh, &wait);
+
+> Index: linux-2.6-git-2.6.31-bisect2/kernel/sysctl.c
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/kernel/sysctl.c
+> +++ linux-2.6-git-2.6.31-bisect2/kernel/sysctl.c
+> @@ -253,6 +253,8 @@ static int max_wakeup_granularity_ns = N
+>  #endif
+>  
+>  extern unsigned long perf_count_congestion_wait;
+> +extern unsigned long perf_count_pages_direct_reclaim;
+> +extern unsigned long perf_count_failed_pages_direct_reclaim;
+>  static struct ctl_table perf_table[] = {
+>  	{
+>  		.ctl_name	= CTL_UNNUMBERED,
+> @@ -262,6 +264,22 @@ static struct ctl_table perf_table[] = {
+>  		.maxlen		= sizeof(unsigned long),
+>  		.proc_handler   = &proc_doulongvec_minmax,
+>  	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_count_pages_direct_reclaim",
+> +		.data           = &perf_count_pages_direct_reclaim,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.mode           = 0666,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname       = "perf_count_failed_pages_direct_reclaim",
+> +		.data           = &perf_count_failed_pages_direct_reclaim,
+> +		.maxlen		= sizeof(unsigned long),
+> +		.mode           = 0666,
+> +		.proc_handler   = &proc_doulongvec_minmax,
+> +	},
+>  	{ .ctl_name = 0 }
+>  };
+>  
+> Index: linux-2.6-git-2.6.31-bisect2/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6-git-2.6.31-bisect2.orig/mm/page_alloc.c
+> +++ linux-2.6-git-2.6.31-bisect2/mm/page_alloc.c
+> @@ -1605,6 +1605,9 @@ out:
+>  	return page;
+>  }
+>  
+> +unsigned long perf_count_pages_direct_reclaim = 0;
+> +unsigned long perf_count_failed_pages_direct_reclaim = 0;
+> +
+>  /* The really slow allocator path where we enter direct reclaim */
+>  static inline struct page *
+>  __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+> @@ -1645,6 +1648,11 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
+>  					zonelist, high_zoneidx,
+>  					alloc_flags, preferred_zone,
+>  					migratetype);
+> +
+> +	perf_count_pages_direct_reclaim++;
+> +	if (!page)
+> +		perf_count_failed_pages_direct_reclaim++;
+> +
+>  	return page;
+>  }
+>  
+
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
