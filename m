@@ -1,191 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZLRPTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZLRPSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbZLRPTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZLRPTu
+	id S1754480AbZLRPSz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZLRPSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:19:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7833 "EHLO mx1.redhat.com"
+	Fri, 18 Dec 2009 10:18:54 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59124 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754417AbZLRPTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:19:48 -0500
-Date: Fri, 18 Dec 2009 10:17:32 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       taka@valinux.co.jp, jmoyer@redhat.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 3/4] cfq-iosched: Remove prio_change logic for workload
-	selection
-Message-ID: <20091218151732.GB3123@redhat.com>
-References: <1261003980-10115-1-git-send-email-vgoyal@redhat.com> <1261003980-10115-4-git-send-email-vgoyal@redhat.com> <4B29F7DE.4020700@cn.fujitsu.com>
+	id S1753954AbZLRPSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:18:52 -0500
+Date: Fri, 18 Dec 2009 16:18:33 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, krzysztof.h1@wp.pl,
+       Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
+       Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org
+Subject: Re: [PATCH] Logitech G13 driver 0.0.2
+In-Reply-To: <200912142244.nBEMikgN002071@mustang.cs.nmsu.edu>
+Message-ID: <alpine.LNX.2.00.0912181618050.3755@pobox.suse.cz>
+References: <200912142244.nBEMikgN002071@mustang.cs.nmsu.edu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B29F7DE.4020700@cn.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 05:20:30PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> > o CFQ now internally divides cfq queues in therr workload categories. sync-idle,
-> >   sync-noidle and async. Which workload to run depends primarily on rb_key
-> >   offset across three service trees. Which is a combination of mulitiple things
-> >   including what time queue got queued on the service tree.
-> > 
-> >   There is one exception though. That is if we switched the prio class, say
-> >   we served some RT tasks and again started serving BE class, then with-in
-> >   BE class we always started with sync-noidle workload irrespective of rb_key
-> >   offset in service trees.
-> > 
-> >   This can provide better latencies for sync-noidle workload in the presence
-> >   of RT tasks.
-> > 
-> > o This patch gets rid of that exception and which workload to run with-in
-> >   class always depends on lowest rb_key across service trees. The reason
-> >   being that now we have multiple BE class groups and if we always switch
-> >   to sync-noidle workload with-in group, we can potentially starve a sync-idle
-> >   workload with-in group. Same is true for async workload which will be in
-> >   root group. Also the workload-switching with-in group will become very
-> >   unpredictable as it now depends whether some RT workload was running in
-> >   the system or not.
-> > 
-> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> 
-> Actually, in current CFQ, there still has bug in prio_changed logic.
-> Because prio_changed = (cfqd->serving_prio != previous_prio), and previous_prio
-> might come from another group, in this case, prio_changed becomes invalid, but
-> cfq_choose_wl() still relies on prio_changed to calculate serving_type, this
-> doesn't make sence IMHO. 
+On Wed, 16 Dec 2009, akpm@linux-foundation.org wrote:
 
-Ok, so you are referring to the case when we don't save workload state
-because it has expired at the time of group expiry.
+> +static unsigned char g13_lcd_bits[] = {
+> +   0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x28, 0x03, 0x00, 0x40, 0x01, 0x00, 0xc0, 0x3f, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa1,
+> +   0x08, 0x00, 0x08, 0x00, 0x00, 0xe0, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3c, 0x25, 0x00, 0xf3, 0x03,
+> +   0x00, 0xe0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x0e, 0x05, 0x00, 0x20, 0x16, 0x00, 0xf0, 0xff, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x09,
+> +   0x00, 0x00, 0x00, 0x42, 0x00, 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x05, 0x60, 0x80, 0x00, 0x14,
+> +   0x00, 0x30, 0xe7, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x90, 0x00, 0x00, 0x20, 0x00, 0x10, 0x00, 0x10, 0xe3, 0x01,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x02,
+> +   0xe0, 0xdd, 0x03, 0x90, 0x00, 0x50, 0xcb, 0x01, 0x00, 0xfe, 0xff, 0x7f,
+> +   0xf0, 0x3f, 0x00, 0xff, 0xff, 0x7f, 0x80, 0x00, 0xfa, 0xe3, 0x07, 0x38,
+> +   0x00, 0x10, 0xc1, 0x01, 0x00, 0xff, 0xff, 0x7f, 0xf0, 0x3f, 0x00, 0xff,
+> +   0xff, 0xff, 0xd0, 0x00, 0xfc, 0x87, 0x0f, 0x90, 0x00, 0x30, 0xe0, 0x01,
+> +   0x80, 0xff, 0xff, 0x7f, 0xf0, 0x3f, 0x00, 0xff, 0xff, 0xff, 0x81, 0x80,
+> +   0xfe, 0xa7, 0x3f, 0x30, 0x00, 0x30, 0xc0, 0x01, 0xc0, 0xff, 0xff, 0x7f,
+> +   0xf0, 0x3f, 0x00, 0xff, 0xff, 0xff, 0x93, 0x42, 0x0f, 0x08, 0x3a, 0x30,
+> +   0x00, 0x10, 0xe8, 0x01, 0xc0, 0xff, 0xff, 0x7f, 0xf0, 0x3f, 0x00, 0xff,
+> +   0xff, 0xff, 0x93, 0xa4, 0x41, 0x20, 0x20, 0x94, 0x00, 0x30, 0xf4, 0x03,
+> +   0xc0, 0x07, 0x00, 0x00, 0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x93, 0x41,
+> +   0x60, 0x48, 0xe1, 0x98, 0x00, 0x70, 0xda, 0x07, 0xc0, 0x07, 0x00, 0x00,
+> +   0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x83, 0x77, 0x10, 0x82, 0xc5, 0x1f,
+> +   0x00, 0xd0, 0xcc, 0x07, 0xc0, 0x07, 0x00, 0x00, 0x00, 0x3e, 0x00, 0x00,
+> +   0x00, 0xe0, 0x23, 0x3f, 0x00, 0x90, 0xc0, 0x4f, 0x00, 0x98, 0x83, 0x0f,
+> +   0xc0, 0x07, 0x00, 0x00, 0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x03, 0x3f,
+> +   0x00, 0x85, 0x86, 0x27, 0x00, 0x0c, 0x80, 0x0f, 0xc0, 0x07, 0x00, 0x00,
+> +   0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x03, 0x3e, 0xc0, 0x83, 0x86, 0x0b,
+> +   0x00, 0x0c, 0x80, 0x1f, 0xc0, 0x07, 0x00, 0x00, 0x00, 0x3e, 0x00, 0x00,
+> +   0x00, 0xe0, 0x03, 0x11, 0x00, 0x00, 0x04, 0x0d, 0x00, 0x0e, 0x00, 0x3f,
+> +   0xc0, 0x07, 0xff, 0xff, 0x00, 0x3e, 0x00, 0xff, 0xff, 0xff, 0x03, 0x0c,
+> +   0x10, 0x00, 0x02, 0x02, 0x00, 0x0f, 0x00, 0x3f, 0xc0, 0x07, 0xff, 0xff,
+> +   0x00, 0x3e, 0x00, 0xff, 0xff, 0xff, 0x01, 0x00, 0x08, 0x00, 0x1c, 0x02,
+> +   0x00, 0x07, 0x00, 0x7e, 0xc0, 0x07, 0xff, 0xff, 0x00, 0x3e, 0x00, 0xff,
+> +   0xff, 0xff, 0x00, 0x00, 0x04, 0x00, 0x28, 0x04, 0x80, 0x03, 0x00, 0x7e,
+> +   0xc0, 0x07, 0xff, 0xff, 0x00, 0x3e, 0x00, 0xff, 0xff, 0xff, 0x01, 0x08,
+> +   0x02, 0x58, 0x08, 0x00, 0x80, 0x03, 0x00, 0xfc, 0xc0, 0x07, 0xff, 0xff,
+> +   0x00, 0x3e, 0x00, 0xff, 0xff, 0xff, 0x01, 0x00, 0x01, 0x08, 0x21, 0x00,
+> +   0x80, 0x03, 0x00, 0xfc, 0xc0, 0x07, 0x00, 0xf8, 0x00, 0x3e, 0x00, 0x00,
+> +   0x00, 0xe0, 0x03, 0xa4, 0x01, 0x28, 0x00, 0x00, 0xc0, 0x01, 0x00, 0xfc,
+> +   0xc0, 0x07, 0x00, 0xf8, 0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x03, 0x2e,
+> +   0x02, 0x00, 0x00, 0x00, 0xc0, 0x01, 0x00, 0xfc, 0xc1, 0x07, 0x00, 0xf8,
+> +   0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x03, 0x20, 0x00, 0x02, 0x00, 0x00,
+> +   0xe0, 0x01, 0x00, 0xfc, 0xc1, 0x07, 0x00, 0xf8, 0x00, 0x3e, 0x00, 0x00,
+> +   0x00, 0xe0, 0x03, 0x20, 0x02, 0x00, 0x10, 0x00, 0xe0, 0x01, 0x00, 0xe8,
+> +   0xc1, 0x07, 0x00, 0xf8, 0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x03, 0x20,
+> +   0x02, 0x04, 0x00, 0x00, 0xe0, 0x00, 0x00, 0xfc, 0xc1, 0x07, 0x00, 0xf8,
+> +   0x00, 0x3e, 0x00, 0x00, 0x00, 0xe0, 0x03, 0x00, 0x0c, 0x00, 0x00, 0x00,
+> +   0xf0, 0x01, 0x00, 0xfe, 0xc0, 0xff, 0xff, 0xff, 0xf0, 0xff, 0x0f, 0xff,
+> +   0xff, 0xff, 0x03, 0x40, 0x08, 0x08, 0x0d, 0x00, 0x58, 0x03, 0x00, 0x7c,
+> +   0xc0, 0xff, 0xff, 0xff, 0xf0, 0xff, 0x0f, 0xff, 0xff, 0xff, 0x03, 0x40,
+> +   0x10, 0xa0, 0x18, 0x00, 0xa8, 0x06, 0x00, 0xb8, 0x81, 0xff, 0xff, 0xff,
+> +   0xf0, 0xff, 0x0f, 0xff, 0xff, 0xff, 0x01, 0x00, 0x10, 0x00, 0x00, 0x00,
+> +   0x5e, 0x1d, 0x00, 0xe8, 0x82, 0xff, 0xff, 0xff, 0xf0, 0xff, 0x0f, 0xff,
+> +   0xff, 0xff, 0x01, 0x00, 0x20, 0xc0, 0x07, 0x00, 0xab, 0x3a, 0x00, 0x54,
+> +   0x03, 0xfe, 0xff, 0xff, 0xf0, 0xff, 0x0f, 0xff, 0xff, 0x7f, 0x00, 0x80,
+> +   0x40, 0x01, 0x01, 0x00, 0x55, 0x3d, 0x00, 0xaa, 0x06, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81, 0x01, 0x01, 0x00,
+> +   0xab, 0x1a, 0xc0, 0x55, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x80, 0x03, 0x00, 0x00, 0x55, 0x35, 0xe0, 0xab,
+> +   0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0xc0, 0x43, 0x01, 0x00, 0xab, 0xaa, 0xff, 0x55, 0x03, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc7, 0x00, 0x00,
+> +   0x57, 0xf5, 0xff, 0xaa, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0xfc, 0x00, 0x00, 0xaa, 0xea, 0xff, 0xd5,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0xfe, 0x03, 0x00, 0x7c, 0x75, 0x80, 0x2b, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x03, 0x00,
+> +   0x80, 0x1f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+> +   0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x01, 0x00 };
 
-How about saving the serving prio all the time at the time of group expiry,
-irrespective of the fact whether workload has expired or not at the time of
-group expiry and while we also need to always restore the serving prio back
-when group is rescheduled in.
+Probably somme comment explaining what this actually is would be nice 
+here.
 
-Thanks
-Vivek
+[ .. snip .. ]
 
-> But with this change, this bug is gone.
-> 
-> Reviewed-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> 
-> > ---
-> >  block/cfq-iosched.c |   48 ++++++++++++------------------------------------
-> >  1 files changed, 12 insertions(+), 36 deletions(-)
-> > 
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index d9bfa09..8df4fe5 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > @@ -292,8 +292,7 @@ static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd);
-> >  
-> >  static struct cfq_rb_root *service_tree_for(struct cfq_group *cfqg,
-> >  					    enum wl_prio_t prio,
-> > -					    enum wl_type_t type,
-> > -					    struct cfq_data *cfqd)
-> > +					    enum wl_type_t type)
-> >  {
-> >  	if (!cfqg)
-> >  		return NULL;
-> > @@ -1146,7 +1145,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-> >  #endif
-> >  
-> >  	service_tree = service_tree_for(cfqq->cfqg, cfqq_prio(cfqq),
-> > -						cfqq_type(cfqq), cfqd);
-> > +						cfqq_type(cfqq));
-> >  	if (cfq_class_idle(cfqq)) {
-> >  		rb_key = CFQ_IDLE_DELAY;
-> >  		parent = rb_last(&service_tree->rb);
-> > @@ -1609,7 +1608,7 @@ static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
-> >  {
-> >  	struct cfq_rb_root *service_tree =
-> >  		service_tree_for(cfqd->serving_group, cfqd->serving_prio,
-> > -					cfqd->serving_type, cfqd);
-> > +					cfqd->serving_type);
-> >  
-> >  	if (!cfqd->rq_queued)
-> >  		return NULL;
-> > @@ -1956,8 +1955,7 @@ static void cfq_setup_merge(struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
-> >  }
-> >  
-> >  static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
-> > -				struct cfq_group *cfqg, enum wl_prio_t prio,
-> > -				bool prio_changed)
-> > +				struct cfq_group *cfqg, enum wl_prio_t prio)
-> >  {
-> >  	struct cfq_queue *queue;
-> >  	int i;
-> > @@ -1965,24 +1963,9 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
-> >  	unsigned long lowest_key = 0;
-> >  	enum wl_type_t cur_best = SYNC_NOIDLE_WORKLOAD;
-> >  
-> > -	if (prio_changed) {
-> > -		/*
-> > -		 * When priorities switched, we prefer starting
-> > -		 * from SYNC_NOIDLE (first choice), or just SYNC
-> > -		 * over ASYNC
-> > -		 */
-> > -		if (service_tree_for(cfqg, prio, cur_best, cfqd)->count)
-> > -			return cur_best;
-> > -		cur_best = SYNC_WORKLOAD;
-> > -		if (service_tree_for(cfqg, prio, cur_best, cfqd)->count)
-> > -			return cur_best;
-> > -
-> > -		return ASYNC_WORKLOAD;
-> > -	}
-> > -
-> > -	for (i = 0; i < 3; ++i) {
-> > -		/* otherwise, select the one with lowest rb_key */
-> > -		queue = cfq_rb_first(service_tree_for(cfqg, prio, i, cfqd));
-> > +	for (i = 0; i <= SYNC_WORKLOAD; ++i) {
-> > +		/* select the one with lowest rb_key */
-> > +		queue = cfq_rb_first(service_tree_for(cfqg, prio, i));
-> >  		if (queue &&
-> >  		    (!key_valid || time_before(queue->rb_key, lowest_key))) {
-> >  			lowest_key = queue->rb_key;
-> > @@ -1996,8 +1979,6 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
-> >  
-> >  static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
-> >  {
-> > -	enum wl_prio_t previous_prio = cfqd->serving_prio;
-> > -	bool prio_changed;
-> >  	unsigned slice;
-> >  	unsigned count;
-> >  	struct cfq_rb_root *st;
-> > @@ -2025,24 +2006,19 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
-> >  	 * (SYNC, SYNC_NOIDLE, ASYNC), and to compute a workload
-> >  	 * expiration time
-> >  	 */
-> > -	prio_changed = (cfqd->serving_prio != previous_prio);
-> > -	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
-> > -				cfqd);
-> > +	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type);
-> >  	count = st->count;
-> >  
-> >  	/*
-> > -	 * If priority didn't change, check workload expiration,
-> > -	 * and that we still have other queues ready
-> > +	 * check workload expiration, and that we still have other queues ready
-> >  	 */
-> > -	if (!prio_changed && count &&
-> > -	    !time_after(jiffies, cfqd->workload_expires))
-> > +	if (count && !time_after(jiffies, cfqd->workload_expires))
-> >  		return;
-> >  
-> >  	/* otherwise select new workload type */
-> >  	cfqd->serving_type =
-> > -		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio, prio_changed);
-> > -	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
-> > -				cfqd);
-> > +		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio);
-> > +	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type);
-> >  	count = st->count;
-> >  
-> >  	/*
+I can't really comment too much on the framebuffer part, so if you could 
+get some Ack for this part from someone skilled in writing framebuffer 
+drivers, I'd appreciate it.
+
+> +static ssize_t g13_keymap_store(struct device *dev,
+> +				struct device_attribute *attr,
+> +				const char *buf, size_t count)
+> +{
+> +	struct hid_device *hdev;
+> +	int scanned;
+> +	int consumed;
+> +	int scancd;
+> +	int keycd;
+> +	int set_result;
+> +	int set = 0;
+> +	int gkey;
+> +	int index;
+> +	int good;
+> +	struct g13_data *data;
+> +
+> +	/* Get the hid associated with the device */
+> +	hdev = container_of(dev, struct hid_device, dev);
+> +
+> +	/* If we have an invalid pointer we'll return ENODATA */
+> +	if (hdev == NULL || &(hdev->dev) != dev)
+> +		return -ENODATA;
+> +
+> +	/* Now, let's get the data structure */
+> +	data = hid_get_g13data(hdev);
+> +	if (data == NULL)
+> +		return -ENODATA;
+> +
+> +	do {
+> +		good = 0;
+> +
+> +		/* Look for scancode keycode pair in hex */
+> +		scanned = sscanf(buf,
+> +				 "%x %x%n",
+> +				 &scancd, &keycd, &consumed);
+> +		if (scanned == 2) {
+> +			buf += consumed;
+> +			set_result = g13_input_setkeycode(data->input_dev,
+> +							  scancd,
+> +							  keycd);
+> +			if (set_result < 0)
+> +				return set_result;
+> +			set++;
+> +			good = 1;
+> +		} else {
+> +			/*
+> +			 * Look for Gkey keycode pair and assign to current
+> +			 * keymap
+> +			 */
+> +			scanned = sscanf(buf,
+> +					 "G%d %x%n",
+> +					 &gkey, &keycd, &consumed);
+> +			if (scanned == 2 && gkey > 0 && gkey <= G13_KEYS) {
+> +				buf += consumed;
+> +				scancd = data->curkeymap * G13_KEYS + gkey - 1;
+> +				set_result =
+> +					g13_input_setkeycode(data->input_dev,
+> +							     scancd, keycd);
+> +				if (set_result < 0)
+> +					return set_result;
+> +				set++;
+> +				good = 1;
+> +			} else {
+> +				/*
+> +				 * Look for Gkey-index keycode pair and assign
+> +				 * to indexed keymap
+> +				 */
+> +				scanned = sscanf(buf,
+> +						 "G%d-%d %x%n",
+> +						 &gkey,
+> +						 &index,
+> +						 &keycd,
+> +						 &consumed);
+
+These constructions are ugly (funnily enough, this is currently being 
+discussed on lkml -- see http://lkml.org/lkml/2009/12/15/490
+
+Could you perharps split this into some sub-functions, to make it look 
+nicer?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
