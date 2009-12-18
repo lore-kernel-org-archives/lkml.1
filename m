@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbZLRPyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZLRQB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371AbZLRPyt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZLRPyt
+	id S1754851AbZLRQB6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZLRQB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:54:49 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47973 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbZLRPys (ORCPT
+	Fri, 18 Dec 2009 11:01:56 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:16935 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbZLRQBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:54:48 -0500
-Subject: Re: workqueue thing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, awalls@radix.net, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, mingo@elte.hu, akpm@linux-foundation.org,
-       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
-       dhowells@redhat.com, arjan@linux.intel.com, avi@redhat.com,
-       johannes@sipsolutions.net, andi@firstfloor.org
-In-Reply-To: <alpine.LFD.2.00.0912180747030.3712@localhost.localdomain>
-References: <1261141088-2014-1-git-send-email-tj@kernel.org>
-	 <1261143924.20899.169.camel@laptop>
-	 <alpine.LFD.2.00.0912180724580.3712@localhost.localdomain>
-	 <1261150788.20899.299.camel@laptop>
-	 <alpine.LFD.2.00.0912180747030.3712@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 18 Dec 2009 16:53:20 +0100
-Message-ID: <1261151600.20899.316.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Dec 2009 11:01:55 -0500
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+To: akpm@linux-foundation.org, david-b@pacbell.net
+Cc: linux-kernel@vger.kernel.org, ext-jani.1.nikula@nokia.com
+Subject: [PATCH] gpiolib: fix poll(2) support reconfigure on sysfs polarity change
+Date: Fri, 18 Dec 2009 17:59:03 +0200
+Message-Id: <1261151943-11863-1-git-send-email-ext-jani.1.nikula@nokia.com>
+X-Mailer: git-send-email 1.6.5.2
+X-OriginalArrivalTime: 18 Dec 2009 15:59:09.0984 (UTC) FILETIME=[091C2A00:01CA7FFB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 07:47 -0800, Linus Torvalds wrote:
-> 
-> On Fri, 18 Dec 2009, Peter Zijlstra wrote:
-> > 
-> > That's exactly what it does..
-> > 
-> > 4e6045f134784f4b158b3c0f7a282b04bd816887
-> > eb13ba873881abd5e15af784756a61af635e665e
-> > a67da70dc0955580665f5444f318b92e69a3c272
-> 
-> Ahh. Never even triggered my "I've seen those patches".
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Hehe, with the volume going through these days I'm amazed at the amount
-you do remember ;-)
+Previously enabled poll(2) support on one edge was never reconfigured
+when sysfs polarity change was triggered from kernel, because 'struct
+device *dev' shadowed an earlier definition.
+
+Found by sparse, which I should've run much earlier.
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+---
+ drivers/gpio/gpiolib.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index a25ad28..350842a 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -858,8 +858,6 @@ int gpio_sysfs_set_active_low(unsigned gpio, int value)
+ 	desc = &gpio_desc[gpio];
+ 
+ 	if (test_bit(FLAG_EXPORT, &desc->flags)) {
+-		struct device *dev;
+-
+ 		dev = class_find_device(&gpio_class, NULL, desc, match_export);
+ 		if (dev == NULL) {
+ 			status = -ENODEV;
+-- 
+1.6.5.2
 
