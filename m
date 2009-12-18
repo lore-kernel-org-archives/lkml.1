@@ -1,59 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZLRB26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZLRB3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZLRB26 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 20:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZLRB24
+	id S1754743AbZLRB3N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 20:29:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZLRB3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 20:28:56 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:40935 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZLRB2y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 20:28:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=TzLn82XUE4UvMQLnPWKrEMr4IBbnpW0kINJ5Gl0jGK+/KKJO6Jb0Xaj6KxvFQVe/4Z
-         b8OcXL9BS/jZIuEMpAsoelZ3pPeTm9nQEBNh/d3g49gUSz23SEHLeBgKSH4l3jhx51Z/
-         NOmPmMLq402nOuu5Pw8hSV8RgKqAKRjDPmeMU=
+	Thu, 17 Dec 2009 20:29:08 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63709 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753915AbZLRB3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 20:29:03 -0500
+Message-ID: <4B2ADB4C.7010900@cn.fujitsu.com>
+Date: Fri, 18 Dec 2009 09:30:52 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
-References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
-Date: Thu, 17 Dec 2009 17:28:50 -0800
-X-Google-Sender-Auth: 44139bd396519038
-Message-ID: <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com>
-Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
-From: Yinghai Lu <yinghai@kernel.org>
-To: Len Brown <lenb@kernel.org>, Shaohua Li <shaohua.li@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, "Barnes, Jesse" <jesse.barnes@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
+To: "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] btrfs: Simplify offset calculation method for ctree.h
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 16, 2009 at 12:06 PM, Len Brown <lenb@kernel.org> wrote:
-> Hi Linus,
->
-> please pull from:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
->
-;..
->
-> Shaohua Li (3):
->      ACPI: Add a generic API for _OSC -v2
->      ACPI: cleanup pci_root _OSC code.
->      ACPI: Add platform-wide _OSC support.
+Use simple struct operation instead of address calculation.
 
-it seems these three patches broke the _OSC on my intel new systems.
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ fs/btrfs/ctree.h |   46 ++++++++++++++--------------------------------
+ 1 files changed, 14 insertions(+), 32 deletions(-)
 
-revert them fix the problem with AER and pciehp and etc
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index e5dd628..44a3e98 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -1264,12 +1264,12 @@ BTRFS_SETGET_STACK_FUNCS(stack_device_generation, struct btrfs_dev_item,
+ 
+ static inline char *btrfs_device_uuid(struct btrfs_dev_item *d)
+ {
+-	return (char *)d + offsetof(struct btrfs_dev_item, uuid);
++	return (char *)&d->uuid;
+ }
+ 
+ static inline char *btrfs_device_fsid(struct btrfs_dev_item *d)
+ {
+-	return (char *)d + offsetof(struct btrfs_dev_item, fsid);
++	return (char *)&d->fsid;
+ }
+ 
+ BTRFS_SETGET_FUNCS(chunk_length, struct btrfs_chunk, length, 64);
+@@ -1286,7 +1286,7 @@ BTRFS_SETGET_FUNCS(stripe_offset, struct btrfs_stripe, offset, 64);
+ 
+ static inline char *btrfs_stripe_dev_uuid(struct btrfs_stripe *s)
+ {
+-	return (char *)s + offsetof(struct btrfs_stripe, dev_uuid);
++	return (char *)&s->dev_uuid;
+ }
+ 
+ BTRFS_SETGET_STACK_FUNCS(stack_chunk_length, struct btrfs_chunk, length, 64);
+@@ -1310,10 +1310,7 @@ BTRFS_SETGET_STACK_FUNCS(stack_stripe_offset, struct btrfs_stripe, offset, 64);
+ static inline struct btrfs_stripe *btrfs_stripe_nr(struct btrfs_chunk *c,
+ 						   int nr)
+ {
+-	unsigned long offset = (unsigned long)c;
+-	offset += offsetof(struct btrfs_chunk, stripe);
+-	offset += nr * sizeof(struct btrfs_stripe);
+-	return (struct btrfs_stripe *)offset;
++	return &c->stripe + nr;
+ }
+ 
+ static inline char *btrfs_stripe_dev_uuid_nr(struct btrfs_chunk *c, int nr)
+@@ -1383,33 +1380,25 @@ BTRFS_SETGET_FUNCS(inode_flags, struct btrfs_inode_item, flags, 64);
+ static inline struct btrfs_timespec *
+ btrfs_inode_atime(struct btrfs_inode_item *inode_item)
+ {
+-	unsigned long ptr = (unsigned long)inode_item;
+-	ptr += offsetof(struct btrfs_inode_item, atime);
+-	return (struct btrfs_timespec *)ptr;
++	return &inode_item->atime;
+ }
+ 
+ static inline struct btrfs_timespec *
+ btrfs_inode_mtime(struct btrfs_inode_item *inode_item)
+ {
+-	unsigned long ptr = (unsigned long)inode_item;
+-	ptr += offsetof(struct btrfs_inode_item, mtime);
+-	return (struct btrfs_timespec *)ptr;
++	return &inode_item->mtime;
+ }
+ 
+ static inline struct btrfs_timespec *
+ btrfs_inode_ctime(struct btrfs_inode_item *inode_item)
+ {
+-	unsigned long ptr = (unsigned long)inode_item;
+-	ptr += offsetof(struct btrfs_inode_item, ctime);
+-	return (struct btrfs_timespec *)ptr;
++	return &inode_item->ctime;
+ }
+ 
+ static inline struct btrfs_timespec *
+ btrfs_inode_otime(struct btrfs_inode_item *inode_item)
+ {
+-	unsigned long ptr = (unsigned long)inode_item;
+-	ptr += offsetof(struct btrfs_inode_item, otime);
+-	return (struct btrfs_timespec *)ptr;
++	return &inode_item->otime;
+ }
+ 
+ BTRFS_SETGET_FUNCS(timespec_sec, struct btrfs_timespec, sec, 64);
+@@ -1426,8 +1415,7 @@ BTRFS_SETGET_FUNCS(dev_extent_length, struct btrfs_dev_extent, length, 64);
+ 
+ static inline u8 *btrfs_dev_extent_chunk_tree_uuid(struct btrfs_dev_extent *dev)
+ {
+-	unsigned long ptr = offsetof(struct btrfs_dev_extent, chunk_tree_uuid);
+-	return (u8 *)((unsigned long)dev + ptr);
++	return (u8 *)&dev->chunk_tree_uuid;
+ }
+ 
+ BTRFS_SETGET_FUNCS(extent_refs, struct btrfs_extent_item, refs, 64);
+@@ -1731,26 +1719,22 @@ static inline void btrfs_set_header_backref_rev(struct extent_buffer *eb,
+ 
+ static inline u8 *btrfs_header_fsid(struct extent_buffer *eb)
+ {
+-	unsigned long ptr = offsetof(struct btrfs_header, fsid);
+-	return (u8 *)ptr;
++	return (u8 *)offsetof(struct btrfs_header, fsid);
+ }
+ 
+ static inline u8 *btrfs_header_chunk_tree_uuid(struct extent_buffer *eb)
+ {
+-	unsigned long ptr = offsetof(struct btrfs_header, chunk_tree_uuid);
+-	return (u8 *)ptr;
++	return (u8 *)offsetof(struct btrfs_header, chunk_tree_uuid);
+ }
+ 
+ static inline u8 *btrfs_super_fsid(struct extent_buffer *eb)
+ {
+-	unsigned long ptr = offsetof(struct btrfs_super_block, fsid);
+-	return (u8 *)ptr;
++	return (u8 *)offsetof(struct btrfs_super_block, fsid);
+ }
+ 
+ static inline u8 *btrfs_header_csum(struct extent_buffer *eb)
+ {
+-	unsigned long ptr = offsetof(struct btrfs_header, csum);
+-	return (u8 *)ptr;
++	return (u8 *)offsetof(struct btrfs_header, csum);
+ }
+ 
+ static inline struct btrfs_node *btrfs_buffer_node(struct extent_buffer *eb)
+@@ -1858,9 +1842,7 @@ BTRFS_SETGET_FUNCS(file_extent_type, struct btrfs_file_extent_item, type, 8);
+ static inline unsigned long
+ btrfs_file_extent_inline_start(struct btrfs_file_extent_item *e)
+ {
+-	unsigned long offset = (unsigned long)e;
+-	offset += offsetof(struct btrfs_file_extent_item, disk_bytenr);
+-	return offset;
++	return (unsigned long)&e->disk_bytenr;
+ }
+ 
+ static inline u32 btrfs_file_extent_calc_inline_size(u32 datasize)
+-- 
+1.5.5.3
 
-YH
+
