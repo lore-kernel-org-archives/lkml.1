@@ -1,116 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZLSPzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZLRWoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZLSPzk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 10:55:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZLSPzi
+	id S1755737AbZLRWoh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 17:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZLRWof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 10:55:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34752 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752651AbZLSPzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 10:55:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Fri, 18 Dec 2009 23:43:29 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912160311.05915.rjw@sisk.pl> <20091216064025.GB2699@core.coreip.homeip.net>
-In-Reply-To: <20091216064025.GB2699@core.coreip.homeip.net>
+	Fri, 18 Dec 2009 17:44:35 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:62341 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbZLRWoe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 17:44:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tQQMiYuPPvciVSf7f37L7dLSSv1e/2OrIPvvvUiDV+TUFAFI3wsYUSJRFO6LxpQ0p+
+         wfdk4ia4GiDsL+cvdm8UVzi2W9ibeGltdAafkDrHv6iSYxEE6P72InI9HbdLgEAULkJM
+         v6i4am87TZDHjWVtMoxlcI8lf6rqx8ZgvXy5E=
+Date: Sat, 19 Dec 2009 01:44:31 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
+	setup
+Message-ID: <20091218224431.GA8489@lenovo>
+References: <43F901BD926A4E43B106BF17856F07559A257B5C@orsmsx508.amr.corp.intel.com> <20091217194148.GB5414@lenovo> <43F901BD926A4E43B106BF17856F07559A257E3D@orsmsx508.amr.corp.intel.com> <4B2AB1F0.1020105@linux.intel.com> <43F901BD926A4E43B106BF17856F07559A257FE1@orsmsx508.amr.corp.intel.com> <alpine.LFD.2.00.0912181704360.2755@localhost.localdomain> <43F901BD926A4E43B106BF17856F07559A25826A@orsmsx508.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912182343.29190.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43F901BD926A4E43B106BF17856F07559A25826A@orsmsx508.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 December 2009, Dmitry Torokhov wrote:
-> On Wed, Dec 16, 2009 at 03:11:05AM +0100, Rafael J. Wysocki wrote:
-> > On Tuesday 15 December 2009, Linus Torvalds wrote:
-> > > 
-> > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > Give a real example that matters.
-> > > > 
-> > > > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
-> > > > like this:
-> > > 
-> > > No. 
-> > > 
-> > > I mean something real - something like
-> > > 
-> > >  - if you run on a non-PC with two USB buses behind non-PCI controllers.
-> > > 
-> > >  - device xyz.
-> > > 
-> > > > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
-> > > > show that serio devices take much more time to suspend than USB.
-> > > 
-> > > I mean in general - something where you actually have hard data that some 
-> > > device really needs anythign more than my one-liner, and really _needs_ 
-> > > some complex infrastructure.
-> > > 
-> > > Not "let's imagine a case like xyz".
-> > 
-> > As I said I would, I made some measurements.
-> > 
-> > I measured the total time of suspending and resuming devices as shown by the
-> > code added by this patch:
-> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
-> > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
-> > different and the HP was running 64-bit kernel and user space).
-> > 
-> > I took four cases into consideration:
-> > (1) synchronous suspend and resume (/sys/power/pm_async = 0)
-> > (2) asynchronous suspend and resume as introduced by the async branch at:
-> >     http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-> > (3) asynchronous suspend and resume like in (2), but with your one-liner setting
-> >     the power.async_suspend flag for PCI bridges on top
-> > (4) asynchronous suspend and resume like in (2), but with an extra patch that
-> >     is appended on top
-> > 
-> > For those tests I set power.async_suspend for all USB devices, all serio input
-> > devices, the ACPI battery and the USB PCI controllers (to see the impact of the
-> > one-liner, if any).
-> > 
-> > I carried out 5 consecutive suspend-resume cycles (started from under X) on
-> > each box in each case, and the raw data are here (all times in milliseconds):
-> > http://www.sisk.pl/kernel/data/async-suspend.pdf
-> > 
-> > The summarized data are below (the "big" numbers are averages and the +/-
-> > numbers are standard deviations, all in milliseconds):
-> > 
-> > 			HP nx6325		MSI Wind U100
-> > 
-> > sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> > sync resume		2955 (+/- 2)	3597 (+/- 25)
-> > 
-> > async suspend		1553 (+/- 49)	1177 (+/- 32)
-> > async resume		2692 (+/- 326)	3556  (+/- 33)
-> > 
-> > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> > 
-> > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> > 
-> > So, in my opinion, with the above set of "async" devices, it doesn't
-> > make sense to do async suspend at all, because the sync suspend is actually
-> > the fastest on both machines.
+On Fri, Dec 18, 2009 at 10:13:52AM -0800, Pan, Jacob jun wrote:
+...
+> >
+> >No, we need to fix the whole lapic timer calibration logic first.
+> >
+> >There is no reason why we don't calibrate the lapic at the same time
+> >as we calibrate the TSC.
+> [[JPAN]] that seems to be much more efficient and we can have platform specific
+> way of calibration too with the x86_init abstraction.
+
+Good idea I think!
+
+> >
+> >Another question is why there is no way to read out the lapic clock
+> >frequency from some config registers or wherever the chip designers
+> >decided to hide that. There is no real reason why the lapic timer
+> >calibration needs to be extremly precise.
+> >
+> [[JPAN]] x86 does have MSR_FSB_FREQ to read bus frequency then the DCR to figure
+> out LAPIC timer freq. but i guess not all CPU models have that. so having
+> the abstraction would be a plus for those do have reliable reporting of lapic
+> freq.
+
+IIRC old apics may use independent clock signal too, though I dont think that we
+ever switch (espec novadays) to use it due to obsolescense of such chips :)
+
 > 
-> I think the async suspend is not asynchronous enough then - what kind of
-> time do you get if you simply comment out call to psmouse_reset() in
-> drivers/input/mouse/psmouse-base.c:psmouse_cleanup()?  (Just for testing
-> purposes only, I don't think we want to do that by default.)
+> >> Honestly, i don't fully understand how the dummy lapic event device
+> >> is related to the broadcast mechanism. can someone explain why we
+> >> register the dummy lapic clockevent?
+> >
+> >The broadcast mechanism is there in the first place to work around the
+> >APIC stops in deeper C-states idiocy.
+> >
+> >Then we need to support the disable lapic timer command line option
+> >(even on SMP) so we make use of the existing broadcast mechanism and
+> >register the dummy device to have a per cpu clock event device.
+> >
+> [[JPAN]] thanks for the explanation. so if we have per cpu timer that is
+> always-on, and don't have a broadcast timer, then the dummy device would not
+> be needed, correct?
+> 
+> 
 
-The problem apparently is that the i8042 suspend/resume is synchronous.
+Hmm... We may be using nmi detector, so I think we still need dummy clockevent
+device to send broadcast "time" IPI, or per-cpu timer interrupt handler have
+to call the local apic interrupt routine. At least that is how I imagine this
+scheme :)
 
-Do you think it's safe to mark it as asynchronous?
-
-Rafael
+> >Thanks,
+> >
+> >	tglx
+> 
+	-- Cyrill
