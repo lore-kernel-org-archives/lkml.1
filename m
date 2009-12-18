@@ -1,70 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZLRBS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbZLRBXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbZLRBS7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 20:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZLRBS4
+	id S1753192AbZLRBXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 20:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZLRBXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 20:18:56 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:45069 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754979AbZLRBSt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 20:18:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=nyD4aAx96dg2R5p+E/KEsh9Ktz4vE41K0iMEyNS6kgKX/sZpMc231STqaBUTzmYECN
-         VyHTK6nSRSVlI5eJsARma4aVh24tb5Gw81921IMpuh02bEnMQkC4/PNoBUWnzDcGqkzZ
-         irfoTzruuoLBSDAAelFcsDDx7TPe26RsaiNqk=
+	Thu, 17 Dec 2009 20:23:31 -0500
+Received: from mga14.intel.com ([143.182.124.37]:14421 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbZLRBXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 20:23:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="224254557"
+Date: Fri, 18 Dec 2009 09:23:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Alex Chiang <achiang@hp.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Li, Haicheng" <haicheng.li@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH v2] mm: introduce dump_page() and print symbolic flag names
+Message-ID: <20091218012324.GA7953@localhost>
+References: <20091216122640.GA13817@localhost> <20091216123310.GA17522@localhost> <20091216153513.GC2804@hack>
 MIME-Version: 1.0
-In-Reply-To: <1261047618.14314.6.camel@localhost>
-References: <1261042383.14314.0.camel@localhost> <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com> 
-	<20091217105316.GB26010@elte.hu> <1261047618.14314.6.camel@localhost>
-From: Jason Garrett-Glaser <darkshikari@gmail.com>
-Date: Thu, 17 Dec 2009 17:18:28 -0800
-Message-ID: <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
-Subject: Re: x264 benchmarks BFS vs CFS
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091216153513.GC2804@hack>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 17, 2009 at 3:00 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> On Thu, 2009-12-17 at 11:53 +0100, Ingo Molnar wrote:
->> * Jason Garrett-Glaser <darkshikari@gmail.com> wrote:
->>
->> > On Thu, Dec 17, 2009 at 1:33 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
->> > > well well :) nothing quite speaks out like graphs..
->> > >
->> > > http://doom10.org/index.php?topic=78.0
->> > >
->> > >
->> > >
->> > > regards,
->> > > Kasper Sandberg
->> >
->> > Yeah, I sent this to Mike a bit ago.  Seems that .32 has basically tied
->> > it--and given the strict thread-ordering expectations of x264, you basically
->> > can't expect it to do any better, though I'm curious what's responsible for
->> > the gap in "veryslow", even with SCHED_BATCH enabled.
->> >
->> > The most odd case is that of "ultrafast", in which CFS immediately ties BFS
->> > when we enable SCHED_BATCH.  We're doing some further testing to see exactly
->
-> Thats kinda besides the point.
->
-> all these tunables and weirdness is _NEVER_ going to work for people.
+On Wed, Dec 16, 2009 at 11:35:13PM +0800, AmÃ©rico Wang wrote:
+> On Wed, Dec 16, 2009 at 08:33:10PM +0800, Wu Fengguang wrote:
+> >On Wed, Dec 16, 2009 at 08:26:40PM +0800, Wu Fengguang wrote:
+> >> - introduce dump_page() to print the page info for debugging some error condition.
+> >> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
+> >> - print an extra field: the symbolic names of page->flags
+> >> 
+> >> Example dump_page() output:
+> >> 
+> >> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1
+> >> mapping:ffff88001c901791 index:147
+> >                                 ~~~ this is in fact 0x147
+> >
+> >The index value may sometimes be misread as decimal number, shall this
+> >be fixed by adding a "0x" prefix?
+> 
+> 
+> Using '%#x' will do.
 
-Can't individually applications request SCHED_BATCH?  Our plan was to
-have x264 simply detect if it was necessary (once we figure out what
-encoding settings result in the large gap situation) and automatically
-enable it for the current application.
+Thanks, here is the updated patch.
+---
+mm: introduce dump_page()
 
-Jason
+- introduce dump_page() to print the page info for debugging some error condition.
+- convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
+- print an extra field: the symbolic names of page->flags
+
+Example dump_page() output:
+
+[  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1 mapping:ffff88001c901791 index:0x147
+[  157.525570] page flags: 100000000100068(uptodate|lru|active|swapbacked)
+
+CC: Ingo Molnar <mingo@elte.hu> 
+CC: Alex Chiang <achiang@hp.com>
+CC: Rik van Riel <riel@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org> 
+CC: Mel Gorman <mel@linux.vnet.ibm.com> 
+CC: Christoph Lameter <cl@linux-foundation.org> 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/mm.h  |    2 +
+ mm/memory.c         |    8 +---
+ mm/memory_hotplug.c |    6 +--
+ mm/page_alloc.c     |   83 +++++++++++++++++++++++++++++++++++++++---
+ 4 files changed, 86 insertions(+), 13 deletions(-)
+
+--- linux-mm.orig/mm/page_alloc.c	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/mm/page_alloc.c	2009-12-16 20:33:35.000000000 +0800
+@@ -49,6 +49,7 @@
+ #include <linux/debugobjects.h>
+ #include <linux/kmemleak.h>
+ #include <trace/events/kmem.h>
++#include <linux/ftrace_event.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -262,10 +263,7 @@ static void bad_page(struct page *page)
+ 
+ 	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
+ 		current->comm, page_to_pfn(page));
+-	printk(KERN_ALERT
+-		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+-		page, (void *)page->flags, page_count(page),
+-		page_mapcount(page), page->mapping, page->index);
++	dump_page(page);
+ 
+ 	dump_stack();
+ out:
+@@ -5106,3 +5104,80 @@ bool is_free_buddy_page(struct page *pag
+ 	return order < MAX_ORDER;
+ }
+ #endif
++
++static struct trace_print_flags pageflag_names[] = {
++	{1UL << PG_locked,		"locked"	},
++	{1UL << PG_error,		"error"		},
++	{1UL << PG_referenced,		"referenced"	},
++	{1UL << PG_uptodate,		"uptodate"	},
++	{1UL << PG_dirty,		"dirty"		},
++	{1UL << PG_lru,			"lru"		},
++	{1UL << PG_active,		"active"	},
++	{1UL << PG_slab,		"slab"		},
++	{1UL << PG_owner_priv_1,	"owner_priv_1"	},
++	{1UL << PG_arch_1,		"arch_1"	},
++	{1UL << PG_reserved,		"reserved"	},
++	{1UL << PG_private,		"private"	},
++	{1UL << PG_private_2,		"private_2"	},
++	{1UL << PG_writeback,		"writeback"	},
++#ifdef CONFIG_PAGEFLAGS_EXTENDED
++	{1UL << PG_head,		"head"		},
++	{1UL << PG_tail,		"tail"		},
++#else
++	{1UL << PG_compound,		"compound"	},
++#endif
++	{1UL << PG_swapcache,		"swapcache"	},
++	{1UL << PG_mappedtodisk,	"mappedtodisk"	},
++	{1UL << PG_reclaim,		"reclaim"	},
++	{1UL << PG_buddy,		"buddy"		},
++	{1UL << PG_swapbacked,		"swapbacked"	},
++	{1UL << PG_unevictable,		"unevictable"	},
++#ifdef CONFIG_MMU
++	{1UL << PG_mlocked,		"mlocked"	},
++#endif
++#ifdef CONFIG_ARCH_USES_PG_UNCACHED
++	{1UL << PG_uncached,		"uncached"	},
++#endif
++#ifdef CONFIG_MEMORY_FAILURE
++	{1UL << PG_hwpoison,		"hwpoison"	},
++#endif
++	{-1UL,				NULL		},
++};
++
++static void dump_page_flags(unsigned long flags)
++{
++	const char *delim = "";
++	unsigned long mask;
++	int i;
++
++	printk(KERN_ALERT "page flags: %lx(", flags);
++
++	/* remove zone id */
++	flags &= (1UL << NR_PAGEFLAGS) - 1;
++
++	for (i = 0; pageflag_names[i].name && flags; i++) {
++
++		mask = pageflag_names[i].mask;
++		if ((flags & mask) != mask)
++			continue;
++
++		flags &= ~mask;
++		printk("%s%s", delim, pageflag_names[i].name);
++		delim = "|";
++	}
++
++	/* check for left over flags */
++	if (flags)
++		printk("%s%#lx", delim, flags);
++
++	printk(")\n");
++}
++
++void dump_page(struct page *page)
++{
++	printk(KERN_ALERT
++	       "page:%p count:%d mapcount:%d mapping:%p index:%#lx\n",
++		page, page_count(page), page_mapcount(page),
++		page->mapping, page->index);
++	dump_page_flags(page->flags);
++}
+--- linux-mm.orig/mm/memory.c	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/mm/memory.c	2009-12-14 19:21:22.000000000 +0800
+@@ -430,12 +430,8 @@ static void print_bad_pte(struct vm_area
+ 		"BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
+ 		current->comm,
+ 		(long long)pte_val(pte), (long long)pmd_val(*pmd));
+-	if (page) {
+-		printk(KERN_ALERT
+-		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+-		page, (void *)page->flags, page_count(page),
+-		page_mapcount(page), page->mapping, page->index);
+-	}
++	if (page)
++		dump_page(page);
+ 	printk(KERN_ALERT
+ 		"addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
+ 		(void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
+--- linux-mm.orig/mm/memory_hotplug.c	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/mm/memory_hotplug.c	2009-12-14 19:21:22.000000000 +0800
+@@ -678,9 +678,9 @@ do_migrate_range(unsigned long start_pfn
+ 			if (page_count(page))
+ 				not_managed++;
+ #ifdef CONFIG_DEBUG_VM
+-			printk(KERN_INFO "removing from LRU failed"
+-					 " %lx/%d/%lx\n",
+-				pfn, page_count(page), page->flags);
++			printk(KERN_ALERT "removing pfn %lx from LRU failed\n",
++			       pfn);
++			dump_page(page);
+ #endif
+ 		}
+ 	}
+--- linux-mm.orig/include/linux/mm.h	2009-12-11 10:01:25.000000000 +0800
++++ linux-mm/include/linux/mm.h	2009-12-14 19:21:22.000000000 +0800
+@@ -1328,5 +1328,7 @@ extern void shake_page(struct page *p, i
+ extern atomic_long_t mce_bad_pages;
+ extern int soft_offline_page(struct page *page, int flags);
+ 
++extern void dump_page(struct page *page);
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
