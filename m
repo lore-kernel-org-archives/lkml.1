@@ -1,85 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933028AbZLRViK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933066AbZLRVkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933028AbZLRViK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 16:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932735AbZLRViH
+	id S933066AbZLRVkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 16:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbZLRVkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 16:38:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52140 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932764AbZLRViF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 16:38:05 -0500
-Date: Fri, 18 Dec 2009 13:38:00 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Sage Weil <sage@newdream.net>, Gregory Haskins <gregory.haskins@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Ceph distributed file system client for 2.6.33
-In-Reply-To: <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net>
-Message-ID: <alpine.LFD.2.00.0912181327200.3712@localhost.localdomain>
-References: <Pine.LNX.4.64.0912071511470.32397@cobra.newdream.net> <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Dec 2009 16:40:21 -0500
+Received: from mail1.radix.net ([207.192.128.31]:39748 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932735AbZLRVkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 16:40:20 -0500
+Subject: Re: [Fwd: [patch] media video cx23888 driver: ported to new kfifo
+ API]
+From: Andy Walls <awalls@radix.net>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1261138265.8293.2.camel@wall-e>
+References: <4B2B5622.80604@infradead.org>
+	 <1261137648.3080.36.camel@palomino.walls.org>
+	 <1261138265.8293.2.camel@wall-e>
+Content-Type: text/plain
+Date: Fri, 18 Dec 2009 16:39:19 -0500
+Message-Id: <1261172359.3060.11.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-12-18 at 13:11 +0100, Stefani Seibold wrote:
+> Am Freitag, den 18.12.2009, 07:00 -0500 schrieb Andy Walls:
+> > On Fri, 2009-12-18 at 08:14 -0200, Mauro Carvalho Chehab wrote:
+
+> > 
+> > Stefani and Mauro,
+> > 
+> > My comments/concerns are in line:
+> > 
+> > > -------- Mensagem original --------
+> > > Assunto: [patch] media video cx23888 driver: ported to new kfifo API
+> > > Data: Fri, 18 Dec 2009 09:12:34 +0100
+> > > De: Stefani Seibold <stefani@seibold.net>
+> > > Para: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,  Mauro Carvalho Chehab <mchehab@infradead.org>
+> > > 
+> > > This patch will fix the cx23888 driver to use the new kfifo API.
+> > > 
+> > > The patch-set is against current mm tree from 11-Dec-2009
+> > > 
+> > > Greetings,
+> > > Stefani
+> > > 
+> > > Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> > > ---
+> > >  cx23888-ir.c |   35 ++++++++++-------------------------
+> > >  1 file changed, 10 insertions(+), 25 deletions(-)
+> > > 
+> > > --- mmotm.orig/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 08:42:53.936778002 +0100
+> > > +++ mmotm/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 09:03:04.808703259 +0100
+
+> > > @@ -631,7 +629,7 @@ static int cx23888_ir_irq_handler(struct
+> > >  		cx23888_ir_write4(dev, CX23888_IR_CNTRL_REG, cntrl);
+> > >  		*handled = true;
+> > >  	}
+> > > -	if (kfifo_len(state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+> > > +	if (kfifo_len(&state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+> > >  		events |= V4L2_SUBDEV_IR_RX_FIFO_SERVICE_REQ;
+> > >  
+> > >  	if (events)
+> > 
+> > I am concerned about reading the kfifo_len() without taking the lock,
+> > since another thread on another CPU may be reading from the kfifo at the
+> > same time.
+> > 
+> > If the new kfifo implementation has an atomic_read() or something behind
+> > the kfifo_len() call, then OK.
+> > 
+> > 
+> > > @@ -657,7 +655,7 @@ static int cx23888_ir_rx_read(struct v4l
+> > >  		return 0;
+> > >  	}
+> > >  
+> > > -	n = kfifo_get(state->rx_kfifo, buf, n);
+> > > +	n = kfifo_out_locked(&state->rx_kfifo, buf, n, &state->rx_kfifo_lock);
+> > >  
+> > >  	n /= sizeof(u32);
+> > >  	*num = n * sizeof(u32);
+> > > @@ -785,7 +783,7 @@ static int cx23888_ir_rx_s_parameters(st
+> > >  	o->interrupt_enable = p->interrupt_enable;
+> > >  	o->enable = p->enable;
+> > >  	if (p->enable) {
+> > > -		kfifo_reset(state->rx_kfifo);
+> > > +		kfifo_reset(&state->rx_kfifo);
+> > >  		if (p->interrupt_enable)
+> > >  			irqenable_rx(dev, IRQEN_RSE | IRQEN_RTE | IRQEN_ROE);
+> > >  		control_rx_enable(dev, p->enable);
+> > 
+> > Same concern about kfifo_reset() not taking the lock, and another thread
+> > reading data from the kfifo at the same time.  In the cx23885 module,
+> > this would mostly likely happen only during module unload as things are
+> > being shut down.
+> > 
+
+> Sorry, i ported it only to the new API. I did not touch the
+> functionality.
+
+Stefani,
+
+Huh?  The new kfifo implementation you wrote removed the locks from
+kfifo_len() and kfifo_reset().  By changing those two functions to not
+provide locking, you changed the functionality.
 
 
-On Fri, 18 Dec 2009, Sage Weil wrote:
-> 
-> I would still like to see ceph merged for 2.6.33.  It's certainly not 
-> production ready, but it would be greatly beneficial to be in mainline for 
-> the same reasons other file systems like btrfs and exofs were merged 
-> early.
+>  Feel free to fix it and post it.
 
-So what happened to ceph is the same thing that happened to the alacrityvm 
-pull request (Greg Haskins added to cc): I pretty much continually had a 
-_lot_ of pull requests, and all the time the priority for the ceph and 
-alactrityvm pull requests were just low enough on my priority list that I 
-never felt I had the reason to look into the background enough to make an 
-even half-assed decision of whether to pull or not.
+Please point me to the mmotm tree and I will try to get to this
+tonight. 
 
-And no, "just pull" is not my default answer - if I don't have a reason, 
-the default action is "don't pull".
+I have a blizzard coming tonight threatening to leave 16 to 20 inches of
+snow and I will likely lose power.  I have to purchase gas for my
+generator and go split some wood for the fire.  I might not get the
+change done before I lose power.
 
-I used to say that "my job is to say 'no'", although I've been so good at 
-farming out submaintainers that most of the time my real job is to pull 
-from submaintainers who hopefully know how to say 'no'. But when it comes 
-to whole new driver features, I'm still "no by default - tell me _why_ I 
-should pull".
+If you can't wait for me to provide a patch, just add spin locks and
+unlocks around the calls to kfifo_len() and kfifo_reset() in addition to
+the changes in your current patch.
 
-So what is a new subsystem person to do?
 
-The best thing to do is to try to have users that are vocal about the 
-feature, and talk about how great it is. Some advocates for it, in other 
-words. Just a few other people saying "hey, I use this, it's great", is 
-actually a big deal to me. For alacrityvm and cephfs, I didn't have that, 
-or they just weren't loud enough for me to hear.
+Regards,
+Andy
 
-So since you mentioned btrfs as an "early merge", I'll mention it too, as 
-a great example of how something got merged early because it had easily 
-gotten past my "people are asking for it" filter, to the point where _I_ 
-was interested in trying it out personally, and asking Chris&co to tell me 
-when it was ready.
+> Stefani
 
-Ok, so that was somewhat unusual - I'm not suggesting you'd need to try to 
-drum up quite _that_ much hype - but it kind of illustrates the opposite 
-extreme of your issue. Get some PR going, get people talking about it, get 
-people testing it out. Get people outside of your area saying "hey, I use 
-it, and I hate having to merge it every release".
 
-Then, when I see a pull request during the merge window, the pull suddenly 
-has a much higher priority, and I go "Ok, I know people are using this".
-
-So no astro-turfing, but real grass-roots support really does help (or 
-top-down feedback for that matter - if a _distribution_ says "we're going 
-to merge this in our distro regardless", that also counts as a big hint 
-for me that people actually expect to use it and would like to not go 
-through the pain of merging).
-
-			Linus
