@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZLROXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZLROZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZLROXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 09:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbZLROXp
+	id S1754018AbZLROZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 09:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbZLROZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 09:23:45 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57683 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbZLROXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 09:23:44 -0500
-Date: Fri, 18 Dec 2009 15:23:41 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Patrick Ohly <patrick.ohly@intel.com>
-Cc: Ali Gholami Rudi <ali@rudi.ir>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] trivial: fix checking socket() in net tstamp example
-In-Reply-To: <1257701045.29123.288.camel@pohly-mobl1.ikn.intel.com>
-Message-ID: <alpine.LNX.2.00.0912181523200.3755@pobox.suse.cz>
-References: <20091108155923.GA820@lilem.mirepesht> <1257701045.29123.288.camel@pohly-mobl1.ikn.intel.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 18 Dec 2009 09:25:19 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37080 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753671AbZLROZR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 09:25:17 -0500
+X-Sasl-enc: jx+CGZK6qaJ1dFIQlYIwlb7TYjCxYrkrXSVbxQgOLBKv 1261146315
+Date: Fri, 18 Dec 2009 12:25:12 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linking issue with THINKPAD_ACPI=y and ALSA subsystem
+Message-ID: <20091218142512.GA15898@khazad-dum.debian.net>
+References: <1261103706.4041.83.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261103706.4041.83.camel@localhost.localdomain>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Nov 2009, Patrick Ohly wrote:
+On Thu, 17 Dec 2009, Marcel Holtmann wrote:
+> I do have THINKPAD_ACPI=y in my configuration and CONFIG_SND=m.
 
-> > diff --git a/Documentation/networking/timestamping/timestamping.c b/Documentation/networking/timestamping/timestamping.c
-> > index a7936fe..bab619a 100644
-> > --- a/Documentation/networking/timestamping/timestamping.c
-> > +++ b/Documentation/networking/timestamping/timestamping.c
-> > @@ -370,7 +370,7 @@ int main(int argc, char **argv)
-> >  	}
-> >  
-> >  	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-> > -	if (socket < 0)
-> > +	if (sock < 0)
-> 
-> Argh, of course you are right. FWIW, acknowledged.
-
-Doesn't seem to be present in 2.6.33-rc1, I have applied it to my tree.
-
-Thanks,
+That won't work.  Even with the fixes for the Kconfig (either a depends on
+SND or a "select SOUND, select SND") you will have to either have both as
+modules or both built-in.
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
