@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZLRXPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZLSARw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755788AbZLRXPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 18:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZLRXPw
+	id S1755276AbZLSARw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 19:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZLSARs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 18:15:52 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:51976 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbZLRXPv (ORCPT
+	Fri, 18 Dec 2009 19:17:48 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:39294 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755049AbZLSARp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 18:15:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HeOq2YqP+0uf4tMbX1ooLusgz23bCQR6secUemZCrOsikgqzSCR9R+d4VfYP3+Fsfs
-         e6n+F9LOAIuuf7uuCjFwSJ7+zQemM0tFDfKUbOx0HGcQmORxlXqA9uV+OHO2OOO4NBYa
-         cQZ+yAU1XD0mJbAP586QfZ0eQ5ZOclGoVVTCg=
-Date: Sat, 19 Dec 2009 00:15:47 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Roland McGrath <roland@redhat.com>, Jan Kiszka <jan.kiszka@siemens.com>,
-       Avi Kivity <avi@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
-	08d68323d1f0c34452e614263b212ca556dae47f
-Message-ID: <20091218231545.GA8803@nowhere>
-References: <20091218005650.GA20667@redhat.com> <20091218030601.GB16470@nowhere> <20091218172747.GA10924@redhat.com> <20091218200503.2CA0DF9A4@magilla.sf.frob.com>
+	Fri, 18 Dec 2009 19:17:45 -0500
+Message-ID: <4B2C0D68.6080401@oracle.com>
+Date: Fri, 18 Dec 2009 15:16:56 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091218200503.2CA0DF9A4@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: lkml <linux-kernel@vger.kernel.org>
+CC: akpm <akpm@linux-foundation.org>, Pekka Paalanen <pq@iki.fi>
+Subject: [PATCH 1/4] Documentation: update mmiotrace.txt
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B2C1B94.00C9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 12:05:03PM -0800, Roland McGrath wrote:
-> > Please find the trivial test-case below. It hangs, because
-> > PTRACE_SINGLESTEP doesn't trigger the trap.
-> 
-> 2.6.33-rc1 x86-64 works for me with either -m64 or -m32 version of that test.
-> 
-> > (not sure this matters, but I did the testing under kvm)
-> 
-> Apparently it does.  You should hack some printks into do_debug() and see
-> how kvm is differing from real hardware.  (Actually you can probably do
-> this with a notifier added by a module, not that you are shy about
-> recompiling!)  
-> 
-> Probably kvm's emulation of the hardware behavior wrt the DR6 bits is not
-> sufficiently faithful.  Conceivably, kvm is being consistent with some
-> older hardware and we have encoded assumptions that only newer hardware
-> meets.  But I'd guess it's just a plain kvm bug.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Fix typos, spellos, hyphenation, line lengths.
 
-It looks like in kvm, before entering the guest, we restore its
-debug registers:
+BTW:  are there some userspace tools?  There is a reference to some
+at the wiki page, but there are no tools listed there.
 
-vcpu_enter_guest():
-	if (unlikely(vcpu->arch.switch_db_regs)) {
-		set_debugreg(0, 7);
-		set_debugreg(vcpu->arch.eff_db[0], 0);
-		set_debugreg(vcpu->arch.eff_db[1], 1);
-		set_debugreg(vcpu->arch.eff_db[2], 2);
-		set_debugreg(vcpu->arch.eff_db[3], 3);
-	}
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Pekka Paalanen <pq@iki.fi>
+---
+ Documentation/trace/mmiotrace.txt |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-
-But what happens to dr6, I don't know.
-
-Adding Avi and Jan in Cc.
+--- lnx-2633-rc1.orig/Documentation/trace/mmiotrace.txt
++++ lnx-2633-rc1/Documentation/trace/mmiotrace.txt
+@@ -44,7 +44,8 @@ Check for lost events.
+ Usage
+ -----
+ 
+-Make sure debugfs is mounted to /sys/kernel/debug. If not, (requires root privileges)
++Make sure debugfs is mounted to /sys/kernel/debug.
++If not (requires root privileges):
+ $ mount -t debugfs debugfs /sys/kernel/debug
+ 
+ Check that the driver you are about to trace is not loaded.
+@@ -91,7 +92,7 @@ $ dmesg > dmesg.txt
+ $ tar zcf pciid-nick-mmiotrace.tar.gz mydump.txt lspci.txt dmesg.txt
+ and then send the .tar.gz file. The trace compresses considerably. Replace
+ "pciid" and "nick" with the PCI ID or model name of your piece of hardware
+-under investigation and your nick name.
++under investigation and your nickname.
+ 
+ 
+ How Mmiotrace Works
+@@ -100,7 +101,7 @@ How Mmiotrace Works
+ Access to hardware IO-memory is gained by mapping addresses from PCI bus by
+ calling one of the ioremap_*() functions. Mmiotrace is hooked into the
+ __ioremap() function and gets called whenever a mapping is created. Mapping is
+-an event that is recorded into the trace log. Note, that ISA range mappings
++an event that is recorded into the trace log. Note that ISA range mappings
+ are not caught, since the mapping always exists and is returned directly.
+ 
+ MMIO accesses are recorded via page faults. Just before __ioremap() returns,
+@@ -122,11 +123,11 @@ Trace Log Format
+ ----------------
+ 
+ The raw log is text and easily filtered with e.g. grep and awk. One record is
+-one line in the log. A record starts with a keyword, followed by keyword
+-dependant arguments. Arguments are separated by a space, or continue until the
++one line in the log. A record starts with a keyword, followed by keyword-
++dependent arguments. Arguments are separated by a space, or continue until the
+ end of line. The format for version 20070824 is as follows:
+ 
+-Explanation	Keyword	Space separated arguments
++Explanation	Keyword	Space-separated arguments
+ ---------------------------------------------------------------------------
+ 
+ read event	R	width, timestamp, map id, physical, value, PC, PID
+@@ -136,7 +137,7 @@ iounmap event	UNMAP	timestamp, map id, P
+ marker		MARK	timestamp, text
+ version		VERSION	the string "20070824"
+ info for reader	LSPCI	one line from lspci -v
+-PCI address map	PCIDEV	space separated /proc/bus/pci/devices data
++PCI address map	PCIDEV	space-separated /proc/bus/pci/devices data
+ unk. opcode	UNKNOWN	timestamp, map id, physical, data, PC, PID
+ 
+ Timestamp is in seconds with decimals. Physical is a PCI bus address, virtual
 
