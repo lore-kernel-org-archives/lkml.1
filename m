@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZLRSzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZLRS4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZLRSzY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 13:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbZLRSzX
+	id S1755450AbZLRS4w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 13:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZLRS4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 13:55:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43656 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Dec 2009 13:56:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41109 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752097AbZLRSzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 13:55:20 -0500
-Date: Fri, 18 Dec 2009 19:55:06 +0100
+	id S1752683AbZLRS4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 13:56:49 -0500
+Date: Fri, 18 Dec 2009 19:56:31 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20091218185506.GA5859@elte.hu>
+Subject: [GIT PULL] x86 fixes
+Message-ID: <20091218185631.GA15747@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,1332 +33,1252 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest sched-fixes-for-linus git tree from:
+Please pull the latest x86-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-These contain some difficult race fixes from Peter - would be nice to pull 
-them early in the -rc2 cycle, in case there's any problems with them.
+
+out-of-topic modifications in x86-fixes-for-linus:
+--------------------------------------------------
+Makefile                           # 06b5dc6: Makefile: Unexport LC_ALL instead
+                                   # c051346: Makefile: set LC_CTYPE, LC_COLLAT
+include/linux/decompress/mm.h      # c1e7c3a: bzip2/lzma/gzip: pre-boot malloc 
+include/linux/mm.h                 # 3299625: x86: Fix checking of SRAT when no
+init/initramfs.c                   # 5429136: initramfs: add missing decompress
+lib/decompress_bunzip2.c           # d452986: bzip2: Add missing checks for mal
+mm/page_alloc.c                    # 3299625: x86: Fix checking of SRAT when no
 
  Thanks,
 
 	Ingo
 
 ------------------>
-David Miller (1):
-      sched: Fix cpu_clock() in NMIs, on !CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+Andreas Herrmann (1):
+      x86, amd: Get multi-node CPU info from NodeId MSR instead of PCI config space
 
-Frederic Weisbecker (1):
-      sched: Teach might_sleep() about preemptible RCU
+Borislav Petkov (1):
+      x86, msr: msrs_alloc/free for CONFIG_SMP=n
 
-Ingo Molnar (1):
-      sched: Make warning less noisy
+H. Peter Anvin (3):
+      x86, msr/cpuid: Register enough minors for the MSR and CPUID drivers
+      Makefile: set LC_CTYPE, LC_COLLATE, LC_NUMERIC to C
+      Makefile: Unexport LC_ALL instead of clearing it
 
-Joe Perches (1):
-      sched: Use pr_fmt() and pr_<level>()
+Pallipadi, Venkatesh (1):
+      x86: Reenable TSC sync check at boot, even with NONSTOP_TSC
 
-Peter Zijlstra (16):
-      sched: Mark boot-cpu active before smp_init()
-      sched: Fix task_hot() test order
-      sched: Select_task_rq_fair() must honour SD_LOAD_BALANCE
-      sched: Use TASK_WAKING for fork wakups
-      sched: Ensure set_task_cpu() is never called on blocked tasks
-      sched: Fix sched_exec() balancing
-      sched: Fix select_task_rq() vs hotplug issues
-      sched: Move kthread_bind() back to kthread.c
-      sched: Add pre and post wakeup hooks
-      sched: Remove the cfs_rq dependency from set_task_cpu()
-      sched: Simplify set_task_cpu()
-      sched: Move TASK_STATE_TO_CHAR_STR near the TASK_state bits
-      sched: Add missing state chars to TASK_STATE_TO_CHAR_STR
-      sched: Update task_state_arraypwith new states
-      sched: Assert task state bits at build time
-      sched: Fix broken assertion
+Phillip Lougher (3):
+      bzip2/lzma/gzip: pre-boot malloc doesn't return NULL on failure
+      bzip2: Add missing checks for malloc returning NULL
+      initramfs: add missing decompressor error check
 
-Rafael J. Wysocki (1):
-      sched: Make wakeup side and atomic variants of completion API irq safe
+Roland Dreier (1):
+      x86: Don't use POSIX character classes in gen-insn-attr-x86.awk
 
-Thomas Gleixner (3):
-      sched: Use rcu in sys_sched_getscheduler/sys_sched_getparam()
-      sched: Use rcu in sched_get/set_affinity()
-      sched: Use rcu in sched_get_rr_param()
+Sheng Yang (1):
+      x86: Add IA32_TSC_AUX MSR and use it
 
-Xiaotian Feng (1):
-      sched: Fix set_cpu_active() in cpu_down()
+Suresh Siddha (2):
+      x86, cpuid: Add "volatile" to asm in native_cpuid()
+      x86, irq: Allow 0xff for /proc/irq/[n]/smp_affinity on an 8-cpu system
+
+Yinghai Lu (2):
+      x86: Fix checking of SRAT when node 0 ram is not from 0
+      x86: Increase MAX_EARLY_RES; insufficient on 32-bit NUMA
+
+akpm@linux-foundation.org (1):
+      x86: Fix objdump version check in arch/x86/tools/chkobjdump.awk
 
 
- fs/proc/array.c         |   19 ++-
- include/linux/rcutiny.h |    5 +
- include/linux/rcutree.h |   11 ++
- include/linux/sched.h   |   13 +-
- init/main.c             |    7 +-
- kernel/cpu.c            |   24 +---
- kernel/kthread.c        |   23 +++
- kernel/sched.c          |  401 ++++++++++++++++++++++++-----------------------
- kernel/sched_clock.c    |   23 ++-
- kernel/sched_fair.c     |   53 ++++++-
- kernel/sched_idletask.c |    2 +-
- kernel/sched_rt.c       |    4 +-
- 12 files changed, 336 insertions(+), 249 deletions(-)
+ Makefile                              |    7 +
+ arch/x86/include/asm/cpufeature.h     |    1 +
+ arch/x86/include/asm/hw_irq.h         |    3 +-
+ arch/x86/include/asm/msr-index.h      |    2 +
+ arch/x86/include/asm/msr.h            |   16 ++-
+ arch/x86/include/asm/processor.h      |    2 +-
+ arch/x86/kernel/apic/apic_flat_64.c   |    5 +-
+ arch/x86/kernel/apic/bigsmp_32.c      |    5 +-
+ arch/x86/kernel/apic/io_apic.c        |   32 ++---
+ arch/x86/kernel/apic/x2apic_cluster.c |    5 +-
+ arch/x86/kernel/apic/x2apic_phys.c    |    5 +-
+ arch/x86/kernel/apic/x2apic_uv_x.c    |    5 +-
+ arch/x86/kernel/cpu/amd.c             |   53 +++------
+ arch/x86/kernel/cpu/intel.c           |    1 -
+ arch/x86/kernel/cpuid.c               |    5 +-
+ arch/x86/kernel/e820.c                |    2 +-
+ arch/x86/kernel/msr.c                 |    4 +-
+ arch/x86/kernel/tsc.c                 |    1 +
+ arch/x86/kernel/uv_irq.c              |    3 +-
+ arch/x86/lib/Makefile                 |    4 +-
+ arch/x86/lib/msr-smp.c                |  204 +++++++++++++++++++++++++++++++
+ arch/x86/lib/msr.c                    |  213 ---------------------------------
+ arch/x86/mm/srat_32.c                 |    2 +
+ arch/x86/mm/srat_64.c                 |    4 +-
+ arch/x86/tools/chkobjdump.awk         |    2 +-
+ arch/x86/tools/gen-insn-attr-x86.awk  |   10 +-
+ include/linux/decompress/mm.h         |    4 +-
+ include/linux/mm.h                    |    3 +
+ init/initramfs.c                      |   10 +-
+ lib/decompress_bunzip2.c              |   10 ++-
+ mm/page_alloc.c                       |    4 +-
+ 31 files changed, 307 insertions(+), 320 deletions(-)
+ create mode 100644 arch/x86/lib/msr-smp.c
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 4badde1..f560325 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -134,13 +134,16 @@ static inline void task_name(struct seq_file *m, struct task_struct *p)
-  * simple bit tests.
+diff --git a/Makefile b/Makefile
+index 33d4732..5e92ca5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,6 +16,13 @@ NAME = Man-Eating Seals of Antiquity
+ # o  print "Entering directory ...";
+ MAKEFLAGS += -rR --no-print-directory
+ 
++# Avoid funny character set dependencies
++unexport LC_ALL
++LC_CTYPE=C
++LC_COLLATE=C
++LC_NUMERIC=C
++export LC_CTYPE LC_COLLATE LC_NUMERIC
++
+ # We are using a recursive build, so we need to do a little thinking
+ # to get the ordering right.
+ #
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 613700f..637e1ec 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -153,6 +153,7 @@
+ #define X86_FEATURE_SSE5	(6*32+11) /* SSE-5 */
+ #define X86_FEATURE_SKINIT	(6*32+12) /* SKINIT/STGI instructions */
+ #define X86_FEATURE_WDT		(6*32+13) /* Watchdog timer */
++#define X86_FEATURE_NODEID_MSR	(6*32+19) /* NodeId MSR */
+ 
+ /*
+  * Auxiliary flags: Linux defined - For features scattered in various
+diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
+index 08c48a8..eeac829 100644
+--- a/arch/x86/include/asm/hw_irq.h
++++ b/arch/x86/include/asm/hw_irq.h
+@@ -103,7 +103,8 @@ extern int assign_irq_vector(int, struct irq_cfg *, const struct cpumask *);
+ extern void send_cleanup_vector(struct irq_cfg *);
+ 
+ struct irq_desc;
+-extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *);
++extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *,
++				      unsigned int *dest_id);
+ extern int IO_APIC_get_PCI_irq_vector(int bus, int devfn, int pin, struct io_apic_irq_attr *irq_attr);
+ extern void setup_ioapic_dest(void);
+ 
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 4ffe09b..1cd58cd 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -12,6 +12,7 @@
+ #define MSR_FS_BASE		0xc0000100 /* 64bit FS base */
+ #define MSR_GS_BASE		0xc0000101 /* 64bit GS base */
+ #define MSR_KERNEL_GS_BASE	0xc0000102 /* SwapGS GS shadow */
++#define MSR_TSC_AUX		0xc0000103 /* Auxiliary TSC */
+ 
+ /* EFER bits: */
+ #define _EFER_SCE		0  /* SYSCALL/SYSRET */
+@@ -123,6 +124,7 @@
+ #define FAM10H_MMIO_CONF_BUSRANGE_SHIFT 2
+ #define FAM10H_MMIO_CONF_BASE_MASK	0xfffffff
+ #define FAM10H_MMIO_CONF_BASE_SHIFT	20
++#define MSR_FAM10H_NODE_ID		0xc001100c
+ 
+ /* K8 MSRs */
+ #define MSR_K8_TOP_MEM1			0xc001001a
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 2d228fc..c5bc4c2 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -27,6 +27,18 @@ struct msr {
+ 	};
+ };
+ 
++struct msr_info {
++	u32 msr_no;
++	struct msr reg;
++	struct msr *msrs;
++	int err;
++};
++
++struct msr_regs_info {
++	u32 *regs;
++	int err;
++};
++
+ static inline unsigned long long native_read_tscp(unsigned int *aux)
+ {
+ 	unsigned long low, high;
+@@ -240,9 +252,9 @@ do {                                                            \
+ #define checking_wrmsrl(msr, val) wrmsr_safe((msr), (u32)(val),		\
+ 					     (u32)((val) >> 32))
+ 
+-#define write_tsc(val1, val2) wrmsr(0x10, (val1), (val2))
++#define write_tsc(val1, val2) wrmsr(MSR_IA32_TSC, (val1), (val2))
+ 
+-#define write_rdtscp_aux(val) wrmsr(0xc0000103, (val), 0)
++#define write_rdtscp_aux(val) wrmsr(MSR_TSC_AUX, (val), 0)
+ 
+ struct msr *msrs_alloc(void);
+ void msrs_free(struct msr *msrs);
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 6f8ec1c..fc801ba 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -181,7 +181,7 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
+ 				unsigned int *ecx, unsigned int *edx)
+ {
+ 	/* ecx is often an input as well as an output. */
+-	asm("cpuid"
++	asm volatile("cpuid"
+ 	    : "=a" (*eax),
+ 	      "=b" (*ebx),
+ 	      "=c" (*ecx),
+diff --git a/arch/x86/kernel/apic/apic_flat_64.c b/arch/x86/kernel/apic/apic_flat_64.c
+index d0c99ab..eacbd2b 100644
+--- a/arch/x86/kernel/apic/apic_flat_64.c
++++ b/arch/x86/kernel/apic/apic_flat_64.c
+@@ -306,10 +306,7 @@ physflat_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
+ 	}
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_apicid, cpu);
+ }
+ 
+ struct apic apic_physflat =  {
+diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
+index 38dcecf..cb804c5 100644
+--- a/arch/x86/kernel/apic/bigsmp_32.c
++++ b/arch/x86/kernel/apic/bigsmp_32.c
+@@ -131,10 +131,7 @@ static unsigned int bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
+ 	}
+-	if (cpu < nr_cpu_ids)
+-		return bigsmp_cpu_to_logical_apicid(cpu);
+-
+-	return BAD_APICID;
++	return bigsmp_cpu_to_logical_apicid(cpu);
+ }
+ 
+ static int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index d5d498f..98ced70 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -2276,26 +2276,28 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq
+ 
+ /*
+  * Either sets desc->affinity to a valid value, and returns
+- * ->cpu_mask_to_apicid of that, or returns BAD_APICID and
++ * ->cpu_mask_to_apicid of that in dest_id, or returns -1 and
+  * leaves desc->affinity untouched.
   */
- static const char *task_state_array[] = {
--	"R (running)",		/*  0 */
--	"S (sleeping)",		/*  1 */
--	"D (disk sleep)",	/*  2 */
--	"T (stopped)",		/*  4 */
--	"T (tracing stop)",	/*  8 */
--	"Z (zombie)",		/* 16 */
--	"X (dead)"		/* 32 */
-+	"R (running)",		/*   0 */
-+	"S (sleeping)",		/*   1 */
-+	"D (disk sleep)",	/*   2 */
-+	"T (stopped)",		/*   4 */
-+	"t (tracing stop)",	/*   8 */
-+	"Z (zombie)",		/*  16 */
-+	"X (dead)",		/*  32 */
-+	"x (dead)",		/*  64 */
-+	"K (wakekill)",		/* 128 */
-+	"W (waking)",		/* 256 */
- };
- 
- static inline const char *get_task_state(struct task_struct *tsk)
-@@ -148,6 +151,8 @@ static inline const char *get_task_state(struct task_struct *tsk)
- 	unsigned int state = (tsk->state & TASK_REPORT) | tsk->exit_state;
- 	const char **p = &task_state_array[0];
- 
-+	BUILD_BUG_ON(1 + ilog2(TASK_STATE_MAX) != ARRAY_SIZE(task_state_array));
-+
- 	while (state) {
- 		p++;
- 		state >>= 1;
-diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
-index c4ba9a7..96cc307 100644
---- a/include/linux/rcutiny.h
-+++ b/include/linux/rcutiny.h
-@@ -101,4 +101,9 @@ static inline void exit_rcu(void)
+ unsigned int
+-set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
++set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask,
++		  unsigned int *dest_id)
  {
- }
+ 	struct irq_cfg *cfg;
+ 	unsigned int irq;
  
-+static inline int rcu_preempt_depth(void)
-+{
+ 	if (!cpumask_intersects(mask, cpu_online_mask))
+-		return BAD_APICID;
++		return -1;
+ 
+ 	irq = desc->irq;
+ 	cfg = desc->chip_data;
+ 	if (assign_irq_vector(irq, cfg, mask))
+-		return BAD_APICID;
++		return -1;
+ 
+ 	cpumask_copy(desc->affinity, mask);
+ 
+-	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
++	*dest_id = apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
 +	return 0;
-+}
-+
- #endif /* __LINUX_RCUTINY_H */
-diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-index c93eee5..8044b1b 100644
---- a/include/linux/rcutree.h
-+++ b/include/linux/rcutree.h
-@@ -45,6 +45,12 @@ extern void __rcu_read_unlock(void);
- extern void synchronize_rcu(void);
- extern void exit_rcu(void);
- 
-+/*
-+ * Defined as macro as it is a very low level header
-+ * included from areas that don't even know about current
-+ */
-+#define rcu_preempt_depth() (current->rcu_read_lock_nesting)
-+
- #else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 
- static inline void __rcu_read_lock(void)
-@@ -63,6 +69,11 @@ static inline void exit_rcu(void)
- {
  }
  
-+static inline int rcu_preempt_depth(void)
-+{
-+	return 0;
-+}
-+
- #endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
+ static int
+@@ -2311,12 +2313,11 @@ set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
+ 	cfg = desc->chip_data;
  
- static inline void __rcu_read_lock_bh(void)
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5c858f3..3754387 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -192,6 +192,12 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- #define TASK_DEAD		64
- #define TASK_WAKEKILL		128
- #define TASK_WAKING		256
-+#define TASK_STATE_MAX		512
-+
-+#define TASK_STATE_TO_CHAR_STR "RSDTtZXxKW"
-+
-+extern char ___assert_task_state[1 - 2*!!(
-+		sizeof(TASK_STATE_TO_CHAR_STR)-1 != ilog2(TASK_STATE_MAX)+1)];
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest != BAD_APICID) {
++	ret = set_desc_affinity(desc, mask, &dest);
++	if (!ret) {
+ 		/* Only the high 8 bits are valid. */
+ 		dest = SET_APIC_LOGICAL_ID(dest);
+ 		__target_IO_APIC_irq(irq, dest, cfg);
+-		ret = 0;
+ 	}
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
  
- /* Convenience macros for the sake of set_task_state */
- #define TASK_KILLABLE		(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
-@@ -1091,7 +1097,8 @@ struct sched_class {
- 			      enum cpu_idle_type idle);
- 	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
- 	void (*post_schedule) (struct rq *this_rq);
--	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
-+	void (*task_waking) (struct rq *this_rq, struct task_struct *task);
-+	void (*task_woken) (struct rq *this_rq, struct task_struct *task);
+@@ -3351,8 +3352,7 @@ static int set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct msi_msg msg;
+ 	unsigned int dest;
  
- 	void (*set_cpus_allowed)(struct task_struct *p,
- 				 const struct cpumask *newmask);
-@@ -1115,7 +1122,7 @@ struct sched_class {
- 					 struct task_struct *task);
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
  
- #ifdef CONFIG_FAIR_GROUP_SCHED
--	void (*moved_group) (struct task_struct *p);
-+	void (*moved_group) (struct task_struct *p, int on_rq);
- #endif
- };
+ 	cfg = desc->chip_data;
+@@ -3384,8 +3384,7 @@ ir_set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	if (get_irte(irq, &irte))
+ 		return -1;
  
-@@ -2594,8 +2601,6 @@ static inline void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	irte.vector = cfg->vector;
+@@ -3567,8 +3566,7 @@ static int dmar_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+@@ -3623,8 +3621,7 @@ static int hpet_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+@@ -3730,8 +3727,7 @@ static int set_ht_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct irq_cfg *cfg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
+index a5371ec..cf69c59 100644
+--- a/arch/x86/kernel/apic/x2apic_cluster.c
++++ b/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -148,10 +148,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 			break;
+ 	}
+ 
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_logical_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_logical_apicid, cpu);
  }
- #endif /* CONFIG_MM_OWNER */
  
--#define TASK_STATE_TO_CHAR_STR "RSDTtZX"
+ static unsigned int x2apic_cluster_phys_get_apic_id(unsigned long x)
+diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
+index a8989aa..8972f38 100644
+--- a/arch/x86/kernel/apic/x2apic_phys.c
++++ b/arch/x86/kernel/apic/x2apic_phys.c
+@@ -146,10 +146,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 			break;
+ 	}
+ 
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
 -
- #endif /* __KERNEL__ */
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_apicid, cpu);
+ }
  
- #endif
-diff --git a/init/main.c b/init/main.c
-index c3db4a9..dac44a9 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -369,12 +369,6 @@ static void __init smp_init(void)
+ static unsigned int x2apic_phys_get_apic_id(unsigned long x)
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index b684bb3..d56b0ef 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -225,10 +225,7 @@ uv_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
+ 	}
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_apicid, cpu);
+ }
+ 
+ static unsigned int x2apic_get_apic_id(unsigned long x)
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 8dc3ea1..e485825 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -254,59 +254,36 @@ static int __cpuinit nearby_node(int apicid)
+ 
+ /*
+  * Fixup core topology information for AMD multi-node processors.
+- * Assumption 1: Number of cores in each internal node is the same.
+- * Assumption 2: Mixed systems with both single-node and dual-node
+- *               processors are not supported.
++ * Assumption: Number of cores in each internal node is the same.
+  */
+ #ifdef CONFIG_X86_HT
+ static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
  {
- 	unsigned int cpu;
- 
--	/*
--	 * Set up the current CPU as possible to migrate to.
--	 * The other ones will be done by cpu_up/cpu_down()
--	 */
--	set_cpu_active(smp_processor_id(), true);
--
- 	/* FIXME: This should be done in userspace --RR */
- 	for_each_present_cpu(cpu) {
- 		if (num_online_cpus() >= setup_max_cpus)
-@@ -486,6 +480,7 @@ static void __init boot_cpu_init(void)
+-#ifdef CONFIG_PCI
+-	u32 t, cpn;
+-	u8 n, n_id;
++	unsigned long long value;
++	u32 nodes, cores_per_node;
  	int cpu = smp_processor_id();
- 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
- 	set_cpu_online(cpu, true);
-+	set_cpu_active(cpu, true);
- 	set_cpu_present(cpu, true);
- 	set_cpu_possible(cpu, true);
- }
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 291ac58..1c8ddd6 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -209,6 +209,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- 		return -ENOMEM;
  
- 	cpu_hotplug_begin();
-+	set_cpu_active(cpu, false);
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
- 	if (err == NOTIFY_BAD) {
-@@ -280,18 +281,6 @@ int __ref cpu_down(unsigned int cpu)
- 		goto out;
- 	}
++	if (!cpu_has(c, X86_FEATURE_NODEID_MSR))
++		return;
++
+ 	/* fixup topology information only once for a core */
+ 	if (cpu_has(c, X86_FEATURE_AMD_DCM))
+ 		return;
  
--	set_cpu_active(cpu, false);
+-	/* check for multi-node processor on boot cpu */
+-	t = read_pci_config(0, 24, 3, 0xe8);
+-	if (!(t & (1 << 29)))
++	rdmsrl(MSR_FAM10H_NODE_ID, value);
++
++	nodes = ((value >> 3) & 7) + 1;
++	if (nodes == 1)
+ 		return;
+ 
+ 	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
++	cores_per_node = c->x86_max_cores / nodes;
+ 
+-	/* cores per node: each internal node has half the number of cores */
+-	cpn = c->x86_max_cores >> 1;
++	/* store NodeID, use llc_shared_map to store sibling info */
++	per_cpu(cpu_llc_id, cpu) = value & 7;
+ 
+-	/* even-numbered NB_id of this dual-node processor */
+-	n = c->phys_proc_id << 1;
 -
 -	/*
--	 * Make sure the all cpus did the reschedule and are not
--	 * using stale version of the cpu_active_mask.
--	 * This is not strictly necessary becuase stop_machine()
--	 * that we run down the line already provides the required
--	 * synchronization. But it's really a side effect and we do not
--	 * want to depend on the innards of the stop_machine here.
+-	 * determine internal node id and assign cores fifty-fifty to
+-	 * each node of the dual-node processor
 -	 */
--	synchronize_sched();
+-	t = read_pci_config(0, 24 + n, 3, 0xe8);
+-	n = (t>>30) & 0x3;
+-	if (n == 0) {
+-		if (c->cpu_core_id < cpn)
+-			n_id = 0;
+-		else
+-			n_id = 1;
+-	} else {
+-		if (c->cpu_core_id < cpn)
+-			n_id = 1;
+-		else
+-			n_id = 0;
+-	}
 -
- 	err = _cpu_down(cpu, 0);
+-	/* compute entire NodeID, use llc_shared_map to store sibling info */
+-	per_cpu(cpu_llc_id, cpu) = (c->phys_proc_id << 1) + n_id;
+-
+-	/* fixup core id to be in range from 0 to cpn */
+-	c->cpu_core_id = c->cpu_core_id % cpn;
+-#endif
++	/* fixup core id to be in range from 0 to (cores_per_node - 1) */
++	c->cpu_core_id = c->cpu_core_id % cores_per_node;
+ }
+ #endif
  
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index 9c31e8b..879666f 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -70,7 +70,6 @@ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ 	if (c->x86_power & (1 << 8)) {
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+ 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
+-		set_cpu_cap(c, X86_FEATURE_TSC_RELIABLE);
+ 		sched_clock_stable = 1;
+ 	}
+ 
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index 7ef24a7..cb27fd6 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -187,7 +187,8 @@ static int __init cpuid_init(void)
+ 	int i, err = 0;
+ 	i = 0;
+ 
+-	if (register_chrdev(CPUID_MAJOR, "cpu/cpuid", &cpuid_fops)) {
++	if (__register_chrdev(CPUID_MAJOR, 0, NR_CPUS,
++			      "cpu/cpuid", &cpuid_fops)) {
+ 		printk(KERN_ERR "cpuid: unable to get major %d for cpuid\n",
+ 		       CPUID_MAJOR);
+ 		err = -EBUSY;
+@@ -216,7 +217,7 @@ out_class:
+ 	}
+ 	class_destroy(cpuid_class);
+ out_chrdev:
+-	unregister_chrdev(CPUID_MAJOR, "cpu/cpuid");
++	__unregister_chrdev(CPUID_MAJOR, 0, NR_CPUS, "cpu/cpuid");
  out:
-@@ -382,19 +371,12 @@ int disable_nonboot_cpus(void)
- 		return error;
- 	cpu_maps_update_begin();
- 	first_cpu = cpumask_first(cpu_online_mask);
--	/* We take down all of the non-boot CPUs in one shot to avoid races
-+	/*
-+	 * We take down all of the non-boot CPUs in one shot to avoid races
- 	 * with the userspace trying to use the CPU hotplug at the same time
- 	 */
- 	cpumask_clear(frozen_cpus);
- 
--	for_each_online_cpu(cpu) {
--		if (cpu == first_cpu)
--			continue;
--		set_cpu_active(cpu, false);
--	}
--
--	synchronize_sched();
--
- 	printk("Disabling non-boot CPUs ...\n");
- 	for_each_online_cpu(cpu) {
- 		if (cpu == first_cpu)
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index ab7ae57..fbb6222 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -150,6 +150,29 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
- EXPORT_SYMBOL(kthread_create);
- 
- /**
-+ * kthread_bind - bind a just-created kthread to a cpu.
-+ * @p: thread created by kthread_create().
-+ * @cpu: cpu (might not be online, must be possible) for @k to run on.
-+ *
-+ * Description: This function is equivalent to set_cpus_allowed(),
-+ * except that @cpu doesn't need to be online, and the thread must be
-+ * stopped (i.e., just returned from kthread_create()).
-+ */
-+void kthread_bind(struct task_struct *p, unsigned int cpu)
-+{
-+	/* Must have done schedule() in kthread() before we set_task_cpu */
-+	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	p->cpus_allowed = cpumask_of_cpu(cpu);
-+	p->rt.nr_cpus_allowed = 1;
-+	p->flags |= PF_THREAD_BOUND;
-+}
-+EXPORT_SYMBOL(kthread_bind);
-+
-+/**
-  * kthread_stop - stop a thread created by kthread_create().
-  * @k: thread created by kthread_create().
-  *
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 18cceee..720df10 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -26,6 +26,8 @@
-  *              Thomas Gleixner, Mike Kravetz
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/nmi.h>
-@@ -2002,39 +2004,6 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
- 		p->sched_class->prio_changed(rq, p, oldprio, running);
+ 	return err;
  }
- 
--/**
-- * kthread_bind - bind a just-created kthread to a cpu.
-- * @p: thread created by kthread_create().
-- * @cpu: cpu (might not be online, must be possible) for @k to run on.
-- *
-- * Description: This function is equivalent to set_cpus_allowed(),
-- * except that @cpu doesn't need to be online, and the thread must be
-- * stopped (i.e., just returned from kthread_create()).
-- *
-- * Function lives here instead of kthread.c because it messes with
-- * scheduler internals which require locking.
-- */
--void kthread_bind(struct task_struct *p, unsigned int cpu)
--{
--	struct rq *rq = cpu_rq(cpu);
--	unsigned long flags;
--
--	/* Must have done schedule() in kthread() before we set_task_cpu */
--	if (!wait_task_inactive(p, TASK_UNINTERRUPTIBLE)) {
--		WARN_ON(1);
--		return;
--	}
--
--	raw_spin_lock_irqsave(&rq->lock, flags);
--	update_rq_clock(rq);
--	set_task_cpu(p, cpu);
--	p->cpus_allowed = cpumask_of_cpu(cpu);
--	p->rt.nr_cpus_allowed = 1;
--	p->flags |= PF_THREAD_BOUND;
--	raw_spin_unlock_irqrestore(&rq->lock, flags);
--}
--EXPORT_SYMBOL(kthread_bind);
--
- #ifdef CONFIG_SMP
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index f50447d..05ed7ab 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -724,7 +724,7 @@ core_initcall(e820_mark_nvs_memory);
  /*
-  * Is this task likely cache-hot:
-@@ -2044,6 +2013,9 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+  * Early reserved memory areas.
+  */
+-#define MAX_EARLY_RES 20
++#define MAX_EARLY_RES 32
+ 
+ struct early_res {
+ 	u64 start, end;
+diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+index 572b07e..4bd93c9 100644
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -246,7 +246,7 @@ static int __init msr_init(void)
+ 	int i, err = 0;
+ 	i = 0;
+ 
+-	if (register_chrdev(MSR_MAJOR, "cpu/msr", &msr_fops)) {
++	if (__register_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr", &msr_fops)) {
+ 		printk(KERN_ERR "msr: unable to get major %d for msr\n",
+ 		       MSR_MAJOR);
+ 		err = -EBUSY;
+@@ -274,7 +274,7 @@ out_class:
+ 		msr_device_destroy(i);
+ 	class_destroy(msr_class);
+ out_chrdev:
+-	unregister_chrdev(MSR_MAJOR, "cpu/msr");
++	__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr");
+ out:
+ 	return err;
+ }
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index cd982f4..597683a 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -763,6 +763,7 @@ void mark_tsc_unstable(char *reason)
  {
- 	s64 delta;
+ 	if (!tsc_unstable) {
+ 		tsc_unstable = 1;
++		sched_clock_stable = 0;
+ 		printk(KERN_INFO "Marking TSC unstable due to %s\n", reason);
+ 		/* Change only the rating, when not registered */
+ 		if (clocksource_tsc.mult)
+diff --git a/arch/x86/kernel/uv_irq.c b/arch/x86/kernel/uv_irq.c
+index 61d805d..ece73d8 100644
+--- a/arch/x86/kernel/uv_irq.c
++++ b/arch/x86/kernel/uv_irq.c
+@@ -215,8 +215,7 @@ static int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	unsigned long mmr_offset;
+ 	unsigned mmr_pnode;
  
-+	if (p->sched_class != &fair_sched_class)
-+		return 0;
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	mmr_value = 0;
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index a2d6472..706be8b 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -14,7 +14,7 @@ $(obj)/inat.o: $(obj)/inat-tables.c
+ 
+ clean-files := inat-tables.c
+ 
+-obj-$(CONFIG_SMP) := msr.o
++obj-$(CONFIG_SMP) += msr-smp.o
+ 
+ lib-y := delay.o
+ lib-y += thunk_$(BITS).o
+@@ -22,7 +22,7 @@ lib-y += usercopy_$(BITS).o getuser.o putuser.o
+ lib-y += memcpy_$(BITS).o
+ lib-y += insn.o inat.o
+ 
+-obj-y += msr-reg.o msr-reg-export.o
++obj-y += msr.o msr-reg.o msr-reg-export.o
+ 
+ ifeq ($(CONFIG_X86_32),y)
+         obj-y += atomic64_32.o
+diff --git a/arch/x86/lib/msr-smp.c b/arch/x86/lib/msr-smp.c
+new file mode 100644
+index 0000000..a6b1b86
+--- /dev/null
++++ b/arch/x86/lib/msr-smp.c
+@@ -0,0 +1,204 @@
++#include <linux/module.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <asm/msr.h>
 +
- 	/*
- 	 * Buddy candidates are cache hot:
- 	 */
-@@ -2052,9 +2024,6 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 			 &p->se == cfs_rq_of(&p->se)->last))
- 		return 1;
- 
--	if (p->sched_class != &fair_sched_class)
--		return 0;
--
- 	if (sysctl_sched_migration_cost == -1)
- 		return 1;
- 	if (sysctl_sched_migration_cost == 0)
-@@ -2065,22 +2034,24 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 	return delta < (s64)sysctl_sched_migration_cost;
- }
- 
--
- void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- {
--	int old_cpu = task_cpu(p);
--	struct cfs_rq *old_cfsrq = task_cfs_rq(p),
--		      *new_cfsrq = cpu_cfs_rq(old_cfsrq, new_cpu);
-+#ifdef CONFIG_SCHED_DEBUG
-+	/*
-+	 * We should never call set_task_cpu() on a blocked task,
-+	 * ttwu() will sort out the placement.
-+	 */
-+	WARN_ON_ONCE(p->state != TASK_RUNNING && p->state != TASK_WAKING &&
-+			!(task_thread_info(p)->preempt_count & PREEMPT_ACTIVE));
-+#endif
- 
- 	trace_sched_migrate_task(p, new_cpu);
- 
--	if (old_cpu != new_cpu) {
--		p->se.nr_migrations++;
--		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS,
--				     1, 1, NULL, 0);
--	}
--	p->se.vruntime -= old_cfsrq->min_vruntime -
--					 new_cfsrq->min_vruntime;
-+	if (task_cpu(p) == new_cpu)
-+		return;
-+
-+	p->se.nr_migrations++;
-+	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
- 
- 	__set_task_cpu(p, new_cpu);
- }
-@@ -2105,13 +2076,10 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
- 
- 	/*
- 	 * If the task is not on a runqueue (and not running), then
--	 * it is sufficient to simply update the task's cpu field.
-+	 * the next wake-up will properly place the task.
- 	 */
--	if (!p->se.on_rq && !task_running(rq, p)) {
--		update_rq_clock(rq);
--		set_task_cpu(p, dest_cpu);
-+	if (!p->se.on_rq && !task_running(rq, p))
- 		return 0;
--	}
- 
- 	init_completion(&req->done);
- 	req->task = p;
-@@ -2317,10 +2285,73 @@ void task_oncpu_function_call(struct task_struct *p,
- }
- 
- #ifdef CONFIG_SMP
-+static int select_fallback_rq(int cpu, struct task_struct *p)
++static void __rdmsr_on_cpu(void *info)
 +{
-+	int dest_cpu;
-+	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(cpu));
++	struct msr_info *rv = info;
++	struct msr *reg;
++	int this_cpu = raw_smp_processor_id();
 +
-+	/* Look for allowed, online CPU in same node. */
-+	for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
-+		if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
-+			return dest_cpu;
++	if (rv->msrs)
++		reg = per_cpu_ptr(rv->msrs, this_cpu);
++	else
++		reg = &rv->reg;
 +
-+	/* Any allowed, online CPU? */
-+	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
-+	if (dest_cpu < nr_cpu_ids)
-+		return dest_cpu;
-+
-+	/* No more Mr. Nice Guy. */
-+	if (dest_cpu >= nr_cpu_ids) {
-+		rcu_read_lock();
-+		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
-+		rcu_read_unlock();
-+		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
-+
-+		/*
-+		 * Don't tell them about moving exiting tasks or
-+		 * kernel threads (both mm NULL), since they never
-+		 * leave kernel.
-+		 */
-+		if (p->mm && printk_ratelimit()) {
-+			printk(KERN_INFO "process %d (%s) no "
-+			       "longer affine to cpu%d\n",
-+			       task_pid_nr(p), p->comm, cpu);
-+		}
-+	}
-+
-+	return dest_cpu;
++	rdmsr(rv->msr_no, reg->l, reg->h);
 +}
++
++static void __wrmsr_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++	struct msr *reg;
++	int this_cpu = raw_smp_processor_id();
++
++	if (rv->msrs)
++		reg = per_cpu_ptr(rv->msrs, this_cpu);
++	else
++		reg = &rv->reg;
++
++	wrmsr(rv->msr_no, reg->l, reg->h);
++}
++
++int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++	int err;
++	struct msr_info rv;
++
++	memset(&rv, 0, sizeof(rv));
++
++	rv.msr_no = msr_no;
++	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
++	*l = rv.reg.l;
++	*h = rv.reg.h;
++
++	return err;
++}
++EXPORT_SYMBOL(rdmsr_on_cpu);
++
++int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++	int err;
++	struct msr_info rv;
++
++	memset(&rv, 0, sizeof(rv));
++
++	rv.msr_no = msr_no;
++	rv.reg.l = l;
++	rv.reg.h = h;
++	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
++
++	return err;
++}
++EXPORT_SYMBOL(wrmsr_on_cpu);
++
++static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
++			    struct msr *msrs,
++			    void (*msr_func) (void *info))
++{
++	struct msr_info rv;
++	int this_cpu;
++
++	memset(&rv, 0, sizeof(rv));
++
++	rv.msrs	  = msrs;
++	rv.msr_no = msr_no;
++
++	this_cpu = get_cpu();
++
++	if (cpumask_test_cpu(this_cpu, mask))
++		msr_func(&rv);
++
++	smp_call_function_many(mask, msr_func, &rv, 1);
++	put_cpu();
++}
++
++/* rdmsr on a bunch of CPUs
++ *
++ * @mask:       which CPUs
++ * @msr_no:     which MSR
++ * @msrs:       array of MSR values
++ *
++ */
++void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
++{
++	__rwmsr_on_cpus(mask, msr_no, msrs, __rdmsr_on_cpu);
++}
++EXPORT_SYMBOL(rdmsr_on_cpus);
 +
 +/*
-+ * Called from:
++ * wrmsr on a bunch of CPUs
 + *
-+ *  - fork, @p is stable because it isn't on the tasklist yet
++ * @mask:       which CPUs
++ * @msr_no:     which MSR
++ * @msrs:       array of MSR values
 + *
-+ *  - exec, @p is unstable, retry loop
-+ *
-+ *  - wake-up, we serialize ->cpus_allowed against TASK_WAKING so
-+ *             we should be good.
 + */
- static inline
- int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
- {
--	return p->sched_class->select_task_rq(p, sd_flags, wake_flags);
-+	int cpu = p->sched_class->select_task_rq(p, sd_flags, wake_flags);
++void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
++{
++	__rwmsr_on_cpus(mask, msr_no, msrs, __wrmsr_on_cpu);
++}
++EXPORT_SYMBOL(wrmsr_on_cpus);
 +
-+	/*
-+	 * In order not to call set_task_cpu() on a blocking task we need
-+	 * to rely on ttwu() to place the task on a valid ->cpus_allowed
-+	 * cpu.
-+	 *
-+	 * Since this is common to all placement strategies, this lives here.
-+	 *
-+	 * [ this allows ->select_task() to simply return task_cpu(p) and
-+	 *   not worry about this generic constraint ]
-+	 */
-+	if (unlikely(!cpumask_test_cpu(cpu, &p->cpus_allowed) ||
-+		     !cpu_active(cpu)))
-+		cpu = select_fallback_rq(task_cpu(p), p);
++/* These "safe" variants are slower and should be used when the target MSR
++   may not actually exist. */
++static void __rdmsr_safe_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
 +
-+	return cpu;
- }
- #endif
- 
-@@ -2375,6 +2406,10 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 	if (task_contributes_to_load(p))
- 		rq->nr_uninterruptible--;
- 	p->state = TASK_WAKING;
++	rv->err = rdmsr_safe(rv->msr_no, &rv->reg.l, &rv->reg.h);
++}
 +
-+	if (p->sched_class->task_waking)
-+		p->sched_class->task_waking(rq, p);
++static void __wrmsr_safe_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
 +
- 	__task_rq_unlock(rq);
++	rv->err = wrmsr_safe(rv->msr_no, rv->reg.l, rv->reg.h);
++}
++
++int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++	int err;
++	struct msr_info rv;
++
++	memset(&rv, 0, sizeof(rv));
++
++	rv.msr_no = msr_no;
++	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
++	*l = rv.reg.l;
++	*h = rv.reg.h;
++
++	return err ? err : rv.err;
++}
++EXPORT_SYMBOL(rdmsr_safe_on_cpu);
++
++int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++	int err;
++	struct msr_info rv;
++
++	memset(&rv, 0, sizeof(rv));
++
++	rv.msr_no = msr_no;
++	rv.reg.l = l;
++	rv.reg.h = h;
++	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
++
++	return err ? err : rv.err;
++}
++EXPORT_SYMBOL(wrmsr_safe_on_cpu);
++
++/*
++ * These variants are significantly slower, but allows control over
++ * the entire 32-bit GPR set.
++ */
++static void __rdmsr_safe_regs_on_cpu(void *info)
++{
++	struct msr_regs_info *rv = info;
++
++	rv->err = rdmsr_safe_regs(rv->regs);
++}
++
++static void __wrmsr_safe_regs_on_cpu(void *info)
++{
++	struct msr_regs_info *rv = info;
++
++	rv->err = wrmsr_safe_regs(rv->regs);
++}
++
++int rdmsr_safe_regs_on_cpu(unsigned int cpu, u32 *regs)
++{
++	int err;
++	struct msr_regs_info rv;
++
++	rv.regs   = regs;
++	rv.err    = -EIO;
++	err = smp_call_function_single(cpu, __rdmsr_safe_regs_on_cpu, &rv, 1);
++
++	return err ? err : rv.err;
++}
++EXPORT_SYMBOL(rdmsr_safe_regs_on_cpu);
++
++int wrmsr_safe_regs_on_cpu(unsigned int cpu, u32 *regs)
++{
++	int err;
++	struct msr_regs_info rv;
++
++	rv.regs = regs;
++	rv.err  = -EIO;
++	err = smp_call_function_single(cpu, __wrmsr_safe_regs_on_cpu, &rv, 1);
++
++	return err ? err : rv.err;
++}
++EXPORT_SYMBOL(wrmsr_safe_regs_on_cpu);
+diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
+index 8728341..8f8eebd 100644
+--- a/arch/x86/lib/msr.c
++++ b/arch/x86/lib/msr.c
+@@ -1,123 +1,7 @@
+ #include <linux/module.h>
+ #include <linux/preempt.h>
+-#include <linux/smp.h>
+ #include <asm/msr.h>
  
- 	cpu = select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
-@@ -2438,8 +2473,8 @@ out_running:
- 
- 	p->state = TASK_RUNNING;
- #ifdef CONFIG_SMP
--	if (p->sched_class->task_wake_up)
--		p->sched_class->task_wake_up(rq, p);
-+	if (p->sched_class->task_woken)
-+		p->sched_class->task_woken(rq, p);
- 
- 	if (unlikely(rq->idle_stamp)) {
- 		u64 delta = rq->clock - rq->idle_stamp;
-@@ -2538,14 +2573,6 @@ static void __sched_fork(struct task_struct *p)
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	INIT_HLIST_HEAD(&p->preempt_notifiers);
- #endif
+-struct msr_info {
+-	u32 msr_no;
+-	struct msr reg;
+-	struct msr *msrs;
+-	int err;
+-};
 -
--	/*
--	 * We mark the process as running here, but have not actually
--	 * inserted it onto the runqueue yet. This guarantees that
--	 * nobody will actually run it, and a signal or other external
--	 * event cannot wake it up and insert it on the runqueue either.
--	 */
--	p->state = TASK_RUNNING;
- }
- 
- /*
-@@ -2556,6 +2583,12 @@ void sched_fork(struct task_struct *p, int clone_flags)
- 	int cpu = get_cpu();
- 
- 	__sched_fork(p);
-+	/*
-+	 * We mark the process as waking here. This guarantees that
-+	 * nobody will actually run it, and a signal or other external
-+	 * event cannot wake it up and insert it on the runqueue either.
-+	 */
-+	p->state = TASK_WAKING;
- 
- 	/*
- 	 * Revert to default priority/policy on fork if requested.
-@@ -2624,14 +2657,15 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- 	struct rq *rq;
- 
- 	rq = task_rq_lock(p, &flags);
--	BUG_ON(p->state != TASK_RUNNING);
-+	BUG_ON(p->state != TASK_WAKING);
-+	p->state = TASK_RUNNING;
- 	update_rq_clock(rq);
- 	activate_task(rq, p, 0);
- 	trace_sched_wakeup_new(rq, p, 1);
- 	check_preempt_curr(rq, p, WF_FORK);
- #ifdef CONFIG_SMP
--	if (p->sched_class->task_wake_up)
--		p->sched_class->task_wake_up(rq, p);
-+	if (p->sched_class->task_woken)
-+		p->sched_class->task_woken(rq, p);
- #endif
- 	task_rq_unlock(rq, &flags);
- }
-@@ -3101,21 +3135,36 @@ static void double_rq_unlock(struct rq *rq1, struct rq *rq2)
- }
- 
- /*
-- * If dest_cpu is allowed for this process, migrate the task to it.
-- * This is accomplished by forcing the cpu_allowed mask to only
-- * allow dest_cpu, which will force the cpu onto dest_cpu. Then
-- * the cpu_allowed mask is restored.
-+ * sched_exec - execve() is a valuable balancing opportunity, because at
-+ * this point the task has the smallest effective memory and cache footprint.
-  */
--static void sched_migrate_task(struct task_struct *p, int dest_cpu)
-+void sched_exec(void)
- {
-+	struct task_struct *p = current;
- 	struct migration_req req;
-+	int dest_cpu, this_cpu;
- 	unsigned long flags;
- 	struct rq *rq;
- 
-+again:
-+	this_cpu = get_cpu();
-+	dest_cpu = select_task_rq(p, SD_BALANCE_EXEC, 0);
-+	if (dest_cpu == this_cpu) {
-+		put_cpu();
-+		return;
-+	}
-+
- 	rq = task_rq_lock(p, &flags);
-+	put_cpu();
-+
-+	/*
-+	 * select_task_rq() can race against ->cpus_allowed
-+	 */
- 	if (!cpumask_test_cpu(dest_cpu, &p->cpus_allowed)
--	    || unlikely(!cpu_active(dest_cpu)))
--		goto out;
-+	    || unlikely(!cpu_active(dest_cpu))) {
-+		task_rq_unlock(rq, &flags);
-+		goto again;
-+	}
- 
- 	/* force the process onto the specified CPU */
- 	if (migrate_task(p, dest_cpu, &req)) {
-@@ -3130,24 +3179,10 @@ static void sched_migrate_task(struct task_struct *p, int dest_cpu)
- 
- 		return;
- 	}
--out:
- 	task_rq_unlock(rq, &flags);
- }
- 
- /*
-- * sched_exec - execve() is a valuable balancing opportunity, because at
-- * this point the task has the smallest effective memory and cache footprint.
-- */
--void sched_exec(void)
+-static void __rdmsr_on_cpu(void *info)
 -{
--	int new_cpu, this_cpu = get_cpu();
--	new_cpu = select_task_rq(current, SD_BALANCE_EXEC, 0);
--	put_cpu();
--	if (new_cpu != this_cpu)
--		sched_migrate_task(current, new_cpu);
+-	struct msr_info *rv = info;
+-	struct msr *reg;
+-	int this_cpu = raw_smp_processor_id();
+-
+-	if (rv->msrs)
+-		reg = per_cpu_ptr(rv->msrs, this_cpu);
+-	else
+-		reg = &rv->reg;
+-
+-	rdmsr(rv->msr_no, reg->l, reg->h);
 -}
+-
+-static void __wrmsr_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-	struct msr *reg;
+-	int this_cpu = raw_smp_processor_id();
+-
+-	if (rv->msrs)
+-		reg = per_cpu_ptr(rv->msrs, this_cpu);
+-	else
+-		reg = &rv->reg;
+-
+-	wrmsr(rv->msr_no, reg->l, reg->h);
+-}
+-
+-int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	memset(&rv, 0, sizeof(rv));
+-
+-	rv.msr_no = msr_no;
+-	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
+-	*l = rv.reg.l;
+-	*h = rv.reg.h;
+-
+-	return err;
+-}
+-EXPORT_SYMBOL(rdmsr_on_cpu);
+-
+-int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	memset(&rv, 0, sizeof(rv));
+-
+-	rv.msr_no = msr_no;
+-	rv.reg.l = l;
+-	rv.reg.h = h;
+-	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL(wrmsr_on_cpu);
+-
+-static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
+-			    struct msr *msrs,
+-			    void (*msr_func) (void *info))
+-{
+-	struct msr_info rv;
+-	int this_cpu;
+-
+-	memset(&rv, 0, sizeof(rv));
+-
+-	rv.msrs	  = msrs;
+-	rv.msr_no = msr_no;
+-
+-	this_cpu = get_cpu();
+-
+-	if (cpumask_test_cpu(this_cpu, mask))
+-		msr_func(&rv);
+-
+-	smp_call_function_many(mask, msr_func, &rv, 1);
+-	put_cpu();
+-}
+-
+-/* rdmsr on a bunch of CPUs
+- *
+- * @mask:       which CPUs
+- * @msr_no:     which MSR
+- * @msrs:       array of MSR values
+- *
+- */
+-void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
+-{
+-	__rwmsr_on_cpus(mask, msr_no, msrs, __rdmsr_on_cpu);
+-}
+-EXPORT_SYMBOL(rdmsr_on_cpus);
 -
 -/*
-  * pull_task - move a task from a remote runqueue to the local runqueue.
-  * Both runqueues must be locked.
-  */
-@@ -5340,8 +5375,8 @@ static noinline void __schedule_bug(struct task_struct *prev)
- {
- 	struct pt_regs *regs = get_irq_regs();
- 
--	printk(KERN_ERR "BUG: scheduling while atomic: %s/%d/0x%08x\n",
--		prev->comm, prev->pid, preempt_count());
-+	pr_err("BUG: scheduling while atomic: %s/%d/0x%08x\n",
-+	       prev->comm, prev->pid, preempt_count());
- 
- 	debug_show_held_locks(prev);
- 	print_modules();
-@@ -5911,14 +5946,15 @@ EXPORT_SYMBOL(wait_for_completion_killable);
-  */
- bool try_wait_for_completion(struct completion *x)
- {
-+	unsigned long flags;
- 	int ret = 1;
- 
--	spin_lock_irq(&x->wait.lock);
-+	spin_lock_irqsave(&x->wait.lock, flags);
- 	if (!x->done)
- 		ret = 0;
- 	else
- 		x->done--;
--	spin_unlock_irq(&x->wait.lock);
-+	spin_unlock_irqrestore(&x->wait.lock, flags);
- 	return ret;
- }
- EXPORT_SYMBOL(try_wait_for_completion);
-@@ -5933,12 +5969,13 @@ EXPORT_SYMBOL(try_wait_for_completion);
-  */
- bool completion_done(struct completion *x)
- {
-+	unsigned long flags;
- 	int ret = 1;
- 
--	spin_lock_irq(&x->wait.lock);
-+	spin_lock_irqsave(&x->wait.lock, flags);
- 	if (!x->done)
- 		ret = 0;
--	spin_unlock_irq(&x->wait.lock);
-+	spin_unlock_irqrestore(&x->wait.lock, flags);
- 	return ret;
- }
- EXPORT_SYMBOL(completion_done);
-@@ -6457,7 +6494,7 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
- 		return -EINVAL;
- 
- 	retval = -ESRCH;
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	p = find_process_by_pid(pid);
- 	if (p) {
- 		retval = security_task_getscheduler(p);
-@@ -6465,7 +6502,7 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
- 			retval = p->policy
- 				| (p->sched_reset_on_fork ? SCHED_RESET_ON_FORK : 0);
- 	}
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	return retval;
- }
- 
-@@ -6483,7 +6520,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
- 	if (!param || pid < 0)
- 		return -EINVAL;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	p = find_process_by_pid(pid);
- 	retval = -ESRCH;
- 	if (!p)
-@@ -6494,7 +6531,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
- 		goto out_unlock;
- 
- 	lp.sched_priority = p->rt_priority;
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 
- 	/*
- 	 * This one might sleep, we cannot do it with a spinlock held ...
-@@ -6504,7 +6541,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
- 	return retval;
- 
- out_unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	return retval;
- }
- 
-@@ -6515,22 +6552,18 @@ long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
- 	int retval;
- 
- 	get_online_cpus();
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 
- 	p = find_process_by_pid(pid);
- 	if (!p) {
--		read_unlock(&tasklist_lock);
-+		rcu_read_unlock();
- 		put_online_cpus();
- 		return -ESRCH;
- 	}
- 
--	/*
--	 * It is not safe to call set_cpus_allowed with the
--	 * tasklist_lock held. We will bump the task_struct's
--	 * usage count and then drop tasklist_lock.
--	 */
-+	/* Prevent p going away */
- 	get_task_struct(p);
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 
- 	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
- 		retval = -ENOMEM;
-@@ -6616,7 +6649,7 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask)
- 	int retval;
- 
- 	get_online_cpus();
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 
- 	retval = -ESRCH;
- 	p = find_process_by_pid(pid);
-@@ -6632,7 +6665,7 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask)
- 	task_rq_unlock(rq, &flags);
- 
- out_unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	put_online_cpus();
- 
- 	return retval;
-@@ -6876,7 +6909,7 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
- 		return -EINVAL;
- 
- 	retval = -ESRCH;
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	p = find_process_by_pid(pid);
- 	if (!p)
- 		goto out_unlock;
-@@ -6889,13 +6922,13 @@ SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
- 	time_slice = p->sched_class->get_rr_interval(rq, p);
- 	task_rq_unlock(rq, &flags);
- 
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	jiffies_to_timespec(time_slice, &t);
- 	retval = copy_to_user(interval, &t, sizeof(t)) ? -EFAULT : 0;
- 	return retval;
- 
- out_unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	return retval;
- }
- 
-@@ -6907,23 +6940,23 @@ void sched_show_task(struct task_struct *p)
- 	unsigned state;
- 
- 	state = p->state ? __ffs(p->state) + 1 : 0;
--	printk(KERN_INFO "%-13.13s %c", p->comm,
-+	pr_info("%-13.13s %c", p->comm,
- 		state < sizeof(stat_nam) - 1 ? stat_nam[state] : '?');
- #if BITS_PER_LONG == 32
- 	if (state == TASK_RUNNING)
--		printk(KERN_CONT " running  ");
-+		pr_cont(" running  ");
- 	else
--		printk(KERN_CONT " %08lx ", thread_saved_pc(p));
-+		pr_cont(" %08lx ", thread_saved_pc(p));
- #else
- 	if (state == TASK_RUNNING)
--		printk(KERN_CONT "  running task    ");
-+		pr_cont("  running task    ");
- 	else
--		printk(KERN_CONT " %016lx ", thread_saved_pc(p));
-+		pr_cont(" %016lx ", thread_saved_pc(p));
- #endif
- #ifdef CONFIG_DEBUG_STACK_USAGE
- 	free = stack_not_used(p);
- #endif
--	printk(KERN_CONT "%5lu %5d %6d 0x%08lx\n", free,
-+	pr_cont("%5lu %5d %6d 0x%08lx\n", free,
- 		task_pid_nr(p), task_pid_nr(p->real_parent),
- 		(unsigned long)task_thread_info(p)->flags);
- 
-@@ -6935,11 +6968,9 @@ void show_state_filter(unsigned long state_filter)
- 	struct task_struct *g, *p;
- 
- #if BITS_PER_LONG == 32
--	printk(KERN_INFO
--		"  task                PC stack   pid father\n");
-+	pr_info("  task                PC stack   pid father\n");
- #else
--	printk(KERN_INFO
--		"  task                        PC stack   pid father\n");
-+	pr_info("  task                        PC stack   pid father\n");
- #endif
- 	read_lock(&tasklist_lock);
- 	do_each_thread(g, p) {
-@@ -6986,6 +7017,7 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
- 	raw_spin_lock_irqsave(&rq->lock, flags);
- 
- 	__sched_fork(idle);
-+	idle->state = TASK_RUNNING;
- 	idle->se.exec_start = sched_clock();
- 
- 	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
-@@ -7100,7 +7132,23 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
- 	struct rq *rq;
- 	int ret = 0;
- 
-+	/*
-+	 * Since we rely on wake-ups to migrate sleeping tasks, don't change
-+	 * the ->cpus_allowed mask from under waking tasks, which would be
-+	 * possible when we change rq->lock in ttwu(), so synchronize against
-+	 * TASK_WAKING to avoid that.
-+	 */
-+again:
-+	while (p->state == TASK_WAKING)
-+		cpu_relax();
-+
- 	rq = task_rq_lock(p, &flags);
-+
-+	if (p->state == TASK_WAKING) {
-+		task_rq_unlock(rq, &flags);
-+		goto again;
-+	}
-+
- 	if (!cpumask_intersects(new_mask, cpu_active_mask)) {
- 		ret = -EINVAL;
- 		goto out;
-@@ -7156,7 +7204,7 @@ EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
- static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
- {
- 	struct rq *rq_dest, *rq_src;
--	int ret = 0, on_rq;
-+	int ret = 0;
- 
- 	if (unlikely(!cpu_active(dest_cpu)))
- 		return ret;
-@@ -7172,12 +7220,13 @@ static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
- 	if (!cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
- 		goto fail;
- 
--	on_rq = p->se.on_rq;
--	if (on_rq)
-+	/*
-+	 * If we're not on a rq, the next wake-up will ensure we're
-+	 * placed properly.
-+	 */
-+	if (p->se.on_rq) {
- 		deactivate_task(rq_src, p, 0);
--
--	set_task_cpu(p, dest_cpu);
--	if (on_rq) {
-+		set_task_cpu(p, dest_cpu);
- 		activate_task(rq_dest, p, 0);
- 		check_preempt_curr(rq_dest, p, 0);
- 	}
-@@ -7273,37 +7322,10 @@ static int __migrate_task_irq(struct task_struct *p, int src_cpu, int dest_cpu)
- static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
- {
- 	int dest_cpu;
--	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
- 
- again:
--	/* Look for allowed, online CPU in same node. */
--	for_each_cpu_and(dest_cpu, nodemask, cpu_active_mask)
--		if (cpumask_test_cpu(dest_cpu, &p->cpus_allowed))
--			goto move;
--
--	/* Any allowed, online CPU? */
--	dest_cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
--	if (dest_cpu < nr_cpu_ids)
--		goto move;
--
--	/* No more Mr. Nice Guy. */
--	if (dest_cpu >= nr_cpu_ids) {
--		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
--		dest_cpu = cpumask_any_and(cpu_active_mask, &p->cpus_allowed);
--
--		/*
--		 * Don't tell them about moving exiting tasks or
--		 * kernel threads (both mm NULL), since they never
--		 * leave kernel.
--		 */
--		if (p->mm && printk_ratelimit()) {
--			printk(KERN_INFO "process %d (%s) no "
--			       "longer affine to cpu%d\n",
--			       task_pid_nr(p), p->comm, dead_cpu);
--		}
--	}
-+	dest_cpu = select_fallback_rq(dead_cpu, p);
- 
--move:
- 	/* It can have affinity changed while we were choosing. */
- 	if (unlikely(!__migrate_task_irq(p, dead_cpu, dest_cpu)))
- 		goto again;
-@@ -7806,48 +7828,44 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
- 
- 	if (!(sd->flags & SD_LOAD_BALANCE)) {
--		printk("does not load-balance\n");
-+		pr_cont("does not load-balance\n");
- 		if (sd->parent)
--			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
--					" has parent");
-+			pr_err("ERROR: !SD_LOAD_BALANCE domain has parent\n");
- 		return -1;
- 	}
- 
--	printk(KERN_CONT "span %s level %s\n", str, sd->name);
-+	pr_cont("span %s level %s\n", str, sd->name);
- 
- 	if (!cpumask_test_cpu(cpu, sched_domain_span(sd))) {
--		printk(KERN_ERR "ERROR: domain->span does not contain "
--				"CPU%d\n", cpu);
-+		pr_err("ERROR: domain->span does not contain CPU%d\n", cpu);
- 	}
- 	if (!cpumask_test_cpu(cpu, sched_group_cpus(group))) {
--		printk(KERN_ERR "ERROR: domain->groups does not contain"
--				" CPU%d\n", cpu);
-+		pr_err("ERROR: domain->groups does not contain CPU%d\n", cpu);
- 	}
- 
- 	printk(KERN_DEBUG "%*s groups:", level + 1, "");
- 	do {
- 		if (!group) {
--			printk("\n");
--			printk(KERN_ERR "ERROR: group is NULL\n");
-+			pr_cont("\n");
-+			pr_err("ERROR: group is NULL\n");
- 			break;
- 		}
- 
- 		if (!group->cpu_power) {
--			printk(KERN_CONT "\n");
--			printk(KERN_ERR "ERROR: domain->cpu_power not "
--					"set\n");
-+			pr_cont("\n");
-+			pr_err("ERROR: domain->cpu_power not set\n");
- 			break;
- 		}
- 
- 		if (!cpumask_weight(sched_group_cpus(group))) {
--			printk(KERN_CONT "\n");
--			printk(KERN_ERR "ERROR: empty group\n");
-+			pr_cont("\n");
-+			pr_err("ERROR: empty group\n");
- 			break;
- 		}
- 
- 		if (cpumask_intersects(groupmask, sched_group_cpus(group))) {
--			printk(KERN_CONT "\n");
--			printk(KERN_ERR "ERROR: repeated CPUs\n");
-+			pr_cont("\n");
-+			pr_err("ERROR: repeated CPUs\n");
- 			break;
- 		}
- 
-@@ -7855,23 +7873,21 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 
- 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
- 
--		printk(KERN_CONT " %s", str);
-+		pr_cont(" %s", str);
- 		if (group->cpu_power != SCHED_LOAD_SCALE) {
--			printk(KERN_CONT " (cpu_power = %d)",
--				group->cpu_power);
-+			pr_cont(" (cpu_power = %d)", group->cpu_power);
- 		}
- 
- 		group = group->next;
- 	} while (group != sd->groups);
--	printk(KERN_CONT "\n");
-+	pr_cont("\n");
- 
- 	if (!cpumask_equal(sched_domain_span(sd), groupmask))
--		printk(KERN_ERR "ERROR: groups don't span domain->span\n");
-+		pr_err("ERROR: groups don't span domain->span\n");
- 
- 	if (sd->parent &&
- 	    !cpumask_subset(groupmask, sched_domain_span(sd->parent)))
--		printk(KERN_ERR "ERROR: parent span is not a superset "
--			"of domain->span\n");
-+		pr_err("ERROR: parent span is not a superset of domain->span\n");
- 	return 0;
- }
- 
-@@ -8427,8 +8443,7 @@ static int build_numa_sched_groups(struct s_data *d,
- 	sg = kmalloc_node(sizeof(struct sched_group) + cpumask_size(),
- 			  GFP_KERNEL, num);
- 	if (!sg) {
--		printk(KERN_WARNING "Can not alloc domain group for node %d\n",
--		       num);
-+		pr_warning("Can not alloc domain group for node %d\n", num);
- 		return -ENOMEM;
- 	}
- 	d->sched_group_nodes[num] = sg;
-@@ -8457,8 +8472,8 @@ static int build_numa_sched_groups(struct s_data *d,
- 		sg = kmalloc_node(sizeof(struct sched_group) + cpumask_size(),
- 				  GFP_KERNEL, num);
- 		if (!sg) {
--			printk(KERN_WARNING
--			       "Can not alloc domain group for node %d\n", j);
-+			pr_warning("Can not alloc domain group for node %d\n",
-+				   j);
- 			return -ENOMEM;
- 		}
- 		sg->cpu_power = 0;
-@@ -8686,7 +8701,7 @@ static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
- 	d->sched_group_nodes = kcalloc(nr_node_ids,
- 				      sizeof(struct sched_group *), GFP_KERNEL);
- 	if (!d->sched_group_nodes) {
--		printk(KERN_WARNING "Can not alloc sched group node list\n");
-+		pr_warning("Can not alloc sched group node list\n");
- 		return sa_notcovered;
- 	}
- 	sched_group_nodes_bycpu[cpumask_first(cpu_map)] = d->sched_group_nodes;
-@@ -8703,7 +8718,7 @@ static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
- 		return sa_send_covered;
- 	d->rd = alloc_rootdomain();
- 	if (!d->rd) {
--		printk(KERN_WARNING "Cannot alloc root domain\n");
-+		pr_warning("Cannot alloc root domain\n");
- 		return sa_tmpmask;
- 	}
- 	return sa_rootdomain;
-@@ -9668,7 +9683,7 @@ void __init sched_init(void)
- #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
- static inline int preempt_count_equals(int preempt_offset)
- {
--	int nested = preempt_count() & ~PREEMPT_ACTIVE;
-+	int nested = (preempt_count() & ~PREEMPT_ACTIVE) + rcu_preempt_depth();
- 
- 	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
- }
-@@ -9685,13 +9700,11 @@ void __might_sleep(char *file, int line, int preempt_offset)
- 		return;
- 	prev_jiffy = jiffies;
- 
--	printk(KERN_ERR
--		"BUG: sleeping function called from invalid context at %s:%d\n",
--			file, line);
--	printk(KERN_ERR
--		"in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
--			in_atomic(), irqs_disabled(),
--			current->pid, current->comm);
-+	pr_err("BUG: sleeping function called from invalid context at %s:%d\n",
-+	       file, line);
-+	pr_err("in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
-+	       in_atomic(), irqs_disabled(),
-+	       current->pid, current->comm);
- 
- 	debug_show_held_locks(current);
- 	if (irqs_disabled())
-@@ -10083,7 +10096,7 @@ void sched_move_task(struct task_struct *tsk)
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	if (tsk->sched_class->moved_group)
--		tsk->sched_class->moved_group(tsk);
-+		tsk->sched_class->moved_group(tsk, on_rq);
- #endif
- 
- 	if (unlikely(running))
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index 479ce56..5b49613 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -236,6 +236,18 @@ void sched_clock_idle_wakeup_event(u64 delta_ns)
- }
- EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
- 
-+unsigned long long cpu_clock(int cpu)
-+{
-+	unsigned long long clock;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	clock = sched_clock_cpu(cpu);
-+	local_irq_restore(flags);
-+
-+	return clock;
-+}
-+
- #else /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
- 
- void sched_clock_init(void)
-@@ -251,17 +263,12 @@ u64 sched_clock_cpu(int cpu)
- 	return sched_clock();
- }
- 
--#endif /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
- 
- unsigned long long cpu_clock(int cpu)
- {
--	unsigned long long clock;
--	unsigned long flags;
-+	return sched_clock_cpu(cpu);
-+}
- 
--	local_irq_save(flags);
--	clock = sched_clock_cpu(cpu);
--	local_irq_restore(flags);
-+#endif /* CONFIG_HAVE_UNSTABLE_SCHED_CLOCK */
- 
--	return clock;
+- * wrmsr on a bunch of CPUs
+- *
+- * @mask:       which CPUs
+- * @msr_no:     which MSR
+- * @msrs:       array of MSR values
+- *
+- */
+-void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
+-{
+-	__rwmsr_on_cpus(mask, msr_no, msrs, __wrmsr_on_cpu);
 -}
- EXPORT_SYMBOL_GPL(cpu_clock);
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 5bedf6e..42ac3c9 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -510,6 +510,7 @@ __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
- 	curr->sum_exec_runtime += delta_exec;
- 	schedstat_add(cfs_rq, exec_clock, delta_exec);
- 	delta_exec_weighted = calc_delta_fair(delta_exec, curr);
-+
- 	curr->vruntime += delta_exec_weighted;
- 	update_min_vruntime(cfs_rq);
- }
-@@ -765,16 +766,26 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
- 	se->vruntime = vruntime;
- }
- 
-+#define ENQUEUE_WAKEUP	1
-+#define ENQUEUE_MIGRATE 2
-+
- static void
--enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
-+enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+-EXPORT_SYMBOL(wrmsr_on_cpus);
+-
+ struct msr *msrs_alloc(void)
  {
- 	/*
-+	 * Update the normalized vruntime before updating min_vruntime
-+	 * through callig update_curr().
-+	 */
-+	if (!(flags & ENQUEUE_WAKEUP) || (flags & ENQUEUE_MIGRATE))
-+		se->vruntime += cfs_rq->min_vruntime;
-+
-+	/*
- 	 * Update run-time statistics of the 'current'.
- 	 */
- 	update_curr(cfs_rq);
- 	account_entity_enqueue(cfs_rq, se);
- 
--	if (wakeup) {
-+	if (flags & ENQUEUE_WAKEUP) {
- 		place_entity(cfs_rq, se, 0);
- 		enqueue_sleeper(cfs_rq, se);
+ 	struct msr *msrs = NULL;
+@@ -137,100 +21,3 @@ void msrs_free(struct msr *msrs)
+ 	free_percpu(msrs);
+ }
+ EXPORT_SYMBOL(msrs_free);
+-
+-/* These "safe" variants are slower and should be used when the target MSR
+-   may not actually exist. */
+-static void __rdmsr_safe_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-
+-	rv->err = rdmsr_safe(rv->msr_no, &rv->reg.l, &rv->reg.h);
+-}
+-
+-static void __wrmsr_safe_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-
+-	rv->err = wrmsr_safe(rv->msr_no, rv->reg.l, rv->reg.h);
+-}
+-
+-int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	memset(&rv, 0, sizeof(rv));
+-
+-	rv.msr_no = msr_no;
+-	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
+-	*l = rv.reg.l;
+-	*h = rv.reg.h;
+-
+-	return err ? err : rv.err;
+-}
+-EXPORT_SYMBOL(rdmsr_safe_on_cpu);
+-
+-int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	memset(&rv, 0, sizeof(rv));
+-
+-	rv.msr_no = msr_no;
+-	rv.reg.l = l;
+-	rv.reg.h = h;
+-	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
+-
+-	return err ? err : rv.err;
+-}
+-EXPORT_SYMBOL(wrmsr_safe_on_cpu);
+-
+-/*
+- * These variants are significantly slower, but allows control over
+- * the entire 32-bit GPR set.
+- */
+-struct msr_regs_info {
+-	u32 *regs;
+-	int err;
+-};
+-
+-static void __rdmsr_safe_regs_on_cpu(void *info)
+-{
+-	struct msr_regs_info *rv = info;
+-
+-	rv->err = rdmsr_safe_regs(rv->regs);
+-}
+-
+-static void __wrmsr_safe_regs_on_cpu(void *info)
+-{
+-	struct msr_regs_info *rv = info;
+-
+-	rv->err = wrmsr_safe_regs(rv->regs);
+-}
+-
+-int rdmsr_safe_regs_on_cpu(unsigned int cpu, u32 *regs)
+-{
+-	int err;
+-	struct msr_regs_info rv;
+-
+-	rv.regs   = regs;
+-	rv.err    = -EIO;
+-	err = smp_call_function_single(cpu, __rdmsr_safe_regs_on_cpu, &rv, 1);
+-
+-	return err ? err : rv.err;
+-}
+-EXPORT_SYMBOL(rdmsr_safe_regs_on_cpu);
+-
+-int wrmsr_safe_regs_on_cpu(unsigned int cpu, u32 *regs)
+-{
+-	int err;
+-	struct msr_regs_info rv;
+-
+-	rv.regs = regs;
+-	rv.err  = -EIO;
+-	err = smp_call_function_single(cpu, __wrmsr_safe_regs_on_cpu, &rv, 1);
+-
+-	return err ? err : rv.err;
+-}
+-EXPORT_SYMBOL(wrmsr_safe_regs_on_cpu);
+diff --git a/arch/x86/mm/srat_32.c b/arch/x86/mm/srat_32.c
+index 6f8aa33..9324f13 100644
+--- a/arch/x86/mm/srat_32.c
++++ b/arch/x86/mm/srat_32.c
+@@ -267,6 +267,8 @@ int __init get_memcfg_from_srat(void)
+ 		e820_register_active_regions(chunk->nid, chunk->start_pfn,
+ 					     min(chunk->end_pfn, max_pfn));
  	}
-@@ -828,6 +839,14 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int sleep)
- 		__dequeue_entity(cfs_rq, se);
- 	account_entity_dequeue(cfs_rq, se);
- 	update_min_vruntime(cfs_rq);
-+
-+	/*
-+	 * Normalize the entity after updating the min_vruntime because the
-+	 * update can refer to the ->curr item and we need to reflect this
-+	 * movement in our normalized position.
-+	 */
-+	if (!sleep)
-+		se->vruntime -= cfs_rq->min_vruntime;
++	/* for out of order entries in SRAT */
++	sort_node_map();
+ 
+ 	for_each_online_node(nid) {
+ 		unsigned long start = node_start_pfn[nid];
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index d890754..a271241 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -317,7 +317,7 @@ static int __init nodes_cover_memory(const struct bootnode *nodes)
+ 		unsigned long s = nodes[i].start >> PAGE_SHIFT;
+ 		unsigned long e = nodes[i].end >> PAGE_SHIFT;
+ 		pxmram += e - s;
+-		pxmram -= absent_pages_in_range(s, e);
++		pxmram -= __absent_pages_in_range(i, s, e);
+ 		if ((long)pxmram < 0)
+ 			pxmram = 0;
+ 	}
+@@ -373,6 +373,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 	for_each_node_mask(i, nodes_parsed)
+ 		e820_register_active_regions(i, nodes[i].start >> PAGE_SHIFT,
+ 						nodes[i].end >> PAGE_SHIFT);
++	/* for out of order entries in SRAT */
++	sort_node_map();
+ 	if (!nodes_cover_memory(nodes)) {
+ 		bad_srat();
+ 		return -1;
+diff --git a/arch/x86/tools/chkobjdump.awk b/arch/x86/tools/chkobjdump.awk
+index 0d13cd9..5bbb5a3 100644
+--- a/arch/x86/tools/chkobjdump.awk
++++ b/arch/x86/tools/chkobjdump.awk
+@@ -9,7 +9,7 @@ BEGIN {
  }
  
- /*
-@@ -1038,13 +1057,19 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
+ /^GNU/ {
+-	split($4, ver, ".");
++	split($3, ver, ".");
+ 	if (ver[1] > od_ver ||
+ 	    (ver[1] == od_ver && ver[2] >= od_sver)) {
+ 		exit 1;
+diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
+index 7a68506..eaf11f5 100644
+--- a/arch/x86/tools/gen-insn-attr-x86.awk
++++ b/arch/x86/tools/gen-insn-attr-x86.awk
+@@ -6,8 +6,6 @@
+ 
+ # Awk implementation sanity check
+ function check_awk_implement() {
+-	if (!match("abc", "[[:lower:]]+"))
+-		return "Your awk doesn't support charactor-class."
+ 	if (sprintf("%x", 0) != "0")
+ 		return "Your awk has a printf-format problem."
+ 	return ""
+@@ -44,12 +42,12 @@ BEGIN {
+ 	delete gtable
+ 	delete atable
+ 
+-	opnd_expr = "^[[:alpha:]/]"
++	opnd_expr = "^[A-Za-z/]"
+ 	ext_expr = "^\\("
+ 	sep_expr = "^\\|$"
+-	group_expr = "^Grp[[:alnum:]]+"
++	group_expr = "^Grp[0-9A-Za-z]+"
+ 
+-	imm_expr = "^[IJAO][[:lower:]]"
++	imm_expr = "^[IJAO][a-z]"
+ 	imm_flag["Ib"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
+ 	imm_flag["Jb"] = "INAT_MAKE_IMM(INAT_IMM_BYTE)"
+ 	imm_flag["Iw"] = "INAT_MAKE_IMM(INAT_IMM_WORD)"
+@@ -62,7 +60,7 @@ BEGIN {
+ 	imm_flag["Ob"] = "INAT_MOFFSET"
+ 	imm_flag["Ov"] = "INAT_MOFFSET"
+ 
+-	modrm_expr = "^([CDEGMNPQRSUVW/][[:lower:]]+|NTA|T[012])"
++	modrm_expr = "^([CDEGMNPQRSUVW/][a-z]+|NTA|T[012])"
+ 	force64_expr = "\\([df]64\\)"
+ 	rex_expr = "^REX(\\.[XRWB]+)*"
+ 	fpu_expr = "^ESC" # TODO
+diff --git a/include/linux/decompress/mm.h b/include/linux/decompress/mm.h
+index 12ff8c3..5032b9a 100644
+--- a/include/linux/decompress/mm.h
++++ b/include/linux/decompress/mm.h
+@@ -25,7 +25,7 @@ static void *malloc(int size)
+ 	void *p;
+ 
+ 	if (size < 0)
+-		error("Malloc error");
++		return NULL;
+ 	if (!malloc_ptr)
+ 		malloc_ptr = free_mem_ptr;
+ 
+@@ -35,7 +35,7 @@ static void *malloc(int size)
+ 	malloc_ptr += size;
+ 
+ 	if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
+-		error("Out of memory");
++		return NULL;
+ 
+ 	malloc_count++;
+ 	return p;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 24c3956..20a2036 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1022,6 +1022,9 @@ extern void add_active_range(unsigned int nid, unsigned long start_pfn,
+ extern void remove_active_range(unsigned int nid, unsigned long start_pfn,
+ 					unsigned long end_pfn);
+ extern void remove_all_active_ranges(void);
++void sort_node_map(void);
++unsigned long __absent_pages_in_range(int nid, unsigned long start_pfn,
++						unsigned long end_pfn);
+ extern unsigned long absent_pages_in_range(unsigned long start_pfn,
+ 						unsigned long end_pfn);
+ extern void get_pfn_range_for_nid(unsigned int nid,
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 4c00edc..b37d34b 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -413,7 +413,7 @@ static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
+ 
+ static char * __init unpack_to_rootfs(char *buf, unsigned len)
  {
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
-+	int flags = 0;
-+
-+	if (wakeup)
-+		flags |= ENQUEUE_WAKEUP;
-+	if (p->state == TASK_WAKING)
-+		flags |= ENQUEUE_MIGRATE;
+-	int written;
++	int written, res;
+ 	decompress_fn decompress;
+ 	const char *compress_name;
+ 	static __initdata char msg_buf[64];
+@@ -445,10 +445,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len)
+ 		}
+ 		this_header = 0;
+ 		decompress = decompress_method(buf, len, &compress_name);
+-		if (decompress)
+-			decompress(buf, len, NULL, flush_buffer, NULL,
++		if (decompress) {
++			res = decompress(buf, len, NULL, flush_buffer, NULL,
+ 				   &my_inptr, error);
+-		else if (compress_name) {
++			if (res)
++				error("decompressor failed");
++		} else if (compress_name) {
+ 			if (!message) {
+ 				snprintf(msg_buf, sizeof msg_buf,
+ 					 "compression method %s not configured",
+diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
+index 7607420..a4e971d 100644
+--- a/lib/decompress_bunzip2.c
++++ b/lib/decompress_bunzip2.c
+@@ -637,6 +637,8 @@ static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, int len,
  
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
- 			break;
- 		cfs_rq = cfs_rq_of(se);
--		enqueue_entity(cfs_rq, se, wakeup);
--		wakeup = 1;
-+		enqueue_entity(cfs_rq, se, flags);
-+		flags = ENQUEUE_WAKEUP;
+ 	/* Allocate bunzip_data.  Most fields initialize to zero. */
+ 	bd = *bdp = malloc(i);
++	if (!bd)
++		return RETVAL_OUT_OF_MEMORY;
+ 	memset(bd, 0, sizeof(struct bunzip_data));
+ 	/* Setup input buffer */
+ 	bd->inbuf = inbuf;
+@@ -664,6 +666,8 @@ static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, int len,
+ 	bd->dbufSize = 100000*(i-BZh0);
+ 
+ 	bd->dbuf = large_malloc(bd->dbufSize * sizeof(int));
++	if (!bd->dbuf)
++		return RETVAL_OUT_OF_MEMORY;
+ 	return RETVAL_OK;
+ }
+ 
+@@ -686,7 +690,7 @@ STATIC int INIT bunzip2(unsigned char *buf, int len,
+ 
+ 	if (!outbuf) {
+ 		error("Could not allocate output bufer");
+-		return -1;
++		return RETVAL_OUT_OF_MEMORY;
  	}
- 
- 	hrtick_update(rq);
-@@ -1120,6 +1145,14 @@ static void yield_task_fair(struct rq *rq)
- 
- #ifdef CONFIG_SMP
- 
-+static void task_waking_fair(struct rq *rq, struct task_struct *p)
-+{
-+	struct sched_entity *se = &p->se;
-+	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-+
-+	se->vruntime -= cfs_rq->min_vruntime;
-+}
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- /*
-  * effective_load() calculates the load change as seen from the root_task_group
-@@ -1429,6 +1462,9 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
+ 	if (buf)
+ 		inbuf = buf;
+@@ -694,6 +698,7 @@ STATIC int INIT bunzip2(unsigned char *buf, int len,
+ 		inbuf = malloc(BZIP2_IOBUF_SIZE);
+ 	if (!inbuf) {
+ 		error("Could not allocate input bufer");
++		i = RETVAL_OUT_OF_MEMORY;
+ 		goto exit_0;
  	}
- 
- 	for_each_domain(cpu, tmp) {
-+		if (!(tmp->flags & SD_LOAD_BALANCE))
-+			continue;
-+
- 		/*
- 		 * If power savings logic is enabled for a domain, see if we
- 		 * are not overloaded, if so, don't balance wider.
-@@ -1975,6 +2011,8 @@ static void task_fork_fair(struct task_struct *p)
- 		resched_task(rq->curr);
+ 	i = start_bunzip(&bd, inbuf, len, fill);
+@@ -720,11 +725,14 @@ STATIC int INIT bunzip2(unsigned char *buf, int len,
+ 	} else if (i == RETVAL_UNEXPECTED_OUTPUT_EOF) {
+ 		error("Compressed file ends unexpectedly");
  	}
- 
-+	se->vruntime -= cfs_rq->min_vruntime;
-+
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
-@@ -2028,12 +2066,13 @@ static void set_curr_task_fair(struct rq *rq)
- }
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
--static void moved_group_fair(struct task_struct *p)
-+static void moved_group_fair(struct task_struct *p, int on_rq)
- {
- 	struct cfs_rq *cfs_rq = task_cfs_rq(p);
- 
- 	update_curr(cfs_rq);
--	place_entity(cfs_rq, &p->se, 1);
-+	if (!on_rq)
-+		place_entity(cfs_rq, &p->se, 1);
- }
- #endif
- 
-@@ -2073,6 +2112,8 @@ static const struct sched_class fair_sched_class = {
- 	.move_one_task		= move_one_task_fair,
- 	.rq_online		= rq_online_fair,
- 	.rq_offline		= rq_offline_fair,
-+
-+	.task_waking		= task_waking_fair,
- #endif
- 
- 	.set_curr_task          = set_curr_task_fair,
-diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-index 5f93b57..21b969a 100644
---- a/kernel/sched_idletask.c
-+++ b/kernel/sched_idletask.c
-@@ -35,7 +35,7 @@ static void
- dequeue_task_idle(struct rq *rq, struct task_struct *p, int sleep)
- {
- 	raw_spin_unlock_irq(&rq->lock);
--	printk(KERN_ERR "bad: scheduling from the idle thread!\n");
-+	pr_err("bad: scheduling from the idle thread!\n");
- 	dump_stack();
- 	raw_spin_lock_irq(&rq->lock);
- }
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index d2ea282..f48328a 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1472,7 +1472,7 @@ static void post_schedule_rt(struct rq *rq)
-  * If we are not running and we are not going to reschedule soon, we should
-  * try to push tasks away now
++	if (!bd)
++		goto exit_1;
+ 	if (bd->dbuf)
+ 		large_free(bd->dbuf);
+ 	if (pos)
+ 		*pos = bd->inbufPos;
+ 	free(bd);
++exit_1:
+ 	if (!buf)
+ 		free(inbuf);
+ exit_0:
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2bc2ac6..873c863 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3573,7 +3573,7 @@ static unsigned long __meminit zone_spanned_pages_in_node(int nid,
+  * Return the number of holes in a range on a node. If nid is MAX_NUMNODES,
+  * then all holes in the requested range will be accounted for.
   */
--static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
-+static void task_woken_rt(struct rq *rq, struct task_struct *p)
+-static unsigned long __meminit __absent_pages_in_range(int nid,
++unsigned long __meminit __absent_pages_in_range(int nid,
+ 				unsigned long range_start_pfn,
+ 				unsigned long range_end_pfn)
  {
- 	if (!task_running(rq, p) &&
- 	    !test_tsk_need_resched(rq->curr) &&
-@@ -1753,7 +1753,7 @@ static const struct sched_class rt_sched_class = {
- 	.rq_offline             = rq_offline_rt,
- 	.pre_schedule		= pre_schedule_rt,
- 	.post_schedule		= post_schedule_rt,
--	.task_wake_up		= task_wake_up_rt,
-+	.task_woken		= task_woken_rt,
- 	.switched_from		= switched_from_rt,
- #endif
+@@ -4102,7 +4102,7 @@ static int __init cmp_node_active_region(const void *a, const void *b)
+ }
  
+ /* sort the node_map by start_pfn */
+-static void __init sort_node_map(void)
++void __init sort_node_map(void)
+ {
+ 	sort(early_node_map, (size_t)nr_nodemap_entries,
+ 			sizeof(struct node_active_region),
