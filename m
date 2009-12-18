@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932246AbZLRRNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbZLRROm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932246AbZLRRNB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZLRRMy
+	id S1755082AbZLRROm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZLRROl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:12:54 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43077 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932232AbZLRRMv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:12:51 -0500
-Message-ID: <4B2BB812.103@zytor.com>
-Date: Fri, 18 Dec 2009 09:12:50 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 18 Dec 2009 12:14:41 -0500
+Received: from www.tglx.de ([62.245.132.106]:57694 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753807AbZLRROl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 12:14:41 -0500
+Date: Fri, 18 Dec 2009 18:14:29 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Miquel van Smoorenburg <miquels@cistron.nl>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: spinlock which can morph into a mutex
+In-Reply-To: <20091218143032.GA16595@xs4all.net>
+Message-ID: <alpine.LFD.2.00.0912181804360.2755@localhost.localdomain>
+References: <20091218143032.GA16595@xs4all.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Chris Rankin <rankincj@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Kernel built for i586 chip crashes instantly at boot time
- (CMOV instructions)
-References: <219280.97558.qm@web52907.mail.re2.yahoo.com>
-In-Reply-To: <219280.97558.qm@web52907.mail.re2.yahoo.com>
-Content-Type: multipart/mixed;
- boundary="------------040109030508070100020306"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040109030508070100020306
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Fri, 18 Dec 2009, Miquel van Smoorenburg wrote:
 
-On 12/18/2009 07:28 AM, Chris Rankin wrote:
-> Hi,
+> I'm trying to implement a dynamically resizable hashtable, and
+> I have found that after resizing the table I need to call
+> synchronize_rcu() and finish up before letting other writers
+> (inserts, deletes) access the table.
 > 
-> I have been trying to build a 2.6.31.x kernel with Fedora 12's gcc compiler, and have discovered that this kernel crashes instantly at boot-time due to a pair of CMOV instructions in arch/x86/boot/compressed/misc.o. According to "make V=1", the command used to compile misc.c is:
+> Ofcourse during the hashtable update a spinlock is held to
+> exclude the other writers. But I cannot hold this spinlock over
+> synchronize_rcu(), yet the other writers still need to be excluded.
 > 
->   gcc -Wp,-MD,arch/x86/boot/compressed/.misc.o.d  -nostdinc -isystem /usr/lib/gcc/i686-redhat-linux/4.4.2/include -Iinclude -Iinclude2 -I/home/chris/LINUX/linux-2.6.31/include -I/home/chris/LINUX/linux-2.6.31/arch/x86/include -include include/linux/autoconf.h  -I/home/chris/LINUX/linux-2.6.31/arch/x86/boot/compressed -Iarch/x86/boot/compressed -D__KERNEL__ -m32 -D__KERNEL__ -O2 -fno-strict-aliasing -fPIC -DDISABLE_BRANCH_PROFILING -ffreestanding -fno-stack-protector   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(misc)"  -D"KBUILD_MODNAME=KBUILD_STR(misc)"  -c -o arch/x86/boot/compressed/misc.o /home/chris/LINUX/linux-2.6.31/arch/x86/boot/compressed/misc.c
+> So I probably need a mutex instead of a spinlock, but I want to
+> keep minimal overhead for the common case (when no resizing is in
+> progress).  I think I need a spinlock that can morph into a mutex ..
+
+Is the writer frequency and the possible contention so high that you
+need a spinlock at all ?
+ 
+> I was thinking about using something like the code below.
+> It is sortof like a spinlock, but it's ofcourse less fair
+> than actual ticketed spinlocks.
 > 
-> which apparently uses gcc's default architecture. However, Fedora has recently changed its gcc default architecture from i586 to i686, and so I end up with a pair on invalid instructions in my kernel binary.
-> 
+> I'm working off 2.6.27 at the moment, but I noticed that in
+> 2.6.28 adaptive spinning was introduced for mutexes. Is the
+> approach below still worth it with adaptive spinning or could
+> I just convert the spinlocks to mutexes with minimal extra overhead ?
 
-Does this patch work for you?
+Test it :)
 
-	-hpa
+If the mutex is still to heavy weight for you, then you can solve it
+without implementing another weird concurrency control:
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+writer side:
 
+       spin_lock(&hash_lock);
 
---------------040109030508070100020306
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="diff"
+       if (unlikely(hash_update_active)) {
+       	  spin_unlock(&hash_lock);
+       	  wait_event_(un)interruptible(&hash_wq, !hash_update_active);
+	  spin_lock(&hash_lock);
+       }
 
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2Jvb3QvY29tcHJlc3NlZC9NYWtlZmlsZSBiL2FyY2gv
-eDg2L2Jvb3QvY29tcHJlc3NlZC9NYWtlZmlsZQppbmRleCBmOGVkMDY1Li5mMjViYmQzIDEw
-MDY0NAotLS0gYS9hcmNoL3g4Ni9ib290L2NvbXByZXNzZWQvTWFrZWZpbGUKKysrIGIvYXJj
-aC94ODYvYm9vdC9jb21wcmVzc2VkL01ha2VmaWxlCkBAIC05LDYgKzksNyBAQCB0YXJnZXRz
-IDo9IHZtbGludXgubGRzIHZtbGludXggdm1saW51eC5iaW4gdm1saW51eC5iaW4uZ3ogdm1s
-aW51eC5iaW4uYnoyIHZtbGludQogS0JVSUxEX0NGTEFHUyA6PSAtbSQoQklUUykgLURfX0tF
-Uk5FTF9fICQoTElOVVhfSU5DTFVERSkgLU8yCiBLQlVJTERfQ0ZMQUdTICs9IC1mbm8tc3Ry
-aWN0LWFsaWFzaW5nIC1mUElDCiBLQlVJTERfQ0ZMQUdTICs9IC1ERElTQUJMRV9CUkFOQ0hf
-UFJPRklMSU5HCitjZmxhZ3MtJChDT05GSUdfWDg2XzMyKSA6PSAtbWFyY2g9aTM4NgogY2Zs
-YWdzLSQoQ09ORklHX1g4Nl82NCkgOj0gLW1jbW9kZWw9c21hbGwKIEtCVUlMRF9DRkxBR1Mg
-Kz0gJChjZmxhZ3MteSkKIEtCVUlMRF9DRkxBR1MgKz0gJChjYWxsIGNjLW9wdGlvbiwtZmZy
-ZWVzdGFuZGluZykK
---------------040109030508070100020306--
+resize side:
+
+       spin_lock(&hash_lock);
+       hash_update_active = 1;
+       ....
+       spin_unlock(&hash_lock);
+       synchronize_rcu();
+       hash_update_active = 0;
+       wake_up(&hash_wq);
+
+Thanks,
+
+	tglx
