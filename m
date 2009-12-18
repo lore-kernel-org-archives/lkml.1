@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZLRKTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329AbZLRKZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbZLRKTt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 05:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZLRKTs
+	id S1752329AbZLRKZQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 05:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZLRKZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 05:19:48 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:33920 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbZLRKTr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 05:19:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rstB/r3s5T+m9PXhtOluW2M0cRjpkjISLoQzrPcOO45x2uipndxnIkZMcg1eT4br+8
-         d+XmVVVVGSZbvg5MCmk6oPpV3X8BOJHbdBOnC13gUZXYCQKTyFybqAvuWUwYDzqe4fZp
-         FhmapkgI1JNA4Y7Su+wndeKBj9Z7F1jWjTbqI=
-MIME-Version: 1.0
-In-Reply-To: <200912181112.30586.a.miskiewicz@gmail.com>
-References: <200912181112.30586.a.miskiewicz@gmail.com>
-Date: Fri, 18 Dec 2009 02:19:47 -0800
-X-Google-Sender-Auth: a1997c78ca28a1e8
-Message-ID: <86802c440912180219j6aeb1480p7adbc5ced1113f4e@mail.gmail.com>
-Subject: Re: what's node "-1" ?
-From: Yinghai Lu <yinghai@kernel.org>
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 18 Dec 2009 05:25:14 -0500
+Received: from sh.osrg.net ([192.16.179.4]:51568 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750900AbZLRKZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 05:25:12 -0500
+Date: Fri, 18 Dec 2009 19:24:12 +0900
+To: James.Bottomley@suse.de
+Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       torvalds@linux-foundation.org, tytso@mit.edu, kyle@mcmartin.ca,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org, linux-arch@vger.kernel.org
+Subject: Re: [git patches] xfs and block fixes for virtually indexed arches
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1261130489.3013.41.camel@mulgrave.site>
+References: <1261120128.3013.8.camel@mulgrave.site>
+	<20091218183353I.fujita.tomonori@lab.ntt.co.jp>
+	<1261130489.3013.41.camel@mulgrave.site>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091218192401D.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 18 Dec 2009 19:24:14 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 2:12 AM, Arkadiusz Miskiewicz
-<a.miskiewicz@gmail.com> wrote:
->
-> [   22.284175]   alloc irq_desc for 55 on node -1
-> [   22.284177]   alloc kstat_irqs on node -1
->
-> What's node "-1" ?
->
-> dmesg talks about nodes such things:
-> [    0.000000] NR_CPUS:32 nr_cpumask_bits:32 nr_cpu_ids:8 nr_node_ids:1
-> [    0.073337] CPU 0/0x0 -> Node 0
->
-> there is some "node 0" ... but no idea what -1 is.
+On Fri, 18 Dec 2009 11:01:29 +0100
+James Bottomley <James.Bottomley@suse.de> wrote:
 
-that mean for irq_desc related, alloc mem will use mem on
-cpu_to_node(cpu) that code is runing
+> > Yeah, but now only XFS passes vmap'ed pages to the block layer. Isn't
+> > it better to wait until we have real users of the API?
+> 
+> XFS is a real user ... the XFS filesystem is our most trusted code base
+> that can break the 8TB limit, which hard disks are already at.  Ext4 may
+> be ready, but it's not universally present in enterprise distros like
+> XFS.
 
-YH
+XFS already has the own code to handle that, which works fine (with
+your patchset except for 5/6 for the block layer). Not much motivation
+for XFS to move to the generic API?
+
+
+> > > That would ensure the architecturally
+> > > correct flushing of the aliases, and would satisfy the expectations of
+> > > blk_rq_map_kern().  The down side is that vmap/vmalloc set up and clear
+> > > page tables, which isn't necessary and might impact performance (xfs
+> > > people?)
+> > 
+> > btw, I'm not sure that the existing blk_rq_map_* API isn't fit well to
+> > file systems since blk_rq_map_user and blk_rq_map_kern takes a request
+> > structure.
+> 
+> OK, so that was illustrative.  The meat of the change is at the bio
+> layer anyway (fss tend to speak bios).
+
+Yeah, I think so, it's up to Jens to add new APIs for vmap there.
