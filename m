@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbZLROK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZLROMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbZLROK1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 09:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZLROKX
+	id S1753859AbZLROMg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 09:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZLROMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 09:10:23 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:63078 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753813AbZLROKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 09:10:20 -0500
-Date: Fri, 18 Dec 2009 09:10:03 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: sniper <s3c24xx@gmail.com>,
-       "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [PATCH] btrfs: Simplify offset calculation method for
- ctree.h
-Message-ID: <20091218141003.GB3202@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Zhaolei <zhaolei@cn.fujitsu.com>, sniper <s3c24xx@gmail.com>,
-	"linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <4B2ADB4C.7010900@cn.fujitsu.com>
- <9bd6b5360912172039y432361fu243d0f05bf75b7b7@mail.gmail.com>
- <4B2B1852.6080105@cn.fujitsu.com>
+	Fri, 18 Dec 2009 09:12:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49475 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753778AbZLROMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 09:12:33 -0500
+Message-ID: <4B2B8DC6.7010506@redhat.com>
+Date: Fri, 18 Dec 2009 09:12:22 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B2B1852.6080105@cn.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B2B8D44.0073:SCFMA4539814,ss=1,fgs=0
+To: Avi Kivity <avi@redhat.com>
+CC: lwoodman@redhat.com, akpm@linux-foundation.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, minchan.kim@gmail.com
+Subject: Re: [PATCH v2] vmscan: limit concurrent reclaimers in shrink_zone
+References: <20091211164651.036f5340@annuminas.surriel.com> <4B2B85C3.5040409@redhat.com>
+In-Reply-To: <4B2B85C3.5040409@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 01:51:14PM +0800, Zhaolei wrote:
-> sniper wrote:
-> > No, many pointers in btrfs function arguments are not pointing to an
-> > absolute address, but relative to the start address of extent.
-> > Take following function as example, argument inode_item is an offset
-> > value to the beginning of leaf. So we can't reach its member with
-> > &inode_item->xxx
-> 
-> Notice that we are not reach its member, we are getting pointer of its
-> member with &inode_item->mtime.
-> This operation have same effect as old one.
+On 12/18/2009 08:38 AM, Avi Kivity wrote:
 
-It relies on gcc doing something specific with the pointer address
-manipulation while the original code makes it clear we're just taking
-the offset.  We do rely on gcc being gcc in lots of places in the code,
-but in this case I prefer the offsetof.
+>> + /* Number of processes running page reclaim code on this zone. */
+>> + atomic_t concurrent_reclaimers;
+>> + wait_queue_head_t reclaim_wait;
+>> +
+>
+> Counting semaphore?
 
--chris
+I don't see a safe way to adjust a counting semaphore
+through /proc/sys.
+
+-- 
+All rights reversed.
