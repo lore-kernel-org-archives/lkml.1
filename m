@@ -1,240 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbZLRDHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZLRCbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbZLRDHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 22:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZLRDG7
+	id S1754683AbZLRCbK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZLRCbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 22:06:59 -0500
-Received: from mga03.intel.com ([143.182.124.21]:58741 "EHLO mga03.intel.com"
+	Thu, 17 Dec 2009 21:31:09 -0500
+Received: from mga01.intel.com ([192.55.52.88]:55490 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbZLRDG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 22:06:57 -0500
+	id S1750860AbZLRCbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:31:07 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="224279939"
-Date: Fri, 18 Dec 2009 10:27:48 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Americo Wang <xiyou.wangcong@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Alex Chiang <achiang@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Li, Haicheng" <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: [PATCH v3] mm: introduce dump_page() and print symbolic flag names
-Message-ID: <20091218022748.GA6575@localhost>
-References: <20091216153513.GC2804@hack> <20091218012324.GA7953@localhost> <20091218102711.6532.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091218102711.6532.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-IronPort-AV: E=Sophos;i="4.47,416,1257148800"; 
+   d="scan'208";a="524255381"
+Subject: [patch] x86, irq: allow 0xff for /proc/irq/[n]/smp_affinity on a 8
+ cpu system
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       John Blackwood <john.blackwood@ccur.com>,
+       Dimitri Sivanich <sivanich@sgi.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 17 Dec 2009 18:29:46 -0800
+Message-Id: <1261103386.2535.409.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 09:35:59AM +0800, KOSAKI Motohiro wrote:
-> > On Wed, Dec 16, 2009 at 11:35:13PM +0800, Américo Wang wrote:
-> > > On Wed, Dec 16, 2009 at 08:33:10PM +0800, Wu Fengguang wrote:
-> > > >On Wed, Dec 16, 2009 at 08:26:40PM +0800, Wu Fengguang wrote:
-> > > >> - introduce dump_page() to print the page info for debugging some error condition.
-> > > >> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
-> > > >> - print an extra field: the symbolic names of page->flags
-> > > >> 
-> > > >> Example dump_page() output:
-> > > >> 
-> > > >> [  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1
-> > > >> mapping:ffff88001c901791 index:147
-> > > >                                 ~~~ this is in fact 0x147
-> > > >
-> > > >The index value may sometimes be misread as decimal number, shall this
-> > > >be fixed by adding a "0x" prefix?
-> > > 
-> > > 
-> > > Using '%#x' will do.
-> > 
-> > +	printk(KERN_ALERT "page flags: %lx(", flags);
-> 
-> nit.
-> Now, you append 0x prefix to index. why don't you appent 0x prefix to this?
-> I mean we have to keep consist prefix printing rule in the same printk.
+John Blackwood reported:
+> on an older Dell PowerEdge 6650 system with 8 cpus (4 are hyper-threaded),
+> and  32 bit (x86) kernel, once you change the irq smp_affinity of an irq
+> to be less than all cpus in the system, you can never change really the
+> irq smp_affinity back to be all cpus in the system (0xff) again,
+> even though no error status is returned on the "/bin/echo ff >
+> /proc/irq/[n]/smp_affinity" operation.
+>
+> This is due to that fact that BAD_APICID has the same value as
+> all cpus (0xff) on 32bit kernels, and thus the value returned from
+> set_desc_affinity() via the cpu_mask_to_apicid_and() function is treated
+> as a failure in set_ioapic_affinity_irq_desc(), and no affinity changes
+> are made.
 
-Good suggestion, thanks!
+set_desc_affinity() is already checking if the incoming cpu mask
+intersects with the cpu online mask or not. So there is no need
+for the apic op cpu_mask_to_apicid_and() to check again
+and return BAD_APICID.
+
+Remove the BAD_APICID return value from cpu_mask_to_apicid_and()
+and also fix set_desc_affinity() to return -1 instead of using BAD_APICID
+to represent error conditions (as cpu_mask_to_apicid_and() can return
+logical or physical apicid values and BAD_APICID is really to represent
+bad physical apic id).
+
+Reported-by: John Blackwood <john.blackwood@ccur.com>
+Root-caused-by: John Blackwood <john.blackwood@ccur.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
+ arch/x86/include/asm/hw_irq.h         |    3 ++-
+ arch/x86/kernel/apic/apic_flat_64.c   |    5 +----
+ arch/x86/kernel/apic/bigsmp_32.c      |    5 +----
+ arch/x86/kernel/apic/io_apic.c        |   32 ++++++++++++++------------------
+ arch/x86/kernel/apic/x2apic_cluster.c |    5 +----
+ arch/x86/kernel/apic/x2apic_phys.c    |    5 +----
+ arch/x86/kernel/apic/x2apic_uv_x.c    |    5 +----
+ arch/x86/kernel/uv_irq.c              |    3 +--
+ 8 files changed, 22 insertions(+), 41 deletions(-)
 
-mm: introduce dump_page()
-
-- introduce dump_page() to print the page info for debugging some error condition.
-- convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
-- print an extra field: the symbolic names of page->flags
-
-Example dump_page() output:
-
-[  157.521694] page:ffffea0000a7cba8 count:2 mapcount:1 mapping:ffff88001c901791 index:0x147
-[  157.525570] page flags: 0x100000000100068(uptodate|lru|active|swapbacked)
-
-CC: Ingo Molnar <mingo@elte.hu> 
-CC: Alex Chiang <achiang@hp.com>
-CC: Rik van Riel <riel@redhat.com>
-CC: Andi Kleen <andi@firstfloor.org> 
-CC: Mel Gorman <mel@linux.vnet.ibm.com> 
-CC: Christoph Lameter <cl@linux-foundation.org> 
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- include/linux/mm.h  |    2 +
- mm/memory.c         |    8 +---
- mm/memory_hotplug.c |    6 +--
- mm/page_alloc.c     |   83 +++++++++++++++++++++++++++++++++++++++---
- 4 files changed, 86 insertions(+), 13 deletions(-)
-
---- linux-mm.orig/mm/page_alloc.c	2009-12-11 10:01:25.000000000 +0800
-+++ linux-mm/mm/page_alloc.c	2009-12-18 10:08:24.000000000 +0800
-@@ -49,6 +49,7 @@
- #include <linux/debugobjects.h>
- #include <linux/kmemleak.h>
- #include <trace/events/kmem.h>
-+#include <linux/ftrace_event.h>
+diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
+index 08c48a8..eeac829 100644
+--- a/arch/x86/include/asm/hw_irq.h
++++ b/arch/x86/include/asm/hw_irq.h
+@@ -103,7 +103,8 @@ extern int assign_irq_vector(int, struct irq_cfg *, const struct cpumask *);
+ extern void send_cleanup_vector(struct irq_cfg *);
  
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -262,10 +263,7 @@ static void bad_page(struct page *page)
+ struct irq_desc;
+-extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *);
++extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *,
++				      unsigned int *dest_id);
+ extern int IO_APIC_get_PCI_irq_vector(int bus, int devfn, int pin, struct io_apic_irq_attr *irq_attr);
+ extern void setup_ioapic_dest(void);
  
- 	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
- 		current->comm, page_to_pfn(page));
--	printk(KERN_ALERT
--		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
--		page, (void *)page->flags, page_count(page),
--		page_mapcount(page), page->mapping, page->index);
-+	dump_page(page);
- 
- 	dump_stack();
- out:
-@@ -5106,3 +5104,80 @@ bool is_free_buddy_page(struct page *pag
- 	return order < MAX_ORDER;
- }
- #endif
-+
-+static struct trace_print_flags pageflag_names[] = {
-+	{1UL << PG_locked,		"locked"	},
-+	{1UL << PG_error,		"error"		},
-+	{1UL << PG_referenced,		"referenced"	},
-+	{1UL << PG_uptodate,		"uptodate"	},
-+	{1UL << PG_dirty,		"dirty"		},
-+	{1UL << PG_lru,			"lru"		},
-+	{1UL << PG_active,		"active"	},
-+	{1UL << PG_slab,		"slab"		},
-+	{1UL << PG_owner_priv_1,	"owner_priv_1"	},
-+	{1UL << PG_arch_1,		"arch_1"	},
-+	{1UL << PG_reserved,		"reserved"	},
-+	{1UL << PG_private,		"private"	},
-+	{1UL << PG_private_2,		"private_2"	},
-+	{1UL << PG_writeback,		"writeback"	},
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	{1UL << PG_head,		"head"		},
-+	{1UL << PG_tail,		"tail"		},
-+#else
-+	{1UL << PG_compound,		"compound"	},
-+#endif
-+	{1UL << PG_swapcache,		"swapcache"	},
-+	{1UL << PG_mappedtodisk,	"mappedtodisk"	},
-+	{1UL << PG_reclaim,		"reclaim"	},
-+	{1UL << PG_buddy,		"buddy"		},
-+	{1UL << PG_swapbacked,		"swapbacked"	},
-+	{1UL << PG_unevictable,		"unevictable"	},
-+#ifdef CONFIG_MMU
-+	{1UL << PG_mlocked,		"mlocked"	},
-+#endif
-+#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-+	{1UL << PG_uncached,		"uncached"	},
-+#endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	{1UL << PG_hwpoison,		"hwpoison"	},
-+#endif
-+	{-1UL,				NULL		},
-+};
-+
-+static void dump_page_flags(unsigned long flags)
-+{
-+	const char *delim = "";
-+	unsigned long mask;
-+	int i;
-+
-+	printk(KERN_ALERT "page flags: %#lx(", flags);
-+
-+	/* remove zone id */
-+	flags &= (1UL << NR_PAGEFLAGS) - 1;
-+
-+	for (i = 0; pageflag_names[i].name && flags; i++) {
-+
-+		mask = pageflag_names[i].mask;
-+		if ((flags & mask) != mask)
-+			continue;
-+
-+		flags &= ~mask;
-+		printk("%s%s", delim, pageflag_names[i].name);
-+		delim = "|";
-+	}
-+
-+	/* check for left over flags */
-+	if (flags)
-+		printk("%s%#lx", delim, flags);
-+
-+	printk(")\n");
-+}
-+
-+void dump_page(struct page *page)
-+{
-+	printk(KERN_ALERT
-+	       "page:%p count:%d mapcount:%d mapping:%p index:%#lx\n",
-+		page, page_count(page), page_mapcount(page),
-+		page->mapping, page->index);
-+	dump_page_flags(page->flags);
-+}
---- linux-mm.orig/mm/memory.c	2009-12-11 10:01:25.000000000 +0800
-+++ linux-mm/mm/memory.c	2009-12-14 19:21:22.000000000 +0800
-@@ -430,12 +430,8 @@ static void print_bad_pte(struct vm_area
- 		"BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
- 		current->comm,
- 		(long long)pte_val(pte), (long long)pmd_val(*pmd));
--	if (page) {
--		printk(KERN_ALERT
--		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
--		page, (void *)page->flags, page_count(page),
--		page_mapcount(page), page->mapping, page->index);
--	}
-+	if (page)
-+		dump_page(page);
- 	printk(KERN_ALERT
- 		"addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
- 		(void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
---- linux-mm.orig/mm/memory_hotplug.c	2009-12-11 10:01:25.000000000 +0800
-+++ linux-mm/mm/memory_hotplug.c	2009-12-14 19:21:22.000000000 +0800
-@@ -678,9 +678,9 @@ do_migrate_range(unsigned long start_pfn
- 			if (page_count(page))
- 				not_managed++;
- #ifdef CONFIG_DEBUG_VM
--			printk(KERN_INFO "removing from LRU failed"
--					 " %lx/%d/%lx\n",
--				pfn, page_count(page), page->flags);
-+			printk(KERN_ALERT "removing pfn %lx from LRU failed\n",
-+			       pfn);
-+			dump_page(page);
- #endif
- 		}
+diff --git a/arch/x86/kernel/apic/apic_flat_64.c b/arch/x86/kernel/apic/apic_flat_64.c
+index d0c99ab..eacbd2b 100644
+--- a/arch/x86/kernel/apic/apic_flat_64.c
++++ b/arch/x86/kernel/apic/apic_flat_64.c
+@@ -306,10 +306,7 @@ physflat_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
  	}
---- linux-mm.orig/include/linux/mm.h	2009-12-11 10:01:25.000000000 +0800
-+++ linux-mm/include/linux/mm.h	2009-12-14 19:21:22.000000000 +0800
-@@ -1328,5 +1328,7 @@ extern void shake_page(struct page *p, i
- extern atomic_long_t mce_bad_pages;
- extern int soft_offline_page(struct page *page, int flags);
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_apicid, cpu);
+ }
  
-+extern void dump_page(struct page *page);
-+
- #endif /* __KERNEL__ */
- #endif /* _LINUX_MM_H */
+ struct apic apic_physflat =  {
+diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
+index 38dcecf..cb804c5 100644
+--- a/arch/x86/kernel/apic/bigsmp_32.c
++++ b/arch/x86/kernel/apic/bigsmp_32.c
+@@ -131,10 +131,7 @@ static unsigned int bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
+ 	}
+-	if (cpu < nr_cpu_ids)
+-		return bigsmp_cpu_to_logical_apicid(cpu);
+-
+-	return BAD_APICID;
++	return bigsmp_cpu_to_logical_apicid(cpu);
+ }
+ 
+ static int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 11a5851..de00c46 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -2276,26 +2276,28 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq
+ 
+ /*
+  * Either sets desc->affinity to a valid value, and returns
+- * ->cpu_mask_to_apicid of that, or returns BAD_APICID and
++ * ->cpu_mask_to_apicid of that in dest_id, or returns -1 and
+  * leaves desc->affinity untouched.
+  */
+ unsigned int
+-set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
++set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask,
++		  unsigned int *dest_id)
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned int irq;
+ 
+ 	if (!cpumask_intersects(mask, cpu_online_mask))
+-		return BAD_APICID;
++		return -1;
+ 
+ 	irq = desc->irq;
+ 	cfg = desc->chip_data;
+ 	if (assign_irq_vector(irq, cfg, mask))
+-		return BAD_APICID;
++		return -1;
+ 
+ 	cpumask_copy(desc->affinity, mask);
+ 
+-	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
++	*dest_id = apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
++	return 0;
+ }
+ 
+ static int
+@@ -2311,12 +2313,11 @@ set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
+ 	cfg = desc->chip_data;
+ 
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest != BAD_APICID) {
++	ret = set_desc_affinity(desc, mask, &dest);
++	if (!ret) {
+ 		/* Only the high 8 bits are valid. */
+ 		dest = SET_APIC_LOGICAL_ID(dest);
+ 		__target_IO_APIC_irq(irq, dest, cfg);
+-		ret = 0;
+ 	}
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
+ 
+@@ -3351,8 +3352,7 @@ static int set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+@@ -3384,8 +3384,7 @@ ir_set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	if (get_irte(irq, &irte))
+ 		return -1;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	irte.vector = cfg->vector;
+@@ -3567,8 +3566,7 @@ static int dmar_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+@@ -3623,8 +3621,7 @@ static int hpet_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+@@ -3730,8 +3727,7 @@ static int set_ht_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	struct irq_cfg *cfg;
+ 	unsigned int dest;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	cfg = desc->chip_data;
+diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
+index a5371ec..cf69c59 100644
+--- a/arch/x86/kernel/apic/x2apic_cluster.c
++++ b/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -148,10 +148,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 			break;
+ 	}
+ 
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_logical_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_logical_apicid, cpu);
+ }
+ 
+ static unsigned int x2apic_cluster_phys_get_apic_id(unsigned long x)
+diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
+index a8989aa..8972f38 100644
+--- a/arch/x86/kernel/apic/x2apic_phys.c
++++ b/arch/x86/kernel/apic/x2apic_phys.c
+@@ -146,10 +146,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 			break;
+ 	}
+ 
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_apicid, cpu);
+ }
+ 
+ static unsigned int x2apic_phys_get_apic_id(unsigned long x)
+diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+index b684bb3..d56b0ef 100644
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -225,10 +225,7 @@ uv_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 		if (cpumask_test_cpu(cpu, cpu_online_mask))
+ 			break;
+ 	}
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_apicid, cpu);
+-
+-	return BAD_APICID;
++	return per_cpu(x86_cpu_to_apicid, cpu);
+ }
+ 
+ static unsigned int x2apic_get_apic_id(unsigned long x)
+diff --git a/arch/x86/kernel/uv_irq.c b/arch/x86/kernel/uv_irq.c
+index 61d805d..ece73d8 100644
+--- a/arch/x86/kernel/uv_irq.c
++++ b/arch/x86/kernel/uv_irq.c
+@@ -215,8 +215,7 @@ static int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ 	unsigned long mmr_offset;
+ 	unsigned mmr_pnode;
+ 
+-	dest = set_desc_affinity(desc, mask);
+-	if (dest == BAD_APICID)
++	if (set_desc_affinity(desc, mask, &dest))
+ 		return -1;
+ 
+ 	mmr_value = 0;
+
+
