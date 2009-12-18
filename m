@@ -1,62 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZLRK5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbZLRLDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZLRK5o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 05:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZLRK5n
+	id S1751328AbZLRLDk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 06:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZLRLDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 05:57:43 -0500
-Received: from fom01.emnet.dk ([89.249.14.84]:61570 "EHLO fom01.emnet.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbZLRK5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 05:57:42 -0500
-X-AuditID: 59f90e54-b7bd7ae000001243-e9-4b2b60240f88
-Subject: Re: x264 benchmarks BFS vs CFS
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Garrett-Glaser <darkshikari@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1261121405.30469.8.camel@marge.simson.net>
-References: <1261042383.14314.0.camel@localhost>
-	 <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
-	 <20091217105316.GB26010@elte.hu> <1261047618.14314.6.camel@localhost>
-	 <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
-	 <20091218052344.GD417@elte.hu>  <1261121405.30469.8.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Fri, 18 Dec 2009 11:57:36 +0100
-Message-Id: <1261133856.14314.39.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAxIa7B4SGuw4EhrsOQ==
+	Fri, 18 Dec 2009 06:03:40 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:58987 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750867AbZLRLDi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 06:03:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=nqaTlpTkWG+BbG1kI8JqaD2yHQhfWTiciHKFJbwLKpWRNuregd+9TRs7MztmW7m60g
+         TF/9vhEcF4qFauwjmk/9wk6MpfvQ0XgLOG6psXXJn2/b9xs11MXhVEYiB0XF3QOXYAzK
+         7QyLUB77nevAjMUXmmlAQ7IreJnzXlWpbfqZw=
+MIME-Version: 1.0
+In-Reply-To: <1261052101-14409-1-git-send-email-chaithrika@ti.com>
+References: <1261052101-14409-1-git-send-email-chaithrika@ti.com>
+Date: Fri, 18 Dec 2009 16:33:35 +0530
+Message-ID: <4fb5db50912180303w2052bce8q76c04782d9cd355e@mail.gmail.com>
+Subject: Re: [PATCH 2/2] davinci: MMC: updates to suspend/resume 
+	implementation
+From: Janakiram Sistla <janakiram.sistla@gmail.com>
+To: Chaithrika U S <chaithrika@ti.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       davinci-linux-open-source@linux.davincidsp.com,
+       khilman@deeprootsystems.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 08:30 +0100, Mike Galbraith wrote:
-> On Fri, 2009-12-18 at 06:23 +0100, Ingo Molnar wrote:
-> 
-> > Having said that, we generally try to make things perform well without apps 
-> > having to switch themselves to SCHED_BATCH. Mike, do you think we can make 
-> > x264 perform as well (or nearly as well) under SCHED_OTHER as under 
-> > SCHED_BATCH?
-> 
-> It's not bad as is, except for ultrafast mode.  START_DEBIT is the
-> biggest problem there.  I don't think SCHED_OTHER will ever match
-> SCHED_BATCH for this load, though I must say I haven't full-spectrum
-> tested.  This load really wants RR scheduling, and wakeup preemption
-> necessarily perturbs run order.
-> 
-> I'll probably piddle with it some more, it's an interesting load.
-Yes, i must say, very interresting, its very complicated and... oh wait,
-its just encoding a movie!
-> 
-> 	-Mike
-> 
+On 12/17/09, Chaithrika U S <chaithrika@ti.com> wrote:
+> Improve the suspend and resume callbacks in DaVinci MMC
+> host controller driver.
+[Ram] I came cross in the mailing some days back that "direct"
+.suspend and .resume calls will stop being supported.Is This
+true??This patch does require a migration then again.
+
+> Tested on DA850/OMAP-L138 EVM. This testing requires patches
+> which add suspend-to-RAM support to DA850/OMAP-L138 SoC[1].
+>
+> [1]http://linux.davincidsp.com/pipermail/davinci-linux-open-source/
+> 2009-September/016118.html
+>
+> Signed-off-by: Chaithrika U S <chaithrika@ti.com>
+> ---
+> Applies to Linus' kernel tree.
+>
+>  drivers/mmc/host/davinci_mmc.c |   31 +++++++++++++++++++++++++++++--
+>  1 files changed, 29 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+> index 25645bf..7d05cc1 100644
+> --- a/drivers/mmc/host/davinci_mmc.c
+> +++ b/drivers/mmc/host/davinci_mmc.c
+> @@ -170,6 +170,7 @@ struct mmc_davinci_host {
+>  #define DAVINCI_MMC_DATADIR_READ       1
+>  #define DAVINCI_MMC_DATADIR_WRITE      2
+>        unsigned char data_dir;
+> +       unsigned char suspended;
+>
+>        /* buffer is used during PIO of one scatterlist segment, and
+>         * is updated along with buffer_bytes_left.  bytes_left applies
+> @@ -1300,15 +1301,41 @@ static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
+>  static int davinci_mmcsd_suspend(struct platform_device *pdev, pm_message_t msg)
+>  {
+>        struct mmc_davinci_host *host = platform_get_drvdata(pdev);
+> +       int ret;
+>
+> -       return mmc_suspend_host(host->mmc, msg);
+> +       mmc_host_enable(host->mmc);
+> +       ret = mmc_suspend_host(host->mmc, msg);
+> +       if (!ret) {
+> +               writel(0, host->base + DAVINCI_MMCIM);
+> +               mmc_davinci_reset_ctrl(host, 1);
+> +               mmc_host_disable(host->mmc);
+> +               clk_disable(host->clk);
+> +               host->suspended = 1;
+> +       } else {
+> +               host->suspended = 0;
+> +               mmc_host_disable(host->mmc);
+> +       }
+> +
+> +       return ret;
+>  }
+>
+>  static int davinci_mmcsd_resume(struct platform_device *pdev)
+>  {
+>        struct mmc_davinci_host *host = platform_get_drvdata(pdev);
+> +       int ret;
+>
+> -       return mmc_resume_host(host->mmc);
+> +       if (!host->suspended)
+> +               return 0;
+> +
+> +       clk_enable(host->clk);
+> +       mmc_host_enable(host->mmc);
+> +
+> +       mmc_davinci_reset_ctrl(host, 0);
+> +       ret = mmc_resume_host(host->mmc);
+> +       if (!ret)
+> +               host->suspended = 0;
+> +
+> +       return ret;
+>  }
+>  #else
+>  #define davinci_mmcsd_suspend  NULL
+> --
+> 1.5.6
+>
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
-
+>
