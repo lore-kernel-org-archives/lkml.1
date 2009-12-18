@@ -1,102 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZLRPhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbZLRPih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbZLRPhj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZLRPhi
+	id S932102AbZLRPih (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZLRPie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:37:38 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:36345 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbZLRPhh (ORCPT
+	Fri, 18 Dec 2009 10:38:34 -0500
+Received: from hypnotoad.manicmethod.com.2.126.204.in-addr.arpa ([204.126.2.47]:35664
+	"EHLO manicmethod.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754580AbZLRPid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:37:37 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: Jerome Glisse <glisse@freedesktop.org>
-Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error with linux-2.6.32)
-Date: Fri, 18 Dec 2009 16:37:34 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32-fglrx; KDE/4.3.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net
-References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de> <200912181447.00498.johannes.hirte@fem.tu-ilmenau.de> <20091218144435.GH22703@localhost.localdomain>
-In-Reply-To: <20091218144435.GH22703@localhost.localdomain>
+	Fri, 18 Dec 2009 10:38:33 -0500
+Message-ID: <4B2BA1F4.6090709@manicmethod.com>
+Date: Fri, 18 Dec 2009 10:38:28 -0500
+From: Joshua Brindle <method@manicmethod.com>
+User-Agent: Postbox 1.1.0 (Windows/20091201)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Paul Nuzzi <pjnuzzi@tycho.ncsc.mil>
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       jmorris@namei.org, selinux@tycho.nsa.gov,
+       "George S. Coker, II" <gscoker@alpha.ncsc.mil>,
+       Eamon Walsh <ewalsh@tycho.nsa.gov>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH] Dynamic port labeling V2
+References: <1259616460.2444.9.camel@moss-stripedbass.epoch.ncsc.mil>	 <4B181228.6080600@manicmethod.com>	 <1259937021.2444.16.camel@moss-stripedbass.epoch.ncsc.mil>	 <4B1932EB.9020303@manicmethod.com> <1260206511.2630.10.camel@moss-stripedbass.epoch.ncsc.mil>
+In-Reply-To: <1260206511.2630.10.camel@moss-stripedbass.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912181637.34237.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 18 Dezember 2009 15:44:35 schrieb Jerome Glisse:
-> On Fri, Dec 18, 2009 at 02:47:00PM +0100, Johannes Hirte wrote:
-> > Am Mittwoch 16 Dezember 2009 20:31:48 schrieb Johannes Hirte:
-> > > Am Mittwoch 16 Dezember 2009 19:41:48 schrieb Jerome Glisse:
-> > > > On Wed, Dec 16, 2009 at 03:58:30PM +0100, Johannes Hirte wrote:
-> > > > > Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
-> > > > > > On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
-> > > > > > > This patch (as the BIOS option) will only disable the error
-> > > > > > > reports. The error itself will still occur, right? So necessary
-> > > > > > > to find out why the radeon driver trigger this error.
-> > > > > >
-> > > > > > Because the graphics driver does aperture accesses with no
-> > > > > > matching GART translation, and the hw generates mchecks for
-> > > > > > that. The whole story on GART table walk errors is in section
-> > > > > > "13.10.1 GART Table Walk Error Reporting" in the document here:
-> > > > > > http://support.amd.com/us/Processor_TechDocs/32559.pdf
-> > > > > >
-> > > > > > I can't say for sure about your BIOS, but if it is done as
-> > > > > > described in the abovementioned section, the BIOS option should
-> > > > > > disable logging of the error, which implies reporting too.
-> > > > > >
-> > > > > > The patch is still needed for machines that do not have that BIOS
-> > > > > > option.
-> > > > >
-> > > > > Disabling in BIOS doesn't made any difference. The errors were
-> > > > > still reported. Your patch disabled it. But I think this will make
-> > > > > work harder for driver developers as they won't get this error
-> > > > > anymore. Could this be made changeable on runtime/boottime?
-> > > > >
-> > > > > I've added drm people to CC as they're responsible for this error.
-> > > > >
-> > > > >
-> > > > > regards,
-> > > > >   Johannes
-> > > >
-> > > > More context would be usefull. Are you using KMS ? If so is your
-> > > > userspace KMS capable ? Does this GART error happen all the time or
-> > > > only after sometimes or when doing somethings specific ?
-> > >
-> > > Yes I'm using KMS when this error occours.
-> > > Hardware:
-> > > - Tyan Tiger K8W S8875 (AMD8151 Northbridge)
-> > > - Radeon HD3650 AGP (RV635)
-> > >
-> > > Software:
-> > > - linux-2.6.32
-> > > - libdrm-2.4.16
-> > > - mesa-7.7_rc2
-> > > - xf86-video-ati-9999 (latest git everytime)
-> > > - KDE-4.3.4 with compositing enabled (OpenGL)
-> > >
-> > > The errors occours after a while of normal desktop work. I haven't
-> > > tested without KMS or compisiting. Will do this as well.
-> >
-> > It's KMS related but not to compositing. Without KMS the errors don't
-> > occur. I found at least two log entries where the error occurred on
-> > initializing KMS. It happens reliable after a while working with X.
-> >
-> > regards,
-> >   Johannes
-> 
-> Can you give me the full reference of your motherboard ?
-> 
-> Cheers,
-> Jerome
-> 
+Paul Nuzzi wrote:
+> On Fri, 2009-12-04 at 11:03 -0500, Joshua Brindle wrote:
+>> effect at once.
+>>
+>> I don't know though, I may be overthinking this. Right now isn't ideal,
+>> portcons have to be stored in a libsemanage "database" and they get
+>> added to the policydb at policy build time. You could generate out a
+>> portcon file that sits next to the policy.24 and gets fed in at load
+>> time but making modifications to that and keeping them in sync would be
+>> a pain, unless libsemanage made the change and regenerated the file (it
+>> would be cheaper than rebuilding the entire policy) but that would also
+>> mean you'd have to modify libsemanage which I typically don't wish on
+>> anyone.
+>>
+>
+> Sounds like your idea would present some a few problems.  To implement
+> this functionality user-space would have to take out a policy lock in
+> the kernel for an indefinite amount of time.  That brings up some issues
+> on scalability.  Typically atomic operations are small and fast.  This
+> also sounds like a toolchain issue.  The proposed functionality can be
+> done in the front end of semanage or setportcon.
+>
 
-Tyan Tiger K8W (S2875ANRF)
-http://tyan.com/product_board_detail.aspx?pid=103
+Thanks to Kyle for digging this thread back up.
 
-regards,
-  Johannes
+I understand there are issues (though I disagree with your assertion 
+above wrt policy lock, you'd just need to fill in an ocontext and take a 
+lock to switch the pointer IIUC). I don't like this "well, its a 
+toolchain issue". Sure it is, and the toolchain issue should be solved 
+before the kernel code goes forward.
+
+Adding something to the kernel and then figuring out how to use it in 
+userspace later is a recipe for disaster, at best it accidentally works 
+but at worst the userspace interface is broken and cumbersome or the 
+kernel part has to be completely rewritten to work the way userspace 
+needs it to.
+
+Not that you need my ACK but I'd need to see the expected userspace 
+interface and how it works with the kernel interface to support this.
+
+The expected userspace interface from my perspective would be semanage 
+since we already have multiple ways of setting portcons and adding 
+another hurts usability.
