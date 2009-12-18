@@ -1,95 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZLRPaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZLRPhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbZLRPaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZLRPay
+	id S1754578AbZLRPhj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZLRPhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:30:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41020 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbZLRPax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:30:53 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH x86/urgent] x86: Fix objdump version check in chkobjdump.awk
-	for different formats.
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 18 Dec 2009 10:34:42 -0500
-Message-ID: <20091218153442.16571.41882.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <4B2ACC11.3020209@zytor.com>
-References: <4B2ACC11.3020209@zytor.com>
-User-Agent: StGIT/0.14.3
+	Fri, 18 Dec 2009 10:37:38 -0500
+Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:36345 "EHLO
+	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754575AbZLRPhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:37:37 -0500
+From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+To: Jerome Glisse <glisse@freedesktop.org>
+Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error with linux-2.6.32)
+Date: Fri, 18 Dec 2009 16:37:34 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-fglrx; KDE/4.3.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de> <200912181447.00498.johannes.hirte@fem.tu-ilmenau.de> <20091218144435.GH22703@localhost.localdomain>
+In-Reply-To: <20091218144435.GH22703@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912181637.34237.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Different version of objdump says its version in different way;
+Am Freitag 18 Dezember 2009 15:44:35 schrieb Jerome Glisse:
+> On Fri, Dec 18, 2009 at 02:47:00PM +0100, Johannes Hirte wrote:
+> > Am Mittwoch 16 Dezember 2009 20:31:48 schrieb Johannes Hirte:
+> > > Am Mittwoch 16 Dezember 2009 19:41:48 schrieb Jerome Glisse:
+> > > > On Wed, Dec 16, 2009 at 03:58:30PM +0100, Johannes Hirte wrote:
+> > > > > Am Mittwoch 16 Dezember 2009 08:14:43 schrieb Borislav Petkov:
+> > > > > > On Tue, Dec 15, 2009 at 11:00:46PM +0100, Johannes Hirte wrote:
+> > > > > > > This patch (as the BIOS option) will only disable the error
+> > > > > > > reports. The error itself will still occur, right? So necessary
+> > > > > > > to find out why the radeon driver trigger this error.
+> > > > > >
+> > > > > > Because the graphics driver does aperture accesses with no
+> > > > > > matching GART translation, and the hw generates mchecks for
+> > > > > > that. The whole story on GART table walk errors is in section
+> > > > > > "13.10.1 GART Table Walk Error Reporting" in the document here:
+> > > > > > http://support.amd.com/us/Processor_TechDocs/32559.pdf
+> > > > > >
+> > > > > > I can't say for sure about your BIOS, but if it is done as
+> > > > > > described in the abovementioned section, the BIOS option should
+> > > > > > disable logging of the error, which implies reporting too.
+> > > > > >
+> > > > > > The patch is still needed for machines that do not have that BIOS
+> > > > > > option.
+> > > > >
+> > > > > Disabling in BIOS doesn't made any difference. The errors were
+> > > > > still reported. Your patch disabled it. But I think this will make
+> > > > > work harder for driver developers as they won't get this error
+> > > > > anymore. Could this be made changeable on runtime/boottime?
+> > > > >
+> > > > > I've added drm people to CC as they're responsible for this error.
+> > > > >
+> > > > >
+> > > > > regards,
+> > > > >   Johannes
+> > > >
+> > > > More context would be usefull. Are you using KMS ? If so is your
+> > > > userspace KMS capable ? Does this GART error happen all the time or
+> > > > only after sometimes or when doing somethings specific ?
+> > >
+> > > Yes I'm using KMS when this error occours.
+> > > Hardware:
+> > > - Tyan Tiger K8W S8875 (AMD8151 Northbridge)
+> > > - Radeon HD3650 AGP (RV635)
+> > >
+> > > Software:
+> > > - linux-2.6.32
+> > > - libdrm-2.4.16
+> > > - mesa-7.7_rc2
+> > > - xf86-video-ati-9999 (latest git everytime)
+> > > - KDE-4.3.4 with compositing enabled (OpenGL)
+> > >
+> > > The errors occours after a while of normal desktop work. I haven't
+> > > tested without KMS or compisiting. Will do this as well.
+> >
+> > It's KMS related but not to compositing. Without KMS the errors don't
+> > occur. I found at least two log entries where the error occurred on
+> > initializing KMS. It happens reliable after a while working with X.
+> >
+> > regards,
+> >   Johannes
+> 
+> Can you give me the full reference of your motherboard ?
+> 
+> Cheers,
+> Jerome
+> 
 
-GNU objdump 2.16.1
+Tyan Tiger K8W (S2875ANRF)
+http://tyan.com/product_board_detail.aspx?pid=103
 
-or
-
-GNU objdump version 2.19.51.0.14-1.fc11 20090722
-
-This patch uses the first argument which starts with a number
-as version string.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Suggested-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/x86/tools/chkobjdump.awk |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/tools/chkobjdump.awk b/arch/x86/tools/chkobjdump.awk
-index 5bbb5a3..250dc79 100644
---- a/arch/x86/tools/chkobjdump.awk
-+++ b/arch/x86/tools/chkobjdump.awk
-@@ -8,14 +8,24 @@ BEGIN {
- 	od_sver = 19;
- }
- 
--/^GNU/ {
--	split($3, ver, ".");
-+/^GNU objdump/ {
-+	verstr = ""
-+	for (i = 3; i <= NF; i++)
-+		if (match($(i), "^[0-9]")) {
-+			verstr = $(i++);
-+			break;
-+		}
-+	if (verstr == "") {
-+		printf("Warning: Failed to find objdump version number.\n");
-+		exit 0;
-+	}
-+	split(verstr, ver, ".");
- 	if (ver[1] > od_ver ||
- 	    (ver[1] == od_ver && ver[2] >= od_sver)) {
- 		exit 1;
- 	} else {
- 		printf("Warning: objdump version %s is older than %d.%d\n",
--		       $4, od_ver, od_sver);
-+		       verstr, od_ver, od_sver);
- 		print("Warning: Skipping posttest.");
- 		# Logic is inverted, because we just skip test without error.
- 		exit 0;
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+regards,
+  Johannes
