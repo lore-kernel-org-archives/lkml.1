@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbZLRLGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751140AbZLRLXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbZLRLGB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 06:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZLRLGA
+	id S1751140AbZLRLXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 06:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbZLRLXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 06:06:00 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:65124 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZLRLF7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 06:05:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=FtytsrR1ZrxkkJ/OBxWWlC/2TMfdOoxAi1hX6HZPiYKk08QBCFXEKP1kurOyHJQp3r
-         huT2fvh4slVOOltO6Zf88Ikdm7PbfnX0VIGuf7zNM/XZ+kH/eJNt8hgxzFD/IeClZVau
-         NxewwS5EKM+wSNjVf/16/9pS4YdpGZsgtdpzA=
-MIME-Version: 1.0
-In-Reply-To: <1261133856.14314.39.camel@localhost>
-References: <1261042383.14314.0.camel@localhost> <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com> 
-	<20091217105316.GB26010@elte.hu> <1261047618.14314.6.camel@localhost> 
-	<28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com> 
-	<20091218052344.GD417@elte.hu> <1261121405.30469.8.camel@marge.simson.net> 
-	<1261133856.14314.39.camel@localhost>
-From: Jason Garrett-Glaser <darkshikari@gmail.com>
-Date: Fri, 18 Dec 2009 03:05:34 -0800
-Message-ID: <28f2fcbc0912180305p47468508ybcb2f60cacb66c35@mail.gmail.com>
-Subject: Re: x264 benchmarks BFS vs CFS
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+	Fri, 18 Dec 2009 06:23:21 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35444 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750946AbZLRLXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 06:23:20 -0500
+Date: Fri, 18 Dec 2009 12:23:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: -tip: origin tree build failure
+Message-ID: <20091218112300.GA25726@elte.hu>
+References: <20091217094041.GA24708@elte.hu>
+ <20091217122316.GB14088@elte.hu>
+ <87bphxu5ef.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87bphxu5ef.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 2:57 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> On Fri, 2009-12-18 at 08:30 +0100, Mike Galbraith wrote:
->> On Fri, 2009-12-18 at 06:23 +0100, Ingo Molnar wrote:
->>
->> > Having said that, we generally try to make things perform well without apps
->> > having to switch themselves to SCHED_BATCH. Mike, do you think we can make
->> > x264 perform as well (or nearly as well) under SCHED_OTHER as under
->> > SCHED_BATCH?
->>
->> It's not bad as is, except for ultrafast mode.  START_DEBIT is the
->> biggest problem there.  I don't think SCHED_OTHER will ever match
->> SCHED_BATCH for this load, though I must say I haven't full-spectrum
->> tested.  This load really wants RR scheduling, and wakeup preemption
->> necessarily perturbs run order.
->>
->> I'll probably piddle with it some more, it's an interesting load.
-> Yes, i must say, very interresting, its very complicated and... oh wait,
-> its just encoding a movie!
 
-Your trolling is becoming a bit over-the-top at this point.  You
-should also considering replying to multiple people in one email as
-opposed to spamming a whole bunch in sequence.
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-Perhaps as the lead x264 developer I'm qualified to say that it
-certainly is a very complicated load due to the strict ordering
-requirements of the threading model--and that you should tone down the
-whining just a tad and perhaps read a bit more about how BFS and CFS
-work before complaining about them.
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >>  config MEMORY_FAILURE
+> >>  	depends on MMU
+> >>  	depends on ARCH_SUPPORTS_MEMORY_FAILURE
+> >> +	select PROC_PAGE_MONITOR
+> >>  	bool "Enable recovery from hardware memory errors"
+> >
+> > It also needs to depend on PROC_FS in that case - as per the updated patch 
+> > below.
+> 
+> Thanks for the report.
+> 
+> MEMORY_FAILURE itself doesn't depend on the page flags, just the injector 
+> which has a separate config option. It already has a select 
+> PROC_PAGE_MONITOR, but the proc dependency is indeed missing.
+> 
+> I think the correct fix is the appended patch.
 
-Jason
+No, your patch is not the correct fix. As i said, PROC_PAGE_MONITOR provides 
+the facility and mm/memory-failure.c uses that facility - and your patch does 
+not solve that fundamental dependency issue, it just fudges around the 
+dependencies.
+
+So your patch can still produce the same kind of build failure (with other 
+Kconfig variations):
+
+ mm/built-in.o: In function `hwpoison_filter':
+ (.text+0x430ba): undefined reference to `stable_page_flags'
+
+This should be cleaned up for real - there's no reason why stable_page_flags() 
+(which is an MM facility) should live in fs/proc/. That's the root of the 
+problem.
+
+Also a few more (very small) nits:
+
+> HWPOISON: Add PROC_FS dependency to hwpoison injector
+
+It would be really useful if hwpoison commit titles were in lower case, like 
+most other commits in the kernel do? Upper-case is used in special cases - IMO 
+this case does not qualify.
+
+> The injector filter requires stable_page_flags() which is supplied by 
+> procfs. So make it dependent on that.
+> 
+> Reported by Ingo Molnar
+
+FYI, we have a Reported-by tag that can be (and should be) used in such cases.
+
+Thanks,
+
+	Ingo
