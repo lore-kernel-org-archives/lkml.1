@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbZLRWUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZLRWVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933100AbZLRWUI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 17:20:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZLRWUG
+	id S1754174AbZLRWVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 17:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZLRWVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 17:20:06 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:31117 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbZLRWUF (ORCPT
+	Fri, 18 Dec 2009 17:21:13 -0500
+Received: from www84.your-server.de ([213.133.104.84]:41995 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753257AbZLRWVM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 17:20:05 -0500
-Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEABuPK0urRN+K/2dsb2JhbAC+fZcghC4EgWQ
-X-IronPort-AV: E=Sophos;i="4.47,420,1257120000"; 
-   d="scan'208";a="122219784"
-From: Roland Dreier <rdreier@cisco.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Simon Horman <horms@verge.net.au>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kexec\@lists.infradead.org" <kexec@lists.infradead.org>
-Subject: Re: kexec reboot broken with ioatdma?
-References: <ada3a3a8v1g.fsf@roland-alpha.cisco.com>
-	<20091216224912.GC16219@verge.net.au>
-	<aday6l27c7w.fsf@roland-alpha.cisco.com> <4B296930.9020704@intel.com>
-	<adatyvq7bbi.fsf@roland-alpha.cisco.com>
-	<1261174241.16958.6.camel@dwillia2-linux.ch.intel.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 18 Dec 2009 14:20:02 -0800
-In-Reply-To: <1261174241.16958.6.camel@dwillia2-linux.ch.intel.com> (Dan
-	Williams's message of "Fri, 18 Dec 2009 15:10:41 -0700")
-Message-ID: <adafx773ox9.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Dec 2009 22:20:03.0311 (UTC) FILETIME=[3EC11FF0:01CA8030]
+	Fri, 18 Dec 2009 17:21:12 -0500
+Subject: [patch] media video cx23888 driver: fix possible races using new
+ kfifo_API kfifo_reset()
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andy Walls <awalls@radix.net>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 18 Dec 2009 23:21:10 +0100
+Message-ID: <1261174870.13019.24.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix the cx23888 driver to use the new kfifo API. Using kfifo_reset() may
+result in a possible race conditions. This patch fix it by using
+spinlock around the kfifo_reset() function.
 
- > Subject: ioat2,3: put channel hardware in known state at init
- > 
- > Put the ioat2 and ioat3 state machines in the halted state with all
- > errors cleared.
+The patch-set is against mm tree from 11-Dec-2009
 
-Yes, with this applied I was able to kexec reboot from a kernel with
-ioatdma loaded and have ioatdma work in the new kernel.  So:
+Greetings,
+Stefani
 
-Tested-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ cx23888-ir.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Thanks!
+--- mmotm.orig/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 22:57:13.588337402 +0100
++++ mmotm/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 23:15:14.651365720 +0100
+@@ -519,6 +519,7 @@ static int cx23888_ir_irq_handler(struct
+ {
+ 	struct cx23888_ir_state *state = to_state(sd);
+ 	struct cx23885_dev *dev = state->dev;
++	unsigned long flags;
+ 
+ 	u32 cntrl = cx23888_ir_read4(dev, CX23888_IR_CNTRL_REG);
+ 	u32 irqen = cx23888_ir_read4(dev, CX23888_IR_IRQEN_REG);
+@@ -629,8 +630,11 @@ static int cx23888_ir_irq_handler(struct
+ 		cx23888_ir_write4(dev, CX23888_IR_CNTRL_REG, cntrl);
+ 		*handled = true;
+ 	}
++
++	spin_lock_irqsave(&state->rx_kfifo_lock, flags);
+ 	if (kfifo_len(&state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+ 		events |= V4L2_SUBDEV_IR_RX_FIFO_SERVICE_REQ;
++	spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
+ 
+ 	if (events)
+ 		v4l2_subdev_notify(sd, V4L2_SUBDEV_IR_RX_NOTIFY, &events);
+@@ -783,7 +787,12 @@ static int cx23888_ir_rx_s_parameters(st
+ 	o->interrupt_enable = p->interrupt_enable;
+ 	o->enable = p->enable;
+ 	if (p->enable) {
++		unsigned long flags;
++
++		spin_lock_irqsave(&state->rx_kfifo_lock, flags);
+ 		kfifo_reset(&state->rx_kfifo);
++		/* reset tx_fifo too if there is one... */
++		spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
+ 		if (p->interrupt_enable)
+ 			irqenable_rx(dev, IRQEN_RSE | IRQEN_RTE | IRQEN_ROE);
+ 		control_rx_enable(dev, p->enable);
+
+
