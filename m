@@ -1,191 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZLRQEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbZLRQFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbZLRQEy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZLRQEx
+	id S932066AbZLRQFK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZLRQFC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:04:53 -0500
-Received: from lo.gmane.org ([80.91.229.12]:53129 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563AbZLRQEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:04:53 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Andres Salomon <dilinger@collabora.co.uk>
-Subject: Re: 2.6.33-rc1 compile error (geode watchdog / mfgpt related)
-Date: Fri, 18 Dec 2009 11:03:58 -0500
-Message-ID: <20091218110358.66c4ec17@mycelium.queued.net>
-References: <4B2B79D3.1070706@nets.rwth-aachen.de>
+	Fri, 18 Dec 2009 11:05:02 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:40067 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751563AbZLRQE7 convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;3:1>);
+	Fri, 18 Dec 2009 11:04:59 -0500
+Message-Id: <4B2BB66F0200007800026AD6@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Fri, 18 Dec 2009 16:05:51 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: lift restriction on the location of FIX_BTMAP_*
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: wireless.queued.net
-In-Reply-To: <4B2B79D3.1070706@nets.rwth-aachen.de>
-X-Newsreader: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Cc: linux-geode@bombadil.infradead.org
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009 13:47:15 +0100
-Arnd Hannemann
-<hannemann@nets.rwth-aachen.de> wrote:
+The early ioremap fixmap entries cover half (or for 32-bit non-PAE, a
+quarter) of a page table, yet they got uncondtitionally aligned so far
+to a 256-entry boundary. This is not necessary if the range of page
+table entries anyway falls into a single page table.
 
-> Hi,
-> 
-> 2.6.33-rc1 does not compile for me:
-> 
->   CC      drivers/watchdog/geodewdt.o
-> drivers/watchdog/geodewdt.c: In function 'geodewdt_ping':
-> drivers/watchdog/geodewdt.c:55: error: implicit declaration of
-> function 'geode_mfgpt_write' drivers/watchdog/geodewdt.c: In function
-> 'geodewdt_probe': drivers/watchdog/geodewdt.c:220: error: implicit
-> declaration of function 'geode_mfgpt_alloc_timer'
-> drivers/watchdog/geodewdt.c:235: error: implicit declaration of
-> function 'geode_mfgpt_toggle_event' make[2]: ***
-> [drivers/watchdog/geodewdt.o] Error 1 make[1]: *** [drivers/watchdog]
-> Error 2 make: *** [drivers] Error 2
-> 
+This buys back, for (theoretically) 50% of all configurations (25% of
+all non-PAE ones), at least some of the lowmem necessarily lost with
+commit e621bd18958ef5dbace3129ebe17a0a475e127d9.
 
-Whoops, I missed that driver; sorry about that.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-The patch below should fix it..
-
-
-
-Subject: [PATCH] watchdog: update geodewdt for new MFGPT API
-
-Update to the new cs5535_mfgpt* API.  The geode-specific wording should
-eventually be dropped from this driver...
-
-Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
 ---
- drivers/watchdog/Kconfig    |    2 +-
- drivers/watchdog/geodewdt.c |   40 +++++++++++++++++++---------------------
- 2 files changed, 20 insertions(+), 22 deletions(-)
+ arch/x86/include/asm/fixmap.h |   16 +++++++++++-----
+ arch/x86/mm/ioremap.c         |    4 ++++
+ 2 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index da84fd0..088f32f 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -368,7 +368,7 @@ config ALIM7101_WDT
- 
- config GEODE_WDT
- 	tristate "AMD Geode CS5535/CS5536 Watchdog"
--	depends on MGEODE_LX
-+	depends on CS5535_MFGPT
- 	help
- 	  This driver enables a watchdog capability built into the
- 	  CS5535/CS5536 companion chips for the AMD Geode GX and LX
-diff --git a/drivers/watchdog/geodewdt.c b/drivers/watchdog/geodewdt.c
-index 9acf001..38252ff 100644
---- a/drivers/watchdog/geodewdt.c
-+++ b/drivers/watchdog/geodewdt.c
-@@ -1,6 +1,7 @@
--/* Watchdog timer for the Geode GX/LX with the CS5535/CS5536 companion chip
-+/* Watchdog timer for machines with the CS5535/CS5536 companion chip
-  *
-  * Copyright (C) 2006-2007, Advanced Micro Devices, Inc.
-+ * Copyright (C) 2009  Andres Salomon <dilinger@collabora.co.uk>
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-@@ -19,7 +20,7 @@
- #include <linux/reboot.h>
- #include <linux/uaccess.h>
- 
--#include <asm/geode.h>
-+#include <linux/cs5535.h>
- 
- #define GEODEWDT_HZ 500
- #define GEODEWDT_SCALE 6
-@@ -46,25 +47,25 @@ MODULE_PARM_DESC(nowayout,
- 
- static struct platform_device *geodewdt_platform_device;
- static unsigned long wdt_flags;
--static int wdt_timer;
-+static struct cs5535_mfgpt_timer *wdt_timer;
- static int safe_close;
- 
- static void geodewdt_ping(void)
- {
- 	/* Stop the counter */
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
- 
- 	/* Reset the counter */
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
- 
- 	/* Enable the counter */
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
- }
- 
- static void geodewdt_disable(void)
- {
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
- }
- 
- static int geodewdt_set_heartbeat(int val)
-@@ -72,10 +73,10 @@ static int geodewdt_set_heartbeat(int val)
- 	if (val < 1 || val > GEODEWDT_MAX_SECONDS)
- 		return -EINVAL;
- 
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2, val * GEODEWDT_HZ);
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_CMP2, val * GEODEWDT_HZ);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
- 
- 	timeout = val;
- 	return 0;
-@@ -215,28 +216,25 @@ static struct miscdevice geodewdt_miscdev = {
- 
- static int __devinit geodewdt_probe(struct platform_device *dev)
- {
--	int ret, timer;
--
--	timer = geode_mfgpt_alloc_timer(MFGPT_TIMER_ANY, MFGPT_DOMAIN_WORKING);
-+	int ret;
- 
--	if (timer == -1) {
-+	wdt_timer = cs5535_mfgpt_alloc_timer(MFGPT_TIMER_ANY, MFGPT_DOMAIN_WORKING);
-+	if (!wdt_timer) {
- 		printk(KERN_ERR "geodewdt:  No timers were available\n");
- 		return -ENODEV;
- 	}
- 
--	wdt_timer = timer;
--
- 	/* Set up the timer */
- 
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP,
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_SETUP,
- 			  GEODEWDT_SCALE | (3 << 8));
- 
- 	/* Set up comparator 2 to reset when the event fires */
--	geode_mfgpt_toggle_event(wdt_timer, MFGPT_CMP2, MFGPT_EVENT_RESET, 1);
-+	cs5535_mfgpt_toggle_event(wdt_timer, MFGPT_CMP2, MFGPT_EVENT_RESET, 1);
- 
- 	/* Set up the initial timeout */
- 
--	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2,
-+	cs5535_mfgpt_write(wdt_timer, MFGPT_REG_CMP2,
- 		timeout * GEODEWDT_HZ);
- 
- 	ret = misc_register(&geodewdt_miscdev);
--- 
-1.5.6.5
-
-
+--- linux-2.6.33-rc1/arch/x86/include/asm/fixmap.h	2009-12-03 04:51:21.000000000 +0100
++++ 2.6.33-rc1-x86-fix-btmap-reduce/arch/x86/include/asm/fixmap.h	2009-12-10 17:24:58.000000000 +0100
+@@ -118,14 +118,20 @@ enum fixed_addresses {
+ 	 * 256 temporary boot-time mappings, used by early_ioremap(),
+ 	 * before ioremap() is functional.
+ 	 *
+-	 * We round it up to the next 256 pages boundary so that we
+-	 * can have a single pgd entry and a single pte table:
++	 * If necessary we round it up to the next 256 pages boundary so
++	 * that we can have a single pgd entry and a single pte table:
+ 	 */
+ #define NR_FIX_BTMAPS		64
+ #define FIX_BTMAPS_SLOTS	4
+-	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
+-			(__end_of_permanent_fixed_addresses & 255),
+-	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
++#define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
++	FIX_BTMAP_END =
++	 (__end_of_permanent_fixed_addresses ^
++	  (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) &
++	 -PTRS_PER_PTE
++	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS -
++	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
++	 : __end_of_permanent_fixed_addresses,
++	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
+ #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+ 	FIX_OHCI1394_BASE,
+ #endif
+--- linux-2.6.33-rc1/arch/x86/mm/ioremap.c	2009-12-18 16:05:40.000000000 +0100
++++ 2.6.33-rc1-x86-fix-btmap-reduce/arch/x86/mm/ioremap.c	2009-12-10 17:30:57.000000000 +0100
+@@ -422,6 +422,10 @@ void __init early_ioremap_init(void)
+ 	 * The boot-ioremap range spans multiple pmds, for which
+ 	 * we are not prepared:
+ 	 */
++#define __FIXADDR_TOP (-PAGE_SIZE)
++	BUILD_BUG_ON((__fix_to_virt(FIX_BTMAP_BEGIN) >> PMD_SHIFT)
++		     != (__fix_to_virt(FIX_BTMAP_END) >> PMD_SHIFT));
++#undef __FIXADDR_TOP
+ 	if (pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END))) {
+ 		WARN_ON(1);
+ 		printk(KERN_WARNING "pmd %p != %p\n",
 
 
 
