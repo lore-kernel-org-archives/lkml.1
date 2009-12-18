@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932939AbZLRU6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbZLRU6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932939AbZLRU6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 15:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbZLRU54
+	id S932966AbZLRU6t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 15:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932938AbZLRU62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 15:57:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57513 "EHLO hera.kernel.org"
+	Fri, 18 Dec 2009 15:58:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52677 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932894AbZLRU4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 15:56:48 -0500
-Message-ID: <4B2BEC40.5070403@kernel.org>
-Date: Fri, 18 Dec 2009 12:55:28 -0800
+	id S932859AbZLRU4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 15:56:34 -0500
+Message-ID: <4B2BEC43.80401@kernel.org>
+Date: Fri, 18 Dec 2009 12:55:31 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -21,7 +21,8 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: [PATCH 8/12] pci: pciehp clean flow in pciehp_configure_device
+Subject: [PATCH 9/12] pci: pciehp second try to get big range for pcie devices
+ -v2
 References: <4B2BE9DD.3040504@kernel.org>
 In-Reply-To: <4B2BE9DD.3040504@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -31,69 +32,84 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-move out bus_size_bridges and assign resources out of pciehp_add_bridge()
-and at last do them all together one time including slot bridge, to avoid to
-call assign resources several times, when there are several bridges under the
-slot bridge.
-use pci_assign_nassigned_bridge_resources
+
+handle the case the slot bridge that doesn't get pre-allocated big enough res
+from FW.
+for example pcie devices need 256M, but the bridge only get preallocated 2M...
+
+-v2: use resource_list_x
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- drivers/pci/hotplug/pciehp_pci.c |   23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ drivers/pci/setup-bus.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/pci/hotplug/pciehp_pci.c
+Index: linux-2.6/drivers/pci/setup-bus.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_pci.c
-+++ linux-2.6/drivers/pci/hotplug/pciehp_pci.c
-@@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struc
- 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
- 	if (!dev->subordinate)
- 		return -1;
--	pci_bus_size_bridges(dev->subordinate);
--	pci_bus_assign_resources(parent);
--	pci_enable_bridges(parent);
--	pci_bus_add_devices(parent);
-+
- 	return 0;
- }
- 
- int pciehp_configure_device(struct slot *p_slot)
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -1021,13 +1021,60 @@ void pci_assign_unassigned_bridge_resour
  {
- 	struct pci_dev *dev;
--	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
-+	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
-+	struct pci_bus *parent = bridge->subordinate;
- 	int num, fn;
- 	struct controller *ctrl = p_slot->ctrl;
+ 	struct pci_bus *bus;
+ 	struct pci_bus *parent = bridge->subordinate;
++	bool second_tried = false;
++	struct resource_list_x head, *list;
+ 	int retval;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
  
-@@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot
- 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
- 			pciehp_add_bridge(dev);
- 		}
-+		pci_dev_put(dev);
++	head.next = NULL;
++
++again:
+ 	pci_bus_size_bridges(parent);
+ 	pci_clear_master(bridge);
+-	__pci_bridge_assign_resources(bridge, NULL);
++	__pci_bridge_assign_resources(bridge, &head);
+ 	retval = pci_reenable_device(bridge);
+ 	pci_set_master(bridge);
+ 	pci_enable_bridges(parent);
++
++	/* any device complain? */
++	if (!head.next)
++		return;
++
++	if (second_tried) {
++		/* still fail, don't need to try more */
++		free_failed_list(&head);
++		return;
 +	}
 +
-+	pci_assign_unassigned_bridge_resources(bridge);
++	second_tried = true;
++	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
 +
-+	for (fn = 0; fn < 8; fn++) {
-+		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
-+		if (!dev)
-+			continue;
-+		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
-+			pci_dev_put(dev);
-+			continue;
-+		}
- 		pci_configure_slot(dev);
- 		pci_dev_put(dev);
- 	}
- 
--	pci_bus_assign_resources(parent);
- 	pci_bus_add_devices(parent);
++	/*
++	 * Try to release leaf bridge's resources that doesn't fit resource of
++	 * child device under that bridge
++	 */
++	for (list = head.next; list;) {
++		unsigned long flags = list->flags;
 +
- 	return 0;
++		bus = list->dev->bus;
++		pci_bus_release_unused_bridge_res(bus, flags & type_mask, 0);
++		list = list->next;
++	}
++	/* retore size and flags */
++	for (list = head.next; list;) {
++		struct resource *res = list->res;
++
++		res->start = list->start;
++		res->end = list->end;
++		res->flags = list->flags;
++		if (list->dev->subordinate)
++			res->flags = 0;
++
++		list = list->next;
++	}
++	free_failed_list(&head);
++
++	goto again;
  }
- 
+ EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
 
 
