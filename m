@@ -1,185 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZLRC4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbZLRC6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZLRC4i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 21:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbZLRC4g
+	id S1756465AbZLRC6P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbZLRC6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 21:56:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23789 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbZLRC4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 21:56:36 -0500
-Subject: [GIT -maybe- PULL] notification - fanotify
-From: Eric Paris <eparis@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, hch@infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 17 Dec 2009 21:56:24 -0500
-Message-Id: <1261104984.2868.39.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Dec 2009 21:58:13 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:48185 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbZLRC6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:58:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MYl7ZwiNXjq+xiKEJuZUQo/3z5KK83PzNDwk1SEf4FLP7FIIYFWDrigDdKJa2rM7kd
+         pdagCxmUjeL/EaBUIVgHJ94vihjV5okt2A+ujpSl65Cbwb1oWSd9iAayWCpliPuJSvjj
+         HbKAJfY28aVBuVDC/hTzMrrkCtsaRww3tn+VE=
+Date: Fri, 18 Dec 2009 03:58:09 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
+	08d68323d1f0c34452e614263b212ca556dae47f
+Message-ID: <20091218025806.GA16470@nowhere>
+References: <20091218005650.GA20667@redhat.com> <20091218014021.CB474135F@magilla.sf.frob.com> <20091218021042.GA508@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091218021042.GA508@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This pull is the basics of fanotify as a notification mechanism.  It has
-been in linux-next for months without any complaints.  I know both viro
-and hch have concerns that neither of them have reviewed the code.  I'm
-putting it out because code has been available in some similar (although
-with a changing user interface) for more than 2 years or so at this
-point and without me asking it to be pulled I assume it will continue to
-be ignored.  If either would like to NAK the code and publicly agree to
-review in the next cycle that seems reasonable.  The user interface has
-seen many comments which have all (it appears) been addresses, but the
-internals are admittedly lacking in intelligent review.  Getting
-notification in order is my highest priority for my paying job and I'm
-willing to address any issues anyone have.  But after years of hoping
-and having gone an entire cycle on list and in linux-next with neither a
-single suggestion nor problem I put it forth to the list for acceptance.
-(there are some known feature requests though)
+On Fri, Dec 18, 2009 at 03:10:42AM +0100, Oleg Nesterov wrote:
+> On 12/17, Roland McGrath wrote:
+> >
+> > Comparing to the old (2.6.32) logic, I think it might be this (untested).
+> > I also note this is the sole use of get_si_code, seems like it should
+> > just be rolled in here.
+> 
+> Well, it is too late for me to even try to read this patch ;)
+> 
+> but...
+> 
+> > @@ -569,14 +568,15 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+> >  	 * We already checked v86 mode above, so we can check for kernel mode
+> >  	 * by just checking the CPL of CS.
+> >  	 */
+> > +	dr6 = tsk->thread.debugreg6;
+> 
+> why? we have "tsk->thread.debugreg6 = dr6" above
 
-This code does NOT do any kind of permissions checking.  It is purely a
-novel notification system which includes an fd with the event.  I have
-another branch with permissions and blocking which makes this usable to
-AV, HSM, and other 3rd party vendors.  I am not proposing that for this
-cycle.  The main issue of this patch is that it adds two syscalls.
 
-SYSCALL_DEFINE3(fanotify_init, unsigned int, flags, unsigned int,
-		event_f_flags, unsigned int, priority)
-SYSCALL_DEFINE(fanotify_mark)(int fanotify_fd, unsigned int flags,
-			      __u64 mask, int dfd,
-			      const char  __user * pathname)
+Yeah.
 
-These are the only 2 syscalls needed to implement all of the fanotify
-requests to date (including permissions and blocking)
 
-Please, if people object speak up.  This has gone on long enough.
+ 
+> >  	if ((dr6 & DR_STEP) && !user_mode(regs)) {
+> >  		tsk->thread.debugreg6 &= ~DR_STEP;
+> >  		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
+> >  		regs->flags &= ~X86_EFLAGS_TF;
+> 
+> this looks strange... we set TIF_SINGLESTEP but clear X86_EFLAGS_TF
 
----
 
-The following changes since commit aa7e943209e021545632d7057ad47923725aac11:
-  Eric Paris (1):
-        inotify: remove inotify in kernel interface
+Yep, I don't understand what happens here either. This logic
+was there before the refactoring and the comment indicates we want
+to ignore traps from kernel. Why do we set this flag in a random
+thread?
 
-are available in the git repository at:
 
-  git://git.infradead.org/users/eparis/notify.git for-linus-fanotify
 
-Andreas Gruenbacher (15):
-      fsnotify: kill FSNOTIFY_EVENT_FILE
-      fsnotify: take inode->i_lock inside fsnotify_find_mark_entry()
-      fanotify: create_fd cleanup
-      fanotify: Add pids to events
-      fsnotify/vfsmount: add fsnotify fields to struct vfsmount
-      fsnotify: Infrastructure for per-mount watches
-      fanotify: remove fanotify_update_mark
-      fanotify: do not call fanotify_update_object_mask in fanotify_remove_mark
-      fanotify: do not call fanotify_update_object_mask in fanotify_add_mark
-      fanotify: do not return pointer from fanotify_add_*_mark
-      fanotify: remove fanotify_add_mark
-      fanotify: rename FAN_MARK_ON_VFSMOUNT to FAN_MARK_MOUNT
-      fanotify: split fanotify_remove_mark
-      fanotify: remove fanotify.h declarations
-      fanotify: remove outgoing function checks in fanotify.h
+> > +	} else if (dr6 & (DR_STEP | DR_TRAP_BITS)) {
+> > +		send_sigtrap(tsk, regs, error_code, get_si_code(dr6));
+> >  	}
+> > -	si_code = get_si_code(tsk->thread.debugreg6);
+> > -	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
+> > -		send_sigtrap(tsk, regs, error_code, si_code);
+> > +
+> 
+> can't understand how this change can fix the problem. We should always
+> send SIGTRAP if the task returns to user-mode with X86_EFLAGS_TF?
+> 
+> OK. I blindly applied this patch, step-simple still fails.
 
-Eric Paris (42):
-      fsnotify: provide the data type to should_send_event
-      fsnotify: include data in should_send calls
-      fsnotify: pass a file instead of an inode to open, read, and write
-      fsnotify: send struct file when sending events to parents when possible
-      fsnotify: per group notification queue merge types
-      fsnotify: clone existing events
-      fsnotify: replace an event on a list
-      fsnotify: lock annotation for event replacement
-      fsnotify: remove group_num altogether
-      fsnotify: fsnotify_obtain_group kzalloc cleanup
-      fsnotify: fsnotify_obtain_group should be fsnotify_alloc_group
-      Audit: only set group mask when something is being watched
-      fsnotify: drop mask argument from fsnotify_alloc_group
-      fsnotify: rename fsnotify_groups to fsnotify_inode_groups
-      fsnotify: initialize the group->num_marks in a better place
-      fsnotify: add groups to fsnotify_inode_groups when registering inode watch
-      fsnotify: mount point listeners list and global mask
-      fsnotify: include vfsmount in should_send_event when appropriate
-      fsnotify: put inode specific fields in an fsnotify_mark in a union
-      fsnotify: add vfsmount specific fields to the fsnotify_mark_entry union
-      fsnotify: add flags to fsnotify_mark_entries
-      fsnotify: rename fsnotify_mark_entry to just fsnotify_mark
-      fsnotify: rename fsnotify_find_mark_entry to fsnotify_find_mark
-      fsnotify: rename mark_entry to just mark
-      inotify: rename mark_entry to just mark
-      dnotify: rename mark_entry to mark
-      vfs: introduce FMODE_NONOTIFY
-      fanotify: fscking all notification system
-      fanotify:drop notification if they exist in the outgoing queue
-      fanotify: merge notification events with different masks
-      fanotify: do not clone on merge unless needed
-      fanotify: fanotify_init syscall declaration
-      fanotify: fanotify_init syscall implementation
-      fanotify: sys_fanotify_mark declartion
-      fanotify: fanotify_mark syscall implementation
-      fanotify: send events using read
-      fsnotify: split generic and inode specific mark code
-      fsnotify: clear marks to 0 in fsnotify_init_mark
-      fsnotify: vfsmount marks generic functions
-      fanotify: should_send_event needs to handle vfsmounts
-      fanotify: infrastructure to add an remove marks on vfsmounts
-      fanotify: hooks the fanotify_mark syscall to the vfsmount code
 
-Heiko Carstens (1):
-      fanotify: CONFIG_HAVE_SYSCALL_WRAPPERS for sys_fanotify_mark
-
-Paul Mundt (1):
-      fanotify: select ANON_INODES.
-
- arch/x86/ia32/ia32entry.S            |    2 +
- arch/x86/ia32/sys_ia32.c             |    9 +
- arch/x86/include/asm/sys_ia32.h      |    3 +
- arch/x86/include/asm/unistd_32.h     |    4 +-
- arch/x86/include/asm/unistd_64.h     |    4 +
- arch/x86/kernel/syscall_table_32.S   |    2 +
- fs/compat.c                          |    5 +-
- fs/exec.c                            |    4 +-
- fs/inode.c                           |    2 +-
- fs/namespace.c                       |    5 +
- fs/nfsd/vfs.c                        |    4 +-
- fs/notify/Kconfig                    |    1 +
- fs/notify/Makefile                   |    4 +-
- fs/notify/dnotify/dnotify.c          |  198 ++++++-------
- fs/notify/fanotify/Kconfig           |   12 +
- fs/notify/fanotify/Makefile          |    1 +
- fs/notify/fanotify/fanotify.c        |  184 +++++++++++
- fs/notify/fanotify/fanotify_user.c   |  573 ++++++++++++++++++++++++++++++++++
- fs/notify/fsnotify.c                 |  104 +++++--
- fs/notify/fsnotify.h                 |   31 ++-
- fs/notify/group.c                    |  140 ++++-----
- fs/notify/inode_mark.c               |  282 +++--------------
- fs/notify/inotify/inotify.h          |    7 +-
- fs/notify/inotify/inotify_fsnotify.c |  112 +++++--
- fs/notify/inotify/inotify_user.c     |  209 ++++++-------
- fs/notify/mark.c                     |  293 +++++++++++++++++
- fs/notify/notification.c             |  155 ++++++----
- fs/notify/vfsmount_mark.c            |  171 ++++++++++
- fs/open.c                            |    9 +-
- fs/read_write.c                      |    8 +-
- include/asm-generic/fcntl.h          |    8 +
- include/linux/Kbuild                 |    1 +
- include/linux/fanotify.h             |   77 +++++
- include/linux/fs.h                   |    5 +-
- include/linux/fsnotify.h             |   87 ++++--
- include/linux/fsnotify_backend.h     |  122 +++++---
- include/linux/mount.h                |    6 +-
- include/linux/syscalls.h             |    5 +
- kernel/audit_tree.c                  |   53 ++--
- kernel/audit_watch.c                 |   38 ++-
- kernel/auditsc.c                     |    4 +-
- kernel/sys_ni.c                      |    4 +
- 42 files changed, 2151 insertions(+), 797 deletions(-)
- create mode 100644 fs/notify/fanotify/Kconfig
- create mode 100644 fs/notify/fanotify/Makefile
- create mode 100644 fs/notify/fanotify/fanotify.c
- create mode 100644 fs/notify/fanotify/fanotify_user.c
- create mode 100644 fs/notify/mark.c
- create mode 100644 fs/notify/vfsmount_mark.c
- create mode 100644 include/linux/fanotify.h
+Yep, that doesn't fix your problem but this patch makes sense
+in that if we were not in user mode while the step occured,
+we shouldn't send the signal.
 
