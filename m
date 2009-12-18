@@ -1,54 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZLRR0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZLRReN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbZLRR0t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbZLRR0r
+	id S1755292AbZLRReN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZLRReM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:26:47 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:39548 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753572AbZLRR0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:26:46 -0500
-Date: Fri, 18 Dec 2009 12:26:44 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912180251.22655.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912181205290.2987-100000@iolanthe.rowland.org>
+	Fri, 18 Dec 2009 12:34:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26629 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755149AbZLRReG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 12:34:06 -0500
+Date: Fri, 18 Dec 2009 18:27:47 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
+	08d68323d1f0c34452e614263b212ca556dae47f
+Message-ID: <20091218172747.GA10924@redhat.com>
+References: <20091218005650.GA20667@redhat.com> <20091218030601.GB16470@nowhere>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091218030601.GB16470@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
+On 12/18, Frederic Weisbecker wrote:
+>
+> On Fri, Dec 18, 2009 at 01:56:50AM +0100, Oleg Nesterov wrote:
+> > Hi.
+> >
+> > do_debug() is obviously wrong wrt PTRACE_SINGLESTEP/TIF_SINGLESTEP, no?
+> >
+> > Afaics this was broken by
+> >
+> > 	hw-breakpoints: modifying generic debug exception to use thread-specific debug registers
+> > 	commit 08d68323d1f0c34452e614263b212ca556dae47f
+> >
+> > To verify, the "patch" below fixes the stepping for me, not sure what
+> > is the proper fix...
+> >
+> > Oleg.
+> >
+> > --- arch/x86/kernel/traps.c~	2009-12-18 00:20:49.000000000 +0100
+> > +++ arch/x86/kernel/traps.c	2009-12-18 01:44:05.000000000 +0100
+> > @@ -575,7 +575,7 @@ dotraplinkage void __kprobes do_debug(st
+> >  		regs->flags &= ~X86_EFLAGS_TF;
+> >  	}
+> >  	si_code = get_si_code(tsk->thread.debugreg6);
+> > -	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
+> > +//	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
+> >  		send_sigtrap(tsk, regs, error_code, si_code);
+>
+>
+>
+> But I don't understand why it is broken with the check.
+> If we are in a singlestep exception, dr6 should have its
+> DR_STEP bit set...
+>
+> Single stepping works well for me, after a quick check on
+> gdb. How did you trigger the bug?
 
-> I didn't manage to do that, but I was able to mark sd and i8042 as async and
-> see the impact of this.
+Please find the trivial test-case below. It hangs, because
+PTRACE_SINGLESTEP doesn't trigger the trap.
 
-Apparently this didn't do what you wanted.  In the nx6325
-sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
-suspended by the main thread instead of an async thread.
+(not sure this matters, but I did the testing under kvm)
 
-There's an important point I neglected to mention before.  Your logs 
-don't show anything for devices with no suspend callbacks at all.  
-Nevertheless, these devices sit on the device list and prevent other
-devices from suspending or resuming as soon as they could.
+Oleg.
 
-For example, the fingerprint sensor (3-1) took the most time to resume.  
-But other devices were delayed until after it finished because it had
-children with no callbacks, and they delayed the devices following
-them in the list.
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <assert.h>
 
-What would happen if you completed these devices immediately, as part 
-of the first pass?
+int main(void)
+{
+	int pid, status, i;
 
-Alan Stern
+	pid = fork();
+	if (!pid)
+		for (;;);
+
+	sleep(1);
+	assert(ptrace(PTRACE_ATTACH, pid, 0,0) == 0);
+
+	assert(pid == wait(&status));
+	assert(WIFSTOPPED(status));
+
+	for (i = 0; i < 10; ++i) {
+		assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
+
+		printf("wait %d ...\n", i);
+		assert(pid == wait(&status));
+
+		assert(WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP);
+	}
+
+	kill(pid, SIGKILL);
+	return 0;
+}
 
