@@ -1,60 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbZLRCF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZLRCJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbZLRCF7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 21:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbZLRCF5
+	id S1756463AbZLRCJZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 21:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbZLRCJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 21:05:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57986 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755641AbZLRCFz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 21:05:55 -0500
-Date: Thu, 17 Dec 2009 18:05:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.33-rc1
-Message-ID: <alpine.LFD.2.00.0912171745160.15740@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 17 Dec 2009 21:09:24 -0500
+Received: from ozlabs.org ([203.10.76.45]:46298 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754842AbZLRCJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Dec 2009 21:09:21 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PULL rexmit] virtio & lguest
+Date: Fri, 18 Dec 2009 12:39:13 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       "Michael S. Tsirkin" <mst@redhat.com>, Adam Litke <agl@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912181239.13938.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mostly the new experimental vhost driver.
 
-So the merge window is closed, and -rc1 is out there now.
+The following changes since commit b8a7f3cd7e8212e5c572178ff3b5a514861036a5:
+  Linus Torvalds (1):
+        Merge branch 'master' of git://git.kernel.org/.../viro/vfs-2.6
 
-Talking about the merge window: there were a _lot_ of trees that left 
-their pull requests pretty dang late. Not everything I merged yesterday 
-and today were late pull requests, but a lot of it was. I'm used to have a 
-fairly busy last day of the merge window, but it was a busy last two days 
-this time - definitely worse than usual.
+are available in the git repository at:
 
-The two-week merge window is _not_ supposed to be "one day merge window 
-after thirteen days of silence". In fact, I think that next time around 
-I'll make the merge window be 11-12 days instead, and people who try to 
-game the system and do a last-minute pull request will get a surprise, and 
-get unceremoniously bumped to 2.6.35 instead.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git virtio-lguest
 
-Anyway, apart from that grumbling, it's been a fairly normal merge window, 
-I think. According to git dirstat (which got fixed to give more accurate 
-numbers), the distribution of changes is pretty much
+Adam Litke (2):
+      virtio: Add memory statistics reporting to the balloon driver (V4)
+      virtio: Fix scheduling while atomic in virtio_balloon stats
 
- - 1/3rd staging
- - 1/3rd "rest of drivers"
- - 1/3rd "everything else"
+Michael S. Tsirkin (4):
+      tun: export underlying socket
+      mm: export use_mm/unuse_mm to modules
+      vhost_net: a kernel-level virtio server
+      vhost: add missing architectures
 
-with about half of that final "everything else" third being arch stuff, 
-and half being random other things (firmware, fs, net).
+Rusty Russell (1):
+      lguest: remove unneeded zlib.h include in example launcher
 
-Notable additions? There's a number of drivers, and depending on which 
-ones you use, you'll find them more or less notable. I personally like how 
-I finally got to merge the Nouveau code, for example. Others will care 
-about other things.
+ Documentation/lguest/lguest.c   |    1 -
+ MAINTAINERS                     |    9 +
+ arch/ia64/kvm/Kconfig           |    1 +
+ arch/powerpc/kvm/Kconfig        |    1 +
+ arch/s390/kvm/Kconfig           |    1 +
+ arch/x86/kvm/Kconfig            |    1 +
+ drivers/Makefile                |    1 +
+ drivers/net/tun.c               |  101 ++++-
+ drivers/vhost/Kconfig           |   11 +
+ drivers/vhost/Makefile          |    2 +
+ drivers/vhost/net.c             |  648 ++++++++++++++++++++++++++
+ drivers/vhost/vhost.c           |  968 +++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h           |  159 +++++++
+ drivers/virtio/virtio_balloon.c |  108 ++++-
+ include/linux/Kbuild            |    1 +
+ include/linux/if_tun.h          |   14 +
+ include/linux/miscdevice.h      |    1 +
+ include/linux/vhost.h           |  130 ++++++
+ include/linux/virtio_balloon.h  |   15 +
+ mm/mmu_context.c                |    3 +
+ 20 files changed, 2148 insertions(+), 28 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/vhost.h
 
-Please give it a good testing, so that we can start figuring out the 
-inevitably regressions,
+commit 740773dda21f343074235c63dc5bb83fa69887d4
+Author: Michael S. Tsirkin <mst@redhat.com>
+Date:   Wed Nov 4 17:55:02 2009 +0200
 
-		Linus
+    tun: export underlying socket
+    
+    Tun device looks similar to a packet socket
+    in that both pass complete frames from/to userspace.
+    
+    This patch fills in enough fields in the socket underlying tun driver
+    to support sendmsg/recvmsg operations, and message flags
+    MSG_TRUNC and MSG_DONTWAIT, and exports access to this socket
+    to modules.  Regular read/write behaviour is unchanged.
+    
+    This way, code using raw sockets to inject packets
+    into a physical device, can support injecting
+    packets into host network stack almost without modification.
+    
+    First user of this interface will be vhost virtualization
+    accelerator.
+    
+    Signed-off-by: "Michael S. Tsirkin" <mst@redhat.com>
+    Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+    Acked-by: "David S. Miller" <davem@davemloft.net>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ drivers/net/tun.c      |  101 +++++++++++++++++++++++++++++++++++++++---------
+ include/linux/if_tun.h |   14 +++++++
+ 2 files changed, 96 insertions(+), 19 deletions(-)
+
+commit 3f451096d762f71defd8cd5cd821b0e8aa57edf3
+Author: Michael S. Tsirkin <mst@redhat.com>
+Date:   Wed Nov 4 17:55:38 2009 +0200
+
+    mm: export use_mm/unuse_mm to modules
+    
+    vhost net module wants to do copy to/from user from a kernel thread,
+    which needs use_mm. Export it to modules.
+    
+    Acked-by: Andrea Arcangeli <aarcange@redhat.com>
+    Signed-off-by: "Michael S. Tsirkin" <mst@redhat.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ mm/mmu_context.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+commit 2c1566dc10c2dcacfbc386cae49d027b8e9e87df
+Author: Michael S. Tsirkin <mst@redhat.com>
+Date:   Mon Nov 9 19:22:30 2009 +0200
+
+    vhost_net: a kernel-level virtio server
+    
+    What it is: vhost net is a character device that can be used to reduce
+    the number of system calls involved in virtio networking.
+    Existing virtio net code is used in the guest without modification.
+    
+    There's similarity with vringfd, with some differences and reduced scope
+    - uses eventfd for signalling
+    - structures can be moved around in memory at any time (good for
+      migration, bug work-arounds in userspace)
+    - write logging is supported (good for migration)
+    - support memory table and not just an offset (needed for kvm)
+    
+    common virtio related code has been put in a separate file vhost.c and
+    can be made into a separate module if/when more backends appear.  I used
+    Rusty's lguest.c as the source for developing this part : this supplied
+    me with witty comments I wouldn't be able to write myself.
+    
+    What it is not: vhost net is not a bus, and not a generic new system
+    call. No assumptions are made on how guest performs hypercalls.
+    Userspace hypervisors are supported as well as kvm.
+    
+    How it works: Basically, we connect virtio frontend (configured by
+    userspace) to a backend. The backend could be a network device, or a tap
+    device.  Backend is also configured by userspace, including vlan/mac
+    etc.
+    
+    Status: This works for me, and I haven't see any crashes.
+    Compared to userspace, people reported improved latency (as I save up to
+    4 system calls per packet), as well as better bandwidth and CPU
+    utilization.
+    
+    Features that I plan to look at in the future:
+    - mergeable buffers
+    - zero copy
+    - scalability tuning: figure out the best threading model to use
+    
+    Note on RCU usage (this is also documented in vhost.h, near
+    private_pointer which is the value protected by this variant of RCU):
+    what is happening is that the rcu_dereference() is being used in a
+    workqueue item.  The role of rcu_read_lock() is taken on by the start of
+    execution of the workqueue item, of rcu_read_unlock() by the end of
+    execution of the workqueue item, and of synchronize_rcu() by
+    flush_workqueue()/flush_work(). In the future we might need to apply
+    some gcc attribute or sparse annotation to the function passed to
+    INIT_WORK(). Paul's ack below is for this RCU usage.
+    
+    (Includes fixes by Alan Cox <alan@linux.intel.com>)
+    
+    Acked-by: Arnd Bergmann <arnd@arndb.de>
+    Acked-by: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+    Signed-off-by: "Michael S. Tsirkin" <mst@redhat.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ MAINTAINERS                |    9 +
+ arch/x86/kvm/Kconfig       |    1 +
+ drivers/Makefile           |    1 +
+ drivers/vhost/Kconfig      |   11 +
+ drivers/vhost/Makefile     |    2 +
+ drivers/vhost/net.c        |  648 +++++++++++++++++++++++++++++
+ drivers/vhost/vhost.c      |  968 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h      |  159 ++++++++
+ include/linux/Kbuild       |    1 +
+ include/linux/miscdevice.h |    1 +
+ include/linux/vhost.h      |  130 ++++++
+ 11 files changed, 1931 insertions(+), 0 deletions(-)
+
+commit f085e4f06bf04d45cb7498e9cb14c2e002dd1c31
+Author: Michael S. Tsirkin <mst@redhat.com>
+Date:   Thu Dec 17 15:01:46 2009 +0200
+
+    vhost: add missing architectures
+    
+    vhost is completely portable, but Kconfig include was missing for all
+    architectures besides x86, so it did not appear in the menu.  Add the
+    relevant Kconfig includes to all architectures that support
+    virtualization.
+    
+    Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ arch/ia64/kvm/Kconfig    |    1 +
+ arch/powerpc/kvm/Kconfig |    1 +
+ arch/s390/kvm/Kconfig    |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
+
+commit a8945c9bf89df5deaba16c2a65f4cf18060299c2
+Author: Adam Litke <agl@us.ibm.com>
+Date:   Mon Nov 30 10:14:15 2009 -0600
+
+    virtio: Add memory statistics reporting to the balloon driver (V4)
+    
+    Changes since V3:
+     - Do not do endian conversions as they will be done in the host
+     - Report stats that reference a quantity of memory in bytes
+     - Minor coding style updates
+    
+    Changes since V2:
+     - Increase stat field size to 64 bits
+     - Report all sizes in kb (not pages)
+     - Drop anon_pages stat and fix endianness conversion
+    
+    Changes since V1:
+     - Use a virtqueue instead of the device config space
+    
+    When using ballooning to manage overcommitted memory on a host, a system for
+    guests to communicate their memory usage to the host can provide information
+    that will minimize the impact of ballooning on the guests.  The current method
+    employs a daemon running in each guest that communicates memory statistics to a
+    host daemon at a specified time interval.  The host daemon aggregates this
+    information and inflates and/or deflates balloons according to the level of
+    host memory pressure.  This approach is effective but overly complex since a
+    daemon must be installed inside each guest and coordinated to communicate with
+    the host.  A simpler approach is to collect memory statistics in the virtio
+    balloon driver and communicate them directly to the hypervisor.
+    
+    This patch enables the guest-side support by adding stats collection and
+    reporting to the virtio balloon driver.
+    
+    Signed-off-by: Adam Litke <agl@us.ibm.com>
+    Cc: Anthony Liguori <anthony@codemonkey.ws>
+    Cc: virtualization@lists.linux-foundation.org
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (minor fixes)
+
+ drivers/virtio/virtio_balloon.c |   94 +++++++++++++++++++++++++++++++++++---
+ include/linux/virtio_balloon.h  |   15 ++++++
+ 2 files changed, 101 insertions(+), 8 deletions(-)
+
+commit 417c5a603344ef72958f6813393690a2bdca030f
+Author: Adam Litke <agl@us.ibm.com>
+Date:   Thu Dec 10 16:35:15 2009 -0600
+
+    virtio: Fix scheduling while atomic in virtio_balloon stats
+    
+    This is a fix for my earlier patch: "virtio: Add memory statistics reporting to
+    the balloon driver (V4)".
+    
+    I discovered that all_vm_events() can sleep and therefore stats collection
+    cannot be done in interrupt context.  One solution is to handle the interrupt
+    by noting that stats need to be collected and waking the existing vballoon
+    kthread which will complete the work via stats_handle_request().  Rusty, is
+    this a saner way of doing business?
+    
+    There is one issue that I would like a broader opinion on.  In stats_request, I
+    update vb->need_stats_update and then wake up the kthread.  The kthread uses
+    vb->need_stats_update as a condition variable.  Do I need a memory barrier
+    between the update and wake_up to ensure that my kthread sees the correct
+    value?  My testing suggests that it is not needed but I would like some
+    confirmation from the experts.
+    
+    Signed-off-by: Adam Litke <agl@us.ibm.com>
+    To: Rusty Russell <rusty@rustcorp.com.au>
+    Cc: Anthony Liguori <aliguori@linux.vnet.ibm.com>
+    Cc: linux-kernel@vger.kernel.org
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ drivers/virtio/virtio_balloon.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
+
+commit c7ff121447eaeb96fc722016db9dce4cfa69d4fa
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Fri Dec 18 12:36:51 2009 -0600
+
+    lguest: remove unneeded zlib.h include in example launcher
+    
+    Two years ago 5bbf89fc2608 removed the horrible bzImage unpacking code.
+    Now it's time to remove the unneeded zlib.h include, too.
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ Documentation/lguest/lguest.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
