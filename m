@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZLRD5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbZLREFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbZLRD5e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 22:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbZLRD5c
+	id S1752424AbZLREFU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 23:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZLREFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 22:57:32 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:53119 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbZLRD5b (ORCPT
+	Thu, 17 Dec 2009 23:05:17 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:42450 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbZLREFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 22:57:31 -0500
-To: Michael Stone <michael@laptop.org>
-Cc: Mark Seaborn <mrs@mythic-beasts.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-References: <20091218030056.GC3047@heat> <20091218033128.GB23514@heat>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 17 Dec 2009 19:57:09 -0800
-In-Reply-To: <20091218033128.GB23514@heat> (Michael Stone's message of "Thu\, 17 Dec 2009 22\:31\:28 -0500")
-Message-ID: <m16385vsru.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 17 Dec 2009 23:05:16 -0500
+Message-ID: <4B2AFF4C.5010100@ct.jp.nec.com>
+Date: Fri, 18 Dec 2009 13:04:28 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH 2/3] Security: Implement prctl(PR_SET_NETWORK, PR_NETWORK_OFF) semantics. (v2)
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: revert "config FS_JOURNAL_INFO"
+References: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>
+In-Reply-To: <b6fcc0a0912170031u162b7f56kf9f6adc23e24278c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Stone <michael@laptop.org> writes:
+Alexey Dobriyan wrote:
+> Can we please revert commit e4c570c4cb7a95dbfafa3d016d2739bf3fdfe319
+> "task_struct: make journal_info conditional"
 
-> Return -EPERM any time we try to __sock_create(), sys_connect(), sys_bind(),
-> sys_sendmsg(), or __ptrace_may_access() from a process with PR_NETWORK_OFF set
-> in current->network unless we're working on a socket which is already connected
-> or on a non-abstract AF_UNIX socket.
+I'm fine to revert it, because it seems merged accidentally.
 
-It appears to me that the current security hooks are sufficient for what
-you are doing.
+> 
+> I think I gave a good enough arguments to not merge it.
+> To iterate:
+> * patch makes impossible to start using ext3 on EXT3_FS=n kernels
+> without reboot.
+> * this is done only for one pointer on task_struct
 
-The one true security module business prevents you from actually using the
-security hooks, but could you create wrappers for the network security
-hooks so the logic of the network stack does not need to change.
+I don't think it's only one pointer.
+There might be a lot of "only one pointer".
 
-At the very least the huge separation of the test for AF_UNIX and
-the test to see if it is a an anonymous AF_UNIX socket is pretty
-large.  Structuring the code in such a way as to keep that together would
-be nice.
+> 
+> None of config options which define task_struct are tristate directly
+> or effectively.
 
-Eric
+So we never allow to make memory usage small with providing an option
+to remove unused area, right? Of cause, that option should be handled
+carefully. If I want to reduce memory usage by this way, should I keep
+this kind of patches out of tree?
+
+thanks,
+Hiroshi
+
