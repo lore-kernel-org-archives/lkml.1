@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZLRTjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbZLRTjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZLRTjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 14:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZLRTis
+	id S1755570AbZLRTjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 14:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZLRTiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 14:38:48 -0500
-Received: from kroah.org ([198.145.64.141]:47457 "EHLO coco.kroah.org"
+	Fri, 18 Dec 2009 14:38:50 -0500
+Received: from kroah.org ([198.145.64.141]:47447 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbZLRTge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 14:36:34 -0500
-Subject: patch staging-slicoss-no-need-type-casting-when-using-netdev_priv.patch added to gregkh-2.6 tree
+	id S1752167AbZLRTgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 14:36:33 -0500
+Subject: patch staging-slicoss-use-dev-stats-rather-than-adapter-stats.patch added to gregkh-2.6 tree
 To: randy.dunlap@oracle.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
        sfr@canb.auug.org.au
 From: <gregkh@suse.de>
 Date: Fri, 18 Dec 2009 11:33:53 -0800
-In-Reply-To: <20091218075427.GA4509@coldcone>
-Message-ID: <12611648333496@kroah.org>
+In-Reply-To: <20091218075745.GA4519@coldcone>
+Message-ID: <12611648334164@kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: 8bit
@@ -26,126 +26,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-    Subject: staging: slicoss No need type casting when using netdev_priv
+    Subject: staging: slicoss Use dev->stats rather than adapter->stats.
 
 to my gregkh-2.6 tree.  Its filename is
 
-    staging-slicoss-no-need-type-casting-when-using-netdev_priv.patch
+    staging-slicoss-use-dev-stats-rather-than-adapter-stats.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From kirjanov@gmail.com  Fri Dec 18 10:33:30 2009
+>From kirjanov@gmail.com  Fri Dec 18 10:33:54 2009
 From: "Denis Kirjanov <kirjanov@gmail.com" <kirjanov@gmail.com>
-Date: Fri, 18 Dec 2009 10:54:27 +0300
-Subject: staging: slicoss No need type casting when using netdev_priv
+Date: Fri, 18 Dec 2009 10:57:45 +0300
+Subject: staging: slicoss Use dev->stats rather than adapter->stats.
 To: gregkh@suse.de, liodot@gmail.com, charrer@alacritech.com
 Cc: devel@linuxdriverproject.org
-Message-ID: <20091218075427.GA4509@coldcone>
+Message-ID: <20091218075745.GA4519@coldcone>
 Content-Disposition: inline
 
 
-No need type casting when using netdev_priv.
+Use dev->stats rather than adapter->stats.
 
 Signed-off-by: Denis Kirjanov <kirjanov@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
 ---
- drivers/staging/slicoss/slicoss.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/staging/slicoss/slicoss.c |   25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
 --- a/drivers/staging/slicoss/slicoss.c
 +++ b/drivers/staging/slicoss/slicoss.c
-@@ -292,7 +292,7 @@ static void slic_init_adapter(struct net
- {
- 	ushort index;
- 	struct slic_handle *pslic_handle;
--	struct adapter *adapter = (struct adapter *)netdev_priv(netdev);
-+	struct adapter *adapter = netdev_priv(netdev);
- 
- /*	adapter->pcidev = pcidev;*/
- 	adapter->vendid = pci_tbl_entry->vendor;
-@@ -484,7 +484,7 @@ err_out_disable_pci:
- 
- static int slic_entry_open(struct net_device *dev)
- {
--	struct adapter *adapter = (struct adapter *) netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct sliccard *card = adapter->card;
- 	u32 locked = 0;
- 	int status;
-@@ -534,7 +534,7 @@ static void __devexit slic_entry_remove(
- 	struct net_device *dev = pci_get_drvdata(pcidev);
- 	u32 mmio_start = 0;
- 	uint mmio_len = 0;
--	struct adapter *adapter = (struct adapter *) netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct sliccard *card;
- 	struct mcast_address *mcaddr, *mlist;
- 
-@@ -581,7 +581,7 @@ static void __devexit slic_entry_remove(
- 
- static int slic_entry_halt(struct net_device *dev)
- {
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct sliccard *card = adapter->card;
- 	__iomem struct slic_regs *slic_regs = adapter->slic_regs;
- 
-@@ -624,7 +624,7 @@ static int slic_entry_halt(struct net_de
- 
- static int slic_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct ethtool_cmd edata;
- 	struct ethtool_cmd ecmd;
- 	u32 data[7];
-@@ -787,7 +787,7 @@ static void slic_xmit_build_request(stru
- static netdev_tx_t slic_xmit_start(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct sliccard *card;
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct slic_hostcmd *hcmd = NULL;
- 	u32 status = 0;
- 	u32 skbtype = NORMAL_ETHFRAME;
-@@ -1071,7 +1071,7 @@ static void slic_xmit_complete(struct ad
- static irqreturn_t slic_interrupt(int irq, void *dev_id)
- {
- 	struct net_device *dev = (struct net_device *)dev_id;
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	u32 isr;
- 
- 	if ((adapter->pshmem) && (adapter->pshmem->isr)) {
-@@ -1229,7 +1229,7 @@ static void slic_init_cleanup(struct ada
- 
+@@ -1230,21 +1230,20 @@ static void slic_init_cleanup(struct ada
  static struct net_device_stats *slic_get_stats(struct net_device *dev)
  {
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct net_device_stats *stats;
+ 	struct adapter *adapter = netdev_priv(dev);
+-	struct net_device_stats *stats;
  
  	ASSERT(adapter);
-@@ -1360,7 +1360,7 @@ static void slic_mcast_set_bit(struct ad
+-	stats = &adapter->stats;
+-	stats->collisions = adapter->slic_stats.iface.xmit_collisions;
+-	stats->rx_errors = adapter->slic_stats.iface.rcv_errors;
+-	stats->tx_errors = adapter->slic_stats.iface.xmt_errors;
+-	stats->rx_missed_errors = adapter->slic_stats.iface.rcv_discards;
+-	stats->tx_heartbeat_errors = 0;
+-	stats->tx_aborted_errors = 0;
+-	stats->tx_window_errors = 0;
+-	stats->tx_fifo_errors = 0;
+-	stats->rx_frame_errors = 0;
+-	stats->rx_length_errors = 0;
+-	return &adapter->stats;
++	dev->stats.collisions = adapter->slic_stats.iface.xmit_collisions;
++	dev->stats.rx_errors = adapter->slic_stats.iface.rcv_errors;
++	dev->stats.tx_errors = adapter->slic_stats.iface.xmt_errors;
++	dev->stats.rx_missed_errors = adapter->slic_stats.iface.rcv_discards;
++	dev->stats.tx_heartbeat_errors = 0;
++	dev->stats.tx_aborted_errors = 0;
++	dev->stats.tx_window_errors = 0;
++	dev->stats.tx_fifo_errors = 0;
++	dev->stats.rx_frame_errors = 0;
++	dev->stats.rx_length_errors = 0;
++
++	return &dev->stats;
+ }
  
- static void slic_mcast_set_list(struct net_device *dev)
- {
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	int status = STATUS_SUCCESS;
- 	int i;
- 	char *addresses;
-@@ -2523,7 +2523,7 @@ static bool slic_mac_filter(struct adapt
- 
- static int slic_mac_set_address(struct net_device *dev, void *ptr)
- {
--	struct adapter *adapter = (struct adapter *)netdev_priv(dev);
-+	struct adapter *adapter = netdev_priv(dev);
- 	struct sockaddr *addr = ptr;
- 
- 	if (netif_running(dev))
+ /*
 
