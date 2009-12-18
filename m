@@ -1,137 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932566AbZLRSOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932405AbZLRSLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932566AbZLRSOi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 13:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbZLRSOb
+	id S932405AbZLRSLV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 13:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932336AbZLRSLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 13:14:31 -0500
-Received: from mga09.intel.com ([134.134.136.24]:53098 "EHLO mga09.intel.com"
+	Fri, 18 Dec 2009 13:11:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30138 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932497AbZLRSN5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 13:13:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,419,1257148800"; 
-   d="scan'208";a="580275710"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>
-Date: Fri, 18 Dec 2009 10:13:52 -0800
-Subject: RE: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
- setup
-Thread-Topic: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
- setup
-Thread-Index: AcqAACe2bTf+i4Q1Tqeu/SXA6l8eDgACJF5A
-Message-ID: <43F901BD926A4E43B106BF17856F07559A25826A@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F07559A257B5C@orsmsx508.amr.corp.intel.com>
- <20091217194148.GB5414@lenovo>
- <43F901BD926A4E43B106BF17856F07559A257E3D@orsmsx508.amr.corp.intel.com>
- <4B2AB1F0.1020105@linux.intel.com>
- <43F901BD926A4E43B106BF17856F07559A257FE1@orsmsx508.amr.corp.intel.com>
- <alpine.LFD.2.00.0912181704360.2755@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912181704360.2755@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S932330AbZLRSLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 13:11:19 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v7 00/11] kprobes: Kprobes jump optimization support
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Fri, 18 Dec 2009 13:15:28 -0500
+Message-ID: <20091218181527.21350.45287.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+Here are the patchset of the kprobes jump optimization v7
+(a.k.a. Djprobe). This version is just moving onto
+2.6.33-rc1-tip. Ingo, I assume its a good timing to
+push this code onto -tip tree (maybe developing branch?),
+since people can test it with perf-probe.
+
+I made a separated patch of generic text_poke_smp()
+for cross modifying code(XMC) by using stop_machine(),
+which originally comes from Mathieu's immediate value
+code. Thanks Mathieu, for helping me to implement it
+and organizing discussion points about int3-base XMC!
+
+These patches can be applied on the latest -tip.
+
+Changes in v7:
+ - Remove ctl_name = CTL_UNNUMBERED for upstream compatibility.
+
+And kprobe stress test didn't found any regressions - from kprobes,
+under kvm/x86.
+
+TODO:
+ - Support preemptive kernel (by stack unwinding and checking address).
 
 
->-----Original Message-----
->From: Thomas Gleixner [mailto:tglx@linutronix.de]
->Sent: Friday, December 18, 2009 8:36 AM
->To: Pan, Jacob jun
->Cc: H. Peter Anvin; Cyrill Gorcunov; linux-kernel@vger.kernel.org;
->x86@kernel.org
->Subject: RE: [PATCH 2/2] x86/apic: check global clockevent in lapic timer setup
->
->On Thu, 17 Dec 2009, Pan, Jacob jun wrote:
->> >-----Original Message-----
->> >From: H. Peter Anvin [mailto:hpa@linux.intel.com]
->> >Sent: Thursday, December 17, 2009 2:34 PM
->> >To: Pan, Jacob jun
->> >Cc: Cyrill Gorcunov; linux-kernel@vger.kernel.org; x86@kernel.org
->> >Subject: Re: [PATCH 2/2] x86/apic: check global clockevent in lapic timer
->setup
->> >
->> >On 12/17/2009 02:31 PM, Pan, Jacob jun wrote:
->> >>> Wouldn't be better to operate the same way as in case of "noapictimer"
->> >>> boot option. I guess the non-pc x86 midplatforms you're mentioning
->> >>> do not use SMP ever but just to be consistent in code.
->> >>>
->> >> [[JPAN]] We do use SMP with hyper threading in Moorestown.
->> >> In that case we have a per cpu platform timer without global clockevent.
->> >> so i think we don't want the dummy lapic event. we don't want to use the
->> >> broadcast mechanism as mentioned in the comments before disabling lapic
->> >> timer.
->> >>
->> >> For moorestown, I can use x86_init.timers.setup_percpu_clockev
->> >> abstraction function so that Moorestown platform does not need to call
->> >> setup_boot_APIC_clock() if per cpu platform timer is used. so many IFs :).
->> >>
->> >> But in the case of having constant and always on LAPIC timer, we still do
->> >> not want the dummy lapic clockevent and the broadcast. we will just have
->> >> per cpu always on local apic timers without global clockevent device.
->> >
->> >OK, I'm not entirely sure I follow this, and I'm not sure someone trying
->> >to understand the code in five years would, either.  I don't really see
->> >the above translating into "we don't have a global clockevent, therefore
->> >we shouldn't initialize (but should still not disable) the local APIC
->> >timer."
->> >
->> >	-hpa
->> [[JPAN]] There is some thing wrong in my logic.
->>
->> If we have always running lapic timer, and per cpu platform timers, we would
->> still want to set up the lapic timer without global clockevent, just without
->> calibration. perhaps use a platform specific setup_percpu_clockev() function.
->>
->> So i don't think we need this patch at the moment, maybe we only need to do a
->> sanity check for global clockevent in calibrate_APIC_clock().
->
->No, we need to fix the whole lapic timer calibration logic first.
->
->There is no reason why we don't calibrate the lapic at the same time
->as we calibrate the TSC.
-[[JPAN]] that seems to be much more efficient and we can have platform specific
-way of calibration too with the x86_init abstraction.
->
->Another question is why there is no way to read out the lapic clock
->frequency from some config registers or wherever the chip designers
->decided to hide that. There is no real reason why the lapic timer
->calibration needs to be extremly precise.
->
-[[JPAN]] x86 does have MSR_FSB_FREQ to read bus frequency then the DCR to figure
-out LAPIC timer freq. but i guess not all CPU models have that. so having
-the abstraction would be a plus for those do have reliable reporting of lapic
-freq.
+Jump Optimized Kprobes
+======================
+o Concept
+ Kprobes uses the int3 breakpoint instruction on x86 for instrumenting
+probes into running kernel. Jump optimization allows kprobes to replace
+breakpoint with a jump instruction for reducing probing overhead drastically.
 
->> Honestly, i don't fully understand how the dummy lapic event device
->> is related to the broadcast mechanism. can someone explain why we
->> register the dummy lapic clockevent?
->
->The broadcast mechanism is there in the first place to work around the
->APIC stops in deeper C-states idiocy.
->
->Then we need to support the disable lapic timer command line option
->(even on SMP) so we make use of the existing broadcast mechanism and
->register the dummy device to have a per cpu clock event device.
->
-[[JPAN]] thanks for the explanation. so if we have per cpu timer that is
-always-on, and don't have a broadcast timer, then the dummy device would not
-be needed, correct?
+o Performance
+ An optimized kprobe 5 times faster than a kprobe.
+
+ Optimizing probes gains its performance. Usually, a kprobe hit takes
+0.5 to 1.0 microseconds to process. On the other hand, a jump optimized
+probe hit takes less than 0.1 microseconds (actual number depends on the
+processor). Here is a sample overheads.
+
+Intel(R) Xeon(R) CPU E5410  @ 2.33GHz (without debugging options)
+
+                     x86-32  x86-64
+kprobe:              0.68us  0.91us
+kprobe+booster:	     0.27us  0.40us
+kprobe+optimized:    0.06us  0.06us
+
+kretprobe :          0.95us  1.21us
+kretprobe+booster:   0.53us  0.71us
+kretprobe+optimized: 0.30us  0.35us
+
+(booster skips single-stepping)
+
+ Note that jump optimization also consumes more memory, but not so much.
+It just uses ~200 bytes, so, even if you use ~10,000 probes, it just 
+consumes a few MB.
 
 
->Thanks,
->
->	tglx
+o Usage
+ Set CONFIG_OPTPROBES=y when building a kernel, then all *probes will be
+optimized if possible.
+
+ Kprobes decodes probed function and checks whether the target instructions
+can be optimized(replaced with a jump) safely. If it can't be, Kprobes just
+doesn't optimize it.
+
+
+o Optimization
+  Before preparing optimization, Kprobes inserts original(user-defined)
+ kprobe on the specified address. So, even if the kprobe is not
+ possible to be optimized, it just uses a normal kprobe.
+
+ - Safety check
+  First, Kprobes gets the address of probed function and checks whether the
+ optimized region, which will be replaced by a jump instruction, does NOT
+ straddle the function boundary, because if the optimized region reaches the
+ next function, its caller causes unexpected results.
+  Next, Kprobes decodes whole body of probed function and checks there is
+ NO indirect jump, NO instruction which will cause exception by checking
+ exception_tables (this will jump to fixup code and fixup code jumps into
+ same function body) and NO near jump which jumps into the optimized region
+ (except the 1st byte of jump), because if some jump instruction jumps
+ into the middle of another instruction, it causes unexpected results too.
+  Kprobes also measures the length of instructions which will be replaced
+ by a jump instruction, because a jump instruction is longer than 1 byte,
+ it may replaces multiple instructions, and it checks whether those
+ instructions can be executed out-of-line.
+
+ - Preparing detour code
+  Then, Kprobes prepares "detour" buffer, which contains exception emulating
+ code (push/pop registers, call handler), copied instructions(Kprobes copies
+ instructions which will be replaced by a jump, to the detour buffer), and
+ a jump which jumps back to the original execution path.
+
+ - Pre-optimization
+  After preparing detour code, Kprobes enqueues the kprobe to optimizing list
+ and kicks kprobe-optimizer workqueue to optimize it. To wait other optimized
+ probes, kprobe-optimizer will delay to work.
+  When the optimized-kprobe is hit before optimization, its handler
+ changes IP(instruction pointer) to copied code and exits. So, the
+ instructions which were copied to detour buffer are executed on the detour
+ buffer.
+
+ - Optimization
+  Kprobe-optimizer doesn't start instruction-replacing soon, it waits
+ synchronize_sched for safety, because some processors are possible to be
+ interrupted on the middle of instruction series (2nd or Nth instruction)
+ which will be replaced by a jump instruction(*).
+ As you know, synchronize_sched() can ensure that all interruptions which were
+ executed when synchronize_sched() was called are done, only if
+ CONFIG_PREEMPT=n. So, this version supports only the kernel with
+ CONFIG_PREEMPT=n.(**)
+  After that, kprobe-optimizer replaces the 4 bytes right after int3 breakpoint
+ with relative-jump destination, and synchronize caches on all processors. Next,
+ it replaces int3 with relative-jump opcode, and synchronize caches again.
+
+ - Unoptimization
+  When unregistering, disabling kprobe or being blocked by other kprobe,
+ an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
+ the kprobe just be dequeued from the optimized list. When the optimization
+ has been done, it replaces a jump with int3 breakpoint and original code.
+  First it puts int3 at the first byte of the jump, synchronize caches
+ on all processors, and replaces the 4 bytes right after int3 with the
+ original code.
+
+(*)Please imagine that 2nd instruction is interrupted and
+stop_machine() replaces the 2nd instruction with jump
+*address* while running interrupt handler. When the interrupt
+returns to original address, there is no valid instructions
+and it causes unexpected result.
+
+(**)This optimization-safety checking may be replaced with stop-machine
+method which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
+
+
+Thank you,
+
+---
+
+Masami Hiramatsu (11):
+      [RFC] kprobes/x86: Use text_poke_fixup() for jump optimization
+      [RFC] x86: Introduce generic jump patching without stop_machine
+      kprobes: Add documents of jump optimization
+      kprobes/x86: Support kprobes jump optimization on x86
+      x86: Add text_poke_smp for SMP cross modifying code
+      kprobes/x86: Cleanup save/restore registers
+      kprobes/x86: Boost probes when reentering
+      kprobes: Jump optimization sysctl interface
+      kprobes: Introduce kprobes jump optimization
+      kprobes: Introduce generic insn_slot framework
+      kprobes/x86: Cleanup RELATIVEJUMP_INSTRUCTION to RELATIVEJUMP_OPCODE
+
+
+ Documentation/kprobes.txt          |  192 ++++++++++-
+ arch/Kconfig                       |   13 +
+ arch/x86/Kconfig                   |    1 
+ arch/x86/include/asm/alternative.h |   15 +
+ arch/x86/include/asm/kprobes.h     |   31 ++
+ arch/x86/kernel/alternative.c      |  162 +++++++++
+ arch/x86/kernel/kprobes.c          |  592 ++++++++++++++++++++++++++++------
+ include/linux/kprobes.h            |   44 +++
+ kernel/kprobes.c                   |  628 +++++++++++++++++++++++++++++++-----
+ kernel/sysctl.c                    |   12 +
+ 10 files changed, 1484 insertions(+), 206 deletions(-)
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
