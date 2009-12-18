@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZLRNCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbZLRM5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753165AbZLRNCe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZLRNB5
+	id S1752100AbZLRM5U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 07:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZLRM5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 08:01:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45226 "EHLO hera.kernel.org"
+	Fri, 18 Dec 2009 07:57:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45180 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbZLRM5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 07:57:15 -0500
+	id S1751606AbZLRM5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 07:57:09 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, awalls@radix.net,
        linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
@@ -17,9 +17,9 @@ To: torvalds@linux-foundation.org, awalls@radix.net,
        avi@redhat.com, peterz@infradead.org, johannes@sipsolutions.net,
        andi@firstfloor.org
 Cc: Tejun Heo <tj@kernel.org>, Mike Galbraith <efault@gmx.de>
-Subject: [PATCH 04/27] sched: make sched_notifiers unconditional
-Date: Fri, 18 Dec 2009 21:57:45 +0900
-Message-Id: <1261141088-2014-5-git-send-email-tj@kernel.org>
+Subject: [PATCH 05/27] sched: add wakeup/sleep sched_notifiers and allow NULL notifier ops
+Date: Fri, 18 Dec 2009 21:57:46 +0900
+Message-Id: <1261141088-2014-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1261141088-2014-1-git-send-email-tj@kernel.org>
 References: <1261141088-2014-1-git-send-email-tj@kernel.org>
@@ -27,179 +27,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_notifiers will be used by workqueue which is always there.
-Always enable sched_notifiers.
+Add wakeup and sleep notifiers to sched_notifiers and allow omitting
+some of the notifiers in the ops table.  These will be used by
+concurrency managed workqueue.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/ia64/kvm/Kconfig    |    1 -
- arch/powerpc/kvm/Kconfig |    1 -
- arch/s390/kvm/Kconfig    |    1 -
- arch/x86/kvm/Kconfig     |    1 -
- include/linux/kvm_host.h |    2 --
- include/linux/sched.h    |    6 ------
- init/Kconfig             |    4 ----
- kernel/sched.c           |   13 -------------
- 8 files changed, 0 insertions(+), 29 deletions(-)
+ include/linux/sched.h |    6 ++++++
+ kernel/sched.c        |   11 ++++++++---
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
-index a38b72e..a9e2b9c 100644
---- a/arch/ia64/kvm/Kconfig
-+++ b/arch/ia64/kvm/Kconfig
-@@ -22,7 +22,6 @@ config KVM
- 	depends on HAVE_KVM && MODULES && EXPERIMENTAL
- 	# for device assignment:
- 	depends on PCI
--	select SCHED_NOTIFIERS
- 	select ANON_INODES
- 	select HAVE_KVM_IRQCHIP
- 	select KVM_APIC_ARCHITECTURE
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index d3a65c6..38818c0 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -18,7 +18,6 @@ if VIRTUALIZATION
- 
- config KVM
- 	bool
--	select SCHED_NOTIFIERS
- 	select ANON_INODES
- 
- config KVM_BOOK3S_64_HANDLER
-diff --git a/arch/s390/kvm/Kconfig b/arch/s390/kvm/Kconfig
-index a0adddd..f9b46b0 100644
---- a/arch/s390/kvm/Kconfig
-+++ b/arch/s390/kvm/Kconfig
-@@ -18,7 +18,6 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support"
- 	depends on HAVE_KVM && EXPERIMENTAL
--	select SCHED_NOTIFIERS
- 	select ANON_INODES
- 	---help---
- 	  Support hosting paravirtualized guest machines using the SIE
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index fd38f79..337a4e5 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -22,7 +22,6 @@ config KVM
- 	depends on HAVE_KVM
- 	# for device assignment:
- 	depends on PCI
--	select SCHED_NOTIFIERS
- 	select MMU_NOTIFIER
- 	select ANON_INODES
- 	select HAVE_KVM_IRQCHIP
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 8079759..45b631e 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -74,9 +74,7 @@ void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
- 
- struct kvm_vcpu {
- 	struct kvm *kvm;
--#ifdef CONFIG_SCHED_NOTIFIERS
- 	struct sched_notifier sched_notifier;
--#endif
- 	int vcpu_id;
- 	struct mutex mutex;
- 	int   cpu;
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index c3a9c3d..f327ac7 100644
+index f327ac7..b3c1666 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -1211,8 +1211,6 @@ struct sched_rt_entity {
- #endif
- };
- 
--#ifdef CONFIG_SCHED_NOTIFIERS
--
- struct sched_notifier;
+@@ -1215,6 +1215,10 @@ struct sched_notifier;
  
  /**
-@@ -1256,8 +1254,6 @@ static inline void sched_notifier_init(struct sched_notifier *notifier,
- 	notifier->ops = ops;
- }
- 
--#endif	/* CONFIG_SCHED_NOTIFIERS */
--
- struct rcu_node;
- 
- struct task_struct {
-@@ -1281,10 +1277,8 @@ struct task_struct {
- 	struct sched_entity se;
- 	struct sched_rt_entity rt;
- 
--#ifdef CONFIG_SCHED_NOTIFIERS
- 	/* list of struct sched_notifier: */
- 	struct hlist_head sched_notifiers;
--#endif
- 
- 	/*
- 	 * fpu_counter contains the number of consecutive context switches
-diff --git a/init/Kconfig b/init/Kconfig
-index 37aefe1..4a6b14b 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1248,8 +1248,4 @@ config STOP_MACHINE
- 	  Need stop_machine() primitive.
- 
- source "block/Kconfig"
--
--config SCHED_NOTIFIERS
--	bool
--
- source "kernel/Kconfig.locks"
+  * sched_notifier_ops - notifiers called for scheduling events
++ * @wakeup: we're waking up
++ *    notifier: struct sched_notifier for the task being woken up
++ * @sleep: we're going to bed
++ *    notifier: struct sched_notifier for the task sleeping
+  * @in: we're about to be rescheduled:
+  *    notifier: struct sched_notifier for the task being scheduled
+  *    cpu:  cpu we're scheduled on
+@@ -1228,6 +1232,8 @@ struct sched_notifier;
+  * and depended upon by its users.
+  */
+ struct sched_notifier_ops {
++	void (*wakeup)(struct sched_notifier *notifier);
++	void (*sleep)(struct sched_notifier *notifier);
+ 	void (*in)(struct sched_notifier *notifier, int cpu);
+ 	void (*out)(struct sched_notifier *notifier, struct task_struct *next);
+ };
 diff --git a/kernel/sched.c b/kernel/sched.c
-index f7e2c32..f44db0b 100644
+index f44db0b..35af985 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1434,8 +1434,6 @@ static inline void cpuacct_update_stats(struct task_struct *tsk,
- 		enum cpuacct_stat_index idx, cputime_t val) {}
- #endif
- 
--#ifdef CONFIG_SCHED_NOTIFIERS
--
- #define fire_sched_notifiers(p, callback, args...) do {			\
- 	struct sched_notifier *__sn;					\
+@@ -1439,7 +1439,8 @@ static inline void cpuacct_update_stats(struct task_struct *tsk,
  	struct hlist_node *__pos;					\
-@@ -1466,12 +1464,6 @@ void sched_notifier_unregister(struct sched_notifier *notifier)
+ 									\
+ 	hlist_for_each_entry(__sn, __pos, &(p)->sched_notifiers, link)	\
+-		__sn->ops->callback(__sn , ##args);			\
++		if (__sn->ops->callback)				\
++			__sn->ops->callback(__sn , ##args);		\
+ } while (0)
+ 
+ /**
+@@ -2410,6 +2411,8 @@ static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
+ 		rq->idle_stamp = 0;
+ 	}
+ #endif
++	if (success)
++		fire_sched_notifiers(p, wakeup);
  }
- EXPORT_SYMBOL_GPL(sched_notifier_unregister);
  
--#else	/* !CONFIG_SCHED_NOTIFIERS */
--
--#define fire_sched_notifiers(p, callback, args...)	do { } while (0)
--
--#endif	/* CONFIG_SCHED_NOTIFIERS */
--
- static inline void inc_cpu_load(struct rq *rq, unsigned long load)
- {
- 	update_load_add(&rq->load, load);
-@@ -2588,10 +2580,7 @@ static void __sched_fork(struct task_struct *p)
- 	INIT_LIST_HEAD(&p->rt.run_list);
- 	p->se.on_rq = 0;
- 	INIT_LIST_HEAD(&p->se.group_node);
--
--#ifdef CONFIG_SCHED_NOTIFIERS
- 	INIT_HLIST_HEAD(&p->sched_notifiers);
--#endif
+ /**
+@@ -5448,10 +5451,12 @@ need_resched_nonpreemptible:
+ 	clear_tsk_need_resched(prev);
  
- 	/*
- 	 * We mark the process as running here, but have not actually
-@@ -9626,9 +9615,7 @@ void __init sched_init(void)
+ 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+-		if (unlikely(signal_pending_state(prev->state, prev)))
++		if (unlikely(signal_pending_state(prev->state, prev))) {
+ 			prev->state = TASK_RUNNING;
+-		else
++		} else {
++			fire_sched_notifiers(prev, sleep);
+ 			deactivate_task(rq, prev, 1);
++		}
+ 		switch_count = &prev->nvcsw;
+ 	}
  
- 	set_load_weight(&init_task);
- 
--#ifdef CONFIG_SCHED_NOTIFIERS
- 	INIT_HLIST_HEAD(&init_task.sched_notifiers);
--#endif
- 
- #ifdef CONFIG_SMP
- 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
 -- 
 1.6.4.2
 
