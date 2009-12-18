@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZLRTlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932264AbZLRToi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbZLRTlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 14:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZLRTlt
+	id S932264AbZLRToi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 14:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZLRTof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 14:41:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51503 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750946AbZLRTlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 14:41:47 -0500
-Date: Fri, 18 Dec 2009 20:41:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steve Rago <sar@nec-labs.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       "jens.axboe" <jens.axboe@oracle.com>
+	Fri, 18 Dec 2009 14:44:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38491 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbZLRToe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 14:44:34 -0500
 Subject: Re: [PATCH] improve the performance of large sequential write NFS
  workloads
-Message-ID: <20091218194129.GB6153@elte.hu>
-References: <1261015420.1947.54.camel@serenity>
- <1261037877.27920.36.camel@laptop>
- <1261164799.1947.123.camel@serenity>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steve Rago <sar@nec-labs.com>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Trond.Myklebust@netapp.com, Wu Fengguang <fengguang.wu@intel.com>,
+       "jens.axboe" <jens.axboe@oracle.com>
 In-Reply-To: <1261164799.1947.123.camel@serenity>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop>  <1261164799.1947.123.camel@serenity>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 18 Dec 2009 20:44:03 +0100
+Message-ID: <1261165443.20899.555.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steve Rago <sar@nec-labs.com> wrote:
-
-> > Also, I don't think this needs to have a sysctl, it should just work.
+On Fri, 2009-12-18 at 14:33 -0500, Steve Rago wrote:
+> > > +void nfs_wait_woutstanding(struct inode *inode)
+> > > +{
+> > > +   if (nfs_max_woutstanding != 0) {
+> > > +           unsigned long background_thresh;
+> > > +           unsigned long dirty_thresh;
+> > > +           long npages;
+> > > +           struct nfs_inode *nfsi = NFS_I(inode);
+> > > +
+> > > +           get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+> > > +           npages = global_page_state(NR_FILE_DIRTY) +
+> > > +                    global_page_state(NR_UNSTABLE_NFS) +
+> > > +                    global_page_state(NR_WRITEBACK);
+> > > +           if (npages >= background_thresh)
+> > > +                   wait_event(nfsi->writes_wq,
+> > > +                      atomic_read(&nfsi->writes) < nfs_max_woutstanding);
+> > > +   }
+> > > +}
+> > 
+> > This looks utterly busted too, why the global state and not the nfs
+> > client's bdi state?
+> > 
+> > Also, why create this extra workqueue and not simply use the congestion
+> > interface that is present? If the congestion stuff doesn't work for you,
+> > fix that, don't add extra muck like this.
 > 
-> The sysctl is a *good thing* in that it allows the eager writeback behavior 
-> to be tuned and shut off if need be.  I can only test the changes on a 
-> finite set of systems, so better safe than sorry.
+> Pages are a global resource.  Once we hit the dirty_threshold, the
+> system is going to work harder to flush the pages out.  This code
+> prevents the caller from creating more dirty pages in this state,
+> thereby making matters worse, when eager writeback is enabled.
 
-This issue has been settled many years ago and that's not what we do in the 
-Linux kernel. We prefer patches to core code where we are reasonably sure they 
-result in good behavior - and then we fix bugs in the new behavior, if any. 
+You misunderstand, dirty limits are per BDI, all those npages might be
+for !NFS traffic, in which case forcing the NFS into sync mode might be
+the wrong thing to do.
 
-(Otherwise odd sysctls would mushroom quickly and the system would become 
-untestable in practice.)
+The dirty pages are no longer a global resource in the current Linux
+tree.
 
-	Ingo
+> This wait queue is used for different purposes than the congestion_wait
+> interface.  Here we are preventing the caller from proceeding if there
+> are too many NFS writes outstanding for this thread and we are in a
+> memory pressure state.  It has nothing to do with the state of the bdi
+> congestion. 
+
+I'm thinking it ought to, congestion is exactly that, when the device
+gets backed up and need to get moving.
+
