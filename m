@@ -1,146 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZLRNg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZLRNhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbZLRNg0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 08:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZLRNgX
+	id S1753226AbZLRNhL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZLRNhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 08:36:23 -0500
-Received: from hmcexedge02.ikoula.com ([78.24.135.22]:7487 "EHLO
-	mail.hmc.ikoula.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751085AbZLRNgW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 08:36:22 -0500
-From: Romain Kubany <rkubany@ikoula.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>
-CC: Mikael Pettersson <mikpe@it.uu.se>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
-Date: Fri, 18 Dec 2009 14:36:18 +0100
-Subject: RE: Possible regression of LBA48 support for piix
-Thread-Topic: Possible regression of LBA48 support for piix
-Thread-Index: Acp/HfW6yWhn+IaPTzq4Ca/2Crcl5AAAjkkg
-Message-ID: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB416@HMCEXMBX01CLUS.hmcikoula.com>
-References: <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB2AF@HMCEXMBX01CLUS.hmcikoula.com>
- <A9C151C7BD19EC47976D4AA14CF277A8BC64DFB31D@HMCEXMBX01CLUS.hmcikoula.com>
- <4B2A227E.2010106@garzik.org> <200912171433.39135.bzolnier@gmail.com>
-In-Reply-To: <200912171433.39135.bzolnier@gmail.com>
-Accept-Language: fr-FR, en-US
-Content-Language: fr-FR
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: fr-FR, en-US
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 18 Dec 2009 08:37:08 -0500
+Received: from mail.gmx.net ([213.165.64.20]:60920 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751421AbZLRNhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 08:37:05 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/adCh+QFXacMWmVw9oKrFB/KYrKlegKR6MyHBe5d
+	Nwp70tTktI0u53
+Subject: Re: x264 benchmarks BFS vs CFS
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jason Garrett-Glaser <darkshikari@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20091218130642.GA17033@elte.hu>
+References: <1261042383.14314.0.camel@localhost>
+	 <28f2fcbc0912170242r6d93dfb1j337558a829e21a75@mail.gmail.com>
+	 <20091217105316.GB26010@elte.hu> <1261047618.14314.6.camel@localhost>
+	 <28f2fcbc0912171718x271520b4k5da3376b5182d88a@mail.gmail.com>
+	 <20091218052344.GD417@elte.hu> <1261121405.30469.8.camel@marge.simson.net>
+	 <28f2fcbc0912180211we599252v39cb94d113537eb5@mail.gmail.com>
+	 <1261140546.15591.5.camel@marge.simson.net>
+	 <20091218130642.GA17033@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Dec 2009 14:36:53 +0100
+Message-Id: <1261143413.15591.15.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
-
-Sorry, some kind of emergency occured and I didn't had the time to answer your mails
-
-Jeff : No change were made to the VM configuration between the two kernel (2.6.27.41 & 2.6.28) so it is unlikely the disk himself or the VM configuration which are provoking this behavior.
-Also, not this virtual machine in particular but others (with the same hardware configuration) are running Windows 2003/2008 without that limitation to 136Gb.
-
-Bartlomiej : Ok, here is the dmesg of a 2.6.32.1 (http://pastebin.com/f3645803b ) and here is the output of a 'hdparm --Istdout /dev/sda' (under 2.6.32) as you suggested :
-
-# hdparm --Istdout /dev/sda
-
-/dev/sda:
-045a 3fff 0000 0010 fe00 0200 003f abcd
-dcba 0123 2020 2020 2020 2020 2020 2020
-2020 2020 2020 2020 0003 0080 0000 312e
-312e 3020 2020 5669 7274 7561 6c20 4844
-2020 2020 2020 2020 2020 2020 2020 2020
-2020 2020 2020 2020 2020 2020 2020 8080
-0000 0f00 0000 0200 0200 0003 ffff 0010
-00ff f010 0fef 0180 f010 0fef 0007 0407
-0003 0078 0078 014d 0078 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0400 0000 0000 0400 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 1900 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-0000 0000 0000 0000 0000 0000 0000 0000
-
-
-
------Message d'origine-----
-De : linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] De la part de Bartlomiej Zolnierkiewicz
-Envoyé : jeudi 17 décembre 2009 14:34
-À : Jeff Garzik
-Cc : Romain Kubany; Mikael Pettersson; linux-kernel@vger.kernel.org; linux-ide@vger.kernel.org
-Objet : Re: Possible regression of LBA48 support for piix
-
-On Thursday 17 December 2009 01:22:22 pm Jeff Garzik wrote:
-> On 12/17/2009 07:07 AM, Romain Kubany wrote:
-> > Here it is under the 2.6.28 :
-> >
-> > # hdparm -I /dev/sda
-> >
-> > /dev/sda:
-> >
-> > ATA device, with non-removable media
-> >          Model Number:       Virtual HD
-> >          Serial Number:
-> >          Firmware Revision:  1.1.0
-> > Standards:
-> >          Likely used: 2
-> > Configuration:
-> >          Logical         max     current
-> >          cylinders       16383   65535
-> >          heads           16      16
-> >          sectors/track   63      255
-> >          --
-> >          bytes/track: 65024      bytes/sector: 512
-> >          CHS current addressable sectors:  267382800
-> >          LBA    user addressable sectors:  267382800
-> >          device size with M = 1024*1024:      130558 MBytes
-> >          device size with M = 1000*1000:      136899 MBytes (136 GB)
+On Fri, 2009-12-18 at 14:06 +0100, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
 > 
-> Yeah, that info is straight from the virtual disk, without any sort of 
-> massaging.  The disk is reporting 136GB max, so I would poke around 
-> Windows to see if a setting changed somewhere...  maybe there is an "old 
-> IDE compatible" setting that got turned on, for the virtual hd?
+> > > I'm personally curious as to what kind of scheduler issues this results 
+> > > in--I haven't done any BFS vs CFS tests with this option enabled yet.
+> > 
+> > I'll look for x264 source, and patch/piddle.
+> 
+> btw., would be nice to look at it via tools/perf/ as well:
+> 
+>   perf stat --repeat 3 ...
+> 
+> to see the basic hardware utilization (cycles/cache-misses, branch execution 
+> rate, instructions, etc.) and the basic parallelism metrics, at a glance.
+> 
+> i suspect "perf stat -e L1-icache-loads -e L1-icache-load-misses" would give 
+> us an even more detailed picture.
 
-It is also possible that this virtual disk has never worked with ata_piix
-driver and worked with piix driver in the older kernels because of pure luck.
+Almost virgin v2.6.32-10468-g020307d running 'medium'.
 
-In 2.6.28 I've fixed LBA48 checks in IDE to match libata (see commit 942dcd8
-for details) so it would be worth to try:
+encoded 600 frames, 36.52 fps, 13003.54 kb/s
 
-	- simulating the older buggy IDE behavior with 2.6.32 kernel
+ Performance counter stats for './x264.sh 8' (3 runs):
 
-or
+   63742.218844  task-clock-msecs         #      3.870 CPUs    ( +-   0.016% )
+          42593  context-switches         #      0.001 M/sec   ( +-   0.487% )
+           3011  CPU-migrations           #      0.000 M/sec   ( +-   0.417% )
+          12862  page-faults              #      0.000 M/sec   ( +-   0.004% )
+   151734450892  cycles                   #   2380.439 M/sec   ( +-   1.947% )  (scaled from 71.44%)
+   205642315207  instructions             #      1.355 IPC     ( +-   0.085% )  (scaled from 80.68%)
+    16274905932  branches                 #    255.324 M/sec   ( +-   0.080% )  (scaled from 80.67%)
+     1257135617  branch-misses            #      7.724 %       ( +-   0.255% )  (scaled from 80.06%)
+     3116653323  cache-references         #     48.895 M/sec   ( +-   0.340% )  (scaled from 23.78%)
+       50823973  cache-misses             #      0.797 M/sec   ( +-   1.400% )  (scaled from 23.76%)
 
-	- staring long enough at 'hdparm --Istdout /dev/sda' output
+   16.470164901  seconds time elapsed   ( +-   0.079% )
 
-first.
+encoded 600 frames, 36.58 fps, 13003.54 kb/s
 
---
-Bartlomiej Zolnierkiewicz
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+ Performance counter stats for './x264.sh 8' (3 runs):
+
+   133692266953  L1-icache-loads            ( +-   0.027% )
+      997371592  L1-icache-load-misses      ( +-   0.009% )
+
+   16.407060367  seconds time elapsed   ( +-   0.036% )
+
 
