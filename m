@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbZLRWqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbZLRWrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933213AbZLRWqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 17:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933111AbZLRWqX
+	id S933234AbZLRWrB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 17:47:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933115AbZLRWrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 17:46:23 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56387 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932612AbZLRWqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 17:46:23 -0500
-Date: Sat, 19 Dec 2009 09:46:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: linux-next: manual merge of the limits tree with the  tree
-Message-Id: <20091219094616.744fc1c1.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Fri, 18 Dec 2009 17:47:00 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:55935 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933111AbZLRWq7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 17:46:59 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       "jens.axboe" <jens.axboe@oracle.com>
+In-Reply-To: <20091218220741.GB21131@elte.hu>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <1261164799.1947.123.camel@serenity>
+	 <20091218194129.GB6153@elte.hu> <1261171211.1947.135.camel@serenity>
+	 <20091218220741.GB21131@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Dec 2009 17:46:56 -0500
+Message-Id: <1261176416.1947.149.camel@serenity>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr"
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Jiri,
+On Fri, 2009-12-18 at 23:07 +0100, Ingo Molnar wrote:
+> * Steve Rago <sar@nec-labs.com> wrote:
+> 
+> > 
+> > On Fri, 2009-12-18 at 20:41 +0100, Ingo Molnar wrote:
+> > > * Steve Rago <sar@nec-labs.com> wrote:
+> > > 
+> > > > > Also, I don't think this needs to have a sysctl, it should just work.
+> > > > 
+> > > > The sysctl is a *good thing* in that it allows the eager writeback behavior 
+> > > > to be tuned and shut off if need be.  I can only test the changes on a 
+> > > > finite set of systems, so better safe than sorry.
+> > > 
+> > > This issue has been settled many years ago and that's not what we do in the 
+> > > Linux kernel. We prefer patches to core code where we are reasonably sure they 
+> > > result in good behavior - and then we fix bugs in the new behavior, if any. 
+> > > 
+> > > (Otherwise odd sysctls would mushroom quickly and the system would become 
+> > > untestable in practice.)
+> > > 
+> > > 	Ingo
+> > 
+> > I don't disagree, but "that's not what we do" hardly provides insight into 
+> > making the judgment call. [...]
+> 
+> I gave you an example of the problems that arise, see the last sentence above.
+> 
+> > [...]  In this case, the variety of combinations of NFS server speed, NFS 
+> > client speed, transmission link speed, client memory size, and server memory 
+> > size argues for a tunable parameter, because one value probably won't work 
+> > well in all combinations.  Making it change dynamically based on these 
+> > parameters is more complicated than these circumstances call for, IMHO.
+> 
+> So having crappy tunables is the reason to introduce even more tunables? I 
+> think you just gave a good second example of why we dont want sysctls for 
+> features like this.
+> 
+> 	Ingo
 
-Today's linux-next merge of the limits tree got a conflict in fs/exec.c
-between commit f6151dfea21496d43dbaba32cfcd9c9f404769bc ("mm: introduce
-coredump parameter structure") from the  tree and commit
-1157605c47673fc63b052df4688697695a9873d5 ("FS: use helpers for rlimits")
-from the limits tree.
+The examples I cited are not tunables.  They are characteristics of the
+systems we use.  I can't squeeze more than 1Gb/s out of my gigabit
+Ethernet connection; I can't make my 2GHz CPU compute any faster; I am
+limited by these components to the performance I can attain.  Writing
+software that performs well in all combinations, especially to take
+advantage of the myriad of combinations, is difficult at best.  The
+tunable introduced in the patch is a compromise to writing a much more
+complicated adaptive algorithm that most likely wouldn't have access to
+all of the information it needed anyway.
 
-I fixed it up (see below - thanks Andrew) and can carry the fix for a
-while.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-diff --cc fs/exec.c
-index ac52447,8a160a1..0000000
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@@ -1772,11 -1763,6 +1772,11 @@@ void do_coredump(long signr, int exit_c
-  	int helper_argc =3D 0;
-  	int dump_count =3D 0;
-  	static atomic_t core_dump_count =3D ATOMIC_INIT(0);
- +	struct coredump_params cprm =3D {
- +		.signr =3D signr,
- +		.regs =3D regs,
-- 		.limit =3D current->signal->rlim[RLIMIT_CORE].rlim_cur,
-++		.limit =3D rlimit(RLIMIT_CORE),
- +	};
- =20
-  	audit_core_dumps(signr);
- =20
+Steve
 
---Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr
-Content-Type: application/pgp-signature
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkssBjgACgkQjjKRsyhoI8y/oACeKhKBPTmT+1fxvA7PVX9WsdOG
-0J0An1qtMihKhxYO8ajhnOY7RuJwTYWD
-=lyKk
------END PGP SIGNATURE-----
-
---Signature=_Sat__19_Dec_2009_09_46_16_+1100_vXIb5pShl2o6Fhfr--
