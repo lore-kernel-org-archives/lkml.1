@@ -1,73 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZLRQY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932175AbZLRQcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbZLRQY5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 11:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbZLRQY4
+	id S932175AbZLRQcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 11:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZLRQcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 11:24:56 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:42611 "EHLO e8.ny.us.ibm.com"
+	Fri, 18 Dec 2009 11:32:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:20090 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754714AbZLRQYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 11:24:55 -0500
-Message-ID: <4B2BACD3.7010903@austin.ibm.com>
-Date: Fri, 18 Dec 2009 10:24:51 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1754975AbZLRQcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 11:32:13 -0500
+Date: Fri, 18 Dec 2009 11:32:00 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+In-Reply-To: <alpine.LFD.2.00.0912170816210.15740@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0912181118390.23738@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+ <200912171618.32882.bzolnier@gmail.com> <alpine.LFD.2.00.0912170726230.17868@localhost.localdomain>
+ <200912171708.07899.bzolnier@gmail.com> <alpine.LFD.2.00.0912170816210.15740@localhost.localdomain>
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6 v5] CPU probe/release files
-References: <4AE8ADCF.6090104@austin.ibm.com>	<4AE8B072.1070603@austin.ibm.com> <m2oclw9wt4.fsf@igel.home>
-In-Reply-To: <m2oclw9wt4.fsf@igel.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab wrote:
-> Nathan Fontenot <nfont@austin.ibm.com> writes:
+On Thu, 17 Dec 2009, Linus Torvalds wrote:
+
+> On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > Well, it could have been done in the other way:
+> > 
+> > -			ret = sscanf (buf, "0x%lx - 0x%lx", &start_addr, &end_addr);
+> > +			ret = sscanf(buf, "0x%lx - 0x%lx",
+> > +				     &start_addr, &end_addr);
+> > 
+> > Just an example that the limit itself is usually not a problem
+> > but its literal interpretation is..
 > 
->> Index: powerpc/arch/powerpc/Kconfig
->> ===================================================================
->> --- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
->> +++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
->> @@ -320,6 +320,10 @@
->>  
->>  	  Say N if you are unsure.
->>  
->> +config ARCH_CPU_PROBE_RELEASE
->> +	def_bool y
->> +	depends on HOTPLUG_CPU
->> +
+> What? Your version is no better.
 > 
-> That does not work.
+> In the above case it doesn't matter, but I've had grep's that fail due to 
+> people splitting the actual string etc, which just drives me wild. We 
+> fixed that to allow checkpatch to skip those warnings, but the fact is, 
+> the fundamnetal problem has always been the "80 character" part.
 > 
-> drivers/built-in.o: In function `.store_online':
-> cpu.c:(.ref.text+0xf5c): undefined reference to `.cpu_hotplug_driver_lock'
-> cpu.c:(.ref.text+0xfc8): undefined reference to `.cpu_hotplug_driver_unlock'
-> make: *** [.tmp_vmlinux1] Error 1
+> I don't think any kernel developers use a vt100 any more. And even if they 
+> do, I bet they curse the "24 lines" more than they curse the occasional 
+> 80+ character lines.
 > 
-> cpu_hotplug_driver_lock is only defined on pseries, but HOTPLUG_CPU is
-> also defined on pmac.
+> I'd be ok with changing the warning to 132 characters, which is another 
+> perfectly fine historical limit. Or we can split the difference, and say 
+> "ok, 106 characters is too much". I don't care. But 80 characters is 
+> causing too many idiotic changes.
 
-These two routines should be defined as a no-op if CONFIG_ARCH_CPU_PROBE_RELEASE
-is not defined in linux/cpu.h.  The update below should be in the patch set
-you are looking at. 
+The problem with 106 character --- I have 100-character display on one 
+computer. If the code were be formatted for 106 characters, it would look 
+like
+					bla - bla - bla - bla - bla -
+bla -
+					bla - bla - bla - bla - bla - 
+bla;
 
-from linux/cpu.h:
+--- i.e. every second line wasted.
 
-#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-extern void cpu_hotplug_driver_lock(void);
-extern void cpu_hotplug_driver_unlock(void);
-#else
-static inline void cpu_hotplug_driver_lock(void)
-{
-}
+On the other hand, if you go without limit, it will be
+					bla - bla - bla - bla -
+bla - bla - bla - bla - bla - bla - bla - bla;
 
-static inline void cpu_hotplug_driver_unlock(void)
-{
-}
-#endif
+--- much better.
 
--Nathan Fontenot
+The same problem comes for 132 chatacters --- many people have 
+128-character display (1024x768 framebuffer) and they see spurious 
+wrapping with 132 character text.
+
+In general, if you select "n" as a line width, you find someone with 
+"n - delta" column display who will have problems.
+
+It would be best to keep line length is unlimited and say that it is the 
+responsibility of the viewer to wrap it.
+
+And make limit of 80 characters only for block comments --- the reader 
+doesn't want to read wrapped words in comments.
+
+Mikulas
+
+> There are way worse problems in many patches than long lines. Too complex 
+> expressions. Too deep indentation. Pure crap code. People seem to get way 
+> too hung up on ".. but at least it passes checkpatch". 
+> 
+> 		Linus
+> 
