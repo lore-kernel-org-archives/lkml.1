@@ -1,292 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZLRHbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZLRHij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZLRHbb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 02:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbZLRHb3
+	id S1752593AbZLRHij (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 02:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZLRHij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 02:31:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45825 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751336AbZLRHb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 02:31:28 -0500
-Date: Fri, 18 Dec 2009 07:30:58 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, john.blackwood@ccur.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, john.blackwood@ccur.com
-In-Reply-To: <1261103386.2535.409.camel@sbs-t61>
-References: <1261103386.2535.409.camel@sbs-t61>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, irq: Allow 0xff for /proc/irq/[n]/smp_affinity on an 8-cpu system
-Message-ID: <tip-18374d89e5fe96772102f44f535efb1198d9be08@git.kernel.org>
-Git-Commit-ID: 18374d89e5fe96772102f44f535efb1198d9be08
-X-Mailer: tip-git-log-daemon
+	Fri, 18 Dec 2009 02:38:39 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:45847 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbZLRHii convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 02:38:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xoNvpVLnTx6Fb9XJM4HEAv0MUkRiITex3J/VnIYi3aTB34WazmHg4YRMpAfhRVXBWW
+         gLSWjP5/M5HDnpY5WCT311jp7m3RYg4h9UfCV/DGeU1TBgM8LUQpn2uvfl4d2tI/ARiD
+         oYNu+OlkiNRRj+pe/GwWzRL01VslLyVuR/fjE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+In-Reply-To: <2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
+References: <b1e768440912172008g605bade0ledc77f91eeaa9d36@mail.gmail.com>
+	 <2375c9f90912172312x7d324979r10da5ecd7edc61d3@mail.gmail.com>
+Date: Fri, 18 Dec 2009 15:38:37 +0800
+Message-ID: <b1e768440912172338k8849393ye23f5e277f554caf@mail.gmail.com>
+Subject: Re: 2.6.32 Kernel panic - not syncing: Attempted to kill init! 
+	Rebooting in 180 seconds..
+From: Zhiyong Wu <zwu.kernel@gmail.com>
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Herbert Xu <herbert@gondor.apana.org.au>, llim@redhat.com,
+       agraf@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  18374d89e5fe96772102f44f535efb1198d9be08
-Gitweb:     http://git.kernel.org/tip/18374d89e5fe96772102f44f535efb1198d9be08
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Thu, 17 Dec 2009 18:29:46 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 17 Dec 2009 22:03:06 -0800
+It does'nt still work based on your method.
 
-x86, irq: Allow 0xff for /proc/irq/[n]/smp_affinity on an 8-cpu system
 
-John Blackwood reported:
-> on an older Dell PowerEdge 6650 system with 8 cpus (4 are hyper-threaded),
-> and  32 bit (x86) kernel, once you change the irq smp_affinity of an irq
-> to be less than all cpus in the system, you can never change really the
-> irq smp_affinity back to be all cpus in the system (0xff) again,
-> even though no error status is returned on the "/bin/echo ff >
-> /proc/irq/[n]/smp_affinity" operation.
+Cheers,
+
+Zhiyong Wu
+
+On Fri, Dec 18, 2009 at 3:12 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
+> On Fri, Dec 18, 2009 at 12:08 PM, Zhiyong Wu <zwu.kernel@gmail.com> wrote:
+>> HI,
+>>
+>> linux-2.6.32 is compiled on a p6 machine with RH5.4 OS and KVM option is enable.
+>>
+>> When rebooting this machine, a crash takes place such as:
+>>
+>> Loading ramdisk...
+>> ramdisk loaded at 01700000, size: 2700 Kbytes
+>> OF stdout device is: /vdevice/vty@30000000
+>> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
+>> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
+>> 06:53:27 EST 2009
+>> Calling ibm,client-architecture-support.../
+>> Elapsed time since release of system processors: 1212 mins 30 secs
+>>
+>> Config file read, 1024 bytes
+>>
+>> Welcome
+>> Welcome to yaboot version 1.3.13 (Red Hat 1.3.13-8.el5)
+>> Enter "help" to get some basic usage information
+>> boot: linux-32
+>> Please wait, loading kernel...
+>>   Elf64 kernel loaded...
+>> Loading ramdisk...
+>> ramdisk loaded at 01700000, size: 2700 Kbytes
+>> OF stdout device is: /vdevice/vty@30000000
+>> Preparing to boot Linux version 2.6.32 (root@p6ml4n07.clusters.com)
+>> (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Fri Dec 18
+>> 06:53:27 EST 2009
+>> Calling ibm,client-architecture-support... done
+>> command line: ro console=hvc0 rhgb quiet root=LABEL=/
+>> memory layout at init:
+>>  memory_limit : 0000000000000000 (16 MB aligned)
+>>  alloc_bottom : 00000000019b0000
+>>  alloc_top    : 0000000008000000
+>>  alloc_top_hi : 0000000008000000
+>>  rmo_top      : 0000000008000000
+>>  ram_top      : 0000000008000000
+>> instantiating rtas at 0x0000000006e10000... done
+>> boot cpu hw idx 0000000000000000
+>> copying OF device tree...
+>> Building dt strings...
+>> Building dt structure...
+>> Device tree strings 0x0000000001bc0000 -> 0x0000000001bc15bb
+>> Device tree struct  0x0000000001bd0000 -> 0x0000000001bf0000
+>> Calling quiesce...
+>> returning from prom_init
+>> Red Hat nash version 5.1.19.6 starting
+>> ibmvscsi 30000002: fast_fail not supported in server
+>> sd 0:0:1:0: [sda] Assuming drive cache: write through
+>> sd 0:0:1:0: [sda] Assuming drive cache: write through
+>> sd 0:0:1:0: [sda] Assuming drive cache: write through
+>> insmod: error inserting '/lib/dm-region-hash.ko': -1 File exists
+>> mount: could not find filesystem '/dev/root'
+>> setuproot: moving /dev failed: No such file or directory
+>> setuproot: error mounting /proc: No such file or directory
+>> setuproot: error mounting /sys: No such file or directory
+>> switchroot: mount failed: No such file or directory
+>> Kernel panic - not syncing: Attempted to kill init!
+>> Rebooting in 180 seconds..[disconnect]
+>>
+>> Can anyone give me a warm hand?
 >
-> This is due to that fact that BAD_APICID has the same value as
-> all cpus (0xff) on 32bit kernels, and thus the value returned from
-> set_desc_affinity() via the cpu_mask_to_apicid_and() function is treated
-> as a failure in set_ioapic_affinity_irq_desc(), and no affinity changes
-> are made.
-
-set_desc_affinity() is already checking if the incoming cpu mask
-intersects with the cpu online mask or not. So there is no need
-for the apic op cpu_mask_to_apicid_and() to check again
-and return BAD_APICID.
-
-Remove the BAD_APICID return value from cpu_mask_to_apicid_and()
-and also fix set_desc_affinity() to return -1 instead of using BAD_APICID
-to represent error conditions (as cpu_mask_to_apicid_and() can return
-logical or physical apicid values and BAD_APICID is really to represent
-bad physical apic id).
-
-Reported-by: John Blackwood <john.blackwood@ccur.com>
-Root-caused-by: John Blackwood <john.blackwood@ccur.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <1261103386.2535.409.camel@sbs-t61>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/include/asm/hw_irq.h         |    3 ++-
- arch/x86/kernel/apic/apic_flat_64.c   |    5 +----
- arch/x86/kernel/apic/bigsmp_32.c      |    5 +----
- arch/x86/kernel/apic/io_apic.c        |   32 ++++++++++++++------------------
- arch/x86/kernel/apic/x2apic_cluster.c |    5 +----
- arch/x86/kernel/apic/x2apic_phys.c    |    5 +----
- arch/x86/kernel/apic/x2apic_uv_x.c    |    5 +----
- arch/x86/kernel/uv_irq.c              |    3 +--
- 8 files changed, 22 insertions(+), 41 deletions(-)
-
-diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
-index 08c48a8..eeac829 100644
---- a/arch/x86/include/asm/hw_irq.h
-+++ b/arch/x86/include/asm/hw_irq.h
-@@ -103,7 +103,8 @@ extern int assign_irq_vector(int, struct irq_cfg *, const struct cpumask *);
- extern void send_cleanup_vector(struct irq_cfg *);
- 
- struct irq_desc;
--extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *);
-+extern unsigned int set_desc_affinity(struct irq_desc *, const struct cpumask *,
-+				      unsigned int *dest_id);
- extern int IO_APIC_get_PCI_irq_vector(int bus, int devfn, int pin, struct io_apic_irq_attr *irq_attr);
- extern void setup_ioapic_dest(void);
- 
-diff --git a/arch/x86/kernel/apic/apic_flat_64.c b/arch/x86/kernel/apic/apic_flat_64.c
-index d0c99ab..eacbd2b 100644
---- a/arch/x86/kernel/apic/apic_flat_64.c
-+++ b/arch/x86/kernel/apic/apic_flat_64.c
-@@ -306,10 +306,7 @@ physflat_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 		if (cpumask_test_cpu(cpu, cpu_online_mask))
- 			break;
- 	}
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_apicid, cpu);
- }
- 
- struct apic apic_physflat =  {
-diff --git a/arch/x86/kernel/apic/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
-index 38dcecf..cb804c5 100644
---- a/arch/x86/kernel/apic/bigsmp_32.c
-+++ b/arch/x86/kernel/apic/bigsmp_32.c
-@@ -131,10 +131,7 @@ static unsigned int bigsmp_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 		if (cpumask_test_cpu(cpu, cpu_online_mask))
- 			break;
- 	}
--	if (cpu < nr_cpu_ids)
--		return bigsmp_cpu_to_logical_apicid(cpu);
--
--	return BAD_APICID;
-+	return bigsmp_cpu_to_logical_apicid(cpu);
- }
- 
- static int bigsmp_phys_pkg_id(int cpuid_apic, int index_msb)
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index d5d498f..98ced70 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -2276,26 +2276,28 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq
- 
- /*
-  * Either sets desc->affinity to a valid value, and returns
-- * ->cpu_mask_to_apicid of that, or returns BAD_APICID and
-+ * ->cpu_mask_to_apicid of that in dest_id, or returns -1 and
-  * leaves desc->affinity untouched.
-  */
- unsigned int
--set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
-+set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask,
-+		  unsigned int *dest_id)
- {
- 	struct irq_cfg *cfg;
- 	unsigned int irq;
- 
- 	if (!cpumask_intersects(mask, cpu_online_mask))
--		return BAD_APICID;
-+		return -1;
- 
- 	irq = desc->irq;
- 	cfg = desc->chip_data;
- 	if (assign_irq_vector(irq, cfg, mask))
--		return BAD_APICID;
-+		return -1;
- 
- 	cpumask_copy(desc->affinity, mask);
- 
--	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
-+	*dest_id = apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
-+	return 0;
- }
- 
- static int
-@@ -2311,12 +2313,11 @@ set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
- 	cfg = desc->chip_data;
- 
- 	spin_lock_irqsave(&ioapic_lock, flags);
--	dest = set_desc_affinity(desc, mask);
--	if (dest != BAD_APICID) {
-+	ret = set_desc_affinity(desc, mask, &dest);
-+	if (!ret) {
- 		/* Only the high 8 bits are valid. */
- 		dest = SET_APIC_LOGICAL_ID(dest);
- 		__target_IO_APIC_irq(irq, dest, cfg);
--		ret = 0;
- 	}
- 	spin_unlock_irqrestore(&ioapic_lock, flags);
- 
-@@ -3351,8 +3352,7 @@ static int set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct msi_msg msg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-@@ -3384,8 +3384,7 @@ ir_set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	if (get_irte(irq, &irte))
- 		return -1;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	irte.vector = cfg->vector;
-@@ -3567,8 +3566,7 @@ static int dmar_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct msi_msg msg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-@@ -3623,8 +3621,7 @@ static int hpet_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct msi_msg msg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-@@ -3730,8 +3727,7 @@ static int set_ht_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	struct irq_cfg *cfg;
- 	unsigned int dest;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	cfg = desc->chip_data;
-diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
-index a5371ec..cf69c59 100644
---- a/arch/x86/kernel/apic/x2apic_cluster.c
-+++ b/arch/x86/kernel/apic/x2apic_cluster.c
-@@ -148,10 +148,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 			break;
- 	}
- 
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_logical_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_logical_apicid, cpu);
- }
- 
- static unsigned int x2apic_cluster_phys_get_apic_id(unsigned long x)
-diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
-index a8989aa..8972f38 100644
---- a/arch/x86/kernel/apic/x2apic_phys.c
-+++ b/arch/x86/kernel/apic/x2apic_phys.c
-@@ -146,10 +146,7 @@ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 			break;
- 	}
- 
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_apicid, cpu);
- }
- 
- static unsigned int x2apic_phys_get_apic_id(unsigned long x)
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index b684bb3..d56b0ef 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -225,10 +225,7 @@ uv_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
- 		if (cpumask_test_cpu(cpu, cpu_online_mask))
- 			break;
- 	}
--	if (cpu < nr_cpu_ids)
--		return per_cpu(x86_cpu_to_apicid, cpu);
--
--	return BAD_APICID;
-+	return per_cpu(x86_cpu_to_apicid, cpu);
- }
- 
- static unsigned int x2apic_get_apic_id(unsigned long x)
-diff --git a/arch/x86/kernel/uv_irq.c b/arch/x86/kernel/uv_irq.c
-index 61d805d..ece73d8 100644
---- a/arch/x86/kernel/uv_irq.c
-+++ b/arch/x86/kernel/uv_irq.c
-@@ -215,8 +215,7 @@ static int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 	unsigned long mmr_offset;
- 	unsigned mmr_pnode;
- 
--	dest = set_desc_affinity(desc, mask);
--	if (dest == BAD_APICID)
-+	if (set_desc_affinity(desc, mask, &dest))
- 		return -1;
- 
- 	mmr_value = 0;
+> Probably this is not a problem of kernel, maybe it's
+> a problem of your initial ramdisk, or something wrong with
+> your root filesystem.
+>
+> Does changing "root=LABEL=/" to "root=/dev/XXX" help?
+> Where "/dev/XXX" is your root filesystem.
+>
