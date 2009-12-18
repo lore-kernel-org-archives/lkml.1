@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZLRM6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZLRNEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752285AbZLRM6K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 07:58:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbZLRM6B
+	id S1753247AbZLRNEp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 08:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZLRNEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 07:58:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45282 "EHLO hera.kernel.org"
+	Fri, 18 Dec 2009 08:04:36 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45170 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbZLRM5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 07:57:42 -0500
+	id S1751473AbZLRM5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 07:57:09 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, awalls@radix.net,
        linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
@@ -16,340 +16,486 @@ To: torvalds@linux-foundation.org, awalls@radix.net,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, peterz@infradead.org, johannes@sipsolutions.net,
        andi@firstfloor.org
-Subject: 
-Date: Fri, 18 Dec 2009 21:57:41 +0900
-Message-Id: <1261141088-2014-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Mike Galbraith <efault@gmx.de>
+Subject: [PATCH 01/27] sched: rename preempt_notifiers to sched_notifiers and refactor implementation
+Date: Fri, 18 Dec 2009 21:57:42 +0900
+Message-Id: <1261141088-2014-2-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
+In-Reply-To: <1261141088-2014-1-git-send-email-tj@kernel.org>
+References: <1261141088-2014-1-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [RFC PATCHSET] concurrency managed workqueue, take#2
+Rename preempt_notifiers to sched_notifiers and move it to sched.h.
+Also, refactor implementation in sched.c such that adding new
+callbacks is easier.
+
+This patch does not introduce any functional change and in fact
+generates the same binary at least with my configuration (x86_64 SMP,
+kvm and some debug options).
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/ia64/kvm/Kconfig    |    2 +-
+ arch/powerpc/kvm/Kconfig |    2 +-
+ arch/s390/kvm/Kconfig    |    2 +-
+ arch/x86/kvm/Kconfig     |    2 +-
+ include/linux/kvm_host.h |    4 +-
+ include/linux/preempt.h  |   48 --------------------
+ include/linux/sched.h    |   53 +++++++++++++++++++++-
+ init/Kconfig             |    2 +-
+ kernel/sched.c           |  108 +++++++++++++++++++---------------------------
+ virt/kvm/kvm_main.c      |   26 +++++------
+ 10 files changed, 113 insertions(+), 136 deletions(-)
+
+diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
+index ef3e7be..a38b72e 100644
+--- a/arch/ia64/kvm/Kconfig
++++ b/arch/ia64/kvm/Kconfig
+@@ -22,7 +22,7 @@ config KVM
+ 	depends on HAVE_KVM && MODULES && EXPERIMENTAL
+ 	# for device assignment:
+ 	depends on PCI
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select ANON_INODES
+ 	select HAVE_KVM_IRQCHIP
+ 	select KVM_APIC_ARCHITECTURE
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 07703f7..d3a65c6 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -18,7 +18,7 @@ if VIRTUALIZATION
+ 
+ config KVM
+ 	bool
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select ANON_INODES
+ 
+ config KVM_BOOK3S_64_HANDLER
+diff --git a/arch/s390/kvm/Kconfig b/arch/s390/kvm/Kconfig
+index 6ee55ae..a0adddd 100644
+--- a/arch/s390/kvm/Kconfig
++++ b/arch/s390/kvm/Kconfig
+@@ -18,7 +18,7 @@ if VIRTUALIZATION
+ config KVM
+ 	tristate "Kernel-based Virtual Machine (KVM) support"
+ 	depends on HAVE_KVM && EXPERIMENTAL
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select ANON_INODES
+ 	---help---
+ 	  Support hosting paravirtualized guest machines using the SIE
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index 4cd4983..fd38f79 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -22,7 +22,7 @@ config KVM
+ 	depends on HAVE_KVM
+ 	# for device assignment:
+ 	depends on PCI
+-	select PREEMPT_NOTIFIERS
++	select SCHED_NOTIFIERS
+ 	select MMU_NOTIFIER
+ 	select ANON_INODES
+ 	select HAVE_KVM_IRQCHIP
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index bd5a616..8079759 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -74,8 +74,8 @@ void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+ 
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	struct preempt_notifier preempt_notifier;
++#ifdef CONFIG_SCHED_NOTIFIERS
++	struct sched_notifier sched_notifier;
+ #endif
+ 	int vcpu_id;
+ 	struct mutex mutex;
+diff --git a/include/linux/preempt.h b/include/linux/preempt.h
+index 2e681d9..538c675 100644
+--- a/include/linux/preempt.h
++++ b/include/linux/preempt.h
+@@ -93,52 +93,4 @@ do { \
+ 
+ #endif
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-
+-struct preempt_notifier;
+-
+-/**
+- * preempt_ops - notifiers called when a task is preempted and rescheduled
+- * @sched_in: we're about to be rescheduled:
+- *    notifier: struct preempt_notifier for the task being scheduled
+- *    cpu:  cpu we're scheduled on
+- * @sched_out: we've just been preempted
+- *    notifier: struct preempt_notifier for the task being preempted
+- *    next: the task that's kicking us out
+- *
+- * Please note that sched_in and out are called under different
+- * contexts.  sched_out is called with rq lock held and irq disabled
+- * while sched_in is called without rq lock and irq enabled.  This
+- * difference is intentional and depended upon by its users.
+- */
+-struct preempt_ops {
+-	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
+-	void (*sched_out)(struct preempt_notifier *notifier,
+-			  struct task_struct *next);
+-};
+-
+-/**
+- * preempt_notifier - key for installing preemption notifiers
+- * @link: internal use
+- * @ops: defines the notifier functions to be called
+- *
+- * Usually used in conjunction with container_of().
+- */
+-struct preempt_notifier {
+-	struct hlist_node link;
+-	struct preempt_ops *ops;
+-};
+-
+-void preempt_notifier_register(struct preempt_notifier *notifier);
+-void preempt_notifier_unregister(struct preempt_notifier *notifier);
+-
+-static inline void preempt_notifier_init(struct preempt_notifier *notifier,
+-				     struct preempt_ops *ops)
+-{
+-	INIT_HLIST_NODE(&notifier->link);
+-	notifier->ops = ops;
+-}
+-
+-#endif
+-
+ #endif /* __LINUX_PREEMPT_H */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index e898578..6231576 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1211,6 +1211,53 @@ struct sched_rt_entity {
+ #endif
+ };
+ 
++#ifdef CONFIG_SCHED_NOTIFIERS
++
++struct sched_notifier;
++
++/**
++ * sched_notifier_ops - notifiers called for scheduling events
++ * @in: we're about to be rescheduled:
++ *    notifier: struct sched_notifier for the task being scheduled
++ *    cpu:  cpu we're scheduled on
++ * @out: we've just been preempted
++ *    notifier: struct sched_notifier for the task being preempted
++ *    next: the task that's kicking us out
++ *
++ * Please note that in and out are called under different contexts.
++ * out is called with rq lock held and irq disabled while in is called
++ * without rq lock and irq enabled.  This difference is intentional
++ * and depended upon by its users.
++ */
++struct sched_notifier_ops {
++	void (*in)(struct sched_notifier *notifier, int cpu);
++	void (*out)(struct sched_notifier *notifier, struct task_struct *next);
++};
++
++/**
++ * sched_notifier - key for installing scheduler notifiers
++ * @link: internal use
++ * @ops: defines the notifier functions to be called
++ *
++ * Usually used in conjunction with container_of().
++ */
++struct sched_notifier {
++	struct hlist_node link;
++	struct sched_notifier_ops *ops;
++};
++
++void sched_notifier_register(struct sched_notifier *notifier);
++void sched_notifier_unregister(struct sched_notifier *notifier);
++
++static inline void sched_notifier_init(struct sched_notifier *notifier,
++				       struct sched_notifier_ops *ops)
++{
++	INIT_HLIST_NODE(&notifier->link);
++	notifier->ops = ops;
++}
++
++#endif	/* CONFIG_SCHED_NOTIFIERS */
++
+ struct rcu_node;
+ 
+ struct task_struct {
+@@ -1234,9 +1281,9 @@ struct task_struct {
+ 	struct sched_entity se;
+ 	struct sched_rt_entity rt;
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	/* list of struct preempt_notifier: */
+-	struct hlist_head preempt_notifiers;
++#ifdef CONFIG_SCHED_NOTIFIERS
++	/* list of struct sched_notifier: */
++	struct hlist_head sched_notifiers;
+ #endif
+ 
+ 	/*
+diff --git a/init/Kconfig b/init/Kconfig
+index a23da9f..37aefe1 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1249,7 +1249,7 @@ config STOP_MACHINE
+ 
+ source "block/Kconfig"
+ 
+-config PREEMPT_NOTIFIERS
++config SCHED_NOTIFIERS
+ 	bool
+ 
+ source "kernel/Kconfig.locks"
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 18cceee..fe3bab0 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1434,6 +1434,44 @@ static inline void cpuacct_update_stats(struct task_struct *tsk,
+ 		enum cpuacct_stat_index idx, cputime_t val) {}
+ #endif
+ 
++#ifdef CONFIG_SCHED_NOTIFIERS
++
++#define fire_sched_notifiers(p, callback, args...) do {			\
++	struct sched_notifier *__sn;					\
++	struct hlist_node *__pos;					\
++									\
++	hlist_for_each_entry(__sn, __pos, &(p)->sched_notifiers, link)	\
++		__sn->ops->callback(__sn , ##args);			\
++} while (0)
++
++/**
++ * sched_notifier_register - register scheduler notifier
++ * @notifier: notifier struct to register
++ */
++void sched_notifier_register(struct sched_notifier *notifier)
++{
++	hlist_add_head(&notifier->link, &current->sched_notifiers);
++}
++EXPORT_SYMBOL_GPL(sched_notifier_register);
++
++/**
++ * sched_notifier_unregister - unregister scheduler notifier
++ * @notifier: notifier struct to unregister
++ *
++ * This is safe to call from within a scheduler notifier.
++ */
++void sched_notifier_unregister(struct sched_notifier *notifier)
++{
++	hlist_del(&notifier->link);
++}
++EXPORT_SYMBOL_GPL(sched_notifier_unregister);
++
++#else	/* !CONFIG_SCHED_NOTIFIERS */
++
++#define fire_sched_notifiers(p, callback, args...)	do { } while (0)
++
++#endif	/* CONFIG_SCHED_NOTIFIERS */
++
+ static inline void inc_cpu_load(struct rq *rq, unsigned long load)
+ {
+ 	update_load_add(&rq->load, load);
+@@ -2535,8 +2573,8 @@ static void __sched_fork(struct task_struct *p)
+ 	p->se.on_rq = 0;
+ 	INIT_LIST_HEAD(&p->se.group_node);
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	INIT_HLIST_HEAD(&p->preempt_notifiers);
++#ifdef CONFIG_SCHED_NOTIFIERS
++	INIT_HLIST_HEAD(&p->sched_notifiers);
+ #endif
+ 
+ 	/*
+@@ -2636,64 +2674,6 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+ 	task_rq_unlock(rq, &flags);
+ }
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-
+-/**
+- * preempt_notifier_register - tell me when current is being preempted & rescheduled
+- * @notifier: notifier struct to register
+- */
+-void preempt_notifier_register(struct preempt_notifier *notifier)
+-{
+-	hlist_add_head(&notifier->link, &current->preempt_notifiers);
+-}
+-EXPORT_SYMBOL_GPL(preempt_notifier_register);
+-
+-/**
+- * preempt_notifier_unregister - no longer interested in preemption notifications
+- * @notifier: notifier struct to unregister
+- *
+- * This is safe to call from within a preemption notifier.
+- */
+-void preempt_notifier_unregister(struct preempt_notifier *notifier)
+-{
+-	hlist_del(&notifier->link);
+-}
+-EXPORT_SYMBOL_GPL(preempt_notifier_unregister);
+-
+-static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
+-{
+-	struct preempt_notifier *notifier;
+-	struct hlist_node *node;
+-
+-	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
+-		notifier->ops->sched_in(notifier, raw_smp_processor_id());
+-}
+-
+-static void
+-fire_sched_out_preempt_notifiers(struct task_struct *curr,
+-				 struct task_struct *next)
+-{
+-	struct preempt_notifier *notifier;
+-	struct hlist_node *node;
+-
+-	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
+-		notifier->ops->sched_out(notifier, next);
+-}
+-
+-#else /* !CONFIG_PREEMPT_NOTIFIERS */
+-
+-static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
+-{
+-}
+-
+-static void
+-fire_sched_out_preempt_notifiers(struct task_struct *curr,
+-				 struct task_struct *next)
+-{
+-}
+-
+-#endif /* CONFIG_PREEMPT_NOTIFIERS */
+-
+ /**
+  * prepare_task_switch - prepare to switch tasks
+  * @rq: the runqueue preparing to switch
+@@ -2711,7 +2691,7 @@ static inline void
+ prepare_task_switch(struct rq *rq, struct task_struct *prev,
+ 		    struct task_struct *next)
+ {
+-	fire_sched_out_preempt_notifiers(prev, next);
++	fire_sched_notifiers(prev, out, next);
+ 	prepare_lock_switch(rq, next);
+ 	prepare_arch_switch(next);
+ }
+@@ -2755,7 +2735,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	perf_event_task_sched_in(current, cpu_of(rq));
+ 	finish_lock_switch(rq, prev);
+ 
+-	fire_sched_in_preempt_notifiers(current);
++	fire_sched_notifiers(current, in, raw_smp_processor_id());
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
+@@ -9615,8 +9595,8 @@ void __init sched_init(void)
+ 
+ 	set_load_weight(&init_task);
+ 
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
++#ifdef CONFIG_SCHED_NOTIFIERS
++	INIT_HLIST_HEAD(&init_task.sched_notifiers);
+ #endif
+ 
+ #ifdef CONFIG_SMP
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index e1f2bf8..255b07e 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -77,7 +77,7 @@ static atomic_t hardware_enable_failed;
+ struct kmem_cache *kvm_vcpu_cache;
+ EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
+ 
+-static __read_mostly struct preempt_ops kvm_preempt_ops;
++static __read_mostly struct sched_notifier_ops kvm_sched_notifier_ops;
+ 
+ struct dentry *kvm_debugfs_dir;
+ 
+@@ -109,7 +109,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+ 
+ 	mutex_lock(&vcpu->mutex);
+ 	cpu = get_cpu();
+-	preempt_notifier_register(&vcpu->preempt_notifier);
++	sched_notifier_register(&vcpu->sched_notifier);
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
+ }
+@@ -118,7 +118,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	preempt_disable();
+ 	kvm_arch_vcpu_put(vcpu);
+-	preempt_notifier_unregister(&vcpu->preempt_notifier);
++	sched_notifier_unregister(&vcpu->sched_notifier);
+ 	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
+@@ -1192,7 +1192,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ 	if (IS_ERR(vcpu))
+ 		return PTR_ERR(vcpu);
+ 
+-	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
++	sched_notifier_init(&vcpu->sched_notifier, &kvm_sched_notifier_ops);
+ 
+ 	r = kvm_arch_vcpu_setup(vcpu);
+ 	if (r)
+@@ -2026,23 +2026,21 @@ static struct sys_device kvm_sysdev = {
+ struct page *bad_page;
+ pfn_t bad_pfn;
+ 
+-static inline
+-struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
++static inline struct kvm_vcpu *sched_notifier_to_vcpu(struct sched_notifier *sn)
+ {
+-	return container_of(pn, struct kvm_vcpu, preempt_notifier);
++	return container_of(sn, struct kvm_vcpu, sched_notifier);
+ }
+ 
+-static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
++static void kvm_sched_in(struct sched_notifier *sn, int cpu)
+ {
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
++	struct kvm_vcpu *vcpu = sched_notifier_to_vcpu(sn);
+ 
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ }
+ 
+-static void kvm_sched_out(struct preempt_notifier *pn,
+-			  struct task_struct *next)
++static void kvm_sched_out(struct sched_notifier *sn, struct task_struct *next)
+ {
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
++	struct kvm_vcpu *vcpu = sched_notifier_to_vcpu(sn);
+ 
+ 	kvm_arch_vcpu_put(vcpu);
+ }
+@@ -2115,8 +2113,8 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
+ 		goto out_free;
+ 	}
+ 
+-	kvm_preempt_ops.sched_in = kvm_sched_in;
+-	kvm_preempt_ops.sched_out = kvm_sched_out;
++	kvm_sched_notifier_ops.in = kvm_sched_in;
++	kvm_sched_notifier_ops.out = kvm_sched_out;
+ 
+ 	kvm_init_debug();
+ 
+-- 
+1.6.4.2
 
-Hello, all.
-
-This is the second take of cmwq (concurrency managed workqueue).  It's
-on top of linus#master 55639353a0035052d9ea6cfe4dde0ac7fcbb2c9f
-(v2.6.33-rc1).  Git tree is available at
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git review-cmwq
-
-Quilt series is available at
-
-  http://master.kernel.org/~tj/patches/review-cmwq.tar.gz
-
-
-ISSUES FROM THE FIRST RFC AND THEIR RESOLUTIONS
-===============================================
-
-The first RFC round[1] was in October.  Several issues were raised but
-there was no objection against the basic design.  Issued raised there
-and later are
-
-A. Hackish scheduler notification implemented by overriding scheduler
-   class needs to be made generic.
-
-B. Scheduler local wake up function needs to be reimplemented and
-   share code path with try_to_wake_up().
-
-C. Dual-colored workqueue flushing scheme may become a scalability
-   issue.
-
-D. There are users which end up issuing too many concurrent works
-   unless throttled somehow (xfs).
-
-E. Single thread workqueue is broken.  Works queued to a single thread
-   workqueue require strict ordering.
-
-F. The patch to actually implement cmwq is too large and needs to be
-   split.
-
-A, B are scheduler related and will be discussed further later with
-other unresolved issues.
-
-C is solved by implementing multi colored flush.  It has two
-properties which make it resistant to scalability issues.  First, 14
-flushes can be in progress simultaneously.  Second, when all the
-colors are used up, new flushers don't wait in line and get processed
-one by one.  All the overflowed ones get assigned the same color and
-processed in batch when a color frees up, so throughput will increase
-along with congestion.
-
-D is solved by introducing max_active per cpu_workqueue_struct.  If
-the number of active (running or pending for execution) works goes
-over the max, works are put on to delayed_works list; thus giving
-workqueues the ability to throttle concurrency.  The original
-freeze/thaw implementation is replaced with max_active based one
-(max_active is temporarily quenched to zero while frozen), so the
-increase in the overall complexity isn't too great.
-
-E also is implemented using max_active.  SINGLE_THREAD flag is
-replaced with SINGLE_CPU.  CWQs dynamically arbitrate which CWQ is
-gonna serve SINGLE_CPU workqueue using atomic accesses to
-wq->single_cpu so that only one CWQ is active at any given time.
-Combined with max_active set to one, this results in the same queuing
-and execution behavior as single thread workqueues without requiring
-dedicated thread.
-
-F is solved by introducing workers, gcwqs, trustee, shared worklist
-and concurrency managed worker pool in separate steps.  Although
-logics which are gradually added carry superfluous parts which will
-only be fully useful after complete implementation, each step achieves
-pretty good execution coverage of new logics and should be useful as
-review and bisection step.
-
-
-UN/HALF-RESOLVED ISSUES
-=======================
-
-A. After a couple of tries, scheduler notification is currently
-   implemented as generalized version of preempt_notifiers which used
-   to be used only by kvm.  Two more notifications - wakeup and sleep
-   - were added.  Ingo was unsatisfied with the fact that there now
-   are three different notification-like mechanisms living around the
-   scheduler code and refused to accept the new notifiers unless all
-   the scheduler notification mechanisms are unified.
-
-   To prevent having cmwq patches floating too long without a stable
-   branch to be tested in linux-next, it was agreed to do this in the
-   following stages[2].
-
-   1. Apply patches which don't change scheduler behavior but will
-      reduce conflicts to sched tree.
-
-   2. Create a new sched branch which will contain the new notifiers.
-      This branch will be stable and will end up in linux-next but
-      won't be pushed to Linus unless the notification mechanisms are
-      unified.
-
-   3. Base cmwq branch on top of the devel branch created in #2 and
-      publish it to linux-next for testing.
-
-   4. Unify scheduler notification mechanisms in the sched devel
-      branch and when it's done push it and cmwq to Linus.
-
-B. set_cpus_allowed_ptr() doesn't move threads bound with
-   kthread_bind() or to CPUs which don't have active set.  Active
-   state encloses online state and used by scheduler to prevent
-   scheduling threads on a dying CPU unless strictly necessary.
-
-   However, it's desirable to have PF_THREAD_BOUND for kworkers during
-   usual operation and new and rescue workers need to be able to
-   migrate to CPUs in CPU_DOWN_PREPARE state to guarantee forward
-   progress to wq/work flushes from DOWN_PREPARE callbacks.  Also, if
-   a CPU comes back online, left running workers need to be rebound to
-   the CPU ignoring PF_THREAD_BOUND restriction.
-
-   Using kthread_bind() isn't feasible because kthread_bind() isn't
-   synchronized against cpu online state and is allowed to put a
-   thread on a dead cpu.
-
-   Originally, force_cpus_allowed() was added which bypasses
-   PF_THREAD_BOUND and active check.  The current version adds
-   __set_cpus_allowed() function which takes @force param to do about
-   the same thing (new version properly checks online state so it will
-   never put a task on a dead cpu).  This is still temporary.
-
-   I think the cleanest solution here would be making sure that nobody
-   depends on kthread_bind() being able to put a task on a dead cpu
-   and then allowing kthread_bind() to bind a task to cpus which are
-   online by calling __set_cpus_allowed().  So, the interface visible
-   outside will be set_cpus_allowed_ptr() for regular cases and
-   kthread_bind() for kthreads.  I'll be happy to pursue this path if
-   it can be agreed on.
-
-C. While discussing issue B [3], Peter Zijlstra objected to the
-   basic design of cmwq.  Peter's objections are...
-
-   o1. It isn't a generic worker pool mechanism in that it can't serve
-       cpu-intensive workloads because all works are affined to local
-       cpus.
-
-   o2. Allowing long (> 5s for example) running works isn't a good
-       idea and by not allowing long running works, the need to
-       migrate back workers when cpu comes back online can be removed.
-
-   o3. It's a fork-fest.
-
-   My rationales for each are
-
-   r1. The first design goal of cmwq is solving the issues the current
-       workqueue implementation has including hard to detect
-       deadlocks, unexpectedly long latencies caused by long running
-       works which share the workqueue and excessive number of worker
-       threads necessitated by each workqueue having its own workers.
-
-       cmwq solves these issues quite efficiently without depending on
-       fragile and complex heuristics.  Concurrency is managed to
-       minimal yet sufficient level, workers are reused as much as
-       possible and only necessary number of workers are created and
-       maintained.
-
-       cmwq is cpu affine because its target workloads are not cpu
-       intensive.  Most works are context hungry not cpu cycle hungry
-       and as such providing the necessary context (or concurrency)
-       from the local CPU is the most efficient way to serve them.
-
-       The second design goal is to unify different async mechanisms
-       in kernel.  Although cmwq wouldn't be able to serve CPU cycle
-       intensive workload, most in-kernel async mechanisms are there
-       to provide context and concurrency and they all can be
-       converted to use cmwq.
-
-       Async workloads which need to burn large amount of CPU cycles
-       such as encryption and IO checksumming have pretty different
-       requirements and worker pool designed to serve them would
-       probably require fair amount of heuristics to determine the
-       appropriate level of concurrency.  Workqueue API may be
-       extended to cover such workloads by providing an anonymous CPU
-       for those works to bind to but the underlying operation would
-       be fairly different.  If this is something necessary, let's
-       pursue it but I don't think it's exclusive with cmwq.
-
-   r2. The only thing necessary to support long running works is the
-       ability to rebind workers to the cpu if it comes back online
-       and allowing long running works will allow most existing worker
-       pools to be served by cmwq and also make CPU down/up latencies
-       more predictable.
-
-   r3. I don't think there is any way to implement shared worker pool
-       without forking when more concurrency is required and the
-       actual amount of forking would be low as cmwq scales the number
-       of idle workers to keep according to the current concurrency
-       level and uses rather long timeout (5min) for idlers.
-
-We know what to do about A.  I'm pretty sure B can be solved one way
-or another.  So, the biggest problem here is that whether the basic
-design of cmwq itself is agreed on.  Being the author, I'm probably
-pretty biased but I really think it's a good solution for the problems
-it tries to solve and many other developers seem to agree on that
-according to the first RFC round.  So, let's discuss.  If I missed
-some points of the objection, please go ahead and add.
-
-
-CHANGES FROM THE LAST RFC TAKE[1] AND PREP PATCHSET[4]
-======================================================
-
-* All scheduler related parts - notification, forced task migration
-  and wake up from notification are re-done.  This part is still in
-  flux and likely to change further.
-
-* Barrier works are now uncolored.  They don't participate in
-  workqueue flushing and don't contribute to the active count.  This
-  change is necessary to enable max_active throttling.
-
-* max_active throttling is added and freezing is reimplemented using
-  it.  Fixed limit on total number of workers is removed.  It's now
-  regulated by max_active.
-
-* Singlethread workqueue is un-removed and works properly.  It's
-  implemented as SINGLE_CPU workqueue with max_active == 1.
-
-* The monster patch to implement cmwq is split into logical steps.
-
-This patchset contains the following 27 patches.
-
- 0001-sched-rename-preempt_notifiers-to-sched_notifiers-an.patch
- 0002-sched-refactor-try_to_wake_up.patch
- 0003-sched-implement-__set_cpus_allowed.patch
- 0004-sched-make-sched_notifiers-unconditional.patch
- 0005-sched-add-wakeup-sleep-sched_notifiers-and-allow-NUL.patch
- 0006-sched-implement-try_to_wake_up_local.patch
- 0007-acpi-use-queue_work_on-instead-of-binding-workqueue-.patch
- 0008-stop_machine-reimplement-without-using-workqueue.patch
- 0009-workqueue-misc-cosmetic-updates.patch
- 0010-workqueue-merge-feature-parameters-into-flags.patch
- 0011-workqueue-define-both-bit-position-and-mask-for-work.patch
- 0012-workqueue-separate-out-process_one_work.patch
- 0013-workqueue-temporarily-disable-workqueue-tracing.patch
- 0014-workqueue-kill-cpu_populated_map.patch
- 0015-workqueue-update-cwq-alignement.patch
- 0016-workqueue-reimplement-workqueue-flushing-using-color.patch
- 0017-workqueue-introduce-worker.patch
- 0018-workqueue-reimplement-work-flushing-using-linked-wor.patch
- 0019-workqueue-implement-per-cwq-active-work-limit.patch
- 0020-workqueue-reimplement-workqueue-freeze-using-max_act.patch
- 0021-workqueue-introduce-global-cwq-and-unify-cwq-locks.patch
- 0022-workqueue-implement-worker-states.patch
- 0023-workqueue-reimplement-CPU-hotplugging-support-using-.patch
- 0024-workqueue-make-single-thread-workqueue-shared-worker.patch
- 0025-workqueue-use-shared-worklist-and-pool-all-workers-p.patch
- 0026-workqueue-implement-concurrency-managed-dynamic-work.patch
- 0027-workqueue-increase-max_active-of-keventd-and-kill-cu.patch
-
-0001-0006 are scheduler related changes.
-
-0007-0008 changes two unusual users.  After the change, acpi creates
-per-cpu workers which weren't necessary before but in the end it won't
-be doing anything suboptimal.  stop_machine won't use workqueue from
-this point on.
-
-0009-0013 do misc preparations.  0007-0013 stayed about the same from
-the previous round.
-
-0014 kills cpu_populated_map, creates workers for all possible workers
-and simplifies CPU hotplugging.
-
-0015-0024 introduces new constructs step by step and reimplements
-workqueue features so that they can be used with shared worker pool.
-
-0025 makes all workqueues share per-cpu worklist and pool their
-workers.  At this stage, all the pieces other than concurrency managed
-worker pool is there.
-
-0026 implements concurrency managed worker pool.  Even after this,
-there is no visible behavior different to workqueue users as all
-workqueues still have max_active of 1.
-
-0027 increases max_active of keventd.  This patch isn't signed off
-yet.  lockdep annotations need to be updated.
-
-Each feature of cmwq has been verified using test scenarios (well, I
-tried, at least).  In a reply, I'll attach the source of the test
-module I used.
-
-Things to do from here are...
-
-* Hopefully, establish a stable tree.
-
-* Audit workqueue users, drop unnecessary workqueues and make them use
-  keventd.
-
-* Restore workqueue tracing.
-
-* Replace various in-kernel async mechanisms which are there to
-  provide context and concurrency.
-
-Diffstat follows.
-
- arch/ia64/kernel/smpboot.c   |    2 
- arch/ia64/kvm/Kconfig        |    1 
- arch/powerpc/kvm/Kconfig     |    1 
- arch/s390/kvm/Kconfig        |    1 
- arch/x86/kernel/smpboot.c    |    2 
- arch/x86/kvm/Kconfig         |    1 
- drivers/acpi/osl.c           |   41 
- include/linux/kvm_host.h     |    4 
- include/linux/preempt.h      |   48 
- include/linux/sched.h        |   71 +
- include/linux/stop_machine.h |    6 
- include/linux/workqueue.h    |   88 +
- init/Kconfig                 |    4 
- init/main.c                  |    2 
- kernel/power/process.c       |   21 
- kernel/sched.c               |  329 +++--
- kernel/stop_machine.c        |  151 ++
- kernel/trace/Kconfig         |    4 
- kernel/workqueue.c           | 2640 +++++++++++++++++++++++++++++++++++++------
- virt/kvm/kvm_main.c          |   26 
- 20 files changed, 2783 insertions(+), 660 deletions(-)
-
-Thanks.
-
---
-tejun
-
-[1] http://thread.gmane.org/gmane.linux.kernel/896268
-[2] http://patchwork.kernel.org/patch/63119/
-[3] http://thread.gmane.org/gmane.linux.kernel/921267
-[4] http://thread.gmane.org/gmane.linux.kernel/917570
