@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZLRRWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZLRRYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbZLRRWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZLRRWQ
+	id S1755151AbZLRRYH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZLRRYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:22:16 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:3369 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbZLRRWP (ORCPT
+	Fri, 18 Dec 2009 12:24:06 -0500
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:41991 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753869AbZLRRYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:22:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=N1wmY4g0IvfoR7waM5qqP+MtBesuEGwJrsyoAc4OttqHuhiUit6yxeOnLrTEp4g2L6
-         Bt7cCjubnUbXMux3WRf7k2RaBGMsRdUy8PgXKdPI8xgil74rojOBnGGzj8H2Kz22DcLA
-         oburNZqyDH3p1cTs+mJqbhFzc8m2UQWLv0yYw=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH] Staging: vt665x depend on WIRELESS
-Date: Fri, 18 Dec 2009 20:23:08 +0300
-Message-Id: <1261156988-14346-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.5.1
+	Fri, 18 Dec 2009 12:24:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=S67/hs+qY64uqupmmqFUR5O26X7mL2h+wtEbZ0ff3dj4GFmgIMnaXj4/lnAqu8YZvtCj3MQ4QifKrB+sV45VgNeiQZ56KORDMkdNBMgbwX86zgofgcDBf68gEJiGFd9v;
+Date: Fri, 18 Dec 2009 09:23:23 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/9] x86: check range in update range
+Message-ID: <20091218092323.2a648faf@jbarnes-piketon>
+In-Reply-To: <4B2B4F93.2080203@kernel.org>
+References: <4B2B4C19.6010402@kernel.org>
+	<4B2B4F93.2080203@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix build error when NET or/and WIRELESS are not enabled.
+On Fri, 18 Dec 2009 01:46:59 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/vt6655/Kconfig |    2 +-
- drivers/staging/vt6656/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> fend off wrong range
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
 
-diff --git a/drivers/staging/vt6655/Kconfig b/drivers/staging/vt6655/Kconfig
-index 825bbc4..6a186be 100644
---- a/drivers/staging/vt6655/Kconfig
-+++ b/drivers/staging/vt6655/Kconfig
-@@ -1,6 +1,6 @@
- config VT6655
-    tristate "VIA Technologies VT6655 support"
--   depends on PCI
-+   depends on PCI && WIRELESS
-    select WIRELESS_EXT
-    select WEXT_PRIV
-    ---help---
-diff --git a/drivers/staging/vt6656/Kconfig b/drivers/staging/vt6656/Kconfig
-index 87bcd26..6fceae4 100644
---- a/drivers/staging/vt6656/Kconfig
-+++ b/drivers/staging/vt6656/Kconfig
-@@ -1,6 +1,6 @@
- config VT6656
- 	tristate "VIA Technologies VT6656 support"
--	depends on USB
-+	depends on USB && WIRELESS
- 	select WIRELESS_EXT
- 	select WEXT_PRIV
- 	---help---
+This could be merged with the previous patch.
+
 -- 
-1.6.6.rc3
-
+Jesse Barnes, Intel Open Source Technology Center
