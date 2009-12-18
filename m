@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbZLRM60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZLRM75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472AbZLRM60 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 07:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZLRM5h
+	id S1752316AbZLRM75 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 07:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZLRM7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 07:57:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45269 "EHLO hera.kernel.org"
+	Fri, 18 Dec 2009 07:59:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45241 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681AbZLRM5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 07:57:35 -0500
+	id S1750890AbZLRM5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 07:57:17 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, awalls@radix.net,
        linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
@@ -17,9 +17,9 @@ To: torvalds@linux-foundation.org, awalls@radix.net,
        avi@redhat.com, peterz@infradead.org, johannes@sipsolutions.net,
        andi@firstfloor.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 24/27] workqueue: make single thread workqueue shared worker pool friendly
-Date: Fri, 18 Dec 2009 21:58:05 +0900
-Message-Id: <1261141088-2014-25-git-send-email-tj@kernel.org>
+Subject: [PATCH 25/27] workqueue: use shared worklist and pool all workers per cpu
+Date: Fri, 18 Dec 2009 21:58:06 +0900
+Message-Id: <1261141088-2014-26-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1261141088-2014-1-git-send-email-tj@kernel.org>
 References: <1261141088-2014-1-git-send-email-tj@kernel.org>
@@ -27,319 +27,438 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reimplement st (single thread) workqueue so that it's friendly to
-shared worker pool.  It was originally implemented by confining st
-workqueues to use cwq of a fixed cpu and always having a worker for
-the cpu.  This implementation isn't very friendly to shared worker
-pool and suboptimal in that it ends up crossing cpu boundaries often.
+Use gcwq->worklist instead of cwq->worklist and break the strict
+association between a cwq and its worker.  All works queued on a cpu
+are queued on gcwq->worklist and processed by any available worker on
+the gcwq.
 
-Reimplement st workqueue using dynamic single cpu binding and
-cwq->limit.  WQ_SINGLE_THREAD is replaced with WQ_SINGLE_CPU.  In a
-single cpu workqueue, at most single cwq is bound to the wq at any
-given time.  Arbitration is done using atomic accesses to
-wq->single_cpu when queueing a work.  Once bound, the binding stays
-till the workqueue is drained.
+As there no longer is strict association between a cwq and its worker,
+whether a work is executing can now only be determined using
+gcwq->busy_hash[].  [__]find_worker_executing_work() are implemented
+for this and used where it's necessary to find whether a work is being
+executed and if so which worker is executing it.
 
-Note that the binding is never broken while a workqueue is frozen.
-This is because idle cwqs may have works waiting in delayed_works
-queue while frozen.  On thaw, the cwq is restarted if there are any
-delayed works or unbound otherwise.
+After this change, the only association between a cwq and its worker
+is that a cwq puts a worker into shared worker pool on creation and
+kills it on destruction.  As all workqueues are still limited to
+max_active of one, this means that there are always at least as many
+workers as active works and thus there's no danger for deadlock.
 
-When combined with max_active limit of 1, single cpu workqueue has
-exactly the same execution properties as the original single thread
-workqueue while allowing sharing of per-cpu workers.
+The break of strong association between cwqs and workers requires
+somewhat clumsy changes to current_is_keventd() and
+destroy_workqueue().  Dynamic worker pool management will remove both
+clumsy changes.  current_is_keventd() won't be necessary at all as the
+only reason it exists is to avoid queueing a work from a work which
+will be allowed just fine.  The clumsy part of destroy_workqueue() is
+added because a worker can only be destroyed while idle and there's no
+guarantee a worker is idle when its wq is going down.  With dynamic
+pool management, workers are not associated with workqueues at all and
+only idle ones will be submitted to destroy_workqueue() so the code
+won't be necessary anymore.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/workqueue.h |    6 +-
- kernel/workqueue.c        |  139 ++++++++++++++++++++++++++++++++-------------
- 2 files changed, 103 insertions(+), 42 deletions(-)
+ kernel/workqueue.c |  192 +++++++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 154 insertions(+), 38 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 7a260df..b012da7 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -212,7 +212,7 @@ static inline bool work_static(struct work_struct *work) { return false; }
- 
- enum {
- 	WQ_FREEZEABLE		= 1 << 0, /* freeze during suspend */
--	WQ_SINGLE_THREAD	= 1 << 1, /* no per-cpu worker */
-+	WQ_SINGLE_CPU		= 1 << 1, /* only single cpu at a time */
- };
- 
- extern struct workqueue_struct *
-@@ -241,9 +241,9 @@ __create_workqueue_key(const char *name, unsigned int flags, int max_active,
- #define create_workqueue(name)					\
- 	__create_workqueue((name), 0, 1)
- #define create_freezeable_workqueue(name)			\
--	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD, 1)
-+	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_CPU, 1)
- #define create_singlethread_workqueue(name)			\
--	__create_workqueue((name), WQ_SINGLE_THREAD, 1)
-+	__create_workqueue((name), WQ_SINGLE_CPU, 1)
- 
- extern void destroy_workqueue(struct workqueue_struct *wq);
- 
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 265f480..19cfa12 100644
+index 19cfa12..f38d263 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -114,8 +114,7 @@ struct global_cwq {
- } ____cacheline_aligned_in_smp;
- 
- /*
-- * The per-CPU workqueue (if single thread, we always use the first
-- * possible cpu).  The lower WORK_STRUCT_FLAG_BITS of
-+ * The per-CPU workqueue.  The lower WORK_STRUCT_FLAG_BITS of
-  * work_struct->data are used for flags and thus cwqs need to be
-  * aligned at two's power of the number of flag bits.
+@@ -72,7 +72,6 @@ enum {
   */
-@@ -159,6 +158,8 @@ struct workqueue_struct {
- 	struct list_head	flusher_queue;	/* F: flush waiters */
- 	struct list_head	flusher_overflow; /* F: flush overflow list */
  
-+	unsigned long		single_cpu;	/* cpu for single cpu wq */
+ struct global_cwq;
+-struct cpu_workqueue_struct;
+ 
+ struct worker {
+ 	/* on idle list while idle, on busy hash table while busy */
+@@ -85,7 +84,6 @@ struct worker {
+ 	struct list_head	scheduled;	/* L: scheduled works */
+ 	struct task_struct	*task;		/* I: worker task */
+ 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
+-	struct cpu_workqueue_struct *cwq;	/* I: the associated cwq */
+ 	unsigned int		flags;		/* L: flags */
+ 	int			id;		/* I: worker id */
+ };
+@@ -95,6 +93,7 @@ struct worker {
+  */
+ struct global_cwq {
+ 	spinlock_t		lock;		/* the gcwq lock */
++	struct list_head	worklist;	/* L: list of pending works */
+ 	unsigned int		cpu;		/* I: the associated cpu */
+ 	unsigned int		flags;		/* L: GCWQ_* flags */
+ 
+@@ -120,7 +119,6 @@ struct global_cwq {
+  */
+ struct cpu_workqueue_struct {
+ 	struct global_cwq	*gcwq;		/* I: the associated gcwq */
+-	struct list_head worklist;
+ 	struct worker		*worker;
+ 	struct workqueue_struct *wq;		/* I: the owning workqueue */
+ 	int			work_color;	/* L: current color */
+@@ -338,6 +336,32 @@ static inline struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
+ 			WORK_STRUCT_WQ_DATA_MASK);
+ }
+ 
++/* Return the first worker.  Safe with preemption disabled */
++static struct worker *first_worker(struct global_cwq *gcwq)
++{
++	if (unlikely(list_empty(&gcwq->idle_list)))
++		return NULL;
 +
- 	int			saved_max_active; /* I: saved cwq max_active */
- 	const char		*name;		/* I: workqueue name */
- #ifdef CONFIG_LOCKDEP
-@@ -289,8 +290,6 @@ static DEFINE_PER_CPU(struct global_cwq, global_cwq);
- 
- static int worker_thread(void *__worker);
- 
--static int singlethread_cpu __read_mostly;
--
- static struct global_cwq *get_gcwq(unsigned int cpu)
- {
- 	return &per_cpu(global_cwq, cpu);
-@@ -302,14 +301,6 @@ static struct cpu_workqueue_struct *get_cwq(unsigned int cpu,
- 	return per_cpu_ptr(wq->cpu_wq, cpu);
- }
- 
--static struct cpu_workqueue_struct *target_cwq(unsigned int cpu,
--					       struct workqueue_struct *wq)
--{
--	if (unlikely(wq->flags & WQ_SINGLE_THREAD))
--		cpu = singlethread_cpu;
--	return get_cwq(cpu, wq);
--}
--
- static unsigned int work_color_to_flags(int color)
- {
- 	return color << WORK_STRUCT_COLOR_SHIFT;
-@@ -403,17 +394,84 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
- 	wake_up_process(cwq->worker->task);
- }
- 
--static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
--			 struct work_struct *work)
++	return list_first_entry(&gcwq->idle_list, struct worker, entry);
++}
++
 +/**
-+ * cwq_unbind_single_cpu - unbind cwq from single cpu workqueue processing
-+ * @cwq: cwq to unbind
++ * wake_up_worker - wake up an idle worker
++ * @gcwq: gcwq to wake worker for
 + *
-+ * Try to unbind @cwq from single cpu workqueue processing.  If
-+ * @cwq->wq is frozen, unbind is delayed till the workqueue is thawed.
++ * Wake up the first idle worker of @gcwq.
 + *
 + * CONTEXT:
 + * spin_lock_irq(gcwq->lock).
 + */
-+static void cwq_unbind_single_cpu(struct cpu_workqueue_struct *cwq)
- {
--	struct cpu_workqueue_struct *cwq = target_cwq(cpu, wq);
-+	struct workqueue_struct *wq = cwq->wq;
- 	struct global_cwq *gcwq = cwq->gcwq;
++static void wake_up_worker(struct global_cwq *gcwq)
++{
++	struct worker *worker = first_worker(gcwq);
 +
-+	BUG_ON(wq->single_cpu != gcwq->cpu);
-+	/*
-+	 * Unbind from workqueue if @cwq is not frozen.  If frozen,
-+	 * thaw_workqueues() will either restart processing on this
-+	 * cpu or unbind if empty.  This keeps works queued while
-+	 * frozen fully ordered and flushable.
-+	 */
-+	if (likely(!(gcwq->flags & GCWQ_FREEZING))) {
-+		smp_wmb();	/* paired with cmpxchg() in __queue_work() */
-+		wq->single_cpu = NR_CPUS;
-+	}
++	if (likely(worker))
++		wake_up_process(worker->task);
 +}
 +
-+static void __queue_work(unsigned int req_cpu, struct workqueue_struct *wq,
-+			 struct work_struct *work)
+ /**
+  * busy_worker_head - return the busy hash head for a work
+  * @gcwq: gcwq of interest
+@@ -366,13 +390,67 @@ static struct hlist_head *busy_worker_head(struct global_cwq *gcwq,
+ }
+ 
+ /**
+- * insert_work - insert a work into cwq
++ * __find_worker_executing_work - find worker which is executing a work
++ * @gcwq: gcwq of interest
++ * @bwh: hash head as returned by busy_worker_head()
++ * @work: work to find worker for
++ *
++ * Find a worker which is executing @work on @gcwq.  @bwh should be
++ * the hash head obtained by calling busy_worker_head() with the same
++ * work.
++ *
++ * CONTEXT:
++ * spin_lock_irq(gcwq->lock).
++ *
++ * RETURNS:
++ * Pointer to worker which is executing @work if found, NULL
++ * otherwise.
++ */
++static struct worker *__find_worker_executing_work(struct global_cwq *gcwq,
++						   struct hlist_head *bwh,
++						   struct work_struct *work)
 +{
-+	struct global_cwq *gcwq;
-+	struct cpu_workqueue_struct *cwq;
- 	struct list_head *worklist;
-+	unsigned int cpu;
- 	unsigned long flags;
-+	bool arbitrate;
- 
- 	debug_work_activate(work);
- 
--	spin_lock_irqsave(&gcwq->lock, flags);
-+	if (!(wq->flags & WQ_SINGLE_CPU)) {
-+		/* just use the requested cpu for multicpu workqueues */
-+		cwq = get_cwq(req_cpu, wq);
-+		gcwq = cwq->gcwq;
-+		spin_lock_irqsave(&gcwq->lock, flags);
-+	} else {
-+		/*
-+		 * It's a bit more complex for single cpu workqueues.
-+		 * We first need to determine which cpu is going to be
-+		 * used.  If no cpu is currently serving this
-+		 * workqueue, arbitrate using atomic accesses to
-+		 * wq->single_cpu; otherwise, use the current one.
-+		 */
-+	retry:
-+		cpu = wq->single_cpu;
-+		arbitrate = cpu == NR_CPUS;
-+		if (arbitrate)
-+			cpu = req_cpu;
++	struct worker *worker;
++	struct hlist_node *tmp;
 +
-+		cwq = get_cwq(cpu, wq);
-+		gcwq = cwq->gcwq;
-+		spin_lock_irqsave(&gcwq->lock, flags);
++	hlist_for_each_entry(worker, tmp, bwh, hentry)
++		if (worker->current_work == work)
++			return worker;
++	return NULL;
++}
 +
-+		/*
-+		 * The following cmpxchg() is full barrier paired with
-+		 * smp_wmb() in cwq_unbind_single_cpu() and guarantees
-+		 * that all changes to wq->st_* fields are visible on
-+		 * the new cpu after this point.
-+		 */
-+		if (arbitrate)
-+			cmpxchg(&wq->single_cpu, NR_CPUS, cpu);
++/**
++ * find_worker_executing_work - find worker which is executing a work
++ * @gcwq: gcwq of interest
++ * @work: work to find worker for
++ *
++ * Find a worker which is executing @work on @gcwq.  This function is
++ * identical to __find_worker_executing_work() except that this
++ * function calculates @bwh itself.
++ *
++ * CONTEXT:
++ * spin_lock_irq(gcwq->lock).
++ *
++ * RETURNS:
++ * Pointer to worker which is executing @work if found, NULL
++ * otherwise.
++ */
++static struct worker *find_worker_executing_work(struct global_cwq *gcwq,
++						 struct work_struct *work)
++{
++	return __find_worker_executing_work(gcwq, busy_worker_head(gcwq, work),
++					    work);
++}
 +
-+		if (unlikely(wq->single_cpu != cpu)) {
-+			spin_unlock_irqrestore(&gcwq->lock, flags);
-+			goto retry;
-+		}
-+	}
-+
- 	BUG_ON(!list_empty(&work->entry));
++/**
++ * insert_work - insert a work into gcwq
+  * @cwq: cwq @work belongs to
+  * @work: work to insert
+  * @head: insertion point
+  * @extra_flags: extra WORK_STRUCT_* flags to set
+  *
+- * Insert @work into @cwq after @head.
++ * Insert @work which belongs to @cwq into @gcwq after @head.
++ * @extra_flags is or'd to work_struct flags.
+  *
+  * CONTEXT:
+  * spin_lock_irq(gcwq->lock).
+@@ -391,7 +469,7 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
+ 	smp_wmb();
  
- 	cwq->nr_in_flight[cwq->work_color]++;
-@@ -523,7 +581,7 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 		timer_stats_timer_set_start_info(&dwork->timer);
+ 	list_add_tail(&work->entry, head);
+-	wake_up_process(cwq->worker->task);
++	wake_up_worker(cwq->gcwq);
+ }
  
- 		/* This stores cwq for the moment, for the timer_fn */
--		set_wq_data(work, target_cwq(raw_smp_processor_id(), wq), 0);
-+		set_wq_data(work, get_cwq(raw_smp_processor_id(), wq), 0);
- 		timer->expires = jiffies + delay;
- 		timer->data = (unsigned long)dwork;
- 		timer->function = delayed_work_timer_fn;
-@@ -784,10 +842,14 @@ static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
- 	cwq->nr_in_flight[color]--;
- 	cwq->nr_active--;
+ /**
+@@ -478,7 +556,7 @@ static void __queue_work(unsigned int req_cpu, struct workqueue_struct *wq,
  
--	/* one down, submit a delayed one */
--	if (!list_empty(&cwq->delayed_works) &&
--	    cwq->nr_active < cwq->max_active)
--		cwq_activate_first_delayed(cwq);
-+	if (!list_empty(&cwq->delayed_works)) {
-+		/* one down, submit a delayed one */
-+		if (cwq->nr_active < cwq->max_active)
-+			cwq_activate_first_delayed(cwq);
-+	} else if (!cwq->nr_active && cwq->wq->flags & WQ_SINGLE_CPU) {
-+		/* this was the last work, unbind from single cpu */
-+		cwq_unbind_single_cpu(cwq);
-+	}
+ 	if (likely(cwq->nr_active < cwq->max_active)) {
+ 		cwq->nr_active++;
+-		worklist = &cwq->worklist;
++		worklist = &gcwq->worklist;
+ 	} else
+ 		worklist = &cwq->delayed_works;
  
- 	/* is flush in progress and are we at the flushing tip? */
- 	if (likely(cwq->flush_color != color))
-@@ -1667,7 +1729,6 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 						struct lock_class_key *key,
- 						const char *lock_name)
+@@ -657,10 +735,10 @@ static struct worker *alloc_worker(void)
+ 
+ /**
+  * create_worker - create a new workqueue worker
+- * @cwq: cwq the new worker will belong to
++ * @gcwq: gcwq the new worker will belong to
+  * @bind: whether to set affinity to @cpu or not
+  *
+- * Create a new worker which is bound to @cwq.  The returned worker
++ * Create a new worker which is bound to @gcwq.  The returned worker
+  * can be started by calling start_worker() or destroyed using
+  * destroy_worker().
+  *
+@@ -670,9 +748,8 @@ static struct worker *alloc_worker(void)
+  * RETURNS:
+  * Pointer to the newly created worker.
+  */
+-static struct worker *create_worker(struct cpu_workqueue_struct *cwq, bool bind)
++static struct worker *create_worker(struct global_cwq *gcwq, bool bind)
  {
--	bool singlethread = flags & WQ_SINGLE_THREAD;
- 	struct workqueue_struct *wq;
- 	bool failed = false;
- 	unsigned int cpu;
-@@ -1688,6 +1749,8 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	atomic_set(&wq->nr_cwqs_to_flush, 0);
- 	INIT_LIST_HEAD(&wq->flusher_queue);
- 	INIT_LIST_HEAD(&wq->flusher_overflow);
-+	wq->single_cpu = NR_CPUS;
+-	struct global_cwq *gcwq = cwq->gcwq;
+ 	int id = -1;
+ 	struct worker *worker = NULL;
+ 
+@@ -690,7 +767,6 @@ static struct worker *create_worker(struct cpu_workqueue_struct *cwq, bool bind)
+ 		goto fail;
+ 
+ 	worker->gcwq = gcwq;
+-	worker->cwq = cwq;
+ 	worker->id = id;
+ 
+ 	worker->task = kthread_create(worker_thread, worker, "kworker/%u:%d",
+@@ -818,7 +894,7 @@ static void cwq_activate_first_delayed(struct cpu_workqueue_struct *cwq)
+ 	struct work_struct *work = list_first_entry(&cwq->delayed_works,
+ 						    struct work_struct, entry);
+ 
+-	move_linked_works(work, &cwq->worklist, NULL);
++	move_linked_works(work, &cwq->gcwq->worklist, NULL);
+ 	cwq->nr_active++;
+ }
+ 
+@@ -886,11 +962,12 @@ static void cwq_dec_nr_in_flight(struct cpu_workqueue_struct *cwq, int color)
+  */
+ static void process_one_work(struct worker *worker, struct work_struct *work)
+ {
+-	struct cpu_workqueue_struct *cwq = worker->cwq;
++	struct cpu_workqueue_struct *cwq = get_wq_data(work);
+ 	struct global_cwq *gcwq = cwq->gcwq;
+ 	struct hlist_head *bwh = busy_worker_head(gcwq, work);
+ 	work_func_t f = work->func;
+ 	int work_color;
++	struct worker *collision;
+ #ifdef CONFIG_LOCKDEP
+ 	/*
+ 	 * It is permissible to free the struct work_struct from
+@@ -901,6 +978,18 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
+ 	 */
+ 	struct lockdep_map lockdep_map = work->lockdep_map;
+ #endif
++	/*
++	 * A single work shouldn't be executed concurrently by
++	 * multiple workers on a single cpu.  Check whether anyone is
++	 * already processing the work.  If so, defer the work to the
++	 * currently executing one.
++	 */
++	collision = __find_worker_executing_work(gcwq, bwh, work);
++	if (unlikely(collision)) {
++		move_linked_works(work, &collision->scheduled, NULL);
++		return;
++	}
 +
- 	wq->name = name;
- 	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
- 	INIT_LIST_HEAD(&wq->list);
-@@ -1713,8 +1776,7 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	/* claim and process */
+ 	debug_work_deactivate(work);
+ 	hlist_add_head(&worker->hentry, bwh);
+@@ -910,7 +999,6 @@ static void process_one_work(struct worker *worker, struct work_struct *work)
+ 
+ 	spin_unlock_irq(&gcwq->lock);
+ 
+-	BUG_ON(get_wq_data(work) != cwq);
+ 	work_clear_pending(work);
+ 	lock_map_acquire(&cwq->wq->lockdep_map);
+ 	lock_map_acquire(&lockdep_map);
+@@ -967,7 +1055,6 @@ static int worker_thread(void *__worker)
+ {
+ 	struct worker *worker = __worker;
+ 	struct global_cwq *gcwq = worker->gcwq;
+-	struct cpu_workqueue_struct *cwq = worker->cwq;
+ 
+ woke_up:
+ 	spin_lock_irq(&gcwq->lock);
+@@ -987,9 +1074,9 @@ woke_up:
+ 	 */
+ 	BUG_ON(!list_empty(&worker->scheduled));
+ 
+-	while (!list_empty(&cwq->worklist)) {
++	while (!list_empty(&gcwq->worklist)) {
+ 		struct work_struct *work =
+-			list_first_entry(&cwq->worklist,
++			list_first_entry(&gcwq->worklist,
+ 					 struct work_struct, entry);
+ 
+ 		if (likely(!(*work_data_bits(work) & WORK_STRUCT_LINKED))) {
+@@ -1343,8 +1430,7 @@ int flush_work(struct work_struct *work)
+ 		if (unlikely(cwq != get_wq_data(work)))
+ 			goto already_gone;
+ 	} else {
+-		if (cwq->worker && cwq->worker->current_work == work)
+-			worker = cwq->worker;
++		worker = find_worker_executing_work(gcwq, work);
+ 		if (!worker)
+ 			goto already_gone;
+ 	}
+@@ -1413,11 +1499,9 @@ static void wait_on_cpu_work(struct cpu_workqueue_struct *cwq,
+ 
+ 	spin_lock_irq(&gcwq->lock);
+ 
+-	worker = NULL;
+-	if (unlikely(cwq->worker && cwq->worker->current_work == work)) {
+-		worker = cwq->worker;
++	worker = find_worker_executing_work(gcwq, work);
++	if (unlikely(worker))
+ 		insert_wq_barrier(cwq, &barr, work, worker);
+-	}
+ 
+ 	spin_unlock_irq(&gcwq->lock);
+ 
+@@ -1671,18 +1755,37 @@ int keventd_up(void)
+ 
+ int current_is_keventd(void)
+ {
+-	struct cpu_workqueue_struct *cwq;
+-	int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
+-	int ret = 0;
++	bool found = false;
++	unsigned int cpu;
+ 
+-	BUG_ON(!keventd_wq);
++	/*
++	 * There no longer is one-to-one relation between worker and
++	 * work queue and a worker task might be unbound from its cpu
++	 * if the cpu was offlined.  Match all busy workers.  This
++	 * function will go away once dynamic pool is implemented.
++	 */
++	for_each_possible_cpu(cpu) {
++		struct global_cwq *gcwq = get_gcwq(cpu);
++		struct worker *worker;
++		struct hlist_node *pos;
++		unsigned long flags;
++		int i;
+ 
+-	cwq = get_cwq(cpu, keventd_wq);
+-	if (current == cwq->worker->task)
+-		ret = 1;
++		spin_lock_irqsave(&gcwq->lock, flags);
+ 
+-	return ret;
++		for_each_busy_worker(worker, i, pos, gcwq) {
++			if (worker->task == current) {
++				found = true;
++				break;
++			}
++		}
++
++		spin_unlock_irqrestore(&gcwq->lock, flags);
++		if (found)
++			break;
++	}
+ 
++	return found;
+ }
+ 
+ static struct cpu_workqueue_struct *alloc_cwqs(void)
+@@ -1771,12 +1874,11 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 		cwq->wq = wq;
+ 		cwq->flush_color = -1;
+ 		cwq->max_active = max_active;
+-		INIT_LIST_HEAD(&cwq->worklist);
+ 		INIT_LIST_HEAD(&cwq->delayed_works);
  
  		if (failed)
  			continue;
--		cwq->worker = create_worker(cwq,
--					    cpu_online(cpu) && !singlethread);
-+		cwq->worker = create_worker(cwq, cpu_online(cpu));
+-		cwq->worker = create_worker(cwq, cpu_online(cpu));
++		cwq->worker = create_worker(gcwq, cpu_online(cpu));
  		if (cwq->worker)
  			start_worker(cwq->worker);
  		else
-@@ -1912,18 +1974,16 @@ static int __cpuinit trustee_thread(void *__gcwq)
+@@ -1836,13 +1938,26 @@ void destroy_workqueue(struct workqueue_struct *wq)
  
- 	spin_lock_irq(&gcwq->lock);
- 	/*
--	 * Make all multithread workers rogue.  Trustee must be bound
--	 * to the target cpu and can't be cancelled.
-+	 * Make all workers rogue.  Trustee must be bound to the
-+	 * target cpu and can't be cancelled.
- 	 */
- 	BUG_ON(gcwq->cpu != smp_processor_id());
+ 	for_each_possible_cpu(cpu) {
+ 		struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
++		struct global_cwq *gcwq = cwq->gcwq;
+ 		int i;
  
- 	list_for_each_entry(worker, &gcwq->idle_list, entry)
--		if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD))
--			worker->flags |= WORKER_ROGUE;
-+		worker->flags |= WORKER_ROGUE;
- 
- 	for_each_busy_worker(worker, i, pos, gcwq)
--		if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD))
--			worker->flags |= WORKER_ROGUE;
-+		worker->flags |= WORKER_ROGUE;
- 
- 	/*
- 	 * We're now in charge.  Notify and proceed to drain.  We need
-@@ -2027,20 +2087,17 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
+ 		if (cwq->worker) {
+-			spin_lock_irq(&cwq->gcwq->lock);
++		retry:
++			spin_lock_irq(&gcwq->lock);
++			/*
++			 * Worker can only be destroyed while idle.
++			 * Wait till it becomes idle.  This is ugly
++			 * and prone to starvation.  It will go away
++			 * once dynamic worker pool is implemented.
++			 */
++			if (!(cwq->worker->flags & WORKER_IDLE)) {
++				spin_unlock_irq(&gcwq->lock);
++				msleep(100);
++				goto retry;
++			}
+ 			destroy_worker(cwq->worker);
+ 			cwq->worker = NULL;
+-			spin_unlock_irq(&cwq->gcwq->lock);
++			spin_unlock_irq(&gcwq->lock);
  		}
  
- 		/*
--		 * Clear ROGUE from and rebind all multithread
--		 * workers.  Unsetting ROGUE and rebinding require
--		 * dropping gcwq->lock.  Restart loop after each
--		 * successful release.
-+		 * Clear ROGUE from and rebind all workers.  Unsetting
-+		 * ROGUE and rebinding require dropping gcwq->lock.
-+		 * Restart loop after each successful release.
- 		 */
- 	recheck:
- 		list_for_each_entry(worker, &gcwq->idle_list, entry)
--			if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD) &&
--			    trustee_unset_rogue(worker))
-+			if (trustee_unset_rogue(worker))
- 				goto recheck;
+ 		for (i = 0; i < WORK_NR_COLORS; i++)
+@@ -2161,7 +2276,7 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
+  *
+  * Start freezing workqueues.  After this function returns, all
+  * freezeable workqueues will queue new works to their frozen_works
+- * list instead of the cwq ones.
++ * list instead of gcwq->worklist.
+  *
+  * CONTEXT:
+  * Grabs and releases workqueue_lock and gcwq->lock's.
+@@ -2247,7 +2362,7 @@ out_unlock:
+  * thaw_workqueues - thaw workqueues
+  *
+  * Thaw workqueues.  Normal queueing is restored and all collected
+- * frozen works are transferred to their respective cwq worklists.
++ * frozen works are transferred to their respective gcwq worklists.
+  *
+  * CONTEXT:
+  * Grabs and releases workqueue_lock and gcwq->lock's.
+@@ -2320,6 +2435,7 @@ void __init init_workqueues(void)
+ 		struct global_cwq *gcwq = get_gcwq(cpu);
  
- 		for_each_busy_worker(worker, i, pos, gcwq)
--			if (!(worker->cwq->wq->flags & WQ_SINGLE_THREAD) &&
--			    trustee_unset_rogue(worker))
-+			if (trustee_unset_rogue(worker))
- 				goto recheck;
- 		break;
- 	}
-@@ -2226,6 +2283,11 @@ void thaw_workqueues(void)
- 			       cwq->nr_active < cwq->max_active)
- 				cwq_activate_first_delayed(cwq);
+ 		spin_lock_init(&gcwq->lock);
++		INIT_LIST_HEAD(&gcwq->worklist);
+ 		gcwq->cpu = cpu;
  
-+			/* perform delayed unbind from single cpu if empty */
-+			if (wq->single_cpu == gcwq->cpu &&
-+			    !cwq->nr_active && list_empty(&cwq->delayed_works))
-+				cwq_unbind_single_cpu(cwq);
-+
- 			wake_up_process(cwq->worker->task);
- 		}
- 
-@@ -2251,7 +2313,6 @@ void __init init_workqueues(void)
- 	BUILD_BUG_ON(__alignof__(struct cpu_workqueue_struct) <
- 		     __alignof__(unsigned long long));
- 
--	singlethread_cpu = cpumask_first(cpu_possible_mask);
- 	hotcpu_notifier(workqueue_cpu_callback, 0);
- 
- 	/* initialize gcwqs */
+ 		INIT_LIST_HEAD(&gcwq->idle_list);
 -- 
 1.6.4.2
 
