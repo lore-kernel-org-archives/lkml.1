@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZLRAi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZLRAjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbZLRAi5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Dec 2009 19:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZLRAiz
+	id S1753742AbZLRAjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Dec 2009 19:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZLRAjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Dec 2009 19:38:55 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:54194 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808AbZLRAiy convert rfc822-to-8bit (ORCPT
+	Thu, 17 Dec 2009 19:39:16 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:38942 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbZLRAjM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Dec 2009 19:38:54 -0500
+	Thu, 17 Dec 2009 19:39:12 -0500
 MIME-Version: 1.0
-Message-ID: <7d3e642c-30c5-47fe-8300-68a693784ec6@default>
-Date: Thu, 17 Dec 2009 16:37:33 -0800 (PST)
+Message-ID: <dee07055-5763-4e91-b6a2-964bbc8217aa@default>
+Date: Thu, 17 Dec 2009 16:37:55 -0800 (PST)
 From: Dan Magenheimer <dan.magenheimer@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: dan.magenheimer@oracle.com, npiggin@suse.de, akpm@osdl.org,
@@ -25,399 +25,585 @@ Cc: dan.magenheimer@oracle.com, npiggin@suse.de, akpm@osdl.org,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Marcelo Tosatti <mtosatti@redhat.com>, alan@lxorguk.ukuu.org.uk,
        chris.mason@oracle.com, Pavel Machek <pavel@ucw.cz>
-Subject: Tmem [PATCH 1/5] (Take 3): Core API between kernel and tmem
+Subject: Tmem [PATCH 2/5] (Take 3): Implement cleancache on top of tmem layer
 X-Priority: 3
 X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
  9.0.0.6627]
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B2ACEE7.00D7:SCFMA4539814,ss=1,fgs=0
+X-Source-IP: rcsinet13.oracle.com [148.87.113.125]
+X-CT-RefId: str=0001.0A090201.4B2ACF02.00AF:SCFMA4539811,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tmem [PATCH 1/5] (Take 3): Core API between kernel and tmem
+Tmem [PATCH 2/5] (Take 3): Implement cleancache on top of tmem layer.
 
-Declares tmem_ops accessors and initializes them to be no-ops
-(returning -ENOSYS).  By itself, this API is useless; it requires
-a layer such as cleancache and/or frontswap (or similar) on top to
-make use of the API and a layer below to declare non-no-op tmem
-accessors that interface to a tmem implementation (e.g. Xen hypercalls).
-(Many thanks to Jeremy Fitzhardinge for suggesting this approach.)
+Hooks added to existing page cache, VFS, and FS (ext3, ocfs2, btrfs,
+and ext4 supported as of now) routines to:
+1) create a tmem pool when filesystem is mounted and record its id
+2) "put" clean pages that are being evicted
+3) attempt to "get" pages prior to reading from a mounted FS and
+   fallback to reading from the FS if "get" fails
+4) "flush" as necessary to ensure coherency btwn page cache & cleancache
+5) destroy the tmem pool when the FS is unmounted
+
+Hooks for page cache and VFS placed by Chris Mason
+
+The term "cleancache" is used because only clean data
+can be cached using this interface.  The previous term
+("precache") was deemed too generic and overloaded.
 
 Signed-off-by: Dan Magenheimer <dan.magenheimer@oracle.com>
 
 
- Documentation/transcendent-memory.txt    |  176 +++++++++++++++++++++
- include/linux/tmem.h                     |   88 ++++++++++
- mm/tmem.c                                |   93 +++++++++++
- 3 files changed, 357 insertions(+)
+ fs/btrfs/extent_io.c                     |    9 +
+ fs/btrfs/super.c                         |    2 
+ fs/buffer.c                              |    5 
+ fs/ext3/super.c                          |    2 
+ fs/ext4/super.c                          |    2 
+ fs/mpage.c                               |    8 
+ fs/ocfs2/super.c                         |    2 
+ fs/super.c                               |    6 
+ include/linux/cleancache.h               |   55 ++++++
+ include/linux/fs.h                       |    7 
+ mm/cleancache.c                          |  184 +++++++++++++++++++++
+ mm/filemap.c                             |   11 +
+ mm/truncate.c                            |   10 +
+ 13 files changed, 303 insertions(+)
 
---- linux-2.6.32/include/linux/tmem.h	1969-12-31 17:00:00.000000000 -0700
-+++ linux-2.6.32-tmem/include/linux/tmem.h	2009-12-10 11:10:17.000000000 -0700
-@@ -0,0 +1,88 @@
+--- linux-2.6.32/fs/super.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/super.c	2009-12-17 13:51:04.000000000 -0700
+@@ -37,6 +37,7 @@
+ #include <linux/kobject.h>
+ #include <linux/mutex.h>
+ #include <linux/file.h>
++#include <linux/cleancache.h>
+ #include <asm/uaccess.h>
+ #include "internal.h"
+ 
+@@ -104,6 +105,9 @@ static struct super_block *alloc_super(s
+ 		s->s_qcop = sb_quotactl_ops;
+ 		s->s_op = &default_op;
+ 		s->s_time_gran = 1000000000;
++#ifdef CONFIG_CLEANCACHE
++		s->cleancache_poolid = -1;
++#endif
+ 	}
+ out:
+ 	return s;
+@@ -194,6 +198,7 @@ void deactivate_super(struct super_block
+ 		vfs_dq_off(s, 0);
+ 		down_write(&s->s_umount);
+ 		fs->kill_sb(s);
++		cleancache_flush_filesystem(s);
+ 		put_filesystem(fs);
+ 		put_super(s);
+ 	}
+@@ -220,6 +225,7 @@ void deactivate_locked_super(struct supe
+ 		spin_unlock(&sb_lock);
+ 		vfs_dq_off(s, 0);
+ 		fs->kill_sb(s);
++		cleancache_flush_filesystem(s);
+ 		put_filesystem(fs);
+ 		put_super(s);
+ 	} else {
+--- linux-2.6.32/fs/ext3/super.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/ext3/super.c	2009-12-17 13:51:24.000000000 -0700
+@@ -37,6 +37,7 @@
+ #include <linux/quotaops.h>
+ #include <linux/seq_file.h>
+ #include <linux/log2.h>
++#include <linux/cleancache.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -1307,6 +1308,7 @@ static int ext3_setup_super(struct super
+ 	} else {
+ 		printk("internal journal\n");
+ 	}
++	cleancache_init(sb);
+ 	return res;
+ }
+ 
+--- linux-2.6.32/include/linux/fs.h	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/include/linux/fs.h	2009-12-17 15:29:35.000000000 -0700
+@@ -1380,6 +1380,13 @@ struct super_block {
+ 	 * generic_show_options()
+ 	 */
+ 	char *s_options;
++
++#ifdef CONFIG_CLEANCACHE
++	/*
++	 * Saved pool identifier for cleancache (-1 means none)
++	 */
++	u32 cleancache_poolid;
++#endif
+ };
+ 
+ extern struct timespec current_fs_time(struct super_block *sb);
+--- linux-2.6.32/fs/buffer.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/buffer.c	2009-12-17 13:50:32.000000000 -0700
+@@ -41,6 +41,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mpage.h>
+ #include <linux/bit_spinlock.h>
++#include <linux/cleancache.h>
+ 
+ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
+ 
+@@ -276,6 +277,10 @@ void invalidate_bdev(struct block_device
+ 
+ 	invalidate_bh_lrus();
+ 	invalidate_mapping_pages(mapping, 0, -1);
++	/* 99% of the time, we don't need to flush the cleancache on the bdev.
++	 * But, for the strange corners, lets be cautious
++	 */
++	cleancache_flush_inode(mapping);
+ }
+ EXPORT_SYMBOL(invalidate_bdev);
+ 
+--- linux-2.6.32/fs/mpage.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/mpage.c	2009-12-17 13:50:37.000000000 -0700
+@@ -26,6 +26,7 @@
+ #include <linux/writeback.h>
+ #include <linux/backing-dev.h>
+ #include <linux/pagevec.h>
++#include <linux/cleancache.h>
+ 
+ /*
+  * I/O completion handler for multipage BIOs.
+@@ -285,6 +286,13 @@ do_mpage_readpage(struct bio *bio, struc
+ 		SetPageMappedToDisk(page);
+ 	}
+ 
++	if (fully_mapped &&
++	    blocks_per_page == 1 && !PageUptodate(page) &&
++	    cleancache_get(page->mapping, page->index, page) == 1) {
++		SetPageUptodate(page);
++		goto confused;
++	}
++
+ 	/*
+ 	 * This page will go to BIO.  Do we need to send this BIO off first?
+ 	 */
+--- linux-2.6.32/fs/btrfs/super.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/btrfs/super.c	2009-12-17 13:50:16.000000000 -0700
+@@ -38,6 +38,7 @@
+ #include <linux/namei.h>
+ #include <linux/miscdevice.h>
+ #include <linux/magic.h>
++#include <linux/cleancache.h>
+ #include "compat.h"
+ #include "ctree.h"
+ #include "disk-io.h"
+@@ -387,6 +388,7 @@ static int btrfs_fill_super(struct super
+ 	sb->s_root = root_dentry;
+ 
+ 	save_mount_options(sb, data);
++	cleancache_init(sb);
+ 	return 0;
+ 
+ fail_close:
+--- linux-2.6.32/fs/btrfs/extent_io.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/btrfs/extent_io.c	2009-12-17 15:28:33.000000000 -0700
+@@ -11,6 +11,7 @@
+ #include <linux/swap.h>
+ #include <linux/writeback.h>
+ #include <linux/pagevec.h>
++#include <linux/cleancache.h>
+ #include "extent_io.h"
+ #include "extent_map.h"
+ #include "compat.h"
+@@ -2015,6 +2016,13 @@ static int __extent_read_full_page(struc
+ 
+ 	set_page_extent_mapped(page);
+ 
++	if (!PageUptodate(page)) {
++		if (cleancache_get(page->mapping, page->index, page) == 1) {
++			BUG_ON(blocksize != PAGE_SIZE);
++			goto out;
++		}
++	}
++
+ 	end = page_end;
+ 	lock_extent(tree, start, end, GFP_NOFS);
+ 
+@@ -2131,6 +2139,7 @@ static int __extent_read_full_page(struc
+ 		cur = cur + iosize;
+ 		page_offset += iosize;
+ 	}
++out:
+ 	if (!nr) {
+ 		if (!PageError(page))
+ 			SetPageUptodate(page);
+--- linux-2.6.32/fs/ocfs2/super.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/ocfs2/super.c	2009-12-17 13:51:11.000000000 -0700
+@@ -42,6 +42,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/quotaops.h>
+ #include <linux/smp_lock.h>
++#include <linux/cleancache.h>
+ 
+ #define MLOG_MASK_PREFIX ML_SUPER
+ #include <cluster/masklog.h>
+@@ -2228,6 +2229,7 @@ static int ocfs2_initialize_super(struct
+ 		mlog_errno(status);
+ 		goto bail;
+ 	}
++	shared_cleancache_init(sb, &di->id2.i_super.s_uuid[0]);
+ 
+ bail:
+ 	mlog_exit(status);
+--- linux-2.6.32/fs/ext4/super.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/fs/ext4/super.c	2009-12-17 13:51:17.000000000 -0700
+@@ -39,6 +39,7 @@
+ #include <linux/ctype.h>
+ #include <linux/log2.h>
+ #include <linux/crc16.h>
++#include <linux/cleancache.h>
+ #include <asm/uaccess.h>
+ 
+ #include "ext4.h"
+@@ -1660,6 +1661,7 @@ static int ext4_setup_super(struct super
+ 			EXT4_INODES_PER_GROUP(sb),
+ 			sbi->s_mount_opt);
+ 
++	cleancache_init(sb);
+ 	return res;
+ }
+ 
+--- linux-2.6.32/mm/truncate.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/mm/truncate.c	2009-12-17 13:56:31.000000000 -0700
+@@ -18,6 +18,7 @@
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/buffer_head.h>	/* grr. try_to_release_page,
+ 				   do_invalidatepage */
++#include <linux/cleancache.h>
+ #include "internal.h"
+ 
+ 
+@@ -50,6 +51,7 @@ void do_invalidatepage(struct page *page
+ static inline void truncate_partial_page(struct page *page, unsigned partial)
+ {
+ 	zero_user_segment(page, partial, PAGE_CACHE_SIZE);
++	cleancache_flush(page->mapping, page->index);
+ 	if (page_has_private(page))
+ 		do_invalidatepage(page, partial);
+ }
+@@ -107,6 +109,10 @@ truncate_complete_page(struct address_sp
+ 	clear_page_mlock(page);
+ 	remove_from_page_cache(page);
+ 	ClearPageMappedToDisk(page);
++	/* this must be after the remove_from_page_cache which
++	 * calls cleancache_put
++	 */
++	cleancache_flush(mapping, page->index);
+ 	page_cache_release(page);	/* pagecache ref */
+ 	return 0;
+ }
+@@ -214,6 +220,7 @@ void truncate_inode_pages_range(struct a
+ 	pgoff_t next;
+ 	int i;
+ 
++	cleancache_flush_inode(mapping);
+ 	if (mapping->nrpages == 0)
+ 		return;
+ 
+@@ -287,6 +294,7 @@ void truncate_inode_pages_range(struct a
+ 		}
+ 		pagevec_release(&pvec);
+ 	}
++	cleancache_flush_inode(mapping);
+ }
+ EXPORT_SYMBOL(truncate_inode_pages_range);
+ 
+@@ -423,6 +431,7 @@ int invalidate_inode_pages2_range(struct
+ 	int did_range_unmap = 0;
+ 	int wrapped = 0;
+ 
++	cleancache_flush_inode(mapping);
+ 	pagevec_init(&pvec, 0);
+ 	next = start;
+ 	while (next <= end && !wrapped &&
+@@ -479,6 +488,7 @@ int invalidate_inode_pages2_range(struct
+ 		pagevec_release(&pvec);
+ 		cond_resched();
+ 	}
++	cleancache_flush_inode(mapping);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(invalidate_inode_pages2_range);
+--- linux-2.6.32/mm/filemap.c	2009-12-02 20:51:21.000000000 -0700
++++ linux-2.6.32-tmem/mm/filemap.c	2009-12-17 13:56:55.000000000 -0700
+@@ -34,6 +34,7 @@
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
++#include <linux/cleancache.h>
+ #include "internal.h"
+ 
+ /*
+@@ -119,6 +120,16 @@ void __remove_from_page_cache(struct pag
+ {
+ 	struct address_space *mapping = page->mapping;
+ 
++	/*
++	 * if we're uptodate, flush out into the cleancache, otherwise
++	 * invalidate any existing cleancache entries.  We can't leave
++	 * stale data around in the cleancache once our page is gone
++	 */
++	if (PageUptodate(page))
++		cleancache_put(page->mapping, page->index, page);
++	else
++		cleancache_flush(page->mapping, page->index);
++
+ 	radix_tree_delete(&mapping->page_tree, page->index);
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+--- linux-2.6.32/include/linux/cleancache.h	1969-12-31 17:00:00.000000000 -0700
++++ linux-2.6.32-tmem/include/linux/cleancache.h	2009-12-17 13:41:04.000000000 -0700
+@@ -0,0 +1,55 @@
++#ifndef _LINUX_CLEANCACHE_H
++
++#include <linux/fs.h>
++#include <linux/mm.h>
++
++#ifdef CONFIG_CLEANCACHE
++extern void cleancache_init(struct super_block *sb);
++extern void shared_cleancache_init(struct super_block *sb, char *uuid);
++extern int cleancache_get(struct address_space *mapping, unsigned long index,
++	       struct page *empty_page);
++extern int cleancache_put(struct address_space *mapping, unsigned long index,
++		struct page *page);
++extern int cleancache_flush(struct address_space *mapping, unsigned long index);
++extern int cleancache_flush_inode(struct address_space *mapping);
++extern int cleancache_flush_filesystem(struct super_block *s);
++#else
++static inline void cleancache_init(struct super_block *sb)
++{
++}
++
++static inline void shared_cleancache_init(struct super_block *sb, char *uuid)
++{
++}
++
++static inline int cleancache_get(struct address_space *mapping,
++		unsigned long index, struct page *empty_page)
++{
++	return 0;
++}
++
++static inline int cleancache_put(struct address_space *mapping,
++		unsigned long index, struct page *page)
++{
++	return 0;
++}
++
++static inline int cleancache_flush(struct address_space *mapping,
++		unsigned long index)
++{
++	return 0;
++}
++
++static inline int cleancache_flush_inode(struct address_space *mapping)
++{
++	return 0;
++}
++
++static inline int cleancache_flush_filesystem(struct super_block *s)
++{
++	return 0;
++}
++#endif
++
++#define _LINUX_CLEANCACHE_H
++#endif /* _LINUX_CLEANCACHE_H */
+--- linux-2.6.32/mm/cleancache.c	1969-12-31 17:00:00.000000000 -0700
++++ linux-2.6.32-tmem/mm/cleancache.c	2009-12-17 15:30:59.000000000 -0700
+@@ -0,0 +1,184 @@
 +/*
-+ * linux/tmem.h
++ * linux/mm/cleancache.c
 + *
-+ * Interface to transcendent memory
++ * Implements a page-granularity clean cache for filesystems/pagecache on the
++ * transcendent * memory ("tmem") API.  A filesystem creates an "ephemeral
++ * tmem pool" and retains the returned pool_id in its superblock.  Clean pages
++ * evicted from pagecache may be "put" into the pool and associated with a
++ * "handle" consisting of the pool_id, an object (inode) id, and an index (page
++ * offset).  Note that the page is copied to tmem; no kernel mappings are
++ * changed. If the page is later needed, the filesystem (or VFS) issues a "get",
++ * passing the same handle and an empty pageframe.  If successful, the page is
++ * copied into the pageframe and a disk read is avoided.  But since the tmem
++ * pool is of indeterminate size, a "put" page has indeterminate longevity
++ * ("ephemeral"), and the "get" may fail, in which case the filesystem must
++ * read the page from disk as before.  Note that the filesystem/pagecache are
++ * responsible for maintaining coherency between the pagecache, tmem's clean
++ * cache and the disk, for which "flush page" and "flush object" actions
++ * are provided.  And when a filesystem is unmounted, it must "destroy"
++ * the pool.
++ *
++ * Tmem supports two different modes for a cleancache: "private" or "shared".
++ * Shared pools are still under development. For a private pool, a successful
++ * "get" always flushes, implementing "exclusive cache" semantics.  Note
++ * that a failed "duplicate" put (overwrite) always guarantees the old data
++ * is flushed.
++ *
++ * Note also that multiple accesses to a tmem pool may be concurrent and any
++ * ordering must be guaranteed by the caller.
 + *
 + * Copyright (C) 2008,2009 Dan Magenheimer, Oracle Corp.
 + */
 +
-+#include <linux/errno.h>
-+
-+struct tmem_pool_uuid {
-+	u64 uuid_lo;
-+	u64 uuid_hi;
-+};
-+
-+#define TMEM_POOL_PRIVATE_UUID	{ 0, 0 }
-+
-+struct tmem_ops {
-+	int (*new_pool)(struct tmem_pool_uuid uuid, u32 flags);
-+	int (*put_page)(u32 pool_id, u64 object, u32 index, unsigned long gmfn);
-+	int (*get_page)(u32 pool_id, u64 object, u32 index, unsigned long gmfn);
-+	int (*flush_page)(u32 pool_id, u64 object, u32 index);
-+	int (*flush_object)(u32 pool_id, u64 object);
-+	int (*destroy_pool)(u32 pool_id);
-+};
-+
-+extern struct tmem_ops *tmem_ops;
-+extern void tmem_set_ops(struct tmem_ops *ops);
-+
-+/* flags for tmem_ops.new_pool */
-+#define TMEM_POOL_PERSIST          1
-+#define TMEM_POOL_SHARED           2
-+
-+static inline int tmem_new_pool(struct tmem_pool_uuid uuid, u32 flags)
-+{
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_TMEM
-+	ret = (*tmem_ops->new_pool)(uuid, flags);
-+#endif
-+	return ret;
-+}
-+
-+static inline int tmem_put_page(u32 pool_id, u64 object, u32 index,
-+	unsigned long gmfn)
-+{
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_TMEM
-+	ret = (*tmem_ops->put_page)(pool_id, object, index, gmfn);
-+#endif
-+	return ret;
-+}
-+
-+static inline int tmem_get_page(u32 pool_id, u64 object, u32 index,
-+	unsigned long gmfn)
-+{
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_TMEM
-+	ret = (*tmem_ops->get_page)(pool_id, object, index, gmfn);
-+#endif
-+	return ret;
-+}
-+
-+static inline int tmem_flush_page(u32 pool_id, u64 object, u32 index)
-+{
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_TMEM
-+	ret = (*tmem_ops->flush_page)(pool_id, object, index);
-+#endif
-+	return ret;
-+}
-+
-+static inline int tmem_flush_object(u32 pool_id, u64 object)
-+{
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_TMEM
-+	ret = (*tmem_ops->flush_object)(pool_id, object);
-+#endif
-+	return ret;
-+}
-+
-+static inline int tmem_destroy_pool(u32 pool_id)
-+{
-+	int ret = -ENOSYS;
-+#ifdef CONFIG_TMEM
-+	ret = (*tmem_ops->destroy_pool)(pool_id);
-+#endif
-+	return ret;
-+}
---- linux-2.6.32/mm/tmem.c	1969-12-31 17:00:00.000000000 -0700
-+++ linux-2.6.32-tmem/mm/tmem.c	2009-12-17 13:58:59.000000000 -0700
-@@ -0,0 +1,93 @@
-+/*
-+ * Default implementation for transcendent memory (tmem)
-+ *
-+ * Copyright (C) 2008, 2009 Dan Magenheimer, Oracle Corp.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
++#include <linux/cleancache.h>
++#include <linux/module.h>
 +#include <linux/tmem.h>
-+#include <linux/bug.h>
 +
-+static int default_tmem_new_pool(struct tmem_pool_uuid uuid, u32 flags)
++static int cleancache_auto_allocate; /* set to 1 to auto_allocate */
++static unsigned long cleancache_puts;
++static unsigned long cleancache_succ_gets;
++static unsigned long cleancache_failed_gets;
++
++int cleancache_put(struct address_space *mapping, unsigned long index,
++ struct page *page)
 +{
-+	return -ENOSYS;
++	u32 tmem_pool = mapping->host->i_sb->cleancache_poolid;
++	u64 obj = (unsigned long) mapping->host->i_ino;
++	u32 ind = (u32) index;
++	unsigned long pfn = page_to_pfn(page);
++	struct tmem_pool_uuid uuid_private = TMEM_POOL_PRIVATE_UUID;
++	int ret;
++
++	if ((s32)tmem_pool < 0) {
++		if (!cleancache_auto_allocate)
++			return 0;
++		/* a put on a non-existent cleancache may auto-allocate one */
++		ret = tmem_new_pool(uuid_private, 0);
++		if (ret < 0)
++			return 0;
++		printk(KERN_INFO
++			"Mapping superblock for s_id=%s to cleancache_id=%d\n",
++			mapping->host->i_sb->s_id, tmem_pool);
++		mapping->host->i_sb->cleancache_poolid = tmem_pool;
++	}
++	if (ind != index)
++		return 0;
++	mb(); /* ensure page is quiescent; tmem may address it with an alias */
++	cleancache_puts++;
++	return tmem_put_page(tmem_pool, obj, ind, pfn);
 +}
 +
-+static int default_tmem_put_page(u32 pool_id, u64 object, u32 index,
-+	unsigned long gmfn)
++int cleancache_get(struct address_space *mapping, unsigned long index,
++ struct page *empty_page)
 +{
-+	return -ENOSYS;
-+}
++	u32 tmem_pool = mapping->host->i_sb->cleancache_poolid;
++	u64 obj = (unsigned long) mapping->host->i_ino;
++	u32 ind = (u32) index;
++	unsigned long pfn = page_to_pfn(empty_page);
++	int ret;
 +
-+static int default_tmem_get_page(u32 pool_id, u64 object, u32 index,
-+	unsigned long gmfn)
++	if ((s32)tmem_pool < 0)
++		return 0;
++	if (ind != index)
++		return 0;
++
++	ret = tmem_get_page(tmem_pool, obj, ind, pfn);
++	if (ret == 1)
++		cleancache_succ_gets++;
++	else
++		cleancache_failed_gets++;
++	return ret;
++}
++EXPORT_SYMBOL(cleancache_get);
++
++int cleancache_flush(struct address_space *mapping, unsigned long index)
 +{
-+	return -ENOSYS;
-+}
++	u32 tmem_pool = mapping->host->i_sb->cleancache_poolid;
++	u64 obj = (unsigned long) mapping->host->i_ino;
++	u32 ind = (u32) index;
 +
-+static int default_tmem_flush_page(u32 pool_id, u64 object, u32 index)
++	if ((s32)tmem_pool < 0)
++		return 0;
++	if (ind != index)
++		return 0;
++
++	return tmem_flush_page(tmem_pool, obj, ind);
++}
++EXPORT_SYMBOL(cleancache_flush);
++
++int cleancache_flush_inode(struct address_space *mapping)
 +{
-+	return -ENOSYS;
-+}
++	u32 tmem_pool = mapping->host->i_sb->cleancache_poolid;
++	u64 obj = (unsigned long) mapping->host->i_ino;
 +
-+static int default_tmem_flush_object(u32 pool_id, u64 object)
++	if ((s32)tmem_pool < 0)
++		return 0;
++
++	return tmem_flush_object(tmem_pool, obj);
++}
++EXPORT_SYMBOL(cleancache_flush_inode);
++
++int cleancache_flush_filesystem(struct super_block *sb)
 +{
-+	return -ENOSYS;
-+}
++	u32 tmem_pool = sb->cleancache_poolid;
++	int ret;
 +
-+static int default_tmem_destroy_pool(u32 pool_id)
++	if ((s32)tmem_pool < 0)
++		return 0;
++	ret = tmem_destroy_pool(tmem_pool);
++	if (!ret)
++		return 0;
++	printk(KERN_INFO
++		"Unmapping superblock for s_id=%s from cleancache_id=%d\n",
++		sb->s_id, ret);
++	sb->cleancache_poolid = 0;
++	return 1;
++}
++EXPORT_SYMBOL(cleancache_flush_filesystem);
++
++void cleancache_init(struct super_block *sb)
 +{
-+	return -ENOSYS;
++	struct tmem_pool_uuid uuid_private = TMEM_POOL_PRIVATE_UUID;
++
++	sb->cleancache_poolid = tmem_new_pool(uuid_private, 0);
 +}
++EXPORT_SYMBOL(cleancache_init);
 +
-+static struct tmem_ops default_tmem_ops = {
-+	.new_pool = default_tmem_new_pool,
-+	.put_page = default_tmem_put_page,
-+	.get_page = default_tmem_get_page,
-+	.flush_page = default_tmem_flush_page,
-+	.flush_object = default_tmem_flush_object,
-+	.destroy_pool = default_tmem_destroy_pool
-+};
-+
-+struct tmem_ops *tmem_ops = &default_tmem_ops;
-+
-+void __init tmem_set_ops(struct tmem_ops *ops)
++void shared_cleancache_init(struct super_block *sb, char *uuid)
 +{
-+	/* should only ever be set once */
-+	WARN_ON(tmem_ops != &default_tmem_ops);
++	struct tmem_pool_uuid shared_uuid;
 +
-+	tmem_ops = ops;
++	shared_uuid.uuid_lo = *(u64 *)uuid;
++	shared_uuid.uuid_hi = *(u64 *)(&uuid[8]);
++	sb->cleancache_poolid = tmem_new_pool(shared_uuid, TMEM_POOL_SHARED);
 +}
++EXPORT_SYMBOL(shared_cleancache_init);
 +
 +#ifdef CONFIG_SYSCTL
 +#include <linux/sysctl.h>
 +
-+#ifdef CONFIG_CLEANCACHE
-+extern struct ctl_table cleancache_table[];
-+#endif
-+#ifdef CONFIG_FRONTSWAP
-+extern struct ctl_table frontswap_table[];
-+#endif
-+
-+ctl_table tmem_table[] = {
-+#ifdef CONFIG_CLEANCACHE
++ctl_table cleancache_table[] = {
 +	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "cleancache",
-+		.mode		= 0555,
-+		.child		= cleancache_table,
++		.procname	= "puts",
++		.data		= &cleancache_puts,
++		.maxlen		= sizeof(unsigned long),
++		.mode		= 0444,
++		.proc_handler	= &proc_doulongvec_minmax,
 +	},
-+#endif
-+#ifdef CONFIG_FRONTSWAP
 +	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "frontswap",
-+		.mode		= 0555,
-+		.child		= frontswap_table,
++		.procname	= "succ_gets",
++		.data		= &cleancache_succ_gets,
++		.maxlen		= sizeof(unsigned long),
++		.mode		= 0444,
++		.proc_handler	= &proc_doulongvec_minmax,
 +	},
-+#endif
++	{
++		.procname	= "failed_gets",
++		.data		= &cleancache_failed_gets,
++		.maxlen		= sizeof(unsigned long),
++		.mode		= 0444,
++		.proc_handler	= &proc_doulongvec_minmax,
++	},
 +	{ .ctl_name = 0 }
 +};
 +#endif /* CONFIG_SYSCTL */
---- linux-2.6.32/Documentation/transcendent-memory.txt	1969-12-31 17:00:00.000000000 -0700
-+++ linux-2.6.32-tmem/Documentation/transcendent-memory.txt	2009-12-17 15:29:10.000000000 -0700
-@@ -0,0 +1,176 @@
-+Normal memory is directly addressable by the kernel, of a known
-+normally-fixed size, synchronously accessible, and persistent (though
-+not across a reboot).
-+
-+What if there was a class of memory that is of unknown and dynamically
-+variable size, is addressable only indirectly by the kernel, can be
-+configured either as persistent or as "ephemeral" (meaning it will be
-+around for awhile, but might disappear without warning), and is still
-+fast enough to be synchronously accessible?
-+
-+We call this latter class "transcendent memory" and it provides an
-+interesting opportunity to more efficiently utilize RAM in a virtualized
-+environment.  However this "memory but not really memory" may also have
-+applications in NON-virtualized environments, such as hotplug-memory
-+deletion, SSDs, and page cache compression.  Others have suggested ideas
-+such as allowing use of highmem memory without a highmem kernel, or use
-+of spare video memory.
-+
-+Transcendent memory, or "tmem" for short, provides a well-defined API to
-+access this unusual class of memory.  (A summary of the API is provided
-+below.)  The basic operations are page-copy-based and use a flexible
-+object-oriented addressing mechanism.  Tmem assumes that some "privileged
-+entity" is capable of executing tmem requests and storing pages of data;
-+this entity is currently a hypervisor and operations are performed via
-+hypercalls, but the entity could be a kernel policy, or perhaps a
-+"memory node" in a cluster of blades connected by a high-speed
-+interconnect such as hypertransport or QPI.
-+
-+Since tmem is not directly accessible and because page copying is done
-+to/from physical pageframes, it more suitable for in-kernel memory needs
-+than for userland applications.  However, there may be yet undiscovered
-+userland possibilities.
-+
-+With the tmem concept outlined vaguely and its broader potential hinted,
-+we will overview two existing examples of how tmem can be used by the
-+kernel.
-+
-+"Cleancache" can be thought of as a page-granularity victim cache for clean
-+pages that the kernel's pageframe replacement algorithm (PFRA) would like
-+to keep around, but can't since there isn't enough memory.   So when the
-+PFRA "evicts" a page, it first puts it into the cleancache via a call to
-+tmem.  And any time a filesystem reads a page from disk, it first attempts
-+to get the page from cleancache.  If it's there, a disk access is eliminated.
-+If not, the filesystem just goes to the disk like normal.  Cleancache is
-+"ephemeral" so whether a page is kept in cleancache (between the "put" and
-+the "get") is dependent on a number of factors that are invisible to
-+the kernel.
-+
-+"Frontswap" is so named because it can be thought of as the opposite of
-+a "backing store". Frontswap IS persistent, but for various reasons may not
-+always be available for use, again due to factors that may not be visible to
-+the kernel. (But, briefly, if the kernel is being "good" and has shared its
-+resources nicely, then it will be able to use frontswap, else it will not.)
-+Once a page is put, a get on the page will always succeed.  So when the
-+kernel finds itself in a situation where it needs to swap out a page, it
-+first attempts to use frontswap.  If the put works, a disk write and
-+(usually) a disk read are avoided.  If it doesn't, the page is written
-+to swap as usual.  Unlike cleancache, whether a page is stored in frontswap
-+vs swap is recorded in kernel data structures, so when a page needs to
-+be fetched, the kernel does a get if it is in frontswap and reads from
-+swap if it is not in frontswap.
-+
-+Both cleancache and frontswap may be optionally compressed, trading off 2x
-+space reduction vs 10x performance for access.  Cleancache also has a
-+sharing feature, which allows different nodes in a "virtual cluster"
-+to share a local page cache.
-+
-+Tmem has some similarity to IBM's Collaborative Memory Management, but
-+creates more of a partnership between the kernel and the "privileged
-+entity" and is not very invasive.  Tmem may be applicable for KVM and
-+containers; there is some disagreement on the extent of its value.
-+Tmem is highly complementary to ballooning (aka page granularity hot
-+plug) and memory deduplication (aka transparent content-based page
-+sharing) but still has value when neither are present.
-+
-+Performance is difficult to quantify because some benchmarks respond
-+very favorably to increases in memory and tmem may do quite well on
-+those, depending on how much tmem is available which may vary widely
-+and dynamically, depending on conditions completely outside of the
-+system being measured.  Ideas on how best to provide useful metrics
-+would be appreciated.
-+
-+Tmem is supported starting in Xen 4.0 and is in Xen's Linux 2.6.18-xen
-+source tree.  It is also released as a technology preview in Oracle's
-+Xen-based virtualization product, Oracle VM 2.2.  Again, Xen is not
-+necessarily a requirement, but currently provides the only existing
-+implementation of tmem.
-+
-+Lots more information about tmem can be found at:
-+  http://oss.oracle.com/projects/tmem
-+and there was a talk about it on the first day of Linux Symposium in
-+July 2009; an updated talk is planned at linux.conf.au in January 2010.
-+Tmem is the result of a group effort, including Dan Magenheimer,
-+Chris Mason, Dave McCracken, Kurt Hackel and Zhigang Wang, with helpful
-+input from Jeremy Fitzhardinge, Keir Fraser, Ian Pratt, Sunil Mushran,
-+Joel Becker, and Jan Beulich.
-+
-+THE TRANSCENDENT MEMORY API
-+
-+Transcendent memory is made up of a set of pools.  Each pool is made
-+up of a set of objects.  And each object contains a set of pages.
-+The combination of a 32-bit pool id, a 64-bit object id, and a 32-bit
-+page id, uniquely identify a page of tmem data, and this tuple is called
-+a "handle." Commonly, the three parts of a handle are used to address
-+a filesystem, a file within that filesystem, and a page within that file;
-+however an OS can use any values as long as they uniquely identify
-+a page of data.
-+
-+When a tmem pool is created, it is given certain attributes: It can
-+be private or shared, and it can be persistent or ephemeral.  Each
-+combination of these attributes provides a different set of useful
-+functionality and also defines a slightly different set of semantics
-+for the various operations on the pool.  Other pool attributes include
-+the size of the page and a version number.
-+
-+Once a pool is created, operations are performed on the pool.  Pages
-+are copied between the OS and tmem and are addressed using a handle.
-+Pages and/or objects may also be flushed from the pool.  When all
-+operations are completed, a pool can be destroyed.
-+
-+The specific tmem functions are called in Linux through a set of
-+accessor functions:
-+
-+int (*new_pool)(struct tmem_pool_uuid uuid, u32 flags);
-+int (*destroy_pool)(u32 pool_id);
-+int (*put_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
-+int (*get_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
-+int (*flush_page)(u32 pool_id, u64 object, u32 index);
-+int (*flush_object)(u32 pool_id, u64 object);
-+
-+The new_pool accessor creates a new pool and returns a pool id
-+which is a non-negative 32-bit integer.  If the flags parameter
-+specifies that the pool is to be shared, the uuid is a 128-bit "shared
-+secret" else it is ignored.  The destroy_pool accessor destroys the pool.
-+(Note: shared pools are not supported until security implications
-+are better understood.)
-+
-+The put_page accessor copies a page of data from the specified pageframe
-+and associates it with the specified handle.
-+
-+The get_page accessor looks up a page of data in tmem associated with
-+the specified handle and, if found, copies it to the specified pageframe.
-+
-+The flush_page accessor ensures that subsequent gets of a page with
-+the specified handle will fail.  The flush_object accessor ensures
-+that subsequent gets of any page matching the pool id and object
-+will fail.
-+
-+There are many subtle but critical behaviors for get_page and put_page:
-+- Any put_page (with one notable exception) may be rejected and the client
-+  must be prepared to deal with that failure.  A put_page copies, NOT moves,
-+  data; that is the data exists in both places.  Linux is responsible for
-+  destroying or overwriting its own copy, or alternately managing any
-+  coherency between the copies.
-+- Every page successfully put to a persistent pool must be found by a
-+  subsequent get_page that specifies the same handle.  A page successfully
-+  put to an ephemeral pool has an indeterminate lifetime and even an
-+  immediately subsequent get_page may fail.
-+- A get_page to a private pool is destructive, that is it behaves as if
-+  the get_page were atomically followed by a flush_page.  A get_page
-+  to a shared pool is non-destructive.  A flush_page behaves just like
-+  a get_page to a private pool except the data is thrown away.
-+- Put-put-get coherency is guaranteed.  For example, after the sequence:
-+        put_page(ABC,D1);
-+        put_page(ABC,D2);
-+        get_page(ABC,E)
-+  E may never contain the data from D1.  However, even for a persistent
-+  pool, the get_page may fail if the second put_page indicates failure.
-+- Get-get coherency is guaranteed.  For example, in the sequence:
-+        put_page(ABC,D);
-+        get_page(ABC,E1);
-+        get_page(ABC,E2)
-+  if the first get_page fails, the second must also fail.
-+- A tmem implementation provides no serialization guarantees (e.g. to
-+  an SMP Linux).  So if different Linux threads are putting and flushing
-+  the same page, the results are indeterminate.
