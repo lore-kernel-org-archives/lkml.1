@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932281AbZLRRhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZLRRkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932281AbZLRRhT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 12:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZLRRhO
+	id S1755320AbZLRRkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 12:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZLRRkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 12:37:14 -0500
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:45358 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755189AbZLRRhM (ORCPT
+	Fri, 18 Dec 2009 12:40:21 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:64318 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753783AbZLRRkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 12:37:12 -0500
-Date: Fri, 18 Dec 2009 23:07:03 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: x86: do_debug && PTRACE_SINGLESTEP broken by
-	08d68323d1f0c34452e614263b212ca556dae47f
-Message-ID: <20091218173703.GA3726@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20091218005650.GA20667@redhat.com>
+	Fri, 18 Dec 2009 12:40:19 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH] iplink: add macvlan options for bridge mode
+Date: Fri, 18 Dec 2009 18:37:49 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Anna Fischer <anna.fischer@hp.com>,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick McHardy <kaber@trash.net>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       bridge@lists.linux-foundation.org, virtualization@linux-foundation.com,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
+References: <1258497551-25959-1-git-send-email-arnd@arndb.de> <200912181445.07756.arnd@arndb.de> <20091218092547.4ddfde58@nehalam>
+In-Reply-To: <20091218092547.4ddfde58@nehalam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091218005650.GA20667@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912181837.50242.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/0AV9SA7SkIeczLuFyb6ONgwjn+IlQzXngGjb
+ XGnA2sjY+Qof6D+GXnW1E98OYU8+QrQvh9J+fW6JKJ7FFGpiJi
+ ouH7RuRrD8cU65rg9Jahw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 01:56:50AM +0100, Oleg Nesterov wrote:
-> Hi.
+On Friday 18 December 2009, Stephen Hemminger wrote:
+> On Fri, 18 Dec 2009 14:45:07 +0100
+> Arnd Bergmann <arnd@arndb.de> wrote:
 > 
-> do_debug() is obviously wrong wrt PTRACE_SINGLESTEP/TIF_SINGLESTEP, no?
+> > Ping!
+> > 
+> > Stephen, I submitted this twice but never heard back from you.
+> > The changes to macvlan have been merged in 2.6.33-rc1, so it
+> > would be good to have this included as well.
+> > 
+> >       Arnd
+> > 
 > 
-> Afaics this was broken by
-> 
-> 	hw-breakpoints: modifying generic debug exception to use thread-specific debug registers
-> 	commit 08d68323d1f0c34452e614263b212ca556dae47f
-> 
-> To verify, the "patch" below fixes the stepping for me, not sure what
-> is the proper fix...
-> 
-> Oleg.
-> 
-> --- arch/x86/kernel/traps.c~	2009-12-18 00:20:49.000000000 +0100
-> +++ arch/x86/kernel/traps.c	2009-12-18 01:44:05.000000000 +0100
-> @@ -575,7 +575,7 @@ dotraplinkage void __kprobes do_debug(st
->  		regs->flags &= ~X86_EFLAGS_TF;
->  	}
->  	si_code = get_si_code(tsk->thread.debugreg6);
-> -	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
-> +//	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
->  		send_sigtrap(tsk, regs, error_code, si_code);
->  	preempt_conditional_cli(regs);
->
+> iproute gets updated (after patch is in upstream). I haven't started
+> on the 2.6.33 version yet.
 
-The cause for such a behaviour isn't apparent to me and like others, I'm
-unable to recreate it (Single-stepping using gdb over a tiny program
-running on x86, latest -tip works fine).
+Ok, thanks for the info. Tell me when/if I should resubmit.
+I also have another (smaller) patch that also accepts the same
+options for the macvtap driver, which is not upstream.
+Should I also send that when the kernel code hits net-next,
+2.6.34-rc1 or 2.6.34?
 
-Did you try to narrow down the causative piece of code, among the
-several hooks in do_debug()?
-
-A separate 'dr6' and 'thread.debugreg6' was desired by the community (refer:
-Pine.LNX.4.44L0.0904011216460.3736-100000@iolanthe.rowland.org and
-Pine.LNX.4.44L0.0904091634150.4094-100000@iolanthe.rowland.org) then.
-'dr6' and 'thread.deebugreg6' would contain the value of the DR6 status
-register and every exception handler would reset the bits in them
-corresponding to which action has been taken. The difference in them being
-that 'thread.debugreg6' would be eventually processed by code interested
-in user-space while 'dr6' was restricted to those hooks in do_debug().
-
-Thanks,
-K.Prasad
-
+	Arnd
