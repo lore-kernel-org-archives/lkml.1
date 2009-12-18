@@ -1,113 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbZLRLpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZLRL4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751791AbZLRLpL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 06:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZLRLpJ
+	id S1751529AbZLRL4i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 06:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZLRL4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 06:45:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51695 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZLRLpG (ORCPT
+	Fri, 18 Dec 2009 06:56:37 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:3994 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbZLRL4g convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 06:45:06 -0500
-Date: Fri, 18 Dec 2009 12:45:01 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: -tip: origin tree build failure
-Message-ID: <20091218114501.GA17561@basil.fritz.box>
-References: <20091217094041.GA24708@elte.hu> <20091217122316.GB14088@elte.hu> <87bphxu5ef.fsf@basil.nowhere.org> <20091218112300.GA25726@elte.hu>
+	Fri, 18 Dec 2009 06:56:36 -0500
+X-SpamScore: -34
+X-BigFish: VPS-34(z21eWz1432R98dN148cMa84eizz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KUUJTZ-01-1GT-02
+X-M-MSG: 
+Date: Fri, 18 Dec 2009 12:56:39 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: radeon KMS causes GART Table Walk Errors (was: K8 ECC error
+ with linux-2.6.32)
+Message-ID: <20091218115639.GA28439@aftab>
+References: <200912112202.48173.johannes.hirte@fem.tu-ilmenau.de>
+ <200912170407.04568.johannes.hirte@fem.tu-ilmenau.de>
+ <20091217072232.GB4293@aftab>
+ <200912172003.30023.johannes.hirte@fem.tu-ilmenau.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20091218112300.GA25726@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200912172003.30023.johannes.hirte@fem.tu-ilmenau.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 18 Dec 2009 11:56:23.0391 (UTC) FILETIME=[1EBE76F0:01CA7FD9]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No, your patch is not the correct fix. As i said, PROC_PAGE_MONITOR provides 
-> the facility and mm/memory-failure.c uses that facility - and your patch does 
-> not solve that fundamental dependency issue, it just fudges around the 
-> dependencies.
+On Thu, Dec 17, 2009 at 08:03:29PM +0100, Johannes Hirte wrote:
+> GART Error Reporting was disabled. Here is the output after enabling it:
+>
+> datengrab ~ # lsmsr MC4 -V3
+> MC4_CTL              = 0x0000000000003bff
+>   CorrEccEn=0x1
+>   UnCorrEccEn=0x1
+>   CrcErr0En=0x1
+>   CrcErr1En=0x1
+>   CrcErr2En=0x1
+>   SyncPkt0En=0x1
+>   SyncPkt1En=0x1
+>   SyncPkt2En=0x1
+>   MstrAbrtEn=0x1
+>   TgtAbrtEn=0x1
+>   GartTblWkEn=0
+>   AtomicRMWEn=0x1
+>   WchDogTmrEn=0x1
+>   DramParEn=0
 
-Thanks for the report.
+[.. ]
 
-The filter is really part of the injector, even if it happens to be 
-in the other file. I first resisted adding an ifdef to it, but it seems
-we need it. I think I forgot to set to set CONFIG_EMBEDDED earlier,
-that is what made the earlier build test pass even when it shouldn't have.
+> MC4_CTL_MASK         = 0x0000000000000000
+>   CorrEccEn=0
+>   UnCorrEccEn=0
+>   CrcErr0En=0
+>   CrcErr1En=0
+>   CrcErr2En=0
+>   SyncPkt0En=0
+>   SyncPkt1En=0
+>   SyncPkt2En=0
+>   MstrAbrtEn=0
+>   TgtAbrtEn=0
+>   GartTblWkEn=0
 
-This updated patch should fix it. I tried to build test all applicable
-combinations, if anything is still missing please let me know.
+Ok, thanks for testing. It looks like your BIOS is applying the wrong
+workaround when the option is enabled. It clears MC4_CTL[GartTblWkEn],
+which means, it disables reporting of GART table walk errors while
+they're still being logged by the hw. What it should do is to set
+MC4_CTL_MASK[GartTblWkEn] to 1 so that logging gets disabled, as it is
+recommended in the K8 BKDG.
 
--Andi
+-- 
+Regards/Gruss,
+Boris.
 
----
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-HWPOISON: Add PROC_FS dependency to hwpoison injector v2
-
-The injector filter requires stable_page_flags() which is supplied
-by procfs. So make it dependent on that.
-
-Also add ifdefs around the filter code in memory-failure.c so that
-when the filter is disabled due to missing dependencies the whole
-code still builds. 
-
-Reported-by: Ingo Molnar 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- mm/Kconfig          |    2 +-
- mm/memory-failure.c |    9 +++++++++
- 2 files changed, 10 insertions(+), 1 deletion(-)
-
-Index: linux/mm/Kconfig
-===================================================================
---- linux.orig/mm/Kconfig
-+++ linux/mm/Kconfig
-@@ -252,7 +252,7 @@ config MEMORY_FAILURE
- 
- config HWPOISON_INJECT
- 	tristate "HWPoison pages injector"
--	depends on MEMORY_FAILURE && DEBUG_KERNEL
-+	depends on MEMORY_FAILURE && DEBUG_KERNEL && PROC_FS
- 	select PROC_PAGE_MONITOR
- 
- config NOMMU_INITIAL_TRIM_EXCESS
-Index: linux/mm/memory-failure.c
-===================================================================
---- linux.orig/mm/memory-failure.c
-+++ linux/mm/memory-failure.c
-@@ -52,6 +52,8 @@ int sysctl_memory_failure_recovery __rea
- 
- atomic_long_t mce_bad_pages __read_mostly = ATOMIC_LONG_INIT(0);
- 
-+#if defined(CONFIG_HWPOISON_INJECT) || defined(CONFIG_HWPOISON_INJECT_MODULE)
-+
- u32 hwpoison_filter_enable = 0;
- u32 hwpoison_filter_dev_major = ~0U;
- u32 hwpoison_filter_dev_minor = ~0U;
-@@ -164,6 +166,13 @@ int hwpoison_filter(struct page *p)
- 
- 	return 0;
- }
-+#else
-+int hwpoison_filter(struct page *p)
-+{
-+	return 0;
-+}
-+#endif
-+
- EXPORT_SYMBOL_GPL(hwpoison_filter);
- 
- /*
