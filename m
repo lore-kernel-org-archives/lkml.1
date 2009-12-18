@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZLRPBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZLRPBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZLRPBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 10:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbZLRPBe
+	id S1754162AbZLRPBo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 10:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZLRPBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 10:01:34 -0500
-Received: from khc.piap.pl ([195.187.100.11]:59437 "EHLO khc.piap.pl"
+	Fri, 18 Dec 2009 10:01:41 -0500
+Received: from mga09.intel.com ([134.134.136.24]:32569 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753884AbZLRPBd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 10:01:33 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: dmarkh@cfl.rr.com
-Cc: Alain Knaff <alain@knaff.lu>, Mark Hounschell <markh@compro.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, fdutils@fdutils.linux.lu
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-References: <4AFB3962.2020106@ntlworld.com> <4B292D84.5040306@compro.net>
-	<4B29624F.2080109@knaff.lu> <4B2A3805.8040707@compro.net>
-	<4B2A3E3E.8060405@knaff.lu> <4B2A4975.8020809@compro.net>
-	<4B2A49F4.6070402@compro.net> <4B2A4B86.8060307@knaff.lu>
-	<4B2A4C78.10107@compro.net> <4B2A4CF7.6040000@knaff.lu>
-	<4B2A4EC9.2030902@compro.net> <4B2A4FA5.5000701@knaff.lu>
-	<4B2A5192.6090602@compro.net> <4B2A6394.3080705@knaff.lu>
-	<4B2A98BB.5080406@knaff.lu>
-	<alpine.LFD.2.00.0912171256560.15740@localhost.localdomain>
-	<4B2AAC87.5000703@knaff.lu>
-	<alpine.LFD.2.00.0912171440420.15740@localhost.localdomain>
-	<4B2ABDC8.6090104@knaff.lu> <4B2B4485.6000305@cfl.rr.com>
-	<4B2B5F86.1090403@cfl.rr.com>
-Date: Fri, 18 Dec 2009 16:01:29 +0100
-In-Reply-To: <4B2B5F86.1090403@cfl.rr.com> (Mark Hounschell's message of "Fri,
-	18 Dec 2009 05:55:02 -0500")
-Message-ID: <m3aaxg1g3a.fsf@intrepid.localdomain>
+	id S1754111AbZLRPBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 10:01:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,418,1257148800"; 
+   d="scan'208";a="580220070"
+Message-ID: <4B2B9949.1000608@linux.intel.com>
+Date: Fri, 18 Dec 2009 07:01:29 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+To: Andi Kleen <andi@firstfloor.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>,
+       torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net
+Subject: Re: workqueue thing
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box>
+In-Reply-To: <20091218135033.GB8678@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Hounschell <dmarkh@cfl.rr.com> writes:
-
-> harley:/usr/src/linux-2.6-allstable # git bisect good
-> Bisecting: 2443 revisions left to test after this (roughly 11 steps)
-> [db563fc2e80534f98c7f9121a6f7dfe41f177a79] Merge
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfrench/cifs-2.6
+On 12/18/2009 5:50, Andi Kleen wrote:
+>> The only way something can be not cpu intensive and long 'running' is if
+>> it got blocked that long, and the right solution is to fix that
+>> contention, things should not be blocked for seconds.
 >
-> This one doesn't build:
->
-> CC [M]  fs/ext3/super.o
-> fs/ext3/super.c: In function ‘ext3_quota_on’:
-> fs/ext3/super.c:2839: error: ‘nd’ undeclared (first use in this function)
-> fs/ext3/super.c:2839: error: (Each undeclared identifier is reported only once
-> fs/ext3/super.c:2839: error: for each function it appears in.)
-> make[2]: *** [fs/ext3/super.o] Error 1
-> make[1]: *** [fs/ext3] Error 2
-> make: *** [fs] Error 2
->
-> I haven't yet determined that I can but, if I were to make a modification to the
-> tree now to fix this would that screw up the bisect process?
+> Work queue items shouldn't be blocking for seconds in the normal case, but it might
+> always happen in the exceptional case (e.g. handling some error condition).
+> In this case it would be good if the other jobs wouldn't be too
+> disrupted and the whole setup degrades gracefully.
 
-It won't, in such cases.
-But you can also git reset --hard another_commit_id (while doing git
-bisect) if it fixes this problem (e.g. some next commit).
-
-And you can skip uninteresting parts of the tree when starting git
-bisect (though if the cause is in skipped parts, the results will be
-meaningless).
--- 
-Krzysztof Halasa
+in addition, threads are cheap. Linux has no technical problem with running 100's of kernel threads
+(if not 1000s); they cost basically a task struct and a stack (2 pages) each and that's about it.
+making an elaborate-and-thus-fragile design to save a few kernel threads is likely a bad design direction...
