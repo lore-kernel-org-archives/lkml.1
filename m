@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbZLSRlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZLSSHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753092AbZLSRlM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 12:41:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZLSRlL
+	id S1753322AbZLSSHN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 13:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZLSSHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 12:41:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52787 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750919AbZLSRlJ (ORCPT
+	Sat, 19 Dec 2009 13:07:12 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:46359 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZLSSHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 12:41:09 -0500
-Date: Sat, 19 Dec 2009 09:40:56 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [1/2] SYSCTL: Make bin_table not const
-In-Reply-To: <20091219145832.A0424B158A@basil.firstfloor.org>
-Message-ID: <alpine.LFD.2.00.0912190929180.3712@localhost.localdomain>
-References: <20091219358.549678091@firstfloor.org> <20091219145832.A0424B158A@basil.firstfloor.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 19 Dec 2009 13:07:11 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 19 Dec 2009 10:07:05 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Nikolai ZHUBR <zhubr@mail.ru>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: epoll'ing tcp sockets for reading
+In-Reply-To: <1257480306.20091219150206@mail.ru>
+Message-ID: <alpine.DEB.2.00.0912190953160.4482@makko.or.mcafeemobile.com>
+References: <1257480306.20091219150206@mail.ru>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 19 Dec 2009, Nikolai ZHUBR wrote:
 
-
-On Sat, 19 Dec 2009, Andi Kleen wrote:
+> Hello people, I have a question about epoll'ing tcp sockets.
 > 
-> Turn all the bin_tables from const to non-const. This is needed for the next
-> patch. Unfortunately there were a lot of them, so the patch is rather 
-> large, but it is completely mechanic. 
+> Is it possible (with epoll or some other good method) to get userspace
+> notified not only of the fact that some data has become available
+> for the socket, but also of the respective _size_ available for
+> reading connected with this exact event?
+> 
+> Yes, read'ing until EAGAIN or using FIONREAD would provide this
+> sort of information, but there is a problem. In case of subsequent
+> continuous data arrival, an application could get stuck reading
+> data for one socket infinitely (after epoll return, just before
+> the next epoll), unless it implements some kind of artifical safety
+> measures.
 
-Ouch. I hate this.
+It is up to your application to handle data arrival correctly, according 
+to the latency/throughput constraints of your software.
+The "read until EAGAIN" that is cited inside the epoll man pages, does not 
+mean that you have to exhaust the data in one single event processing loop.
+After you have read and processed "enough data" (where enough depends on 
+the nature and constraints of your software), you can just drop that fd 
+into an "hot list" and pick the timeout for your next epoll_wait() 
+depending on the fact that such list is empty or not (you'd pick zero if 
+not empty). Proper handling of new and hot events will ensure that no 
+connections will be starving for service.
 
-I'd much rather have a constant sysctl bin_table.
 
-If the _only_ thing you want to do is to do a "warn-on-once" logic, I 
-would seriously suggest you use a small hash-table instead of turning 
-bin_table non-const.
 
-IOW, d something like this:
+- Davide
 
-	#define WARN_ONCE_HASH_BITS (10)
-	#define WARN_ONCE_HASH_SIZE (1<<WARN_ONCE_HASH_BITS)
 
-	static DECLARE_BITMAP(warn_once_bitmap, WARN_ONCE_HASH_SIZE);
-
-	/*
-	 * NOTE! We don't use the SMP-safe bit tests. We simply
-	 * don't care enough. 
-	 */
-	static void warn_on_bintable(const int *name, int nlen)
-	{
-		unsigned int hash = full_name_hash(name, nlen);
-		hash = hash_32(hash, WARN_ONCE_HASH_BITS);
-		if (__test_and_set_bit(warn_once_bitmap, hash))
-			return;
-		deprecated_sysctl_warning(name, nlen);
-	}
-
-which should do the right thing in all practical circumstances.
-
-(The above is obviously totally untested, I wrote it in the mail reader, 
-but it's obvious enough what the intent is).
-
-			Linus
