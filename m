@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZLSHaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbZLSHeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbZLSHaf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 02:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZLSHad
+	id S1753059AbZLSHeM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 02:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZLSHeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 02:30:33 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:50396 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752815AbZLSHac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 02:30:32 -0500
-Date: Sat, 19 Dec 2009 08:30:30 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Dan Williams <dan.j.williams@intel.com>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] drivers/dma: drop unnecesary memset
-Message-ID: <Pine.LNX.4.64.0912190830110.30546@ask.diku.dk>
+	Sat, 19 Dec 2009 02:34:11 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:58740 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbZLSHeK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 02:34:10 -0500
+Date: Sat, 19 Dec 2009 18:34:06 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>
+Subject: Re: kexec reboot broken with ioatdma?
+Message-ID: <20091219073406.GG9764@verge.net.au>
+References: <ada3a3a8v1g.fsf@roland-alpha.cisco.com>
+ <20091216224912.GC16219@verge.net.au>
+ <aday6l27c7w.fsf@roland-alpha.cisco.com>
+ <4B296930.9020704@intel.com>
+ <adatyvq7bbi.fsf@roland-alpha.cisco.com>
+ <1261174241.16958.6.camel@dwillia2-linux.ch.intel.com>
+ <adafx773ox9.fsf@roland-alpha.cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adafx773ox9.fsf@roland-alpha.cisco.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Fri, Dec 18, 2009 at 02:20:02PM -0800, Roland Dreier wrote:
+> 
+>  > Subject: ioat2,3: put channel hardware in known state at init
+>  > 
+>  > Put the ioat2 and ioat3 state machines in the halted state with all
+>  > errors cleared.
+> 
+> Yes, with this applied I was able to kexec reboot from a kernel with
+> ioatdma loaded and have ioatdma work in the new kernel.  So:
+> 
+> Tested-by: Roland Dreier <rolandd@cisco.com>
 
-memset of 0 is not needed after kzalloc
+This seems fine to me from a kexec point of view
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression x;
-statement S;
-@@
-
-x = kzalloc(...);
-if (x == NULL) S
-... when != x
--memset(x,0,...);// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/dma/dw_dmac.c |    2 --
- 1 file changed, 2 deletions(-)
-
-diff -u -p a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
---- a/drivers/dma/dw_dmac.c
-+++ b/drivers/dma/dw_dmac.c
-@@ -1270,8 +1270,6 @@ static int __init dw_probe(struct platfo
- 		goto err_kfree;
- 	}
- 
--	memset(dw, 0, sizeof *dw);
--
- 	dw->regs = ioremap(io->start, DW_REGLEN);
- 	if (!dw->regs) {
- 		err = -ENOMEM;
+Acked-by: Simon Horman <horms@verge.net.au>
