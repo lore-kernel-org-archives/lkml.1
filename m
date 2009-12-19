@@ -1,116 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbZLRX5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZLSAFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbZLRX5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 18:57:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZLRX5f
+	id S1755841AbZLSAFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 19:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZLSAFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 18:57:35 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:59037 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbZLRX5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 18:57:33 -0500
-Message-ID: <4B2C15D5.9040501@gawab.com>
-Date: Fri, 18 Dec 2009 15:52:53 -0800
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091215 Shredder/3.0
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, gregkh@suse.de, error27@gmail.com,
-       ray-lk@madrabbit.org
-Subject: Re: [PATCH] staging: s5k3e2fx.c: simplify complexity by factoring
-References: <1260910330-3409-1-git-send-email-jdm64@gawab.com> <20091218184146.GE2909@kroah.com>
-In-Reply-To: <20091218184146.GE2909@kroah.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Dec 2009 19:05:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:59707 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751165AbZLSAFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 19:05:21 -0500
+Date: Sat, 19 Dec 2009 11:04:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for December 19
+Message-Id: <20091219110457.d6c5de1f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__19_Dec_2009_11_04_57_+1100_8vOvZ0dxUC+ICVSR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/2009 10:41 AM, Greg KH wrote:
+--Signature=_Sat__19_Dec_2009_11_04_57_+1100_8vOvZ0dxUC+ICVSR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, Dec 15, 2009 at 12:52:10PM -0800, Justin Madru wrote:
->> the code was looping, seting s_move[i] to the following calculations
->>
->> if (actual_step>= 0)
->>          s_move[i] = ((((i + 1) * gain + 0x200) - (i * gain + 0x200)) / 0x400);
->> else
->>          s_move[i] = ((((i + 1) * gain - 0x200) - (i * gain - 0x200)) / 0x400);
->>
->> but, this code redues to the expression
->> 	s_move[i] = gain>>  10;
->>
->> The reason for the complexity was to generate a step function with
->> integer division and rounding to land on specific values. But these calculations
->> can be simplified to the following code:
->>
->> 	gain = ((actual_step<<  10) / 5)>>  10;
->> 	for (i = 0; i<= 4; i++)
->> 		s_move[i] = gain;
->
-> Care to resend this with a Signed-off-by: line, and add the reviewed-by
-> line that was requested by Ray?
->
-> thanks,
->
-> greg k-h
-Sorry about that, new at submitting patches, don't completely know the flow yet.
-Does the below format work for you? Hopefully my email client won't mess the patch up.
+Hi all,
 
-Justin Madru
-------
+I said:
+> News:  there will be no linux-next releases until at least Dec 24 and,
+> more likely, Dec 29.  Have a Merry Christmas and take a break.  :-)
 
-From: Justin Madru<jdm64@gawab.com>
-Date: Tue, 15 Dec 2009 12:27:31 -0800
-Subject: [PATCH] staging: s5k3e2fx.c: simplify complexity by factoring
+Well, I decided I had time for one more so it will be based in -rc1).
 
-the code was looping, setting s_move[i] to the following calculations
+This one has not had the build testing *between* merges, but has had all
+the normal build testing at the end.  Since the latter testing showed no
+problems, this just means that there may be more unbisectable points in
+the tree (but that is unlikely).
 
-if (actual_step>= 0)
-         s_move[i] = ((((i + 1) * gain + 0x200) - (i * gain + 0x200)) / 0x400);
-else
-         s_move[i] = ((((i + 1) * gain - 0x200) - (i * gain - 0x200)) / 0x400);
+Changes since 20091218:
 
-but, this code reduces to the expression
-	s_move[i] = gain>>  10;
+The mips tree lost its conflicts.
 
-The reason for the complexity was to generate a step function with
-integer division and rounding to land on specific values. But these calculations
-can be simplified to the following code:
+The rr tree lost its conflicts and merge fixup.
 
-	gain = ((actual_step<<  10) / 5)>>  10;
-	for (i = 0; i<= 4; i++)
-		s_move[i] = gain;
+The backlight tree lost its conflicts.
 
-Signed-off-by: Justin Madru<jdm64@gawab.com>
-Reviewed-by: Ray Lee<ray-lk@madrabbit.org>
----
-  drivers/staging/dream/camera/s5k3e2fx.c |   10 +++-------
-  1 files changed, 3 insertions(+), 7 deletions(-)
+The drm tree lost its conflict.
 
-diff --git a/drivers/staging/dream/camera/s5k3e2fx.c b/drivers/staging/dream/camera/s5k3e2fx.c
-index f0e49be..93162a0 100644
---- a/drivers/staging/dream/camera/s5k3e2fx.c
-+++ b/drivers/staging/dream/camera/s5k3e2fx.c
-@@ -1092,14 +1092,10 @@ static int32_t s5k3e2fx_move_focus(int direction, int32_t num_steps)
+The fsnotify tree lost its build failure and it conflicts.
 
-  	actual_step = step_direction * (int16_t)num_steps;
-  	pos_offset = init_code + s5k3e2fx_ctrl->curr_lens_pos;
--	gain = actual_step * 0x400 / 5;
-+	gain = ((actual_step<<  10) / 5)>>  10;
+The limits tree gained a conflict against Linus' tree.
 
--	for (i = 0; i<= 4; i++) {
--		if (actual_step>= 0)
--			s_move[i] = ((((i+1)*gain+0x200) - (i*gain+0x200))/0x400);
--		else
--			s_move[i] = ((((i+1)*gain-0x200) - (i*gain-0x200))/0x400);
--	}
-+	for (i = 0; i<= 4; i++)
-+		s_move[i] = gain;
+The tip tree gained a conflict against the limits tree.
 
-  	/* Ring Damping Code */
-  	for (i = 0; i<= 4; i++) {
--- 
-1.6.5.6
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+CONFLICT (content): Merge conflict in fs/ocfs2/file.c
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (add/add): Merge conflict in fs/xfs/linux-2.6/xfs_trace.h
+CONFLICT (content): Merge conflict in include/linux/fs.h
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-13=
+94.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-av=
+c.c
+CONFLICT (add/add): Merge conflict in drivers/media/dvb/firewire/firedtv-fw=
+.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv.h
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in fs/exec.c
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in include/linux/sched.h
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Sat__19_Dec_2009_11_04_57_+1100_8vOvZ0dxUC+ICVSR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkssGKkACgkQjjKRsyhoI8wJZwCfVP/rcGIyGyFbxlms02r28MJc
+OK0An3u3uq1z0zsXKfiBApDxbqCFgvxT
+=uGLJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__19_Dec_2009_11_04_57_+1100_8vOvZ0dxUC+ICVSR--
