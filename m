@@ -1,133 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZLST7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbZLSUDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbZLST7n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 14:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbZLST7n
+	id S1753448AbZLSUDu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 15:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZLSUDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 14:59:43 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64756 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbZLST7m (ORCPT
+	Sat, 19 Dec 2009 15:03:47 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:57376 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330AbZLSUDq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 14:59:42 -0500
+	Sat, 19 Dec 2009 15:03:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gzdEkKHYfZQXllvZ71Ejy/81CxZAvMrYhd8T8SvnJGWcHOB3mH5CCa2fAleik0pzu2
-         ok8x6547kP2+q1cXuP3x5lUAjimQdaznB5hQKaLXsgQgr+gCsPVczgbB1llLI1Bt9JL5
-         D35obF6GZ9rOm0v9KCqXbG6eO0yfEochSAf2s=
-Date: Sat, 19 Dec 2009 11:59:35 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
-	suspend-resume patch w/ rwsems)
-Message-ID: <20091219195935.GB4073@core.coreip.homeip.net>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912160311.05915.rjw@sisk.pl> <20091216064025.GB2699@core.coreip.homeip.net> <200912182343.29190.rjw@sisk.pl>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LjocuRPRU+LczPraefndc72S6pCK1Jr712thv1bLo0ycfBDIZxxAUqfkht4UpCUxMR
+         1Pe/MGnLkckCsEbaoNwlHK2on1srgmOMlUdCLADaQ03vMX9+Xw2d0wnDeWffrIMcJsWZ
+         WoEciXbMBuQ4xnkel1X33kaemI7WocBkuxy3E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912182343.29190.rjw@sisk.pl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <b4198de60912172315w73223eh996d32c89ac807fd@mail.gmail.com>
+References: <b4198de60912172315w73223eh996d32c89ac807fd@mail.gmail.com>
+Date: Sat, 19 Dec 2009 15:03:45 -0500
+Message-ID: <b4198de60912191203s2fa8d0cfpe0db59c8c8f42fa5@mail.gmail.com>
+Subject: Re: [PULL] alpha-2.6
+From: Matt Turner <mattst88@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-alpha@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 11:43:29PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 16 December 2009, Dmitry Torokhov wrote:
-> > On Wed, Dec 16, 2009 at 03:11:05AM +0100, Rafael J. Wysocki wrote:
-> > > On Tuesday 15 December 2009, Linus Torvalds wrote:
-> > > > 
-> > > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> > > > > > 
-> > > > > > Give a real example that matters.
-> > > > > 
-> > > > > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
-> > > > > like this:
-> > > > 
-> > > > No. 
-> > > > 
-> > > > I mean something real - something like
-> > > > 
-> > > >  - if you run on a non-PC with two USB buses behind non-PCI controllers.
-> > > > 
-> > > >  - device xyz.
-> > > > 
-> > > > > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
-> > > > > show that serio devices take much more time to suspend than USB.
-> > > > 
-> > > > I mean in general - something where you actually have hard data that some 
-> > > > device really needs anythign more than my one-liner, and really _needs_ 
-> > > > some complex infrastructure.
-> > > > 
-> > > > Not "let's imagine a case like xyz".
-> > > 
-> > > As I said I would, I made some measurements.
-> > > 
-> > > I measured the total time of suspending and resuming devices as shown by the
-> > > code added by this patch:
-> > > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
-> > > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
-> > > different and the HP was running 64-bit kernel and user space).
-> > > 
-> > > I took four cases into consideration:
-> > > (1) synchronous suspend and resume (/sys/power/pm_async = 0)
-> > > (2) asynchronous suspend and resume as introduced by the async branch at:
-> > >     http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-> > > (3) asynchronous suspend and resume like in (2), but with your one-liner setting
-> > >     the power.async_suspend flag for PCI bridges on top
-> > > (4) asynchronous suspend and resume like in (2), but with an extra patch that
-> > >     is appended on top
-> > > 
-> > > For those tests I set power.async_suspend for all USB devices, all serio input
-> > > devices, the ACPI battery and the USB PCI controllers (to see the impact of the
-> > > one-liner, if any).
-> > > 
-> > > I carried out 5 consecutive suspend-resume cycles (started from under X) on
-> > > each box in each case, and the raw data are here (all times in milliseconds):
-> > > http://www.sisk.pl/kernel/data/async-suspend.pdf
-> > > 
-> > > The summarized data are below (the "big" numbers are averages and the +/-
-> > > numbers are standard deviations, all in milliseconds):
-> > > 
-> > > 			HP nx6325		MSI Wind U100
-> > > 
-> > > sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> > > sync resume		2955 (+/- 2)	3597 (+/- 25)
-> > > 
-> > > async suspend		1553 (+/- 49)	1177 (+/- 32)
-> > > async resume		2692 (+/- 326)	3556  (+/- 33)
-> > > 
-> > > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> > > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> > > 
-> > > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> > > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> > > 
-> > > So, in my opinion, with the above set of "async" devices, it doesn't
-> > > make sense to do async suspend at all, because the sync suspend is actually
-> > > the fastest on both machines.
-> > 
-> > I think the async suspend is not asynchronous enough then - what kind of
-> > time do you get if you simply comment out call to psmouse_reset() in
-> > drivers/input/mouse/psmouse-base.c:psmouse_cleanup()?  (Just for testing
-> > purposes only, I don't think we want to do that by default.)
-> 
-> The problem apparently is that the i8042 suspend/resume is synchronous.
-> 
-> Do you think it's safe to mark it as asynchronous?
-> 
+On Fri, Dec 18, 2009 at 2:15 AM, Matt Turner <mattst88@gmail.com> wrote:
+> Hi Linus,
+>
+> Please pull the 'for-linus' branch from
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/mattst88/alpha-2.6.git
+> for-linus
+>
+> It contains some catch-up work, adding missing syscalls and perf
+> support, along with the new unreachable() stuff.
 
-Umm.. there lie dragons. There is an implicit relationship between i8042
-and PNP/ACPI devices representing keyboard and mouse ports, and I am not
-sure how happy i8042 (and most importantly the BIOS) will be if they get
-shut down before i8042. Also there is EC which is in theory independent
-but in practice not so much.
+Ping?
 
--- 
-Dmitry
+I read your -rc1 announcement and assumed this pull request was one of
+the ones you were talking about.
+
+The changes are very basic, but are nonetheless pretty important.
+(latest udev doesn't run without the added inotify_init1 syscall).
+
+> Thanks,
+> Matt Turner
+>
+> The following changes since commit 55639353a0035052d9ea6cfe4dde0ac7fcbb2c9f:
+>  Linus Torvalds (1):
+>        Linux 2.6.33-rc1
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/mattst88/alpha-2.6.git for-linus
+>
+> Daniele Calore (1):
+>      alpha: Wire up missing/new syscalls
+>
+> David Daney (1):
+>      alpha: Convert BUG() to use unreachable()
+>
+> Michael Cree (1):
+>      alpha: Add minimal support for software performance events
+>
+>  arch/alpha/Kconfig                  |    1 +
+>  arch/alpha/include/asm/bug.h        |    3 ++-
+>  arch/alpha/include/asm/perf_event.h |    9 +++++++++
+>  arch/alpha/include/asm/unistd.h     |   17 ++++++++++++++++-
+>  arch/alpha/kernel/systbls.S         |   16 +++++++++++++++-
+>  5 files changed, 43 insertions(+), 3 deletions(-)
+>  create mode 100644 arch/alpha/include/asm/perf_event.h
+>
