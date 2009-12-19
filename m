@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZLSP7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZLSQDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbZLSP7s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 10:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZLSP7r
+	id S1752751AbZLSQDe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 11:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZLSQDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 10:59:47 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33346 "EHLO
+	Sat, 19 Dec 2009 11:03:33 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55216 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbZLSP7r (ORCPT
+	with ESMTP id S1751861AbZLSQDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 10:59:47 -0500
-Date: Sat, 19 Dec 2009 15:59:45 +0000
+	Sat, 19 Dec 2009 11:03:31 -0500
+Date: Sat, 19 Dec 2009 16:03:30 +0000
 From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, eparis@redhat.com
-Subject: [PATCH] fix braindamage in audit_tree.c untag_chunk()
-Message-ID: <20091219155945.GL18217@ZenIV.linux.org.uk>
+Subject: [PATCH] fix more leaks in audit_tree.c tag_chunk()
+Message-ID: <20091219160330.GM18217@ZenIV.linux.org.uk>
+References: <20091219155945.GL18217@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091219155945.GL18217@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	... aka "Al had badly fscked up when writing that thing and nobody
-noticed until Eric had fixed leaks that used to mask the breakage".
-
-The function essentially creates a copy of old array sans one element
-and replaces the references to elements of original (they are on cyclic
-lists) with those to corresponding elements of new one.  After that the
-old one is fair game for freeing.
-
-First of all, there's a dumb braino: when we get to list_replace_init we
-use indices for wrong arrays - position in new one with the old array and
-vice versa.
-
-Another bug is more subtle - termination condition is wrong if the element
-to be excluded happens to be the last one.  We shouldn't go until we fill
-the new array, we should go until we'd finished the old one.  Otherwise
-the element we are trying to kill will remain on the cyclic lists...
-
-That crap used to be masked by several leaks, so it was not quite trivial
-to hit.  Eric had fixed some of those leaks a while ago and the shit had
-hit the fan...
+	Several leaks in audit_tree didn't get caught by commit
+318b6d3d7ddbcad3d6867e630711b8a705d873d7, including the leak on
+normal exit in case of multiple rules refering to the same chunk.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
 diff --git a/kernel/audit_tree.c b/kernel/audit_tree.c
 --- a/kernel/audit_tree.c
 +++ b/kernel/audit_tree.c
-@@ -277,7 +277,7 @@ static void untag_chunk(struct node *p)
- 		owner->root = NULL;
+@@ -373,15 +373,17 @@ static int tag_chunk(struct inode *inode, struct audit_tree *tree)
+ 	for (n = 0; n < old->count; n++) {
+ 		if (old->owners[n].owner == tree) {
+ 			spin_unlock(&hash_lock);
+-			put_inotify_watch(watch);
++			put_inotify_watch(&old->watch);
+ 			return 0;
+ 		}
  	}
+ 	spin_unlock(&hash_lock);
  
--	for (i = j = 0; i < size; i++, j++) {
-+	for (i = j = 0; j <= size; i++, j++) {
- 		struct audit_tree *s;
- 		if (&chunk->owners[j] == p) {
- 			list_del_init(&p->list);
-@@ -290,7 +290,7 @@ static void untag_chunk(struct node *p)
- 		if (!s) /* result of earlier fallback */
- 			continue;
- 		get_tree(s);
--		list_replace_init(&chunk->owners[i].list, &new->owners[j].list);
-+		list_replace_init(&chunk->owners[j].list, &new->owners[i].list);
- 	}
+ 	chunk = alloc_chunk(old->count + 1);
+-	if (!chunk)
++	if (!chunk) {
++		put_inotify_watch(&old->watch);
+ 		return -ENOMEM;
++	}
  
- 	list_replace_rcu(&chunk->hash, &new->hash);
+ 	mutex_lock(&inode->inotify_mutex);
+ 	if (inotify_clone_watch(&old->watch, &chunk->watch) < 0) {
+@@ -425,7 +427,8 @@ static int tag_chunk(struct inode *inode, struct audit_tree *tree)
+ 	spin_unlock(&hash_lock);
+ 	inotify_evict_watch(&old->watch);
+ 	mutex_unlock(&inode->inotify_mutex);
+-	put_inotify_watch(&old->watch);
++	put_inotify_watch(&old->watch); /* pair to inotify_find_watch */
++	put_inotify_watch(&old->watch); /* and kill it */
+ 	return 0;
+ }
+ 
