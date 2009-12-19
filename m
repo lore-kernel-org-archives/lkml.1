@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZLSEQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZLSETP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZLSEQU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 23:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbZLSEQT
+	id S1756095AbZLSETP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 23:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZLSETO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 23:16:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36589
+	Fri, 18 Dec 2009 23:19:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36598
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756027AbZLSEQS (ORCPT
+	by vger.kernel.org with ESMTP id S1756039AbZLSETN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 23:16:18 -0500
-Date: Fri, 18 Dec 2009 20:16:20 -0800 (PST)
-Message-Id: <20091218.201620.28810836.davem@davemloft.net>
-To: mcarlson@broadcom.com
-Cc: roel.kluin@gmail.com, netdev@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] broadcom: bcm54xx_shadow_read() errors ignored in
- bcm54xx_adjust_rxrefclk()
+	Fri, 18 Dec 2009 23:19:13 -0500
+Date: Fri, 18 Dec 2009 20:19:14 -0800 (PST)
+Message-Id: <20091218.201914.102544489.davem@davemloft.net>
+To: jesse.brandeburg@intel.com
+Cc: roger.oksanen@cs.helsinki.fi, stern@rowland.harvard.edu,
+       jeffrey.t.kirsher@intel.com, bruce.w.allan@intel.com,
+       peter.p.waskiewicz.jr@intel.com, john.ronciak@intel.com,
+       e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: e100 REGRESSION in 2.6.32 (PATCH v2)
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091218014138.GA22080@xw6200.broadcom.net>
-References: <4B28DA62.40909@gmail.com>
-	<20091218014138.GA22080@xw6200.broadcom.net>
+In-Reply-To: <alpine.WNT.2.00.0912170919010.2612@jbrandeb-desk1.amr.corp.intel.com>
+References: <Pine.LNX.4.44L0.0912171046070.2645-100000@iolanthe.rowland.org>
+	<200912171810.45575.roger.oksanen@cs.helsinki.fi>
+	<alpine.WNT.2.00.0912170919010.2612@jbrandeb-desk1.amr.corp.intel.com>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,14 +32,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Matt Carlson" <mcarlson@broadcom.com>
-Date: Thu, 17 Dec 2009 17:41:39 -0800
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Date: Thu, 17 Dec 2009 09:21:49 -0800 (Pacific Standard Time)
 
-> On Wed, Dec 16, 2009 at 05:02:26AM -0800, Roel Kluin wrote:
->> If not signed read errors are ignored.
->> 
->> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > 
-> Acked-by: Matt Carlson <mcarlson@broadcom.com>
+> On Thu, 17 Dec 2009, Roger Oksanen wrote:
+>> e100: Fix broken cbs accounting due to missing memset.
+>> 
+>> Alan Stern noticed that e100 caused slab corruption.
+>> commit 98468efddb101f8a29af974101c17ba513b07be1 changed
+>> the allocation of cbs to use dma pools that don't return zeroed memory,
+>> especially the cb->status field used to track which cb to clean, causing
+>> (the visible) double freeing of skbs and a wrong free cbs count.
+>> 
+>> Now the cbs are explicitly zeroed at allocation time.
+>> 
+>> Reported-by: Alan Stern <stern@rowland.harvard.edu>
+>> Tested-by: Alan Stern <stern@rowland.harvard.edu>
+>> Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+> 
+> Change looks reasonable, ACK.
 
-Applied, thanks.
+Applied, thanks everyone.  I'll try to requeue the e100 stuff
+together into -stable again now that this is resolved.
+
+> should we also consider a followon patch to zero memory allocated with 
+> pci_pools?  Seems useful.
+
+Nah, it's more fun debugging subtle bugs like this one.
+:-)
