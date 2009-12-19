@@ -1,130 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbZLSVdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZLSVi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbZLSVdG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 16:33:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbZLSVdF
+	id S1753842AbZLSVi0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 16:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbZLSViZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 16:33:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35808 "EHLO ogre.sisk.pl"
+	Sat, 19 Dec 2009 16:38:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60828 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753557AbZLSVdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 16:33:01 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Sat, 19 Dec 2009 22:33:44 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912182343.29190.rjw@sisk.pl> <20091219195935.GB4073@core.coreip.homeip.net>
-In-Reply-To: <20091219195935.GB4073@core.coreip.homeip.net>
+	id S1752012AbZLSViZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 16:38:25 -0500
+Message-ID: <4B2D4781.20907@kernel.org>
+Date: Sat, 19 Dec 2009 13:37:05 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Vincent ETIENNE <ve@vetienne.net>
+CC: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org
+Subject: Re: Kernel 2.66.33-rC1 boot problem bisected to commit 99935a7a59eaca0292c1a5880e10bae03f4a5e3d
+References: <200912191707.16648.ve@vetienne.net>
+In-Reply-To: <200912191707.16648.ve@vetienne.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912192233.44575.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 December 2009, Dmitry Torokhov wrote:
-> On Fri, Dec 18, 2009 at 11:43:29PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 16 December 2009, Dmitry Torokhov wrote:
-> > > On Wed, Dec 16, 2009 at 03:11:05AM +0100, Rafael J. Wysocki wrote:
-> > > > On Tuesday 15 December 2009, Linus Torvalds wrote:
-> > > > > 
-> > > > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> > > > > > > 
-> > > > > > > Give a real example that matters.
-> > > > > > 
-> > > > > > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
-> > > > > > like this:
-> > > > > 
-> > > > > No. 
-> > > > > 
-> > > > > I mean something real - something like
-> > > > > 
-> > > > >  - if you run on a non-PC with two USB buses behind non-PCI controllers.
-> > > > > 
-> > > > >  - device xyz.
-> > > > > 
-> > > > > > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
-> > > > > > show that serio devices take much more time to suspend than USB.
-> > > > > 
-> > > > > I mean in general - something where you actually have hard data that some 
-> > > > > device really needs anythign more than my one-liner, and really _needs_ 
-> > > > > some complex infrastructure.
-> > > > > 
-> > > > > Not "let's imagine a case like xyz".
-> > > > 
-> > > > As I said I would, I made some measurements.
-> > > > 
-> > > > I measured the total time of suspending and resuming devices as shown by the
-> > > > code added by this patch:
-> > > > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
-> > > > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
-> > > > different and the HP was running 64-bit kernel and user space).
-> > > > 
-> > > > I took four cases into consideration:
-> > > > (1) synchronous suspend and resume (/sys/power/pm_async = 0)
-> > > > (2) asynchronous suspend and resume as introduced by the async branch at:
-> > > >     http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-> > > > (3) asynchronous suspend and resume like in (2), but with your one-liner setting
-> > > >     the power.async_suspend flag for PCI bridges on top
-> > > > (4) asynchronous suspend and resume like in (2), but with an extra patch that
-> > > >     is appended on top
-> > > > 
-> > > > For those tests I set power.async_suspend for all USB devices, all serio input
-> > > > devices, the ACPI battery and the USB PCI controllers (to see the impact of the
-> > > > one-liner, if any).
-> > > > 
-> > > > I carried out 5 consecutive suspend-resume cycles (started from under X) on
-> > > > each box in each case, and the raw data are here (all times in milliseconds):
-> > > > http://www.sisk.pl/kernel/data/async-suspend.pdf
-> > > > 
-> > > > The summarized data are below (the "big" numbers are averages and the +/-
-> > > > numbers are standard deviations, all in milliseconds):
-> > > > 
-> > > > 			HP nx6325		MSI Wind U100
-> > > > 
-> > > > sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> > > > sync resume		2955 (+/- 2)	3597 (+/- 25)
-> > > > 
-> > > > async suspend		1553 (+/- 49)	1177 (+/- 32)
-> > > > async resume		2692 (+/- 326)	3556  (+/- 33)
-> > > > 
-> > > > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> > > > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> > > > 
-> > > > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> > > > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> > > > 
-> > > > So, in my opinion, with the above set of "async" devices, it doesn't
-> > > > make sense to do async suspend at all, because the sync suspend is actually
-> > > > the fastest on both machines.
-> > > 
-> > > I think the async suspend is not asynchronous enough then - what kind of
-> > > time do you get if you simply comment out call to psmouse_reset() in
-> > > drivers/input/mouse/psmouse-base.c:psmouse_cleanup()?  (Just for testing
-> > > purposes only, I don't think we want to do that by default.)
-> > 
-> > The problem apparently is that the i8042 suspend/resume is synchronous.
-> > 
-> > Do you think it's safe to mark it as asynchronous?
-> > 
+Vincent ETIENNE wrote:
 > 
-> Umm.. there lie dragons. There is an implicit relationship between i8042
-> and PNP/ACPI devices representing keyboard and mouse ports, and I am not
-> sure how happy i8042 (and most importantly the BIOS) will be if they get
-> shut down before i8042. Also there is EC which is in theory independent
-> but in practice not so much.
+> I am experiencing boot problem with kernel 2.6.33-rc1.  Bisection points to
+> 
+> commit 99935a7a59eaca0292c1a5880e10bae03f4a5e3d
+> Author: Yinghai Lu <yinghai@kernel.org>
+> Date:   Sun Oct 4 21:54:24 2009 -0700
+> 
+>     x86/PCI: read root resources from IOH on Intel
+> 
+>     For intel systems with multi IOH, we should read peer root resources
+>     directly from PCI config space, and don't trust _CRS.
+> 
+>     Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>     Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+> 
+> 
+> V2.6.32 is OK
+> 
+> V2.6.33 is bad. A brief summary of the problem  is that very quickly kernel ( 
+> less than 1.5 seconds) try to mount the root device without doing any probing 
+> on disk leading to a kernel panic ( could not mount root devices).  Alsa 
+> devices and usb devices is also not detected / not probed. Maybe other devices 
+> is also not detected but that just from the message seen on the monitor before 
+> the panic so it's not very accurate (no log as it doesn't boot and only one 
+> computer so no serial console). Sounds like the kernel didn't see any devices 
+> (disk, usb, sounds). 
+> 
+> I have a intel system so the commit log seems possibly relevant for the my 
+> computer (Not sure of what is IOH, i have take it for I/O Hub in the lspci out 
+> output and i have 3 of these according to lspci).
+> 
+> Have try to revert the commit on a 2.6.33_rc1 base but this lead to some 
+> compilation problem (symbol not defined and so on).  So I'm not completely sure 
+> of my bisection (also note that it's the first time i use git so an error is 
+> very possible).
+> 
+> Attached a dmesg log with kernel 2.6.32-rc8 and lspci -vvv output.
+> 
+> If you need further information/testing, i will my best to provide these.
 
-I see.
+please check
 
-Is this possible to identify ACPI devices that should wait for the i8042
-suspend and that should be waited for by it on resume?
+Subject: [PATCH 1/7] x86/pci: intel ioh bus num reg accessing fix
 
-Rafael
+it is above 0x100, so if mmconf is not enable, need to skip it
+
+Reported-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/pci/intel_bus.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: linux-2.6/arch/x86/pci/intel_bus.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/intel_bus.c
++++ linux-2.6/arch/x86/pci/intel_bus.c
+@@ -49,6 +49,10 @@ static void __devinit pci_root_bus_res(s
+ 	u64 mmioh_base, mmioh_end;
+ 	int bus_base, bus_end;
+ 
++	/* some sys doesn't get mmconf enabled */
++	if (dev->cfg_size < 0x200)
++		return;
++
+ 	if (pci_root_num >= PCI_ROOT_NR) {
+ 		printk(KERN_DEBUG "intel_bus.c: PCI_ROOT_NR is too small\n");
+ 		return;
+
