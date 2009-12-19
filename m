@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbZLSUSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbZLSUxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbZLSUSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 15:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZLSUSV
+	id S1753547AbZLSUxG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 15:53:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZLSUxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 15:18:21 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44986 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753324AbZLSUSV (ORCPT
+	Sat, 19 Dec 2009 15:53:05 -0500
+Received: from us-mx4.synaptics.com ([12.178.49.178]:26741 "EHLO
+	us-mx4.synaptics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbZLSUxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 15:18:21 -0500
-Date: Sat, 19 Dec 2009 21:18:17 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [PATCH 2/4] mfd: mc13783: When probing, unlock the mc13783
-	before subsystems initialisation.
-Message-ID: <20091219201816.GA28742@pengutronix.de>
-References: <1260808880.2022.98.camel@climbing-alby> <1260810776.2022.130.camel@climbing-alby> <1260811085.2022.135.camel@climbing-alby> <1261152746.3356.72.camel@climbing-alby>
+	Sat, 19 Dec 2009 15:53:03 -0500
+X-PGP-Universal: processed;
+	by securemail.synaptics.com on Sat, 19 Dec 2009 11:52:12 -0800
+Message-ID: <4B2D3B3A.2010308@synaptics.com>
+Date: Sat, 19 Dec 2009 12:44:42 -0800
+From: Christopher Heiny <cheiny@synaptics.com>
+Organization: Synaptics, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Allie Xiong <axiong@synaptics.com>, William Manson <WManson@synaptics.com>,
+       Christopher Heiny <Cheiny@synaptics.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [RFC] [PATCH 0/1] input/touchscreen: Synaptics Touchscreen Driver
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1261152746.3356.72.camel@climbing-alby>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This patch adds an initial driver supporting Synaptics ClearPad
+touchscreens that use the RMI4 protocol, as defined here:
 
-On Fri, Dec 18, 2009 at 05:12:26PM +0100, Alberto Panizzo wrote:
-> Ping :)
-> 
-> PATCH 1 & 2 are fixes that can go to .33
-I don't like patch 1.  I'd prefer that drivers touching
-MC13783_REG_POWER_MISCELLANEOUS are aware of the bit in question and
-wouldn't rely on mc13783-core.
+http://www.synaptics.com/sites/default/files/511-000136-01_revA.pdf
 
-Best regards
-Uwe
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+This version of the driver does not support all features of the RMI4
+protocol yet.  We felt it more important to start with a solid
+implementation of the basic functionality, and then build on that base
+to support additional features (such as gestures, proximity detection,
+capacitive buttons, and so on).
+
+Additionally, as this is our team's first venture into the wonderful
+world of kernel submissions, we figured it was important to start out
+initially with a fairly simple codebase, just in case we're doing
+something horribly wrong.
+
+
+The significant files in this version of the driver are:
+      rmi_core.c
+          Implements the basic core of the RMI4 protocol
+          including self-discovery of RMI4 functions.  This
+          also implements RMI4 function 0x01, which provides
+          generic device control.
+      rmi_function_11.c
+          Implements basic RMI4 function 0x11 (2D sensor)
+          features, including multitouch up to 10 fingers.
+      rmi_app_touchpad.c
+          The major driver functions (mod_init, mod_exit,
+          and so on).
+More detailed descriptions can be found in each file's comments.
+
+We chose to use multiple source files because it makes it easy to add
+support for additional RMI4 functions with minimal impact to existing
+functions.  Additionally, this supports future changes to the
+configuration to allow you to compile in only those RMI4 functions that
+you need for your particular device.
+
+
+There are two existing drivers for similar Synaptics devices in the
+current kernel tree (excluding the PS/2 touchpad driver).  These are:
+
+./linux-2.6/drivers/input/mouse/synaptics_i2c.c
+      A driver for the Exeda 15mm touchpad, written by Mike Rapoport
+      <mike@compulab.co.il> and Igor Grinberg <grinberg@compulab.co.il>
+
+./linux-2.6/drivers/staging/dream/synaptics_i2c_rmi.c
+      A driver for the HTC Dream ClearPad, written by Arve Hjønnevåg
+      <arve@android.com>
+
+We have not extended these drivers for a couple of reasons.  First, the
+two drivers are specific to particular Synaptics products, and it is our
+desire to produce a general solution that takes advantage of the 'self
+describing' features of products that use the RMI protocol.
+
+Second, and more importantly, is that the existing drivers are written
+for an older version of the RMI protocol (aka RMI3) that is being
+retired in favor of a more recent and substantially changed version (aka
+RMI4).  Most currently shipping Synaptics ClearPads speak the RMI4
+protocol, and it will be Synaptics protocol of choice going forward.  In
+almost all respects, RMI4 is not backward compatible with RMI3, making
+it impractical to support both versions in the same driver.
+
+
+Comments and other feedback on this driver are welcomed.
+
+Bill Manson
+Allie Xiong
+Christopher Heiny
+
+PS Synaptics will be on holiday break from December 24th through January
+3rd.  Feedback received during that time may not get attention until
+after shutdown.
