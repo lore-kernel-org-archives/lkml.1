@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZLSMXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbZLSMVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbZLSMXN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 07:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZLSMXM
+	id S1752001AbZLSMVi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 07:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbZLSMVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 07:23:12 -0500
-Received: from mga03.intel.com ([143.182.124.21]:4779 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751851AbZLSMXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 07:23:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="224723628"
-Date: Sat, 19 Dec 2009 20:20:33 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Rago <sar@nec-labs.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-Message-ID: <20091219122033.GA11360@localhost>
-References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop>
+	Sat, 19 Dec 2009 07:21:37 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:58321 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbZLSMVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 07:21:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=WESwnADQuITpOBFPizabrNfbuRzYbFmXJOGr7OVoVHAFyCYhDnthff2GtsTCcw75Pk
+         IX4hz/HPT6Q2FhVuYx1DRjzWhwRacpk08Kb1MKiAf4xTHrO3wHBMt41cn2ZdUovehqA2
+         cu31pVpup7XrOe4h7OgRa2FuDk16YvrSsNArc=
+Message-ID: <4B2CC54A.9020507@gmail.com>
+Date: Sat, 19 Dec 2009 13:21:30 +0100
+From: Martin Fuzzey <mfuzzey@gmail.com>
+Reply-To: mfuzzey@gmail.com
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261037877.27920.36.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Subject: Portable drivers for 8 bit devices
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+Hi,
 
-// I should really read the NFS code, but maybe you can help us better
-// understand the problem :)
+I recently posted a patch for the sc26xx serial driver (which is
+currently only enabled for SNI_RM 32 bit MIPS), enabling it for all
+architectures (and adding support for 268x devices). I tested this on ARM.
 
-On Thu, Dec 17, 2009 at 04:17:57PM +0800, Peter Zijlstra wrote:
-> On Wed, 2009-12-16 at 21:03 -0500, Steve Rago wrote:
-> > Eager Writeback for NFS Clients
-> > -------------------------------
-> > Prevent applications that write large sequential streams of data (like backup, for example)
-> > from entering into a memory pressure state, which degrades performance by falling back to
-> > synchronous operations (both synchronous writes and additional commits).
+However I was contacted (off list) by someone trying to use the driver
+on 64 bit MIPS.
+Turned out this didn't work because the driver (both the current main
+line and my patched version) assume the UART chip (which is a 8 bit
+device) is mapped into a 32 bit port (ie the first 3 8 bit register
+offsets are defined as):
 
-What exactly is the "memory pressure state" condition?  What's the
-code to do the "synchronous writes and additional commits" and maybe
-how they are triggered?
+#define WR_PORT_MRx 0x00
+#define WR_PORT_CSR 0x04
+#define WR_PORT_CR  0x08
 
-> > This is accomplished by preventing the client application from
-> > dirtying pages faster than they can be written to the server:
-> > clients write pages eagerly instead of lazily.
+On the 64 bit MIPS system (a CISCO router..) these offsets needed to be
+doubled.
 
-We already have the balance_dirty_pages() based global throttling.
-So what makes the performance difference in your proposed "per-inode" throttling?
-balance_dirty_pages() does have much larger threshold than yours. 
+What is the best way to fix this properly? Some ideas:
+1) Compile time #ifdef based on CPU bus size
+2) Add a driver specific KConfig option for the address shift
+3) Add an address shift element to platform data
 
-> > The eager writeback is controlled by a sysctl: fs.nfs.nfs_max_woutstanding set to 0 disables
-> > the feature.  Otherwise it contains the maximum number of outstanding NFS writes that can be
-> > in flight for a given file.  This is used to block the application from dirtying more pages
-> > until the writes are complete.
+I don't think #1 is the right solution since the port size is often
+configurable (especially on SoCs) independently of the CPU bus size.
+My preference is #3
 
-What if we do heuristic write-behind for sequential NFS writes?
+Cheers,
 
-Another related proposal from Peter Staubach is to start async writeback
-(without the throttle in your proposal) when one inode have enough pages
-dirtied:
+Martin
 
-        Another approach that I suggested was to keep track of the
-        number of pages which are dirty on a per-inode basis.  When
-        enough pages are dirty to fill an over the wire transfer,
-        then schedule an asynchronous write to transmit that data to
-        the server.  This ties in with support to ensure that the
-        server/network is not completely overwhelmed by the client
-        by flow controlling the writing application to better match
-        the bandwidth and latencies of the network and server.
-        With this support, the NFS client tends not to fill memory
-        with dirty pages and thus, does not depend upon the other
-        parts of the system to flush these pages.
 
-Can the above alternatives fix the same problem? (or perhaps, is the
-per-inode throttling really necessary?)
 
-> > This patch is based heavily (okay, almost entirely) on a prior patch by Peter Staubach.  For
-> > the original patch, see http://article.gmane.org/gmane.linux.nfs/24323.
-> >
-> > The patch below applies to linux-2.6.32-rc7, but it should apply cleanly to vanilla linux-2.6.32.
-> >
-> > Performance data and tuning notes can be found on my web site (http://www.nec-labs.com/~sar).
-> > With iozone, I see about 50% improvement for large sequential write workloads over a 1Gb Ethernet.
-> > With an in-house micro-benchmark, I see 80% improvement for large, single-stream, sequential
-> > workloads (where "large" is defined to be greater than the memory size on the client).
-
-These are impressive numbers. I wonder what would be the minimal patch
-(just hacking it to fast, without all the aux bits)? Is it this chunk
-to call nfs_wb_eager()?
-
-> > @@ -623,10 +635,21 @@ static ssize_t nfs_file_write(struct kio
-> >       nfs_add_stats(inode, NFSIOS_NORMALWRITTENBYTES, count);
-> >       result = generic_file_aio_write(iocb, iov, nr_segs, pos);
-> >       /* Return error values for O_SYNC and IS_SYNC() */
-> > -     if (result >= 0 && nfs_need_sync_write(iocb->ki_filp, inode)) {
-> > -             int err = nfs_do_fsync(nfs_file_open_context(iocb->ki_filp), inode);
-> > -             if (err < 0)
-> > -                     result = err;
-> > +     if (result >= 0) {
-> > +             if (nfs_need_sync_write(iocb->ki_filp, inode)) {
-> > +                     int err;
-> > +
-> > +                     err = nfs_do_fsync(nfs_file_open_context(iocb->ki_filp),
-> > +                                        inode);
-> > +                     if (err < 0)
-> > +                             result = err;
-> > +             } else if (nfs_max_woutstanding != 0 &&
-> > +                  nfs_is_seqwrite(inode, pos) &&
-> > +                  atomic_read(&nfsi->ndirty) >= NFS_SERVER(inode)->wpages) {
-> > +                     nfs_wb_eager(inode);
-> > +             }
-> > +             if (result > 0)
-> > +                     nfsi->wrpos = pos + result;
-> >       }
-
-Thanks,
-Fengguang
 
