@@ -1,204 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbZLSEDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZLSEEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbZLSEDk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 23:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZLSEDj
+	id S1756007AbZLSEEd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 23:04:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZLSEEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 23:03:39 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57074 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754955AbZLSEDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 23:03:37 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/FvQFH7UnFsazYo4nfOKS0ViBAmFwJVaPMbCMOQX
-	2ZoIqR4bXj6UT5
-Subject: Re: x264 benchmarks BFS vs CFS
-From: Mike Galbraith <efault@gmx.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Jason Garrett-Glaser <darkshikari@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200912191208.57907.kernel@kolivas.org>
-References: <1261042383.14314.0.camel@localhost>
-	 <20091218052344.GD41 <28f2fcbc0912180305p47468508ybcb2f60cacb66c35@mail.gmail.com>
-	 <200912191208.57907.kernel@kolivas.org>
-Content-Type: text/plain
-Date: Sat, 19 Dec 2009 05:03:32 +0100
-Message-Id: <1261195412.8240.153.camel@marge.simson.net>
+	Fri, 18 Dec 2009 23:04:32 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:38421 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755243AbZLSEEa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Dec 2009 23:04:30 -0500
+Subject: Re: 2.6.33-rc1: hrtimers and tickless broken on m68knommu.
+From: john stultz <johnstul@us.ibm.com>
+To: Steven King <sfking@fdwdc.com>
+Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>
+In-Reply-To: <200912181920.12905.sfking@fdwdc.com>
+References: <200912181813.44220.sfking@fdwdc.com>
+	 <1f1b08da0912181844u4f7e66a7ue30287208d075327@mail.gmail.com>
+	 <200912181920.12905.sfking@fdwdc.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 18 Dec 2009 20:04:23 -0800
+Message-ID: <1261195463.4115.126.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-12-19 at 12:08 +1100, Con Kolivas wrote:
-> On Fri, 18 Dec 2009 22:05:34 Jason Garrett-Glaser wrote:
-> > On Fri, Dec 18, 2009 at 2:57 AM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> > > On Fri, 2009-12-18 at 08:30 +0100, Mike Galbraith wrote:
-> > >> On Fri, 2009-12-18 at 06:23 +0100, Ingo Molnar wrote:
-> > >> > Having said that, we generally try to make things perform well without
-> > >> > apps having to switch themselves to SCHED_BATCH. Mike, do you think we
-> > >> > can make x264 perform as well (or nearly as well) under SCHED_OTHER as
-> > >> > under SCHED_BATCH?
-> > >>
-> > >> It's not bad as is, except for ultrafast mode.  START_DEBIT is the
-> > >> biggest problem there.  I don't think SCHED_OTHER will ever match
-> > >> SCHED_BATCH for this load, though I must say I haven't full-spectrum
-> > >> tested.  This load really wants RR scheduling, and wakeup preemption
-> > >> necessarily perturbs run order.
-> > >>
-> > >> I'll probably piddle with it some more, it's an interesting load.
-> > >
-> > > Yes, i must say, very interresting, its very complicated and... oh wait,
-> > > its just encoding a movie!
-> > 
-> > Your trolling is becoming a bit over-the-top at this point.  You
-> > should also considering replying to multiple people in one email as
-> > opposed to spamming a whole bunch in sequence.
-> > 
-> > Perhaps as the lead x264 developer I'm qualified to say that it
-> > certainly is a very complicated load due to the strict ordering
-> > requirements of the threading model--and that you should tone down the
-> > whining just a tad and perhaps read a bit more about how BFS and CFS
-> > work before complaining about them.
+On Fri, 2009-12-18 at 19:20 -0800, Steven King wrote:
+> On Friday 18 December 2009 06:44:44 john stultz wrote:
+> > On Fri, Dec 18, 2009 at 6:13 PM, Steven King <sfking@fdwdc.com> wrote:
+> > > Attach is the .config; it works on v2.6.32 but fails to boot on .33-rc1;
+> > > but if I deselect hrtimers && tickless then it works.
+> >
+> > Sorry for the dup, forgot to cc lkml on my reply.
+> >
+> > Fails to boot all together? Or does it hang at some point in the dmesg
+> > that you can point out?
 > 
-> Your workload is interesting because it is a well written real world 
-> application with a solid threading model written in a cross platform portable 
-> way.  Your code is valuable as a measure for precisely this reason, and 
-> there's a trap in trying to program in a way that "the scheduler might like". 
-> That's presumably what Kasper is trying to point out, albeit in a much blunter 
-> fashion.
-
-If using a different kernel facility gives better results, go for what
-works best.  Programmers have been doing that since day one.  I doubt
-you'd call it a trap to trade a pipe for a socketpair if one produced
-better results than the other.
-
-Mind you, we should be able to better service the load with plain
-SCHED_OTHER, no argument there.
-
-> The only workloads I'm remotely interested in are real world workloads 
-> involving real applications like yours, software compilation, video playback, 
-> audio playback, gaming, apache page serving, mysql performance and so on that 
-> people in the real world use on real hardware all day every day. These are, of 
-> course, measurable even above and beyond the elusive and impossible to measure 
-> and quantify interactivity and responsiveness.
+> fails to boot all together; nothing on the serial console.
+> >
+> > Could you run the following so we can narrow down which clocksource your
+> > using? cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+> > cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> >
+> > Then with the kernel that doesn't boot, go through the clocksources
+> > listed in available_clocksources and try booting w/
+> > "clocksource=<clock name>" and see if the behavior changes.
 > 
-> I couldn't care less about some artificial benchmark involving LTP, timing 
-> mplayer playing in the presence of 100,000 pipes, volanomark which is just a 
-> sched_yield benchmark, dbench and hackbench which even their original 
-> programmers don't like them being used as a meaningful measure, and so on, and 
-> normal users should also not care about the values returned by these artificial 
-> benchmarks when they bear no resemblance to their real world performance cases 
-> as above.
+> on the working .32 kernel:
+> 
+> # cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+> pit
+> # cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> pit
+> 
+> just to be sure, I tried clocksource=pit on the .33-rc1 kernel.  It didnt make 
+> any difference.
 
-I find all programs interesting and valid in their own right, whether
-they be a benchmark or not, though I agree that vmark and hackbench are
-a bit over the top.
 
-> I have zero interest in adding any "tweaks" to BFS to perform well in X 
-> benchmark, for there be a path where dragons lie. I've always maintained that, 
-> and still stick to it, that the more tweaks you add for corner cases, the more 
-> corner cases you introduce yourself. BFS will remain for a targeted audience 
-> and I care not to appeal to any artificial benchmarketing obsessed population 
-> that drives mainline, since I don't -have- to. Mainline can do what it wants, 
-> and hopefully uses BFS as a yardstick for comparison when appropriate.
+Hrmm.. So looking at the code in arch/m68knommu/platform/coldfire/pit.c,
+I'm a little confused on how this got marked as a continuous clocksource
+(CLOCK_SOURCE_IS_CONTINUOUS), especially as it seems it couldn't handle
+skipping an interrupt.
 
-Interesting rant.  IMO, benchmarks are all merely programs that do some
-work and quantify.  Whether you like what they measure or not, whether
-they emit flattering numbers or not, they can all tell you something if
-you're willing to listen.
+That said, I'm not sure how it worked in 2.6.32, as its been that way
+for awhile it seems.  Maybe my assumptions on how the PIT works is wrong
+(or just biased in how it works on x86)?
 
-Oh, and for the record, timing mplayer thing was NOT in the presence of
-100000 pipes, it was in the presence of one cpu hog, as was the time
-amarok loading thing.  Those were UP tests showing you a weakness.  All
-of the results I sent you were intended to show you areas that could use
-some improvement, but you don't want to hear, so label and hand-wave.
+Greg, could you clarify how the PIT can be used as a clocksource if its
+also being used in oneshot mode?
 
-Below is a quote of the results I sent you.
+Steven, I assume the patch below avoids the issue (by disabling highres
+timers and nohz)?
 
-<quote>
+thanks
+-john
 
-I've taken BFS out for a few spins while looking into BFS vs CFS latency
-reports, and noticed a couple problems I'll share, comparison testing
-has been healthy for CFS, so maybe BFS can profit as well.  Below are
-some bfs304 vs my working tree numbers from a run this morning, looking
-to see if some issues seen in earlier releases were still present.
 
-Comments on noted issues: 
 
-It looks like there may be some affinity troubles, and there definitely
-seems to be a fairness bug still lurking.  No idea what's up with that,
-but see data below, it's pretty nasty.  Any sleepy load competing with a
-pure hog seems to be troublesome. 
+The m68knommu coldfire pit clocksource looks like it was incorrectly
+marked as a continuous clocksource. From the looks of it, running with
+it marked as a continuous clocksource could cause hangs when the system
+switches to highres mode or enables nohz.  I have no idea why it worked
+in prior kernels, and I'm not 100% sure the following fix is really the
+right solution.
 
-The pgsql+oltp test data is very interesting to me, pgsql+oltp hates
-preemption with a passion, because of it's USERLAND spinlocks.  Preempt
-the lock holder, and watch the fun.  Your preemption model suits it very
-well at the low end, and does pretty well all the way though.  Really
-interesting to me is the difference in 1 and 2 client throughput, why
-I'm including these.
+This patch removes the CLOCK_SOURCE_IS_CONTINUOUS flag on the coldfire
+pit clocksource. This will disallow systems using this clocksource from
+entering oneshot mode (disabling highres timers and nohz).
 
-msql+oltp and tbench look like they're griping about affinity to me, but
-I haven't instrumented anything, so can't be sure.  mysql+oltp I know is
-a wakeup preemption and is very affinity sensitive.  Too little wakeup
-preemption, it suffers, any load balancing, it suffers.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-What vmark is so upset about, I have no idea.  I know it's very affinity
-sensitive, and hates wakeup preemption passionately.
+---
 
-Numbers:
-
-vmark
-tip           108841 messages per second 
-tip++         116260 messages per second
-31.bfs304      28279 messages per second
-
-tbench 8
-tip           938.421 MB/sec 8 procs
-tip++         952.302 MB/sec 8 procs
-31.bfs304     709.121 MB/sec 8 procs
-
-mysql+oltp
-clients             1          2          4          8         16         32         64        128        256
-tip           9999.36   18493.54   34652.91   34253.13   32057.64   30297.43   28300.96   25450.14   20675.99
-tip++        10041.16   18531.16   34934.22   34192.65   32829.65   32010.55   30341.31   27340.65   22724.87
-31.bfs304     9459.85   14952.44   32209.07   29724.03   28608.02   27051.10   24851.44   21223.15   15809.46
-
-pgsql+oltp
-clients             1          2          4          8         16         32         64        128        256
-tip          13577.63   26510.67   51871.05   51374.62   50190.69   45494.64   37173.83   27767.09   22795.23
-tip++        13685.69   26693.42   52056.45   51733.30   50854.75   49790.95   48972.02   47517.34   44999.22
-31.bfs304    15467.03   21126.57   52673.76   50972.41   49652.54   46015.73   44567.18   40419.90   33276.67
-
-fairness bug in 31.bfs304?
-
-prep:
-set CPU governor to performance first, as in all benchmarking.
-taskset -c 0 pert (100% CPU hog TSC perturbation measurement proggy)
-taskset -p 0x1 `pidof Xorg`
-
-perf stat taskset -c 0 konsole -e exit
-31.bfs304    2.073724549  seconds time elapsed
-tip++        0.989323860  seconds time elapsed
-
-note: amarok pins itself to CPU0, and is set up to use mysql database.
-
-prep: cache warmup run.
-perf stat amarokapp (quit after 12000 song mp3 collection is loaded)
-
-31.bfs304    136.418518486  seconds time elapsed
-tip++         19.439268066  seconds time elapsed
-
-prep: restart amarok, wait for load, start playing
-
-perf stat taskset -c 0 mplayer -nosound 3DMark2000.mkv (exact 6 minute movie)
-31.bfs304    432.712500554  seconds time elapsed
-tip++        363.622519583  seconds time elapsed
+diff --git a/arch/m68knommu/platform/coldfire/pit.c b/arch/m68knommu/platform/coldfire/pit.c
+index d8720ee..aebea19 100644
+--- a/arch/m68knommu/platform/coldfire/pit.c
++++ b/arch/m68knommu/platform/coldfire/pit.c
+@@ -146,7 +146,6 @@ static struct clocksource pit_clk = {
+ 	.read	= pit_read_clk,
+ 	.shift	= 20,
+ 	.mask	= CLOCKSOURCE_MASK(32),
+-	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
+ };
+ 
+ /***************************************************************************/
 
 
