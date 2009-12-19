@@ -1,88 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751378AbZLSLgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751560AbZLSLkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751378AbZLSLgO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 06:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZLSLgN
+	id S1751560AbZLSLkn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 06:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbZLSLkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 06:36:13 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51546 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbZLSLgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 06:36:11 -0500
-Date: Sat, 19 Dec 2009 12:36:09 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
-       Roger Quadros <quadros.roger@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>
-Subject: Re: [PATCH] new kqueue API v.08
-Message-ID: <20091219113609.GB9321@basil.fritz.box>
-References: <1261179026.16900.42.camel@wall-e>
+	Sat, 19 Dec 2009 06:40:42 -0500
+Received: from web52908.mail.re2.yahoo.com ([206.190.49.18]:45175 "HELO
+	web52908.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750946AbZLSLkl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 06:40:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=2GgoxjhIwR4J7HtNZIZEHA1CpMEk/Smj1NZTeRMZKYTwSTnIj4H2pqhb5if1CluWktBq0PtLT6Y0Ok7NxEe3xG6KuRt+AYKVHJNRJU0pp4rFIYYonqu53dZCf93AYUnpW00EOR7ymIGwXYRdX7TNWEJRlkV8+8kEN55mjSivz0c=;
+Message-ID: <209510.16318.qm@web52908.mail.re2.yahoo.com>
+X-YMail-OSG: .sTAvkkVM1nBpBxCbSKhsPZ8yRCM.6W_JG2K1A9Yoji53FVYF0nkYUK92zphM68DtwgATpVIP4.kZ8oWPtM3f2RsQObkYa.BQ4wVv2HyppRIXyhvVyKzLdGWLcTEpcDLmnfV6AS5uDf4PKbrK3TP.OxKBoRJ4d.4N28aZVBarK3.0DcW00aBkNK5oLXNFfCFDS12pM36CqPOXumwbpEM0MmApi_l_iF9qQ3WlDYuXvp5mSLm5CIZpthzSImH5pjPOnGPMKV7uYqUA9hws3Otg1z.LbFvVqQXs88Ii1IhcsAHHJ1xxZYDwnFh2Xq3Fp74Nzo5DuxObC.CLp15goVDOIt1zQ21Lw--
+X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
+Date: Sat, 19 Dec 2009 03:40:40 -0800 (PST)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: [BUG] Kernel built for i586 chip crashes instantly at boot time (CMOV instructions)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4B2BB812.103@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261179026.16900.42.camel@wall-e>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--- On Fri, 18/12/09, H. Peter Anvin <hpa@zytor.com> wrote:
+> Does this patch work for you?
 
-I like the basic idea of a type safe FIFO.
+Yes, that fixed it.
 
-> #define	DYNAMIC
-> #ifdef DYNAMIC
-> static DECLARE_KFIFO_PTR(test[1], int);
-> #else
-> static DECLARE_KFIFO(test[1], int, FIFO_SIZE);
-
-The [1] looks weird.  Is that really needed and what does it mean?
-The callers below don't seem to use it like an array.
-
-> I know that this kind of macros are very sophisticated and not easy to
-> maintain. But i have all tested and it works as expected. I analyzed the
-> output of the compiler and for the x86 the code is as good as hand
-> written assembler code.
-
-Linux has a long tradition of complicated macros in headers, that shouldn't be a 
-problem.
-
->  include/linux/kfifo.h | 1107 +++++++++++++++++++++++++++++---------------------
->  kernel/kfifo.c        |  768 +++++++++++++++++++++++-----------
->  2 files changed, 1174 insertions(+), 701 deletions(-)
-> 
-> diff -u -N -r -p mmotm.orig/include/linux/kfifo.h mmotm.new/include/linux/kfifo.h
-> --- mmotm.orig/include/linux/kfifo.h	2009-12-19 00:23:12.510334931 +0100
-> +++ mmotm.new/include/linux/kfifo.h	2009-12-19 00:23:04.375307229 +0100
-> @@ -1,8 +1,7 @@
->  /*
-> - * A generic kernel FIFO implementation.
-> + * A generic kernel fifo implementation
->   *
->   * Copyright (C) 2009 Stefani Seibold <stefani@seibold.net>
-> - * Copyright (C) 2004 Stelian Pop <stelian@popies.net>
-
-You should probably keep the old copyright, even if not much code remains.
-
-> +#ifdef __KERNEL__
->  #include <linux/kernel.h>
->  #include <linux/spinlock.h>
-> +#include <linux/stddef.h>
-> +#include <linux/scatterlist.h>
-> +#else
-> +#include "helper.h"
-> +#endif
-
-Such ifdefs should not make it into submitted code. Better use more glue
-in the test program.
+Thanks,
+Chris
 
 
-... didn't review the whole thing at this point ...
-
--Andi
+      
