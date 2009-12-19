@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752120AbZLSM2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZLSM1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752120AbZLSM2r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 07:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZLSM2q
+	id S1752093AbZLSM1e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 07:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbZLSM1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 07:28:46 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40043 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbZLSM2q (ORCPT
+	Sat, 19 Dec 2009 07:27:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37034 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751994AbZLSM1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 07:28:46 -0500
-X-Authority-Analysis: v=1.0 c=1 a=vB0P8UTOP5sA:10 a=7U3hwN5JcxgA:10 a=yPCof4ZbAAAA:8 a=meVymXHHAAAA:8 a=QyMqLM8RQBULtshC-2MA:9 a=fdpZlQVHmXNIuOhxvxCQHrY35UUA:4 a=7DSvI1NPTFQA:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 4/4] Documentation: update ring-buffer-design.txt
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-In-Reply-To: <4B2C0D7E.5030602@oracle.com>
-References: <4B2C0D7E.5030602@oracle.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Sat, 19 Dec 2009 07:28:43 -0500
-Message-ID: <1261225723.2146.881.camel@gandalf.stny.rr.com>
+	Sat, 19 Dec 2009 07:27:32 -0500
+Date: Sat, 19 Dec 2009 12:29:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
+Message-ID: <20091219122912.780f63de@lxorguk.ukuu.org.uk>
+In-Reply-To: <hgifbt$mme$1@taverner.cs.berkeley.edu>
+References: <20091218030056.GC3047@heat>
+	<20091218094955.32938765@nehalam>
+	<hgifbt$mme$1@taverner.cs.berkeley.edu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 15:17 -0800, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix typos, grammos, spellos, hyphenation.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  Documentation/trace/ring-buffer-design.txt |   56 ++++++++++++++---------------
->  1 file changed, 28 insertions(+), 28 deletions(-)
-> 
-> --- lnx-2633-rc1.orig/Documentation/trace/ring-buffer-design.txt
-> +++ lnx-2633-rc1/Documentation/trace/ring-buffer-design.txt
-> @@ -33,9 +33,9 @@ head_page - a pointer to the page that t
->  
+O> I don't know of any reasonable way to introduce firewall rules
+> that apply only to a specific process; nor do I know of any way
+> for a user-level (non-root) process to specify and apply such
+> rules.  So it doesn't sound to me like the firewalling infrastructure
+> meets the requirements for which this patch was introduced.  Or did
+> I miss something?
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+You can push BPF style filters onto sockets in Linux. They are not just
+tied to some arbitary capture device. A process imposing its own isn't
+too hard - imposing them on another process (or user) gets more complex
+but cotnainers can probably do what is needed nowdays.
 
-Thanks Randy!
+(We also have other weirdness like AX.25 where the mac address depends on
+the user id of course)
 
--- Steve
-
-
+Alan
