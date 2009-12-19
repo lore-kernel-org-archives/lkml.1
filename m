@@ -1,45 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbZLSKOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751485AbZLSKQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751395AbZLSKOf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 05:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZLSKOe
+	id S1751485AbZLSKQI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 05:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZLSKQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 05:14:34 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:51353 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbZLSKOe (ORCPT
+	Sat, 19 Dec 2009 05:16:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56611 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbZLSKQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 05:14:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=GykMx+QVhEqC1mZuKtRJzI5mKvcpNrqOcZMwztqKIlVRjw+IcZZzPOHWAHvsibL24r
-         9RoVNRZQbXbi50JGYO5BqIixrw4LT2vSw65IkIS66AydcvpUTaJm5uDs5fJ0HPB+09WO
-         y47siMp3SnBIYCG8EFuep3ybgKPV8FHsiJA7Y=
+	Sat, 19 Dec 2009 05:16:04 -0500
+Message-ID: <4B2CA7B6.1000405@infradead.org>
+Date: Sat, 19 Dec 2009 08:15:18 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090902 Fedora/3.0-3.7.b3.el6 Thunderbird/3.0b3
 MIME-Version: 1.0
-Date: Sat, 19 Dec 2009 18:14:33 +0800
-Message-ID: <8e678d3f0912190214s7ffbc3can784e8c907a6fe97@mail.gmail.com>
-Subject: Can not generate ALSA driver documentation via Makefile
-From: Robin Steven <armrobin@gmail.com>
-To: linux-kernel@vger.kernel.org
+To: Andy Walls <awalls@radix.net>
+CC: Stefani Seibold <stefani@seibold.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>
+Subject: Re: [patch] media video cx23888 driver: fix possible races using
+ new kfifo_API kfifo_reset()
+References: <1261174870.13019.24.camel@wall-e> <1261179828.3060.15.camel@palomino.walls.org>
+In-Reply-To: <1261179828.3060.15.camel@palomino.walls.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, guy:
+Em 18-12-2009 21:43, Andy Walls escreveu:
+> On Fri, 2009-12-18 at 23:21 +0100, Stefani Seibold wrote:
+>> Fix the cx23888 driver to use the new kfifo API. Using kfifo_reset() may
+>> result in a possible race conditions. This patch fix it by using
+>> spinlock around the kfifo_reset() function.
+>>
+>> The patch-set is against mm tree from 11-Dec-2009
+>>
+>> Greetings,
+>> Stefani
+>>
+>> Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> 
+> For both this patch together with your previous patch:
+> 
+> Reviewed-by: Andy Walls <awalls@radix.net>
+> Acked-by: Andy Walls <awalls@radix.net>
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+> 
+> Thanks Stefani.
+> 
+> Regards,
+> Andy
+> 
+>> ---
+>>  cx23888-ir.c |    9 +++++++++
+>>  1 file changed, 9 insertions(+)
+>>
+>> --- mmotm.orig/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 22:57:13.588337402 +0100
+>> +++ mmotm/drivers/media/video/cx23885/cx23888-ir.c	2009-12-18 23:15:14.651365720 +0100
+>> @@ -519,6 +519,7 @@ static int cx23888_ir_irq_handler(struct
+>>  {
+>>  	struct cx23888_ir_state *state = to_state(sd);
+>>  	struct cx23885_dev *dev = state->dev;
+>> +	unsigned long flags;
+>>  
+>>  	u32 cntrl = cx23888_ir_read4(dev, CX23888_IR_CNTRL_REG);
+>>  	u32 irqen = cx23888_ir_read4(dev, CX23888_IR_IRQEN_REG);
+>> @@ -629,8 +630,11 @@ static int cx23888_ir_irq_handler(struct
+>>  		cx23888_ir_write4(dev, CX23888_IR_CNTRL_REG, cntrl);
+>>  		*handled = true;
+>>  	}
+>> +
+>> +	spin_lock_irqsave(&state->rx_kfifo_lock, flags);
+>>  	if (kfifo_len(&state->rx_kfifo) >= CX23888_IR_RX_KFIFO_SIZE / 2)
+>>  		events |= V4L2_SUBDEV_IR_RX_FIFO_SERVICE_REQ;
+>> +	spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
+>>  
+>>  	if (events)
+>>  		v4l2_subdev_notify(sd, V4L2_SUBDEV_IR_RX_NOTIFY, &events);
+>> @@ -783,7 +787,12 @@ static int cx23888_ir_rx_s_parameters(st
+>>  	o->interrupt_enable = p->interrupt_enable;
+>>  	o->enable = p->enable;
+>>  	if (p->enable) {
+>> +		unsigned long flags;
+>> +
+>> +		spin_lock_irqsave(&state->rx_kfifo_lock, flags);
+>>  		kfifo_reset(&state->rx_kfifo);
+>> +		/* reset tx_fifo too if there is one... */
+>> +		spin_unlock_irqrestore(&state->rx_kfifo_lock, flags);
+>>  		if (p->interrupt_enable)
+>>  			irqenable_rx(dev, IRQEN_RSE | IRQEN_RTE | IRQEN_ROE);
+>>  		control_rx_enable(dev, p->enable);
+>>
+>>
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-I am hacking ALSA driver for my customized board, and want to study
-the document "writing_an_alsa_driver" in
-"Documentation/sound/alsa/DocBook", in the top directory of kernel
-source and run:
-
-$ make htmldocs
-
-I can get all the html format document in "Documentation/DocBook", and
-no any html document in
-"Documentation/sound/alsa/DocBook" was converted for .tmpl to html.
-
-Thanks in advenced for any one can give me any idea!
-
-= Robin
