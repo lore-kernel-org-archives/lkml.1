@@ -1,185 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbZLSVmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZLSVkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbZLSVmO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 16:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZLSVmN
+	id S1753918AbZLSVkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 16:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZLSVkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 16:42:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:64141 "EHLO mx1.redhat.com"
+	Sat, 19 Dec 2009 16:40:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35828 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753411AbZLSVmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 16:42:12 -0500
-Date: Sat, 19 Dec 2009 16:40:28 -0500
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200912192140.nBJLeSfA028905@hs20-bc2-1.build.redhat.com>
-To: a.p.zijlstra@chello.nl, acme@redhat.com, eranian@google.com,
-       fweisbec@gmail.com, linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       mingo@elte.hu, paulus@samba.org, penberg@cs.helsinki.fi,
-       xiaoguangrong@cn.fujitsu.com
-Subject: perf: A few more directory handling optimizations
+	id S1753902AbZLSVkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 16:40:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Sat, 19 Dec 2009 22:41:03 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912181205290.2987-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912181205290.2987-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912192241.03991.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few more optimizations for perf when dealing with directories.  Some of
-them significantly cut down the work which has to be done.  d_type should
-always be set; otherwise fix the kernel code.  And there are functions
-available to parse fstab-like files, so use them.
+On Friday 18 December 2009, Alan Stern wrote:
+> On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > I didn't manage to do that, but I was able to mark sd and i8042 as async and
+> > see the impact of this.
+> 
+> Apparently this didn't do what you wanted.  In the nx6325
+> sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
+> suspended by the main thread instead of an async thread.
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Hm, that's odd, because there's a noticeable time difference between the
+two cases in which the sd is sync and async.  I'll look into it further.
 
- builtin-kmem.c          |   17 +++++-----------
- util/trace-event-info.c |   49 +++++++++++++++++++++---------------------------
- 2 files changed, 28 insertions(+), 38 deletions(-)
+> There's an important point I neglected to mention before.  Your logs 
+> don't show anything for devices with no suspend callbacks at all.  
+> Nevertheless, these devices sit on the device list and prevent other
+> devices from suspending or resuming as soon as they could.
 
+Unless they are async, that is.
 
-diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
-index fc21ad7..a438c54 100644
---- a/tools/perf/builtin-kmem.c
-+++ b/tools/perf/builtin-kmem.c
-@@ -92,23 +92,18 @@ static void setup_cpunode_map(void)
- 	if (!dir1)
- 		return;
- 
--	while (true) {
--		dent1 = readdir(dir1);
--		if (!dent1)
--			break;
--
--		if (sscanf(dent1->d_name, "node%u", &mem) < 1)
-+	while ((dent1 = readdir(dir1)) != NULL) {
-+		if (dent1->d_type != DT_DIR ||
-+		    sscanf(dent1->d_name, "node%u", &mem) < 1)
- 			continue;
- 
- 		snprintf(buf, PATH_MAX, "%s/%s", PATH_SYS_NODE, dent1->d_name);
- 		dir2 = opendir(buf);
- 		if (!dir2)
- 			continue;
--		while (true) {
--			dent2 = readdir(dir2);
--			if (!dent2)
--				break;
--			if (sscanf(dent2->d_name, "cpu%u", &cpu) < 1)
-+		while ((dent2 = readdir(dir2)) != NULL) {
-+			if (dent2->d_type != DT_LNK ||
-+			    sscanf(dent2->d_name, "cpu%u", &cpu) < 1)
- 				continue;
- 			cpunode_map[cpu] = mem;
- 		}
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index cace355..bff6d8c 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -20,6 +20,7 @@
-  */
- #define _GNU_SOURCE
- #include <dirent.h>
-+#include <mntent.h>
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
-@@ -103,28 +104,27 @@ static const char *find_debugfs(void)
- {
- 	static char debugfs[MAX_PATH+1];
- 	static int debugfs_found;
--	char type[100];
- 	FILE *fp;
-+	struct mntent *m;
- 
- 	if (debugfs_found)
- 		return debugfs;
- 
--	if ((fp = fopen("/proc/mounts","r")) == NULL)
-+	if ((fp = setmntent("/proc/mounts", "r")) == NULL)
- 		die("Can't open /proc/mounts for read");
- 
--	while (fscanf(fp, "%*s %"
--		      STR(MAX_PATH)
--		      "s %99s %*s %*d %*d\n",
--		      debugfs, type) == 2) {
--		if (strcmp(type, "debugfs") == 0)
-+	while ((m = getmntent(fp)) != NULL) {
-+		if (strcmp(m->mnt_type, "debugfs") == 0) {
-+			strcpy(debugfs, m->mnt_dir);
-+			debugfs_found = 1;
- 			break;
-+		}
- 	}
--	fclose(fp);
- 
--	if (strcmp(type, "debugfs") != 0)
--		die("debugfs not mounted, please mount");
-+	endmntent(fp);
- 
--	debugfs_found = 1;
-+	if (! debugfs_found)
-+		die("debugfs not mounted, please mount");
- 
- 	return debugfs;
- }
-@@ -317,7 +317,8 @@ static void copy_event_system(const char *sys, struct tracepoint_path *tps)
- 		die("can't read directory '%s'", sys);
- 
- 	while ((dent = readdir(dir))) {
--		if (strcmp(dent->d_name, ".") == 0 ||
-+		if (dent->d_type != DT_DIR ||
-+		    strcmp(dent->d_name, ".") == 0 ||
- 		    strcmp(dent->d_name, "..") == 0 ||
- 		    !name_in_tp_list(dent->d_name, tps))
- 			continue;
-@@ -334,7 +335,8 @@ static void copy_event_system(const char *sys, struct tracepoint_path *tps)
- 
- 	rewinddir(dir);
- 	while ((dent = readdir(dir))) {
--		if (strcmp(dent->d_name, ".") == 0 ||
-+		if (dent->d_type != DT_DIR ||
-+		    strcmp(dent->d_name, ".") == 0 ||
- 		    strcmp(dent->d_name, "..") == 0 ||
- 		    !name_in_tp_list(dent->d_name, tps))
- 			continue;
-@@ -394,26 +396,21 @@ static void read_event_files(struct tracepoint_path *tps)
- 		die("can't read directory '%s'", path);
- 
- 	while ((dent = readdir(dir))) {
--		if (strcmp(dent->d_name, ".") == 0 ||
-+		if (dent->d_type != DT_DIR ||
-+		    strcmp(dent->d_name, ".") == 0 ||
- 		    strcmp(dent->d_name, "..") == 0 ||
- 		    strcmp(dent->d_name, "ftrace") == 0 ||
- 		    !system_in_tp_list(dent->d_name, tps))
- 			continue;
--		sys = malloc_or_die(strlen(path) + strlen(dent->d_name) + 2);
--		sprintf(sys, "%s/%s", path, dent->d_name);
--		ret = stat(sys, &st);
--		free(sys);
--		if (ret < 0)
--			continue;
--		if (S_ISDIR(st.st_mode))
--			count++;
-+		count++;
- 	}
- 
- 	write_or_die(&count, 4);
- 
- 	rewinddir(dir);
- 	while ((dent = readdir(dir))) {
--		if (strcmp(dent->d_name, ".") == 0 ||
-+		if (dent->d_type != DT_DIR ||
-+		    strcmp(dent->d_name, ".") == 0 ||
- 		    strcmp(dent->d_name, "..") == 0 ||
- 		    strcmp(dent->d_name, "ftrace") == 0 ||
- 		    !system_in_tp_list(dent->d_name, tps))
-@@ -422,10 +419,8 @@ static void read_event_files(struct tracepoint_path *tps)
- 		sprintf(sys, "%s/%s", path, dent->d_name);
- 		ret = stat(sys, &st);
- 		if (ret >= 0) {
--			if (S_ISDIR(st.st_mode)) {
--				write_or_die(dent->d_name, strlen(dent->d_name) + 1);
--				copy_event_system(sys, tps);
--			}
-+			write_or_die(dent->d_name, strlen(dent->d_name) + 1);
-+			copy_event_system(sys, tps);
- 		}
- 		free(sys);
- 	}
+> For example, the fingerprint sensor (3-1) took the most time to resume.  
+> But other devices were delayed until after it finished because it had
+> children with no callbacks, and they delayed the devices following
+> them in the list.
+> 
+> What would happen if you completed these devices immediately, as part 
+> of the first pass?
+
+OK.  How do the PM core is supposed to check if a device has null suspend
+and resume?  Check all of the function pointers in the first pass?
+
+Rafael
