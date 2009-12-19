@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZLSTGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZLSTV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZLSTGI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 14:06:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZLSTGB
+	id S1753344AbZLSTV1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 14:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZLSTV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 14:06:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33476 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751973AbZLSTGA (ORCPT
+	Sat, 19 Dec 2009 14:21:27 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:43228 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbZLSTVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 14:06:00 -0500
-Date: Sat, 19 Dec 2009 11:05:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata updates
-In-Reply-To: <20091219181350.GA21058@havoc.gtf.org>
-Message-ID: <alpine.LFD.2.00.0912191102320.3712@localhost.localdomain>
-References: <20091219181350.GA21058@havoc.gtf.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 19 Dec 2009 14:21:25 -0500
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUPIzI/Orkx
+X-RZG-CLASS-ID: mo00
+Message-ID: <4B2D27B6.3000707@hartkopp.net>
+Date: Sat, 19 Dec 2009 20:21:26 +0100
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven King <sfking@fdwdc.com>, johnstul@us.ibm.com
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Also on x86 - was: 2.6.33-rc1: hrtimers and tickless broken on m68knommu.
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+i'm currently checking in LKML why my Dell 830 Laptop is not booting at all
+with 2.6.33-rc1 - and i found your thread:
+
+http://lkml.org/lkml/2009/12/18/494
+
+I also use a setup with tickless & hrtimers enabled - but on a x86.
+
+Same behaviour as on your m68knommu box: Just nothing to see ...
+
+Regards,
+Oliver
 
 
-On Sat, 19 Dec 2009, Jeff Garzik wrote:
-> 
-> to receive the following updates:
-> 
->  drivers/ata/libata-scsi.c    |    2 +-
->  drivers/ata/libata-sff.c     |    2 +-
->  drivers/ata/pata_hpt3x2n.c   |   64 ++++++++++---------
->  drivers/ata/pata_octeon_cf.c |    2 +-
->  drivers/ata/sata_mv.c        |  144 ++++++++++++++++++++++++++++++++++++------
->  5 files changed, 163 insertions(+), 51 deletions(-)
->  mode change 100644 => 100755 drivers/ata/sata_mv.c
 
-WTF is that mode change?
 
-It's introduced by commit 6481f2b52cd5411ea6342b749daf0e4f3b390d7b: 
-"sata_mv: add power management support for the platform driver", and it's 
-totally nonsensical.
 
-I fixed that crazy stuff when merging, but you should look at your own 
-summaries a bit, and should have noticed that it was crazy. That file 
-isn't an executable.
-
-			Linus
