@@ -1,43 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZLSAfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZLSAlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbZLSAfY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Dec 2009 19:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbZLSAfX
+	id S1755686AbZLSAlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Dec 2009 19:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbZLSAlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Dec 2009 19:35:23 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45547 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754897AbZLSAfW (ORCPT
+	Fri, 18 Dec 2009 19:41:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50122 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754792AbZLSAlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Dec 2009 19:35:22 -0500
-Message-ID: <4B2C1F8D.5070500@zytor.com>
-Date: Fri, 18 Dec 2009 16:34:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
+	Fri, 18 Dec 2009 19:41:45 -0500
+Date: Fri, 18 Dec 2009 16:40:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
 To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/9] x86: move range related operation to one file
-References: <4B2B4C19.6010402@kernel.org> <4B2B4F85.5030901@kernel.org> <4B2BE1BF.60803@zytor.com> <4B2BE348.207@kernel.org> <4B2BF38F.3090101@zytor.com> <4B2C14A3.90906@kernel.org> <4B2C1D69.8090703@zytor.com> <4B2C1DFF.7090405@kernel.org>
-In-Reply-To: <4B2C1DFF.7090405@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 2/12] pci: add pci_bridge_release_unused_res and
+ pci_bus_release_unused_bridge_res -v2
+In-Reply-To: <4B2C1DA9.4030907@kernel.org>
+Message-ID: <alpine.LFD.2.00.0912181635170.3712@localhost.localdomain>
+References: <4B2BE9DD.3040504@kernel.org> <4B2BEC1B.9090104@kernel.org> <alpine.LFD.2.00.0912181316190.3712@localhost.localdomain> <4B2C1DA9.4030907@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/18/2009 04:27 PM, Yinghai Lu wrote:
+
+
+On Fri, 18 Dec 2009, Yinghai Lu wrote:
 > 
-> can you put current 9 patches into tip? i will submit following patch that merge range and early_res
-> 
+> ok, please check attached is right or not
+>  
+> +static void __release_child_resources(struct resource *r)
+> +{
+> +	struct resource *tmp, *p;
+> +	resource_size_t size;
+> +
+> +	p = r->child;
+> +	r->child = NULL;
+> +	while (p) {
+> +		tmp = p;
+> +		p = p->sibling;
+> +
+> +		tmp->parent = NULL;
+> +		tmp->sibling = NULL;
+> +		__release_child_resources(tmp);
+> +
+> +		printk(KERN_DEBUG "release child resource %pR\n", tmp);
+> +		/* need to restore size, and keep flags */
+> +		size = resource_size(tmp);
+> +		tmp->start = 0;
+> +		tmp->end = size - 1;
+> +	}
+> +}
 
-I still have to review them (I had to spend the day deal with non-kernel
-job duties that had been old hold for the merge window.)  I will look at
-it probably Monday or Tuesday.
+Ok, this looks mostly right. I do worry about the alignment information: 
+you lose that thing for any resource that had IORESOURCE_STARTALIGN set 
+when you do this thing. That's pretty fundamental to the whole resource 
+code, I suspect we should just finally add a 'alignment' field to the 
+resource struct, so that alignment doesn't get lost when a resource is 
+allocated.
 
-Sorry,
+(Do a "git grep IORESOURCE_.*ALIGN" to see the kind of stuff I'm talking 
+about, and look at he PCI 'setup-bus.c' code that sets that STARTALIGN 
+thing).
 
-	-hpa
+So a preliminary ack on the resource.c parts. The rest I'm still a bit 
+dubious about, and the whole "we've lost alignment on the resources" is 
+probably indicative of how none of the resource code has ever really been 
+designed for this kind of "tear down and build back up again" behavior.
+
+				Linus
