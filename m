@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751117AbZLSFGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbZLSFdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751117AbZLSFGX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 00:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZLSFGW
+	id S1750999AbZLSFdc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 00:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbZLSFdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 00:06:22 -0500
-Received: from smtp102.biz.mail.mud.yahoo.com ([68.142.200.237]:25561 "HELO
-	smtp102.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750825AbZLSFGV (ORCPT
+	Sat, 19 Dec 2009 00:33:31 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:55440 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZLSFda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 00:06:21 -0500
-X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: ._ZibnsVM1nVGnURSljs_XYXCwnP0TO18ORuzB1erC0Ez8Jz6ZCVwz_7g9ZoDKJcdNv7cfDlHKRjl6yPJIjl9dH2umudVy5puOQ0pdTpQWLqKmqz6U5N48KUU7w8V.p8pb_EqUMDtisabAcf5qgMN_ic0JTkh0DmffNTxU0c2ECOhAoy_wYkxzDNydgiO3Y8mZJOEGBLfC.LQAx4jTFGrDf2_grSI_sOA3c6Mx5qpOA2.VSyxZ9QbfgWXcm5iyAVdKdkzVKuws2E_v3HF1IQ0OH1nN7k2qP1BqV7cpDPhQVi31K_pNT2C5PjL3NGnIu71t8IRWkkxsZZy4vE1oMRxSnP6UgVcMD14uz_lXrSxP6k2ERrivO9BHXyejRApKjo4NyyCr.7XA--
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-Organization: fdwdc.com
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: 2.6.33-rc1: hrtimers and tickless broken on m68knommu.
-Date: Fri, 18 Dec 2009 21:06:18 -0800
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>
-References: <200912181813.44220.sfking@fdwdc.com> <200912181920.12905.sfking@fdwdc.com> <1261195463.4115.126.camel@localhost.localdomain>
-In-Reply-To: <1261195463.4115.126.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sat, 19 Dec 2009 00:33:30 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Sage Weil <sage@newdream.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Ceph distributed file system client for 2.6.33
+In-Reply-To: Your message of "Fri, 18 Dec 2009 12:54:02 PST."
+             <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net>
+From: Valdis.Kletnieks@vt.edu
+References: <Pine.LNX.4.64.0912071511470.32397@cobra.newdream.net>
+            <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1261200797_3855P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912182106.18709.sfking@fdwdc.com>
+Date: Sat, 19 Dec 2009 00:33:17 -0500
+Message-ID: <14397.1261200797@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020204.4B2C659F.0079,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 December 2009 08:04:23 john stultz wrote:
-> On Fri, 2009-12-18 at 19:20 -0800, Steven King wrote:
-> > On Friday 18 December 2009 06:44:44 john stultz wrote:
-> > > On Fri, Dec 18, 2009 at 6:13 PM, Steven King <sfking@fdwdc.com> wrote:
-> > > > Attach is the .config; it works on v2.6.32 but fails to boot on
-> > > > .33-rc1; but if I deselect hrtimers && tickless then it works.
-> > >
-> > > Sorry for the dup, forgot to cc lkml on my reply.
-> > >
-> > > Fails to boot all together? Or does it hang at some point in the dmesg
-> > > that you can point out?
-> >
-> > fails to boot all together; nothing on the serial console.
-> >
-> > > Could you run the following so we can narrow down which clocksource
-> > > your using? cat
-> > > /sys/devices/system/clocksource/clocksource0/current_clocksource cat
-> > > /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > >
-> > > Then with the kernel that doesn't boot, go through the clocksources
-> > > listed in available_clocksources and try booting w/
-> > > "clocksource=<clock name>" and see if the behavior changes.
-> >
-> > on the working .32 kernel:
-> >
-> > # cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-> > pit
-> > # cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > pit
-> >
-> > just to be sure, I tried clocksource=pit on the .33-rc1 kernel.  It didnt
-> > make any difference.
->
-> Hrmm.. So looking at the code in arch/m68knommu/platform/coldfire/pit.c,
-> I'm a little confused on how this got marked as a continuous clocksource
-> (CLOCK_SOURCE_IS_CONTINUOUS), especially as it seems it couldn't handle
-> skipping an interrupt.
->
-> That said, I'm not sure how it worked in 2.6.32, as its been that way
-> for awhile it seems.  Maybe my assumptions on how the PIT works is wrong
-> (or just biased in how it works on x86)?
->
-> Greg, could you clarify how the PIT can be used as a clocksource if its
-> also being used in oneshot mode?
->
-> Steven, I assume the patch below avoids the issue (by disabling highres
-> timers and nohz)?
+--==_Exmh_1261200797_3855P
+Content-Type: text/plain; charset=us-ascii
 
-Yes.
+On Fri, 18 Dec 2009 12:54:02 PST, Sage Weil said:
+> I would still like to see ceph merged for 2.6.33.  It's certainly not 
+> production ready, but it would be greatly beneficial to be in mainline for 
+> the same reasons other file systems like btrfs and exofs were merged 
+> early.
 
-I suspect it wasnt working correctly on earlier kernels, we just got away with 
-it; I had recently added ntpclient to this target but the time reported by 
-date was always off by some odd amount, I had assume that it was a busybox or 
-ntpclient issue but hadnt gotten around to tracking it down.  With your patch 
-(or, as I just now verified, on .32 without no_hz and hrtimers) the system 
-time is now correct.  I probably never would have made the connection.
+Is the on-the-wire protocol believed to be correct, complete, and stable? How
+about any userspace APIs and on-disk formats? In other words..
 
-Thank you John!
+> > The git tree includes the full patchset posted in October and incremental
+> > changes since then.  I've tried to cram in all the anticipated protocol
+> > changes, but the file system is still strictly EXPERIMENTAL and is marked
 
--- 
-Steven King -- sfking at fdwdc dot com
+Anything left dangling on the changes?
+
+--==_Exmh_1261200797_3855P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLLGWdcC3lWbTT17ARAgDgAKD92sdfp2Q4T6ucKJyVthh0gJ26fQCgvvMb
+JSVxggXzOMQn42BaiIFX++U=
+=wkjY
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1261200797_3855P--
+
