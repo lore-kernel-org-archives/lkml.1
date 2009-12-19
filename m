@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153AbZLSJmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbZLSKLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751153AbZLSJmp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 04:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbZLSJmo
+	id S1751372AbZLSKLg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 05:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZLSKLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 04:42:44 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:53921 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750800AbZLSJmn (ORCPT
+	Sat, 19 Dec 2009 05:11:35 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:53923 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbZLSKLe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 04:42:43 -0500
-Date: Sat, 19 Dec 2009 17:42:40 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Youquan,Song" <youquan.song@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
-       youquan.song@intel.com
-Subject: Re: [PATCH]crypto: Fix complain about lack test for internal used
-	algorithm
-Message-ID: <20091219094240.GA21546@gondor.apana.org.au>
-References: <200912101939.30446.david-b@pacbell.net> <20091211034711.GA2773@suse.de> <200912102013.59329.david-b@pacbell.net> <20091211043849.GA18007@suse.de> <1260509771.12346.138.camel@localhost> <20091211132321.GA17228@youquan-linux.bj.intel.com> <20091211060448.GA28704@gondor.apana.org.au> <20091219094043.GA23639@youquan-linux.bj.intel.com> <20091219022917.GA19431@gondor.apana.org.au> <20091219150736.GA5368@youquan-linux.bj.intel.com>
+	Sat, 19 Dec 2009 05:11:34 -0500
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6 v5] CPU probe/release files
+References: <4AE8ADCF.6090104@austin.ibm.com>
+	<4AE8B072.1070603@austin.ibm.com> <m2oclw9wt4.fsf@igel.home>
+	<1261212415.2173.94.camel@pasglop>
+X-Yow: If I have enough money to buy 5,000 CANS of NOODLE-RONI, can I get a
+ VAT of MARSHMALLOW FLUFF free??
+Date: Sat, 19 Dec 2009 11:11:29 +0100
+In-Reply-To: <1261212415.2173.94.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Sat, 19 Dec 2009 19:46:55 +1100")
+Message-ID: <m26383jmsu.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091219150736.GA5368@youquan-linux.bj.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 19, 2009 at 10:07:36AM -0500, Youquan,Song wrote:
-> > No what I meant is that each algorithm should have its own nul
-> > entry.  IOW we don't need this crypto_is_internal stuff at all.
-> 
-> Hi Herbert,
-> 
-> Well, Are you satisfied with the following modification?
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Yes looks good to me.  Please resubmit with a proper changelog
-and sign-off.
+> Nathan, the problem is that the above wlil define ARCH_CPU_PROBE_RELEASE
+> for any powerpc platform that has HOTPLUG_CPU. So a kernel that doesn't
+> have pSeries support but has hotplug CPU will have a problem, though for
+> some reason none of my test configs triggered it (I'll have to check why
+> next week).
 
-Thanks,
+Perhaps you didn't enable CONFIG_SUSPEND.
+
+Andreas.
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
