@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbZLSPWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZLSP7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751908AbZLSPWp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 10:22:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZLSPWo
+	id S1752560AbZLSP7s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 10:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZLSP7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 10:22:44 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:41872 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbZLSPWn (ORCPT
+	Sat, 19 Dec 2009 10:59:47 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33346 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbZLSP7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 10:22:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=IWubdOHWuNjkbvoRqOJVIVBYeeLqi1U3+iQsWePAL+BckNehkPQC/LGAFnJ62V8qGO
-         icZ7/xN+yWA4G8qNHSs8uhA5uJCXBXdkId+/zW6g/HsoaBZ0NVXKG8Yv0QGT8r3kFqQ0
-         QFu63ob6i50rBultpf6jSWZeIQSWLyrQYIsrw=
-Message-ID: <4B2CEE94.3080800@gmail.com>
-Date: Sat, 19 Dec 2009 16:17:40 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Sat, 19 Dec 2009 10:59:47 -0500
+Date: Sat, 19 Dec 2009 15:59:45 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, eparis@redhat.com
+Subject: [PATCH] fix braindamage in audit_tree.c untag_chunk()
+Message-ID: <20091219155945.GL18217@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Tony Lindgren <tony@atomide.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] OMAP: &&/|| confusion in iommu_put()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-obj can't be both NULL and be an error pointer.
+	... aka "Al had badly fscked up when writing that thing and nobody
+noticed until Eric had fixed leaks that used to mask the breakage".
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+The function essentially creates a copy of old array sans one element
+and replaces the references to elements of original (they are on cyclic
+lists) with those to corresponding elements of new one.  After that the
+old one is fair game for freeing.
+
+First of all, there's a dumb braino: when we get to list_replace_init we
+use indices for wrong arrays - position in new one with the old array and
+vice versa.
+
+Another bug is more subtle - termination condition is wrong if the element
+to be excluded happens to be the last one.  We shouldn't go until we fill
+the new array, we should go until we'd finished the old one.  Otherwise
+the element we are trying to kill will remain on the cyclic lists...
+
+That crap used to be masked by several leaks, so it was not quite trivial
+to hit.  Eric had fixed some of those leaks a while ago and the shit had
+hit the fan...
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/arm/plat-omap/iommu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/plat-omap/iommu.c b/arch/arm/plat-omap/iommu.c
-index c0ff1e3..463d638 100644
---- a/arch/arm/plat-omap/iommu.c
-+++ b/arch/arm/plat-omap/iommu.c
-@@ -827,7 +827,7 @@ EXPORT_SYMBOL_GPL(iommu_get);
-  **/
- void iommu_put(struct iommu *obj)
- {
--	if (!obj && IS_ERR(obj))
-+	if (!obj || IS_ERR(obj))
- 		return;
+diff --git a/kernel/audit_tree.c b/kernel/audit_tree.c
+--- a/kernel/audit_tree.c
++++ b/kernel/audit_tree.c
+@@ -277,7 +277,7 @@ static void untag_chunk(struct node *p)
+ 		owner->root = NULL;
+ 	}
  
- 	mutex_lock(&obj->iommu_lock);
+-	for (i = j = 0; i < size; i++, j++) {
++	for (i = j = 0; j <= size; i++, j++) {
+ 		struct audit_tree *s;
+ 		if (&chunk->owners[j] == p) {
+ 			list_del_init(&p->list);
+@@ -290,7 +290,7 @@ static void untag_chunk(struct node *p)
+ 		if (!s) /* result of earlier fallback */
+ 			continue;
+ 		get_tree(s);
+-		list_replace_init(&chunk->owners[i].list, &new->owners[j].list);
++		list_replace_init(&chunk->owners[j].list, &new->owners[i].list);
+ 	}
+ 
+ 	list_replace_rcu(&chunk->hash, &new->hash);
