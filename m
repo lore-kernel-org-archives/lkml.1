@@ -1,29 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbZLSRiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbZLSRlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752976AbZLSRiM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 12:38:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZLSRiK
+	id S1753205AbZLSRlZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 12:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZLSRlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 12:38:10 -0500
-Received: from web1107.biz.mail.sk1.yahoo.com ([74.6.114.39]:22283 "HELO
-	web1107.biz.mail.sk1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750772AbZLSRiI (ORCPT
+	Sat, 19 Dec 2009 12:41:23 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:39039 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753154AbZLSRlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 12:38:08 -0500
-Message-ID: <151375.29413.qm@web1107.biz.mail.sk1.yahoo.com>
-X-YMail-OSG: woKYEoUVM1nr7cnkgeBFz3bajAbzjPlrjOrlIBMcvGK.Pj9vBFAwZs7PvYUw_ROMYCoyade0o8upT4cKsI1Th7eELLss7yhm9w3svv4Tyr62eoUf9Q6kvr5Kymkjch5.xkM1fMIV3xk9zBwfCyLqUPY_.8NQ_1oSbiXuDqJOsNV5zTD0NedaXvbNve6GWIalUnWZ2BIm1Np3bbdHcBEE86J4pYyXH2akbW_jGgykGPOVYiRAFkRFavxBrxJDPXsmcNtfpwdcu0t0IaakP3HwYciJ_HtPntJW1eKzvvDRdkXDYRgWO5d8RY5xI10pOA5OHT3PnT7ZdLM5qpORYuLSCQIkWlYkFt_lM8xcW7qzKb8q7hhK.SSHUloAdAe68B1pyf0XykG3qfY8zAOuoHYMgmg8pfCCFRbu8SLjXhr5kgL48riX_3T2m3gCVfD3MI7W8PjTxC16ZLk82ANS43PvvTmC.wOIOuZMXV56eA42SZArzEMnomNHFq9Jg4zAQm2c0viqKQ8vTcP1at6QPGcC5OtpJZIZG9ykZ252aah6jNm7AFNQaojIr6x3GwwEwCxDfRmkKrLfGn5rxfhOMTMiFLnK3kHy7HJi3N4fQdR6sXI.zbsbTfg1wtlEfkOBkYLFZ8mG9DXtZD3i_Aq46xn1Kf25TY.NN9gI3eSludpg3onTxCMPFhVTtO.wx4r9Si4Te_Hr20nlqyJWtSjQBxHYzDhF6P9o2hpu.6fhtvxBV9AyMGHO5LJ.LrJwjP.XBAV57Iq2q7PzjsH_mYqqk1Q_4LPUdnqNyIJ2GZazE9AIF38tKmeuqKeBK.sCYmtqcw6G2SuoTCduT49sj3FyjXBtCgYDt1jJJzbirONP7FDT0W.UoO28K0Fd5Au54mi2rNWMGZuDSGDUnZ50qci1sd4bFyVexqthWD7hwqwR2xQ3Sb4MRHQEOCSEUEwry1j6CSXGca7_2aaSaNG6Ft.vGYpyWd9VSDTYMNG3knNtpQzrbZaggp4m6u3pyhtxxVO8bfl3_DDHOoLLDbds.pOptgKy_fZpPdyS5XDTc6mre8wW0pqnueqgywi.tuiCE1lqStMH.NV.s486KrrJjEK1KnzAk9.hukuZypFrZJwyZXMnUw9T0LY3vGY4kea8drifH8fdc4hG0iEqCEKHG4bq8rjyABYZkyd.KGRkKl2bkSQYxgKd1qSXHuI1vxYgZk3knR8WR3HGoKTpPkOLn0qoZRuEOGW_otyGQR.X1Wh2k7CERzr2gO2AYGPnlACpmrnlxdoVtXDAFsAQaxGoLrA53ItMK_WAl6eqvQoMZVo2iCBlBnzZEJTi.ptYRl1TSDwV0w2jSAHuS0eAD0H87P73XBJf9x7eQXpjzmkPf29ShCZSkPzXGBxcBe6gAngc7mvZi8TL_6Bcp52vrAIUdOArseen7TImWXpNA4L414lExYiZ4MBe1W26VK9axQ9M6uQH2xG7F.0euHvaGXOYFa0irKvNnv68idWouyurOj4JAaBdRVj9rH41elakaIVvhKHbhpl96QAj8JUnjkjgzs9Pbnn.nIYsAlMgNReOjkzOCR8ZmqiU7ebGGnHsZgP7UAPFsjcbrOGH9vQEdwRLmfKud44w7968Gunhq_Xl3NiTyxRZmI.YvJCRtJLrYXsEXxByjUkst0IjCll7gfxUMgheSTtqzvyp8IbHTeWzoeoPI5p0WXnAhuYt_sYF4tS_PN8yLFh8NbcPom7uiHI0tHQ8qXXKbicOL60CUAJMiaQh1nZYWLbH6DNN5VyGqUfvgJXlkcINxWXMlZ5CjTXZNv7_nLw0IjrQRMlmzkB9rtEUrMUiXdR3bW2um.gCgFKCImbtLOddsZzsevKqV1LknVEUFURZobyxtK3ArSGoAIUmcoOT.0gr4Tzv2aihBK0kytll9p_AZ.3tlZNaIcD94__ZTWkgKJoClNIdQEr8jV.lleKYuS6qecO_MVK9HOhrSU5E_A4EInPJf6VvzvmKBnnNfDC7djEdu736Rv5DQ_inYBzhxR!
- HgUYQOotuZWZsrLaz3.UfTSlXdaCF7u8jPA0OIy4pOXegUXzPvIxN1cpHxT0jtTjdWMs64uinDrpCTS_lUhKjTbCy8lyQlEumGI1p20918tCPqag825vFhQEcwS13NpW66eSFGsrwepTuPtlr0W5ofpm.b9ANjteWAn4IJTwCtRTlLOy0vZmdBP0N9KvQhiXpJKNZLUE0Edp6rAII6b4qCzb4Jdwb75.FAdlAoFe0PSmLioZiemGj4AwzuEKw8OiBNOCh2hd
-X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
-Date: Sat, 19 Dec 2009 09:38:03 -0800 (PST)
-From: OFFICE OF THE SENATE <charlotte@communityhh.net>
-Reply-To: mr.william_davison@yahoo.com.hk
-Subject: RE:
-To: undisclosed recipients:;
+	Sat, 19 Dec 2009 12:41:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=x0trI/7/0SkemfbGCvEE6/e6ysM/AnOd1Dkj6zqFx/hO0TPYV+EpEEJF2GaLpaqAS3
+         NUh5pYYu37kGFnpoFHFn0uUmCfv17DEzIZyaPokipyGkCSSb4RKPOJTzILM38Z6QyjBs
+         /MRZy+nzYv1nLtzPjJIMU8L5XIvxMS9ZQLXms=
+Message-ID: <4B2D1025.1020106@gmail.com>
+Date: Sat, 19 Dec 2009 18:40:53 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bernard Pidoux <bernard.pidoux@upmc.fr>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Bernard Pidoux <bpidoux@free.fr>
+Subject: Re: kernel BUG at kernel/timer.c:951!
+References: <4B2CD772.1030106@upmc.fr>
+In-Reply-To: <4B2CD772.1030106@upmc.fr>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bernard Pidoux wrote, On 12/19/2009 02:38 PM:
 
-To celebrate the 30th anniversary celebration,We are giving out a yearly donation of The ATM Card Value is $6.8 million USD to 2 lucky recipients,as New Year promotion from the W.H.O,UN, and the EU in accordance with the enabling act of Parliament. back with: Names: Address: Sex:
+> I am experiencing a few kernel panics on my Linux system using 2.6.32 and 2.6.32.1 kernels
+> with nosmp. 
+
+Some of these oopses look similarly to those:
+http://markmail.org/message/scjov36zm2wf2ytv
+
+How about this patch I sent you for testing?:
+http://markmail.org/message/nymi7xyd5c43hyfu
+
+Jarek P.
