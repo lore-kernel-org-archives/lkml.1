@@ -1,78 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbZLSFdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbZLSGhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750999AbZLSFdc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 00:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbZLSFdb
+	id S1751806AbZLSGhr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 01:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZLSGhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 00:33:31 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:55440 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbZLSFda (ORCPT
+	Sat, 19 Dec 2009 01:37:46 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55425 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbZLSGhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 00:33:30 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Sage Weil <sage@newdream.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Ceph distributed file system client for 2.6.33
-In-Reply-To: Your message of "Fri, 18 Dec 2009 12:54:02 PST."
-             <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.64.0912071511470.32397@cobra.newdream.net>
-            <Pine.LNX.4.64.0912181140370.26094@cobra.newdream.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1261200797_3855P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 19 Dec 2009 00:33:17 -0500
-Message-ID: <14397.1261200797@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020204.4B2C659F.0079,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Sat, 19 Dec 2009 01:37:45 -0500
+Message-ID: <d68104c17771d2a52c59efc6ef8d5bc9.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <4B2C4727.1010302@gmail.com>
+References: <20091216120011.3eecfe79.kamezawa.hiroyu@jp.fujitsu.com>
+    <20091216101107.GA15031@basil.fritz.box>
+    <20091216191312.f4655dac.kamezawa.hiroyu@jp.fujitsu.com>
+    <20091216102806.GC15031@basil.fritz.box>
+    <28c262360912160231r18db8478sf41349362360cab8@mail.gmail.com>
+    <20091216193315.14a508d5.kamezawa.hiroyu@jp.fujitsu.com>
+    <20091218093849.8ba69ad9.kamezawa.hiroyu@jp.fujitsu.com>
+    <20091218094336.cb479a36.kamezawa.hiroyu@jp.fujitsu.com>
+    <4B2C4727.1010302@gmail.com>
+Date: Sat, 19 Dec 2009 15:37:41 +0900 (JST)
+Subject: Re: [RFC 2/4] add mm event counter
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Minchan Kim" <minchan.kim@gmail.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1261200797_3855P
-Content-Type: text/plain; charset=us-ascii
+Minchan Kim
+> Hi, Kame.
+>
+Hi,
 
-On Fri, 18 Dec 2009 12:54:02 PST, Sage Weil said:
-> I would still like to see ceph merged for 2.6.33.  It's certainly not 
-> production ready, but it would be greatly beneficial to be in mainline for 
-> the same reasons other file systems like btrfs and exofs were merged 
-> early.
+> KAMEZAWA Hiroyuki wrote:
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> Add version counter to mm_struct. It's updated when
+>> write_lock is held and released. And this patch also adds
+>> task->mm_version. By this, mm_semaphore can provides some
+>> operation like seqlock.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> ---
+>>  include/linux/mm_types.h |    1 +
+>>  include/linux/sched.h    |    2 +-
+>>  mm/mm_accessor.c         |   29 ++++++++++++++++++++++++++---
+>>  3 files changed, 28 insertions(+), 4 deletions(-)
+>>
+>> Index: mmotm-mm-accessor/include/linux/mm_types.h
+>> ===================================================================
+>> --- mmotm-mm-accessor.orig/include/linux/mm_types.h
+>> +++ mmotm-mm-accessor/include/linux/mm_types.h
+>> @@ -216,6 +216,7 @@ struct mm_struct {
+>>  	atomic_t mm_count;			/* How many references to "struct mm_struct"
+>> (users count as 1) */
+>>  	int map_count;				/* number of VMAs */
+>>  	struct rw_semaphore mmap_sem;
+>
+> How about ?
+>
+> struct map_sem {
+> 	struct rw_semaphore;
+> #ifdef CONFIG_PER_THREAD_VMACACHE
+> 	int version;
+> #endif
+> };
+>
+> struct mm_struct {
+> 	...
+> 	struct map_sem mmap_sem
+> 	...
+> };
+>
+> void mm_read_lock(struct mem_sem *mmap_sem)
+> {
+> 	down_read(mmap_sem);
+> #ifdef CONFIG_PER_THREAD_VMACACHE
+> 	if (current->mm_version != mmap_sem->version)
+> 		current->mm_version = mmap_sem->version;
+> #endif
+> }
+>
+> We know many place(ex, page fault patch) are matched (current->mm == mm).
+> Let's compare it just case of get_user_pages and few cases before calling
+> mm_xxx_lock.
+>
+Yes, your idea is reasonable.
 
-Is the on-the-wire protocol believed to be correct, complete, and stable? How
-about any userspace APIs and on-disk formats? In other words..
+> Why I suggest above is that i don't want regression about single thread
+> app.
+> (Of course. you use the cache hit well but we can't ignore compare and
+> one cache line invalidation by store).
+>
+> If we can configure CONFIG_PER_THREAD_VMACACHE, we can prevent it.
+>
+Sure.
 
-> > The git tree includes the full patchset posted in October and incremental
-> > changes since then.  I've tried to cram in all the anticipated protocol
-> > changes, but the file system is still strictly EXPERIMENTAL and is marked
+> As a matter of fact, I want to control speculative page fault and older in
+> runtime.
+> For example, if any process starts to have many threads, VM turns on
+> speculative about
+> the process. But It's not easy to determine the threshold
+> (ex, the number of thread >> NR_CPU  .
+>
+> I think mm_accessor patch is valuable as above.
+>
+> 1. It doesn't hide lock instance.
+> 2. It can be configurable.
+> 3. code is more simple.
+>
+> If you can do it well without mm_accessor, I don't mind it.
+>
+> I think this is a good start point.
+>
+ok. As an additional information, I tried some benchmarks as
+kernel make, sysbench, java grande, .... etc. But no difference
+before after patches. So, this patch's effect is very limited to
+some special application's special case.
+Then, I'd like to start from CONFIG_SPECULATIVE_PAGE_FAULT.
+And I should add CONFIG_SPLIT_PTLOCK rather than #define USE_SPLIT_PTLOCK
+for making configurable.
 
-Anything left dangling on the changes?
 
---==_Exmh_1261200797_3855P
-Content-Type: application/pgp-signature
+>> +	int version;
+>>  	spinlock_t page_table_lock;		/* Protects page tables and some counters
+>> */
+>>
+>>  	struct list_head mmlist;		/* List of maybe swapped mm's.	These are
+>> globally strung
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+>>  void mm_write_unlock(struct mm_struct *mm)
+>>  {
+>> +	mm->version++;
+>>  	up_write(&mm->mmap_sem);
+>
+> Don't we need to increase version in unlock case?
+>
+This is for quick check. As seq_lock, the reader can know mm is
+write-locked by checking
+   mm->versio & 0x1.
+In this patch, current->mm_version is always even number.
+(But this attribute is not used in later patch ;)
 
-iD8DBQFLLGWdcC3lWbTT17ARAgDgAKD92sdfp2Q4T6ucKJyVthh0gJ26fQCgvvMb
-JSVxggXzOMQn42BaiIFX++U=
-=wkjY
------END PGP SIGNATURE-----
 
---==_Exmh_1261200797_3855P--
+
+>>  }
+>>  EXPORT_SYMBOL(mm_write_unlock);
+>>
+>>  int mm_write_trylock(struct mm_struct *mm)
+>>  {
+>> -	return down_write_trylock(&mm->mmap_sem);
+>> +	int ret = down_write_trylock(&mm->mmap_sem);
+>> +
+>> +	if (ret)
+>> +		mm->version++;
+>> +	return ret;
+>>  }
+>>  EXPORT_SYMBOL(mm_write_trylock);
+>>
+>> @@ -45,6 +56,7 @@ EXPORT_SYMBOL(mm_is_locked);
+>>
+>>  void mm_write_to_read_lock(struct mm_struct *mm)
+>>  {
+>> +	mm->version++;
+>>  	downgrade_write(&mm->mmap_sem);
+>>  }
+>>  EXPORT_SYMBOL(mm_write_to_read_lock);
+>> @@ -78,3 +90,14 @@ void mm_read_might_lock(struct mm_struct
+>>  	might_lock_read(&mm->mmap_sem);
+>>  }
+>>  EXPORT_SYMBOL(mm_read_might_lock);
+>> +
+>> +/*
+>> + * Called when mm is accessed without read-lock or for chekcing
+> 							  ^^^^^^^^
+> 							  checking :)
+yes.
+
+>> + * per-thread cached value is stale or not.
+>> + */
+>> +int mm_version_check(struct mm_struct *mm)
+> Nitpick:
+>
+> How about "int vma_cache_stale(struct mm_struct *mm)"?
+>
+>> +{
+>> +	if ((current->mm == mm) && (current->mm_version != mm->version))
+>> +		return 0;
+>> +	return 1;
+>> +}
+>>
+>
+yes, if the usage is limited to vma_cache.
+
+I'd like to add vma->vma_version instead of mm->version for avoiding
+mm_accessor. Maybe I can do it...Anyway, thank you for good inputs.
+
+Regards,
+-Kame
+
+
+
 
