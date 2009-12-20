@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZLTRyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbZLTR5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbZLTRyI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZLTRyG
+	id S1755883AbZLTR5U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbZLTR5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:54:06 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:52678 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755634AbZLTRyA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:54:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=XqQw1Tkm8MR7fgF0AL6tgagCiywNIOonzOKoSzAW2MoCwWnCam7b8YbWQutqJJcfJO
-         Dv217kXrDQLHUgAGd67/PYVVsaWHccdojvXChQVgTMNSvG5h47lInhQZEsxqY+3F6apj
-         nkbBLtjU9opFcWiB0BXhaqAfnozfiQRobHSnc=
-MIME-Version: 1.0
-In-Reply-To: <20091218030056.GC3047@heat>
-References: <20091217.225856.145758950057800056.mrs@deli>
-	 <20091218030056.GC3047@heat>
-Date: Sun, 20 Dec 2009 17:53:58 +0000
-X-Google-Sender-Auth: df0e82076352a4e5
-Message-ID: <fb69ef3c0912200953x2546f03cs5a88c9a54fd750ee@mail.gmail.com>
-Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
-From: Mark Seaborn <mrs@mythic-beasts.com>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 20 Dec 2009 12:57:19 -0500
+Received: from mail.perches.com ([173.55.12.10]:1325 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755422AbZLTR5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 12:57:18 -0500
+Subject: Re: sched: restore sanity
+From: Joe Perches <joe@perches.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: San Mehat <san@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1261330592.4314.36.camel@laptop>
+References: <1261315437.4314.6.camel@laptop>
+	 <20091220144925.GA19608@elte.hu> <1261320715.4314.9.camel@laptop>
+	 <236ccac0912200703g464912b1r421497ebf3b6ebc6@mail.gmail.com>
+	 <236ccac0912200705i369d00d1v42603a00e92039b6@mail.gmail.com>
+	 <1261322387.4314.22.camel@laptop>
+	 <1261329743.30458.179.camel@Joe-Laptop.home>
+	 <1261330592.4314.36.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 20 Dec 2009 09:57:17 -0800
+Message-ID: <1261331837.30458.200.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 3:00 AM, Michael Stone <michael@laptop.org> wrote:
+On Sun, 2009-12-20 at 18:36 +0100, Peter Zijlstra wrote:
+> On Sun, 2009-12-20 at 09:22 -0800, Joe Perches wrote:
+> > On Sun, 2009-12-20 at 16:19 +0100, Peter Zijlstra wrote:
+> > > On Sun, 2009-12-20 at 07:05 -0800, San Mehat wrote:
+> > > > >> Probably, but the rest is just as annoying, pr_* is crap.
+> > > > Oh? Out of curiosity whats wrong with it?
+> > > That's what should be asked of printk().
+> > pr_<level> offers some things printk cannot:
+> > o standardization, eliminates frequent missing KERN_ levels
+> >   and missing/typo/misspelled module prefixes  
+> printk(char level, char *fmt, ...);
 
-> @Eric, Mark: regarding ptrace()-ing from network-disabled processes: I agree
-> that this functionality is critical and I have altered the
-> __ptrace_may_access() check to support it.
-> The new rule I propose is equivalent to the rule I used in ptrace_set_network()
-> and is similar to the rule that Eric proposed earlier this afternoon. I now
-> propose:
->
->  "You may ptrace() any process that has all the network restrictions you do."
->
-> This should take care of your use of strace without bending anything else into
-> an unnatural shape.
+A change that's not possible without breaking the build of
+one rather large body of code.
 
-I am in two minds about this.  On the one hand, it adds the
-flexibility that I asked for.  On the other hand, it is a more
-complicated rule to have fixed in the kernel.
+> Which is something we have precedent for too in fprintf() and syslog().
 
-It still seems wrong to me that the disable-networking flag should
-affect ptrace() at all.
+Huh?  Did that break builds?
 
-The reason is that the disable-networking flag is not useful on its
-own.  Anyone who uses it will use it in combination with some other
-authority-limiting mechanism.  They will already have a story for how
-to prevent sandboxed processes with interfering with other processes
-via ptrace(), kill(), writing to ~/.bashrc, etc.  There's no point in
-disabling network access for a process if it has full access to your
-home directory and can cause programs to be run with your full
-authority as a user.
+> > o finer grained ability to eliminate unnecessary messages
+> >   for embedded systems
+> How is that not possible with another solution.
 
-So if there is already a way to control access to ptrace(), we
-shouldn't add another check to the kernel's access control rules.
-They are complicated enough already.
+printk is not selective.  printk always compiles all
+messages, pr_debug eliminates to nothing without DEBUG.
+Similar mechanisms are possible for arbitrary pr_<level>.
 
+> > o standardized mechanism to prefix messages with module/function
+> Who fucking gives a shit
 
-On ad-hocness: I am very much in favour of providing unprivileged
-mechanisms for switching off sources of ambient authority.  But it
-does not seem very useful to provide an unprivileged mechanism to
-switch off network access if there is no unprivileged mechanism for
-switching off access to the filesystem namespace, which is usually a
-more important source of authority.  Maybe we should solve both
-problems?
+Apparently the people that prefix.
 
-Cheers,
-Mark
+There are an awful lot of printks with __func__ or
+embedded typed function names that I think are senseless.
+
+I think it'd be much more sensible to have some
+per module_printk_flags field that controlled whether
+or not module/function/line was emitted.
+
+I'm trying to get rid of them slowly and generically.
+
+> > o eventual code reduction via use of a singleton instead of
+> >   duplicated module/function names
+> text reduction?
+
+Yes.
+
+> > o eventual dynamic_debug styled control of prefix by
+> >   module/function
+> Feh, who cares, printk output simply shouldn't be frequent enough to
+> need filtering, there's much better solutions for that.
+
+You could name those solutions.
+
+> > There are quite of number of arbitrarily named module wrapper
+> > macros and functions that build on printk.
+> Then remove them all..
+> Are you really arguing to fully deprecate printk()?
+
+I think pr_<level> is a better use.
+It's too early to deprecate printk though.
+
+> If not this is all
+> going to be useless since I'll simply keep using printk().
+
+I didn't suggest you shouldn't.  Use what works for you.
+
