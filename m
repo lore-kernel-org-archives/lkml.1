@@ -1,35 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbZLTJxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbZLTJxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbZLTJxM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 04:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZLTJxK
+	id S1753246AbZLTJxR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 04:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZLTJxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 04:53:10 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:59620 "EHLO linta.de"
+	Sun, 20 Dec 2009 04:53:11 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:59623 "EHLO linta.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752484AbZLTJxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 04:53:08 -0500
-Date: Sun, 20 Dec 2009 10:50:02 +0100
+	id S1752687AbZLTJxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 04:53:09 -0500
+Date: Sun, 20 Dec 2009 10:52:48 +0100
 From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] resources: fix call to alignf() in allocate_resource()
-Message-ID: <20091220095001.GA6029@comet.dominikbrodowski.net>
+To: Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.33-rc0 regression: 256MB CF card no longer recognized in
+ PCMCIA slot
+Message-ID: <20091220095248.GC6029@comet.dominikbrodowski.net>
 Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Yinghai Lu <yhlu.kernel@gmail.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	linux-kernel@vger.kernel.org
+	Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091219215459.GB9011@elf.ucw.cz>
+ <4B2D54E7.9060508@garzik.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Hey,
+
+On Sat, Dec 19, 2009 at 05:34:15PM -0500, Jeff Garzik wrote:
+> On 12/19/2009 04:55 PM, Pavel Machek wrote:
+> >Hi!
+> >
+> >Subject pretty much says it all... I do get some messages on the
+> >console, I'll try to gather them.
+> 
+> Which driver(s) no longer see it?  Do you think it's the PCMCIA
+> subsystem, IDE, libata or other?
+
+My suspicion is that it might be kernel/resource.c -- Pavel, does this patch
+fix the issue you're seeing?
+
+Best,
+	Dominik
+
+
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Date: Sun, 20 Dec 2009 10:04:56 +0100
+Subject: [PATCH] resources: fix call to alignf() in allocate_resource()
 
 The second parameter to alignf() in allocate_resource() must
 reflect what new resource is attempted to be allocated, else
