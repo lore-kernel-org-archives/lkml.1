@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZLTMys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZLTNnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbZLTMys (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 07:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbZLTMyp
+	id S1755233AbZLTNnu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 08:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbZLTNnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 07:54:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36882 "EHLO ogre.sisk.pl"
+	Sun, 20 Dec 2009 08:43:50 -0500
+Received: from ns.hanzlici.cz ([212.158.159.56]:46383 "EHLO hanzlici.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753523AbZLTMyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 07:54:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Sun, 20 Dec 2009 13:55:45 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912192232360.6618-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912192232360.6618-100000@netrider.rowland.org>
+	id S1754501AbZLTNns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 08:43:48 -0500
+X-Greylist: delayed 2878 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Dec 2009 08:43:48 EST
+Message-ID: <4B2E1F1C.7000105@hanzlici.cz>
+Date: Sun, 20 Dec 2009 13:57:00 +0100
+From: Frantisek Hanzlik <franta@hanzlici.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.9.1.7pre) Gecko/20091219 SeaMonkey/2.0.2pre
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: OOPS in inotify code, kernel 2.6.31.6-162.fc12.i686.PAE
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912201355.45760.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 December 2009, Alan Stern wrote:
-> On Sat, 19 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> > On Friday 18 December 2009, Alan Stern wrote:
-> > > On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > I didn't manage to do that, but I was able to mark sd and i8042 as async and
-> > > > see the impact of this.
-> > > 
-> > > Apparently this didn't do what you wanted.  In the nx6325
-> > > sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
-> 
-> To be precise, the device is an ATA or SATA disk but it is managed by 
-> the sd driver.
-> 
-> > > suspended by the main thread instead of an async thread.
-> > 
-> > Hm, that's odd, because there's a noticeable time difference between the
-> > two cases in which the sd is sync and async.  I'll look into it further.
-> 
-> I don't know what the whole story is, but the PID number tells the 
-> tale.
-> 
-> > > There's an important point I neglected to mention before.  Your logs 
-> > > don't show anything for devices with no suspend callbacks at all.  
-> > > Nevertheless, these devices sit on the device list and prevent other
-> > > devices from suspending or resuming as soon as they could.
-> > 
-> > Unless they are async, that is.
-> 
-> Yes.  It would be simpler to make them async.  But first we ought to
-> know what they are.  Can you add an extra line to the log for such
-> devices?
+Hello, when I tried incrond inotify daemon, I found this in system log:
 
-Sure, I'll do that.
+Dec 20 05:20:03 franta kernel: ------------[ cut here ]------------
+Dec 20 05:20:03 franta kernel: WARNING: at fs/notify/inotify/inotify_fsnotify.c:129 idr_callback+0x32/0x56() (Not tainted)
+Dec 20 05:20:03 franta kernel: Hardware name: P5E-VM HDMI
+Dec 20 05:20:03 franta kernel: inotify closing but id=0 for entry=ed0b8900 in group=d657d600 still in idr.  Probably leaking memory
+Dec 20 05:20:03 franta kernel: Modules linked in: bluetooth rfkill hfs hfsplus nls_utf8 fuse ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs autofs4 nfs lock
+d fscache nfs_acl auth_rpcgss sunrpc bridge stp llc cpufreq_ondemand acpi_cpufreq dm_multipath kvm_intel kvm uinput snd_hda_codec_intelhdmi snd_hda_codec_rea
+ltek snd_hda_intel snd_hda_codec snd_hwdep snd_seq snd_seq_device snd_pcm snd_timer firewire_ohci snd firewire_core crc_itu_t iTCO_wdt soundcore iTCO_vendor_
+support asus_atk0110 i2c_i801 snd_page_alloc atl1 serio_raw e100 mii ata_generic pata_acpi pata_jmicron i915 drm_kms_helper drm i2c_algo_bit i2c_core video o
+utput [last unloaded: microcode]
+Dec 20 05:20:03 franta kernel: Pid: 7426, comm: incrond Not tainted 2.6.31.6-162.fc12.i686.PAE #1
+Dec 20 05:20:03 franta kernel: Call Trace:
+Dec 20 05:20:03 franta kernel: [<c043db1b>] warn_slowpath_common+0x70/0x87
+Dec 20 05:20:03 franta kernel: [<c04edbfc>] ? idr_callback+0x32/0x56
+Dec 20 05:20:03 franta kernel: [<c043db70>] warn_slowpath_fmt+0x29/0x2c
+Dec 20 05:20:03 franta kernel: [<c04edbfc>] idr_callback+0x32/0x56
+Dec 20 05:20:03 franta kernel: [<c059ce18>] idr_for_each+0x5c/0x97
+Dec 20 05:20:03 franta kernel: [<c04edbca>] ? idr_callback+0x0/0x56
+Dec 20 05:20:03 franta kernel: [<c04ec2b0>] ? fsnotify_put_event+0x48/0x4b
+Dec 20 05:20:03 franta kernel: [<c04edbb9>] inotify_free_group_priv+0x1a/0x2b
+Dec 20 05:20:03 franta kernel: [<c04ec38f>] fsnotify_final_destroy_group+0x1e/0x28
+Dec 20 05:20:03 franta kernel: [<c04ec453>] fsnotify_put_group+0x75/0x78
+Dec 20 05:20:03 franta kernel: [<c04edd71>] inotify_release+0x1e/0x28
+Dec 20 05:20:03 franta kernel: [<c04c9bd7>] __fput+0xed/0x184
+Dec 20 05:20:03 franta kernel: [<c04c9c86>] fput+0x18/0x1a
+Dec 20 05:20:03 franta kernel: [<c04c7129>] filp_close+0x56/0x60
+Dec 20 05:20:03 franta kernel: [<c043f480>] put_files_struct+0x5d/0xa1
+Dec 20 05:20:03 franta kernel: [<c043f4f7>] exit_files+0x33/0x37
+Dec 20 05:20:03 franta kernel: [<c0440c60>] do_exit+0x1cb/0x5da
+Dec 20 05:20:03 franta kernel: [<c04410d5>] do_group_exit+0x66/0x8d
+Dec 20 05:20:03 franta kernel: [<c0441114>] sys_exit_group+0x18/0x1c
+Dec 20 05:20:03 franta kernel: [<c0408f9b>] sysenter_do_call+0x12/0x28
+Dec 20 05:20:03 franta kernel: ---[ end trace bf2ba6f50ae90f71 ]---
+Dec 20 05:20:03 franta kernel: entry->group=(null) inode=(null) wd=1024
+Dec 20 05:20:08 franta abrt: Kerneloops: Reported 1 kernel oopses to Abrt
+Dec 20 05:20:08 franta abrtd: Directory 'kerneloops-1261282808-1' creation detected
+Dec 20 05:20:08 franta abrtd: Getting local universal unique identification
+Dec 20 05:20:08 franta abrtd: New crash, saving
+Dec 20 05:20:08 franta abrtd: Activation of plugin 'RunApp' was not successful: Plugin 'RunApp' is not registered
 
-> What I'm afraid of is that there might be a "normal" device with a
-> "normal" ancestor but with "abnormal" devices in between (where
-> "normal" means there is a suspend or resume routine and "abnormal"  
-> means all the method pointers are NULL).  I know that this happens when
-> there's a USB mass-storage device, for example.  If we complete the
-> intermediate devices immediately, then there won't be anything to
-> prevent the ancestor from suspending before the device or the device
-> from resuming before the ancestor.
 
-I'm afraid of that too.
+In addition to things above: System is Fedora 12 i686 linux, Core2 Duo E8200, 4GB RAM,
+  ext4 fs on root (where I had inotify paths - they was somewhere under /home/).
 
-Rafael
+Or report to Fedora's bugzilla is more appropriate?
+
+Thanks, Franta Hanzlik
