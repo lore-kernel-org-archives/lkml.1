@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbZLTTqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZLTTu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932066AbZLTTqt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 14:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbZLTTqs
+	id S1756177AbZLTTu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 14:50:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbZLTTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 14:46:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43078 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbZLTTqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 14:46:48 -0500
-Date: Sun, 20 Dec 2009 20:46:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/8] w35und: Remove unused typedefs MLME_DEAUTHREQ_PARA
- and MLME_DISASSOCREQ_PARA
-Message-ID: <20091220194641.GD23917@elf.ucw.cz>
-References: <1261170502-1479-1-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-2-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-3-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-4-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-5-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-6-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-7-git-send-email-penberg@cs.helsinki.fi>
- <1261170502-1479-8-git-send-email-penberg@cs.helsinki.fi>
+	Sun, 20 Dec 2009 14:50:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37581 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755899AbZLTTuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 14:50:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Sun, 20 Dec 2009 20:51:01 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912201434340.27137-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912201434340.27137-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261170502-1479-8-git-send-email-penberg@cs.helsinki.fi>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912202051.01328.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-12-18 23:08:22, Pekka Enberg wrote:
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+On Sunday 20 December 2009, Alan Stern wrote:
+> On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > BTW, what's the right place to call device_enable_async_suspend() for USB
+> > devices?
+> 
+> For USB devices, it's in drivers/usb/core/hub.c:usb_new_device() 
+> anywhere before the call to usb_device_add().
+> 
+> For USB interfaces, it's in 
+> drivers/usb/core/message.c:usb_set_configuration() before the call to 
+> device_add().
+> 
+> For USB endpoints, it's in 
+> drivers/usb/core/endpoint.c:usb_create_ep_devs() before the call to 
+> device_register().
 
-Whole series looks good. ACK.
-								Pavel
+Thanks!
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> However you won't need to do it for interfaces and endpoints if you 
+> automatically treat as async any device without suspend/resume 
+> callbacks.
+
+I don't do that right now and I need these settings just for testing at the
+moment.
+
+Rafael
