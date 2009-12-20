@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZLTUMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZLTUQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbZLTUMW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 15:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbZLTUMV
+	id S1755635AbZLTUQd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 15:16:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZLTUQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 15:12:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40050 "EHLO mx2.mail.elte.hu"
+	Sun, 20 Dec 2009 15:16:32 -0500
+Received: from mail1.radix.net ([207.192.128.31]:49237 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752822AbZLTUMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 15:12:20 -0500
-Date: Sun, 20 Dec 2009 21:10:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Joe Perches <joe@perches.com>
-Cc: Andy Whitcroft <apw@canonical.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       peterz@infradead.org, efault@gmx.de, akpm@linux-foundation.org,
-       tglx@linutronix.de
-Subject: Re: [PATCH] scripts/checkpatch.pl: Add WARN on printk format split
- on multiple lines
-Message-ID: <20091220201052.GA5665@elte.hu>
-References: <1261315437.4314.6.camel@laptop>
- <tip-3df0fc5b2e9d8092dcaeb5ae0b6753d85c851d66@git.kernel.org>
- <1261335300.30458.209.camel@Joe-Laptop.home>
- <20091220191531.GA17878@elte.hu>
- <1261338255.30458.222.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261338255.30458.222.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1754516AbZLTUQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 15:16:31 -0500
+Subject: Re: [PATCH 2/3] g_NCR5380: fix broken MMIO compilation
+From: Andy Walls <awalls@radix.net>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200912202041.29363.linux@rainbow-software.org>
+References: <200912202041.29363.linux@rainbow-software.org>
+Content-Type: text/plain
+Date: Sun, 20 Dec 2009 15:15:44 -0500
+Message-Id: <1261340144.3057.21.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2009-12-20 at 20:41 +0100, Ondrej Zary wrote:
+> The ifdefs are broken so the MMIO code is never compiled and so it's broken
+> too. Fix them all.
+> Untested as I don't have the hardware.
 
-* Joe Perches <joe@perches.com> wrote:
+I still have a DTC-xxxx card in use (under Windows95) and a SUMO SCSI AT
+(usable with g_NCR5380 with a minor hack to toggle a flip flop that
+gates interrupts to the ISA bus).  :)
 
-> On Sun, 2009-12-20 at 20:15 +0100, Ingo Molnar wrote:
-> > Checkpatch should warn about printk 
-> > lines that end with a '"', those are almost always a sign of some ill-advised 
-> > break-the-string artifact.
-> 
-> Perhaps something like this:
-> 
-> diff from Andy Whitcroft's testing script,
-> where logFunctions is defined.
-> http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
-> 
-> --- a/scripts/checkpatch.pl-testing	2009-12-20 11:35:28.000000000 -0800
-> +++ b/scripts/checkpatch.pl-testing	2009-12-20 11:35:46.000000000 -0800
-> @@ -1398,6 +1398,11 @@
->  			WARN("line over 80 characters\n" . $herecurr);
->  		}
->  
-> +#Logging function format split over multiple lines
-> +		if ($line =~ /^\+\s*$logFunctions.*"\s*$/) {
-> +			WARN("Don't split logging function format\n" . $herecurr);
-> +		}
-> +
+I think both cards are wired to use I/O space and not memory space, so
+they are of no help for testing MMIO. :(  
 
-Havent tested it but this check would be lovely to have.
+But, ah memories....
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Regards,
+Andy
 
-	Ingo
