@@ -1,95 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZLTXSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZLTXbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbZLTXSU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 18:18:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZLTXST
+	id S932086AbZLTXbn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 18:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZLTXbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 18:18:19 -0500
-Received: from mx39.mail.ru ([94.100.176.53]:50302 "EHLO mx39.mail.ru"
+	Sun, 20 Dec 2009 18:31:42 -0500
+Received: from host013.keli.cz ([77.48.235.13]:39681 "EHLO host013.keli.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857AbZLTXSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 18:18:18 -0500
-Date: Mon, 21 Dec 2009 02:26:19 +0300
-From: Nikolai ZHUBR <zhubr@mail.ru>
-Message-ID: <11246924033.20091221022619@mail.ru>
-To: Willy Tarreau <w@1wt.eu>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re[2]: epoll'ing tcp sockets for reading
-In-reply-To: <20091220161422.GH32739@1wt.eu>
-References: <1257480306.20091219150206@mail.ru>
- <alpine.DEB.2.00.0912190953160.4482@makko.or.mcafeemobile.com>
- <203216314.20091220013854@mail.ru>
- <alpine.DEB.2.00.0912191437530.4482@makko.or.mcafeemobile.com>
- <1059651918.20091220032610@mail.ru>
- <alpine.DEB.2.00.0912200750280.9679@makko.or.mcafeemobile.com>
- <20091220161422.GH32739@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Spam: Not detected
-X-Mras: Ok
+	id S1754482AbZLTXbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 18:31:41 -0500
+Message-ID: <4B2EB3BC.6030900@titera.eu>
+Date: Mon, 21 Dec 2009 00:31:08 +0100
+From: =?UTF-8?B?UGV0ciBUaXTEm3Jh?= <petr@titera.eu>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: john stultz <johnstul@us.ibm.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Wrong atime on recent kernels
+References: <4B26AB7E.9020208@titera.eu>	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>	 <4B29494B.4010305@titera.eu>	 <1261020388.7245.27.camel@localhost.localdomain>	 <4B2A1051.9010808@century.cz> <1261106021.3466.76.camel@localhost.localdomain> <4B2EA55C.4030406@titera.eu>
+In-Reply-To: <4B2EA55C.4030406@titera.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Willy,
-Sunday, December 20, 2009, 7:14:22 PM, Willy Tarreau wrote:
->> > The same thing can approximately be "emulated" by requesting FIOREAD for
->> > all EPOLLIN-ready sockets just after epoll returns, before any other work.
->> > It just would look not very elegant IMHO.
->> 
->> No such a thing of "atomic matter", since by the time you read the event, 
->> more data might have come. It's just flawed, you see that?
-Well, a carefull application should choose to not read such newly appeared
-data at this point yet, because this data actually belongs to the next
-turn, see below. In other words, the read limit is known at the time of
-epoll return and this value need not be changed till the next epoll,
-no matter more data arrives meanwhile. (And that is why FIONREAD is not
-perfectly good for that - it always reports all data at the moment)
+Petr Titěra napsal(a):
+> john stultz napsal(a):
+>> On Thu, 2009-12-17 at 12:04 +0100, Petr TitĂ�ďż˝ra wrote:
+>>> john stultz napsal(a):
+>>>> On Wed, 2009-12-16 at 21:55 +0100, Petr TitĂ�ďż˝ra wrote:
+>>>>> john stultz napsal(a):
+>>>>>> 2009/12/14 Petr TitĂ�ďż˝ra <petr@titera.eu>:
+>>>>>>> Hello,
+>>>>>>>
+>>>>>>> I see some strange file modification times recently. It seems to me
+>>>>>>> that in some situations, kernel allows to set nanoseconds part 
+>>>>>>> of file
+>>>>>>> access, modification or change time to 100000000 ns. Problem 
+>>>>>>> seems to be in
+>>>>>>> some generic part of kernel because I see it on several different
+>>>>>>> filesysytems (ext4 and nilf2). These is I've got during my 
+>>>>>>> testing on kernel
+>>>>>>> 2.6.32-tip-08309-gad8e75a.
+>>>>>>>
+>>>>>>> File: `./Documentation/dvb/contributors.txt'
+>>>>>>> Size: 3035 Blocks: 8 IO Block: 4096 regular file
+>>>>>>> Device: fe04h/65028d Inode: 818 Links: 1
+>>>>>>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
+>>>>>>> Access: 2009-12-14 10:29:04.1000000000 +0100
+>>>>>>> Modify: 2009-12-14 10:29:04.1000000000 +0100
+>>>>>>> Change: 2009-12-14 10:29:04.1000000000 +0100
+>>>>>>>
+>>>>>>> See that all times of that file ends with 1e6 nanoseconds.
+>>>>> I did not test reverting this patch yet, because I did not find
+>>>>> reliable way how to reproduce these strange modify times. But as I
+>>>>> read your description. Would it be possible that if there would be 
+>>>>> bug
+>>>>> in your patch i would be observer on mostly quiet system? I'm asking
+>>>>> because full day of testing of the system under load did not produce
+>>>>> any result, but then when I tried to run "find / | xargs stat" on 
+>>>>> idle
+>>>>> system I've got several new instances of wrong access time 
+>>>>> (filesystem
+>>>>> is mounted without noatime)
+>>>> Another quick question:
+>>>>
+>>>> What is the normal behavior you see when this issue is not cropping 
+>>>> up?
+>>>>
+>>>> Do you normally see all 0's in the ns field? Or do you expect to 
+>>>> see an
+>>>> actual ns value?
+>>>>
+>>> Sorry to reply again. Previous message did not get to list:
+>>>
+>>> I see values which seems to be ns times there. My root filesystem is 
+>>> ext4 too (recently I do not remeber if I formated it from scratch 
+>>> when I reinstalled that system) but I see this happen on other 
+>>> filesystems too
+>>>
+>>> Root filesystem (ext4 may be converted from ext3)
+>>>
+>>> File: `/etc/sysconfig'
+>>> Size: 4096 Blocks: 8 IO Block: 4096 directory
+>>> Device: fe00h/65024d Inode: 65282 Links: 7
+>>> Access: (0755/drwxr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
+>>> Access: 2009-12-16 21:14:00.172000000 +0100
+>>> Modify: 2009-12-12 11:01:48.1000000000 +0100
+>>> Change: 2009-12-12 11:01:48.1000000000 +0100
+>>> File: `/etc/sysconfig/prelink'
+>>> Size: 1459 Blocks: 8 IO Block: 4096 regular file
+>>> Device: fe00h/65024d Inode: 22706 Links: 1
+>>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
+>>> Access: 2009-12-14 10:27:46.912000002 +0100
+>>> Modify: 2004-11-23 11:43:08.000000000 +0100
+>>> Change: 2009-12-08 22:57:24.656000002 +0100
+>>> File: `/etc/sysconfig/i18n'
+>>> Size: 47 Blocks: 8 IO Block: 4096 regular file
+>>> Device: fe00h/65024d Inode: 48962 Links: 1
+>>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
+>>> Access: 2010-08-27 18:07:21.500013018 +0200
+>>> Modify: 2009-06-22 23:33:43.113581313 +0200
+>>> Change: 2009-06-22 23:58:39.936318201 +0200
+>>
+>> So I'm not reproducing this with 2.6.33-rc1 on a fresh ext4 partition on
+>> x68_64.
+>>
+>> File: `virt'
+>> Size: 4096 Blocks: 8 IO Block: 4096 directory
+>> Device: 804h/2052d Inode: 1868440 Links: 3
+>> Access: (0755/drwxr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
+>> Access: 2009-12-17 21:22:44.692710730 -0500
+>> Modify: 2009-12-17 20:14:40.000000000 -0500
+>> Change: 2009-12-17 21:20:21.001915208 -0500
+>> File: `vmlinux'
+>> Size: 21122497 Blocks: 24136 IO Block: 4096 regular file
+>> Device: 804h/2052d Inode: 1874435 Links: 1
+>> Access: (0755/-rwxr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
+>> Access: 2009-12-17 21:22:05.381691121 -0500
+>> Modify: 2009-12-17 21:22:05.376691754 -0500
+>> Change: 2009-12-17 21:22:05.376691754 -0500
+>> File: `vmlinux.o'
+>> Size: 16701780 Blocks: 32624 IO Block: 4096 regular file
+>> Device: 804h/2052d Inode: 1874418 Links: 1
+>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
+>> Access: 2009-12-17 21:22:01.138228732 -0500
+>> Modify: 2009-12-17 21:22:01.131229619 -0500
+>> Change: 2009-12-17 21:22:01.131229619 -0500
+>>
+>>
+>> Let me know if you find anything that helps narrow this down.
+>>
+> Hello,
+>
+> I know its far fetched, but is there something what is preventing 
+> xtime.tv_nsec to be exactly 999999999 near the end of update_wall_time 
+> in kernel/time/timekeeping.c?
+>
+> Petr
+>
 
-> I think that what Nikolai meant was the ability to wake up as soon as
-> there are *at least* XXX bytes ready. But while I can understand why
-> it would in theory save some code, in practice he would still have to
+Just to follow up. I'm asking because I see a lot of files with access 
+and/or modify times near the top of thousanth of second (see 
+`/etc/sysconfig/prelink' in my example) and I thing that addition of 1 
+to xtime.tv_nsec ath the end of update_wall_time can 'owerflow' to whole 
+second.
 
-Uhhh, no. What I want is to ensure that incoming blocks of network data
-(possibly belonging to different connections) are pulled in and processed
-by application approximately in the same order as they arrive from the
-network. As long as no real queue exists for that, an application must
-at least care to _limit_ the amount of data it reads from any socket per
-one epoll call. (Otherwise, some very active connection with lots of
-incoming data might cause other connections starve badly).
-So, the application will need to find the value for the above limit.
-Most reasonable value, imho, would be simply the amount of data that
-actually arrived on this socket between two successive epoll calls (the
-latest one and the previous one). My point was that it would be handy
-if epoll offered some way to get this value automatically (filled in
-epoll_event maybe?).
-(Though, probably FIONREAD can do the job reasonably well in most cases)
-
-Thank you!
-
-Nikolai ZHUBR
-
-> properly handle corner cases, which would defeat the original purpose
-> of his modification :
-
->   - if he waits for larger data than the socket buffer can handle, he
->     will never wake up ;
-
->   - if my memory serves me right, the copy_and_cksum() code only knows
->     whether a segment is correct during its transfer to userland, which
->     means that epoll() could very well wake up with XXX apparent bytes
->     ready, but the read would fail before XXX due to an invalid checksum
->     on an intermediate segment. So the code would still have to take
->     care of that situation anyway.
-
-> The last point implies the complete implementation of the code he wants
-> to avoid anyway, and the first one implies it will be hard to know when
-> this would work and when this would not. This means that while at first
-> glance this behaviour could be useful, it would in practice be useless.
-
-> Regards,
-> Willy
-
+Petr
+>
+>> thanks
+>> -john
+>>
+>>
+>>
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
 
