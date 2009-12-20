@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZLTNJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbZLTNKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbZLTNJP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 08:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZLTNJO
+	id S1754982AbZLTNKS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 08:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZLTNKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 08:09:14 -0500
-Received: from fom01.emnet.dk ([89.249.14.84]:53671 "EHLO fom01.emnet.dk"
+	Sun, 20 Dec 2009 08:10:16 -0500
+Received: from 1wt.eu ([62.212.114.60]:52833 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754576AbZLTNJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 08:09:13 -0500
-X-AuditID: 59f90e54-b7bd7ae000001243-6e-4b2e21f75e48
-Subject: Re: x264 benchmarks BFS vs CFS
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Andres Freund <andres@anarazel.de>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Jason Garrett-Glaser <darkshikari@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1261311050.14314.67.camel@localhost>
-References: <1261042383.14314.0.camel@localhost>
-	 <1261195412.8240.153.camel@marge.simson.net>
-	 <1261244163.14314.62.camel@localhost>
-	 <200912200422.18314.andres@anarazel.de>
-	 <1261311050.14314.67.camel@localhost>
-Content-Type: text/plain
-Date: Sun, 20 Dec 2009 14:09:07 +0100
-Message-Id: <1261314547.14314.69.camel@localhost>
+	id S1754691AbZLTNKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 08:10:14 -0500
+Date: Sun, 20 Dec 2009 14:09:52 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Michal Marek <mmarek@suse.cz>,
+       Michael Guntsche <mike@it-loops.com>,
+       Oliver Hartkopp <oliver@hartkopp.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86 boot
+Message-ID: <20091220130952.GD9719@1wt.eu>
+References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org> <20091220102857.GG32739@1wt.eu> <4B2E00B1.9010009@msgid.tls.msk.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAxIa7B4SGuw4EhrsOQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2E00B1.9010009@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-20 at 13:10 +0100, Kasper Sandberg wrote:
-> On Sun, 2009-12-20 at 04:22 +0100, Andres Freund wrote:
-> > On Saturday 19 December 2009 18:36:03 Kasper Sandberg wrote:
-> > > Try this on a dualcore or quadcore system, or ofcourse just set the<
-> > > niceness accordingly...
-> > Oh well. This is getting too much for a normally very silent and flame fearing 
-> > reader. Didnt *you* just tell others to shut up about using any tunables for 
-> > any application? And that you dont need any tunables for BFS?
-oh and btw, the niceness is not really a tunable"
-> 
-> That was an entirely different case, have you even been following the
-> thread?
-> 
-> OFCOURSE you're going to see slowdowns on a UP system if you have a cpu
-> hog and then run something else, this is the only behavior possible, and
-> bfs handles it in a fair way.
-> 
-> when i said we needed no tunables, that was for running a _SINGLE_
-> application, and then measuring said applications performance. (where
-> BFS indeed does beat CFS by a quite large margin)
-> 
-> and as for CFS, it SHOULD exhibit fair behavior anyway, isnt it called
-> "completely FAIR scheduler" ? or is that just the marketing name?
-> 
-> 
-> 
+On Sun, Dec 20, 2009 at 01:47:13PM +0300, Michael Tokarev wrote:
+> Willy Tarreau wrote:
+> > On Sun, Dec 20, 2009 at 11:03:44AM +0100, Sam Ravnborg wrote:
+> >> We use ... printf \x ... when calculating the size of the
+> >> compressed kernel.
+> >> Unfortunately dash built-in printf does not support this notation
+> >> resulting in a non-bootable kernel.
+> >>
+> >> Fix this by always using the external version of printf.
 > > 
-> > Andres
+> > Do we really want to workaround shells bugs ? I mean, either
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> There's no bugs in dash, as far as I can see.  According to
+> POSIX, a) echo does not need to interpret _any_ escape sequences
+> at all, and b) printf is not required to interpret \x sequences.
+
+Interesting.
+
+> Ref:
+> 
+> http://www.opengroup.org/onlinepubs/000095399/utilities/echo.html
+> ...
+>   string
+>     A string to be written to standard output. If the first operand is -n,
+>     or if any of the operands contain a backslash ( '\' ) character,
+>    the results are implementation-defined.
+> 
+>     [XSI] On XSI-conformant systems, [..] the following character sequences
+>     shall be recognized on XSI-conformant systems within any of the arguments:
+> 
+>     \a \b \c \f \n \r \t \v \\
+>     \0num
+>         Write an 8-bit value that is the zero, one, two, or three-digit octal
+>         number num.
+> 
+> http://www.opengroup.org/onlinepubs/000095399/utilities/printf.html
+> 
+>  In addition to the escape sequences shown in the Base Definitions volume of IEEE
+>  Std 1003.1-2001, Chapter 5, File Format Notation ( '\\', '\a', '\b', '\f', '\n',
+>  '\r', '\t', '\v' ), "\ddd", where ddd is a one, two, or three-digit octal number,
+>  shall be written as a byte with the numeric value specified by the octal number.
+
+OK so the bug will not be fixed by calling /usr/bin/printf. It
+will still work by pure luck when a the proper printf utility
+will be there, but not when we use a posix-compliant one. The
+proper fix then consists in writing octal chars in the form
+of "\ddd" instead of "\xhh". And if dash is posix-compliant,
+no need for the absolute path.
+
+Willy
 
