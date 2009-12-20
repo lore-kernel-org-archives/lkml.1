@@ -1,44 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbZLTRTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZLTRTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbZLTRTB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:19:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZLTRS7
+	id S1755505AbZLTRTO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZLTRTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:18:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:56107 "EHLO mx1.redhat.com"
+	Sun, 20 Dec 2009 12:19:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35471 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbZLTRS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:18:59 -0500
-Date: Sun, 20 Dec 2009 19:16:08 +0200
+	id S1753931AbZLTRTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 12:19:05 -0500
+Date: Sun, 20 Dec 2009 19:16:17 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Rusty Russell <rusty@rustcorp.com.au>,
        virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 0/3] vhost: fix use_mm usage
-Message-ID: <20091220171608.GA31713@redhat.com>
+Subject: [PATCH 1/3] vhost: prevent modification of an active ring
+Message-ID: <20091220171617.GB31713@redhat.com>
+References: <cover.1261329297.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <cover.1261329297.git.mst@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset fixes an issue, pointed out by Al Viro, in how vhost net
-calls use_mm, Works fine for me, and it's pretty straightforward.  If no
-one sees any issues with it, this will be a good candidate for 2.6.33
-(assuming vhost net itself gets pulled :( ).
+We don't support changing ring size or log base while ring is running.
+If user violates these rules, he might get his memory silently
+corrupted.  It's better to be explicit, and fail such modification
+attempts with an error.
+To make these "vq running" checks in ioctl context robust, this patch
+also moves all vq flushes to under device mutex.
 
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ drivers/vhost/net.c   |    6 +++---
+ drivers/vhost/vhost.c |   29 ++++++++++++++++++++++++-----
+ 2 files changed, 27 insertions(+), 8 deletions(-)
 
-Michael S. Tsirkin (3):
-  vhost: prevent modification of an active ring
-  vhost: add access_ok checks
-  vhost: make default mapping empty by default
-
- drivers/vhost/net.c   |   23 ++++++--
- drivers/vhost/vhost.c |  153 ++++++++++++++++++++++++++++++++++++++++++++-----
- drivers/vhost/vhost.h |    2 +
- 3 files changed, 157 insertions(+), 21 deletions(-)
-
+diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
+index d6db10c..1b509a0 100644
+--- a/drivers/vhost/net.c
++++ b/drivers/vhost/net.c
+@@ -509,12 +509,10 @@ static long vhost_net_set_backend(struct vhost_net *n, unsigned index, int fd)
+ 	vhost_net_enable_vq(n, vq);
+ 	mutex_unlock(&vq->mutex);
+ done:
+-	mutex_unlock(&n->dev.mutex);
+ 	if (oldsock) {
+ 		vhost_net_flush_vq(n, index);
+ 		fput(oldsock->file);
+ 	}
+-	return r;
+ err:
+ 	mutex_unlock(&n->dev.mutex);
+ 	return r;
+@@ -554,8 +552,8 @@ static void vhost_net_set_features(struct vhost_net *n, u64 features)
+ 		n->vqs[i].hdr_size = hdr_size;
+ 		mutex_unlock(&n->vqs[i].mutex);
+ 	}
+-	mutex_unlock(&n->dev.mutex);
+ 	vhost_net_flush(n);
++	mutex_unlock(&n->dev.mutex);
+ }
+ 
+ static long vhost_net_ioctl(struct file *f, unsigned int ioctl,
+@@ -587,8 +585,10 @@ static long vhost_net_ioctl(struct file *f, unsigned int ioctl,
+ 	case VHOST_RESET_OWNER:
+ 		return vhost_net_reset_owner(n);
+ 	default:
++		mutex_lock(&n->dev.mutex);
+ 		r = vhost_dev_ioctl(&n->dev, ioctl, arg);
+ 		vhost_net_flush(n);
++		mutex_unlock(&n->dev.mutex);
+ 		return r;
+ 	}
+ }
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index e7b4dea..29f1675 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -288,6 +288,12 @@ static long vhost_set_vring(struct vhost_dev *d, int ioctl, void __user *argp)
+ 
+ 	switch (ioctl) {
+ 	case VHOST_SET_VRING_NUM:
++		/* Resizing ring with an active backend?
++		 * You don't want to do that. */
++		if (vq->private_data) {
++			r = -EBUSY;
++			break;
++		}
+ 		r = copy_from_user(&s, argp, sizeof s);
+ 		if (r < 0)
+ 			break;
+@@ -298,6 +304,12 @@ static long vhost_set_vring(struct vhost_dev *d, int ioctl, void __user *argp)
+ 		vq->num = s.num;
+ 		break;
+ 	case VHOST_SET_VRING_BASE:
++		/* Moving base with an active backend?
++		 * You don't want to do that. */
++		if (vq->private_data) {
++			r = -EBUSY;
++			break;
++		}
+ 		r = copy_from_user(&s, argp, sizeof s);
+ 		if (r < 0)
+ 			break;
+@@ -413,6 +425,7 @@ static long vhost_set_vring(struct vhost_dev *d, int ioctl, void __user *argp)
+ 	return r;
+ }
+ 
++/* Caller must have device mutex */
+ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+@@ -422,7 +435,6 @@ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, unsigned long arg)
+ 	long r;
+ 	int i, fd;
+ 
+-	mutex_lock(&d->mutex);
+ 	/* If you are not the owner, you can become one */
+ 	if (ioctl == VHOST_SET_OWNER) {
+ 		r = vhost_dev_set_owner(d);
+@@ -447,9 +459,17 @@ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, unsigned long arg)
+ 			break;
+ 		}
+ 		for (i = 0; i < d->nvqs; ++i) {
+-			mutex_lock(&d->vqs[i].mutex);
+-			d->vqs[i].log_base = (void __user *)(unsigned long)p;
+-			mutex_unlock(&d->vqs[i].mutex);
++			struct vhost_virtqueue *vq;
++			vq = d->vqs + i;
++			mutex_lock(&vq->mutex);
++			/* Moving log base with an active backend?
++			 * You don't want to do that. */
++			if (vq->private_data && (vq->log_used ||
++			     vhost_has_feature(d, VHOST_F_LOG_ALL)))
++				r = -EBUSY;
++			else
++				vq->log_base = (void __user *)(unsigned long)p;
++			mutex_unlock(&vq->mutex);
+ 		}
+ 		break;
+ 	case VHOST_SET_LOG_FD:
+@@ -483,7 +503,6 @@ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, unsigned long arg)
+ 		break;
+ 	}
+ done:
+-	mutex_unlock(&d->mutex);
+ 	return r;
+ }
+ 
 -- 
-MST
+1.6.6.rc1.43.gf55cc
+
