@@ -1,119 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZLTMwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZLTMys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbZLTMwf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 07:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbZLTMwe
+	id S1754782AbZLTMys (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 07:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbZLTMyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 07:52:34 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:62869 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754471AbZLTMwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 07:52:32 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIEADqpLUtGGNs5/2dsb2JhbACBSs94hC4EgWWEBA
-Date: Sun, 20 Dec 2009 07:52:29 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: leonid.moiseichuk@nokia.com, Viktor.Rosendahl@nokia.com, tony@atomide.com,
-       eero.tamminen@nokia.com
-Cc: Felipe Balbi <felipe.balbi@nokia.com>,
-       "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [RELEASE] LTTng 0.183/0.183o
-Message-ID: <20091220125228.GA29204@Krystal>
-References: <20091204160633.GA29864@Krystal> <20091213194210.GA3149@nokia.com> <20091216213546.GA5609@Krystal> <20091216222916.GA11101@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 20 Dec 2009 07:54:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36882 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753523AbZLTMyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 07:54:44 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Sun, 20 Dec 2009 13:55:45 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912192232360.6618-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912192232360.6618-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091216222916.GA11101@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 07:48:22 up 3 days, 21:06,  4 users,  load average: 0.10, 0.48,
-	0.52
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200912201355.45760.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> > Hi !
-> > 
-> > I just released LTTng 0.182 for mainline kernel 2.6.32. It fixes ppc440
-> > build and, more importantly, adds full support for ARM omap3 to the
-> > trace clock:
-> > 
-> > - Power management support (suspend/resume, idle)
-> > - DVFS support
-> > 
-> > Basically, the infrastructure is based on the 32k timer as external
-> > time source, but uses the ccnt register to read the time base quickly at
-> > each event. The trace clock is responsible for extending the 32-bit
-> > counter to 64-bit, and for resynchronizing it on the 32k clock when
-> > necessary.
-> > 
-> > I did all development and testing of the omap3 features on top of a
-> > linux-omap-2.6 2.6.32-rc8 kernel and then reintegrated the patches in
-> > the main LTTng tree. I only build-tested the port to main LTTng tree.
-> > 
-> > I should put the linux-omap-2.6-lttng tree online shortly, along with
-> > the corresponding patchset.
+On Sunday 20 December 2009, Alan Stern wrote:
+> On Sat, 19 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> .. and the corresponding patchset and git tree for the omap/pm tree,
-> based on kernel 2.6.32-rc8:
+> > On Friday 18 December 2009, Alan Stern wrote:
+> > > On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > > I didn't manage to do that, but I was able to mark sd and i8042 as async and
+> > > > see the impact of this.
+> > > 
+> > > Apparently this didn't do what you wanted.  In the nx6325
+> > > sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
 > 
-> git://lttng.org/linux-omap-pm-2.6-lttng.git
+> To be precise, the device is an ATA or SATA disk but it is managed by 
+> the sd driver.
 > 
-> http://lttng.org/files/lttng/patch-omap-pm-2.6.32-rc8-lttng-0.182o.tar.bz2
+> > > suspended by the main thread instead of an async thread.
+> > 
+> > Hm, that's odd, because there's a noticeable time difference between the
+> > two cases in which the sd is sync and async.  I'll look into it further.
 > 
-> (it is actually a mix of lttng 0.180 to 0.182).
+> I don't know what the whole story is, but the PID number tells the 
+> tale.
+> 
+> > > There's an important point I neglected to mention before.  Your logs 
+> > > don't show anything for devices with no suspend callbacks at all.  
+> > > Nevertheless, these devices sit on the device list and prevent other
+> > > devices from suspending or resuming as soon as they could.
+> > 
+> > Unless they are async, that is.
+> 
+> Yes.  It would be simpler to make them async.  But first we ought to
+> know what they are.  Can you add an extra line to the log for such
+> devices?
 
-Version 0.183/0.183o turns the periodic resync timer into a timer only
-launched when actual DVFS frequency change occurs (it is used to ensure
-very frequent DVFS freq. change do not generate a high rate of 32k clock
-reads).
+Sure, I'll do that.
 
-Also, I don't want to take any chance, and therefore don't assume the
-ccnt register is stopped in idle. This version now additionally makes
-sure to stop the ccnt register when going to idle/sleep.
+> What I'm afraid of is that there might be a "normal" device with a
+> "normal" ancestor but with "abnormal" devices in between (where
+> "normal" means there is a suspend or resume routine and "abnormal"  
+> means all the method pointers are NULL).  I know that this happens when
+> there's a USB mass-storage device, for example.  If we complete the
+> intermediate devices immediately, then there won't be anything to
+> prevent the ancestor from suspending before the device or the device
+> from resuming before the ancestor.
 
-Mathieu
+I'm afraid of that too.
 
-
-> 
-> Have fun !
-> 
-> Mathieu
-> 
-> > 
-> > Feedback is welcome !
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> > _______________________________________________
-> > ltt-dev mailing list
-> > ltt-dev@lists.casi.polymtl.ca
-> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Rafael
