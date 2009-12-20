@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbZLTJJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbZLTJLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbZLTJJr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 04:09:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZLTJJp
+	id S1752742AbZLTJLa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 04:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZLTJL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 04:09:45 -0500
-Received: from bar.sig21.net ([80.81.252.164]:49360 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbZLTJJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 04:09:44 -0500
-Date: Sun, 20 Dec 2009 10:10:19 +0100
-From: Johannes Stezenbach <js@sig21.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Michael Guntsche <mike@it-loops.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, mjt@tls.msk.ru,
-       mmarek@suse.cz
-Subject: Re: 2.6.33-rc1 Reboot right after bootloader
-Message-ID: <20091220091019.GA20246@sig21.net>
-References: <20091219233457.GA4288@trillian.comsick.at>
- <20091220084656.GA485@merkur.ravnborg.org>
+	Sun, 20 Dec 2009 04:11:29 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41268 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbZLTJL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 04:11:27 -0500
+Message-ID: <4B2DEA33.7000800@cs.helsinki.fi>
+Date: Sun, 20 Dec 2009 11:11:15 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091220084656.GA485@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam-21-Score: -4.0 (----)
-X-Spam-21-Report: No, score=-4.0 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.361,BAYES_00=-2.599 autolearn=no
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V8 03/16] Use this_cpu operations in slub
+References: <20091218222617.384355422@quilx.com> <20091218222649.091070364@quilx.com>
+In-Reply-To: <20091218222649.091070364@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 09:46:56AM +0100, Sam Ravnborg wrote:
-> On Sun, Dec 20, 2009 at 12:34:57AM +0100, Michael Guntsche wrote:
-> > 
-> > I took me some time but I tracked down my reboot problem. The culprit is
-> > commit 
-> > 
-> > 4a2ff67c88211026afcbdbc190c13f705dae1b59: kbuild: fix bzImage build for
-> > x86
+Christoph Lameter wrote:
+> Using per cpu allocations removes the needs for the per cpu arrays in the
+> kmem_cache struct. These could get quite big if we have to support systems
+> with thousands of cpus. The use of this_cpu_xx operations results in:
 > 
-> Just to check what is going wrong here could you try to execute the following two commands:
-> printf \\xa8\\x51\\x37\\x00 > x ; hexdump x
-> /usr/bin/printf \\xa8\\x51\\x37\\x00 > x ; hexdump x
-> echo -ne \\xa8\\x51\\x37\\x00 > x ; hexdump x
+> 1. The size of kmem_cache for SMP configuration shrinks since we will only
+>    need 1 pointer instead of NR_CPUS. The same pointer can be used by all
+>    processors. Reduces cache footprint of the allocator.
 > 
-> Please try as above and also with full path to printf (/usr/bin/printf)
+> 2. We can dynamically size kmem_cache according to the actual nodes in the
+>    system meaning less memory overhead for configurations that may potentially
+>    support up to 1k NUMA nodes / 4k cpus.
+> 
+> 3. We can remove the diddle widdle with allocating and releasing of
+>    kmem_cache_cpu structures when bringing up and shutting down cpus. The cpu
+>    alloc logic will do it all for us. Removes some portions of the cpu hotplug
+>    functionality.
+> 
+> 4. Fastpath performance increases since per cpu pointer lookups and
+>    address calculations are avoided.
+> 
+> V7-V8
+> - Convert missed get_cpu_slab() under CONFIG_SLUB_STATS
+> 
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-Debian dash has a built-in printf which doesn't support \x.
-/usr/bin/printf works fine.
-
-$ printf \\xa8\\x51\\x37\\x00 > x ; hexdump x
-0000000 785c 3861 785c 3135 785c 3733 785c 3030
-0000010
-$ /usr/bin/printf \\xa8\\x51\\x37\\x00 > x ; hexdump x
-0000000 51a8 0037                              
-0000004
-$ echo -ne \\xa8\\x51\\x37\\x00 > x ; hexdump x
-0000000 6e2d 2065 785c 3861 785c 3135 785c 3733
-0000010 785c 3030 000a                         
-0000015
-
-
-Johannes
+Patches 3-6 applied.
