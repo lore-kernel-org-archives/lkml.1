@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbZLTNKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZLTNWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbZLTNKS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 08:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZLTNKQ
+	id S1755257AbZLTNWj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 08:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZLTNWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 08:10:16 -0500
-Received: from 1wt.eu ([62.212.114.60]:52833 "EHLO 1wt.eu"
+	Sun, 20 Dec 2009 08:22:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24862 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754691AbZLTNKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 08:10:14 -0500
-Date: Sun, 20 Dec 2009 14:09:52 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Michal Marek <mmarek@suse.cz>,
-       Michael Guntsche <mike@it-loops.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86 boot
-Message-ID: <20091220130952.GD9719@1wt.eu>
-References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org> <20091220102857.GG32739@1wt.eu> <4B2E00B1.9010009@msgid.tls.msk.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B2E00B1.9010009@msgid.tls.msk.ru>
-User-Agent: Mutt/1.5.11
+	id S1754755AbZLTNWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 08:22:37 -0500
+From: Avi Kivity <avi@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] core, x86: make LIST_POISON less deadly
+Date: Sun, 20 Dec 2009 15:22:30 +0200
+Message-Id: <1261315350-23407-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 01:47:13PM +0300, Michael Tokarev wrote:
-> Willy Tarreau wrote:
-> > On Sun, Dec 20, 2009 at 11:03:44AM +0100, Sam Ravnborg wrote:
-> >> We use ... printf \x ... when calculating the size of the
-> >> compressed kernel.
-> >> Unfortunately dash built-in printf does not support this notation
-> >> resulting in a non-bootable kernel.
-> >>
-> >> Fix this by always using the external version of printf.
-> > 
-> > Do we really want to workaround shells bugs ? I mean, either
-> 
-> There's no bugs in dash, as far as I can see.  According to
-> POSIX, a) echo does not need to interpret _any_ escape sequences
-> at all, and b) printf is not required to interpret \x sequences.
+From: Avi Kivity <avi@qumranet.com>
 
-Interesting.
+The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
+pointers in order to trap erronous use of freed list_heads.  Unfortunately
+userspace can arrange for those pointers to actually be dereferencable,
+potentially turning an oops to an expolit.
 
-> Ref:
-> 
-> http://www.opengroup.org/onlinepubs/000095399/utilities/echo.html
-> ...
->   string
->     A string to be written to standard output. If the first operand is -n,
->     or if any of the operands contain a backslash ( '\' ) character,
->    the results are implementation-defined.
-> 
->     [XSI] On XSI-conformant systems, [..] the following character sequences
->     shall be recognized on XSI-conformant systems within any of the arguments:
-> 
->     \a \b \c \f \n \r \t \v \\
->     \0num
->         Write an 8-bit value that is the zero, one, two, or three-digit octal
->         number num.
-> 
-> http://www.opengroup.org/onlinepubs/000095399/utilities/printf.html
-> 
->  In addition to the escape sequences shown in the Base Definitions volume of IEEE
->  Std 1003.1-2001, Chapter 5, File Format Notation ( '\\', '\a', '\b', '\f', '\n',
->  '\r', '\t', '\v' ), "\ddd", where ddd is a one, two, or three-digit octal number,
->  shall be written as a byte with the numeric value specified by the octal number.
+To avoid this allow architectures (currently x86_64 only) to override
+the default values for these pointers with truly-undereferencable values.
+This is easy on x86_64 as the virtual address space is large and contains
+areas that cannot be mapped.
 
-OK so the bug will not be fixed by calling /usr/bin/printf. It
-will still work by pure luck when a the proper printf utility
-will be there, but not when we use a posix-compliant one. The
-proper fix then consists in writing octal chars in the form
-of "\ddd" instead of "\xhh". And if dash is posix-compliant,
-no need for the absolute path.
+Other 64-bit architectures will likely find similar unmapped ranges.
 
-Willy
+[ingo: switch to 0xdead000000000000 as the unmapped area]
+[ingo: add comments, cleanup]
+[jaswinder: eliminate sparse warnings]
+
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+
+Linus, Ingo won't push this for some reason, but he has no objection to
+me submitting the patch and AFAICT no objections to the patch itself.
+
+ arch/x86/Kconfig       |    5 +++++
+ include/linux/poison.h |   16 ++++++++++++++--
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 3b2a5ac..098f0d3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1244,6 +1244,11 @@ config ARCH_MEMORY_PROBE
+ 	def_bool X86_64
+ 	depends on MEMORY_HOTPLUG
+ 
++config ILLEGAL_POINTER_VALUE
++       hex
++       default 0 if X86_32
++       default 0xdead000000000000 if X86_64
++
+ source "mm/Kconfig"
+ 
+ config HIGHPTE
+diff --git a/include/linux/poison.h b/include/linux/poison.h
+index 7fc194a..2110a81 100644
+--- a/include/linux/poison.h
++++ b/include/linux/poison.h
+@@ -2,13 +2,25 @@
+ #define _LINUX_POISON_H
+ 
+ /********** include/linux/list.h **********/
++
++/*
++ * Architectures might want to move the poison pointer offset
++ * into some well-recognized area such as 0xdead000000000000,
++ * that is also not mappable by user-space exploits:
++ */
++#ifdef CONFIG_ILLEGAL_POINTER_VALUE
++# define POISON_POINTER_DELTA _AC(CONFIG_ILLEGAL_POINTER_VALUE, UL)
++#else
++# define POISON_POINTER_DELTA 0
++#endif
++
+ /*
+  * These are non-NULL pointers that will result in page faults
+  * under normal circumstances, used to verify that nobody uses
+  * non-initialized list entries.
+  */
+-#define LIST_POISON1  ((void *) 0x00100100)
+-#define LIST_POISON2  ((void *) 0x00200200)
++#define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
++#define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
+ 
+ /********** include/linux/timer.h **********/
+ /*
+-- 
+1.6.5.3
 
