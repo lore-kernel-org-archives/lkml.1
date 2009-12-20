@@ -1,63 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZLTWOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZLTWaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZLTWOM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 17:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZLTWOL
+	id S1755057AbZLTWaX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 17:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZLTWaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 17:14:11 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45618 "EHLO kernel.dk"
+	Sun, 20 Dec 2009 17:30:23 -0500
+Received: from host013.keli.cz ([77.48.235.13]:57553 "EHLO host013.keli.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754702AbZLTWOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 17:14:06 -0500
-Date: Sun, 20 Dec 2009 23:14:05 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Sachin Sant <sachinp@in.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] sched: Fix hotplug
-Message-ID: <20091220221405.GD4489@kernel.dk>
-References: <4B2DF699.3090107@in.ibm.com> <1261315887.4314.8.camel@laptop> <20091220145151.GY4489@kernel.dk> <1261320896.4314.10.camel@laptop> <20091220145715.GZ4489@kernel.dk> <1261326987.4314.24.camel@laptop>
+	id S1752855AbZLTWaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 17:30:22 -0500
+Message-ID: <4B2EA55C.4030406@titera.eu>
+Date: Sun, 20 Dec 2009 23:29:48 +0100
+From: =?UTF-8?B?UGV0ciBUaXTEm3Jh?= <petr@titera.eu>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261326987.4314.24.camel@laptop>
+To: john stultz <johnstul@us.ibm.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Wrong atime on recent kernels
+References: <4B26AB7E.9020208@titera.eu>	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>	 <4B29494B.4010305@titera.eu>	 <1261020388.7245.27.camel@localhost.localdomain>	 <4B2A1051.9010808@century.cz> <1261106021.3466.76.camel@localhost.localdomain>
+In-Reply-To: <1261106021.3466.76.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20 2009, Peter Zijlstra wrote:
-> The hot-unplug kstopmachine usage does a wakeup after deactivating the
-> cpu, hence we cannot use cpu_active() here but must rely on the good
-> olde online.
+john stultz napsal(a):
+> On Thu, 2009-12-17 at 12:04 +0100, Petr TitÄ�ra wrote:
+>   
+>> john stultz napsal(a):
+>>     
+>>> On Wed, 2009-12-16 at 21:55 +0100, Petr TitÄ�ra wrote:
+>>>   
+>>>       
+>>>> john stultz napsal(a): 
+>>>>     
+>>>>         
+>>>>> 2009/12/14 Petr TitÄ�ra <petr@titera.eu>:
+>>>>>   
+>>>>>       
+>>>>>           
+>>>>>> Hello,
+>>>>>>
+>>>>>>      I see some strange file modification times recently. It seems to me
+>>>>>> that in some situations, kernel allows to set nanoseconds part of  file
+>>>>>> access, modification or change time  to 100000000 ns. Problem seems to be in
+>>>>>> some generic part of kernel because I see it on several different
+>>>>>> filesysytems (ext4 and nilf2). These is I've got during my testing on kernel
+>>>>>>  2.6.32-tip-08309-gad8e75a.
+>>>>>>
+>>>>>>  File: `./Documentation/dvb/contributors.txt'
+>>>>>>  Size: 3035            Blocks: 8          IO Block: 4096   regular file
+>>>>>> Device: fe04h/65028d    Inode: 818         Links: 1
+>>>>>> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+>>>>>> Access: 2009-12-14 10:29:04.1000000000 +0100
+>>>>>> Modify: 2009-12-14 10:29:04.1000000000 +0100
+>>>>>> Change: 2009-12-14 10:29:04.1000000000 +0100
+>>>>>>
+>>>>>> See that all times of that file ends with 1e6 nanoseconds.
+>>>>>>         
+>>>>>>             
+>>>>     I did not test reverting this patch yet, because I did not find
+>>>> reliable way how to reproduce these strange modify times. But as I
+>>>> read your description. Would it be possible that if there would be bug
+>>>> in your patch i would be observer on mostly quiet system? I'm asking
+>>>> because full day of testing of the system under load did not produce
+>>>> any result, but then when I tried to run "find / | xargs stat" on idle
+>>>> system I've got several new instances of wrong access time (filesystem
+>>>> is mounted without noatime)
+>>>>     
+>>>>         
+>>> Another quick question:
+>>>
+>>> What is the normal behavior you see when this issue is not cropping up?
+>>>
+>>> Do you normally see all 0's in the ns field? Or do you expect to see an
+>>> actual ns value?
+>>>
+>>>   
+>>>       
+>> Sorry to reply again. Previous message did not get to list:
+>>
+>> I see values which seems to be ns times there. My root filesystem is 
+>> ext4 too (recently I do not remeber if I formated it from scratch when I 
+>> reinstalled that system) but I see this happen on other filesystems too
+>>
+>> Root filesystem (ext4 may be converted from ext3)
+>>
+>>   File: `/etc/sysconfig'
+>>   Size: 4096            Blocks: 8          IO Block: 4096   directory
+>> Device: fe00h/65024d    Inode: 65282       Links: 7
+>> Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+>> Access: 2009-12-16 21:14:00.172000000 +0100
+>> Modify: 2009-12-12 11:01:48.1000000000 +0100
+>> Change: 2009-12-12 11:01:48.1000000000 +0100
+>>   File: `/etc/sysconfig/prelink'
+>>   Size: 1459            Blocks: 8          IO Block: 4096   regular file
+>> Device: fe00h/65024d    Inode: 22706       Links: 1
+>> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+>> Access: 2009-12-14 10:27:46.912000002 +0100
+>> Modify: 2004-11-23 11:43:08.000000000 +0100
+>> Change: 2009-12-08 22:57:24.656000002 +0100
+>>   File: `/etc/sysconfig/i18n'
+>>   Size: 47              Blocks: 8          IO Block: 4096   regular file
+>> Device: fe00h/65024d    Inode: 48962       Links: 1
+>> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+>> Access: 2010-08-27 18:07:21.500013018 +0200
+>> Modify: 2009-06-22 23:33:43.113581313 +0200
+>> Change: 2009-06-22 23:58:39.936318201 +0200
+>>     
+>
+> So I'm not reproducing this with 2.6.33-rc1 on a fresh ext4 partition on
+> x68_64.
+>
+>   File: `virt'
+>   Size: 4096            Blocks: 8          IO Block: 4096   directory
+> Device: 804h/2052d      Inode: 1868440     Links: 3
+> Access: (0755/drwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+> Access: 2009-12-17 21:22:44.692710730 -0500
+> Modify: 2009-12-17 20:14:40.000000000 -0500
+> Change: 2009-12-17 21:20:21.001915208 -0500
+>   File: `vmlinux'
+>   Size: 21122497        Blocks: 24136      IO Block: 4096   regular file
+> Device: 804h/2052d      Inode: 1874435     Links: 1
+> Access: (0755/-rwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+> Access: 2009-12-17 21:22:05.381691121 -0500
+> Modify: 2009-12-17 21:22:05.376691754 -0500
+> Change: 2009-12-17 21:22:05.376691754 -0500
+>   File: `vmlinux.o'
+>   Size: 16701780        Blocks: 32624      IO Block: 4096   regular file
+> Device: 804h/2052d      Inode: 1874418     Links: 1
+> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+> Access: 2009-12-17 21:22:01.138228732 -0500
+> Modify: 2009-12-17 21:22:01.131229619 -0500
+> Change: 2009-12-17 21:22:01.131229619 -0500
+>
+>
+> Let me know if you find anything that helps narrow this down.
+>
+>   
+Hello,
 
-Yep, this works for me!
+I know its far fetched, but is there something what is preventing 
+xtime.tv_nsec to be exactly 999999999 near the end of update_wall_time 
+in kernel/time/timekeeping.c?
 
-Tested-by: Jens Axboe <jens.axboe@oracle.com>
+Petr
 
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 720df10..0ac4fa5 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2348,7 +2348,7 @@ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
->  	 *   not worry about this generic constraint ]
->  	 */
->  	if (unlikely(!cpumask_test_cpu(cpu, &p->cpus_allowed) ||
-> -		     !cpu_active(cpu)))
-> +		     !cpu_online(cpu)))
->  		cpu = select_fallback_rq(task_cpu(p), p);
->  
->  	return cpu;
-> 
-> 
 
--- 
-Jens Axboe
+> thanks
+> -john
+>
+>
+>
+>   
 
