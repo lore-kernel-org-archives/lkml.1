@@ -1,76 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbZLTOFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZLTOMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752849AbZLTOFs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 09:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZLTOFr
+	id S1753258AbZLTOMf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 09:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZLTOMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 09:05:47 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54543 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751527AbZLTOFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 09:05:46 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+wl94ld6qwx4HgGA8qf2UMR3jKbSrBOJvU5WYIMF
-	gQ40nczFivyk42
-Subject: Re: [stable] Regression in 2.6.32.2: segfault on halt
-From: Mike Galbraith <efault@gmx.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Holger =?ISO-8859-1?Q?Hoffst=E4tte?= 
-	<holger.hoffstaette@googlemail.com>,
-       linux-kernel@vger.kernel.org, stable@vger.kernel.org
-In-Reply-To: <20091220130616.GC9719@1wt.eu>
-References: <pan.2009.12.19.15.10.48.851500@googlemail.com>
-	 <20091220054847.GF32739@1wt.eu> <4B2E10C6.7050304@googlemail.com>
-	 <20091220130616.GC9719@1wt.eu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 20 Dec 2009 15:05:38 +0100
-Message-Id: <1261317938.6105.24.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+	Sun, 20 Dec 2009 09:12:35 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:45522 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbZLTOMe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 09:12:34 -0500
+Date: Sun, 20 Dec 2009 15:11:56 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Michal Marek <mmarek@suse.cz>, Michael Guntsche <mike@it-loops.com>,
+       Oliver Hartkopp <oliver@hartkopp.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86
+	boot
+Message-ID: <20091220141156.GA3744@merkur.ravnborg.org>
+References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org> <4B2E084D.6080105@msgid.tls.msk.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2E084D.6080105@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-20 at 14:06 +0100, Willy Tarreau wrote:
-> Hi Holger,
-> 
-> On Sun, Dec 20, 2009 at 12:55:50PM +0100, Holger Hoffstätte wrote:
-> > Willy Tarreau wrote:
-> > > On Sat, Dec 19, 2009 at 04:10:49PM +0100, Holger Hoffstaette wrote:
-> > >> After updating to 2.6.32.2 last night (using same config from .32.1) I
-> > >> noticed that "halt" now trips during shutdown and won't power the
-> > >> machine down any longer. This happens reproducibly on two completely
-> > >> different machines, so it looks like a generic problem and regression,
-> > >> since it did not happen in .32.1. Note that "reboot" works as expected -
-> > >> only "halt" crashes.
-> > > 
-> > > I have it working fine here. So your config helps to reproduce the issue.
-> > > Care to post it ?
+On Sun, Dec 20, 2009 at 02:19:41PM +0300, Michael Tokarev wrote:
+> Sam Ravnborg wrote:
+> > We use ... printf \x ... when calculating the size of the
+> > compressed kernel.
+> > Unfortunately dash built-in printf does not support this notation
+> > resulting in a non-bootable kernel.
 > > 
-> > Attached, if it matters. However I managed to find some time with a spare
-> > machine and always wanted to try bisect, so that's what I did - apparently
-> > successfully:
+> > Fix this by always using the external version of printf.
 > > 
-> > root>git bisect bad
-> > 37ed2d7007a65874850f3e357c095806c3756330 is the first bad commit
-> > commit 37ed2d7007a65874850f3e357c095806c3756330
-> > Author: Mike Galbraith <efault@gmx.de>
-> > Date:   Wed Nov 4 17:53:50 2009 +0100
-> > 
-> >     sched: Rate-limit newidle
+> > The commit that introduced this bug was:
+> > 4a2ff67c88211026afcbdbc190c13f705dae1b59: "kbuild: fix bzImage
+> > build for x86"
 > 
-> Interesting, because I saw this one too while digging the patch preview
-> for the word "migration" which appeared in your trace. But these changes
-> did not look suspicious (no obvious invalid pointer dereference for
-> instance).
-> 
-> CCing Mike who may have an idea.
+> It's not that simple Sam.
 
-Thanks Willy.  No, no idea.  I can't see how this can possibly cause a
-crash, but will try building with his config to see what happens.
+The whole business using shell scripts to append the size seems broken.
+How about moving this functionality to mkpiggy where we are
+less shell script dependent.
 
-	-Mike
+Something like the following.
+I have only tested it lightly (vmlinux.bin did not differ
+before/after the patch.
 
+It includes the length also in the gzip case - I dunno if that matters.
+Also I dunno if ".long" is the same on 32 and 64 bit.
+
+	Sam
+
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index f8ed065..d39fe2e 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -54,7 +54,8 @@ suffix-$(CONFIG_KERNEL_BZIP2)	:= bz2
+ suffix-$(CONFIG_KERNEL_LZMA)	:= lzma
+ 
+ quiet_cmd_mkpiggy = MKPIGGY $@
+-      cmd_mkpiggy = $(obj)/mkpiggy $< > $@ || ( rm -f $@ ; false )
++      cmd_mkpiggy = $(obj)/mkpiggy $< $(vmlinux.bin.all-y) > $@ || \
++                   ( rm -f $@ ; false )
+ 
+ targets += piggy.S
+ $(obj)/piggy.S: $(obj)/vmlinux.bin.$(suffix-y) $(obj)/mkpiggy FORCE
+diff --git a/arch/x86/boot/compressed/mkpiggy.c b/arch/x86/boot/compressed/mkpiggy.c
+index bcbd36c..f4a1a3f 100644
+--- a/arch/x86/boot/compressed/mkpiggy.c
++++ b/arch/x86/boot/compressed/mkpiggy.c
+@@ -29,6 +29,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <inttypes.h>
++#include <sys/stat.h>
+ 
+ static uint32_t getle32(const void *p)
+ {
+@@ -38,12 +39,27 @@ static uint32_t getle32(const void *p)
+ 		((uint32_t)cp[2] << 16) + ((uint32_t)cp[3] << 24);
+ }
+ 
++static file_size(const char *filename)
++{
++	struct stat statbuf;
++	int res;
++
++	res = stat(filename, &statbuf);
++	if (res < 0) {
++		perror(filename);
++		exit(1);
++	}
++	return (size_t)statbuf.st_size;
++}
++
+ int main(int argc, char *argv[])
+ {
+ 	uint32_t olen;
+ 	long ilen;
+ 	unsigned long offs;
++	size_t size;
+ 	FILE *f;
++	int i;
+ 
+ 	if (argc < 2) {
+ 		fprintf(stderr, "Usage: %s compressed_file\n", argv[0]);
+@@ -67,6 +83,11 @@ int main(int argc, char *argv[])
+ 	olen = getle32(&olen);
+ 	fclose(f);
+ 
++	i = 2;
++	size = 0;
++	while (i < argc)
++		size += file_size(argv[i++]);
++
+ 	/*
+ 	 * Now we have the input (compressed) and output (uncompressed)
+ 	 * sizes, compute the necessary decompression offset...
+@@ -91,6 +112,14 @@ int main(int argc, char *argv[])
+ 	printf(".globl input_data, input_data_end\n");
+ 	printf("input_data:\n");
+ 	printf(".incbin \"%s\"\n", argv[1]);
++
++        /*
++         * Bzip2 and LZMA do not include size in file... so we have to fake that;
++         * append the size as a 32-bit littleendian number as gzip does.
++         */
++	if (size > 0)
++		printf(".long %d\n", size);
++
+ 	printf("input_data_end:\n");
+ 
+ 	return 0;
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index cd815ac..10bef1c 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -211,27 +211,14 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
+ # Bzip2
+ # ---------------------------------------------------------------------------
+ 
+-# Bzip2 and LZMA do not include size in file... so we have to fake that;
+-# append the size as a 32-bit littleendian number as gzip does.
+-size_append = printf $(shell						\
+-dec_size=0;								\
+-for F in $1; do								\
+-	fsize=$$(stat -c "%s" $$F);					\
+-	dec_size=$$(expr $$dec_size + $$fsize);				\
+-done;									\
+-printf "%08x" $$dec_size |						\
+-	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
+-)
+-
+ quiet_cmd_bzip2 = BZIP2   $@
+-cmd_bzip2 = (cat $(filter-out FORCE,$^) | \
+-	bzip2 -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+-	(rm -f $@ ; false)
++cmd_bzip2 = cat $(filter-out FORCE,$^) | \
++	bzip2 -9 > $@ || (rm -f $@ ; false)
+ 
+ # Lzma
+ # ---------------------------------------------------------------------------
+ 
+ quiet_cmd_lzma = LZMA    $@
+-cmd_lzma = (cat $(filter-out FORCE,$^) | \
+-	lzma -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+-	(rm -f $@ ; false)
++cmd_lzma = cat $(filter-out FORCE,$^) | \
++	lzma -9 > $@ || (rm -f $@ ; false)
++
