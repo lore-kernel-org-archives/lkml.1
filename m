@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZLTTa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZLTTcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZLTTa5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 14:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZLTTar
+	id S1756238AbZLTTcF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 14:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbZLTTbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 14:30:47 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19932 "EHLO
+	Sun, 20 Dec 2009 14:31:44 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:20127 "EHLO
 	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756150AbZLTTap (ORCPT
+	with ESMTP id S1756174AbZLTTbX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 14:30:45 -0500
-Subject: [PATCH v2 04/11] ACPI: processor: factor out common _PDC settings
+	Sun, 20 Dec 2009 14:31:23 -0500
+Subject: [PATCH v2 05/11] ACPI: processor: finish unifying
+	arch_acpi_processor_init_pdc()
 To: venkatesh.pallipadi@intel.com, lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
        Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 20 Dec 2009 12:30:44 -0700
-Message-ID: <20091220193044.5545.4738.stgit@bob.kio>
+Date: Sun, 20 Dec 2009 12:30:49 -0700
+Message-ID: <20091220193049.5545.92202.stgit@bob.kio>
 In-Reply-To: <20091220192731.5545.20582.stgit@bob.kio>
 References: <20091220192731.5545.20582.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -29,9 +30,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both x86 and ia64 initialize _PDC with mostly common bit settings.
+The only thing arch-specific about calling _PDC is what bits get
+set in the input obj_list buffer.
 
-Factor out the common settings and leave the arch-specific ones alone.
+There's no need for several levels of indirection to twiddle those
+bits. Additionally, since we're just messing around with a buffer,
+we can simplify the interface; no need to pass around the entire
+struct acpi_processor * just to get at the buffer.
 
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -40,81 +45,167 @@ Cc: "H. Peter Anvin" <hpa@zytor.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- arch/ia64/kernel/acpi-processor.c |   10 +---------
- arch/x86/kernel/acpi/processor.c  |   10 +---------
- drivers/acpi/processor_pdc.c      |   11 +++++++++++
- 3 files changed, 13 insertions(+), 18 deletions(-)
+ arch/ia64/include/asm/acpi.h      |    4 ++++
+ arch/ia64/kernel/acpi-processor.c |   18 ------------------
+ arch/x86/include/asm/acpi.h       |   19 +++++++++++++++++++
+ arch/x86/kernel/acpi/processor.c  |   34 ----------------------------------
+ drivers/acpi/processor_pdc.c      |    6 +++---
+ include/acpi/processor.h          |    1 -
+ 6 files changed, 26 insertions(+), 56 deletions(-)
 
+diff --git a/arch/ia64/include/asm/acpi.h b/arch/ia64/include/asm/acpi.h
+index 3b78882..7ae5889 100644
+--- a/arch/ia64/include/asm/acpi.h
++++ b/arch/ia64/include/asm/acpi.h
+@@ -133,6 +133,10 @@ extern int __initdata nid_to_pxm_map[MAX_NUMNODES];
+ #endif
+ 
+ static inline bool arch_has_acpi_pdc(void) { return true; }
++static inline void arch_acpi_set_pdc_bits(u32 *buf)
++{
++	buf[2] |= ACPI_PDC_EST_CAPABILITY_SMP;
++}
+ 
+ #define acpi_unlazy_tlb(x)
+ 
 diff --git a/arch/ia64/kernel/acpi-processor.c b/arch/ia64/kernel/acpi-processor.c
-index ab72d46..ebe23f5 100644
+index ebe23f5..7ba5acc 100644
 --- a/arch/ia64/kernel/acpi-processor.c
 +++ b/arch/ia64/kernel/acpi-processor.c
-@@ -18,15 +18,7 @@ static void init_intel_pdc(struct acpi_processor *pr)
+@@ -14,24 +14,6 @@
+ #include <acpi/processor.h>
+ #include <asm/acpi.h>
+ 
+-static void init_intel_pdc(struct acpi_processor *pr)
+-{
+-	u32 *buf = (u32 *)pr->pdc->pointer->buffer.pointer;
+-
+-	buf[2] |= ACPI_PDC_EST_CAPABILITY_SMP;
+-
+-	return;
+-}
+-
+-/* Initialize _PDC data based on the CPU vendor */
+-void arch_acpi_processor_init_pdc(struct acpi_processor *pr)
+-{
+-	init_intel_pdc(pr);
+-	return;
+-}
+-
+-EXPORT_SYMBOL(arch_acpi_processor_init_pdc);
+-
+ void arch_acpi_processor_cleanup_pdc(struct acpi_processor *pr)
  {
- 	u32 *buf = (u32 *)pr->pdc->pointer->buffer.pointer;
- 
--	buf[0] = ACPI_PDC_REVISION_ID;
--	buf[1] = 1;
--	buf[2] = ACPI_PDC_EST_CAPABILITY_SMP;
--	/*
--	 * The default of PDC_SMP_T_SWCOORD bit is set for IA64 cpu so
--	 * that OSPM is capable of native ACPI throttling software
--	 * coordination using BIOS supplied _TSD info.
--	 */
--	buf[2] |= ACPI_PDC_SMP_T_SWCOORD;
-+	buf[2] |= ACPI_PDC_EST_CAPABILITY_SMP;
- 
- 	return;
+ 	if (pr->pdc) {
+diff --git a/arch/x86/include/asm/acpi.h b/arch/x86/include/asm/acpi.h
+index d787e6e..56f462c 100644
+--- a/arch/x86/include/asm/acpi.h
++++ b/arch/x86/include/asm/acpi.h
+@@ -149,6 +149,25 @@ static inline bool arch_has_acpi_pdc(void)
+ 		c->x86_vendor == X86_VENDOR_CENTAUR);
  }
-diff --git a/arch/x86/kernel/acpi/processor.c b/arch/x86/kernel/acpi/processor.c
-index 967860b..d722ca8 100644
---- a/arch/x86/kernel/acpi/processor.c
-+++ b/arch/x86/kernel/acpi/processor.c
-@@ -16,16 +16,8 @@ static void init_intel_pdc(struct acpi_processor *pr, struct cpuinfo_x86 *c)
- {
- 	u32 *buf = (u32 *)pr->pdc->pointer->buffer.pointer;
  
--	buf[0] = ACPI_PDC_REVISION_ID;
--	buf[1] = 1;
--	buf[2] = ACPI_PDC_C_CAPABILITY_SMP;
-+	buf[2] |= ACPI_PDC_C_CAPABILITY_SMP;
- 
--	/*
--	 * The default of PDC_SMP_T_SWCOORD bit is set for intel x86 cpu so
--	 * that OSPM is capable of native ACPI throttling software
--	 * coordination using BIOS supplied _TSD info.
--	 */
--	buf[2] |= ACPI_PDC_SMP_T_SWCOORD;
- 	if (cpu_has(c, X86_FEATURE_EST))
- 		buf[2] |= ACPI_PDC_EST_CAPABILITY_SWSMP;
- 
-diff --git a/drivers/acpi/processor_pdc.c b/drivers/acpi/processor_pdc.c
-index 87946b6..ccda7c9 100644
---- a/drivers/acpi/processor_pdc.c
-+++ b/drivers/acpi/processor_pdc.c
-@@ -33,6 +33,15 @@ static struct dmi_system_id __cpuinitdata processor_idle_dmi_table[] = {
- 	{},
- };
- 
-+static void acpi_set_pdc_bits(u32 *buf)
++static inline void arch_acpi_set_pdc_bits(u32 *buf)
 +{
-+	buf[0] = ACPI_PDC_REVISION_ID;
-+	buf[1] = 1;
++	struct cpuinfo_x86 *c = &cpu_data(0);
 +
-+	/* Enable coordination with firmware's _TSD info */
-+	buf[2] = ACPI_PDC_SMP_T_SWCOORD;
++	buf[2] |= ACPI_PDC_C_CAPABILITY_SMP;
++
++	if (cpu_has(c, X86_FEATURE_EST))
++		buf[2] |= ACPI_PDC_EST_CAPABILITY_SWSMP;
++
++	if (cpu_has(c, X86_FEATURE_ACPI))
++		buf[2] |= ACPI_PDC_T_FFH;
++
++	/*
++	 * If mwait/monitor is unsupported, C2/C3_FFH will be disabled
++	 */
++	if (!cpu_has(c, X86_FEATURE_MWAIT))
++		buf[2] &= ~(ACPI_PDC_C_C2C3_FFH);
 +}
 +
- static void acpi_processor_init_pdc(struct acpi_processor *pr)
- {
- 	struct acpi_object_list *obj_list;
-@@ -63,6 +72,8 @@ static void acpi_processor_init_pdc(struct acpi_processor *pr)
- 		return;
- 	}
+ #else /* !CONFIG_ACPI */
  
-+	acpi_set_pdc_bits(buf);
+ #define acpi_lapic 0
+diff --git a/arch/x86/kernel/acpi/processor.c b/arch/x86/kernel/acpi/processor.c
+index d722ca8..0f57307 100644
+--- a/arch/x86/kernel/acpi/processor.c
++++ b/arch/x86/kernel/acpi/processor.c
+@@ -12,40 +12,6 @@
+ #include <acpi/processor.h>
+ #include <asm/acpi.h>
+ 
+-static void init_intel_pdc(struct acpi_processor *pr, struct cpuinfo_x86 *c)
+-{
+-	u32 *buf = (u32 *)pr->pdc->pointer->buffer.pointer;
+-
+-	buf[2] |= ACPI_PDC_C_CAPABILITY_SMP;
+-
+-	if (cpu_has(c, X86_FEATURE_EST))
+-		buf[2] |= ACPI_PDC_EST_CAPABILITY_SWSMP;
+-
+-	if (cpu_has(c, X86_FEATURE_ACPI))
+-		buf[2] |= ACPI_PDC_T_FFH;
+-
+-	/*
+-	 * If mwait/monitor is unsupported, C2/C3_FFH will be disabled
+-	 */
+-	if (!cpu_has(c, X86_FEATURE_MWAIT))
+-		buf[2] &= ~(ACPI_PDC_C_C2C3_FFH);
+-
+-	return;
+-}
+-
+-
+-/* Initialize _PDC data based on the CPU vendor */
+-void arch_acpi_processor_init_pdc(struct acpi_processor *pr)
+-{
+-	struct cpuinfo_x86 *c = &cpu_data(pr->id);
+-
+-	init_intel_pdc(pr, c);
+-
+-	return;
+-}
+-
+-EXPORT_SYMBOL(arch_acpi_processor_init_pdc);
+-
+ void arch_acpi_processor_cleanup_pdc(struct acpi_processor *pr)
+ {
+ 	if (pr->pdc) {
+diff --git a/drivers/acpi/processor_pdc.c b/drivers/acpi/processor_pdc.c
+index ccda7c9..48df08e 100644
+--- a/drivers/acpi/processor_pdc.c
++++ b/drivers/acpi/processor_pdc.c
+@@ -40,6 +40,9 @@ static void acpi_set_pdc_bits(u32 *buf)
+ 
+ 	/* Enable coordination with firmware's _TSD info */
+ 	buf[2] = ACPI_PDC_SMP_T_SWCOORD;
 +
- 	obj->type = ACPI_TYPE_BUFFER;
- 	obj->buffer.length = 12;
- 	obj->buffer.pointer = (u8 *) buf;
++	/* Twiddle arch-specific bits needed for _PDC */
++	arch_acpi_set_pdc_bits(buf);
+ }
+ 
+ static void acpi_processor_init_pdc(struct acpi_processor *pr)
+@@ -81,9 +84,6 @@ static void acpi_processor_init_pdc(struct acpi_processor *pr)
+ 	obj_list->pointer = obj;
+ 	pr->pdc = obj_list;
+ 
+-	/* Now let the arch do the bit-twiddling to buf[] */
+-	arch_acpi_processor_init_pdc(pr);
+-
+ 	return;
+ }
+ 
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index a1b748a..50edd73 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -257,7 +257,6 @@ int acpi_processor_notify_smm(struct module *calling_module);
+ DECLARE_PER_CPU(struct acpi_processor *, processors);
+ extern struct acpi_processor_errata errata;
+ 
+-void arch_acpi_processor_init_pdc(struct acpi_processor *pr);
+ void arch_acpi_processor_cleanup_pdc(struct acpi_processor *pr);
+ 
+ #ifdef ARCH_HAS_POWER_INIT
 
