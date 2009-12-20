@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZLTAJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZLTAVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZLTAJa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 19:09:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZLTAJ3
+	id S1754451AbZLTAVE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 19:21:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZLTAVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 19:09:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36788 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754487AbZLTAJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 19:09:28 -0500
-Date: Sat, 19 Dec 2009 16:09:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912200053.45988.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912191557320.3712@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912200040.18944.rjw@sisk.pl> <alpine.LFD.2.00.0912191542570.3712@localhost.localdomain> <200912200053.45988.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 19 Dec 2009 19:21:01 -0500
+Received: from mx75.mail.ru ([94.100.176.90]:64741 "EHLO mx75.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751509AbZLTAVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 19:21:00 -0500
+Date: Sun, 20 Dec 2009 03:26:10 +0300
+From: Nikolai ZHUBR <zhubr@mail.ru>
+Message-ID: <1059651918.20091220032610@mail.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re[3]: epoll'ing tcp sockets for reading
+In-reply-To: <alpine.DEB.2.00.0912191437530.4482@makko.or.mcafeemobile.com>
+References: <1257480306.20091219150206@mail.ru>
+ <alpine.DEB.2.00.0912190953160.4482@makko.or.mcafeemobile.com>
+ <203216314.20091220013854@mail.ru>
+ <alpine.DEB.2.00.0912191437530.4482@makko.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sunday, December 20, 2009, 1:56:22 AM, Davide Libenzi wrote:
+[trim]
+> The kernel cannot make decisions based on something whose knowledge is 
+> userspace bound.
+I didn't mean that. I just meant it would be usefull to let the caller
+of epoll know also the size of data related to specific EPOLLIN event in
+some "atomic" manner immediately, because the kernel probably knows this
+size already.
+The same thing can approximately be "emulated" by requesting FIOREAD for
+all EPOLLIN-ready sockets just after epoll returns, before any other work.
+It just would look not very elegant IMHO.
+
+> What you define as "abstract/imprecise/overcomplicated" are simply 
+> decisions that you, as implementor of the upper layer protocol, have to 
+> take in order to implement your userspace code.
+> And I, personally, see nothing even close to be defined complicated in 
+> such code.
+> Whenever you're asking for an abstraction/API to implement a kind 
+> of software which exist in large quantities on a system, you've got to ask 
+> yourself how relevant such abstraction is at the end, if all the existing 
+> software have done w/out it.
+Ok, maybe that's what I should have asked at the first place. What would
+you recommend as a reference implementation showing clean, efficient,
+fail-safe usage of epoll with sockets?
+Actually I've been googling for about 2 weeks to find some, but the results
+are rather scarce and dubious.
+
+Thank you!
+
+Nikolai ZHUBR
 
 
-On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > Why would it be?
-> 
-> The embedded controller may depend on it.
+> - Davide
 
-Again, I say "why?"
 
-Anything can be true. That doesn't _make_ everything true. There's no real 
-reason why PnP/ACPI suspend/resume should really care.
-
-We can try it. Not for 2.6.33, but by the 34 merge window maybe we'll have 
-a patch-series that is ready to be tested, and that aggressively tries to 
-do the devices that matter asynchronously.
-
-So instead of you trying to make up some idiotic cross-device worries, 
-just see if those worries have any actual background in reality. So far I 
-haven't actually heard anything but "in theory, anything is possible", 
-which is such a truism that it's not even worth voicing.
-
-That said, I still get the feeling that we'd be even better off simply 
-trying to avoid the whole keyboard reset entirely. Apparently we do it for 
-a few HP laptops. It's entirely possible that we'd be better off simply 
-not _doing_ the slow thing in the first place.
-
-For example, we may be _much_ better off doing that whole keyboard reset 
-at resume time than at suspend time. That's what we do when we probe 
-things on initialization - and the resume-time keyboard code is actually 
-already asynchronous, it does that atkbd_reconnect asynchronously by 
-queuing it as an event.
-
-So again, all these problems may not at all be fundamnetal problems: the 
-keyboard driver does certain things, but there is no guarantee that it 
-_needs_ to do those things. Turning the driver async may be totally the 
-wrong thing to do, when we could potentially fix latency problems at the 
-driver level instead.
-
-			Linus
