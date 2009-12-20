@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZLTRTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbZLTRLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbZLTRTf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZLTRTW
+	id S1752650AbZLTRLb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZLTRLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:19:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25906 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755558AbZLTRTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:19:20 -0500
-Date: Sun, 20 Dec 2009 19:16:32 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 3/3] vhost: make default mapping empty by default
-Message-ID: <20091220171632.GD31713@redhat.com>
-References: <cover.1261329297.git.mst@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1261329297.git.mst@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sun, 20 Dec 2009 12:11:30 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37952 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750950AbZLTRLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 12:11:30 -0500
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX1+xUN0R6pSxqB1D6nEAJeC1jPiQGmkWDUWti1tBq0
+	WE8HWCZTG3Jw6N
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       JosephChan@via.com.tw, ScottFang@viatech.com.cn,
+       Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: [PATCH 1/5] viafb: deprecate private ioctls
+Date: Sun, 20 Dec 2009 17:16:45 +0000
+Message-Id: <1261329409-3518-1-git-send-email-FlorianSchandinat@gmx.de>
+X-Mailer: git-send-email 1.6.3.2
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vhost now validates each region with access_ok in calling process
-context before access.  Since this fails on a full 64 bit 1:1 mapping
-that vhost had by default, we can't support such a mapping: users will
-have to set up a table with real addresses that actually matches their
-address space.
-Make the default mapping empty.
+viafb: deprecate private ioctls
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+This patch prints a warning when viafb ioctls are called. Those
+should not be used as their exact meaning is sometimes unknown and
+they in parts duplicate functionality present in the framebuffer
+interface.
+There is no known user of these ioctls.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/vhost/vhost.c |   13 +++----------
- 1 files changed, 3 insertions(+), 10 deletions(-)
+ drivers/video/via/viafbdev.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 33e06bf..2b65d9b 100644
---- a/drivers/vhost/vhost.c
-+++ b/drivers/vhost/vhost.c
-@@ -170,21 +170,14 @@ long vhost_dev_reset_owner(struct vhost_dev *dev)
- {
- 	struct vhost_memory *memory;
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index d8df17a..ce07b5e 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -477,6 +477,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ 	u32 gpu32;
  
--	/* Restore memory to default 1:1 mapping. */
--	memory = kmalloc(offsetof(struct vhost_memory, regions) +
--			 2 * sizeof *memory->regions, GFP_KERNEL);
-+	/* Restore memory to default empty mapping. */
-+	memory = kmalloc(offsetof(struct vhost_memory, regions), GFP_KERNEL);
- 	if (!memory)
- 		return -ENOMEM;
+ 	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
++	printk(KERN_WARNING "viafb_ioctl: Please avoid this interface as it is unstable and might change or vanish at any time!\n");
+ 	memset(&u, 0, sizeof(u));
  
- 	vhost_dev_cleanup(dev);
- 
--	memory->nregions = 2;
--	memory->regions[0].guest_phys_addr = 1;
--	memory->regions[0].userspace_addr = 1;
--	memory->regions[0].memory_size = ~0ULL;
--	memory->regions[1].guest_phys_addr = 0;
--	memory->regions[1].userspace_addr = 0;
--	memory->regions[1].memory_size = 1;
-+	memory->nregions = 0;
- 	dev->memory = memory;
- 	return 0;
- }
+ 	switch (cmd) {
 -- 
-1.6.6.rc1.43.gf55cc
+1.6.3.2
+
