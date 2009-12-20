@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZLTJ4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZLTJ74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191AbZLTJ4s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 04:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZLTJ4r
+	id S1753331AbZLTJ74 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 04:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZLTJ7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 04:56:47 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:55135 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbZLTJ4q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 04:56:46 -0500
-Date: Sun, 20 Dec 2009 20:56:44 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Marin Mitov <mitov@issp.bas.bg>
-Cc: David Airlie <airlied@linux.ie>, Jesse Barnes <jesse.barnes@intel.com>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]Silancing a false positive: "may be used uninitialized"
-Message-ID: <20091220095644.GA17838@verge.net.au>
-References: <200912200903.28002.mitov@issp.bas.bg>
+	Sun, 20 Dec 2009 04:59:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27173 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752887AbZLTJ7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 04:59:54 -0500
+Message-ID: <4B2DF597.6050106@redhat.com>
+Date: Sun, 20 Dec 2009 11:59:51 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912200903.28002.mitov@issp.bas.bg>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Zachary Amsden <zamsden@redhat.com>
+CC: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: SVM: Adjust tsc_offset only if tsc_unstable
+References: <1260789740-14847-1-git-send-email-joerg.roedel@amd.com> <4B2704B2.10709@redhat.com>
+In-Reply-To: <4B2704B2.10709@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 09:03:27AM +0200, Marin Mitov wrote:
-> Hello all,
-> 
-> Silancing a false positive:
-> warning: 'width' may be used uninitialized in this function
-> drivers/gpu/drm/drm_edid.c
+On 12/15/2009 05:38 AM, Zachary Amsden wrote:
+> On 12/14/2009 01:22 AM, Joerg Roedel wrote:
+>> The tsc_offset adjustment in svm_vcpu_load is executed
+>> unconditionally even if Linux considers the host tsc as
+>> stable. This causes a Linux guest detecting an unstable tsc
+>> in any case.
+>> This patch removes the tsc_offset adjustment if the host tsc
+>> is stable. The guest will now get the benefit of a stable
+>> tsc too.
+>>
+> Hi Joerg, I have a much more comprehensive series of patches to 
+> address this issue, please take a look.
+>
 
-Is it guaranteed that the switch will always see a value covered by the
-four cases it has?  If not width would be used without having been initialised.
+Despite this, I've applied the patch to have this fix in while we review 
+your patch set (haven't started yet, sorry - still recovering from 
+nested vmx).
 
-Perhaps adding
+-- 
+error compiling committee.c: too many arguments to function
 
-		default:
-			BUG();
-
-would be worthwhile?
-
-> 
-> Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-> ==========================================================================
-> --- a/drivers/gpu/drm/drm_edid.c	2009-12-20 07:43:57.000000000 +0200
-> +++ b/drivers/gpu/drm/drm_edid.c	2009-12-20 07:45:49.000000000 +0200
-> @@ -913,7 +913,7 @@
->  	const int rates[] = { 60, 85, 75, 60, 50 };
->  
->  	for (i = 0; i < 4; i++) {
-> -		int width, height;
-> +		int uninitialized_var(width), height;
->  		cvt = &(timing->data.other_data.data.cvt[i]);
->  
->  		height = (cvt->code[0] + ((cvt->code[1] & 0xf0) << 8) + 1) * 2;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
