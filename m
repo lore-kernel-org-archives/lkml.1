@@ -1,50 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZLTD7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZLTEYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZLTD7M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 22:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZLTD7K
+	id S1755054AbZLTEYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 23:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbZLTEYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 22:59:10 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:52611 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753134AbZLTD7I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 22:59:08 -0500
-Date: Sat, 19 Dec 2009 22:59:06 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912200040.18944.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912192253200.6618-100000@netrider.rowland.org>
+	Sat, 19 Dec 2009 23:24:42 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56982 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754346AbZLTEYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 23:24:41 -0500
+Message-ID: <4B2DA5EC.6030505@cn.fujitsu.com>
+Date: Sun, 20 Dec 2009 12:19:56 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       taka@valinux.co.jp, jmoyer@redhat.com, m-ikeda@ds.jp.nec.com,
+       czoccolo@gmail.com, Alan.Brunelle@hp.com
+Subject: Re: [PATCH 3/4] cfq-iosched: Remove prio_change logic for workload
+ selection
+References: <1261003980-10115-1-git-send-email-vgoyal@redhat.com> <1261003980-10115-4-git-send-email-vgoyal@redhat.com> <4B29F7DE.4020700@cn.fujitsu.com> <20091218151732.GB3123@redhat.com>
+In-Reply-To: <20091218151732.GB3123@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
-
-> So, seriously, do you think it makes sense to do asynchronous suspend at all?
-> I'm asking, because we're likely to get into troubles like this during suspend
-> for other kinds of devices too and without resolving them we won't get any
-> significant speedup from asynchronous suspend.
+Vivek Goyal wrote:
+> On Thu, Dec 17, 2009 at 05:20:30PM +0800, Gui Jianfeng wrote:
+>> Vivek Goyal wrote:
+>>> o CFQ now internally divides cfq queues in therr workload categories. sync-idle,
+>>>   sync-noidle and async. Which workload to run depends primarily on rb_key
+>>>   offset across three service trees. Which is a combination of mulitiple things
+>>>   including what time queue got queued on the service tree.
+>>>
+>>>   There is one exception though. That is if we switched the prio class, say
+>>>   we served some RT tasks and again started serving BE class, then with-in
+>>>   BE class we always started with sync-noidle workload irrespective of rb_key
+>>>   offset in service trees.
+>>>
+>>>   This can provide better latencies for sync-noidle workload in the presence
+>>>   of RT tasks.
+>>>
+>>> o This patch gets rid of that exception and which workload to run with-in
+>>>   class always depends on lowest rb_key across service trees. The reason
+>>>   being that now we have multiple BE class groups and if we always switch
+>>>   to sync-noidle workload with-in group, we can potentially starve a sync-idle
+>>>   workload with-in group. Same is true for async workload which will be in
+>>>   root group. Also the workload-switching with-in group will become very
+>>>   unpredictable as it now depends whether some RT workload was running in
+>>>   the system or not.
+>>>
+>>> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+>> Actually, in current CFQ, there still has bug in prio_changed logic.
+>> Because prio_changed = (cfqd->serving_prio != previous_prio), and previous_prio
+>> might come from another group, in this case, prio_changed becomes invalid, but
+>> cfq_choose_wl() still relies on prio_changed to calculate serving_type, this
+>> doesn't make sence IMHO. 
 > 
-> That said, to me it's definitely worth doing asynchronous resume with the
-> "start asynch threads upfront" modification, as the results of the tests show
-> that quite clearly.  I hope you agree.
+> Ok, so you are referring to the case when we don't save workload state
+> because it has expired at the time of group expiry.
+> 
+> How about saving the serving prio all the time at the time of group expiry,
+> irrespective of the fact whether workload has expired or not at the time of
+> group expiry and while we also need to always restore the serving prio back
+> when group is rescheduled in.
 
-It's too early to come to this sort of conclusion (i.e., that suspend
-and resume react very differently to an asynchronous approach).  Unless
-you have some definite _reason_ for thinking that resume will benefit
-more than suspend, you shouldn't try to generalize so much from tests
-on only two systems.
+Hi Vivek,
 
-Alan Stern
+Yes, i think so also.
+
+Thanks,
+Gui
+
+> 
+> Thanks
+> Vivek
+> 
+>> But with this change, this bug is gone.
+>>
+>> Reviewed-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+>>
+>>> ---
+>>>  block/cfq-iosched.c |   48 ++++++++++++------------------------------------
+>>>  1 files changed, 12 insertions(+), 36 deletions(-)
+>>>
+>>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>>> index d9bfa09..8df4fe5 100644
+>>> --- a/block/cfq-iosched.c
+>>> +++ b/block/cfq-iosched.c
+>>> @@ -292,8 +292,7 @@ static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd);
+>>>  
+>>>  static struct cfq_rb_root *service_tree_for(struct cfq_group *cfqg,
+>>>  					    enum wl_prio_t prio,
+>>> -					    enum wl_type_t type,
+>>> -					    struct cfq_data *cfqd)
+>>> +					    enum wl_type_t type)
+>>>  {
+>>>  	if (!cfqg)
+>>>  		return NULL;
+>>> @@ -1146,7 +1145,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>>>  #endif
+>>>  
+>>>  	service_tree = service_tree_for(cfqq->cfqg, cfqq_prio(cfqq),
+>>> -						cfqq_type(cfqq), cfqd);
+>>> +						cfqq_type(cfqq));
+>>>  	if (cfq_class_idle(cfqq)) {
+>>>  		rb_key = CFQ_IDLE_DELAY;
+>>>  		parent = rb_last(&service_tree->rb);
+>>> @@ -1609,7 +1608,7 @@ static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
+>>>  {
+>>>  	struct cfq_rb_root *service_tree =
+>>>  		service_tree_for(cfqd->serving_group, cfqd->serving_prio,
+>>> -					cfqd->serving_type, cfqd);
+>>> +					cfqd->serving_type);
+>>>  
+>>>  	if (!cfqd->rq_queued)
+>>>  		return NULL;
+>>> @@ -1956,8 +1955,7 @@ static void cfq_setup_merge(struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
+>>>  }
+>>>  
+>>>  static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
+>>> -				struct cfq_group *cfqg, enum wl_prio_t prio,
+>>> -				bool prio_changed)
+>>> +				struct cfq_group *cfqg, enum wl_prio_t prio)
+>>>  {
+>>>  	struct cfq_queue *queue;
+>>>  	int i;
+>>> @@ -1965,24 +1963,9 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
+>>>  	unsigned long lowest_key = 0;
+>>>  	enum wl_type_t cur_best = SYNC_NOIDLE_WORKLOAD;
+>>>  
+>>> -	if (prio_changed) {
+>>> -		/*
+>>> -		 * When priorities switched, we prefer starting
+>>> -		 * from SYNC_NOIDLE (first choice), or just SYNC
+>>> -		 * over ASYNC
+>>> -		 */
+>>> -		if (service_tree_for(cfqg, prio, cur_best, cfqd)->count)
+>>> -			return cur_best;
+>>> -		cur_best = SYNC_WORKLOAD;
+>>> -		if (service_tree_for(cfqg, prio, cur_best, cfqd)->count)
+>>> -			return cur_best;
+>>> -
+>>> -		return ASYNC_WORKLOAD;
+>>> -	}
+>>> -
+>>> -	for (i = 0; i < 3; ++i) {
+>>> -		/* otherwise, select the one with lowest rb_key */
+>>> -		queue = cfq_rb_first(service_tree_for(cfqg, prio, i, cfqd));
+>>> +	for (i = 0; i <= SYNC_WORKLOAD; ++i) {
+>>> +		/* select the one with lowest rb_key */
+>>> +		queue = cfq_rb_first(service_tree_for(cfqg, prio, i));
+>>>  		if (queue &&
+>>>  		    (!key_valid || time_before(queue->rb_key, lowest_key))) {
+>>>  			lowest_key = queue->rb_key;
+>>> @@ -1996,8 +1979,6 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
+>>>  
+>>>  static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>>>  {
+>>> -	enum wl_prio_t previous_prio = cfqd->serving_prio;
+>>> -	bool prio_changed;
+>>>  	unsigned slice;
+>>>  	unsigned count;
+>>>  	struct cfq_rb_root *st;
+>>> @@ -2025,24 +2006,19 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>>>  	 * (SYNC, SYNC_NOIDLE, ASYNC), and to compute a workload
+>>>  	 * expiration time
+>>>  	 */
+>>> -	prio_changed = (cfqd->serving_prio != previous_prio);
+>>> -	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
+>>> -				cfqd);
+>>> +	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type);
+>>>  	count = st->count;
+>>>  
+>>>  	/*
+>>> -	 * If priority didn't change, check workload expiration,
+>>> -	 * and that we still have other queues ready
+>>> +	 * check workload expiration, and that we still have other queues ready
+>>>  	 */
+>>> -	if (!prio_changed && count &&
+>>> -	    !time_after(jiffies, cfqd->workload_expires))
+>>> +	if (count && !time_after(jiffies, cfqd->workload_expires))
+>>>  		return;
+>>>  
+>>>  	/* otherwise select new workload type */
+>>>  	cfqd->serving_type =
+>>> -		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio, prio_changed);
+>>> -	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
+>>> -				cfqd);
+>>> +		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio);
+>>> +	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type);
+>>>  	count = st->count;
+>>>  
+>>>  	/*
+> 
+> 
+> 
+
+-- 
+Regards
+Gui Jianfeng
 
