@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZLTKFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZLTKER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZLTKFH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 05:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZLTKFF
+	id S1753089AbZLTKER (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 05:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZLTKEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 05:05:05 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56739 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbZLTKFE (ORCPT
+	Sun, 20 Dec 2009 05:04:16 -0500
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:36721 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbZLTKEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 05:05:04 -0500
-Date: Sun, 20 Dec 2009 11:03:44 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Marek <mmarek@suse.cz>, Michael Guntsche <mike@it-loops.com>
-Cc: Oliver Hartkopp <oliver@hartkopp.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, mjt@tls.msk.ru
-Subject: [PATCH] kbuild: correct size calculation of bzImgae / fix x86 boot
-Message-ID: <20091220100344.GA6614@merkur.ravnborg.org>
-References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091138.GA1793@trillian.comsick.at>
+	Sun, 20 Dec 2009 05:04:15 -0500
+Message-ID: <4B2DF699.3090107@in.ibm.com>
+Date: Sun, 20 Dec 2009 15:34:09 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091220091138.GA1793@trillian.comsick.at>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: CPU offline/online related hang with latest git
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We use ... printf \x ... when calculating the size of the
-compressed kernel.
-Unfortunately dash built-in printf does not support this notation
-resulting in a non-bootable kernel.
+With 2.6.33-rc1-git1 (dd59f6c..) i am having trouble with
+CPU hotplug on multiple architectures. Trying to offline
+a CPU results in a machine hang.
 
-Fix this by always using the external version of printf.
+Sample o/p from a 4 way x86_64 box :
 
-The commit that introduced this bug was:
-4a2ff67c88211026afcbdbc190c13f705dae1b59: "kbuild: fix bzImage
-build for x86"
+#:/sys/devices/system/cpu/cpu3 # cat online
+1
+#:/sys/devices/system/cpu/cpu3 # echo 0 > online
+Stack:
+Call Trace:
+ <IRQ>
+ <EOI>
+Code: 45 f0 48 89 45 b8 48 8d 45 d0 4c 89 4d f8 c7 45 b0 10 00 00 00 48 89 45 c0 e8 5a ff ff ff c9 c3 89 f0 b9 40 00 00 00 55 99 f7 f9 <48> 89 e5 48 89 f9 48 83 ec 08 31 d2 41 89 c0 eb 12 48 8b 01 48
+Stack:
+Call Trace:
+Code: 20 00 00 00 00 48 89 3e 49 8d 74 24 28 e8 45 75 1d 00 49 c7 44 24 50 00 00 00 00 48 8b 9b 60 01 00 00 48 85 db 0f 85 25 ff ff ff <5b> 41 5c c9 c3 55 48 89 e5 41 57 41 56 41 55 41 54 53 48 81 ec
+Stack:
+Call Trace:
+Code: 48 0f 45 d8 eb 1a 44 0f a3 20 19 c0 48 c7 c3 10 b5 a0 81 85 c0 48 c7 c0 30 b5 a0 81 48 0f 44 d8 31 c0 f3 90 44 8b 25 82 35 96 00 <41> 39 c4 74 46 41 83 fc 02 74 08 41 83 fc 03 75 12 eb 03 fa eb
+Stack:
+Call Trace:
+Code: 48 c7 c0 30 b5 a0 81 48 0f 45 d8 eb 1a 44 0f a3 20 19 c0 48 c7 c3 10 b5 a0 81 85 c0 48 c7 c0 30 b5 a0 81 48 0f 44 d8 31 c0 f3 90 <44> 8b 25 82 35 96 00 41 39 c4 74 46 41 83 fc 02 74 08 41 83 fc
+Uhhuh. NMI received for unknown reason 25 on CPU 0.
+Do you have a strange power saving mode enabled?
+Dazed and confused, but trying to continue
 
-Reported-by: Michael Guntsche <mike@it-loops.com>
-Cc: Oliver Hartkopp <oliver@hartkopp.net>
-Cc: Johannes Stezenbach <js@sig21.net>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
+The above messages are repeated after this. I observed similar hangs
+on other architectures as well (s390x, PowerPC, x86_32).
 
-This should fix it but it would be great if it is tested.
-Michal Marek, I think this needs to go upstream pretty quickly.
+2.6.33-rc1 worked fine. I haven't tried the bisect. Will do that
+first thing tomorrow morning. 
 
-	Sam
+Thanks
+-Sachin
 
- scripts/Makefile.lib |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index cd815ac..bd201d9 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -213,13 +213,14 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
- 
- # Bzip2 and LZMA do not include size in file... so we have to fake that;
- # append the size as a 32-bit littleendian number as gzip does.
-+# Note: dash built-in printf does not support \x so use /usr/bin version
- size_append = printf $(shell						\
- dec_size=0;								\
- for F in $1; do								\
- 	fsize=$$(stat -c "%s" $$F);					\
- 	dec_size=$$(expr $$dec_size + $$fsize);				\
- done;									\
--printf "%08x" $$dec_size |						\
-+/usr/bin/printf "%08x" $$dec_size |						\
- 	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
- )
- 
 -- 
-1.6.0.6
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
