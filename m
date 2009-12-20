@@ -1,119 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZLTTOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZLTTPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZLTTOr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 14:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZLTTOr
+	id S1754851AbZLTTPy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 14:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZLTTPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 14:14:47 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:41591 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754366AbZLTTOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 14:14:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=Bb0iRDmR/3tcWmC4JNxbkkYfYxtsZvMh/w9wGOcq9nGy5sv1xr+6Hh9y9aHQUqGp/o
-         CDzOfz1PwyFExdF3IxSdq7GVqgTSa5JtIpzxH/Sw5SnVXY7t+V6mh4QZzBLv+wdZIoDp
-         /x8mwKNHK3Yls/mqxXJxLuvqfyqAXpxv6yD6Y=
-Date: Sun, 20 Dec 2009 20:14:36 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: Linux 2.6.33-rc1
-Message-ID: <20091220191436.GA3982@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Torsten Kaiser <just.for.lkml@googlemail.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Borislav Petkov <borislav.petkov@amd.com>
-References: <alpine.LFD.2.00.0912171745160.15740@localhost.localdomain>
- <64bb37e0912191154n4a7ea5benbb3da57f1aabdbe6@mail.gmail.com>
- <64bb37e0912200953j2046a935n2f9ecd2cdfed780f@mail.gmail.com>
+	Sun, 20 Dec 2009 14:15:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42703 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754439AbZLTTPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 14:15:51 -0500
+Date: Sun, 20 Dec 2009 20:15:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joe Perches <joe@perches.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, peterz@infradead.org, efault@gmx.de,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/urgent] sched: Restore printk sanity
+Message-ID: <20091220191531.GA17878@elte.hu>
+References: <1261315437.4314.6.camel@laptop>
+ <tip-3df0fc5b2e9d8092dcaeb5ae0b6753d85c851d66@git.kernel.org>
+ <1261335300.30458.209.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <64bb37e0912200953j2046a935n2f9ecd2cdfed780f@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1261335300.30458.209.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 06:53:24PM +0100, Torsten Kaiser wrote:
-> On Sat, Dec 19, 2009 at 8:54 PM, Torsten Kaiser
-> <just.for.lkml@googlemail.com> wrote:
-> > [    5.061998] EDAC MC: Ver: 2.1.0 Dec 18 2009
-> > [    5.062186] EDAC amd64_edac:  Ver: 3.3.0 Dec 18 2009
-> > [    5.062235] EDAC amd64: ECC is enabled by BIOS.
-> > [    5.062297] EDAC amd64: ECC is enabled by BIOS.
-> > [    5.128332] EDAC MC: Rev F or later detected
-> > [    5.134186] EDAC amd64: amd64_read_mc_registers: error reading F2x190.
-> > [    5.142290] EDAC amd64: amd64_read_mc_registers: error reading F2x194.
-> > [    5.150355] EDAC MC: DCT0 chip selects:
-> > [    5.150357] EDAC MC:  0:   512MB 1:   512MB
-> > [    5.150358] EDAC MC:  2:     0MB 3:     0MB
-> > [    5.150361] EDAC MC:  4:     0MB 5:     0MB
-> > [    5.150362] EDAC MC:  6:     0MB 7:     0MB
-> > [    5.150519] EDAC MC0: Giving out device to 'amd64_edac' 'RevF': DEV
-> > 0000:00:18.2
-> > [    5.150522] EDAC MC: Rev F or later detected
-> > [    5.150530] EDAC amd64: amd64_read_mc_registers: error reading F2x190.
-> > [    5.150532] EDAC amd64: amd64_read_mc_registers: error reading F2x194.
-> > [    5.150533] EDAC MC: DCT0 chip selects:
-> > [    5.150535] EDAC MC:  0:   512MB 1:   512MB
-> > [    5.150536] EDAC MC:  2:     0MB 3:     0MB
-> > [    5.150537] EDAC MC:  4:     0MB 5:     0MB
-> > [    5.150539] EDAC MC:  6:     0MB 7:     0MB
-> > [    5.150664] EDAC MC1: Giving out device to 'amd64_edac' 'RevF': DEV
-> > 0000:00:19.2
-> > [    5.150742] EDAC PCI0: Giving out device to module 'amd64_edac'
-> > controller 'EDAC PCI
-> >  controller': DEV '0000:00:18.2' (POLLED)
-> >
-> > The system has 4x 1GB RAM sticks (2 on each CPU).
 
-What are those DIMMs: single or dual ranked? Can you give me the exact
-model name?
+* Joe Perches <joe@perches.com> wrote:
 
-> After reading the code in drivers/edac/amd64_edac.c and the
-> documentation in the AMD reference doc (#32559, I have Rev. 3.08) the
-> bug is, that the current code does not try to differentiate between
-> the 64bit and the 128bit mode.
-> In the doc the sizes for the 64bit mode in table 10, section 4.5.8.1
-> are identical to the table ddr2_dbam in amd64_edac.c.
-> But for the 128bit mode the table 11 should be used, there the sizes
-> are doubled.
+> On Sun, 2009-12-20 at 18:06 +0000, tip-bot for Peter Zijlstra wrote:
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 720df10..7ffde2a 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -7828,44 +7828,48 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+> >  	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
+> >  
+> >  	if (!(sd->flags & SD_LOAD_BALANCE)) {
+> > -		pr_cont("does not load-balance\n");
+> > +		printk("does not load-balance\n");
+> >  		if (sd->parent)
+> > -			pr_err("ERROR: !SD_LOAD_BALANCE domain has parent\n");
+> > +			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain"
+> > +					" has parent");
 > 
-> The code uses the bit 11 (named F10_WIDTH_128 in amd64_edac.h) of the
-> lower DRAM configuration register to determine the number of channels
-> in k8_early_channel_count(), but this is not used in
-> amd64_debug_display_dimm_sizes()
+> Missing a trailing \n.
 
-That might be the case, can you enable CONFIG_EDAC_DEBUG and
-CONFIG_EDAC_DEBUG_VERBOSE and rebuild your kernel, please? Then, send me
-the _whole_ dmesg output. If the output appears truncated, try enlarging
-the log buffer size by setting log_buf_len on the kernel command line to
-something large, i.e. 'log_buf_len=10M'.
+It's also needlessly broken mid-string. Checkpatch should warn about printk 
+lines that end with a '"', those are almost always a sign of some ill-advised 
+break-the-string artifact.
 
-> 
-> > And there is no line like 'EDAC PCI0' for the DRAM controller of the
-> > second CPU (19.2). Is that normal?
-> 
-> amd64_edac_init() calls amd64_init_2nd_stage() for each northbrigde,
-> but amd64_setup_pci_device() only once.
-> 
-> But from looking at the code, I can't see if a second device is needed or not.
-
-No, its not since it seems like the EDAC PCI code scans all known PCI
-devices anyways.
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
+	Ingo
