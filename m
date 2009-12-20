@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZLTNsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZLTNua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbZLTNsr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 08:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZLTNsq
+	id S1751655AbZLTNua (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 08:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZLTNu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 08:48:46 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:43628 "EHLO
+	Sun, 20 Dec 2009 08:50:29 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:64399 "EHLO
 	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbZLTNsp (ORCPT
+	with ESMTP id S1751116AbZLTNu2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 08:48:45 -0500
+	Sun, 20 Dec 2009 08:50:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=X0Yyk7cju5l766CtmEo9gkRI7bMNLoOuVf2LffKKGEI4PHT4CBahLtAMAAexdOsdAk
-         imuUVLFrvKwlzpOJDRoG3jmKQlZpwp0KPs60sVSO5AALoATZd5y8ctNpHcvdxBxGc6+q
-         G3SLdMM5kmilfYNgk4AeHtXcG77E8+6OZom7k=
-Subject: Re: [PATCH 2/4] mfd: mc13783: When probing, unlock the mc13783
- before subsystems initialisation.
-From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-In-Reply-To: <20091219201816.GA28742@pengutronix.de>
-References: <1260808880.2022.98.camel@climbing-alby>
-	 <1260810776.2022.130.camel@climbing-alby>
-	 <1260811085.2022.135.camel@climbing-alby>
-	 <1261152746.3356.72.camel@climbing-alby>
-	 <20091219201816.GA28742@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 20 Dec 2009 14:48:38 +0100
-Message-ID: <1261316918.5224.15.camel@climbing-alby>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=thrb/YqnbL0wbKLGI62GzuDUo5dzCUrB9MVRYVw7NkeVW9xxJ0PvnrttooIpqe3pXH
+         CjaDHA034PQrYU8bdGSCwYdMsA8CM0q2Zl7519URVIXS/RQeGEaEgGdMzOlFqV8J9r8L
+         ku1po0Qp8gDrtsU9wxu2bFs4NlsNG6Z1ctYxs=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86 boot
+Date: Sun, 20 Dec 2009 14:50:23 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc1-dirty; KDE/4.3.4; x86_64; ; )
+Cc: Sam Ravnborg <sam@ravnborg.org>, Michal Marek <mmarek@suse.cz>,
+       Michael Guntsche <mike@it-loops.com>,
+       Oliver Hartkopp <oliver@hartkopp.net>, mjt@tls.msk.ru
+References: <20091219233457.GA4288@trillian.comsick.at> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org>
+In-Reply-To: <20091220100344.GA6614@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200912201450.23559.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il giorno sab, 19/12/2009 alle 21.18 +0100, Uwe Kleine-König ha
-scritto: 
-> Hello,
-> 
-> On Fri, Dec 18, 2009 at 05:12:26PM +0100, Alberto Panizzo wrote:
-> > Ping :)
-> > 
-> > PATCH 1 & 2 are fixes that can go to .33
-> I don't like patch 1.  I'd prefer that drivers touching
-> MC13783_REG_POWER_MISCELLANEOUS are aware of the bit in question and
-> wouldn't rely on mc13783-core.
-> 
-> Best regards
-> Uwe
+On Sunday 20 of December 2009, Sam Ravnborg wrote:
+			\
+> -printf "%08x" $$dec_size |						\
+> +/usr/bin/printf "%08x" $$dec_size |						\
+>  	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
+>  )
 > 
 
-Yes, but MC13783_REG_POWER_MISCELLANEOUS contains bit that control
-different aspect of mc13783 chip.
-GPO are regulator related, but those two bits in question maybe 
-apply to a power management driver, so this problem is a matter
-of mc13783-core.
+Here printf is in /bin/ and not in /usr/bin.
 
-Another possible solution, is to trace the writings to those two bits
-in mc13783_reg_rmw storing the value written an reproducing it in next
-mc13783_reg_rmw calls.
-But the problem for this is that we don't know if the bootloader 
-had initialised those with another non default value.
-Another problem is that if another driver make use of 
-mc13783_reg_write for modifying those bits, the state stored will
-be inconsistent.
-
-And so? what kind of solution can you suggest?
-
-I am working to support i.MX31 PDK board that make a strong use of mc13783
-and GPO's controls important power supplies.
-
-Alberto!
-
-
-
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
