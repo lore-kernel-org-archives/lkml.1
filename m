@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZLTWN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZLTWOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbZLTWN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 17:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZLTWNZ
+	id S1756119AbZLTWOM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 17:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZLTWOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 17:13:25 -0500
-Received: from THUNK.ORG ([69.25.196.29]:33776 "EHLO thunker.thunk.org"
+	Sun, 20 Dec 2009 17:14:11 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45618 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754516AbZLTWNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 17:13:24 -0500
-Date: Sun, 20 Dec 2009 17:12:32 -0500
-From: tytso@mit.edu
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joe Perches <joe@perches.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       peterz@infradead.org, efault@gmx.de, akpm@linux-foundation.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/urgent] sched: Restore printk sanity
-Message-ID: <20091220221232.GC4887@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Ingo Molnar <mingo@elte.hu>,
-	Joe Perches <joe@perches.com>, mingo@redhat.com, hpa@zytor.com,
-	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-	peterz@infradead.org, efault@gmx.de, akpm@linux-foundation.org,
-	tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-References: <1261315437.4314.6.camel@laptop>
- <tip-3df0fc5b2e9d8092dcaeb5ae0b6753d85c851d66@git.kernel.org>
- <1261335300.30458.209.camel@Joe-Laptop.home>
- <20091220191531.GA17878@elte.hu>
+	id S1754702AbZLTWOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 17:14:06 -0500
+Date: Sun, 20 Dec 2009 23:14:05 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sachin Sant <sachinp@in.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] sched: Fix hotplug
+Message-ID: <20091220221405.GD4489@kernel.dk>
+References: <4B2DF699.3090107@in.ibm.com> <1261315887.4314.8.camel@laptop> <20091220145151.GY4489@kernel.dk> <1261320896.4314.10.camel@laptop> <20091220145715.GZ4489@kernel.dk> <1261326987.4314.24.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091220191531.GA17878@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1261326987.4314.24.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 08:15:31PM +0100, Ingo Molnar wrote:
+On Sun, Dec 20 2009, Peter Zijlstra wrote:
+> The hot-unplug kstopmachine usage does a wakeup after deactivating the
+> cpu, hence we cannot use cpu_active() here but must rely on the good
+> olde online.
+
+Yep, this works for me!
+
+Tested-by: Jens Axboe <jens.axboe@oracle.com>
+
 > 
-> It's also needlessly broken mid-string. Checkpatch should warn about printk 
-> lines that end with a '"', those are almost always a sign of some ill-advised 
-> break-the-string artifact.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/sched.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 720df10..0ac4fa5 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2348,7 +2348,7 @@ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
+>  	 *   not worry about this generic constraint ]
+>  	 */
+>  	if (unlikely(!cpumask_test_cpu(cpu, &p->cpus_allowed) ||
+> -		     !cpu_active(cpu)))
+> +		     !cpu_online(cpu)))
+>  		cpu = select_fallback_rq(task_cpu(p), p);
+>  
+>  	return cpu;
+> 
+> 
 
-Ironic, given that for a long time checkpatch strongly encouraged
-people to do this with its "line too long" complaint.  Maybe all
-printk's should be exempted from this, or at least if it's the format
-string which is breaking whatever the magic boundary happens to be?
+-- 
+Jens Axboe
 
-Even if we up the limit to 106, or 132, or whatever, I can imagine
-situations where it will be *impossible* to shut up checkpatch.
-Either it will bitch and moan about the line being too long, or it
-will bitch and moan that a format string has been broken across
-multiple lines.  :-(
-
-					- Ted
