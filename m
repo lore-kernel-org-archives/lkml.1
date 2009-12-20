@@ -1,34 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZLTSIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZLTSI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbZLTSIO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 13:08:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755916AbZLTSIN
+	id S1755976AbZLTSI3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 13:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbZLTSIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 13:08:13 -0500
+	Sun, 20 Dec 2009 13:08:25 -0500
 Received: from qw-out-2122.google.com ([74.125.92.26]:47473 "EHLO
 	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755899AbZLTSIM (ORCPT
+	with ESMTP id S1755916AbZLTSIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 13:08:12 -0500
+	Sun, 20 Dec 2009 13:08:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=dCBqHZb5aEGG+eky1InvaRB+FwGV8Ocetd2cahZQlsUS6AgAW3F405J9jqZql6bYxK
-         Xq7uN4YKJQl9cRNefYIQMeAJZFSmUD/tdUsPopxF2xTvjaJNGSHBkgAR087gjNXhSQ1g
-         pQ1SXppQpNIJrwr5NMCNi+VtYjkNFqP6C6UM4=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=t1c7NPeClf/lvSKCLHdwgo6TeJZ3CktsaG7kknvLFZHlsJ+Tby0LDe9XTjcIdxLiXB
+         lrG+C7GJYbbJloxy0JG3lcOl8/Q77gX0hLh6g+UKIFKEFHkhX/jFXnvDypzJCXL9VFsa
+         Re3ZSMhUIE5SstEJzUBF4cAYkyFjsz09XgzjY=
 From: Thiago Farina <tfransosi@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 1/2] kernel: Use CALLER_ADDR0 macro.
-Date: Sun, 20 Dec 2009 13:07:46 -0500
-Message-Id: <1261332469-25298-1-git-send-email-tfransosi@gmail.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>,
+       Benjamin Marzinski <bmarzins@redhat.com>,
+       David Teigland <teigland@redhat.com>,
+       Thiago Farina <tfransosi@gmail.com>, cluster-devel@redhat.com
+Subject: [PATCH 2/2] gfs2: Use CALLER_ADDR0 macro.
+Date: Sun, 20 Dec 2009 13:07:47 -0500
+Message-Id: <1261332469-25298-2-git-send-email-tfransosi@gmail.com>
 X-Mailer: git-send-email 1.6.6.rc3
+In-Reply-To: <1261332469-25298-1-git-send-email-tfransosi@gmail.com>
+References: <1261332469-25298-1-git-send-email-tfransosi@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,63 +40,83 @@ sed -i "s/(unsigned long)__builtin_return_address(0)/CALLER_ADDR0/g" path/to/fil
 
 Signed-off-by: Thiago Farina <tfransosi@gmail.com>
 ---
- kernel/panic.c   |    2 +-
- kernel/softirq.c |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ fs/gfs2/glock.c |    5 +++--
+ fs/gfs2/glops.c |    3 ++-
+ fs/gfs2/trans.c |    3 ++-
+ 3 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 5827f7b..55b0b71 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -129,7 +129,7 @@ NORET_TYPE void panic(const char * fmt, ...)
- 	{
- 		unsigned long caller;
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index f455a03..216898d 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -27,6 +27,7 @@
+ #include <linux/freezer.h>
+ #include <linux/workqueue.h>
+ #include <linux/jiffies.h>
++#include <linux/ftrace.h>
  
--		caller = (unsigned long)__builtin_return_address(0);
-+		caller = CALLER_ADDR0;
- 		disabled_wait(caller);
- 	}
- #endif
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index a09502e..979e029 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -116,7 +116,7 @@ static inline void __local_bh_disable(unsigned long ip)
- 
- void local_bh_disable(void)
+ #include "gfs2.h"
+ #include "incore.h"
+@@ -831,7 +832,7 @@ void gfs2_holder_init(struct gfs2_glock *gl, unsigned int state, unsigned flags,
  {
--	__local_bh_disable((unsigned long)__builtin_return_address(0));
-+	__local_bh_disable(CALLER_ADDR0);
+ 	INIT_LIST_HEAD(&gh->gh_list);
+ 	gh->gh_gl = gl;
+-	gh->gh_ip = (unsigned long)__builtin_return_address(0);
++	gh->gh_ip = CALLER_ADDR0;
+ 	gh->gh_owner_pid = get_pid(task_pid(current));
+ 	gh->gh_state = state;
+ 	gh->gh_flags = flags;
+@@ -855,7 +856,7 @@ void gfs2_holder_reinit(unsigned int state, unsigned flags, struct gfs2_holder *
+ 	gh->gh_state = state;
+ 	gh->gh_flags = flags;
+ 	gh->gh_iflags = 0;
+-	gh->gh_ip = (unsigned long)__builtin_return_address(0);
++	gh->gh_ip = CALLER_ADDR0;
  }
  
- EXPORT_SYMBOL(local_bh_disable);
-@@ -132,7 +132,7 @@ void _local_bh_enable(void)
- 	WARN_ON_ONCE(!irqs_disabled());
+ /**
+diff --git a/fs/gfs2/glops.c b/fs/gfs2/glops.c
+index 78554ac..b8331d8 100644
+--- a/fs/gfs2/glops.c
++++ b/fs/gfs2/glops.c
+@@ -14,6 +14,7 @@
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/bio.h>
+ #include <linux/posix_acl.h>
++#include <linux/ftrace.h>
  
- 	if (softirq_count() == SOFTIRQ_OFFSET)
--		trace_softirqs_on((unsigned long)__builtin_return_address(0));
-+		trace_softirqs_on(CALLER_ADDR0);
- 	sub_preempt_count(SOFTIRQ_OFFSET);
- }
+ #include "gfs2.h"
+ #include "incore.h"
+@@ -51,7 +52,7 @@ static void gfs2_ail_empty_gl(struct gfs2_glock *gl)
  
-@@ -167,7 +167,7 @@ static inline void _local_bh_enable_ip(unsigned long ip)
+ 	/* A shortened, inline version of gfs2_trans_begin() */
+ 	tr.tr_reserved = 1 + gfs2_struct2blk(sdp, tr.tr_revokes, sizeof(u64));
+-	tr.tr_ip = (unsigned long)__builtin_return_address(0);
++	tr.tr_ip = CALLER_ADDR0;
+ 	INIT_LIST_HEAD(&tr.tr_list_buf);
+ 	gfs2_log_reserve(sdp, tr.tr_reserved);
+ 	BUG_ON(current->journal_info);
+diff --git a/fs/gfs2/trans.c b/fs/gfs2/trans.c
+index 4ef0e9f..9355c73 100644
+--- a/fs/gfs2/trans.c
++++ b/fs/gfs2/trans.c
+@@ -14,6 +14,7 @@
+ #include <linux/buffer_head.h>
+ #include <linux/kallsyms.h>
+ #include <linux/gfs2_ondisk.h>
++#include <linux/ftrace.h>
  
- void local_bh_enable(void)
- {
--	_local_bh_enable_ip((unsigned long)__builtin_return_address(0));
-+	_local_bh_enable_ip(CALLER_ADDR0);
- }
- EXPORT_SYMBOL(local_bh_enable);
+ #include "gfs2.h"
+ #include "incore.h"
+@@ -40,7 +41,7 @@ int gfs2_trans_begin(struct gfs2_sbd *sdp, unsigned int blocks,
+ 	if (!tr)
+ 		return -ENOMEM;
  
-@@ -198,7 +198,7 @@ asmlinkage void __do_softirq(void)
- 	pending = local_softirq_pending();
- 	account_system_vtime(current);
- 
--	__local_bh_disable((unsigned long)__builtin_return_address(0));
-+	__local_bh_disable(CALLER_ADDR0);
- 	lockdep_softirq_enter();
- 
- 	cpu = smp_processor_id();
+-	tr->tr_ip = (unsigned long)__builtin_return_address(0);
++	tr->tr_ip = CALLER_ADDR0;
+ 	tr->tr_blocks = blocks;
+ 	tr->tr_revokes = revokes;
+ 	tr->tr_reserved = 1;
 -- 
 1.6.6.rc0.61.g41d5b
 
