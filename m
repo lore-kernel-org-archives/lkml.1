@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbZLTRHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbZLTRMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753137AbZLTRHX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbZLTRHQ
+	id S1755617AbZLTRMW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZLTRMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:07:16 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:60955 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754271AbZLTRHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:07:12 -0500
-Date: Sun, 20 Dec 2009 18:07:10 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: tytso@mit.edu, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] fs/ext4: Eliminate double free
-Message-ID: <Pine.LNX.4.64.0912201806530.26912@ask.diku.dk>
+	Sun, 20 Dec 2009 12:12:14 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:53919 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752915AbZLTRMK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 12:12:10 -0500
+Date: Sun, 20 Dec 2009 12:12:09 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <200912201352.07689.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0912201210300.24162-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
 
-b_entry_name and buffer are initially NULL, are initialized within a loop
-to the result of calling kmalloc, and are freed at the bottom of this loop.
-The loop contains gotos to cleanup, which also frees b_entry_name and
-buffer.  Some of these gotos are before the reinitializations of
-b_entry_name and buffer.  To maintain the invariant that b_entry_name and
-buffer are NULL at the top of the loop, and thus acceptable arguments to
-kfree, these variables are now set to NULL after the kfrees.
+> > It's too early to come to this sort of conclusion (i.e., that suspend
+> > and resume react very differently to an asynchronous approach).  Unless
+> > you have some definite _reason_ for thinking that resume will benefit
+> > more than suspend, you shouldn't try to generalize so much from tests
+> > on only two systems.
+> 
+> In fact I have one reason.  Namely, the things that drivers do on suspend and
+> resume are evidently quite different and on these two systems I was able to
+> test they apparently took different amounts of time to complete.
+> 
+> The very fact that on both systems resume is substantially longer than suspend,
+> even if all devices are suspended and resumed synchronously, is quite
+> interesting.
 
-This seems to be the simplest solution.  A more complicated solution
-would be to introduce more labels in the error handling code at the end of
-the function.
+Yes, it is.  But it doesn't mean that suspend won't benefit from 
+asynchronicity; it just means that the benefits might not be as large 
+as they are for resume.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+Alan Stern
 
-// <smpl>
-@r@
-identifier E;
-expression E1;
-iterator I;
-statement S;
-@@
-
-*kfree(E);
-... when != E = E1
-    when != I(E,...) S
-    when != &E
-*kfree(E);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- fs/ext4/xattr.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/fs/ext4/xattr.c b/fs/ext4/xattr.c
-index 83218be..f3a2f7e 100644
---- a/fs/ext4/xattr.c
-+++ b/fs/ext4/xattr.c
-@@ -1332,6 +1332,8 @@ retry:
- 			goto cleanup;
- 		kfree(b_entry_name);
- 		kfree(buffer);
-+		b_entry_name = NULL;
-+		buffer = NULL;
- 		brelse(is->iloc.bh);
- 		kfree(is);
- 		kfree(bs);
