@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZLTVx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZLTWSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbZLTVx6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 16:53:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZLTVx5
+	id S1754525AbZLTWSM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 17:18:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbZLTWSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 16:53:57 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:59415 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615AbZLTVx4 convert rfc822-to-8bit (ORCPT
+	Sun, 20 Dec 2009 17:18:11 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:46736 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbZLTWSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 16:53:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=D1gqaLc7KC/aXIaa6HcDK8MpBR9lY03mi0++z5IJtKkANUVGWrVXEGp2exlxVn1vuj
-         00jIvx1nni36wSnOS5wjd6DHVsrgn9YdhAZ6sbMUFVlX3kMxwecwKzZTHb7L11DgTgeF
-         rR/9H1CGTVOWKiA5Qj9wyJI435NYM9gGCjPew=
-MIME-Version: 1.0
-In-Reply-To: <20091220212515.GP18217@ZenIV.linux.org.uk>
-References: <1261344092-30700-1-git-send-email-a.beregalov@gmail.com>
-	 <20091220212515.GP18217@ZenIV.linux.org.uk>
-Date: Mon, 21 Dec 2009 00:53:54 +0300
-Message-ID: <a4423d670912201353r53ed19cegc5061c3510e6ecf@mail.gmail.com>
-Subject: Re: [PATCH] fs/compat_ioctl.c: fix build error when !BLOCK
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: arnd@arndb.de, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 20 Dec 2009 17:18:10 -0500
+Subject: Re: [PATCH] resources: fix call to alignf() in allocate_resource()
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0912201026570.3712@localhost.localdomain>
+References: <20091220095001.GA6029@comet.dominikbrodowski.net>
+	 <alpine.LFD.2.00.0912201026570.3712@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 20 Dec 2009 15:12:16 -0700
+Message-Id: <1261347136.26429.3.camel@dc7800.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/21 Al Viro <viro@zeniv.linux.org.uk>:
-> On Mon, Dec 21, 2009 at 12:21:32AM +0300, Alexander Beregalov wrote:
->> Fix this build error when CONFIG_BLOCK is not set.
->> fs/compat_ioctl.c:1604: error: 'SG_SET_TRANSFORM' undeclared
->
-> Do you want that through VFS tree?  I'm going to send a bunch of assorted
-> fixes tomorrow morning, so I can pass that one at the same time...
+On Sun, 2009-12-20 at 10:33 -0800, Linus Torvalds wrote:
+> 
+> On Sun, 20 Dec 2009, Dominik Brodowski wrote:
+> >
+> > The second parameter to alignf() in allocate_resource() must
+> > reflect what new resource is attempted to be allocated, else
+> > functions like pcibios_align_resource() (at least on x86) or
+> > pcmcia_align() can't work correctly.
+> > 
+> > Commit 1e5ad9679016275d422e36b12a98b0927d76f556 broke this by
+> > setting the "new" resource until we're about to return success.
+> > To keep the resource untouched when allocate_resource() fails,
+> > a "tmp" resource is introduced.
+> 
+> Ack. That was subtle. 
+> 
+> That said, maybe a nicer fix to this would be to actually return 'start' 
+> from the 'alignf' macro. That "modify the resource inside the alignment 
+> function" thing was always pretty ugly.
+> 
+> And then we'd pass in 'start' instead of 'size' (I have _no_ idea why we 
+> pass in 'size' to the alignment function, but whatever).
+> 
+> We'd still need to pass in the 'struct resource', but that would be so 
+> that it can figure out 'flags' (and 'size' if it really needs it) from it, 
+> but now it would be for reading only. So we could mark it 'const'.
 
-Yes, please.
+Ouch, sorry about that, I should have noticed that alignf() can modify
+'new' before we know whether we're going to succeed.
+
+Linus' proposal requires more code change, but has the advantage that
+future similar mistakes would be less likely.
+
+Bjorn
+
+
