@@ -1,560 +1,345 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZLTRLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZLTRL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbZLTRLt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZLTRLn
+	id S1755581AbZLTRL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbZLTRLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:11:43 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39769 "HELO mail.gmx.net"
+	Sun, 20 Dec 2009 12:11:53 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40357 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752917AbZLTRLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:11:41 -0500
+	id S1755499AbZLTRLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 12:11:51 -0500
 X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1+fpPF0knqfrJWai6t7J9v3Z6RCPSAEIFb0qOkXu0
-	XV36AJd3ipsn64
+X-Provags-ID: V01U2FsdGVkX18dLVwRRzcdLWkN0RIb7Q4ZsNYoGHof6D4EoYd1wh
+	dKKpU2tzi+hDR4
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 To: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        JosephChan@via.com.tw, ScottFang@viatech.com.cn,
        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH 4/5] viafb: remove the remaining VIA_RES_* uses
-Date: Sun, 20 Dec 2009 17:16:48 +0000
-Message-Id: <1261329409-3518-4-git-send-email-FlorianSchandinat@gmx.de>
+Subject: [PATCH 5/5] viafb: some dvi cleanup
+Date: Sun, 20 Dec 2009 17:16:49 +0000
+Message-Id: <1261329409-3518-5-git-send-email-FlorianSchandinat@gmx.de>
 X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <1261329409-3518-3-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1261329409-3518-4-git-send-email-FlorianSchandinat@gmx.de>
 References: <1261329409-3518-1-git-send-email-FlorianSchandinat@gmx.de>
  <1261329409-3518-2-git-send-email-FlorianSchandinat@gmx.de>
  <1261329409-3518-3-git-send-email-FlorianSchandinat@gmx.de>
+ <1261329409-3518-4-git-send-email-FlorianSchandinat@gmx.de>
 X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+X-FuHaFi: 0.42
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-viafb: remove the remaining VIA_RES_* uses
+viafb: some dvi cleanup
 
-This patch removes the rest of the VIA_RES_* use cases. Obviously
-this was no longer useful. Keep the related infrastructure/functions
-for later use.
-No runtime impact expected.
+This patch removes some unused variables, moves some dvi code around
+and stores the detected maximum resolution for later use. The
+vertical resolution is handled as the old code did it but I hope it
+can be read from the hardware some day.
+No runtime change expected.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/chip.h  |    2 -
- drivers/video/via/dvi.c   |   82 +++++---------------------------------------
- drivers/video/via/lcd.c   |   42 +++--------------------
- drivers/video/via/share.h |   55 ------------------------------
- 4 files changed, 15 insertions(+), 166 deletions(-)
+ drivers/video/via/chip.h |    9 +---
+ drivers/video/via/dvi.c  |  107 +++++++++++++++++++++-------------------------
+ drivers/video/via/dvi.h  |    3 +-
+ drivers/video/via/hw.c   |   11 +----
+ 4 files changed, 55 insertions(+), 75 deletions(-)
 
 diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-index 474f428..52253d0 100644
+index 52253d0..8c06bd3 100644
 --- a/drivers/video/via/chip.h
 +++ b/drivers/video/via/chip.h
-@@ -146,7 +146,6 @@ struct tmds_setting_information {
- 	int refresh_rate;
- 	int get_dvi_size_method;
+@@ -107,7 +107,6 @@
+ struct tmds_chip_information {
+ 	int tmds_chip_name;
+ 	int tmds_chip_slave_addr;
+-	int dvi_panel_id;
+ 	int data_mode;
+ 	int output_interface;
+ 	int i2c_port;
+@@ -142,13 +141,9 @@ struct tmds_setting_information {
+ 	int iga_path;
+ 	int h_active;
+ 	int v_active;
+-	int bpp;
+-	int refresh_rate;
+-	int get_dvi_size_method;
  	int max_pixel_clock;
--	int dvi_panel_size;
- 	int dvi_panel_hres;
- 	int dvi_panel_vres;
- 	int native_size;
-@@ -160,7 +159,6 @@ struct lvds_setting_information {
- 	int refresh_rate;
- 	int get_lcd_size_method;
- 	int lcd_panel_id;
--	int lcd_panel_size;
- 	int lcd_panel_hres;
- 	int lcd_panel_vres;
- 	int display_method;
+-	int dvi_panel_hres;
+-	int dvi_panel_vres;
+-	int native_size;
++	int max_hres;
++	int max_vres;
+ };
+ 
+ struct lvds_setting_information {
 diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-index 92f7593..9cb261c 100644
+index 9cb261c..0e0852e 100644
 --- a/drivers/video/via/dvi.c
 +++ b/drivers/video/via/dvi.c
-@@ -23,9 +23,9 @@
+@@ -23,9 +23,10 @@
  static void tmds_register_write(int index, u8 data);
  static int tmds_register_read(int index);
  static int tmds_register_read_bytes(int index, u8 *buff, int buff_len);
--static int dvi_get_panel_size_from_DDCv1(void);
--static int dvi_get_panel_size_from_DDCv2(void);
--static unsigned char dvi_get_panel_info(void);
-+static void dvi_get_panel_size_from_DDCv1(void);
-+static void dvi_get_panel_size_from_DDCv2(void);
-+static void dvi_get_panel_info(void);
+-static void dvi_get_panel_size_from_DDCv1(void);
+-static void dvi_get_panel_size_from_DDCv2(void);
+-static void dvi_get_panel_info(void);
++static void dvi_get_panel_size_from_DDCv1(struct tmds_chip_information
++	*tmds_chip, struct tmds_setting_information *tmds_setting);
++static void dvi_get_panel_size_from_DDCv2(struct tmds_chip_information
++	*tmds_chip, struct tmds_setting_information *tmds_setting);
  static int viafb_dvi_query_EDID(void);
  
  static int check_tmds_chip(int device_id_subaddr, int device_id)
-@@ -314,18 +314,13 @@ static int viafb_dvi_query_EDID(void)
+@@ -36,23 +37,24 @@ static int check_tmds_chip(int device_id_subaddr, int device_id)
+ 		return FAIL;
+ }
+ 
+-void viafb_init_dvi_size(void)
++void viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
++	struct tmds_setting_information *tmds_setting)
+ {
+ 	DEBUG_MSG(KERN_INFO "viafb_init_dvi_size()\n");
+-	DEBUG_MSG(KERN_INFO
+-		"viaparinfo->tmds_setting_info->get_dvi_size_method %d\n",
+-		  viaparinfo->tmds_setting_info->get_dvi_size_method);
+ 
+-	switch (viaparinfo->tmds_setting_info->get_dvi_size_method) {
+-	case GET_DVI_SIZE_BY_SYSTEM_BIOS:
++	viafb_dvi_sense();
++	switch (viafb_dvi_query_EDID()) {
++	case 1:
++		dvi_get_panel_size_from_DDCv1(tmds_chip, tmds_setting);
+ 		break;
+-	case GET_DVI_SZIE_BY_HW_STRAPPING:
++	case 2:
++		dvi_get_panel_size_from_DDCv2(tmds_chip, tmds_setting);
+ 		break;
+-	case GET_DVI_SIZE_BY_VGA_BIOS:
+ 	default:
+-		dvi_get_panel_info();
++		printk(KERN_WARNING "viafb_init_dvi_size: DVI panel size undetected!\n");
+ 		break;
+ 	}
++
+ 	return;
+ }
+ 
+@@ -314,11 +316,9 @@ static int viafb_dvi_query_EDID(void)
  		return false;
  }
  
--/*
+-/* void dvi_get_panel_size_from_DDCv1(void)
 - *
-- * int dvi_get_panel_size_from_DDCv1(void)
-+/* void dvi_get_panel_size_from_DDCv1(void)
-  *
-  *     - Get Panel Size Using EDID1 Table
-- *
-- * Return Type:    int
-- *
-  */
--static int dvi_get_panel_size_from_DDCv1(void)
-+static void dvi_get_panel_size_from_DDCv1(void)
+- *     - Get Panel Size Using EDID1 Table
+- */
+-static void dvi_get_panel_size_from_DDCv1(void)
++/* Get Panel Size Using EDID1 Table */
++static void dvi_get_panel_size_from_DDCv1(struct tmds_chip_information
++	*tmds_chip, struct tmds_setting_information *tmds_setting)
  {
--	int i, max_h = 0, max_v = 0, tmp, restore;
-+	int i, max_h = 0, tmp, restore;
+ 	int i, max_h = 0, tmp, restore;
  	unsigned char rData;
- 	unsigned char EDID_DATA[18];
+@@ -326,8 +326,8 @@ static void dvi_get_panel_size_from_DDCv1(void)
  
-@@ -391,46 +386,23 @@ static int dvi_get_panel_size_from_DDCv1(void)
+ 	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv1 \n");
  
+-	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr;
+-	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = 0xA0;
++	restore = tmds_chip->tmds_chip_slave_addr;
++	tmds_chip->tmds_chip_slave_addr = 0xA0;
+ 
+ 	rData = tmds_register_read(0x23);
+ 	if (rData & 0x3C)
+@@ -373,8 +373,8 @@ static void dvi_get_panel_size_from_DDCv1(void)
+ 				/* The first two byte must be zero. */
+ 				if (EDID_DATA[3] == 0xFD) {
+ 					/* To get max pixel clock. */
+-					viaparinfo->tmds_setting_info->
+-					max_pixel_clock = EDID_DATA[9] * 10;
++					tmds_setting->max_pixel_clock =
++						EDID_DATA[9] * 10;
+ 				}
+ 			}
+ 			break;
+@@ -384,23 +384,31 @@ static void dvi_get_panel_size_from_DDCv1(void)
+ 		}
+ 	}
+ 
++	tmds_setting->max_hres = max_h;
  	switch (max_h) {
  	case 640:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_640X480;
++		tmds_setting->max_vres = 480;
  		break;
  	case 800:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_800X600;
++		tmds_setting->max_vres = 600;
  		break;
  	case 1024:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1024X768;
++		tmds_setting->max_vres = 768;
  		break;
  	case 1280:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1280X1024;
++		tmds_setting->max_vres = 1024;
  		break;
  	case 1400:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1400X1050;
++		tmds_setting->max_vres = 1050;
  		break;
  	case 1440:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1440X1050;
++		tmds_setting->max_vres = 1050;
  		break;
  	case 1600:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1600X1200;
++		tmds_setting->max_vres = 1200;
  		break;
  	case 1920:
--		if (max_v == 1200) {
--			viaparinfo->tmds_setting_info->dvi_panel_size =
--				VIA_RES_1920X1200;
--		} else {
--			viaparinfo->tmds_setting_info->dvi_panel_size =
--				VIA_RES_1920X1080;
--		}
- 
+-
++		tmds_setting->max_vres = 1080;
  		break;
  	default:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1024X768;
  		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d !\
- 					 set default panel size.\n", max_h);
- 		break;
-@@ -439,19 +411,13 @@ static int dvi_get_panel_size_from_DDCv1(void)
+@@ -409,72 +417,55 @@ static void dvi_get_panel_size_from_DDCv1(void)
+ 	}
+ 
  	DEBUG_MSG(KERN_INFO "DVI max pixelclock = %d\n",
- 		  viaparinfo->tmds_setting_info->max_pixel_clock);
- 	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
--	return viaparinfo->tmds_setting_info->dvi_panel_size;
+-		  viaparinfo->tmds_setting_info->max_pixel_clock);
+-	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
++		tmds_setting->max_pixel_clock);
++	tmds_chip->tmds_chip_slave_addr = restore;
  }
  
--/*
+-/* void dvi_get_panel_size_from_DDCv2(void)
 - *
-- * int dvi_get_panel_size_from_DDCv2(void)
-+/* void dvi_get_panel_size_from_DDCv2(void)
-  *
-  *     - Get Panel Size Using EDID2 Table
-- *
-- * Return Type:    int
-- *
-  */
--static int dvi_get_panel_size_from_DDCv2(void)
-+static void dvi_get_panel_size_from_DDCv2(void)
+- *     - Get Panel Size Using EDID2 Table
+- */
+-static void dvi_get_panel_size_from_DDCv2(void)
++/* Get Panel Size Using EDID2 Table */
++static void dvi_get_panel_size_from_DDCv2(struct tmds_chip_information
++	*tmds_chip, struct tmds_setting_information *tmds_setting)
  {
- 	int HSize = 0, restore;
+-	int HSize = 0, restore;
++	int restore;
  	unsigned char R_Buffer[2];
-@@ -468,56 +434,34 @@ static int dvi_get_panel_size_from_DDCv2(void)
  
- 	switch (HSize) {
+ 	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv2 \n");
+ 
+-	restore = viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr;
+-	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = 0xA2;
++	restore = tmds_chip->tmds_chip_slave_addr;
++	tmds_chip->tmds_chip_slave_addr = 0xA2;
+ 
+ 	/* Horizontal: 0x76, 0x77 */
+ 	tmds_register_read_bytes(0x76, R_Buffer, 2);
+-	HSize = R_Buffer[0];
+-	HSize += R_Buffer[1] << 8;
++	tmds_setting->max_hres = R_Buffer[0] + (R_Buffer[1] << 8);
+ 
+-	switch (HSize) {
++	switch (tmds_setting->max_hres) {
  	case 640:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_640X480;
++		tmds_setting->max_vres = 480;
  		break;
  	case 800:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_800X600;
++		tmds_setting->max_vres = 600;
  		break;
  	case 1024:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1024X768;
++		tmds_setting->max_vres = 768;
  		break;
  	case 1280:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1280X1024;
++		tmds_setting->max_vres = 1024;
  		break;
  	case 1400:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1400X1050;
++		tmds_setting->max_vres = 1050;
  		break;
  	case 1440:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1440X1050;
++		tmds_setting->max_vres = 1050;
  		break;
  	case 1600:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1600X1200;
++		tmds_setting->max_vres = 1200;
  		break;
  	default:
--		viaparinfo->tmds_setting_info->dvi_panel_size =
--			VIA_RES_1024X768;
  		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d!\
- 					set default panel size.\n", HSize);
+-					set default panel size.\n", HSize);
++			set default panel size.\n", tmds_setting->max_hres);
  		break;
  	}
  
- 	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
--	return viaparinfo->tmds_setting_info->dvi_panel_size;
- }
- 
--/*
-- *
-- * unsigned char dvi_get_panel_info(void)
-+/* unsigned char dvi_get_panel_info(void)
-  *
-  *     - Get Panel Size
-- *
-- * Return Type:    unsigned char
-  */
--static unsigned char dvi_get_panel_info(void)
-+static void dvi_get_panel_info(void)
- {
--	unsigned char dvipanelsize;
- 	DEBUG_MSG(KERN_INFO "dvi_get_panel_info! \n");
- 
- 	viafb_dvi_sense();
-@@ -531,12 +475,6 @@ static unsigned char dvi_get_panel_info(void)
- 	default:
- 		break;
- 	}
+-	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
+-}
 -
--	DEBUG_MSG(KERN_INFO "dvi panel size is %2d \n",
--		  viaparinfo->tmds_setting_info->dvi_panel_size);
--	dvipanelsize = (unsigned char)(viaparinfo->
--		tmds_setting_info->dvi_panel_size);
--	return dvipanelsize;
+-/* unsigned char dvi_get_panel_info(void)
+- *
+- *     - Get Panel Size
+- */
+-static void dvi_get_panel_info(void)
+-{
+-	DEBUG_MSG(KERN_INFO "dvi_get_panel_info! \n");
+-
+-	viafb_dvi_sense();
+-	switch (viafb_dvi_query_EDID()) {
+-	case 1:
+-		dvi_get_panel_size_from_DDCv1();
+-		break;
+-	case 2:
+-		dvi_get_panel_size_from_DDCv2();
+-		break;
+-	default:
+-		break;
+-	}
++	tmds_chip->tmds_chip_slave_addr = restore;
  }
  
  /* If Disable DVI, turn off pad */
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index e0ab605..3a83e5b 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -61,7 +61,7 @@ static struct _lcd_scaling_factor lcd_scaling_factor_CLE = {
+diff --git a/drivers/video/via/dvi.h b/drivers/video/via/dvi.h
+index 5ca2ffc..0dffcfd 100644
+--- a/drivers/video/via/dvi.h
++++ b/drivers/video/via/dvi.h
+@@ -57,7 +57,8 @@ int viafb_dvi_sense(void);
+ void viafb_dvi_disable(void);
+ void viafb_dvi_enable(void);
+ int viafb_tmds_trasmitter_identify(void);
+-void viafb_init_dvi_size(void);
++void viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
++	struct tmds_setting_information *tmds_setting);
+ void viafb_dvi_set_mode(struct VideoModeTable *videoMode, int mode_bpp,
+ 	int set_iga);
  
- static int check_lvds_chip(int device_id_subaddr, int device_id);
- static bool lvds_identify_integratedlvds(void);
--static int fp_id_to_vindex(int panel_id);
-+static void fp_id_to_vindex(int panel_id);
- static int lvds_register_read(int index);
- static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
- 		      int panel_vres);
-@@ -127,33 +127,24 @@ void viafb_init_lcd_size(void)
- 		break;
- 	case GET_LCD_SIZE_BY_VGA_BIOS:
- 		DEBUG_MSG(KERN_INFO "Get LCD Size method by VGA BIOS !!\n");
--		viaparinfo->lvds_setting_info->lcd_panel_size =
--		    fp_id_to_vindex(viafb_lcd_panel_id);
-+		fp_id_to_vindex(viafb_lcd_panel_id);
- 		DEBUG_MSG(KERN_INFO "LCD Panel_ID = %d\n",
- 			  viaparinfo->lvds_setting_info->lcd_panel_id);
--		DEBUG_MSG(KERN_INFO "LCD Panel Size = %d\n",
--			  viaparinfo->lvds_setting_info->lcd_panel_size);
- 		break;
- 	case GET_LCD_SIZE_BY_USER_SETTING:
- 		DEBUG_MSG(KERN_INFO "Get LCD Size method by user setting !!\n");
--		viaparinfo->lvds_setting_info->lcd_panel_size =
--		    fp_id_to_vindex(viafb_lcd_panel_id);
-+		fp_id_to_vindex(viafb_lcd_panel_id);
- 		DEBUG_MSG(KERN_INFO "LCD Panel_ID = %d\n",
- 			  viaparinfo->lvds_setting_info->lcd_panel_id);
--		DEBUG_MSG(KERN_INFO "LCD Panel Size = %d\n",
--			  viaparinfo->lvds_setting_info->lcd_panel_size);
- 		break;
- 	default:
- 		DEBUG_MSG(KERN_INFO "viafb_init_lcd_size fail\n");
- 		viaparinfo->lvds_setting_info->lcd_panel_id =
- 			LCD_PANEL_ID1_800X600;
--		viaparinfo->lvds_setting_info->lcd_panel_size =
--		    fp_id_to_vindex(LCD_PANEL_ID1_800X600);
-+		fp_id_to_vindex(LCD_PANEL_ID1_800X600);
- 	}
- 	viaparinfo->lvds_setting_info2->lcd_panel_id =
- 		viaparinfo->lvds_setting_info->lcd_panel_id;
--	viaparinfo->lvds_setting_info2->lcd_panel_size =
--		viaparinfo->lvds_setting_info->lcd_panel_size;
- 	viaparinfo->lvds_setting_info2->lcd_panel_hres =
- 		viaparinfo->lvds_setting_info->lcd_panel_hres;
- 	viaparinfo->lvds_setting_info2->lcd_panel_vres =
-@@ -250,7 +241,7 @@ int viafb_lvds_trasmitter_identify(void)
- 	return FAIL;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 726fbd1..1aa3bb2 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1911,9 +1911,6 @@ void viafb_update_device_setting(int hres, int vres,
+ 
+ 		viaparinfo->tmds_setting_info->h_active = hres;
+ 		viaparinfo->tmds_setting_info->v_active = vres;
+-		viaparinfo->tmds_setting_info->bpp = bpp;
+-		viaparinfo->tmds_setting_info->refresh_rate =
+-			vmode_refresh;
+ 
+ 		viaparinfo->lvds_setting_info->h_active = hres;
+ 		viaparinfo->lvds_setting_info->v_active = vres;
+@@ -1930,9 +1927,6 @@ void viafb_update_device_setting(int hres, int vres,
+ 		if (viaparinfo->tmds_setting_info->iga_path == IGA2) {
+ 			viaparinfo->tmds_setting_info->h_active = hres;
+ 			viaparinfo->tmds_setting_info->v_active = vres;
+-			viaparinfo->tmds_setting_info->bpp = bpp;
+-			viaparinfo->tmds_setting_info->refresh_rate =
+-				vmode_refresh;
+ 		}
+ 
+ 		if (viaparinfo->lvds_setting_info->iga_path == IGA2) {
+@@ -2031,9 +2025,8 @@ static void init_tmds_chip_info(void)
+ 
+ 	DEBUG_MSG(KERN_INFO "TMDS Chip = %d\n",
+ 		  viaparinfo->chip_info->tmds_chip_info.tmds_chip_name);
+-	viaparinfo->tmds_setting_info->get_dvi_size_method =
+-		GET_DVI_SIZE_BY_VGA_BIOS;
+-	viafb_init_dvi_size();
++	viafb_init_dvi_size(&viaparinfo->shared->chip_info.tmds_chip_info,
++		&viaparinfo->shared->tmds_setting_info);
  }
  
--static int fp_id_to_vindex(int panel_id)
-+static void fp_id_to_vindex(int panel_id)
- {
- 	DEBUG_MSG(KERN_INFO "fp_get_panel_id()\n");
- 
-@@ -266,7 +257,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID0_640X480;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_640X480;
- 		break;
- 	case 0x1:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 800;
-@@ -275,7 +265,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID1_800X600;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_800X600;
- 		break;
- 	case 0x2:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1024;
-@@ -284,7 +273,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID2_1024X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1024X768;
- 		break;
- 	case 0x3:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -293,7 +281,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID3_1280X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1280X768;
- 		break;
- 	case 0x4:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -302,7 +289,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID4_1280X1024;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1280X1024;
- 		break;
- 	case 0x5:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1400;
-@@ -311,7 +297,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID5_1400X1050;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1400X1050;
- 		break;
- 	case 0x6:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1600;
-@@ -320,7 +305,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID6_1600X1200;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1600X1200;
- 		break;
- 	case 0x8:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 800;
-@@ -329,7 +313,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_IDA_800X480;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_800X480;
- 		break;
- 	case 0x9:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1024;
-@@ -338,7 +321,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID2_1024X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1024X768;
- 		break;
- 	case 0xA:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1024;
-@@ -347,7 +329,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID2_1024X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1024X768;
- 		break;
- 	case 0xB:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1024;
-@@ -356,7 +337,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID2_1024X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1024X768;
- 		break;
- 	case 0xC:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -365,7 +345,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID3_1280X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1280X768;
- 		break;
- 	case 0xD:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -374,7 +353,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID4_1280X1024;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1280X1024;
- 		break;
- 	case 0xE:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1400;
-@@ -383,7 +361,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID5_1400X1050;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1400X1050;
- 		break;
- 	case 0xF:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1600;
-@@ -392,7 +369,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID6_1600X1200;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1600X1200;
- 		break;
- 	case 0x10:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1366;
-@@ -401,7 +377,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID7_1366X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1368X768;
- 		break;
- 	case 0x11:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1024;
-@@ -410,7 +385,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID8_1024X600;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1024X600;
- 		break;
- 	case 0x12:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -419,7 +393,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID3_1280X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1280X768;
- 		break;
- 	case 0x13:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -428,7 +401,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID9_1280X800;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_1280X800;
- 		break;
- 	case 0x14:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1360;
-@@ -437,7 +409,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_IDB_1360X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1360X768;
- 		break;
- 	case 0x15:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 1280;
-@@ -446,7 +417,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID3_1280X768;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 1;
- 		viaparinfo->lvds_setting_info->LCDDithering = 0;
--		return VIA_RES_1280X768;
- 		break;
- 	case 0x16:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 480;
-@@ -455,7 +425,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_IDC_480X640;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_480X640;
- 		break;
- 	default:
- 		viaparinfo->lvds_setting_info->lcd_panel_hres = 800;
-@@ -464,7 +433,6 @@ static int fp_id_to_vindex(int panel_id)
- 			LCD_PANEL_ID1_800X600;
- 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
- 		viaparinfo->lvds_setting_info->LCDDithering = 1;
--		return VIA_RES_800X600;
- 	}
- }
- 
-diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-index 7cd03e2..fad3d2d 100644
---- a/drivers/video/via/share.h
-+++ b/drivers/video/via/share.h
-@@ -43,61 +43,6 @@
- /* Video Memory Size */
- #define VIDEO_MEMORY_SIZE_16M    0x1000000
- 
--/* Definition Mode Index
--*/
--#define     VIA_RES_640X480                 	0
--#define     VIA_RES_800X600                 	1
--#define     VIA_RES_1024X768                	2
--#define     VIA_RES_1152X864                	3
--#define     VIA_RES_1280X1024               	4
--#define     VIA_RES_1600X1200               	5
--#define     VIA_RES_1440X1050               	6
--#define     VIA_RES_1280X768                	7
--#define     VIA_RES_1280X960                	8
--#define     VIA_RES_1920X1440               	9
--#define     VIA_RES_848X480                 	10
--#define     VIA_RES_1400X1050               	11
--#define     VIA_RES_720X480                 	12
--#define     VIA_RES_720X576                 	13
--#define     VIA_RES_1024X512                	14
--#define     VIA_RES_856X480                 	15
--#define     VIA_RES_1024X576                	16
--#define     VIA_RES_640X400                 	17
--#define     VIA_RES_1280X720                	18
--#define     VIA_RES_1920X1080               	19
--#define     VIA_RES_800X480                 	20
--#define     VIA_RES_1368X768                	21
--#define     VIA_RES_1024X600                	22
--#define     VIA_RES_1280X800                	23
--#define     VIA_RES_1680X1050               	24
--#define     VIA_RES_960X600			25
--#define     VIA_RES_1000X600               	26
--#define     VIA_RES_1088X612               	27
--#define     VIA_RES_1152X720               	28
--#define     VIA_RES_1200X720               	29
--#define     VIA_RES_1280X600               	30
--#define     VIA_RES_1360X768               	31
--#define     VIA_RES_1366X768               	32
--#define     VIA_RES_1440X900               	33
--#define     VIA_RES_1600X900               	34
--#define     VIA_RES_1600X1024              	35
--#define     VIA_RES_1792X1344              	36
--#define     VIA_RES_1856X1392              	37
--#define     VIA_RES_1920X1200              	38
--#define     VIA_RES_2048X1536              	39
--#define     VIA_RES_480X640                  	40
--
--/*Reduce Blanking*/
--#define     VIA_RES_1360X768_RB          	131
--#define     VIA_RES_1440X900_RB          	133
--#define     VIA_RES_1400X1050_RB        	111
--#define     VIA_RES_1600X900_RB          	134
--#define     VIA_RES_1680X1050_RB        	124
--#define     VIA_RES_1920X1080_RB        	119
--#define     VIA_RES_1920X1200_RB        	138
--
--#define     VIA_RES_INVALID                 	255
--
- /* standard VGA IO port
- */
- #define VIARMisc    0x3CC
+ static void init_lvds_chip_info(void)
 -- 
 1.6.3.2
 
