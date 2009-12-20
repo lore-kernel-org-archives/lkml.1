@@ -1,100 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbZLTTQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZLTTTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbZLTTQW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 14:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbZLTTQU
+	id S1755384AbZLTTTJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 14:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZLTTTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 14:16:20 -0500
-Received: from ns.hanzlici.cz ([212.158.159.56]:58816 "EHLO hanzlici.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754566AbZLTTQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 14:16:19 -0500
-Message-ID: <4B2E7841.6020203@hanzlici.cz>
-Date: Sun, 20 Dec 2009 20:17:21 +0100
-From: Frantisek Hanzlik <franta@hanzlici.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.9.1.7pre) Gecko/20091219 SeaMonkey/2.0.2pre
+	Sun, 20 Dec 2009 14:19:07 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:30393 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbZLTTTF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 14:19:05 -0500
+Subject: [PATCH 00/11] ACPI: early _PDC eval and unify x86/ia64
+To: venkatesh.pallipadi@intel.com, lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Sun, 20 Dec 2009 12:19:04 -0700
+Message-ID: <20091220190434.4274.67855.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: eparis@redhat.com
-Subject: Re: OOPS in inotify code, kernel 2.6.31.6-162.fc12.i686.PAE
-References: <4B2E1F1C.7000105@hanzlici.cz>
-In-Reply-To: <4B2E1F1C.7000105@hanzlici.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frantisek Hanzlik wrote:
-> Hello, when I tried incrond inotify daemon, I found this in system log:
->
-> Dec 20 05:20:03 franta kernel: ------------[ cut here ]------------
-> Dec 20 05:20:03 franta kernel: WARNING: at
-> fs/notify/inotify/inotify_fsnotify.c:129 idr_callback+0x32/0x56() (Not
-> tainted)
-> Dec 20 05:20:03 franta kernel: Hardware name: P5E-VM HDMI
-> Dec 20 05:20:03 franta kernel: inotify closing but id=0 for
-> entry=ed0b8900 in group=d657d600 still in idr. Probably leaking memory
-> Dec 20 05:20:03 franta kernel: Modules linked in: bluetooth rfkill hfs
-> hfsplus nls_utf8 fuse ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs
-> autofs4 nfs lock
-> d fscache nfs_acl auth_rpcgss sunrpc bridge stp llc cpufreq_ondemand
-> acpi_cpufreq dm_multipath kvm_intel kvm uinput snd_hda_codec_intelhdmi
-> snd_hda_codec_rea
-> ltek snd_hda_intel snd_hda_codec snd_hwdep snd_seq snd_seq_device
-> snd_pcm snd_timer firewire_ohci snd firewire_core crc_itu_t iTCO_wdt
-> soundcore iTCO_vendor_
-> support asus_atk0110 i2c_i801 snd_page_alloc atl1 serio_raw e100 mii
-> ata_generic pata_acpi pata_jmicron i915 drm_kms_helper drm i2c_algo_bit
-> i2c_core video o
-> utput [last unloaded: microcode]
-> Dec 20 05:20:03 franta kernel: Pid: 7426, comm: incrond Not tainted
-> 2.6.31.6-162.fc12.i686.PAE #1
-> Dec 20 05:20:03 franta kernel: Call Trace:
-> Dec 20 05:20:03 franta kernel: [<c043db1b>] warn_slowpath_common+0x70/0x87
-> Dec 20 05:20:03 franta kernel: [<c04edbfc>] ? idr_callback+0x32/0x56
-> Dec 20 05:20:03 franta kernel: [<c043db70>] warn_slowpath_fmt+0x29/0x2c
-> Dec 20 05:20:03 franta kernel: [<c04edbfc>] idr_callback+0x32/0x56
-> Dec 20 05:20:03 franta kernel: [<c059ce18>] idr_for_each+0x5c/0x97
-> Dec 20 05:20:03 franta kernel: [<c04edbca>] ? idr_callback+0x0/0x56
-> Dec 20 05:20:03 franta kernel: [<c04ec2b0>] ? fsnotify_put_event+0x48/0x4b
-> Dec 20 05:20:03 franta kernel: [<c04edbb9>]
-> inotify_free_group_priv+0x1a/0x2b
-> Dec 20 05:20:03 franta kernel: [<c04ec38f>]
-> fsnotify_final_destroy_group+0x1e/0x28
-> Dec 20 05:20:03 franta kernel: [<c04ec453>] fsnotify_put_group+0x75/0x78
-> Dec 20 05:20:03 franta kernel: [<c04edd71>] inotify_release+0x1e/0x28
-> Dec 20 05:20:03 franta kernel: [<c04c9bd7>] __fput+0xed/0x184
-> Dec 20 05:20:03 franta kernel: [<c04c9c86>] fput+0x18/0x1a
-> Dec 20 05:20:03 franta kernel: [<c04c7129>] filp_close+0x56/0x60
-> Dec 20 05:20:03 franta kernel: [<c043f480>] put_files_struct+0x5d/0xa1
-> Dec 20 05:20:03 franta kernel: [<c043f4f7>] exit_files+0x33/0x37
-> Dec 20 05:20:03 franta kernel: [<c0440c60>] do_exit+0x1cb/0x5da
-> Dec 20 05:20:03 franta kernel: [<c04410d5>] do_group_exit+0x66/0x8d
-> Dec 20 05:20:03 franta kernel: [<c0441114>] sys_exit_group+0x18/0x1c
-> Dec 20 05:20:03 franta kernel: [<c0408f9b>] sysenter_do_call+0x12/0x28
-> Dec 20 05:20:03 franta kernel: ---[ end trace bf2ba6f50ae90f71 ]---
-> Dec 20 05:20:03 franta kernel: entry->group=(null) inode=(null) wd=1024
-> Dec 20 05:20:08 franta abrt: Kerneloops: Reported 1 kernel oopses to Abrt
-> Dec 20 05:20:08 franta abrtd: Directory 'kerneloops-1261282808-1'
-> creation detected
-> Dec 20 05:20:08 franta abrtd: Getting local universal unique identification
-> Dec 20 05:20:08 franta abrtd: New crash, saving
-> Dec 20 05:20:08 franta abrtd: Activation of plugin 'RunApp' was not
-> successful: Plugin 'RunApp' is not registered
->
->
-> In addition to things above: System is Fedora 12 i686 linux, Core2 Duo
-> E8200, 4GB RAM,
-> ext4 fs on root (where I had inotify paths - they was somewhere under
-> /home/).
->
-> Or report to Fedora's bugzilla is more appropriate?
->
-> Thanks, Franta Hanzlik
+It was recently discovered that some BIOS implementations load
+dynamic SSDTs when a processor's _PDC method is evaluated.
 
-Sorry for noise, as I just see this bug is probably already reported by Tim Blechmann's
-mail "WARNING: at fs/notify/inotify/inotify_fsnotify.c:129" from 10 Dec 2009 21:39:00
-and hope solving by Eric Paris.
+In Linux, we do not evaluate _PDC until after we initialize the EC.
 
-Franta
+Unfortunately, that same BIOS references objects in the dynamic
+table during EC enablement. So we get undefined references to
+methods during enablement, and we fail to initialize certain pieces
+of hardware.
+
+Windows works just fine on this machine, so to me, this is a hint
+that Linux should be evaluating _PDC much earlier.
+
+The first patch in this series does just that and makes Linux
+more compatible with Windows' ACPI implementation.
+
+The remaining 10 patches unify the x86/ia64 implementations of
+calling _PDC. I noticed the two archs were way more similar than
+they were different, so I thought it made sense to combine them
+as much as possible.
+
+This patch series was built on both x86 and ia64 (checkpatch and
+sparse clean).
+
+It was also boot tested on an HP Envy 15 (x86) and an HP rx6600
+(ia64). It resolved the namespace failures on the Envy 15 and did
+not cause any regressions on the rx6600.
+
+This does introduce a boot time namespace walk for all the CPUs
+in the system, looking for and evaluating _PDC. Hopefully that
+will not make life miserable for the giant SGI clusters. If worse
+comes to worse, maybe we can quirk them and avoid the namespace
+walk.
+
+Thanks,
+/ac
+
+---
+
+Alex Chiang (11):
+      ACPI: processor: call _PDC early
+      ACPI: processor: introduce arch_has_acpi_pdc
+      ACPI: processor: unify arch_acpi_processor_init_pdc
+      ACPI: processor: factor out common _PDC settings
+      ACPI: processor: finish unifying arch_acpi_processor_init_pdc()
+      ACPI: processor: unify arch_acpi_processor_cleanup_pdc
+      ACPI: processor: introduce acpi_processor_alloc_pdc()
+      ACPI: processor: change acpi_processor_eval_pdc interface
+      ACPI: processor: open code acpi_processor_cleanup_pdc
+      ACPI: processor: change acpi_processor_set_pdc() interface
+      ACPI: processor: remove _PDC object list from struct acpi_processor
+
+
+ arch/ia64/include/asm/acpi.h      |    6 +
+ arch/ia64/kernel/Makefile         |    4 -
+ arch/ia64/kernel/acpi-processor.c |   85 -------------------
+ arch/x86/include/asm/acpi.h       |   26 ++++++
+ arch/x86/kernel/acpi/Makefile     |    2 
+ arch/x86/kernel/acpi/processor.c  |  101 -----------------------
+ drivers/acpi/Makefile             |    1 
+ drivers/acpi/bus.c                |    2 
+ drivers/acpi/internal.h           |    1 
+ drivers/acpi/processor_core.c     |   71 ----------------
+ drivers/acpi/processor_pdc.c      |  165 +++++++++++++++++++++++++++++++++++++
+ include/acpi/processor.h          |    8 +-
+ 12 files changed, 206 insertions(+), 266 deletions(-)
+ delete mode 100644 arch/ia64/kernel/acpi-processor.c
+ delete mode 100644 arch/x86/kernel/acpi/processor.c
+ create mode 100644 drivers/acpi/processor_pdc.c
+
