@@ -1,73 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZLTWer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZLTWuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZLTWer (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 17:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZLTWeq
+	id S1755215AbZLTWuJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 17:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZLTWuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 17:34:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45266 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857AbZLTWep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 17:34:45 -0500
-Date: Sun, 20 Dec 2009 22:33:36 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, sachinp@in.ibm.com,
-       jens.axboe@oracle.com, benh@kernel.crashing.org,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, sachinp@in.ibm.com,
-       jens.axboe@oracle.com, benh@kernel.crashing.org,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1261326987.4314.24.camel@laptop>
-References: <1261326987.4314.24.camel@laptop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Fix hotplug hang
-Message-ID: <tip-70f1120527797adb31c68bdc6f1b45e182c342c7@git.kernel.org>
-Git-Commit-ID: 70f1120527797adb31c68bdc6f1b45e182c342c7
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Sun, 20 Dec 2009 17:50:07 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:11122 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbZLTWuF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 17:50:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Fmg//Ul74a5EF5V5cmkC8st0cWRUEjxzXbeSywJdpUKOJ+Hh22MP/zmvjALMxnxZzk
+         ++Ah7wY6YryzN9pd4Fm7/44/kgyeYdzBAEeJT4o2tHTMlWsQnqp4ZApvb0p8Tg9OjH1A
+         DXX/1W9JKmjPfYiu0kfDiljGKA6fV8pSmskUs=
+Subject: Re: [PATCH 2/4] mfd: mc13783: When probing, unlock the mc13783
+ before subsystems initialisation.
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Samuel Ortiz <sameo@linux.intel.com>,
+       Sascha linux-arm <s.hauer@pengutronix.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+In-Reply-To: <20091220184941.GA13294@pengutronix.de>
+References: <1260808880.2022.98.camel@climbing-alby>
+	 <1260810776.2022.130.camel@climbing-alby>
+	 <1260811085.2022.135.camel@climbing-alby>
+	 <1261152746.3356.72.camel@climbing-alby>
+	 <20091219201816.GA28742@pengutronix.de>
+	 <1261316918.5224.15.camel@climbing-alby>
+	 <20091220184941.GA13294@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 20 Dec 2009 23:50:01 +0100
+Message-ID: <1261349401.5224.154.camel@climbing-alby>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  70f1120527797adb31c68bdc6f1b45e182c342c7
-Gitweb:     http://git.kernel.org/tip/70f1120527797adb31c68bdc6f1b45e182c342c7
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Sun, 20 Dec 2009 17:36:27 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 20 Dec 2009 23:31:23 +0100
+Hi Uwe,
 
-sched: Fix hotplug hang
+Il giorno dom, 20/12/2009 alle 19.49 +0100, Uwe Kleine-König ha scritto:
+> Hi Alberto,
+> 
+> On Sun, Dec 20, 2009 at 02:48:38PM +0100, Alberto Panizzo wrote:
+> > > > PATCH 1 & 2 are fixes that can go to .33
+> > > I don't like patch 1.  I'd prefer that drivers touching
+> > > MC13783_REG_POWER_MISCELLANEOUS are aware of the bit in question and
+> > > wouldn't rely on mc13783-core.
+> > 
+> > Yes, but MC13783_REG_POWER_MISCELLANEOUS contains bit that control
+> > different aspect of mc13783 chip.
+> > GPO are regulator related, but those two bits in question maybe 
+> > apply to a power management driver, so this problem is a matter
+> > of mc13783-core.
+> maybe?
+>  
+> > Another possible solution, is to trace the writings to those two bits
+> > in mc13783_reg_rmw storing the value written an reproducing it in next
+> > mc13783_reg_rmw calls.
+> > But the problem for this is that we don't know if the bootloader 
+> > had initialised those with another non default value.
+> > Another problem is that if another driver make use of 
+> > mc13783_reg_write for modifying those bits, the state stored will
+> > be inconsistent.
+> The next best thing I would consider acceptable are dedicated functions
+> for MC13783_REG_POWER_MISCELLANEOUS.  I havn't checked what the register
+> in question is used for, but I think the bootloader isn't generally a
+> problem as Linux shouldn't rely on things setup by the bootloader (apart
+> from the things described in
+> http://www.arm.linux.org.uk/developer/booting.php of course).  And I
+> don't see a problem for in-kernel users of mc13783_reg_write to modify
+> the register.  If the mc13783-API is changed that
+> MC13783_REG_POWER_MISCELLANEOUS must only be modified by using (say)
+> mc13783_powermisc_rmw() it's a (probably uncatched) bug to use
+> mc13783_reg_write.
 
-The hot-unplug kstopmachine usage does a wakeup after
-deactivating the cpu, hence we cannot use cpu_active()
-here but must rely on the good olde online.
+Thanks for your point of view. What I proposed is a functionality cut
+for mc13783 and I understand this.
 
-Reported-by: Sachin Sant <sachinp@in.ibm.com>
-Reported-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Tested-by: Jens Axboe <jens.axboe@oracle.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-LKML-Reference: <1261326987.4314.24.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+MC13783_REG_POWER_MISCELLANEOUS contain configuration bits for GPO's
+(two bits for everyone: "Enable" and "Controlled by Standby")
+those two Power Gates Enable and VIBPINCTRL that behave the same as the
+two Power Gates Enable.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 7ffde2a..87f1f47 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2346,7 +2346,7 @@ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
- 	 *   not worry about this generic constraint ]
- 	 */
- 	if (unlikely(!cpumask_test_cpu(cpu, &p->cpus_allowed) ||
--		     !cpu_active(cpu)))
-+		     !cpu_online(cpu)))
- 		cpu = select_fallback_rq(task_cpu(p), p);
- 
- 	return cpu;
+GPO's are considered as regulators by the present driver in the term 
+that they are thought to be used as external power supplies controllers.
+
+Power Gates behave light different: PWGTnDRV are digital output 
+controlled by hardware pins (PWGTnEN) and enabled (the hardware control)
+by those two bits.
+
+In this sense, can they be considered digital regulators too?
+
+If yes, they can be controlled in the regulator driver and there can
+be written a new mc13783_regulator_powermisc_rmw() function.
+
+In the i.MX31 PDK board PWGT1DRV controls the MCU power supply and
+PWGT2DRV control the L2 cache power supply. PWGTnEN are connected
+to the corresponding i.MX31 Power Management interface outputs
+in this way, in power saving mode, voltage for MCU is lowered at the
+minimum and L2 cache is turned off.
+
+> 
+> And patch 1 is definitly *not* material for .33, as there is currently
+> no user of MC13783_REG_POWER_MISCELLANEOUS in .33-rc1, so there is
+> nothing to fix.
+> 
+> Best regards
+> Uwe
+
+You are right, there is no directly user, what I thought to fix is
+the capability to enable / disable GPOs in the mc13783 that is a 
+existent functionality for the present .33 regulator driver.
+
+I must make much familiarity with the kernel developing process.
+
+Thanks a lot!
+Best regards
+Alberto!
+
+
