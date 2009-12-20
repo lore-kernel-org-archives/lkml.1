@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZLTXAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZLTXWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbZLTXAH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 18:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZLTXAB
+	id S1756149AbZLTXWc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 18:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZLTXWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 18:00:01 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:51328 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754286AbZLTXAA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 18:00:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type
-	:content-transfer-encoding; q=dns; s=sasl; b=Ld++2RGc0r3ZhKrBtzB
-	OxOcVdOQOlV7te5RBOMURtsRTdZj1J8pGyWo+ZHqYxCixDOdQnBEz8AsicWLKgjf
-	2HZgxbBqpq2sbAvtmP7eeXQdvtuVFsbWKKvazy6VniPOAju9un7+2tet4ClgZrjc
-	Gs3ilJYvaBuPPCvv1yQz8NxM=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] Git 1.6.6.rc4
-From: Junio C Hamano <gitster@pobox.com>
-Date: Sun, 20 Dec 2009 14:59:47 -0800
-Message-ID: <7vmy1d9rq4.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 20 Dec 2009 18:22:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55709 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755269AbZLTXWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 18:22:30 -0500
+Message-ID: <4B2EB216.6020909@redhat.com>
+Date: Sun, 20 Dec 2009 13:24:06 -1000
+From: Zachary Amsden <zamsden@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-X-Pobox-Relay-ID: 62804BF2-EDBB-11DE-A875-DC0DEE7EF46B-77302942!a-pb-sasl-quonix.pobox.com
-Content-Transfer-Encoding: 8BIT
+To: Avi Kivity <avi@redhat.com>
+CC: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KVM: SVM: Adjust tsc_offset only if tsc_unstable
+References: <1260789740-14847-1-git-send-email-joerg.roedel@amd.com> <4B2704B2.10709@redhat.com> <4B2DF597.6050106@redhat.com>
+In-Reply-To: <4B2DF597.6050106@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A release candidate Git 1.6.6.rc4 is available at the usual places
-for final testing:
+On 12/19/2009 11:59 PM, Avi Kivity wrote:
+> On 12/15/2009 05:38 AM, Zachary Amsden wrote:
+>> On 12/14/2009 01:22 AM, Joerg Roedel wrote:
+>>> The tsc_offset adjustment in svm_vcpu_load is executed
+>>> unconditionally even if Linux considers the host tsc as
+>>> stable. This causes a Linux guest detecting an unstable tsc
+>>> in any case.
+>>> This patch removes the tsc_offset adjustment if the host tsc
+>>> is stable. The guest will now get the benefit of a stable
+>>> tsc too.
+>>>
+>> Hi Joerg, I have a much more comprehensive series of patches to 
+>> address this issue, please take a look.
+>>
+>
+> Despite this, I've applied the patch to have this fix in while we 
+> review your patch set (haven't started yet, sorry - still recovering 
+> from nested vmx).
 
-  http://www.kernel.org/pub/software/scm/git/
+No worries, I can always re-base.  My patch set needs some other fixed 
+bits for sleep in C-states on Intel CPUs.
 
-  git-1.6.6.rc4.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.6.rc4.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.6.rc4.tar.{gz,bz2}		(preformatted docs)
+Choices are:
 
-The RPM binary packages for a few architectures are found in:
+1) do nothing; don't support these CPUs
+2) do nothing; don't support MWAIT based sleep into C3 on these CPUs, 
+force different idle routine
+3) resync the TSC on exit from C3
+4) don't use TSC here at all
 
-  testing/git-*-1.6.6.rc4-1.fc11.$arch.rpm	(RPM)
+If the wakeup time for a CPU needs to be fast, I prefer approach #2;
 
-Hopefully I'll do the final this Wednesday to make 1.6.6 a holiday gift to
-everybody.
+However, if the load is so low that we can drop to C3, then we can 
+consider the state of deep idle to be equivalent to bring a CPU down and 
+then back up, which is a problem we already know how to solve; this is 
+an argument for #3.
 
-I would very much prefer news outlets like kernelpodcast.org and lwn.net
-_not_ to say "... is released; it comes with many _fixes_".  Fixes to
-released versions have indeed been included in the 'master' branch, but
-they all appear in the maintenance release.  The main _point_ of using a
-new feature release like 1.6.6 is to get new _features_, so it is more
-appropriate to say "it comes with many new features."
+It is also pragmatic to suggest #4, now that there exists a patchset for 
+doing intercept based TSC virtualization.
 
-Thanks for all contributors who have worked hard to whip this release into
-shape.
-
-----------------------------------------------------------------
-
-Changes since v1.6.6-rc3 are as follows:
-
-Björn Gustavsson (1):
-      rebase -i: abort cleanly if the editor fails to launch
-
-Eric Wong (2):
-      git svn: make empty directory creation gc-aware
-      t9146: use 'svn_cmd' wrapper
-
-Junio C Hamano (1):
-      Git 1.6.6-rc4
-
-Stephen Boyd (2):
-      api-strbuf.txt: fix typos and document launch_editor()
-      technical-docs: document hash API
-
+Zach
