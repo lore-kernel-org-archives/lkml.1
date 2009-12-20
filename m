@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZLTAVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZLTAev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbZLTAVE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Dec 2009 19:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZLTAVB
+	id S1754753AbZLTAev (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Dec 2009 19:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZLTAet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Dec 2009 19:21:01 -0500
-Received: from mx75.mail.ru ([94.100.176.90]:64741 "EHLO mx75.mail.ru"
+	Sat, 19 Dec 2009 19:34:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36193 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbZLTAVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Dec 2009 19:21:00 -0500
-Date: Sun, 20 Dec 2009 03:26:10 +0300
-From: Nikolai ZHUBR <zhubr@mail.ru>
-Message-ID: <1059651918.20091220032610@mail.ru>
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re[3]: epoll'ing tcp sockets for reading
-In-reply-To: <alpine.DEB.2.00.0912191437530.4482@makko.or.mcafeemobile.com>
-References: <1257480306.20091219150206@mail.ru>
- <alpine.DEB.2.00.0912190953160.4482@makko.or.mcafeemobile.com>
- <203216314.20091220013854@mail.ru>
- <alpine.DEB.2.00.0912191437530.4482@makko.or.mcafeemobile.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754503AbZLTAes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Dec 2009 19:34:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
+Date: Sun, 20 Dec 2009 01:35:21 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912200053.45988.rjw@sisk.pl> <alpine.LFD.2.00.0912191557320.3712@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912191557320.3712@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam: Not detected
-X-Mras: Ok
+Message-Id: <200912200135.21477.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunday, December 20, 2009, 1:56:22 AM, Davide Libenzi wrote:
-[trim]
-> The kernel cannot make decisions based on something whose knowledge is 
-> userspace bound.
-I didn't mean that. I just meant it would be usefull to let the caller
-of epoll know also the size of data related to specific EPOLLIN event in
-some "atomic" manner immediately, because the kernel probably knows this
-size already.
-The same thing can approximately be "emulated" by requesting FIOREAD for
-all EPOLLIN-ready sockets just after epoll returns, before any other work.
-It just would look not very elegant IMHO.
+On Sunday 20 December 2009, Linus Torvalds wrote:
+> 
+> On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > Why would it be?
+> > 
+> > The embedded controller may depend on it.
+> 
+> Again, I say "why?"
+> 
+> Anything can be true. That doesn't _make_ everything true. There's no real 
+> reason why PnP/ACPI suspend/resume should really care.
+> 
+> We can try it. Not for 2.6.33, but by the 34 merge window maybe we'll have 
+> a patch-series that is ready to be tested, and that aggressively tries to 
+> do the devices that matter asynchronously.
 
-> What you define as "abstract/imprecise/overcomplicated" are simply 
-> decisions that you, as implementor of the upper layer protocol, have to 
-> take in order to implement your userspace code.
-> And I, personally, see nothing even close to be defined complicated in 
-> such code.
-> Whenever you're asking for an abstraction/API to implement a kind 
-> of software which exist in large quantities on a system, you've got to ask 
-> yourself how relevant such abstraction is at the end, if all the existing 
-> software have done w/out it.
-Ok, maybe that's what I should have asked at the first place. What would
-you recommend as a reference implementation showing clean, efficient,
-fail-safe usage of epoll with sockets?
-Actually I've been googling for about 2 weeks to find some, but the results
-are rather scarce and dubious.
+Yes, I'd like to have such a patch series for 2.6.34.
 
-Thank you!
+So far I've been able to confirm that doing serio+i8042, USB and ACPI battery
+asynchronously may give us significant time savings, especially during resume.
 
-Nikolai ZHUBR
+> So instead of you trying to make up some idiotic cross-device worries, 
+> just see if those worries have any actual background in reality. So far I 
+> haven't actually heard anything but "in theory, anything is possible", 
+> which is such a truism that it's not even worth voicing.
+> 
+> That said, I still get the feeling that we'd be even better off simply 
+> trying to avoid the whole keyboard reset entirely. Apparently we do it for 
+> a few HP laptops. It's entirely possible that we'd be better off simply 
+> not _doing_ the slow thing in the first place.
 
+That very well may be the case, but I'm not the right person to confirm or deny
+that.
 
-> - Davide
-
-
+Rafael
