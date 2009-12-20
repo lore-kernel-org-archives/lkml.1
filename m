@@ -1,58 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZLTVXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZLTVZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbZLTVXy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 16:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZLTVXx
+	id S1756182AbZLTVZU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 16:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZLTVZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 16:23:53 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:48344 "EHLO
+	Sun, 20 Dec 2009 16:25:18 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48357 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbZLTVXw (ORCPT
+	with ESMTP id S1755449AbZLTVZQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 16:23:52 -0500
-Date: Sun, 20 Dec 2009 21:23:40 +0000
+	Sun, 20 Dec 2009 16:25:16 -0500
+Date: Sun, 20 Dec 2009 21:25:15 +0000
 From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeff Layton <jlayton@redhat.com>, Jamie Lokier <jamie@shareable.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu
-Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
-	and file bind mounts (try #5)
-Message-ID: <20091220212340.GO18217@ZenIV.linux.org.uk>
-References: <1258998084-26797-1-git-send-email-jlayton@redhat.com> <m1my2cdhi3.fsf@fess.ebiederm.org> <20091123173616.75c3f600@tlielax.poochiereds.net> <20091123224948.GB5598@shareable.org> <20091123181545.05ad004d@tlielax.poochiereds.net> <20091216123143.GA15784@ZenIV.linux.org.uk> <20091220195903.GG23917@elf.ucw.cz> <20091220210404.GN18217@ZenIV.linux.org.uk> <20091220210619.GK23917@elf.ucw.cz>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs/compat_ioctl.c: fix build error when !BLOCK
+Message-ID: <20091220212515.GP18217@ZenIV.linux.org.uk>
+References: <1261344092-30700-1-git-send-email-a.beregalov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091220210619.GK23917@elf.ucw.cz>
+In-Reply-To: <1261344092-30700-1-git-send-email-a.beregalov@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 10:06:19PM +0100, Pavel Machek wrote:
-> > > Consider FD passing over unix socket. Passing R/O file descriptor to
-> > > the other task, then having the task write to the file is certainly bad.
-> > 
-> > You've omitted the "R/O file descriptor of a file that is writable for
-> > that other task" part...
-> 
-> That is 666 for the other task. But the other task can't access it due
-> to directory being 700 or something. Your fchdir() argument  does not
-> apply here.
+On Mon, Dec 21, 2009 at 12:21:32AM +0300, Alexander Beregalov wrote:
+> Fix this build error when CONFIG_BLOCK is not set.
+> fs/compat_ioctl.c:1604: error: 'SG_SET_TRANSFORM' undeclared
 
-*snort*
-
-What you are advocating is a very limited class of setups that might be
-usable for protecting files if not for the existing behaviour on a shitload
-of systems.
-
-The thing is, that class *is* very limited.  E.g. introduce links and it's
-fallen apart.  Introduce bindings and the same will happen.  Just try to
-extend it one level deeper and fchdir() will bite you, etc.  All of that
-is not dependent on procfs even being there.
-
-Access rights belong to file, not to a pathname (and there's no such thing
-as _the_ pathname of a file).
-
-I'd buy that as a minor QoI issue; as a security one - no way.
+Do you want that through VFS tree?  I'm going to send a bunch of assorted
+fixes tomorrow morning, so I can pass that one at the same time...
