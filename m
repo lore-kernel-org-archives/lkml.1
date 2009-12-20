@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZLTNua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbZLTOFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751655AbZLTNua (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 08:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZLTNu3
+	id S1752849AbZLTOFs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 09:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZLTOFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 08:50:29 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:64399 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbZLTNu2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 08:50:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=thrb/YqnbL0wbKLGI62GzuDUo5dzCUrB9MVRYVw7NkeVW9xxJ0PvnrttooIpqe3pXH
-         CjaDHA034PQrYU8bdGSCwYdMsA8CM0q2Zl7519URVIXS/RQeGEaEgGdMzOlFqV8J9r8L
-         ku1po0Qp8gDrtsU9wxu2bFs4NlsNG6Z1ctYxs=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86 boot
-Date: Sun, 20 Dec 2009 14:50:23 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc1-dirty; KDE/4.3.4; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>, Michal Marek <mmarek@suse.cz>,
-       Michael Guntsche <mike@it-loops.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>, mjt@tls.msk.ru
-References: <20091219233457.GA4288@trillian.comsick.at> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org>
-In-Reply-To: <20091220100344.GA6614@merkur.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912201450.23559.a.miskiewicz@gmail.com>
+	Sun, 20 Dec 2009 09:05:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54543 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751527AbZLTOFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 09:05:46 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+wl94ld6qwx4HgGA8qf2UMR3jKbSrBOJvU5WYIMF
+	gQ40nczFivyk42
+Subject: Re: [stable] Regression in 2.6.32.2: segfault on halt
+From: Mike Galbraith <efault@gmx.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Holger =?ISO-8859-1?Q?Hoffst=E4tte?= 
+	<holger.hoffstaette@googlemail.com>,
+       linux-kernel@vger.kernel.org, stable@vger.kernel.org
+In-Reply-To: <20091220130616.GC9719@1wt.eu>
+References: <pan.2009.12.19.15.10.48.851500@googlemail.com>
+	 <20091220054847.GF32739@1wt.eu> <4B2E10C6.7050304@googlemail.com>
+	 <20091220130616.GC9719@1wt.eu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 20 Dec 2009 15:05:38 +0100
+Message-Id: <1261317938.6105.24.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 of December 2009, Sam Ravnborg wrote:
-			\
-> -printf "%08x" $$dec_size |						\
-> +/usr/bin/printf "%08x" $$dec_size |						\
->  	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
->  )
+On Sun, 2009-12-20 at 14:06 +0100, Willy Tarreau wrote:
+> Hi Holger,
 > 
+> On Sun, Dec 20, 2009 at 12:55:50PM +0100, Holger Hoffstätte wrote:
+> > Willy Tarreau wrote:
+> > > On Sat, Dec 19, 2009 at 04:10:49PM +0100, Holger Hoffstaette wrote:
+> > >> After updating to 2.6.32.2 last night (using same config from .32.1) I
+> > >> noticed that "halt" now trips during shutdown and won't power the
+> > >> machine down any longer. This happens reproducibly on two completely
+> > >> different machines, so it looks like a generic problem and regression,
+> > >> since it did not happen in .32.1. Note that "reboot" works as expected -
+> > >> only "halt" crashes.
+> > > 
+> > > I have it working fine here. So your config helps to reproduce the issue.
+> > > Care to post it ?
+> > 
+> > Attached, if it matters. However I managed to find some time with a spare
+> > machine and always wanted to try bisect, so that's what I did - apparently
+> > successfully:
+> > 
+> > root>git bisect bad
+> > 37ed2d7007a65874850f3e357c095806c3756330 is the first bad commit
+> > commit 37ed2d7007a65874850f3e357c095806c3756330
+> > Author: Mike Galbraith <efault@gmx.de>
+> > Date:   Wed Nov 4 17:53:50 2009 +0100
+> > 
+> >     sched: Rate-limit newidle
+> 
+> Interesting, because I saw this one too while digging the patch preview
+> for the word "migration" which appeared in your trace. But these changes
+> did not look suspicious (no obvious invalid pointer dereference for
+> instance).
+> 
+> CCing Mike who may have an idea.
 
-Here printf is in /bin/ and not in /usr/bin.
+Thanks Willy.  No, no idea.  I can't see how this can possibly cause a
+crash, but will try building with his config to see what happens.
 
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+	-Mike
+
