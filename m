@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbZLTSKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLTSPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbZLTSKA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 13:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZLTSJ5
+	id S1755939AbZLTSPU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 13:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZLTSPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 13:09:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37390 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755840AbZLTSJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 13:09:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async suspend-resume patch w/ rwsems)
-Date: Sun, 20 Dec 2009 19:10:26 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912201210300.24162-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912201210300.24162-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Sun, 20 Dec 2009 13:15:19 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43863 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755480AbZLTSPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 13:15:18 -0500
+Date: Sun, 20 Dec 2009 19:17:25 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Joe Perches <joe@perches.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, San Mehat <san@google.com>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: sched: restore sanity
+Message-ID: <20091220191725.1799eab7@infradead.org>
+In-Reply-To: <1261329743.30458.179.camel@Joe-Laptop.home>
+References: <1261315437.4314.6.camel@laptop>
+	<20091220144925.GA19608@elte.hu>
+	<1261320715.4314.9.camel@laptop>
+	<236ccac0912200703g464912b1r421497ebf3b6ebc6@mail.gmail.com>
+	<236ccac0912200705i369d00d1v42603a00e92039b6@mail.gmail.com>
+	<1261322387.4314.22.camel@laptop>
+	<1261329743.30458.179.camel@Joe-Laptop.home>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912201910.26895.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 December 2009, Alan Stern wrote:
-> On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> > > It's too early to come to this sort of conclusion (i.e., that suspend
-> > > and resume react very differently to an asynchronous approach).  Unless
-> > > you have some definite _reason_ for thinking that resume will benefit
-> > > more than suspend, you shouldn't try to generalize so much from tests
-> > > on only two systems.
-> > 
-> > In fact I have one reason.  Namely, the things that drivers do on suspend and
-> > resume are evidently quite different and on these two systems I was able to
-> > test they apparently took different amounts of time to complete.
-> > 
-> > The very fact that on both systems resume is substantially longer than suspend,
-> > even if all devices are suspended and resumed synchronously, is quite
-> > interesting.
-> 
-> Yes, it is.  But it doesn't mean that suspend won't benefit from 
-> asynchronicity; it just means that the benefits might not be as large 
-> as they are for resume.
+On Sun, 20 Dec 2009 09:22:23 -0800
+Joe Perches <joe@perches.com> wrote:
 
-Agreed, although that rises the question whether they are sufficiently
-significant.  I guess time will tell.  With the i8042 done asynchronously they
-are IMO.
+> What are the negatives of using pr_<level>?
 
-BTW, what's the right place to call device_enable_async_suspend() for USB
-devices?
+pr_ is really just for "I am a driver and want a single line message
+out in a standardized format".
+Nothing wrong with that.
 
-Rafael
+But here you are changing fundamental kernel outputs in the style of an
+oops message. Multiline, complex and machine parsed things...
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
