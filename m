@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbZLTRW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbZLTR1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755770AbZLTRW2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbZLTRW0
+	id S1755694AbZLTR1t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZLTR1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:22:26 -0500
-Received: from mail.perches.com ([173.55.12.10]:1315 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752906AbZLTRWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:22:25 -0500
-Subject: Re: sched: restore sanity
-From: Joe Perches <joe@perches.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: San Mehat <san@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1261322387.4314.22.camel@laptop>
-References: <1261315437.4314.6.camel@laptop>
-	 <20091220144925.GA19608@elte.hu> <1261320715.4314.9.camel@laptop>
-	 <236ccac0912200703g464912b1r421497ebf3b6ebc6@mail.gmail.com>
-	 <236ccac0912200705i369d00d1v42603a00e92039b6@mail.gmail.com>
-	 <1261322387.4314.22.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 20 Dec 2009 09:22:23 -0800
-Message-ID: <1261329743.30458.179.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Dec 2009 12:27:48 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:63220 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbZLTR1r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 12:27:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=F+DnoXlt/DRq8aq7SFs4W+DyaUF8UWqiJG5LAEM5wlPMU3D46aNYxmeJ0iiZtKUrF5
+         qvJSmmjjQDkYXAmHfyots/6bJuiRMHMKRLTrhOIGfXMomg1o6t0O45GRJqAJ9BilhqiS
+         oRNUrgek31S5yy70cZCNU4dNq1L1Szcw+x1YM=
+MIME-Version: 1.0
+Date: Sun, 20 Dec 2009 18:27:45 +0100
+Message-ID: <8db1092f0912200927y7cdab36ftd1f73d56cd89763f@mail.gmail.com>
+Subject: [2.6.33-rc1] [SOUND] HDA: high cpu usage, noise
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org, perex@perex.cz, tiwai@suse.de,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-20 at 16:19 +0100, Peter Zijlstra wrote:
-> On Sun, 2009-12-20 at 07:05 -0800, San Mehat wrote:
-> > >> Probably, but the rest is just as annoying, pr_* is crap.
-> > Oh? Out of curiosity whats wrong with it?
-> That's what should be asked of printk().
+Hi
 
-pr_<level> offers some things printk cannot:
+Affected kernel: 2.6.33-rc1
+Last known good: 2.6.32
 
-o standardization, eliminates frequent missing KERN_ levels
-  and missing/typo/misspelled module prefixes  
-o visually shorter, fewer chars used, less 80 char wrapping
-o finer grained ability to eliminate unnecessary messages
-  for embedded systems
-o standardized mechanism to prefix messages with module/function
-o eventual code reduction via use of a singleton instead of
-  duplicated module/function names
-o eventual dynamic_debug styled control of prefix by
-  module/function
+Hadware:
+/proc/asound/pcm
+00-00: AD198x Analog : AD198x Analog : playback 1 : capture 1
+00-06: Si3054 Modem : Si3054 Modem : playback 1 : capture 1
 
-There are quite of number of arbitrarily named module wrapper
-macros and functions that build on printk.
+I notice high cpu load during idle/playing sounds. From "ps aux":
 
-Standardizing them around a fewer number of prefixes would
-ease grepping for logging.
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root      1119 26.4  0.0      0     0 ?        R    18:09   1:47 [hd-audio0]
 
-A standardized logging function to filter messages by
-bitmask or level could also be useful. 
+Also I hear noise, during (probably) disk I/O operations. Any suggestions?
 
-> We try to stick to ANSI-C as much as possible, we've got
-> kalloc,kfree,strcmp,strnlen and all the other 'regular' C bits,
-> deviating from that serves no purpose but seed confusion.
+cat /proc/interrupts
+           CPU0       CPU1
+  0:      58385          0   IO-APIC-edge      timer
+  1:         77        201   IO-APIC-edge      i8042
+  8:          1          0   IO-APIC-edge      rtc0
+  9:         67        117   IO-APIC-fasteoi   acpi
+ 12:        157      14303   IO-APIC-edge      i8042
+ 14:       1625          0   IO-APIC-edge      ata_piix
+ 15:          0          0   IO-APIC-edge      ata_piix
+ 16:       1115          0   IO-APIC-fasteoi   i915@pci:0000:00:02.0, eth0
+ 18:          0          0   IO-APIC-fasteoi   yenta, uhci_hcd:usb4
+ 19:          1          0   IO-APIC-fasteoi   ohci1394, uhci_hcd:usb5
+ 20:        146          2   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+ 21:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 27:       4013      10861   PCI-MSI-edge      ahci
+ 28:       3452          0   PCI-MSI-edge      iwl3945
+ 29:    1556997          0   PCI-MSI-edge      HDA Intel
+NMI:          0          0   Non-maskable interrupts
+LOC:      16143      35244   Local timer interrupts
+SPU:          0          0   Spurious interrupts
+PMI:          0          0   Performance monitoring interrupts
+PND:          0          0   Performance pending work
+RES:      27154     126864   Rescheduling interrupts
+CAL:         59         34   Function call interrupts
+TLB:        899        748   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+THR:          0          0   Threshold APIC interrupts
+MCE:          0          0   Machine check exceptions
+MCP:          1          1   Machine check polls
+ERR:          0
+MIS:          0
 
-There is a lot of kernel code that isn't 'regular' C.
+Config, dmesg and lspci:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc1/gumis/
 
-Nothing in pr_<level> is not ANSI-C, it just builds on printk.
-
-> But I feel this has no place in the core kernel at all, esp when its
-> getting in the way of things without offering a single benefit.
-
-What are the negatives of using pr_<level>?
-
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
