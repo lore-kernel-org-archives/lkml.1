@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZLTTa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbZLTTak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbZLTTa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 14:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZLTTa1
+	id S1756140AbZLTTak (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 14:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZLTTac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 14:30:27 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:23661 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754276AbZLTTaY (ORCPT
+	Sun, 20 Dec 2009 14:30:32 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:4359 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754661AbZLTTaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 14:30:24 -0500
-Subject: [PATCH v2 00/11] ACPI: early _PDC eval and unify x86/ia64
+	Sun, 20 Dec 2009 14:30:30 -0500
+Subject: [PATCH v2 01/11] ACPI: processor: call _PDC early
 To: venkatesh.pallipadi@intel.com, lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Sun, 20 Dec 2009 12:30:23 -0700
-Message-ID: <20091220192731.5545.20582.stgit@bob.kio>
+       linux-kernel@vger.kernel.org, ming.m.lin@intel.com
+Date: Sun, 20 Dec 2009 12:30:28 -0700
+Message-ID: <20091220193028.5545.171.stgit@bob.kio>
+In-Reply-To: <20091220192731.5545.20582.stgit@bob.kio>
+References: <20091220192731.5545.20582.stgit@bob.kio>
 User-Agent: StGit/0.15
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,82 +27,308 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extreme apologies, but I had a mailer hiccup and totally botched
-the first attempt at mailing this series.
+We discovered that at least one machine (HP Envy), methods in the DSDT
+attempt to call external methods defined in a dynamically loaded SSDT.
 
-Please disregard that earlier attempt.
+Unfortunately, the DSDT methods we are trying to call are part of the
+EC initialization, which happens very early, and the the dynamic SSDT
+is only loaded when a processor _PDC method runs much later.
 
-v1 -> v2:
-	- no changes to patches; only fixed mail addresses
+This results in namespace lookup errors for the (as of yet) undefined
+methods.
 
-It was recently discovered that some BIOS implementations load
-dynamic SSDTs when a processor's _PDC method is evaluated.
+Since Windows doesn't have any issues with this machine, we take it
+as a hint that they must be evaluating _PDC much earlier than we are.
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=14824
-	http://bugzilla.kernel.org/show_bug.cgi?id=14710
+Thus, the proper thing for Linux to do should be to match the Windows
+implementation more closely.
 
-In Linux, we do not evaluate _PDC until after we initialize the EC.
+Provide a mechanism to call _PDC before we enable the EC. Doing so loads
+the dynamic tables, and allows the EC to be enabled correctly.
 
-Unfortunately, that same BIOS references objects in the dynamic
-table during EC enablement. So we get undefined references to
-methods during enablement, and we fail to initialize certain pieces
-of hardware.
+The ACPI processor driver will still evaluate _PDC in its .add() method
+to cover the hotplug case.
 
-Windows works just fine on this machine, so to me, this is a hint
-that Linux should be evaluating _PDC much earlier.
+Resolves: http://bugzilla.kernel.org/show_bug.cgi?id=14824
 
-The first patch in this series does just that and makes Linux
-more compatible with Windows' ACPI implementation.
-
-The remaining 10 patches unify the x86/ia64 implementations of
-calling _PDC. I noticed the two archs were way more similar than
-they were different, so I thought it made sense to combine them
-as much as possible.
-
-This patch series was built on both x86 and ia64 (checkpatch and
-sparse clean).
-
-It was also boot tested on an HP Envy 15 (x86) and an HP rx6600
-(ia64). It resolved the namespace failures on the Envy 15 and did
-not cause any regressions on the rx6600.
-
-This does introduce a boot time namespace walk for all the CPUs
-in the system, looking for and evaluating _PDC. Hopefully that
-will not make life miserable for the giant SGI clusters. If worse
-comes to worse, maybe we can quirk them and avoid the namespace
-walk.
-
-
+Cc: ming.m.lin@intel.com
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
-Alex Chiang (11):
-      ACPI: processor: call _PDC early
-      ACPI: processor: introduce arch_has_acpi_pdc
-      ACPI: processor: unify arch_acpi_processor_init_pdc
-      ACPI: processor: factor out common _PDC settings
-      ACPI: processor: finish unifying arch_acpi_processor_init_pdc()
-      ACPI: processor: unify arch_acpi_processor_cleanup_pdc
-      ACPI: processor: introduce acpi_processor_alloc_pdc()
-      ACPI: processor: change acpi_processor_eval_pdc interface
-      ACPI: processor: open code acpi_processor_cleanup_pdc
-      ACPI: processor: change acpi_processor_set_pdc() interface
-      ACPI: processor: remove _PDC object list from struct acpi_processor
-
-
- arch/ia64/include/asm/acpi.h      |    6 +
- arch/ia64/kernel/Makefile         |    4 -
- arch/ia64/kernel/acpi-processor.c |   85 -------------------
- arch/x86/include/asm/acpi.h       |   26 ++++++
- arch/x86/kernel/acpi/Makefile     |    2 
- arch/x86/kernel/acpi/processor.c  |  101 -----------------------
- drivers/acpi/Makefile             |    1 
- drivers/acpi/bus.c                |    2 
- drivers/acpi/internal.h           |    1 
- drivers/acpi/processor_core.c     |   71 ----------------
- drivers/acpi/processor_pdc.c      |  165 +++++++++++++++++++++++++++++++++++++
- include/acpi/processor.h          |    8 +-
- 12 files changed, 206 insertions(+), 266 deletions(-)
- delete mode 100644 arch/ia64/kernel/acpi-processor.c
- delete mode 100644 arch/x86/kernel/acpi/processor.c
+ drivers/acpi/Makefile         |    1 
+ drivers/acpi/bus.c            |    2 +
+ drivers/acpi/internal.h       |    1 
+ drivers/acpi/processor_core.c |   69 --------------------------
+ drivers/acpi/processor_pdc.c  |  108 +++++++++++++++++++++++++++++++++++++++++
+ include/acpi/processor.h      |    3 +
+ 6 files changed, 115 insertions(+), 69 deletions(-)
  create mode 100644 drivers/acpi/processor_pdc.c
+
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index c7b10b4..66cc3f3 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -32,6 +32,7 @@ acpi-$(CONFIG_ACPI_SLEEP)	+= proc.o
+ #
+ acpi-y				+= bus.o glue.o
+ acpi-y				+= scan.o
++acpi-y				+= processor_pdc.o
+ acpi-y				+= ec.o
+ acpi-$(CONFIG_ACPI_DOCK)	+= dock.o
+ acpi-y				+= pci_root.o pci_link.o pci_irq.o pci_bind.o
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 65f7e33..0bdf24a 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -888,6 +888,8 @@ static int __init acpi_bus_init(void)
+ 		goto error1;
+ 	}
+ 
++	acpi_early_processor_set_pdc();
++
+ 	/*
+ 	 * Maybe EC region is required at bus_scan/acpi_get_devices. So it
+ 	 * is necessary to enable it as early as possible.
+diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
+index 074cf86..cb28e05 100644
+--- a/drivers/acpi/internal.h
++++ b/drivers/acpi/internal.h
+@@ -43,6 +43,7 @@ int acpi_power_transition(struct acpi_device *device, int state);
+ extern int acpi_power_nocheck;
+ 
+ int acpi_wakeup_device_init(void);
++void acpi_early_processor_set_pdc(void);
+ 
+ /* --------------------------------------------------------------------------
+                                   Embedded Controller
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index 4173123..a19a4ff 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -124,29 +124,6 @@ static const struct file_operations acpi_processor_info_fops = {
+ 
+ DEFINE_PER_CPU(struct acpi_processor *, processors);
+ struct acpi_processor_errata errata __read_mostly;
+-static int set_no_mwait(const struct dmi_system_id *id)
+-{
+-	printk(KERN_NOTICE PREFIX "%s detected - "
+-		"disabling mwait for CPU C-states\n", id->ident);
+-	idle_nomwait = 1;
+-	return 0;
+-}
+-
+-static struct dmi_system_id __cpuinitdata processor_idle_dmi_table[] = {
+-	{
+-	set_no_mwait, "IFL91 board", {
+-	DMI_MATCH(DMI_BIOS_VENDOR, "COMPAL"),
+-	DMI_MATCH(DMI_SYS_VENDOR, "ZEPTO"),
+-	DMI_MATCH(DMI_PRODUCT_VERSION, "3215W"),
+-	DMI_MATCH(DMI_BOARD_NAME, "IFL91") }, NULL},
+-	{
+-	set_no_mwait, "Extensa 5220", {
+-	DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies LTD"),
+-	DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
+-	DMI_MATCH(DMI_PRODUCT_VERSION, "0100"),
+-	DMI_MATCH(DMI_BOARD_NAME, "Columbia") }, NULL},
+-	{},
+-};
+ 
+ /* --------------------------------------------------------------------------
+                                 Errata Handling
+@@ -277,45 +254,6 @@ static int acpi_processor_errata(struct acpi_processor *pr)
+ }
+ 
+ /* --------------------------------------------------------------------------
+-                              Common ACPI processor functions
+-   -------------------------------------------------------------------------- */
+-
+-/*
+- * _PDC is required for a BIOS-OS handshake for most of the newer
+- * ACPI processor features.
+- */
+-static int acpi_processor_set_pdc(struct acpi_processor *pr)
+-{
+-	struct acpi_object_list *pdc_in = pr->pdc;
+-	acpi_status status = AE_OK;
+-
+-
+-	if (!pdc_in)
+-		return status;
+-	if (idle_nomwait) {
+-		/*
+-		 * If mwait is disabled for CPU C-states, the C2C3_FFH access
+-		 * mode will be disabled in the parameter of _PDC object.
+-		 * Of course C1_FFH access mode will also be disabled.
+-		 */
+-		union acpi_object *obj;
+-		u32 *buffer = NULL;
+-
+-		obj = pdc_in->pointer;
+-		buffer = (u32 *)(obj->buffer.pointer);
+-		buffer[2] &= ~(ACPI_PDC_C_C2C3_FFH | ACPI_PDC_C_C1_FFH);
+-
+-	}
+-	status = acpi_evaluate_object(pr->handle, "_PDC", pdc_in, NULL);
+-
+-	if (ACPI_FAILURE(status))
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-		    "Could not evaluate _PDC, using legacy perf. control...\n"));
+-
+-	return status;
+-}
+-
+-/* --------------------------------------------------------------------------
+                               FS Interface (/proc)
+    -------------------------------------------------------------------------- */
+ 
+@@ -825,9 +763,7 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 	}
+ 
+ 	/* _PDC call should be done before doing anything else (if reqd.). */
+-	arch_acpi_processor_init_pdc(pr);
+ 	acpi_processor_set_pdc(pr);
+-	arch_acpi_processor_cleanup_pdc(pr);
+ 
+ #ifdef CONFIG_CPU_FREQ
+ 	acpi_processor_ppc_has_changed(pr, 0);
+@@ -1145,11 +1081,6 @@ static int __init acpi_processor_init(void)
+ 	if (!acpi_processor_dir)
+ 		return -ENOMEM;
+ #endif
+-	/*
+-	 * Check whether the system is DMI table. If yes, OSPM
+-	 * should not use mwait for CPU-states.
+-	 */
+-	dmi_check_system(processor_idle_dmi_table);
+ 	result = cpuidle_register_driver(&acpi_idle_driver);
+ 	if (result < 0)
+ 		goto out_proc;
+diff --git a/drivers/acpi/processor_pdc.c b/drivers/acpi/processor_pdc.c
+new file mode 100644
+index 0000000..b416c32
+--- /dev/null
++++ b/drivers/acpi/processor_pdc.c
+@@ -0,0 +1,108 @@
++#include <linux/dmi.h>
++
++#include <acpi/acpi_drivers.h>
++#include <acpi/processor.h>
++
++#include "internal.h"
++
++#define PREFIX			"ACPI: "
++#define _COMPONENT		ACPI_PROCESSOR_COMPONENT
++ACPI_MODULE_NAME("processor_pdc");
++
++static int set_no_mwait(const struct dmi_system_id *id)
++{
++	printk(KERN_NOTICE PREFIX "%s detected - "
++		"disabling mwait for CPU C-states\n", id->ident);
++	idle_nomwait = 1;
++	return 0;
++}
++
++static struct dmi_system_id __cpuinitdata processor_idle_dmi_table[] = {
++	{
++	set_no_mwait, "IFL91 board", {
++	DMI_MATCH(DMI_BIOS_VENDOR, "COMPAL"),
++	DMI_MATCH(DMI_SYS_VENDOR, "ZEPTO"),
++	DMI_MATCH(DMI_PRODUCT_VERSION, "3215W"),
++	DMI_MATCH(DMI_BOARD_NAME, "IFL91") }, NULL},
++	{
++	set_no_mwait, "Extensa 5220", {
++	DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies LTD"),
++	DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
++	DMI_MATCH(DMI_PRODUCT_VERSION, "0100"),
++	DMI_MATCH(DMI_BOARD_NAME, "Columbia") }, NULL},
++	{},
++};
++
++/*
++ * _PDC is required for a BIOS-OS handshake for most of the newer
++ * ACPI processor features.
++ */
++static int acpi_processor_eval_pdc(struct acpi_processor *pr)
++{
++	struct acpi_object_list *pdc_in = pr->pdc;
++	acpi_status status = AE_OK;
++
++	if (!pdc_in)
++		return status;
++	if (idle_nomwait) {
++		/*
++		 * If mwait is disabled for CPU C-states, the C2C3_FFH access
++		 * mode will be disabled in the parameter of _PDC object.
++		 * Of course C1_FFH access mode will also be disabled.
++		 */
++		union acpi_object *obj;
++		u32 *buffer = NULL;
++
++		obj = pdc_in->pointer;
++		buffer = (u32 *)(obj->buffer.pointer);
++		buffer[2] &= ~(ACPI_PDC_C_C2C3_FFH | ACPI_PDC_C_C1_FFH);
++
++	}
++	status = acpi_evaluate_object(pr->handle, "_PDC", pdc_in, NULL);
++
++	if (ACPI_FAILURE(status))
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++		    "Could not evaluate _PDC, using legacy perf. control.\n"));
++
++	return status;
++}
++
++void acpi_processor_set_pdc(struct acpi_processor *pr)
++{
++	arch_acpi_processor_init_pdc(pr);
++	acpi_processor_eval_pdc(pr);
++	arch_acpi_processor_cleanup_pdc(pr);
++}
++EXPORT_SYMBOL_GPL(acpi_processor_set_pdc);
++
++static acpi_status
++early_init_pdc(acpi_handle handle, u32 lvl, void *context, void **rv)
++{
++	struct acpi_processor pr;
++
++	pr.handle = handle;
++
++	/* x86 implementation looks at pr.id to determine some
++	 * CPU capabilites. We can just hard code to 0 since we're
++	 * assuming the CPUs in the system are homogenous and all
++	 * have the same capabilities.
++	 */
++	pr.id = 0;
++
++	acpi_processor_set_pdc(&pr);
++
++	return AE_OK;
++}
++
++void acpi_early_processor_set_pdc(void)
++{
++	/*
++	 * Check whether the system is DMI table. If yes, OSPM
++	 * should not use mwait for CPU-states.
++	 */
++	dmi_check_system(processor_idle_dmi_table);
++
++	acpi_walk_namespace(ACPI_TYPE_PROCESSOR, ACPI_ROOT_OBJECT,
++			    ACPI_UINT32_MAX,
++			    early_init_pdc, NULL, NULL, NULL);
++}
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 29245c6..a1b748a 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -325,6 +325,9 @@ static inline int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+ 
+ #endif				/* CONFIG_CPU_FREQ */
+ 
++/* in processor_pdc.c */
++void acpi_processor_set_pdc(struct acpi_processor *pr);
++
+ /* in processor_throttling.c */
+ int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
+ int acpi_processor_get_throttling_info(struct acpi_processor *pr);
 
