@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbZLTK3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZLTKdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbZLTK3K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 05:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZLTK3J
+	id S1753579AbZLTKdd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 05:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZLTKdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 05:29:09 -0500
-Received: from 1wt.eu ([62.212.114.60]:52824 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752990AbZLTK3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 05:29:07 -0500
-Date: Sun, 20 Dec 2009 11:28:57 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Michal Marek <mmarek@suse.cz>, Michael Guntsche <mike@it-loops.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, mjt@tls.msk.ru
-Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86 boot
-Message-ID: <20091220102857.GG32739@1wt.eu>
-References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091220100344.GA6614@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.11
+	Sun, 20 Dec 2009 05:33:32 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64404 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753283AbZLTKdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 05:33:31 -0500
+Message-ID: <4B2DFD08.9010507@cn.fujitsu.com>
+Date: Sun, 20 Dec 2009 18:31:36 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/1] perf record: We should fork only if a program was
+ specified to run
+References: <1261168944-6615-1-git-send-email-acme@infradead.org>
+In-Reply-To: <1261168944-6615-1-git-send-email-acme@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 11:03:44AM +0100, Sam Ravnborg wrote:
-> We use ... printf \x ... when calculating the size of the
-> compressed kernel.
-> Unfortunately dash built-in printf does not support this notation
-> resulting in a non-bootable kernel.
+
+
+Arnaldo Carvalho de Melo wrote:
+> From: Arnaldo Carvalho de Melo <acme@redhat.com>
 > 
-> Fix this by always using the external version of printf.
+> IOW: Now 'perf record -a' works, this was a bug introduced in:
+> 
+> 856e96608a72412d319e498a3a7c557571f811bd
+> "perf record: Properly synchronize child creation"
+> 
 
-Do we really want to workaround shells bugs ? I mean, either
-the shell correctly implements the printf function or it does
-not at all so that the correct printf is found in the path.
-"man printf" clearly states that \x is supported, so what
-should be fixed is the shell's implementation of printf.
+Sorry, i not noticed this patch and also send a patch to fix this bug,
+See:
+	http://lkml.org/lkml/2009/12/20/7
 
-The more absolute paths we specify, the less portable the
-build system. And if linking /bin/sh to whatever shell works
-but linking it to dash breaks, it's a shell bug.
+please ignore my patch.
 
-Willy
-
+Thanks,
+Xiao
