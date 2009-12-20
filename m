@@ -1,164 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZLTXbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZLTXud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZLTXbn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 18:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZLTXbm
+	id S1756199AbZLTXud (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 18:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZLTXub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 18:31:42 -0500
-Received: from host013.keli.cz ([77.48.235.13]:39681 "EHLO host013.keli.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754482AbZLTXbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 18:31:41 -0500
-Message-ID: <4B2EB3BC.6030900@titera.eu>
-Date: Mon, 21 Dec 2009 00:31:08 +0100
-From: =?UTF-8?B?UGV0ciBUaXTEm3Jh?= <petr@titera.eu>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Wrong atime on recent kernels
-References: <4B26AB7E.9020208@titera.eu>	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>	 <4B29494B.4010305@titera.eu>	 <1261020388.7245.27.camel@localhost.localdomain>	 <4B2A1051.9010808@century.cz> <1261106021.3466.76.camel@localhost.localdomain> <4B2EA55C.4030406@titera.eu>
-In-Reply-To: <4B2EA55C.4030406@titera.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sun, 20 Dec 2009 18:50:31 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:30278 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755515AbZLTXu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 18:50:28 -0500
+Subject: Re: [PATCH 0/12] pci: update pci bridge resources
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+In-Reply-To: <4B2BEC0E.3050909@kernel.org>
+References: <4B2BEC0E.3050909@kernel.org>
+Content-Type: text/plain
+Date: Sun, 20 Dec 2009 16:44:32 -0700
+Message-Id: <1261352672.26429.41.camel@dc7800.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Titěra napsal(a):
-> john stultz napsal(a):
->> On Thu, 2009-12-17 at 12:04 +0100, Petr TitĂ�ďż˝ra wrote:
->>> john stultz napsal(a):
->>>> On Wed, 2009-12-16 at 21:55 +0100, Petr TitĂ�ďż˝ra wrote:
->>>>> john stultz napsal(a):
->>>>>> 2009/12/14 Petr TitĂ�ďż˝ra <petr@titera.eu>:
->>>>>>> Hello,
->>>>>>>
->>>>>>> I see some strange file modification times recently. It seems to me
->>>>>>> that in some situations, kernel allows to set nanoseconds part 
->>>>>>> of file
->>>>>>> access, modification or change time to 100000000 ns. Problem 
->>>>>>> seems to be in
->>>>>>> some generic part of kernel because I see it on several different
->>>>>>> filesysytems (ext4 and nilf2). These is I've got during my 
->>>>>>> testing on kernel
->>>>>>> 2.6.32-tip-08309-gad8e75a.
->>>>>>>
->>>>>>> File: `./Documentation/dvb/contributors.txt'
->>>>>>> Size: 3035 Blocks: 8 IO Block: 4096 regular file
->>>>>>> Device: fe04h/65028d Inode: 818 Links: 1
->>>>>>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
->>>>>>> Access: 2009-12-14 10:29:04.1000000000 +0100
->>>>>>> Modify: 2009-12-14 10:29:04.1000000000 +0100
->>>>>>> Change: 2009-12-14 10:29:04.1000000000 +0100
->>>>>>>
->>>>>>> See that all times of that file ends with 1e6 nanoseconds.
->>>>> I did not test reverting this patch yet, because I did not find
->>>>> reliable way how to reproduce these strange modify times. But as I
->>>>> read your description. Would it be possible that if there would be 
->>>>> bug
->>>>> in your patch i would be observer on mostly quiet system? I'm asking
->>>>> because full day of testing of the system under load did not produce
->>>>> any result, but then when I tried to run "find / | xargs stat" on 
->>>>> idle
->>>>> system I've got several new instances of wrong access time 
->>>>> (filesystem
->>>>> is mounted without noatime)
->>>> Another quick question:
->>>>
->>>> What is the normal behavior you see when this issue is not cropping 
->>>> up?
->>>>
->>>> Do you normally see all 0's in the ns field? Or do you expect to 
->>>> see an
->>>> actual ns value?
->>>>
->>> Sorry to reply again. Previous message did not get to list:
->>>
->>> I see values which seems to be ns times there. My root filesystem is 
->>> ext4 too (recently I do not remeber if I formated it from scratch 
->>> when I reinstalled that system) but I see this happen on other 
->>> filesystems too
->>>
->>> Root filesystem (ext4 may be converted from ext3)
->>>
->>> File: `/etc/sysconfig'
->>> Size: 4096 Blocks: 8 IO Block: 4096 directory
->>> Device: fe00h/65024d Inode: 65282 Links: 7
->>> Access: (0755/drwxr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
->>> Access: 2009-12-16 21:14:00.172000000 +0100
->>> Modify: 2009-12-12 11:01:48.1000000000 +0100
->>> Change: 2009-12-12 11:01:48.1000000000 +0100
->>> File: `/etc/sysconfig/prelink'
->>> Size: 1459 Blocks: 8 IO Block: 4096 regular file
->>> Device: fe00h/65024d Inode: 22706 Links: 1
->>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
->>> Access: 2009-12-14 10:27:46.912000002 +0100
->>> Modify: 2004-11-23 11:43:08.000000000 +0100
->>> Change: 2009-12-08 22:57:24.656000002 +0100
->>> File: `/etc/sysconfig/i18n'
->>> Size: 47 Blocks: 8 IO Block: 4096 regular file
->>> Device: fe00h/65024d Inode: 48962 Links: 1
->>> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
->>> Access: 2010-08-27 18:07:21.500013018 +0200
->>> Modify: 2009-06-22 23:33:43.113581313 +0200
->>> Change: 2009-06-22 23:58:39.936318201 +0200
->>
->> So I'm not reproducing this with 2.6.33-rc1 on a fresh ext4 partition on
->> x68_64.
->>
->> File: `virt'
->> Size: 4096 Blocks: 8 IO Block: 4096 directory
->> Device: 804h/2052d Inode: 1868440 Links: 3
->> Access: (0755/drwxr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
->> Access: 2009-12-17 21:22:44.692710730 -0500
->> Modify: 2009-12-17 20:14:40.000000000 -0500
->> Change: 2009-12-17 21:20:21.001915208 -0500
->> File: `vmlinux'
->> Size: 21122497 Blocks: 24136 IO Block: 4096 regular file
->> Device: 804h/2052d Inode: 1874435 Links: 1
->> Access: (0755/-rwxr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
->> Access: 2009-12-17 21:22:05.381691121 -0500
->> Modify: 2009-12-17 21:22:05.376691754 -0500
->> Change: 2009-12-17 21:22:05.376691754 -0500
->> File: `vmlinux.o'
->> Size: 16701780 Blocks: 32624 IO Block: 4096 regular file
->> Device: 804h/2052d Inode: 1874418 Links: 1
->> Access: (0644/-rw-r--r--) Uid: ( 0/ root) Gid: ( 0/ root)
->> Access: 2009-12-17 21:22:01.138228732 -0500
->> Modify: 2009-12-17 21:22:01.131229619 -0500
->> Change: 2009-12-17 21:22:01.131229619 -0500
->>
->>
->> Let me know if you find anything that helps narrow this down.
->>
-> Hello,
->
-> I know its far fetched, but is there something what is preventing 
-> xtime.tv_nsec to be exactly 999999999 near the end of update_wall_time 
-> in kernel/time/timekeeping.c?
->
-> Petr
->
+On Fri, 2009-12-18 at 12:54 -0800, Yinghai Lu wrote:
+> this patche set is trying to update pci bridge BAR when that BAR is big enough.
+> 
+> default it is disabled.
+> 
+> could use pci=try=2 to enable it.
 
-Just to follow up. I'm asking because I see a lot of files with access 
-and/or modify times near the top of thousanth of second (see 
-`/etc/sysconfig/prelink' in my example) and I thing that addition of 1 
-to xtime.tv_nsec ath the end of update_wall_time can 'owerflow' to whole 
-second.
+Thanks for posting this as a nice new series.  It was getting hard to
+figure out what went where.
 
-Petr
->
->> thanks
->> -john
->>
->>
->>
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at http://www.tux.org/lkml/
+I think you mean "when the BAR is *not* big enough."  And strictly
+speaking, I think you're concerned with the bridge *window*, which isn't
+actually a bridge BAR.
+
+I don't like the new "pci=try=2" parameter.  Linux should be smart
+enough to do the right thing without requiring the user to do something
+special.  Using a parameter to enable the new code makes it feel like
+"here's some new functionality, but I'm not sure it's safe enough for
+everybody to use, so try this parameter if you need it."
+
+The result is that the new code will be rarely used and poorly tested,
+yet it remains a burden to all future PCI maintainers, who will have to
+understand it and try not to break it.
+
+Can you please put the "-v2"-type comments about your development
+history in the [0/n] email?  They are useful while reviewing the
+different versions, but they don't need to be in the commit logs.
+
+Also, some of the patches in this series have "-v2" in subject, others
+have "-v3", others have nothing.  It's easier to follow development of
+the series if the version applies to the series as a whole, not to
+individual patches.  The version doesn't need to be on the patch subject
+line, because that will go into the commit log, where it won't be
+relevant.  Tools like stgit put it where it will be automatically
+discarded, e.g., "[PATCH -v2 x/n]"
+
+Bjorn
 
