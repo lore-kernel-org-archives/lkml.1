@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZLTLi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbZLTLkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbZLTLi7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 06:38:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZLTLi6
+	id S1753965AbZLTLkG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 06:40:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZLTLkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 06:38:58 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:37253 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751442AbZLTLi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 06:38:58 -0500
-Message-ID: <4B2E0CCF.7050509@msgid.tls.msk.ru>
-Date: Sun, 20 Dec 2009 14:38:55 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Sun, 20 Dec 2009 06:40:05 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48678 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751550AbZLTLkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 06:40:01 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B2E0CFB.30806@s5r6.in-berlin.de>
+Date: Sun, 20 Dec 2009 12:39:39 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Johannes Stezenbach <js@sig21.net>
-CC: Sam Ravnborg <sam@ravnborg.org>, Michael Guntsche <mike@it-loops.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, mmarek@suse.cz
-Subject: Re: 2.6.33-rc1 Reboot right after bootloader
-References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091019.GA20246@sig21.net> <4B2DFEB7.4080507@msgid.tls.msk.ru> <4B2E062C.1040106@msgid.tls.msk.ru>
-In-Reply-To: <4B2E062C.1040106@msgid.tls.msk.ru>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=804465C5
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Jay Fenlason <fenlason@redhat.com>
+Subject: On "ratelimit: Use per ratelimit context locking"
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev ?????:
-> Michael Tokarev wrote:
-> []
->> So now I don't know what to do.  According to the standard, there's
->> no utility that will work here. ;)  Maybe the attached (together
->> with 4a2ff67c88211026afcbdbc190c13f705dae1b59) will make everyone happy?
-> 
-> --- a/scripts/Makefile.lib.orig	2009-12-19 18:36:01.944153109 +0300
-> +++ a/scripts/Makefile.lib	2009-12-20 13:36:04.014530573 +0300
-> @@ -215,6 +215,6 @@
->  	dec_size=$$(expr $$dec_size + $$fsize);				\
->  done;									\
-> -printf "%08x" $$dec_size |						\
-> -	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
-> +printf "%012o" $$dec_size |						\
-> +	sed 's/\(...\)\(...\)\(...\)\(...\)/\\\\4\\\\3\\\\2\\\\1/g'	\
->  )
-> 
-> Apparently that does not work with dash either.  It produces \4\3\2\1:
-..
-..because one pair of backslashes are missing before each digit, should be:
+Hi Ingo,
 
-+	sed 's/\(...\)\(...\)\(...\)\(...\)/\\\\\\4\\\\\\3\\\\\\2\\\\\\1/g'	\
+in pre 2.6.33-rc1 commit 979f693d you wrote: "I'd like to use
+printk_ratelimit() in atomic context, but that's not possible right now
+due to the spinlock usage this commit introduced more than a year ago:
+717115e: printk ratelimiting rewrite".¹,²
 
-But that still does not work, because a byte does not correspond to 3
-octal characters, that's why it was hexadecimal...
+By not possible, do you mean it would be an outright bug to call
+printk_ratelimit in atomic context prior to 979f693d, or merely a
+performance issue?  If the former, under which circumstances would the
+bug hit?
 
-/mjt
+I'm asking because one of my commits actually introduced a
+printk_ratelimit use in an interrupt handler shortly before 2.6.32 was
+released.  In my testing, it didn't occur to me that there might be a
+problem.
+
+¹http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=979f693def9084a452846365dfde5dcb28366333
+²http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=717115e1a5856b57af0f71e1df7149108294fc10
+-- 
+Stefan Richter
+-=====-==--= ==-- =-=--
+http://arcgraph.de/sr/
