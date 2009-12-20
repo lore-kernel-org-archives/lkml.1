@@ -1,91 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZLTRx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZLTRyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbZLTRx2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 12:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbZLTRx1
+	id S1755599AbZLTRyI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 12:54:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZLTRyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 12:53:27 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:42628 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbZLTRx0 convert rfc822-to-8bit (ORCPT
+	Sun, 20 Dec 2009 12:54:06 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:52678 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755634AbZLTRyA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 12:53:26 -0500
+	Sun, 20 Dec 2009 12:54:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BTrnwRcqD3sTmt6pj9aiNL3SlHGGGmzuLJzNW5XjfJqMzZIsXQy3K2Z4je5m5efxSR
-         f98YFjAg9dyw0aeUhfhanAVQsJzvXsaBnQLNkr75Rig9O4SVCCq8l9t5Hy6jx5eMQ0VK
-         BbHXGGbdoltK5XRWIOKGRYInhgWKjTudxkzpk=
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=XqQw1Tkm8MR7fgF0AL6tgagCiywNIOonzOKoSzAW2MoCwWnCam7b8YbWQutqJJcfJO
+         Dv217kXrDQLHUgAGd67/PYVVsaWHccdojvXChQVgTMNSvG5h47lInhQZEsxqY+3F6apj
+         nkbBLtjU9opFcWiB0BXhaqAfnozfiQRobHSnc=
 MIME-Version: 1.0
-In-Reply-To: <64bb37e0912191154n4a7ea5benbb3da57f1aabdbe6@mail.gmail.com>
-References: <alpine.LFD.2.00.0912171745160.15740@localhost.localdomain>
-	 <64bb37e0912191154n4a7ea5benbb3da57f1aabdbe6@mail.gmail.com>
-Date: Sun, 20 Dec 2009 18:53:24 +0100
-Message-ID: <64bb37e0912200953j2046a935n2f9ecd2cdfed780f@mail.gmail.com>
-Subject: Re: Linux 2.6.33-rc1
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Borislav Petkov <borislav.petkov@amd.com>
+In-Reply-To: <20091218030056.GC3047@heat>
+References: <20091217.225856.145758950057800056.mrs@deli>
+	 <20091218030056.GC3047@heat>
+Date: Sun, 20 Dec 2009 17:53:58 +0000
+X-Google-Sender-Auth: df0e82076352a4e5
+Message-ID: <fb69ef3c0912200953x2546f03cs5a88c9a54fd750ee@mail.gmail.com>
+Subject: Re: [PATCH] Security: Add prctl(PR_{GET,SET}_NETWORK) interface.
+From: Mark Seaborn <mrs@mythic-beasts.com>
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 19, 2009 at 8:54 PM, Torsten Kaiser
-<just.for.lkml@googlemail.com> wrote:
-> [    5.061998] EDAC MC: Ver: 2.1.0 Dec 18 2009
-> [    5.062186] EDAC amd64_edac:  Ver: 3.3.0 Dec 18 2009
-> [    5.062235] EDAC amd64: ECC is enabled by BIOS.
-> [    5.062297] EDAC amd64: ECC is enabled by BIOS.
-> [    5.128332] EDAC MC: Rev F or later detected
-> [    5.134186] EDAC amd64: amd64_read_mc_registers: error reading F2x190.
-> [    5.142290] EDAC amd64: amd64_read_mc_registers: error reading F2x194.
-> [    5.150355] EDAC MC: DCT0 chip selects:
-> [    5.150357] EDAC MC:  0:   512MB 1:   512MB
-> [    5.150358] EDAC MC:  2:     0MB 3:     0MB
-> [    5.150361] EDAC MC:  4:     0MB 5:     0MB
-> [    5.150362] EDAC MC:  6:     0MB 7:     0MB
-> [    5.150519] EDAC MC0: Giving out device to 'amd64_edac' 'RevF': DEV
-> 0000:00:18.2
-> [    5.150522] EDAC MC: Rev F or later detected
-> [    5.150530] EDAC amd64: amd64_read_mc_registers: error reading F2x190.
-> [    5.150532] EDAC amd64: amd64_read_mc_registers: error reading F2x194.
-> [    5.150533] EDAC MC: DCT0 chip selects:
-> [    5.150535] EDAC MC:  0:   512MB 1:   512MB
-> [    5.150536] EDAC MC:  2:     0MB 3:     0MB
-> [    5.150537] EDAC MC:  4:     0MB 5:     0MB
-> [    5.150539] EDAC MC:  6:     0MB 7:     0MB
-> [    5.150664] EDAC MC1: Giving out device to 'amd64_edac' 'RevF': DEV
-> 0000:00:19.2
-> [    5.150742] EDAC PCI0: Giving out device to module 'amd64_edac'
-> controller 'EDAC PCI
->  controller': DEV '0000:00:18.2' (POLLED)
+On Fri, Dec 18, 2009 at 3:00 AM, Michael Stone <michael@laptop.org> wrote:
+
+> @Eric, Mark: regarding ptrace()-ing from network-disabled processes: I agree
+> that this functionality is critical and I have altered the
+> __ptrace_may_access() check to support it.
+> The new rule I propose is equivalent to the rule I used in ptrace_set_network()
+> and is similar to the rule that Eric proposed earlier this afternoon. I now
+> propose:
 >
-> The system has 4x 1GB RAM sticks (2 on each CPU).
+>  "You may ptrace() any process that has all the network restrictions you do."
+>
+> This should take care of your use of strace without bending anything else into
+> an unnatural shape.
 
-After reading the code in drivers/edac/amd64_edac.c and the
-documentation in the AMD reference doc (#32559, I have Rev. 3.08) the
-bug is, that the current code does not try to differentiate between
-the 64bit and the 128bit mode.
-In the doc the sizes for the 64bit mode in table 10, section 4.5.8.1
-are identical to the table ddr2_dbam in amd64_edac.c.
-But for the 128bit mode the table 11 should be used, there the sizes
-are doubled.
+I am in two minds about this.  On the one hand, it adds the
+flexibility that I asked for.  On the other hand, it is a more
+complicated rule to have fixed in the kernel.
 
-The code uses the bit 11 (named F10_WIDTH_128 in amd64_edac.h) of the
-lower DRAM configuration register to determine the number of channels
-in k8_early_channel_count(), but this is not used in
-amd64_debug_display_dimm_sizes()
+It still seems wrong to me that the disable-networking flag should
+affect ptrace() at all.
 
-> And there is no line like 'EDAC PCI0' for the DRAM controller of the
-> second CPU (19.2). Is that normal?
+The reason is that the disable-networking flag is not useful on its
+own.  Anyone who uses it will use it in combination with some other
+authority-limiting mechanism.  They will already have a story for how
+to prevent sandboxed processes with interfering with other processes
+via ptrace(), kill(), writing to ~/.bashrc, etc.  There's no point in
+disabling network access for a process if it has full access to your
+home directory and can cause programs to be run with your full
+authority as a user.
 
-amd64_edac_init() calls amd64_init_2nd_stage() for each northbrigde,
-but amd64_setup_pci_device() only once.
+So if there is already a way to control access to ptrace(), we
+shouldn't add another check to the kernel's access control rules.
+They are complicated enough already.
 
-But from looking at the code, I can't see if a second device is needed or not.
 
-Torsten
+On ad-hocness: I am very much in favour of providing unprivileged
+mechanisms for switching off sources of ambient authority.  But it
+does not seem very useful to provide an unprivileged mechanism to
+switch off network access if there is no unprivileged mechanism for
+switching off access to the filesystem namespace, which is usually a
+more important source of authority.  Maybe we should solve both
+problems?
+
+Cheers,
+Mark
