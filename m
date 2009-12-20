@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZLTT3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZLTTa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbZLTT3m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 14:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbZLTT3l
+	id S1756086AbZLTTa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 14:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZLTTa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 14:29:41 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:60272 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754465AbZLTT3k (ORCPT
+	Sun, 20 Dec 2009 14:30:27 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:23661 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276AbZLTTaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 14:29:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=R9EVRK7BBR7RpoNn4EaIDGJKdl5KM+ubWlW8pmBAD2lS09se0Hy8l3Fi7t056QgiXj
-         joH4tSz4hvjQ6KyewvcA/GVKmVfh470vOhyqsjh0njSFOMqb3ARfijSnYMIqtV3s88Xn
-         2yIivQw/xI5MiyTQxz33VtiRoxCoxmmqLNGeE=
-Message-ID: <4B2E7B21.4070907@gmail.com>
-Date: Sun, 20 Dec 2009 13:29:37 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Sun, 20 Dec 2009 14:30:24 -0500
+Subject: [PATCH v2 00/11] ACPI: early _PDC eval and unify x86/ia64
+To: venkatesh.pallipadi@intel.com, lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Sun, 20 Dec 2009 12:30:23 -0700
+Message-ID: <20091220192731.5545.20582.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-To: jidanni@jidanni.org
-CC: 561764@bugs.debian.org, linux-kernel@vger.kernel.org,
-       561229@bugs.debian.org
-Subject: Re: Bug#561764: some warnings fly off screen and are not saved in
- any file
-References: <87skb5zgri.fsf@jidanni.org>
-In-Reply-To: <87skb5zgri.fsf@jidanni.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/20/2009 11:39 AM, jidanni@jidanni.org wrote:
-> OK, via
-> $ zcat /boot/initrd.img-2.6.32-trunk-686|strings|less
-> I think I found one of the messages I saw:
-> SYSFS{}= will be removed in a future udev version
-> which is in /sbin/udevadm ... bug #561229 perhaps.
->
-> However, what I'm saying is "how bad it is that there be any messages
-> that fly off the screen at boot and are not also 'remembered into some
-> log file' one can read later?".
->
-> Either remember all messages into those /var/log/ files, or remember
-> none. Remembering 95% makes one think that they see all of them.
->
-> There is some step so early in the boot process that recording has not
-> been turned on yet. That step is making error messages that fly off the
-> screen... with only one small laptop one is not going to be able to see these
-> messages. One should not be required to attach other equipment to see them.
+Extreme apologies, but I had a mailer hiccup and totally botched
+the first attempt at mailing this series.
 
-Not sure why this is CCed to LKML, the kernel isn't responsible for 
-logging anything to files..
+Please disregard that earlier attempt.
+
+v1 -> v2:
+	- no changes to patches; only fixed mail addresses
+
+It was recently discovered that some BIOS implementations load
+dynamic SSDTs when a processor's _PDC method is evaluated.
+
+	http://bugzilla.kernel.org/show_bug.cgi?id=14824
+	http://bugzilla.kernel.org/show_bug.cgi?id=14710
+
+In Linux, we do not evaluate _PDC until after we initialize the EC.
+
+Unfortunately, that same BIOS references objects in the dynamic
+table during EC enablement. So we get undefined references to
+methods during enablement, and we fail to initialize certain pieces
+of hardware.
+
+Windows works just fine on this machine, so to me, this is a hint
+that Linux should be evaluating _PDC much earlier.
+
+The first patch in this series does just that and makes Linux
+more compatible with Windows' ACPI implementation.
+
+The remaining 10 patches unify the x86/ia64 implementations of
+calling _PDC. I noticed the two archs were way more similar than
+they were different, so I thought it made sense to combine them
+as much as possible.
+
+This patch series was built on both x86 and ia64 (checkpatch and
+sparse clean).
+
+It was also boot tested on an HP Envy 15 (x86) and an HP rx6600
+(ia64). It resolved the namespace failures on the Envy 15 and did
+not cause any regressions on the rx6600.
+
+This does introduce a boot time namespace walk for all the CPUs
+in the system, looking for and evaluating _PDC. Hopefully that
+will not make life miserable for the giant SGI clusters. If worse
+comes to worse, maybe we can quirk them and avoid the namespace
+walk.
+
+
+---
+
+Alex Chiang (11):
+      ACPI: processor: call _PDC early
+      ACPI: processor: introduce arch_has_acpi_pdc
+      ACPI: processor: unify arch_acpi_processor_init_pdc
+      ACPI: processor: factor out common _PDC settings
+      ACPI: processor: finish unifying arch_acpi_processor_init_pdc()
+      ACPI: processor: unify arch_acpi_processor_cleanup_pdc
+      ACPI: processor: introduce acpi_processor_alloc_pdc()
+      ACPI: processor: change acpi_processor_eval_pdc interface
+      ACPI: processor: open code acpi_processor_cleanup_pdc
+      ACPI: processor: change acpi_processor_set_pdc() interface
+      ACPI: processor: remove _PDC object list from struct acpi_processor
+
+
+ arch/ia64/include/asm/acpi.h      |    6 +
+ arch/ia64/kernel/Makefile         |    4 -
+ arch/ia64/kernel/acpi-processor.c |   85 -------------------
+ arch/x86/include/asm/acpi.h       |   26 ++++++
+ arch/x86/kernel/acpi/Makefile     |    2 
+ arch/x86/kernel/acpi/processor.c  |  101 -----------------------
+ drivers/acpi/Makefile             |    1 
+ drivers/acpi/bus.c                |    2 
+ drivers/acpi/internal.h           |    1 
+ drivers/acpi/processor_core.c     |   71 ----------------
+ drivers/acpi/processor_pdc.c      |  165 +++++++++++++++++++++++++++++++++++++
+ include/acpi/processor.h          |    8 +-
+ 12 files changed, 206 insertions(+), 266 deletions(-)
+ delete mode 100644 arch/ia64/kernel/acpi-processor.c
+ delete mode 100644 arch/x86/kernel/acpi/processor.c
+ create mode 100644 drivers/acpi/processor_pdc.c
+
