@@ -1,91 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbZLUPlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZLUPnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbZLUPlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZLUPlQ
+	id S1756081AbZLUPnl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 10:43:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZLUPnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:41:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46256 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752873AbZLUPlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:41:15 -0500
-Subject: Re: [PATCH] perf_events: improve Intel event scheduling
-From: Peter Zijlstra <peterz@infradead.org>
-To: eranian@gmail.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       perfmon2-devel@lists.sf.net, "David S. Miller" <davem@davemloft.net>,
-       eranian@google.com
-In-Reply-To: <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
-References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
-	 <1258561957.3918.661.camel@laptop>
-	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
-	 <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 16:40:40 +0100
-Message-ID: <1261410040.4314.178.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 21 Dec 2009 10:43:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53125 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755889AbZLUPnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 10:43:39 -0500
+Message-ID: <4B2F978D.7010602@redhat.com>
+Date: Mon, 21 Dec 2009 17:43:09 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com>
+In-Reply-To: <4B2F9582.5000002@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-11 at 12:59 +0100, stephane eranian wrote:
+On 12/21/2009 05:34 PM, Gregory Haskins wrote:
+>
+>> I think it would be fair to point out that these patches have been objected to
+>> by the KVM folks quite extensively,
+>>      
+> Actually, these patches have nothing to do with the KVM folks.  You are
+> perhaps confusing this with the hypervisor-side discussion, of which
+> there is indeed much disagreement.
+>    
 
-> There is a major difference between PPC and X86 here. PPC has a
-> centralized register to control start/stop. This register  uses
-> bitmask to enable or disable counters. Thus, in hw_perf_enable(), if
-> n_added=0, then you just need to use the pre-computed bitmask.
-> Otherwise, you need to recompute the bitmask to include the new
-> registers. The assignment of events and validation is done in
-> hw_group_sched_in().
-> 
-> In X86, assignment and validation is done in hw_group_sched_in().
-> Activation is done individually for each counter. There is no
-> centralized register used here, thus no bitmask to update.
+This is true, though these drivers are fairly pointless for 
+virtualization without the host side support.
 
-intel core2 has the global control reg, but for all intents and purposes
-the perf_enable/disable calls emulate this global enable/disable.
+I did have a few issues with the guest drivers:
+- the duplication of effort wrt virtio.  These drivers don't cover 
+exactly the same problem space, but nearly so.
+- no effort at scalability - all interrupts are taken on one cpu
+- the patches introduce a new virtual interrupt controller for dubious 
+(IMO) benefits
 
-> Disabling a counter does not trigger a complete reschedule of events.
-> This happens only when hw_group_sched_in() is called.
-> 
-> The n_events = 0 in hw_perf_disable() is used to signal that something
-> is changing. It should not be here but here. The problem is that
-> hw_group_sched_in() needs a way to know that it is called for a
-> completely new series of group scheduling so it can discard any
-> previous assignment. This goes back to the issue I raised in my
-> previous email. You could add a parameter to hw_group_sched_in() that
-> would indicate this is the first group. that would cause n_events =0
-> and the function would start accumulating events for the new
-> scheduling period.
+>  From my research, the reason why virt in general, and KVM in particular
+> suffers on the IO performance front is as follows: IOs
+> (traps+interrupts) are more expensive than bare-metal, and real hardware
+> is naturally concurrent (your hbas and nics are effectively parallel
+> execution engines, etc).
+>
+> Assuming my observations are correct, in order to squeeze maximum
+> performance from a given guest, you need to do three things:  A)
+> eliminate as many IOs as you possibly can, B) reduce the cost of the
+> ones you can't avoid, and C) run your algorithms in parallel to emulate
+> concurrent silicon.
+>    
 
-I'm not really seeing the problem here...
+All these are addressed by vhost-net without introducing new drivers.
 
-
- perf_disable() <-- shut down the full pmu
-
- pmu->disable() <-- hey someone got removed (easy free the reg)
- pmu->enable()  <-- hey someone got added (harder, check constraints)
-
- hw_perf_group_sched_in() <-- hey a full group got added 
-                              (better than multiple ->enable)
-
- perf_enable() <-- re-enable pmu
-
-
-So ->disable() is used to track freeing, ->enable is used to add
-individual counters, check constraints etc..
-
-hw_perf_group_sched_in() is used to optimize the full group enable.
-
-Afaict that is what power does (Paul?) and that should I think be
-sufficient to track x86 as well.
-
-Since sched_in() is balanced with sched_out(), the ->disable() calls
-should provide the required information as to the occupation of the pmu.
-I don't see the need for more hooks.
-
-Paul, could you comment, since you did all this for power?
+-- 
+error compiling committee.c: too many arguments to function
 
