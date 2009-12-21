@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753015AbZLUEha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbZLUEin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753015AbZLUEha (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 23:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZLUEh3
+	id S1753163AbZLUEin (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 23:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZLUEim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 23:37:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6360 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662AbZLUEh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 23:37:29 -0500
-From: Dave Airlie <airlied@gmail.com>
-To: stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net,
-       Dave Airlie <airlied@redhat.com>
-Subject: [PATCH] stable - drm/radeon/kms: fix crtc vblank update for r600
-Date: Mon, 21 Dec 2009 14:33:52 +1000
-Message-Id: <1261370032-15420-1-git-send-email-airlied@gmail.com>
+	Sun, 20 Dec 2009 23:38:42 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:40466 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbZLUEil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 23:38:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=uFOPFeKqtbAcOoULasy3yjCFasqndOVkV58Nwi4TtomdjHbNtCO7+yBcyHd5a7qsaG
+         nocRVgHdWJm7T/abucIo47+zUruJHF3MSY25VWBGQ2e5OnXq7y4ecS6GVnQCC4ECK9zu
+         lIYVRgNL/LObe2gLRECSBs8v/rESyweLdouPU=
+Subject: drivers/edac/ move a kfree() to after last use
+From: Darren Jenkins <darrenrjenkins@gmail.com>
+To: Kernel Janitors <kernel-janitors@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dougthompson@xmission.com, borislav.petkov@amd.com
+Cc: bluesmoke-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 15:38:26 +1100
+Message-ID: <1261370306.11354.52.camel@ICE-BOX>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Airlie <airlied@redhat.com>
 
-In 2.6.32.2 r600 had no IRQ support, however the patch in
-500b758725314ab1b5316eb0caa5b0fa26740e6b to fix vblanks on avivo
-cards, needs irqs.
+Move a kfree() below the last use of the memory
 
-So check for an R600 card and avoid this path if so.
+Coverity CID: 13142
 
-This is a stable only patch for 2.6.32.2 as 2.6.33 has IRQs for r600.
+Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index df5b684..15b8b3c 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2925,10 +2925,10 @@ static void __devexit
+amd64_remove_one_instance(struct pci_dev *pdev)
+ 
+ 	amd64_free_mc_sibling_devices(pvt);
+ 
+-	kfree(pvt);
+ 	mci->pvt_info = NULL;
+ 
+ 	mci_lookup[pvt->mc_node_id] = NULL;
++	kfree(pvt);
+ 
+ 	/* unregister from EDAC MCE */
+ 	amd_report_gart_errors(false);
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- drivers/gpu/drm/radeon/atombios_crtc.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/radeon/atombios_crtc.c b/drivers/gpu/drm/radeon/atombios_crtc.c
-index c6777cb..19f93f2 100644
---- a/drivers/gpu/drm/radeon/atombios_crtc.c
-+++ b/drivers/gpu/drm/radeon/atombios_crtc.c
-@@ -249,13 +249,15 @@ void atombios_crtc_dpms(struct drm_crtc *crtc, int mode)
- 		if (ASIC_IS_DCE3(rdev))
- 			atombios_enable_crtc_memreq(crtc, 1);
- 		atombios_blank_crtc(crtc, 0);
--		drm_vblank_post_modeset(dev, radeon_crtc->crtc_id);
-+		if (rdev->family < CHIP_R600)
-+			drm_vblank_post_modeset(dev, radeon_crtc->crtc_id);
- 		radeon_crtc_load_lut(crtc);
- 		break;
- 	case DRM_MODE_DPMS_STANDBY:
- 	case DRM_MODE_DPMS_SUSPEND:
- 	case DRM_MODE_DPMS_OFF:
--		drm_vblank_pre_modeset(dev, radeon_crtc->crtc_id);
-+		if (rdev->family < CHIP_R600)
-+			drm_vblank_pre_modeset(dev, radeon_crtc->crtc_id);
- 		atombios_blank_crtc(crtc, 1);
- 		if (ASIC_IS_DCE3(rdev))
- 			atombios_enable_crtc_memreq(crtc, 0);
--- 
-1.6.5.2
 
