@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbZLUHQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbZLUHOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751782AbZLUHQU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 02:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZLUHQS
+	id S1751677AbZLUHOM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 02:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZLUHOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 02:16:18 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:50982 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751296AbZLUHQR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 02:16:17 -0500
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Peter Hutterer <peter.hutterer@redhat.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
-References: <20091203050810.GA26595@barra.bne.redhat.com>
-	<87zl60s17o.fsf@macbook.be.48ers.dk> <4B1836A6.405@redhat.com>
-	<871vjasxnm.fsf@macbook.be.48ers.dk> <4B190D88.4090102@redhat.com>
-	<87ws12rh5j.fsf@macbook.be.48ers.dk> <4B1C96C4.5080709@redhat.com>
-	<87hbs0mqju.fsf@macbook.be.48ers.dk> <4B2B0CCE.2020406@redhat.com>
-	<87638239ha.fsf@macbook.be.48ers.dk> <4B2EB7E1.7090506@redhat.com>
-Date: Mon, 21 Dec 2009 08:16:11 +0100
-In-Reply-To: <4B2EB7E1.7090506@redhat.com> (Peter Hutterer's message of "Mon,
-	21 Dec 2009 09:48:49 +1000")
-Message-ID: <873a3423wk.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	Mon, 21 Dec 2009 02:14:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48942 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751257AbZLUHOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 02:14:10 -0500
+Message-ID: <4B2F20E0.30804@kernel.org>
+Date: Mon, 21 Dec 2009 16:16:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Tim Blechmann <tim@klingt.org>
+CC: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, x86@kernel.org
+Subject: Re: 2.6.32 regression: unable to handle kernel paging request
+References: <4B269765.1070703@klingt.org> <4B2A2A7D.1050506@klingt.org> <4B2A93F2.3070407@klingt.org> <4B2AFBB1.3040609@kernel.org> <4B2B4838.6080509@klingt.org>
+In-Reply-To: <4B2B4838.6080509@klingt.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Peter" == Peter Hutterer <peter.hutterer@redhat.com> writes:
+On 12/18/2009 06:15 PM, Tim Blechmann wrote:
+>>>> trying to bisect the kernel tree,
+>>>> 405d967dc70002991f8fc35c20e0d3cbc7614f63 seems to be the first bad commit.
+>>>> during bisecting, i recorded several boot logs, which are attached.
+>>>
+>>> removing module-common.lds from LDFLAGS_MODULE, my machine boots fine
+>>> and without any error messages:
+>>
+>> Looks like some necessary part of module image ends up in discarded
+>> sections.  Before the commit, the build process kept those sections so
+>> it worked.  The code has been there for some time now and you're the
+>> first one to report it, so I suppose your .config is a bit different
+>> from more usual ones.  Can you please attach it?
+> 
+> it is not too different ... it is based on the .config file of the
+> ubuntu kernel with a few tweaks ...
+> one odd thing is, that i once was able to boot 2.6.32-rcX kernels, at
+> one point, i kept getting these bug messages ... i didn't (knowingly)
+> change the configuration, though ...
 
-Hi,
+Hmmm... weirdly I can't reproduce the problem here with the same
+config.  Can you please attach "readelf -a lp.ko" with and without the
+module-common.lds struck out?
 
- >> Ok, thanks for checking it all out! Just to be completely sure, the
- >> quirk doesn't cause any problems in mode 1/9, right?
-
- Peter> no, the evtest output looks the same with and without the quirk,
- Peter> including right button emulation on long press, etc.
-
-Perfect, thanks!
+Thanks.
 
 -- 
-Bye, Peter Korsgaard
+tejun
