@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZLUPSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZLUTb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbZLUPSw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZLUPSt
+	id S1755115AbZLUTb0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 14:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZLUTbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:18:49 -0500
-Received: from smtp.ispras.ru ([83.149.198.201]:48696 "EHLO smtp.ispras.ru"
+	Mon, 21 Dec 2009 14:31:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7390 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752340AbZLUPSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:18:48 -0500
-From: Alexander Strakh <strakh@ispras.ru>
-Organization: ISP RAS
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Donald Becker <becker@scyld.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] 3c507.c: remove unused NULL pointer check
-Date: Mon, 21 Dec 2009 19:23:58 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+	id S1750834AbZLUTbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 14:31:24 -0500
+Message-ID: <4B2FCCE3.1090209@redhat.com>
+Date: Mon, 21 Dec 2009 11:30:43 -0800
+From: Richard Henderson <rth@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Richard Guenther <richard.guenther@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk>
+In-Reply-To: <20091217181718.GA4440@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912211923.58735.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	In driver drivers/net/3c507.c in function Iirqreturn_t el16_interrupt:
-1. If in line 555 dev = NULL then we goto line 556
-2. In line 556 we have null dereference because pr_err called with dev->name 
-in third parameter.
- 555        if (dev == NULL) {
- 556                pr_err("%s: net_interrupt(): irq %d for unknown device.
-\n",
- 557                        dev->name, irq);
- 558                return IRQ_NONE;
- 559        }
+On 12/17/2009 10:17 AM, Russell King - ARM Linux wrote:
+> How is "size-optimal trap" defined?
 
-Found by Linux Device Drivers Verification (Svace detector)
+E.g. Sparc and MIPS have "tcc" instructions that trap based on the
+condition codes, and so we eliminate the branch.  That's the only
+optimization we apply with __builtin_trap.
 
-Remove unused NULL pointer check.
+> Let me put it another way: I want this function to terminate with an
+> explicit NULL pointer dereference in every case.
 
-Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+Then just use that.
 
----
-diff --git a/./0000/drivers/net/3c507.c b/./moder/drivers/net/3c507.c
-index fbc2311..3bfb3dd 100644
---- a/./0000/drivers/net/3c507.c
-+++ b/./moder/drivers/net/3c507.c
-@@ -552,12 +552,6 @@ static irqreturn_t el16_interrupt(int irq, void *dev_id)
- 	ushort ack_cmd = 0;
- 	void __iomem *shmem;
- 
--	if (dev == NULL) {
--		pr_err("%s: net_interrupt(): irq %d for unknown device.\n",
--			dev->name, irq);
--		return IRQ_NONE;
--	}
--
- 	ioaddr = dev->base_addr;
- 	lp = netdev_priv(dev);
- 	shmem = lp->base;
+
+r~
