@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZLUBWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbZLUBVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbZLUBWN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 20:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZLUBWB
+	id S1756500AbZLUBVf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 20:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbZLUBVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 20:22:01 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37728 "EHLO
+	Sun, 20 Dec 2009 20:21:21 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37732 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756398AbZLUBUd (ORCPT
+	with ESMTP id S1756404AbZLUBUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 20:20:33 -0500
+	Sun, 20 Dec 2009 20:20:34 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <20091221220.243954235@firstfloor.org>
 In-Reply-To: <20091221220.243954235@firstfloor.org>
-To: joel.becker@oracle.com, linux-kernel@vger.kernel.org,
+To: samuel@sortiz.org, linux-kernel@vger.kernel.org,
        paulmck@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: [PATCH] [10/11] SYSCTL: Use RCU protected sysctl for ocfs group add helper
-Message-Id: <20091221012031.B4593B158A@basil.firstfloor.org>
-Date: Mon, 21 Dec 2009 02:20:31 +0100 (CET)
+Subject: [PATCH] [11/11] SYSCTL: Convert IRDA text sysctl to RCU 
+Message-Id: <20091221012032.B73BAB158A@basil.firstfloor.org>
+Date: Mon, 21 Dec 2009 02:20:32 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This avoids races with unlocked sysctl() 
+This avoids races with lockless sysctl
 
-Cc: joel.becker@oracle.com
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Cc: samuel@sortiz.org
 
 ---
- fs/ocfs2/stackglue.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ net/irda/irlmp.c    |    3 +--
+ net/irda/irsysctl.c |    9 ++++++---
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.33-rc1-ak/fs/ocfs2/stackglue.c
+Index: linux-2.6.33-rc1-ak/net/irda/irlmp.c
 ===================================================================
---- linux-2.6.33-rc1-ak.orig/fs/ocfs2/stackglue.c
-+++ linux-2.6.33-rc1-ak/fs/ocfs2/stackglue.c
+--- linux-2.6.33-rc1-ak.orig/net/irda/irlmp.c
++++ linux-2.6.33-rc1-ak/net/irda/irlmp.c
+@@ -56,7 +56,7 @@ int  sysctl_discovery         = 0;
+ int  sysctl_discovery_timeout = 3; /* 3 seconds by default */
+ int  sysctl_discovery_slots   = 6; /* 6 slots by default */
+ int  sysctl_lap_keepalive_time = LM_IDLE_TIMEOUT * 1000 / HZ;
+-char sysctl_devname[65];
++char *sysctl_devname = "Linux";
+ 
+ const char *irlmp_reasons[] = {
+ 	"ERROR, NOT USED",
+@@ -101,7 +101,6 @@ int __init irlmp_init(void)
+ 	spin_lock_init(&irlmp->cachelog->hb_spinlock);
+ 
+ 	irlmp->last_lsap_sel = 0x0f; /* Reserved 0x00-0x0f */
+-	strcpy(sysctl_devname, "Linux");
+ 
+ 	init_timer(&irlmp->discovery_timer);
+ 
+Index: linux-2.6.33-rc1-ak/net/irda/irsysctl.c
+===================================================================
+--- linux-2.6.33-rc1-ak.orig/net/irda/irsysctl.c
++++ linux-2.6.33-rc1-ak/net/irda/irsysctl.c
 @@ -27,6 +27,7 @@
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
+ #include <linux/ctype.h>
  #include <linux/sysctl.h>
-+#include <linux/rcustring.h>
+ #include <linux/init.h>
++#include <linux/rcupdate.h>
  
- #include "ocfs2_fs.h"
- 
-@@ -40,7 +41,7 @@ static struct ocfs2_locking_protocol *lp
- static DEFINE_SPINLOCK(ocfs2_stack_lock);
- static LIST_HEAD(ocfs2_stack_list);
- static char cluster_stack_name[OCFS2_STACK_LABEL_LEN + 1];
--static char ocfs2_hb_ctl_path[OCFS2_MAX_HB_CTL_PATH] = "/sbin/ocfs2_hb_ctl";
-+static char *ocfs2_hb_ctl_path = "/sbin/ocfs2_hb_ctl";
- 
- /*
-  * The stack currently in use.  If not null, active_stack->sp_count > 0,
-@@ -395,8 +396,15 @@ static void ocfs2_leave_group(const char
+ #include <net/irda/irda.h>		/* irda_debug */
+ #include <net/irda/irlmp.h>
+@@ -38,7 +39,7 @@ extern int  sysctl_discovery_slots;
+ extern int  sysctl_discovery_timeout;
+ extern int  sysctl_slot_timeout;
+ extern int  sysctl_fast_poll_increase;
+-extern char sysctl_devname[];
++extern char *sysctl_devname;
+ extern int  sysctl_max_baud_rate;
+ extern int  sysctl_min_tx_turn_time;
+ extern int  sysctl_max_tx_data_size;
+@@ -78,13 +79,15 @@ static int do_devname(ctl_table *table,
  {
  	int ret;
- 	char *argv[5], *envp[3];
-+	char *helper;
  
--	argv[0] = ocfs2_hb_ctl_path;
-+	helper = access_rcu_string(ocfs2_hb_ctl_path, OCFS2_MAX_HB_CTL_PATH, GFP_KERNEL);
-+	if (!helper) {
-+		printk(KERN_ERR "ocfs2_leave_group: no memory\n");
-+		return;
-+	}
-+
-+	argv[0] = helper;
- 	argv[1] = "-K";
- 	argv[2] = "-u";
- 	argv[3] = (char *)group;
-@@ -414,6 +422,7 @@ static void ocfs2_leave_group(const char
- 		       "\"%s %s %s %s\"\n",
- 		       ret, argv[0], argv[1], argv[2], argv[3]);
+-	ret = proc_dostring(table, write, buffer, lenp, ppos);
++	ret = proc_rcu_string(table, write, buffer, lenp, ppos);
+ 	if (ret == 0 && write) {
+ 		struct ias_value *val;
+ 
++		rcu_read_lock();
+ 		val = irias_new_string_value(sysctl_devname);
+ 		if (val)
+ 			irias_object_change_attribute("Device", "DeviceName", val);
++		rcu_read_unlock();
  	}
-+	kfree(helper);
+ 	return ret;
  }
- 
- /*
-@@ -621,10 +630,10 @@ error:
- static ctl_table ocfs2_nm_table[] = {
- 	{
- 		.procname	= "hb_ctl_path",
--		.data		= ocfs2_hb_ctl_path,
-+		.data		= &ocfs2_hb_ctl_path,
- 		.maxlen		= OCFS2_MAX_HB_CTL_PATH,
- 		.mode		= 0644,
--		.proc_handler	= proc_dostring,
-+		.proc_handler	= proc_rcu_string,
+@@ -121,7 +124,7 @@ static ctl_table irda_table[] = {
  	},
- 	{ }
- };
+ 	{
+ 		.procname	= "devname",
+-		.data		= sysctl_devname,
++		.data		= &sysctl_devname,
+ 		.maxlen		= 65,
+ 		.mode		= 0644,
+ 		.proc_handler	= do_devname,
