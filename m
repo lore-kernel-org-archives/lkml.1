@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZLUL3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZLULdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZLUL3o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 06:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZLUL3n
+	id S1756574AbZLULdI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 06:33:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbZLULdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 06:29:43 -0500
-Received: from ozlabs.org ([203.10.76.45]:60681 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbZLUL3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 06:29:42 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH 0/3] vhost: fix use_mm usage
-Date: Mon, 21 Dec 2009 21:59:39 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20091220171608.GA31713@redhat.com>
-In-Reply-To: <20091220171608.GA31713@redhat.com>
+	Mon, 21 Dec 2009 06:33:06 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56833 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756387AbZLULdD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 06:33:03 -0500
+Date: Mon, 21 Dec 2009 12:33:01 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>,
+       torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net
+Subject: Re: workqueue thing
+Message-ID: <20091221113301.GG25372@basil.fritz.box>
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box> <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk> <20091221110929.GF25372@basil.fritz.box> <4B2F592C.4000504@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912212159.39198.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2F592C.4000504@linux.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Dec 2009 03:46:08 am Michael S. Tsirkin wrote:
-> This patchset fixes an issue, pointed out by Al Viro, in how vhost net
-> calls use_mm, Works fine for me, and it's pretty straightforward.  If no
-> one sees any issues with it, this will be a good candidate for 2.6.33
-> (assuming vhost net itself gets pulled :( ).
+>> Also the nice thing about dynamically sizing the thread pool
+>> is that if something bad (error condition that takes long) happens
+>> in one work queue for a specific subsystem there's still a chance
+>> to make process with other operations in the same subsystem.
+>
+> yup
+> same is true for hitting some form of contention; just make an extra thread
+> so that the rest can continue.
 
-No, Linus didn't respond to either pull request.  Either he considers it a
-new driver and hence not in a hurry to enter merge window, or there's some
-other issue.
+If you dynamically increase you can/should as well dynamically shrink too.
+And with some more gimmicks you're nearly at what Tejun is proposing
 
-I've taken these fixes too, meanwhile.
+Not sure what you're arguing against?
 
-Thanks,
-Rusty.
+-Andi
+>
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
