@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZLUUbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbZLUUdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbZLUUbY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 15:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZLUUbX
+	id S1757038AbZLUUdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZLUUdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 15:31:23 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:53018 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbZLUUbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 15:31:22 -0500
-Date: Mon, 21 Dec 2009 12:31:11 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Oliver Hartkopp <socketcan@hartkopp.net>
-Cc: Alexander Strakh <strakh@ispras.ru>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Donald Becker <becker@scyld.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 3c507.c: remove unused NULL pointer check
-Message-ID: <20091221123111.4498b17c@nehalam>
-In-Reply-To: <4B2FA8C7.3010509@hartkopp.net>
-References: <200912211923.58735.strakh@ispras.ru>
-	<4B2FA8C7.3010509@hartkopp.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Dec 2009 15:33:19 -0500
+Received: from RELAY-01.ANDREW.CMU.EDU ([128.2.10.212]:35540 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbZLUUdS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 15:33:18 -0500
+Date: Mon, 21 Dec 2009 15:32:54 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujitsu.com, akpm@linux-foundation.org, menage@google.com,
+       bblum@andrew.cmu.edu
+Subject: [PATCH 0/4] cgroups: support for module-loadable subsystems
+Message-ID: <20091221203253.GA5683@andrew.cmu.edu>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org, lizf@cn.fujitsu.com,
+	akpm@linux-foundation.org, menage@google.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Dec 2009 17:56:39 +0100
-Oliver Hartkopp <socketcan@hartkopp.net> wrote:
+[This is a revision of http://lkml.org/lkml/2009/12/4/53 ]
 
-> Alexander Strakh wrote:
-> > 	In driver drivers/net/3c507.c in function Iirqreturn_t el16_interrupt:
-> > 1. If in line 555 dev = NULL then we goto line 556
-> > 2. In line 556 we have null dereference because pr_err called with dev->name 
-> > in third parameter.
-> >  555        if (dev == NULL) {
-> >  556                pr_err("%s: net_interrupt(): irq %d for unknown device.
-> > \n",
-> >  557                        dev->name, irq);
-> >  558                return IRQ_NONE;
-> >  559        }
-> > 
-> > Found by Linux Device Drivers Verification (Svace detector)
-> > 
-> > Remove unused NULL pointer check.
-> 
-> You are obviously doing more than that ...
-> 
-> > 
-> > Signed-off-by: Alexander Strakh <strakh@ispras.ru>
-> > 
-> > ---
-> > diff --git a/./0000/drivers/net/3c507.c b/./moder/drivers/net/3c507.c
-> > index fbc2311..3bfb3dd 100644
-> > --- a/./0000/drivers/net/3c507.c
-> > +++ b/./moder/drivers/net/3c507.c
-> > @@ -552,12 +552,6 @@ static irqreturn_t el16_interrupt(int irq, void *dev_id)
-> >  	ushort ack_cmd = 0;
-> >  	void __iomem *shmem;
-> >  
-> > -	if (dev == NULL) {
-> > -		pr_err("%s: net_interrupt(): irq %d for unknown device.\n",
-> > -			dev->name, irq);
-> 
-> You are changing real funcionality here!
-> 
-> If you want to fix it, fix the pr_err() but do not remove the "return
-> IRQ_NONE" entirely.
-> 
-> This looks like an introduction of a bug.
-> 
-> Regards,
-> Oliver
-> 
-> 
-> > -		return IRQ_NONE;
-> > -	}
-> > -
+This patch series implements support for building, loading, and
+unloading subsystems as modules, both within and outside the kernel
+source tree. It provides an interface cgroup_load_subsys() and
+cgroup_unload_subsys() which modular subsystems can use to register and
+depart during runtime. The net_cls classifier subsystem serves as the
+example for a subsystem which can be converted into a module using these
+changes.
 
-Interrupts will never be called with third parameter of NULL. It is really
-bogus impossible to reach code.
+Patch #1 sets up the subsys[] array so its contents can be dynamic as
+modules appear and (eventually) disappear. Iterations over the array are
+modified to handle when subsystems are absent, and the dynamic section
+of the array is protected by cgroup_mutex.
 
--- 
+Patch #2 implements an interface for modules to load subsystems, called
+cgroup_load_subsys, similar to cgroup_init_subsys, and adds a module
+pointer in struct cgroup_subsys.
+
+Patch #3 modifies the net_cls subsystem, which already had some module
+declarations, to be configurable as a module, which also serves as a
+simple proof-of-concept.
+
+Patch #4 adds a mechanism for unloading modular subsystems, which
+includes a more advanced rework of the rudimentary reference counting
+introduced in patch 2. It also modifies the exitcall of net_cls to use
+this interface.
+
+Part of implementing patches 2 and 4 involved updating css pointers in
+each css_set when the module appears or leaves. In doing this, it was
+discovered that css_sets always remain linked to the dummy cgroup,
+regardless of whether or not any subsystems are actually bound to it
+(i.e., not mounted on an actual hierarchy). The subsystem loading and
+unloading code therefore should keep in mind the special cases where the
+added subsystem is the only one in the dummy cgroup (and therefore all
+css_sets need to be linked back into it) and where the removed subsys
+was the only one in the dummy cgroup (and therefore all css_sets should
+be unlinked from it) - however, as all css_sets always stay attached to
+the dummy cgroup anyway, these cases are ignored. Any fix that addresses
+this issue should also make sure these cases are addressed in the
+subsystem loading and unloading code.
+
+-- bblum
+
+---
+
+ Documentation/cgroups/cgroups.txt |    6
+ include/linux/cgroup.h            |   16 +
+ kernel/cgroup.c                   |  337 +++++++++++++++++++++++++++++++++-----
+ net/sched/Kconfig                 |    5
+ net/sched/cls_cgroup.c            |   40 +++-
+ 5 files changed, 350 insertions(+), 54 deletions(-)
