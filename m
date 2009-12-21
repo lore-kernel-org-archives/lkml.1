@@ -1,57 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbZLUOVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZLUOYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbZLUOVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 09:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZLUOVc
+	id S1754111AbZLUOYo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 09:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbZLUOYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 09:21:32 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:42429 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbZLUOVb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 09:21:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=H62oaTyUWWd3Oy1CNsl2IZi/yiKiqLUQFSP8AxFOb21kAOoeKiJoJ7MHRe6zFtu6LG
-         ic5cGROGpGmMSG4q4kVTlQkoK/7C6GYs7Ml/dfJ+KIK7DinwEiEHr6FyyeufbmhIu3e2
-         Glc6G5poIc8bLT0ZJmPxTPRr6u+edfQSiZNaM=
-MIME-Version: 1.0
-In-Reply-To: <4A5CD77C.6070701@garzik.org>
-References: <1247593187-26570-1-git-send-email-vapier@gentoo.org> 
-	<4A5CD77C.6070701@garzik.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 21 Dec 2009 09:21:03 -0500
-Message-ID: <8bd0f97a0912210621g19535a03q38b8b67c01df6a75@mail.gmail.com>
-Subject: Re: [PATCH] libata: pata_bf54x: handle portmuxing of pins through 
-	GPIO PORTs
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 21 Dec 2009 09:24:43 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:45566 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbZLUOYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 09:24:43 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-fbdev-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: [PATCH] fbdev: bf54x-lq043fb/bfin-t350mcqb-fb: drop custom mmap() handler
+Date: Mon, 21 Dec 2009 09:25:42 -0500
+Message-Id: <1261405542-7079-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 14:07, Jeff Garzik wrote:
-> Mike Frysinger wrote:
->> By default, the PATA pins are routed to the async address lines in which
->> case, no peripheral muxing needs to be done.  However, if the pins get
->> routed through the GPIO PORTs pins, we need to make sure to request them
->> so that the muxing is properly set up.
->> ---
->> Andrew: could you pick this up ?  it was posted over a month ago to the
->> Linux/IDE list w/no feedback.
->
-> Although it is disappointing that your patch was missed -- our apologies --
-> I don't think the best response was to elide linux-ide and the libata
-> maintainer, in favor of a higher noise list.  :)
->
-> I have the patch queued, now.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-so it's been 8 months since it was posted, 6 months since it was
-queued, and multiple libata merges have been made, but this patch has
-yet to make it into mainline ...
--mike
+The common Blackfin code implements the get_fb_unmapped_area() function,
+so we no longer need to have our own mmap() handler.  The common fb code
+will take care of everything for us now.
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/bf54x-lq043fb.c    |   30 ------------------------------
+ drivers/video/bfin-t350mcqb-fb.c |   29 -----------------------------
+ 2 files changed, 0 insertions(+), 59 deletions(-)
+
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index e49ae5e..814312a 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -82,7 +82,6 @@ struct bfin_bf54xfb_info {
+ 	unsigned char *fb_buffer;	/* RGB Buffer */
+ 
+ 	dma_addr_t dma_handle;
+-	int lq043_mmap;
+ 	int lq043_open_cnt;
+ 	int irq;
+ 	spinlock_t lock;	/* lock */
+@@ -316,7 +315,6 @@ static int bfin_bf54x_fb_release(struct fb_info *info, int user)
+ 	spin_lock(&fbi->lock);
+ 
+ 	fbi->lq043_open_cnt--;
+-	fbi->lq043_mmap = 0;
+ 
+ 	if (fbi->lq043_open_cnt <= 0) {
+ 
+@@ -374,33 +372,6 @@ static int bfin_bf54x_fb_check_var(struct fb_var_screeninfo *var,
+ 	return 0;
+ }
+ 
+-static int bfin_bf54x_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+-{
+-
+-	struct bfin_bf54xfb_info *fbi = info->par;
+-
+-	if (fbi->lq043_mmap)
+-		return -1;
+-
+-	spin_lock(&fbi->lock);
+-	fbi->lq043_mmap = 1;
+-	spin_unlock(&fbi->lock);
+-
+-	vma->vm_start = (unsigned long)(fbi->fb_buffer);
+-
+-	vma->vm_end = vma->vm_start + info->fix.smem_len;
+-	/* For those who don't understand how mmap works, go read
+-	 *   Documentation/nommu-mmap.txt.
+-	 * For those that do, you will know that the VM_MAYSHARE flag
+-	 * must be set in the vma->vm_flags structure on noMMU
+-	 *   Other flags can be set, and are documented in
+-	 *   include/linux/mm.h
+-	 */
+-	vma->vm_flags |=  VM_MAYSHARE | VM_SHARED;
+-
+-	return 0;
+-}
+-
+ int bfin_bf54x_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	if (nocursor)
+@@ -452,7 +423,6 @@ static struct fb_ops bfin_bf54x_fb_ops = {
+ 	.fb_fillrect = cfb_fillrect,
+ 	.fb_copyarea = cfb_copyarea,
+ 	.fb_imageblit = cfb_imageblit,
+-	.fb_mmap = bfin_bf54x_fb_mmap,
+ 	.fb_cursor = bfin_bf54x_fb_cursor,
+ 	.fb_setcolreg = bfin_bf54x_fb_setcolreg,
+ };
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 2549c53..5653d08 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -87,7 +87,6 @@ struct bfin_t350mcqbfb_info {
+ 	struct device *dev;
+ 	unsigned char *fb_buffer;	/* RGB Buffer */
+ 	dma_addr_t dma_handle;
+-	int lq043_mmap;
+ 	int lq043_open_cnt;
+ 	int irq;
+ 	spinlock_t lock;	/* lock */
+@@ -235,7 +234,6 @@ static int bfin_t350mcqb_fb_release(struct fb_info *info, int user)
+ 	spin_lock(&fbi->lock);
+ 
+ 	fbi->lq043_open_cnt--;
+-	fbi->lq043_mmap = 0;
+ 
+ 	if (fbi->lq043_open_cnt <= 0) {
+ 		bfin_t350mcqb_disable_ppi();
+@@ -293,32 +291,6 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
+ 	return 0;
+ }
+ 
+-static int bfin_t350mcqb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+-{
+-	struct bfin_t350mcqbfb_info *fbi = info->par;
+-
+-	if (fbi->lq043_mmap)
+-		return -1;
+-
+-	spin_lock(&fbi->lock);
+-	fbi->lq043_mmap = 1;
+-	spin_unlock(&fbi->lock);
+-
+-	vma->vm_start = (unsigned long)(fbi->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET);
+-
+-	vma->vm_end = vma->vm_start + info->fix.smem_len;
+-	/* For those who don't understand how mmap works, go read
+-	 *   Documentation/nommu-mmap.txt.
+-	 * For those that do, you will know that the VM_MAYSHARE flag
+-	 * must be set in the vma->vm_flags structure on noMMU
+-	 *   Other flags can be set, and are documented in
+-	 *   include/linux/mm.h
+-	 */
+-	vma->vm_flags |= VM_MAYSHARE | VM_SHARED;
+-
+-	return 0;
+-}
+-
+ int bfin_t350mcqb_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	if (nocursor)
+@@ -370,7 +342,6 @@ static struct fb_ops bfin_t350mcqb_fb_ops = {
+ 	.fb_fillrect = cfb_fillrect,
+ 	.fb_copyarea = cfb_copyarea,
+ 	.fb_imageblit = cfb_imageblit,
+-	.fb_mmap = bfin_t350mcqb_fb_mmap,
+ 	.fb_cursor = bfin_t350mcqb_fb_cursor,
+ 	.fb_setcolreg = bfin_t350mcqb_fb_setcolreg,
+ };
+-- 
+1.6.5.4
+
