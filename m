@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZLUHb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbZLUHgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752169AbZLUHb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 02:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZLUHbz
+	id S1752423AbZLUHgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 02:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZLUHgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 02:31:55 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:37726 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbZLUHby (ORCPT
+	Mon, 21 Dec 2009 02:36:16 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:64791 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbZLUHgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 02:31:54 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Eric Blake <ebb9@byu.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: utimensat fails to update ctime
-References: <4B2B156D.9040604@byu.net>
-Date: Mon, 21 Dec 2009 16:31:49 +0900
-In-Reply-To: <4B2B156D.9040604@byu.net> (Eric Blake's message of "Thu, 17 Dec
-	2009 22:38:53 -0700")
-Message-ID: <87aaxclr4q.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
+	Mon, 21 Dec 2009 02:36:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mtFdE7fyPJzCHncDlBvyEDYldpeYERiZve6Q1ntHI1YhDVShbdKy0UVaZq1CzJso9f
+         ApfxfiLUV3WXv29Y2P375TIl8l6GmZoluZVRe6UskTLdJhQQMv7Vn93ekc5GqRYXtVOY
+         O80aggSoPfuLUkp+BMqrlPlaPDtjbzHfyJLIE=
+Date: Sun, 20 Dec 2009 23:35:55 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [RFC] Asynchronous suspend/resume - test results
+Message-ID: <20091221073555.GB3234@core.coreip.homeip.net>
+References: <200912210140.19713.rjw@sisk.pl> <4B2F22EF.6040500@crca.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2F22EF.6040500@crca.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Blake <ebb9@byu.net> writes:
+Hi Nigel,
 
-> POSIX requires that utimensat/futimens must update ctime in all cases
-> where any change is made (it only exempts when both atime and mtime were
-> requested as UTIME_OMIT, where the file must exist but no change is made).
->  Unfortunately, when atime is specified and mtime is UTIME_OMIT, the
-> kernel mistakenly behaves like read(), by updating atime but not ctime.
-> This in turn caused a regression in coreutils 8.2, visible through 'touch -a':
-> http://lists.gnu.org/archive/html/bug-coreutils/2009-12/msg00171.html
->
-> Here is a simple program demonstrating the failure:
-> $ cat foo.c
-> #include <fcntl.h>
-> #include <unistd.h>
-> #include <sys/stat.h>
-> int
-> main ()
-> {
->   int fd = creat ("file", 0600);
->   struct stat st1, st2;
->   struct timespec t[2] = { { 1000000000, 0 }, { 0, UTIME_OMIT } };
->   fstat (fd, &st1);
->   sleep (1);
->   futimens (fd, t);
->   fstat (fd, &st2);
->   return st1.st_ctime == st2.st_ctime;
-> }
-> $ gcc -o foo foo.c -D_GNU_SOURCE
-> $ ./foo; echo $?
-> 1
->
-> The exit status should have been 0.
->
-> GNU coreutils will end up working around the bug by calling fstat/[l]stat
-> prior to futimens/utimensat, and populating the mtime field with the
-> desired value rather than using UTIME_OMIT.  But this is a pointless stat
-> call, which could be avoided if the kernel were fixed to comply with POSIX
-> by updating ctime even when mtime is UTIME_OMIT.
+On Mon, Dec 21, 2009 at 06:25:35PM +1100, Nigel Cunningham wrote:
+> Hi.
+> 
+> Rafael J. Wysocki wrote:
+> > I'm not sure what the next step should be at this point.  To me, the picture is
+> > quite clear now, but perhaps we ought to run more tests on some other machines
+> > or something.  Please let me know what you think.
+> 
+> Looks great. If you do decide you want other machines tested, I'll
+> happily try the machines around here:
+> 
+> - Dell M1530
+> - Omnibook XE3-GF.
+> - Via LN10000 based Mythtv Box
+> - Desktop machine - Some Intel-based mobo I've forgotten the name of.
+> 
 
-I couldn't reproduce this with your test program on my machine (latest
-linus tree). And that utime path looks like no problem, um..., can you
-provide output of strace or something?
+Would you mind also testing patch that I just posted that changes full
+PS/2 keyboard and mouse resets to more lightweight versions?
 
-Thanks.
+Thanks!
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Dmitry
