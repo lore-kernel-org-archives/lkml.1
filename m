@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZLUEk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZLUEur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZLUEk0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 23:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZLUEkZ
+	id S1754019AbZLUEur (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 23:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZLUEuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 23:40:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39650 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752518AbZLUEkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 23:40:25 -0500
-Subject: Re: [PATCH] Move -fno-dwarf2-cfi-asm to powerpc only
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       kyle@redhat.com, mmarek@suse.cz
-In-Reply-To: <20091221012351.GA24720@basil.fritz.box>
-References: <20091221012351.GA24720@basil.fritz.box>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 15:39:10 +1100
-Message-ID: <1261370350.2173.124.camel@pasglop>
+	Sun, 20 Dec 2009 23:50:46 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:25100 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZLUEuo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 23:50:44 -0500
+Subject: Re: [PATCH 0/12] pci: update pci bridge resources
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+In-Reply-To: <4B2ED29B.7060108@kernel.org>
+References: <4B2BEC0E.3050909@kernel.org>
+	 <1261352672.26429.41.camel@dc7800.home>  <4B2ED29B.7060108@kernel.org>
+Content-Type: text/plain
+Date: Sun, 20 Dec 2009 21:44:52 -0700
+Message-Id: <1261370692.26429.78.camel@dc7800.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 02:23 +0100, Andi Kleen wrote:
-> Move -fno-dwarf2-cfi-asm to powerpc only
+On Sun, 2009-12-20 at 17:42 -0800, Yinghai Lu wrote:
+> Bjorn Helgaas wrote:
+> > On Fri, 2009-12-18 at 12:54 -0800, Yinghai Lu wrote:
+> >> this patche set is trying to update pci bridge BAR when that BAR is big enough.
+> >>
+> >> default it is disabled.
+> >>
+> >> could use pci=try=2 to enable it.
+> > 
+> > I think you mean "when the BAR is *not* big enough."  And strictly
+> > speaking, I think you're concerned with the bridge *window*, which isn't
+> > actually a bridge BAR.
 > 
-> Better dwarf2 unwind information is a good thing, it allows better
-> debugging with kgdb and crash and helps systemtap.
+> in PCI bridge to bridge spec 1.1, page 38, 3.2.5.1 still call them bridge "Base Address Registers"
 > 
-> commit 003086497f07f7f1e67c0c295e261740f822b377 disabled some CFI
-> information globally to work around a module loader bug on powerpc.
+> so should be fine we call them Bridge BAR, 
 > 
-> But this disables the better unwind tables for all architectures,
-> not just powerpc. Move the workaround to powerpc and also 
-> add a suitable comment that's it really a workaround.
-> 
-> This improves dwarf2 unwind tables on x86 at least.
+> and we still have device BAR...
 
-Heh, I don't remember the original problem but yeah, that's definitely
-not something to keep in generic Makefiles and in fact we should fix the
-problem on the powerpc side. I'll have a look.
+PCI bridges have optional BARs, described as you point out in section
+3.2.5.1.  These work the same as BARs on any other PCI device, and your
+patches aren't concerned with these.
 
-Cheers,
-Ben.
+Your patch series is primarily concerned with the bridge Base & Limit
+registers described in sections 3.2.5.6 (I/O), 3.2.5.8 (memory), and
+3.2.5.9 (prefetchable memory).  These define the address ranges
+forwarded from one bridge interface to the other.  The spec doesn't have
+a nice term for these ranges, but they're often referred to as "windows"
+or "apertures" because they are the areas where you can "see through"
+the bridge to devices on the other side.
 
-> Cc: kyle@redhat.com
-> Cc: benh@kernel.crashing.org
-> Cc: mmarek@suse.cz
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  Makefile              |    3 ---
->  arch/powerpc/Makefile |    5 +++++
->  2 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.33-rc1-ak/Makefile
-> ===================================================================
-> --- linux-2.6.33-rc1-ak.orig/Makefile
-> +++ linux-2.6.33-rc1-ak/Makefile
-> @@ -570,9 +570,6 @@ KBUILD_CFLAGS += $(call cc-option,-Wno-p
->  # disable invalid "can't wrap" optimizations for signed / pointers
->  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
->  
-> -# revert to pre-gcc-4.4 behaviour of .eh_frame
-> -KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
-> -
->  # conserve stack if available
->  KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
->  
-> Index: linux-2.6.33-rc1-ak/arch/powerpc/Makefile
-> ===================================================================
-> --- linux-2.6.33-rc1-ak.orig/arch/powerpc/Makefile
-> +++ linux-2.6.33-rc1-ak/arch/powerpc/Makefile
-> @@ -112,6 +112,11 @@ KBUILD_CFLAGS += $(call cc-option,-mspe=
->  # kernel considerably.
->  KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
->  
-> +# FIXME: the module load should be taught about the additional relocs
-> +# generated by this.
-> +# revert to pre-gcc-4.4 behaviour of .eh_frame
-> +KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
-> +
->  # Never use string load/store instructions as they are
->  # often slow when they are implemented at all
->  KBUILD_CFLAGS		+= -mno-string
+Bjorn
 
 
