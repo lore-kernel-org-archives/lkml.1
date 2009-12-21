@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZLUTcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZLUTco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbZLUTcM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 14:32:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZLUTcL
+	id S1756733AbZLUTco (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 14:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZLUTcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 14:32:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45366 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbZLUTcK (ORCPT
+	Mon, 21 Dec 2009 14:32:43 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:59373 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbZLUTcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 14:32:10 -0500
-Subject: Re: [PATCH] perf_events: improve Intel event scheduling
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       paulus@samba.org, perfmon2-devel@lists.sf.net,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
-References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
-	 <1258561957.3918.661.camel@laptop>
-	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
-	 <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
-	 <1261410040.4314.178.camel@laptop>
-	 <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 20:31:09 +0100
-Message-ID: <1261423869.4314.198.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Dec 2009 14:32:42 -0500
+Date: Mon, 21 Dec 2009 11:32:39 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Andrey Rahmatullin <wrar@altlinux.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
+       netdev@vger.kernel.org
+Subject: Re: via_rhine kernel crashes in 2.6.32
+In-Reply-To: <20091221181839.GA5232@wrars-comp.wrarsdomain>
+Message-ID: <alpine.DEB.2.01.0912211040100.3483@bogon.housecafe.de>
+References: <20091219111206.GA5307@wrars-comp.wrarsdomain> <20091220200343.GA5427@wrars-comp.wrarsdomain> <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de> <20091221181839.GA5232@wrars-comp.wrarsdomain>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+03HH1D9DpHB23uiua6LQSm9SxeTCT+XmwrKK
+ fpQlbCpzEPsogS93j1fAzPnmD0KpBYTdV+QO3ixt5xPnRcXi64
+ m9Di3a8wDwUit+VJgZdbA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 20:00 +0100, Stephane Eranian wrote:
+On Mon, 21 Dec 2009 at 23:18, Andrey Rahmatullin wrote:
+> I've installed 2.6.27, the earliest kernel supported by udev 149. I
+[...]
+> one of downloads, waited for some time, nothing happened. I resumed the
+> second download, the kernel crashed into an endless stream of backtraces
+> (did 2.6.27 support pause_on_oops?), containing "whatever from the idle
+> thread", or smth like that, which was also in other crash logs.
 
-> >  perf_disable() <-- shut down the full pmu
-> >
-> >  pmu->disable() <-- hey someone got removed (easy free the reg)
-> >  pmu->enable()  <-- hey someone got added (harder, check constraints)
-> >
-> >  hw_perf_group_sched_in() <-- hey a full group got added
-> >                              (better than multiple ->enable)
-> >
-> >  perf_enable() <-- re-enable pmu
-> >
-> >
-> > So ->disable() is used to track freeing, ->enable is used to add
-> > individual counters, check constraints etc..
-> >
-> > hw_perf_group_sched_in() is used to optimize the full group enable.
-> >
-> 
-> Does that mean that after a disable() I can assume that there won't
-> be an enable() without a group_sched_in()?
-> 
-> I suspect not. In fact, there is a counter-example in perf_ctx_adjust_freq().
+So, 2.6.27 crashed as well. Was the backtrace similar to those on 2.6.30? 
+I know it's a long shot, but since you seem to be able to reproduce this 
+pretty reliably, can you try 2.6.23? Or at least something before 
+bea3348eef27e6044b6161fd04c3152215f96411 [0]?
 
-Why would that be a problem?
+Christian.
 
-A perf_disable() will simply disable the pmu, but not alter its
-configuration, perf_enable() will program the pmu and re-enable it (with
-the obvious optimization that if the current state and the new state
-match we can skip the actual programming).
+[0] I'm *really* guessing here, if some netdev guru has some better
+    understanding of the backtraces Andrey sent, please step forward.
+-- 
+BOFH excuse #433:
 
-If a ->disable() was observed between it will simply not re-enable that
-particular counter, that is it will remove that counters' config, and
-perf_enable() can do a smart reprogram by simply no re-enabling that
-counter.
-
-If an ->enable() or hw_perf_group_sched_in() was observed in between,
-you have to recompute the full state in order to validate the
-availability, if that fails, no state change, if it succeeds you have a
-new pmu state and perf_enable() will program that.
-
-In the case of perf_ctx_adjust_freq():
-
-	if (!interrupts) {
-		perf_disable();
-		event->pmu->disable(event);
-		atomic64_set(&hwc->period_left, 0);
-		event->pmu->enable(event);
-		perf_enable();
-	}
-
-You'll very likely end up with the same state you had before, but if not
-who cares -- its supposed to be an unlikely case.
-
-That is, the ->disable() will clear the cpu_hw_events::used_mask bit.
-The ->enable() will want to place the counter on its last know reg,
-which (not so very surprisingly) will be available, hence it will
-trivially succeed, depending on its smarts it might or might not find
-that the 'new' counter's config is identical to the current hw state, if
-not it might set a cpu_hw_event::reprogram state.
-
-perf_enable() will, when it sees cpu_hw_event::reprogram, re-write the
-pmu config and re-enable the whole thing (global ctrl reg, or iterate
-individual EN bits).
-
-
-
+error: one bad user found in front of screen
