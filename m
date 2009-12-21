@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZLUMAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbZLUMC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZLUMAR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 07:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZLUMAP
+	id S1756666AbZLUMC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 07:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbZLUMC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 07:00:15 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:44218 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751780AbZLUMAN (ORCPT
+	Mon, 21 Dec 2009 07:02:27 -0500
+Received: from mtagate7.uk.ibm.com ([194.196.100.167]:35513 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbZLUMC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 07:00:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=ssakd1f5vJAa3ZMAgtKC87Bsr8nbI+VNmVDIcoXuS1xmr3DLzjI+PWjcUJUsNWdl99
-         lMyhxxs3yH9170mOmygqNKB+zRvE2VpH3/wZY68uVoLvNFlrLdnQ+FTKnmft29YuYzmI
-         wJtZTG8WGnUqVrcgydAy+ghOJ4cPaKESObyI0=
-Message-ID: <4B2F63B1.4080109@gmail.com>
-Date: Mon, 21 Dec 2009 20:01:53 +0800
-From: Liuwenyi <qingshenlwy@gmail.com>
-Reply-To: qingshenlwy@gmail.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 21 Dec 2009 07:02:27 -0500
+Date: Mon, 21 Dec 2009 13:02:24 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: kprobes: get rid of distinct type warning
+Message-ID: <20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
+References: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com>
+ <20091221111759.GA12670@in.ibm.com>
 MIME-Version: 1.0
-To: viro@zeniv.linux.org.uk, jeffm@suse.com, joel.becker@oracle.com,
-       jmorris@namei.org, hch@lst.de, reiserfs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, onlyflyer@gmail.com, strongzgy@gmail.com
-Subject: [PATCHv2 11/12]posix_acl: Add the check items
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091221111759.GA12670@in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move the ACL validation check in to fs/posix_acl.c.
-Including nullpointer check and PTR_ERR check.
+On Mon, Dec 21, 2009 at 04:47:59PM +0530, Ananth N Mavinakayanahalli wrote:
+> On Mon, Dec 21, 2009 at 11:15:49AM +0100, Heiko Carstens wrote:
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > 
+> > Every time I see this:
+> > 
+> > kernel/kprobes.c: In function 'register_kretprobe':
+> > kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
+> > 
+> > I'm wondering if something changed in common code and we need to do
+> > something for s390. Apparently that's not the case.
+> > Let's get rid of this annoying warning.
+> > 
+> > Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> Thanks Heiko. I'd tested this on x86 and powerpc and neither throws the
+> warning. No wonder I missed it.
 
+Of course the patch wouldn't help for CONFIG_PREEMPT and !CONFIG_SMP since
+we would have a comparison of a signed and and unsigned value again *sigh*.
+
+So here's an updated version that should always work:
+
+Subject: [PATCH] kprobes: get rid of distinct type warning
+
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+Every time I see this:
+
+kernel/kprobes.c: In function 'register_kretprobe':
+kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
+
+I'm wondering if something changed in common code and we need to do
+something for s390. Apparently that's not the case.
+Let's get rid of this annoying warning.
+
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
-Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Jeff Mahoney <jeffm@suse.com>
-Cc: Joel Becker <joel.becker@oracle.com>
-Cc: James Morris <jmorris@namei.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: reiserfs-devel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+ kernel/kprobes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
----
-diff --git a/fs/reiserfs/xattr_acl.c b/fs/reiserfs/xattr_acl.c
-index cc32e6a..4cf1f18 100644
---- a/fs/reiserfs/xattr_acl.c
-+++ b/fs/reiserfs/xattr_acl.c
-@@ -30,13 +30,9 @@ posix_acl_set(struct dentry *dentry, const char
-*name, const void *value,
-
-if (value) {
-acl = posix_acl_from_xattr(value, size);
-- if (IS_ERR(acl)) {
-- return PTR_ERR(acl);
-- } else if (acl) {
-- error = posix_acl_valid(acl);
-- if (error)
-- goto release_and_out;
-- }
-+ error = posix_acl_valid(acl);
-+ if (error)
-+ goto release_and_out;
-} else
-acl = NULL;
-
-
--- 
-Best Regards,
-Liuwenyi
-
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1035,7 +1035,7 @@ int __kprobes register_kretprobe(struct 
+ 	/* Pre-allocate memory for max kretprobe instances */
+ 	if (rp->maxactive <= 0) {
+ #ifdef CONFIG_PREEMPT
+-		rp->maxactive = max(10, 2 * num_possible_cpus());
++		rp->maxactive = max_t(unsigned int, 10, 2*num_possible_cpus());
+ #else
+ 		rp->maxactive = num_possible_cpus();
+ #endif
