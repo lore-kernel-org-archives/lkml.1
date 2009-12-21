@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZLUQHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZLUUOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZLUQHy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 11:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbZLUQHw
+	id S1756925AbZLUUOf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZLUUOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 11:07:52 -0500
-Received: from smtp.ispras.ru ([83.149.198.201]:48852 "EHLO smtp.ispras.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756658AbZLUQHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 11:07:50 -0500
-From: Alexander Strakh <strakh@ispras.ru>
-Organization: ISP RAS
-To: Frederic Rible <frible@teaser.fr>, Thomas Sailer <sailer@ife.ee.ethz.ch>,
-       "Jean-Paul Roubelat" <jpr@f6fbb.org>, linux-hams@vger.kernel.org,
+	Mon, 21 Dec 2009 15:14:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45370
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751895AbZLUUOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 15:14:32 -0500
+Date: Mon, 21 Dec 2009 12:14:34 -0800 (PST)
+Message-Id: <20091221.121434.226793640.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: BUG null dereference in driver ./drivers/net/hamradio/yam.c
-Date: Mon, 21 Dec 2009 20:13:01 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+Subject: Re: pull request: wireless-2.6 2009-12-21
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091221191626.GE4979@tuxdriver.com>
+References: <20091218211945.GC2828@tuxdriver.com>
+	<20091221191626.GE4979@tuxdriver.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912212013.01887.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-        KERNEL_VERSION: 2.6.32
-        SUBJECT: null derefernce in function __init yam_init_driver
-        SUBSCRIBE:
-        In driver drivers/net/hamradio/yam.c in function __init 
-yam_init_driver:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 21 Dec 2009 14:16:27 -0500
 
-1. If in line 1153 dev = NULL then we goto line 1154
-2. In line 1155 we have null dereference of "dev->name"
+> Here is another big batch of fixes intended for 2.6.33.  They are mostly
+> driver fixes, along with a couple of small ones for mac80211.  I don't
+> think there is anything controverisal here.
+> 
+> Please let me know if there are problems!
+> 
 
-1153                 if (!dev) {
-1154                         printk(KERN_ERR "yam: cannot allocate net device 
-%s\n",
-1155                                dev->name);
-1156                         err = -ENOMEM;
-1157                         goto error;
-1158                 }
-
-Found by Linux Device Drivers Verification Project (Svace Detector)
+Pulled, thanks John.  I'll push it back out after my build
+checks complete.
