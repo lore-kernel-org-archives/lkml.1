@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZLUKY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZLUKYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbZLUKY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 05:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZLUKY0
+	id S1754757AbZLUKYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 05:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbZLUKYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 05:24:26 -0500
-Received: from ozlabs.org ([203.10.76.45]:59334 "EHLO ozlabs.org"
+	Mon, 21 Dec 2009 05:24:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:59370 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753798AbZLUKYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 05:24:25 -0500
+	id S1754228AbZLUKYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 05:24:51 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
-Date: Mon, 21 Dec 2009 20:54:17 +1030
+To: Ben Hutchings <ben@decadent.org.uk>
+Subject: Re: [PATCH] modules: Skip empty sections when exporting section notes
+Date: Mon, 21 Dec 2009 20:54:48 +1030
 User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       Greg KH <gregkh@suse.de>
-References: <200911222201.59471.linux@rainbow-software.org> <200911231359.54544.rusty@rustcorp.com.au> <200912182052.42477.linux@rainbow-software.org>
-In-Reply-To: <200912182052.42477.linux@rainbow-software.org>
+Cc: Helge Deller <deller@gmx.de>, Martin Michlmayr <tbm@cyrius.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1261233781.2418.87.camel@localhost>
+In-Reply-To: <1261233781.2418.87.camel@localhost>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912212054.18055.rusty@rustcorp.com.au>
+Message-Id: <200912212054.48469.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Dec 2009 06:22:39 am Ondrej Zary wrote:
-> Generate pnp:d aliases for isapnp_device_tables. This allows udev to load
-> these modules automatically.
+On Sun, 20 Dec 2009 01:13:01 am Ben Hutchings wrote:
+> Commit 35dead4 "modules: don't export section names of empty sections
+> via sysfs" changed the set of sections that have attributes, but did
+> not change the iteration over these attributes in add_notes_attrs().
+> This can lead to add_notes_attrs() creating attributes with the wrong
+> names or with null name pointers.
 > 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> Introduce a sect_empty() function and use it in both add_sect_attrs()
+> and add_notes_attrs().
 
-I'm happy with this, so I've separated and taken them.  Too late for the
-merge window I'm afraid, but it'll be in next one.
+Looks good, queued.
 
-Thanks,
+Thanks!
 Rusty.
