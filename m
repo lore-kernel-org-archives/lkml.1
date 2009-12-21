@@ -1,129 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZLUXoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751590AbZLUXsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751544AbZLUXoL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 18:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZLUXoK
+	id S1751590AbZLUXsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 18:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbZLUXsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 18:44:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:47498 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbZLUXoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 18:44:07 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Fix BUILD_BUG_ON in fs/compat_ioctl.c to build with gcc 4.5 snapshot
-Date: Tue, 22 Dec 2009 10:14:02 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, rguenther@suse.de, arnd@arndb.de
-References: <20091220165315.GA13208@basil.fritz.box> <200912212102.39878.rusty@rustcorp.com.au> <20091221105138.GD25372@basil.fritz.box>
-In-Reply-To: <20091221105138.GD25372@basil.fritz.box>
+	Mon, 21 Dec 2009 18:48:18 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:30044 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbZLUXsR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 18:48:17 -0500
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912221014.02545.rusty@rustcorp.com.au>
+Message-ID: <022609e4-9f30-4e8b-b26b-023cf58adf21@default>
+Date: Mon, 21 Dec 2009 15:46:28 -0800 (PST)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: ngupta@vflare.org
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       jeremy@goop.org, xen-devel@lists.xensource.com,
+       tmem-devel@oss.oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       Rik van Riel <riel@redhat.com>, dave.mccracken@oracle.com,
+       Rusty@rcsinet15.oracle.com, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, chris.mason@oracle.com,
+       Pavel Machek <pavel@ucw.cz>, linux-mm <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: RE: Tmem [PATCH 0/5] (Take 3): Transcendent memory
+In-Reply-To: <4B2F7C41.9020106@vflare.org>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B3008FE.005D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Dec 2009 09:21:39 pm Andi Kleen wrote:
-> On Mon, Dec 21, 2009 at 09:02:39PM +1030, Rusty Russell wrote:
-> > On Mon, 21 Dec 2009 03:23:15 am Andi Kleen wrote:
-> > > Fix BUILD_BUG_ON in fs/compat_ioctl.c to build with gcc 4.5 snapshot
-> > > 
-> > > The BUILD_BUG_ON in compat_ioctl_check_table() fails
-> > > with a recent gcc mainline snapshot (gcc version 4.5.0 20091219)
-> > > (GCC)), even though it works with older compilers.
-> > 
-> > We have a proper fix for BUILD_BUG_ON which I sent Linus a pull req for,
-> > but I think it was too late:
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git BUILD_BUG_ON
-> > 
-> > It's not really high priority, but it'd be nice to fix this properly.
+> From: Nitin Gupta [mailto:ngupta@vflare.org]
+
+> Hi Dan,
+
+Hi Nitin --
+
+Thanks for your review!
+
+> (I'm not sure if gmane.org interface sends mail to everyone 
+> in CC list, so
+> sending again. Sorry if you are getting duplicate mail).
+
+FWIW, I only got this one copy (at least so far)!
+ 
+> I really like the idea of allocating cache memory from 
+> hypervisor directly. This
+> is much more flexible than assigning fixed size memory to guests.
+
+Thanks!
+
+> I think 'frontswap' part seriously overlaps the functionality 
+> provided by 'ramzswap'
+
+Could be, but I suspect there's a subtle difference.
+A key part of the tmem frontswap api is that any
+"put" at any time can be rejected.  There's no way
+for the kernel to know a priori whether the put
+will be rejected or not, and the kernel must be able
+to react by writing the page to a "true" swap device
+and must keep track of which pages were put
+to tmem frontswap and which were written to disk.
+As a result, tmem frontswap cannot be configured or
+used as a true swap "device".
+
+This is critical to acheive the flexibility you
+commented above that you like.  Only the hypervisor
+knows if a free page is available "now" because
+it is flexibly managing tmem requests from multiple
+guest kernels.
+
+If my understanding of ramzswap is incorrect or you
+have some clever solution that I misunderstood,
+please let me know.
+
+>> Cleancache is
+> > "ephemeral" so whether a page is kept in cleancache 
+> (between the "put" and
+> > the "get") is dependent on a number of factors that are invisible to
+> > the kernel.
 > 
-> AFAIK the code I fixed was not correct in the first place because
-> "const int xxx" is not a constant expression in the standards sense.
-> 
-> So it's orthogonal to whatever changes you come up.
+> Just an idea: as an alternate approach, we can create an 
+> 'in-memory compressed
+> storage' backend for FS-Cache. This way, all filesystems 
+> modified to use
+> fs-cache can benefit from this backend. To make it 
+> virtualization friendly like
+> tmem, we can again provide (per-cache?) option to allocate 
+> from hypervisor  i.e.
+> tmem_{put,get}_page() or use [compress]+alloc natively.
 
-No, it's solving the same problem, generically.  There are numerous places
-where we want to use BUILD_BUG_ON() but we don't have a constant expression.
-Look for MAYBE_BUILD_BUG_ON().
+I looked at FS-Cache and cachefiles and thought I understood
+that it is not restricted to clean pages only, thus
+not a good match for tmem cleancache.
 
-Subject: BUILD_BUG_ON: make it handle more cases
+Again, if I'm wrong (or if it is easy to tell FS-Cache that
+pages may "disappear" underneath it), let me know.
 
-BUILD_BUG_ON used to use the optimizer to do code elimination or fail
-at link time; it was changed to first the size of a negative array (a
-nicer compile time error), then (in
-8c87df457cb58fe75b9b893007917cf8095660a0) to a bitfield.
+BTW, pages put to tmem (both frontswap and cleancache) can
+be optionally compressed.
 
-bitfields: needs a literal constant at parse time, and can't be put under
-	"if (__builtin_constant_p(x))" for example.
-negative array: can handle anything, but if the compiler can't tell it's
-	a constant, silently has no effect.
-link time: breaks link if the compiler can't determine the value, but the
-	linker output is not usually as informative as a compiler error.
+> For guest<-->hypervisor interface, maybe we can use virtio so that all
+> hypervisors can benefit? Not quite sure about this one.
 
-If we use the negative-array-size method *and* the link time trick,
-we get the ability to use BUILD_BUG_ON() under __builtin_constant_p()
-branches, and maximal ability for the compiler to detect errors at
-build time.
+I'm not very familiar with virtio, but the existence of "I/O"
+in the name concerns me because tmem is entirely synchronous.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Hollis Blanchard <hollisb@us.ibm.com>
----
- include/linux/kernel.h |   33 +++++++++++++++++++++++++++------
- 1 file changed, 27 insertions(+), 6 deletions(-)
+Also, tmem is well-layered so very little work needs to be
+done on the Linux side for other hypervisors to benefit.
+Of course these other hypervisors would need to implement
+the hypervisor-side of tmem as well, but there is a well-defined
+API to guide other hypervisor-side implementations... and the
+opensource tmem code in Xen has a clear split between the
+hypervisor-dependent and hypervisor-independent code, which
+should simplify implementation for other opensource hypervisors.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -683,12 +683,6 @@ struct sysinfo {
- 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
- };
- 
--/* Force a compilation error if condition is true */
--#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
--
--/* Force a compilation error if condition is constant and true */
--#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
--
- /* Force a compilation error if condition is true, but also produce a
-    result (of value 0 and type size_t), so the expression can be used
-    e.g. in a structure initializer (or where-ever else comma expressions
-@@ -696,6 +690,33 @@ struct sysinfo {
- #define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
- #define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
- 
-+/**
-+ * BUILD_BUG_ON - break compile if a condition is true.
-+ * @cond: the condition which the compiler should know is false.
-+ *
-+ * If you have some code which relies on certain constants being equal, or
-+ * other compile-time-evaluated condition, you should use BUILD_BUG_ON to
-+ * detect if someone changes it.
-+ *
-+ * The implementation uses gcc's reluctance to create a negative array, but
-+ * gcc (as of 4.4) only emits that error for obvious cases (eg. not arguments
-+ * to inline functions).  So as a fallback we use the optimizer; if it can't
-+ * prove the condition is false, it will cause a link error on the undefined
-+ * "__build_bug_on_failed".  This error message can be harder to track down
-+ * though, hence the two different methods.
-+ */
-+#ifndef __OPTIMIZE__
-+#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-+#else
-+extern int __build_bug_on_failed;
-+#define BUILD_BUG_ON(condition)					\
-+	do {							\
-+		((void)sizeof(char[1 - 2*!!(condition)]));	\
-+		if (condition) __build_bug_on_failed = 1;	\
-+	} while(0)
-+#endif
-+#define MAYBE_BUILD_BUG_ON(condition) BUILD_BUG_ON(condition)
-+
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
- 
+I realize in "Take 3" I didn't provide the URL for more information:
+http://oss.oracle.com/projects/tmem
