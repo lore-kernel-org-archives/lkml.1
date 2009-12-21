@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZLUOTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbZLUOVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbZLUOTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 09:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZLUOT3
+	id S1753441AbZLUOVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 09:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZLUOVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 09:19:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60056 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbZLUOT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 09:19:28 -0500
-Message-ID: <4B2F83F6.2040705@kernel.org>
-Date: Mon, 21 Dec 2009 23:19:34 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Mon, 21 Dec 2009 09:21:32 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:42429 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbZLUOVb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 09:21:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=H62oaTyUWWd3Oy1CNsl2IZi/yiKiqLUQFSP8AxFOb21kAOoeKiJoJ7MHRe6zFtu6LG
+         ic5cGROGpGmMSG4q4kVTlQkoK/7C6GYs7Ml/dfJ+KIK7DinwEiEHr6FyyeufbmhIu3e2
+         Glc6G5poIc8bLT0ZJmPxTPRr6u+edfQSiZNaM=
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <peterz@infradead.org>, torvalds@linux-foundation.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box> <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk> <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org> <4B2F7DD2.2080902@linux.intel.com>
-In-Reply-To: <4B2F7DD2.2080902@linux.intel.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4A5CD77C.6070701@garzik.org>
+References: <1247593187-26570-1-git-send-email-vapier@gentoo.org> 
+	<4A5CD77C.6070701@garzik.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 21 Dec 2009 09:21:03 -0500
+Message-ID: <8bd0f97a0912210621g19535a03q38b8b67c01df6a75@mail.gmail.com>
+Subject: Re: [PATCH] libata: pata_bf54x: handle portmuxing of pins through 
+	GPIO PORTs
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Arjan.
-
-On 12/21/2009 10:53 PM, Arjan van de Ven wrote:
-> I'm just wondering if even that is overkill; I suspect you can do
-> entirely without the scheduler intrusion;
-> just make a new thread for each work item, with some hesteresis:
+On Tue, Jul 14, 2009 at 14:07, Jeff Garzik wrote:
+> Mike Frysinger wrote:
+>> By default, the PATA pins are routed to the async address lines in which
+>> case, no peripheral muxing needs to be done.  However, if the pins get
+>> routed through the GPIO PORTs pins, we need to make sure to request them
+>> so that the muxing is properly set up.
+>> ---
+>> Andrew: could you pick this up ?  it was posted over a month ago to the
+>> Linux/IDE list w/no feedback.
 >
-> * threads should stay around for a bit before dying (you do that)
-> * after some minimum nr of threads (say 4 per cpu), you wait, say, 0.1
-> seconds before deciding it's time
->   to spawn more threads, to smooth out spikes of very short lived stuff.
-> 
-> wouldn't that be a lot simpler than "ask the scheduler to see if
-> they are all blocked". If they are all very busy churning cpu (say
-> doing raid6 work, or btrfs checksumming) you still would want more
-> threads I suspect
+> Although it is disappointing that your patch was missed -- our apologies --
+> I don't think the best response was to elide linux-ide and the libata
+> maintainer, in favor of a higher noise list.  :)
+>
+> I have the patch queued, now.
 
-Ah... okay, there are two aspects cmwq invovles the scheduler.
-
-A. Concurrency management.  This is achieved by the scheduler
-   callbacks which watches how many workers are working.
-
-B. Deadlock avoidance.  This requires migrating rescuers to CPUs under
-   allocation distress.  The problem here is that
-   set_cpus_allowed_ptr() doesn't allow migrating tasks to CPUs which
-   are online but !active (CPU_DOWN_PREPARE).
-
-B would be necessary in whichever way you implement shared worker pool
-unless you create all the workers which might possibly be necessary
-for allocation.
-
-For A, it's far more efficient and robust with scheduler callbacks.
-It's conceptually pretty simple too.  If you look at the patch which
-actually implements the dynamic pool, the amount of code necessary for
-implementing this part isn't that big.  Most of complexity in the
-series comes from trying to sharing workers not the dynamic pool
-management.  Even if it switches to timer based one, there simply
-won't be much reduction in complexity.  So, I don't think there's any
-reason to choose rather fragile heuristics when it can be implemented
-in a pretty mechanical way.
-
-Thanks.
-
--- 
-tejun
+so it's been 8 months since it was posted, 6 months since it was
+queued, and multiple libata merges have been made, but this patch has
+yet to make it into mainline ...
+-mike
