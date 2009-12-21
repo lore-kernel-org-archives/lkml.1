@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbZLUS62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZLUTA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbZLUS62 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 13:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZLUS60
+	id S1757002AbZLUTA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 14:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZLUTAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 13:58:26 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:35297 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZLUS6Z (ORCPT
+	Mon, 21 Dec 2009 14:00:25 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:21737 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbZLUTAZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 13:58:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=u4jaZ0GOVSCVUn+xenNo5lNNsUOSeudrrQcuJwYgXBPQ3DqCJ21Y/LESwy4/RTEJHo
-         qtJ6WqVxP1hh9Rhx3uZ7MtVLmr9TJLyPYMBMoAGWsZeH1sXV5u+6inUnHmKp+qa64h1u
-         CzTdUJJoELPPbduI+mUZZI3GCdD53Ggk9MtcE=
-Message-ID: <4B2FC54D.1070000@garzik.org>
-Date: Mon, 21 Dec 2009 13:58:21 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 21 Dec 2009 14:00:25 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=rIWZkcgoF1wf1NRDmn9ZPuQyTEqQNAKf+1p4mcv4uRi5A6OUUBjPb8NuLY+I/QHFo
+	Y2Y+lOTqQBEzAp3Hibe7A==
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH] libata: pata_bf54x: handle portmuxing of pins through
- 	GPIO PORTs
-References: <1247593187-26570-1-git-send-email-vapier@gentoo.org> 	<4A5CD77C.6070701@garzik.org> <8bd0f97a0912210621g19535a03q38b8b67c01df6a75@mail.gmail.com>
-In-Reply-To: <8bd0f97a0912210621g19535a03q38b8b67c01df6a75@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1261410040.4314.178.camel@laptop>
+References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
+	 <1258561957.3918.661.camel@laptop>
+	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
+	 <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
+	 <1261410040.4314.178.camel@laptop>
+Date: Mon, 21 Dec 2009 20:00:19 +0100
+Message-ID: <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
+Subject: Re: [PATCH] perf_events: improve Intel event scheduling
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       paulus@samba.org, perfmon2-devel@lists.sf.net,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/21/2009 09:21 AM, Mike Frysinger wrote:
-> On Tue, Jul 14, 2009 at 14:07, Jeff Garzik wrote:
->> Mike Frysinger wrote:
->>> By default, the PATA pins are routed to the async address lines in which
->>> case, no peripheral muxing needs to be done.  However, if the pins get
->>> routed through the GPIO PORTs pins, we need to make sure to request them
->>> so that the muxing is properly set up.
->>> ---
->>> Andrew: could you pick this up ?  it was posted over a month ago to the
->>> Linux/IDE list w/no feedback.
->>
->> Although it is disappointing that your patch was missed -- our apologies --
->> I don't think the best response was to elide linux-ide and the libata
->> maintainer, in favor of a higher noise list.  :)
->>
->> I have the patch queued, now.
+Hi,
+
+[Repost because of HTML]
+
+On Mon, Dec 21, 2009 at 4:40 PM, Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> so it's been 8 months since it was posted, 6 months since it was
-> queued, and multiple libata merges have been made, but this patch has
-> yet to make it into mainline ...
+> On Fri, 2009-12-11 at 12:59 +0100, stephane eranian wrote:
+>
+> > There is a major difference between PPC and X86 here. PPC has a
+> > centralized register to control start/stop. This register  uses
+> > bitmask to enable or disable counters. Thus, in hw_perf_enable(), if
+> > n_added=0, then you just need to use the pre-computed bitmask.
+> > Otherwise, you need to recompute the bitmask to include the new
+> > registers. The assignment of events and validation is done in
+> > hw_group_sched_in().
+> >
+> > In X86, assignment and validation is done in hw_group_sched_in().
+> > Activation is done individually for each counter. There is no
+> > centralized register used here, thus no bitmask to update.
+>
+> intel core2 has the global control reg, but for all intents and purposes
+> the perf_enable/disable calls emulate this global enable/disable.
+>
+> > Disabling a counter does not trigger a complete reschedule of events.
+> > This happens only when hw_group_sched_in() is called.
+> >
+> > The n_events = 0 in hw_perf_disable() is used to signal that something
+> > is changing. It should not be here but here. The problem is that
+> > hw_group_sched_in() needs a way to know that it is called for a
+> > completely new series of group scheduling so it can discard any
+> > previous assignment. This goes back to the issue I raised in my
+> > previous email. You could add a parameter to hw_group_sched_in() that
+> > would indicate this is the first group. that would cause n_events =0
+> > and the function would start accumulating events for the new
+> > scheduling period.
+>
+> I'm not really seeing the problem here...
+>
+>
+>  perf_disable() <-- shut down the full pmu
+>
+>  pmu->disable() <-- hey someone got removed (easy free the reg)
+>  pmu->enable()  <-- hey someone got added (harder, check constraints)
+>
+>  hw_perf_group_sched_in() <-- hey a full group got added
+>                              (better than multiple ->enable)
+>
+>  perf_enable() <-- re-enable pmu
+>
+>
+> So ->disable() is used to track freeing, ->enable is used to add
+> individual counters, check constraints etc..
+>
+> hw_perf_group_sched_in() is used to optimize the full group enable.
+>
 
-No idea how it got lost :(   Just sent a pull request to Linus with this 
-in it.
+Does that mean that after a disable() I can assume that there won't
+be an enable() without a group_sched_in()?
 
-	Jeff
+I suspect not. In fact, there is a counter-example in perf_ctx_adjust_freq().
 
-
-
-
+> Afaict that is what power does (Paul?) and that should I think be
+> sufficient to track x86 as well.
+>
+> Since sched_in() is balanced with sched_out(), the ->disable() calls
+> should provide the required information as to the occupation of the pmu.
+> I don't see the need for more hooks.
+>
+> Paul, could you comment, since you did all this for power?
+>
