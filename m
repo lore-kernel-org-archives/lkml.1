@@ -1,126 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbZLUVTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbZLUVhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbZLUVTi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 16:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbZLUVTh
+	id S1757259AbZLUVhL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 16:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbZLUVhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 16:19:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45615 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756109AbZLUVTh (ORCPT
+	Mon, 21 Dec 2009 16:37:09 -0500
+Received: from p01c12o143.mxlogic.net ([208.65.145.66]:36215 "EHLO
+	p01c12o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbZLUVhI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 16:19:37 -0500
-Subject: Re: [PATCH] perf_events: improve Intel event scheduling
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       paulus@samba.org, perfmon2-devel@lists.sf.net,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
-References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
-	 <1258561957.3918.661.camel@laptop>
-	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
-	 <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
-	 <1261410040.4314.178.camel@laptop>
-	 <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
-	 <1261423869.4314.198.camel@laptop>
-	 <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 22:18:52 +0100
-Message-ID: <1261430332.4314.216.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Dec 2009 16:37:08 -0500
+X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Dec 2009 16:37:07 EST
+X-MXL-Hash: 4b2fea83393b0ffe-33d2a8e248819ab265ecd91d0a09a8a98f09f69b
+X-MXL-Hash: 4b2fe8d46556a93a-c698af7122e84ddc73728e80d870e3eb9676c7f7
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH 2.6.33] net: Fix ks8851 snl receive problem
+Date: Mon, 21 Dec 2009 13:29:42 -0800
+Message-ID: <14385191E87B904DBD836449AA30269D021A44@MORGANITE.micrel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.33] net: Fix ks8851 snl receive problem
+Thread-Index: AcqChLUwsBo/+0EvSjWJoipeYWRELQ==
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+To: "Ben Dooks" <ben@simtec.co.uk>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 21 Dec 2009 21:29:42.0402 (UTC) FILETIME=[B5643E20:01CA8284]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009113001)]
+X-MAIL-FROM: <tristram.ha@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=7BbOX77FYVoA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=ppD5YTO_e67L72WQLCoA:9 a=FpRZrd8Vu496fJ]
+X-AnalysisOut: [K9U44A:7 a=hoygO3RCf24fiv19fAamJWqUugsA:4 a=yJsD6ztlz_8A:1]
+X-AnalysisOut: [0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 21:59 +0100, Stephane Eranian wrote:
-> On Mon, Dec 21, 2009 at 8:31 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Mon, 2009-12-21 at 20:00 +0100, Stephane Eranian wrote:
-> >
-> >> >  perf_disable() <-- shut down the full pmu
-> >> >
-> >> >  pmu->disable() <-- hey someone got removed (easy free the reg)
-> >> >  pmu->enable()  <-- hey someone got added (harder, check constraints)
-> >> >
-> >> >  hw_perf_group_sched_in() <-- hey a full group got added
-> >> >                              (better than multiple ->enable)
-> >> >
-> >> >  perf_enable() <-- re-enable pmu
-> >> >
-> >> >
-> >> > So ->disable() is used to track freeing, ->enable is used to add
-> >> > individual counters, check constraints etc..
-> >> >
-> >> > hw_perf_group_sched_in() is used to optimize the full group enable.
-> >> >
-> >>
-> >> Does that mean that after a disable() I can assume that there won't
-> >> be an enable() without a group_sched_in()?
-> >>
-> >> I suspect not. In fact, there is a counter-example in perf_ctx_adjust_freq().
-> >
-> > Why would that be a problem?
-> >
-> > A perf_disable() will simply disable the pmu, but not alter its
-> > configuration, perf_enable() will program the pmu and re-enable it (with
-> > the obvious optimization that if the current state and the new state
-> > match we can skip the actual programming).
-> >
-> > If a ->disable() was observed between it will simply not re-enable that
-> > particular counter, that is it will remove that counters' config, and
-> > perf_enable() can do a smart reprogram by simply no re-enabling that
-> > counter.
-> >
-> > If an ->enable() or hw_perf_group_sched_in() was observed in between,
-> > you have to recompute the full state in order to validate the
-> > availability, if that fails, no state change, if it succeeds you have a
-> > new pmu state and perf_enable() will program that.
-> >
-> 
-> Ok, so what you are suggesting is that the assignment is actually done
-> incrementally in ->enable(). hw_group_sched_in() would simply validate
-> that a single group is sane (i.e., can be scheduled if it was alone).
+From: Tristram Ha <Tristram.Ha@micrel.com>
 
-hw_perf_group_sched_in() can be used to do a whole group at once (see
-how a !0 return value will short-circuit the whole incremental group
-buildup), but yes ->enable() is incremental.
+This fixes a receive problem of the ks8851 snl network driver.  Under heavy TCP traffic the device will stop operating correctly.  First the receive interrupt is not triggered anymore.  After then the driver cannot retrieve the correct packets from the device.  A workaround for this problem is to disable the transmit done interrupt.
 
-> > In the case of perf_ctx_adjust_freq():
-> >
-> >        if (!interrupts) {
-> >                perf_disable();
-> >                event->pmu->disable(event);
-> >                atomic64_set(&hwc->period_left, 0);
-> >                event->pmu->enable(event);
-> >                perf_enable();
-> >        }
-> >
-> > You'll very likely end up with the same state you had before, but if not
-> > who cares -- its supposed to be an unlikely case.
-> >
-> > That is, the ->disable() will clear the cpu_hw_events::used_mask bit.
-> > The ->enable() will want to place the counter on its last know reg,
-> > which (not so very surprisingly) will be available, hence it will
-> 
-> Not in the case I am looking at on AMD. The counter you need to grab
-> depends on what is going on on the other cores on the socket. So
-> there is no guarantee that you will get the same. Something similar
-> exists on Nehalem but it has to do with HT.
+Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
+---
+This patch has some relations to two previous patches I submitted: "[PATH 2.6.32 2/3] net: Fix ks8851 snl transmit problem" and "[PATCH 2.6.32 3/3] net: Make ks8851 snl work under Beagle Zippy combo board."  Please see my replies regarding those patches.
 
-Well the above code is assumed correct, so we need to make it true,
-which should not be too hard to do.
-
-If there are cross cpu constraints (AMD has per node constraints IIRC)
-then we need a structure that describes these (a per node structure for
-AND, a per core structure for HT), if we take a lock on this structure
-the first time we touch it in a perf_disable() region, and release it on
-perf_enable(), then we ensure those constraints remain invariant.
-
-With something like that in place the above code will still be valid,
-since the act of removing the counter will freeze all needed state to
-re-instate it.
-
-Does that make sense?
-
+--- linux-2.6.33-rc1.old/drivers/net/ks8851.c	2009-12-08 17:46:20.000000000 -0800
++++ linux-2.6.33-rc1.new/drivers/net/ks8851.c	2009-12-21 10:43:43.000000000 -0800
+@@ -551,6 +551,13 @@ static void ks8851_irq_work(struct work_
+ 
+ 	mutex_lock(&ks->lock);
+ 
++	/*
++	 * Turn off hardware interrupt during receive processing.  This fixes
++	 * the receive problem under heavy TCP traffic while transmit done
++	 * is enabled.
++	 */
++	ks8851_wrreg16(ks, KS_IER, 0);
++
+ 	status = ks8851_rdreg16(ks, KS_ISR);
+ 
+ 	if (netif_msg_intr(ks))
+@@ -621,6 +628,9 @@ static void ks8851_irq_work(struct work_
+ 		ks8851_wrreg16(ks, KS_RXCR1, rxc->rxcr1);
+ 	}
+ 
++	/* Re-enable hardware interrupt. */
++	ks8851_wrreg16(ks, KS_IER, ks->rc_ier);
++
+ 	mutex_unlock(&ks->lock);
+ 
+ 	if (status & IRQ_TXI)
