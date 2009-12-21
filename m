@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbZLUGh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbZLUGcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbZLUGh3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 01:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbZLUGh3
+	id S1751983AbZLUGcx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 01:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZLUGcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 01:37:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46257 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbZLUGh2 (ORCPT
+	Mon, 21 Dec 2009 01:32:51 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42678 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbZLUGcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 01:37:28 -0500
-Message-ID: <4B2F1630.7090406@zytor.com>
-Date: Sun, 20 Dec 2009 22:31:12 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 21 Dec 2009 01:32:51 -0500
+Date: Mon, 21 Dec 2009 15:32:38 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Am?rico Wang <xiyou.wangcong@gmail.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+Message-ID: <20091221063238.GC15721@linux-sh.org>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com> <2375c9f90912170131g3144ca2eydfa067c85f6ced44@mail.gmail.com> <alpine.LFD.2.00.0912170713390.17868@localhost.localdomain> <200912171618.32882.bzolnier@gmail.com> <alpine.LRH.2.00.0912181400130.21496@twin.jikos.cz>
 MIME-Version: 1.0
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: different symbol address between System.map and /proc/kallsyms
-References: <4B2ECD47.7040202@cn.fujitsu.com>
-In-Reply-To: <4B2ECD47.7040202@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0912181400130.21496@twin.jikos.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/20/2009 05:20 PM, Xiao Guangrong wrote:
-> Hi,
+On Fri, Dec 18, 2009 at 02:04:37PM +0100, Jiri Kosina wrote:
+> On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
 > 
-> The symbol address in System.map and /proc/kallsys is different:
+> > > > I like this patch, this is actually what I wanted to do.
+> > > 
+> > > I have nothing against a switch, but it had better default to off.
+> > > 
+> > > The whole 80-char limit is insane. It results in insane "fixes". Just 
+> > > about every time somebody "improves" a patch due to the warning, the 
+> > > result is worse than the original patch.
+> > 
+> > Examples? :)
 > 
-> # cat System.map | grep _text
->   c1000000 T _text
-> # cat /proc/kallsyms | grep _text
->   c0100000 T _text
+> balance_leaf() in fs/reiserfs/do_balan.c
 > 
-> # readelf -s vmlinux | grep _text
-> 35078: c1000000     0 NOTYPE  GLOBAL DEFAULT    1 _text
+> Example picked totally at random:
 > 
-> So, perf can't get sysmbol address properly:
+> 	set_le_ih_k_offset(ih,
+> 			   le_ih_k_offset(ih) +
+> 			   (tb->
+> 			    lbytes <<
+> 			    (is_indirect_le_ih
+> 			     (ih) ? tb->tb_sb->
+> 			     s_blocksize_bits -
+> 			     UNFM_P_SHIFT :
+> 			     0)));
 > 
-> # ./perf report
-> # Samples: 29
-> #
-> # Overhead  Command        Shared Object  Symbol
-> # ........  .......  ...................  ......
-> #
->     93.10%    sleep             c014f988  [k] 0x000000c014f988
->      3.45%    sleep  libc-2.9.90.so       [.] _int_malloc
->      3.45%    sleep  [kernel]             [k] 0x000000c014f988
+> See how everything is nicely aligned to 80 cols?
+> 
+> 
+> Generally, don't look at this function after having a good lunch you want 
+> to keep. You have been warned.
+> 
+This isn't a valid example, as it wasn't written by a human. This is the
+result of Lindent being run blindly on the file and nothing more.
 
-That is normal if you have a relocatable kernel which has been loaded at
-the non-compile-time default address.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Try again.
