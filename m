@@ -1,163 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZLUOYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZLUO2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZLUOYo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 09:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbZLUOYn
+	id S1753897AbZLUO2k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 09:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZLUO2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 09:24:43 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:45566 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbZLUOYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 09:24:43 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-fbdev-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH] fbdev: bf54x-lq043fb/bfin-t350mcqb-fb: drop custom mmap() handler
-Date: Mon, 21 Dec 2009 09:25:42 -0500
-Message-Id: <1261405542-7079-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.4
+	Mon, 21 Dec 2009 09:28:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44928 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbZLUO2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 09:28:38 -0500
+Subject: Re: workqueue thing
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+In-Reply-To: <4B2F7879.2080901@kernel.org>
+References: <1261141088-2014-1-git-send-email-tj@kernel.org>
+	 <1261143924.20899.169.camel@laptop>  <4B2EE5A5.2030208@kernel.org>
+	 <1261387377.4314.37.camel@laptop>  <4B2F7879.2080901@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 15:26:44 +0100
+Message-ID: <1261405604.4314.154.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Mon, 2009-12-21 at 22:30 +0900, Tejun Heo wrote:
 
-The common Blackfin code implements the get_fb_unmapped_area() function,
-so we no longer need to have our own mmap() handler.  The common fb code
-will take care of everything for us now.
+> I think you're primarily concerned with the scheduler modifications
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/video/bf54x-lq043fb.c    |   30 ------------------------------
- drivers/video/bfin-t350mcqb-fb.c |   29 -----------------------------
- 2 files changed, 0 insertions(+), 59 deletions(-)
+No I think the whole wq redesign sucks chunks, because it:
 
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index e49ae5e..814312a 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -82,7 +82,6 @@ struct bfin_bf54xfb_info {
- 	unsigned char *fb_buffer;	/* RGB Buffer */
- 
- 	dma_addr_t dma_handle;
--	int lq043_mmap;
- 	int lq043_open_cnt;
- 	int irq;
- 	spinlock_t lock;	/* lock */
-@@ -316,7 +315,6 @@ static int bfin_bf54x_fb_release(struct fb_info *info, int user)
- 	spin_lock(&fbi->lock);
- 
- 	fbi->lq043_open_cnt--;
--	fbi->lq043_mmap = 0;
- 
- 	if (fbi->lq043_open_cnt <= 0) {
- 
-@@ -374,33 +372,6 @@ static int bfin_bf54x_fb_check_var(struct fb_var_screeninfo *var,
- 	return 0;
- }
- 
--static int bfin_bf54x_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
--{
--
--	struct bfin_bf54xfb_info *fbi = info->par;
--
--	if (fbi->lq043_mmap)
--		return -1;
--
--	spin_lock(&fbi->lock);
--	fbi->lq043_mmap = 1;
--	spin_unlock(&fbi->lock);
--
--	vma->vm_start = (unsigned long)(fbi->fb_buffer);
--
--	vma->vm_end = vma->vm_start + info->fix.smem_len;
--	/* For those who don't understand how mmap works, go read
--	 *   Documentation/nommu-mmap.txt.
--	 * For those that do, you will know that the VM_MAYSHARE flag
--	 * must be set in the vma->vm_flags structure on noMMU
--	 *   Other flags can be set, and are documented in
--	 *   include/linux/mm.h
--	 */
--	vma->vm_flags |=  VM_MAYSHARE | VM_SHARED;
--
--	return 0;
--}
--
- int bfin_bf54x_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	if (nocursor)
-@@ -452,7 +423,6 @@ static struct fb_ops bfin_bf54x_fb_ops = {
- 	.fb_fillrect = cfb_fillrect,
- 	.fb_copyarea = cfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
--	.fb_mmap = bfin_bf54x_fb_mmap,
- 	.fb_cursor = bfin_bf54x_fb_cursor,
- 	.fb_setcolreg = bfin_bf54x_fb_setcolreg,
- };
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-index 2549c53..5653d08 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -87,7 +87,6 @@ struct bfin_t350mcqbfb_info {
- 	struct device *dev;
- 	unsigned char *fb_buffer;	/* RGB Buffer */
- 	dma_addr_t dma_handle;
--	int lq043_mmap;
- 	int lq043_open_cnt;
- 	int irq;
- 	spinlock_t lock;	/* lock */
-@@ -235,7 +234,6 @@ static int bfin_t350mcqb_fb_release(struct fb_info *info, int user)
- 	spin_lock(&fbi->lock);
- 
- 	fbi->lq043_open_cnt--;
--	fbi->lq043_mmap = 0;
- 
- 	if (fbi->lq043_open_cnt <= 0) {
- 		bfin_t350mcqb_disable_ppi();
-@@ -293,32 +291,6 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
- 	return 0;
- }
- 
--static int bfin_t350mcqb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
--{
--	struct bfin_t350mcqbfb_info *fbi = info->par;
--
--	if (fbi->lq043_mmap)
--		return -1;
--
--	spin_lock(&fbi->lock);
--	fbi->lq043_mmap = 1;
--	spin_unlock(&fbi->lock);
--
--	vma->vm_start = (unsigned long)(fbi->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET);
--
--	vma->vm_end = vma->vm_start + info->fix.smem_len;
--	/* For those who don't understand how mmap works, go read
--	 *   Documentation/nommu-mmap.txt.
--	 * For those that do, you will know that the VM_MAYSHARE flag
--	 * must be set in the vma->vm_flags structure on noMMU
--	 *   Other flags can be set, and are documented in
--	 *   include/linux/mm.h
--	 */
--	vma->vm_flags |= VM_MAYSHARE | VM_SHARED;
--
--	return 0;
--}
--
- int bfin_t350mcqb_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	if (nocursor)
-@@ -370,7 +342,6 @@ static struct fb_ops bfin_t350mcqb_fb_ops = {
- 	.fb_fillrect = cfb_fillrect,
- 	.fb_copyarea = cfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
--	.fb_mmap = bfin_t350mcqb_fb_mmap,
- 	.fb_cursor = bfin_t350mcqb_fb_cursor,
- 	.fb_setcolreg = bfin_t350mcqb_fb_setcolreg,
- };
--- 
-1.6.5.4
+ 1) looses the queue property
+ 2) doesn't deal with cpu heavy tasks/wakeup parallelism
+ 3) gets fragile at memory-pressure/reclaim
+ 4) didn't consider the RT needs
+
+Also, I think that whole move tasks back on online stuff is utter crazy,
+just move then to another cpu and leave them there.
+
+Also, I don't think it can properly warn of simple AB-BA flush
+deadlocks, where work A flushes B and B flushes A.
+
+(I also don't much like the colour coding flush implementation, but I
+haven't spend a lot of time considering alternatives)
+
+> and think that the choose-between-two-masks on migration is ugly.  I
+> agree it's not the prettiest thing in this world but then again it's
+> not a lot of code.  The reason why it looks ugly is because the way
+> migration is implemented and parameter is passed in.  API-wise, I
+> think making kthread_bind() synchronized against cpu onliness should
+> be pretty clean.
+
+Assuming you only migrate blocked tasks the current kthread_bind()
+should suit your needs -- I recently reworked most of the migration
+logic.
+
+But as it stands I don't think its wise to replace the current workqueue
+implementation with this, esp since there are known heavy CPU users
+using it, nor have you addressed the queueing issue (or is that the
+restoration of the single-queue workqueue?)
+
+
 
