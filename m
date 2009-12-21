@@ -1,102 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbZLUBVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbZLUBX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756500AbZLUBVf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 20:21:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbZLUBVV
+	id S1756554AbZLUBX2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 20:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbZLUBXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 20:21:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37732 "EHLO
+	Sun, 20 Dec 2009 20:23:13 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58868 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756404AbZLUBUe (ORCPT
+	with ESMTP id S1752095AbZLUBXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 20:20:34 -0500
+	Sun, 20 Dec 2009 20:23:07 -0500
+Date: Mon, 21 Dec 2009 02:23:05 +0100
 From: Andi Kleen <andi@firstfloor.org>
-References: <20091221220.243954235@firstfloor.org>
-In-Reply-To: <20091221220.243954235@firstfloor.org>
-To: samuel@sortiz.org, linux-kernel@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, ebiederm@xmission.com
-Subject: [PATCH] [11/11] SYSCTL: Convert IRDA text sysctl to RCU 
-Message-Id: <20091221012032.B73BAB158A@basil.firstfloor.org>
-Date: Mon, 21 Dec 2009 02:20:32 +0100 (CET)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SYSCTL: Print binary sysctl warnings (nearly) only once
+Message-ID: <20091221012305.GB5143@basil.fritz.box>
+References: <20091219358.549678091@firstfloor.org> <20091219145832.A0424B158A@basil.firstfloor.org> <alpine.LFD.2.00.0912190929180.3712@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912190929180.3712@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 19, 2009 at 09:40:56AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Sat, 19 Dec 2009, Andi Kleen wrote:
+> > 
+> > Turn all the bin_tables from const to non-const. This is needed for the next
+> > patch. Unfortunately there were a lot of them, so the patch is rather 
+> > large, but it is completely mechanic. 
+> 
+> Ouch. I hate this.
+> 
+> I'd much rather have a constant sysctl bin_table.
+> 
+> If the _only_ thing you want to do is to do a "warn-on-once" logic, I 
+> would seriously suggest you use a small hash-table instead of turning 
+> bin_table non-const.
 
-This avoids races with lockless sysctl
+I played around with this. The standard name hash couldn't be used
+because this is a string of ints, not chars. I ended up using
+FNV32 hash which seemed to do bests when hashing all the possible
+binary sysctls.
 
-Cc: samuel@sortiz.org
+Tested patch appended.
+
+-Andi
 
 ---
- net/irda/irlmp.c    |    3 +--
- net/irda/irsysctl.c |    9 ++++++---
- 2 files changed, 7 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.33-rc1-ak/net/irda/irlmp.c
+SYSCTL: Print binary sysctl warnings (nearly) only once
+
+When printing legacy sysctls print the warning message
+for each of them only once.  This way there is a guarantee
+the syslog won't be flooded for any sane program.
+
+The original attempt at this made the tables non const and stored
+the flag inline.
+
+Linus suggested using a separate hash table for this, this is based on a 
+code snippet from him.
+
+The hash implies this is not exact and can sometimes not print a 
+new sysctl due to a hash collision, but in practice this should not 
+be a problem
+
+I used a FNV32 hash over the binary string with a 32byte bitmap. This
+gives relatively little collisions when all the predefined binary sysctls
+are hashed:
+
+size 256
+bucket
+length      number
+0:          [25] 
+1:          [67] 
+2:          [88] 
+ak@linux.intel.com -- Speaking for myself only.
+3:          [47] 
+4:          [22] 
+5:          [6] 
+6:          [1] 
+
+The worst case is a single collision of 6 hash values.
+
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+---
+ kernel/sysctl_binary.c |   31 ++++++++++++++++++++++++++++++-
+ 1 file changed, 30 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.33-rc1-ak/kernel/sysctl_binary.c
 ===================================================================
---- linux-2.6.33-rc1-ak.orig/net/irda/irlmp.c
-+++ linux-2.6.33-rc1-ak/net/irda/irlmp.c
-@@ -56,7 +56,7 @@ int  sysctl_discovery         = 0;
- int  sysctl_discovery_timeout = 3; /* 3 seconds by default */
- int  sysctl_discovery_slots   = 6; /* 6 slots by default */
- int  sysctl_lap_keepalive_time = LM_IDLE_TIMEOUT * 1000 / HZ;
--char sysctl_devname[65];
-+char *sysctl_devname = "Linux";
- 
- const char *irlmp_reasons[] = {
- 	"ERROR, NOT USED",
-@@ -101,7 +101,6 @@ int __init irlmp_init(void)
- 	spin_lock_init(&irlmp->cachelog->hb_spinlock);
- 
- 	irlmp->last_lsap_sel = 0x0f; /* Reserved 0x00-0x0f */
--	strcpy(sysctl_devname, "Linux");
- 
- 	init_timer(&irlmp->discovery_timer);
- 
-Index: linux-2.6.33-rc1-ak/net/irda/irsysctl.c
-===================================================================
---- linux-2.6.33-rc1-ak.orig/net/irda/irsysctl.c
-+++ linux-2.6.33-rc1-ak/net/irda/irsysctl.c
-@@ -27,6 +27,7 @@
- #include <linux/ctype.h>
- #include <linux/sysctl.h>
- #include <linux/init.h>
-+#include <linux/rcupdate.h>
- 
- #include <net/irda/irda.h>		/* irda_debug */
- #include <net/irda/irlmp.h>
-@@ -38,7 +39,7 @@ extern int  sysctl_discovery_slots;
- extern int  sysctl_discovery_timeout;
- extern int  sysctl_slot_timeout;
- extern int  sysctl_fast_poll_increase;
--extern char sysctl_devname[];
-+extern char *sysctl_devname;
- extern int  sysctl_max_baud_rate;
- extern int  sysctl_min_tx_turn_time;
- extern int  sysctl_max_tx_data_size;
-@@ -78,13 +79,15 @@ static int do_devname(ctl_table *table,
- {
- 	int ret;
- 
--	ret = proc_dostring(table, write, buffer, lenp, ppos);
-+	ret = proc_rcu_string(table, write, buffer, lenp, ppos);
- 	if (ret == 0 && write) {
- 		struct ias_value *val;
- 
-+		rcu_read_lock();
- 		val = irias_new_string_value(sysctl_devname);
- 		if (val)
- 			irias_object_change_attribute("Device", "DeviceName", val);
-+		rcu_read_unlock();
- 	}
- 	return ret;
+--- linux-2.6.33-rc1-ak.orig/kernel/sysctl_binary.c
++++ linux-2.6.33-rc1-ak/kernel/sysctl_binary.c
+@@ -1417,6 +1417,35 @@ static void deprecated_sysctl_warning(co
+ 	return;
  }
-@@ -121,7 +124,7 @@ static ctl_table irda_table[] = {
- 	},
- 	{
- 		.procname	= "devname",
--		.data		= sysctl_devname,
-+		.data		= &sysctl_devname,
- 		.maxlen		= 65,
- 		.mode		= 0644,
- 		.proc_handler	= do_devname,
+ 
++#define WARN_ONCE_HASH_BITS 8
++#define WARN_ONCE_HASH_SIZE (1<<WARN_ONCE_HASH_BITS)
++
++static DECLARE_BITMAP(warn_once_bitmap, WARN_ONCE_HASH_SIZE);
++
++#define FNV32_OFFSET 2166136261U
++#define FNV32_PRIME 0x01000193
++
++/*
++ * Print each legacy sysctl (approximately) only once.
++ * To avoid making the tables non-const use a external
++ * hash-table instead.
++ * Worst case hash collision: 6, but very rarely.
++ * NOTE! We don't use the SMP-safe bit tests. We simply
++ * don't care enough.
++ */
++static void warn_on_bintable(const int *name, int nlen)
++{
++	int i;
++	u32 hash = FNV32_OFFSET;
++
++	for (i = 0; i < nlen; i++)
++		hash = (hash ^ name[i]) * FNV32_PRIME;
++	hash %= WARN_ONCE_HASH_SIZE;
++	if (__test_and_set_bit(hash, warn_once_bitmap))
++		return;
++	deprecated_sysctl_warning(name, nlen);
++}
++
+ static ssize_t do_sysctl(int __user *args_name, int nlen,
+ 	void __user *oldval, size_t oldlen, void __user *newval, size_t newlen)
+ {
+@@ -1431,7 +1460,7 @@ static ssize_t do_sysctl(int __user *arg
+ 		if (get_user(name[i], args_name + i))
+ 			return -EFAULT;
+ 
+-	deprecated_sysctl_warning(name, nlen);
++	warn_on_bintable(name, nlen);
+ 
+ 	return binary_sysctl(name, nlen, oldval, oldlen, newval, newlen);
+ }
