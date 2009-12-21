@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751485AbZLUSe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZLUS32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751485AbZLUSe0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 13:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZLUSeZ
+	id S1754978AbZLUS32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 13:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZLUS31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 13:34:25 -0500
-Received: from 28dayslater.mr.itd.umich.edu ([141.211.12.118]:53597 "EHLO
-	28dayslater.mr.itd.umich.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750965AbZLUSeZ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 13:34:25 -0500
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Dec 2009 13:34:24 EST
-From: Mike Garrison <mcgarr@umich.edu>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Subject: 2.6.32.2: undefined reference to `__udivdi3'
-Date: Mon, 21 Dec 2009 13:22:45 -0500
-Message-Id: <61FF0336-4E17-4EE5-9471-01360A6F7D29@umich.edu>
-To: linux-kernel@vger.kernel.org
-Mime-Version: 1.0 (Apple Message framework v1077)
-X-Mailer: Apple Mail (2.1077)
+	Mon, 21 Dec 2009 13:29:27 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54555 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbZLUS30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 13:29:26 -0500
+Message-ID: <4B2FBE69.3080408@zytor.com>
+Date: Mon, 21 Dec 2009 10:28:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Michael Tokarev <mjt@tls.msk.ru>, Michal Marek <mmarek@suse.cz>,
+       Michael Guntsche <mike@it-loops.com>,
+       Oliver Hartkopp <oliver@hartkopp.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86
+ boot
+References: <20091219233457.GA4288@trillian.comsick.at> <20091220084656.GA485@merkur.ravnborg.org> <20091220091138.GA1793@trillian.comsick.at> <20091220100344.GA6614@merkur.ravnborg.org> <4B2E084D.6080105@msgid.tls.msk.ru> <20091220141156.GA3744@merkur.ravnborg.org>
+In-Reply-To: <20091220141156.GA3744@merkur.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Same problem as Arvids and Andreas:
+On 12/20/2009 06:11 AM, Sam Ravnborg wrote:
+> 
+> The whole business using shell scripts to append the size seems broken.
+> How about moving this functionality to mkpiggy where we are
+> less shell script dependent.
+> 
 
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `menu_select':
-menu.c:(.text+0x139711): undefined reference to `__udivdi3'
-make: *** [.tmp_vmlinux1] Error 1
+Seems a helluva lot saner to me...
 
-Reading specs from /usr/lib/gcc/i686-pc-linux-gnu/3.4.5/specs
-Configured with: ./configure --prefix=/usr --enable-shared --enable-languages=c,c++ --enable-threads=posix --with-slibdir=/lib --enable-__cxa_atexit --enable-clocale=gnu
-Thread model: posix
-gcc version 3.4.5
+> It includes the length also in the gzip case - I dunno if that matters.
+> Also I dunno if ".long" is the same on 32 and 64 bit.
 
-This is a custom build of Linux based on Linux From Scratch. I've had no issues with 2.6.31.X
+Well, gzip already has a length at the end... shouldn't really hurt
+anything, I suppose.  ".long" is 32 bits on both 32 and 64 bits.
 
---
-Mike Garrison
+	-hpa
+
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
