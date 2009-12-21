@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZLULzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZLUL4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbZLULzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 06:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbZLULz3
+	id S1756687AbZLUL4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 06:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbZLULz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 06:55:29 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:38336 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756627AbZLULz1 (ORCPT
+	Mon, 21 Dec 2009 06:55:58 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:33622 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756626AbZLULz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 06:55:27 -0500
+	Mon, 21 Dec 2009 06:55:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=tE0QrIJl+W3ZlDE5rrOjj85xITt+aWGGa1WxlE65468EIZC9UMFa2DnnV6RQbg3/GU
-         gvC6DVOceRBwV6rMjnMwdE5RXcpUMRbmHZz0UWdlkp0ykKp1eCpzOLLszL5Sesk8M0j2
-         lNLxVGUFPiYIQTf9ctN+QsNgEgHrS8GkJ6ulY=
-Message-ID: <4B2F6302.5050302@gmail.com>
-Date: Mon, 21 Dec 2009 19:58:58 +0800
+        b=nsLt+BTpDynEPA7np0cvMWSvEsa85AYBEl5OBYlFjx0bdJw2QaSaHSNo7aFctLzHQc
+         Jxl4/Oh/g0LCNt4yEaznAFeFJluya1gKaee+XZbag+opJQA9868IcJSEAVlA5VKffRYp
+         mopZyP8bFfntxza/FWKZQLyooDxCCTOR4ppVY=
+Message-ID: <4B2F631F.4070303@gmail.com>
+Date: Mon, 21 Dec 2009 19:59:27 +0800
 From: Liuwenyi <qingshenlwy@gmail.com>
 Reply-To: qingshenlwy@gmail.com
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-To: swhiteho@redhat.com, viro@zeniv.linux.org.uk, joel.becker@oracle.com,
-       jmorris@namei.org, hch@lst.de, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, onlyflyer@gmail.com, strongzgy@gmail.com
-Subject: [PATCHv2 07/12]posix_acl: Add the check items
+To: dwmw2@infradead.org, viro@zeniv.linux.org.uk, jmorris@namei.org,
+       akpm@linux-foundation.org, joel.becker@oracle.com, serue@us.ibm.com,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       onlyflyer@gmail.com, strongzgy@gmail.com
+Subject: [PATCHv2 08/12]posix_acl: Add the check items
 Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,38 +39,39 @@ Including nullpointer check and PTR_ERR check.
 
 ---
 Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Joel Becker <joel.becker@oracle.com>
 Cc: James Morris <jmorris@namei.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: cluster-devel@redhat.com
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joel Becker <joel.becker@oracle.com>
+Cc: Serge Hallyn <serue@us.ibm.com>
+Cc: linux-mtd@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 
 ---
-diff --git a/fs/gfs2/acl.c b/fs/gfs2/acl.c
-index 87ee309..462f4e3 100644
---- a/fs/gfs2/acl.c
-+++ b/fs/gfs2/acl.c
-@@ -284,17 +284,6 @@ static int gfs2_xattr_system_set(struct dentry
+diff --git a/fs/jffs2/acl.c b/fs/jffs2/acl.c
+index 7cdc319..1eb4726 100644
+--- a/fs/jffs2/acl.c
++++ b/fs/jffs2/acl.c
+@@ -403,13 +403,10 @@ static int jffs2_acl_setxattr(struct dentry
 *dentry, const char *name,
-goto set_acl;
 
+if (value) {
 acl = posix_acl_from_xattr(value, size);
-- if (!acl) {
-- /*
-- * acl_set_file(3) may request that we set default ACLs with
-- * zero length -- defend (gracefully) against that here.
-- */
+- if (IS_ERR(acl))
+- return PTR_ERR(acl);
+- if (acl) {
+- rc = posix_acl_valid(acl);
+- if (rc)
 - goto out;
 - }
-- if (IS_ERR(acl)) {
-- error = PTR_ERR(acl);
-- goto out;
-- }
-
-error = posix_acl_valid(acl);
-if (error)
++ rc = posix_acl_valid(acl);
++ if (rc)
++ goto out;
++
+} else {
+acl = NULL;
+}
 
 -- 
 Best Regards,
