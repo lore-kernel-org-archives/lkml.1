@@ -1,197 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZLUAJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZLUA2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZLUAJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 19:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbZLUAJ4
+	id S1756246AbZLUA2x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 19:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZLUA2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 19:09:56 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:48257 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755006AbZLUAJz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 19:09:55 -0500
-Subject: Re: [PATCH 2/12] pci: add pci_bridge_release_unused_res and
-	pci_bus_release_unused_bridge_res -v2
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Alex Chiang <achiang@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-In-Reply-To: <4B2C1DA9.4030907@kernel.org>
-References: <4B2BE9DD.3040504@kernel.org> <4B2BEC1B.9090104@kernel.org>
-	 <alpine.LFD.2.00.0912181316190.3712@localhost.localdomain>
-	 <4B2C1DA9.4030907@kernel.org>
-Content-Type: text/plain
-Date: Sun, 20 Dec 2009 17:04:03 -0700
-Message-Id: <1261353843.26429.61.camel@dc7800.home>
+	Sun, 20 Dec 2009 19:28:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1122 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756161AbZLUA2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 19:28:52 -0500
+Subject: Re: OOPS in inotify code, kernel 2.6.31.6-162.fc12.i686.PAE
+From: Eric Paris <eparis@redhat.com>
+To: Frantisek Hanzlik <franta@hanzlici.cz>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4B2E7841.6020203@hanzlici.cz>
+References: <4B2E1F1C.7000105@hanzlici.cz>  <4B2E7841.6020203@hanzlici.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 20 Dec 2009 19:28:47 -0500
+Message-Id: <1261355327.2782.0.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-18 at 16:26 -0800, Yinghai Lu wrote:
-> Subject: [PATCH 2/12] pci: add pci_bridge_release_unused_res and pci_bus_release_unused_bridge_res -v3
+On Sun, 2009-12-20 at 20:17 +0100, Frantisek Hanzlik wrote:
+> Frantisek Hanzlik wrote:
+> > Hello, when I tried incrond inotify daemon, I found this in system log:
+> >
+> > Dec 20 05:20:03 franta kernel: ------------[ cut here ]------------
+> > Dec 20 05:20:03 franta kernel: WARNING: at
+> > fs/notify/inotify/inotify_fsnotify.c:129 idr_callback+0x32/0x56() (Not
+> > tainted)
+> > Dec 20 05:20:03 franta kernel: Hardware name: P5E-VM HDMI
+> > Dec 20 05:20:03 franta kernel: inotify closing but id=0 for
+> > entry=ed0b8900 in group=d657d600 still in idr. Probably leaking memory
+> > Dec 20 05:20:03 franta kernel: Modules linked in: bluetooth rfkill hfs
+> > hfsplus nls_utf8 fuse ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs
+> > autofs4 nfs lock
+> > d fscache nfs_acl auth_rpcgss sunrpc bridge stp llc cpufreq_ondemand
+> > acpi_cpufreq dm_multipath kvm_intel kvm uinput snd_hda_codec_intelhdmi
+> > snd_hda_codec_rea
+> > ltek snd_hda_intel snd_hda_codec snd_hwdep snd_seq snd_seq_device
+> > snd_pcm snd_timer firewire_ohci snd firewire_core crc_itu_t iTCO_wdt
+> > soundcore iTCO_vendor_
+> > support asus_atk0110 i2c_i801 snd_page_alloc atl1 serio_raw e100 mii
+> > ata_generic pata_acpi pata_jmicron i915 drm_kms_helper drm i2c_algo_bit
+> > i2c_core video o
+> > utput [last unloaded: microcode]
+> > Dec 20 05:20:03 franta kernel: Pid: 7426, comm: incrond Not tainted
+> > 2.6.31.6-162.fc12.i686.PAE #1
+> > Dec 20 05:20:03 franta kernel: Call Trace:
+> > Dec 20 05:20:03 franta kernel: [<c043db1b>] warn_slowpath_common+0x70/0x87
+> > Dec 20 05:20:03 franta kernel: [<c04edbfc>] ? idr_callback+0x32/0x56
+> > Dec 20 05:20:03 franta kernel: [<c043db70>] warn_slowpath_fmt+0x29/0x2c
+> > Dec 20 05:20:03 franta kernel: [<c04edbfc>] idr_callback+0x32/0x56
+> > Dec 20 05:20:03 franta kernel: [<c059ce18>] idr_for_each+0x5c/0x97
+> > Dec 20 05:20:03 franta kernel: [<c04edbca>] ? idr_callback+0x0/0x56
+> > Dec 20 05:20:03 franta kernel: [<c04ec2b0>] ? fsnotify_put_event+0x48/0x4b
+> > Dec 20 05:20:03 franta kernel: [<c04edbb9>]
+> > inotify_free_group_priv+0x1a/0x2b
+> > Dec 20 05:20:03 franta kernel: [<c04ec38f>]
+> > fsnotify_final_destroy_group+0x1e/0x28
+> > Dec 20 05:20:03 franta kernel: [<c04ec453>] fsnotify_put_group+0x75/0x78
+> > Dec 20 05:20:03 franta kernel: [<c04edd71>] inotify_release+0x1e/0x28
+> > Dec 20 05:20:03 franta kernel: [<c04c9bd7>] __fput+0xed/0x184
+> > Dec 20 05:20:03 franta kernel: [<c04c9c86>] fput+0x18/0x1a
+> > Dec 20 05:20:03 franta kernel: [<c04c7129>] filp_close+0x56/0x60
+> > Dec 20 05:20:03 franta kernel: [<c043f480>] put_files_struct+0x5d/0xa1
+> > Dec 20 05:20:03 franta kernel: [<c043f4f7>] exit_files+0x33/0x37
+> > Dec 20 05:20:03 franta kernel: [<c0440c60>] do_exit+0x1cb/0x5da
+> > Dec 20 05:20:03 franta kernel: [<c04410d5>] do_group_exit+0x66/0x8d
+> > Dec 20 05:20:03 franta kernel: [<c0441114>] sys_exit_group+0x18/0x1c
+> > Dec 20 05:20:03 franta kernel: [<c0408f9b>] sysenter_do_call+0x12/0x28
+> > Dec 20 05:20:03 franta kernel: ---[ end trace bf2ba6f50ae90f71 ]---
+> > Dec 20 05:20:03 franta kernel: entry->group=(null) inode=(null) wd=1024
+> > Dec 20 05:20:08 franta abrt: Kerneloops: Reported 1 kernel oopses to Abrt
+> > Dec 20 05:20:08 franta abrtd: Directory 'kerneloops-1261282808-1'
+> > creation detected
+> > Dec 20 05:20:08 franta abrtd: Getting local universal unique identification
+> > Dec 20 05:20:08 franta abrtd: New crash, saving
+> > Dec 20 05:20:08 franta abrtd: Activation of plugin 'RunApp' was not
+> > successful: Plugin 'RunApp' is not registered
+> >
+> >
+> > In addition to things above: System is Fedora 12 i686 linux, Core2 Duo
+> > E8200, 4GB RAM,
+> > ext4 fs on root (where I had inotify paths - they was somewhere under
+> > /home/).
+> >
+> > Or report to Fedora's bugzilla is more appropriate?
+> >
+> > Thanks, Franta Hanzlik
 > 
-> so later we could use it to release small resource before pci assign unassign res
-> 
-> -v2: change name to release_child_resources according to Jesse
-> -v3: according to Linus, move release_child_resources to resource.c
->      also need to put the lock around them all to avoid recursive deep.
->      (my test case only have one level that need to be released)
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  drivers/pci/setup-bus.c |   95 +++++++++++++++++++++++++++++++++++++++++++++++-
->  include/linux/ioport.h  |    1 
->  kernel/resource.c       |   30 +++++++++++++++
->  3 files changed, 125 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/pci/setup-bus.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/setup-bus.c
-> +++ linux-2.6/drivers/pci/setup-bus.c
-> @@ -209,7 +209,6 @@ static void pci_setup_bridge_mmio_pref(s
->  		l = (region.start >> 16) & 0xfff0;
->  		l |= region.end & 0xfff00000;
->  		if (res->flags & IORESOURCE_MEM_64) {
-> -			pref_mem64 = 1;
->  			bu = upper_32_bits(region.start);
->  			lu = upper_32_bits(region.end);
->  		}
-> @@ -608,6 +607,100 @@ void __ref pci_bus_assign_resources(cons
->  }
->  EXPORT_SYMBOL(pci_bus_assign_resources);
->  
-> +static void pci_bridge_release_unused_res(struct pci_bus *bus,
-> +					  unsigned long type)
-> +{
-> +	int idx;
-> +	bool changed = false;
-> +	struct pci_dev *dev;
-> +	struct resource *r;
-> +	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-> +				  IORESOURCE_PREFETCH;
-> +
-> +	/* for pci bridges res only */
-> +	dev = bus->self;
-> +	for (idx = PCI_BRIDGE_RESOURCES; idx < PCI_BRIDGE_RESOURCES + 3;
+> Sorry for noise, as I just see this bug is probably already reported by Tim Blechmann's
+> mail "WARNING: at fs/notify/inotify/inotify_fsnotify.c:129" from 10 Dec 2009 21:39:00
+> and hope solving by Eric Paris.
 
-I *think* this magic "3" refers to the three possible windows supported
-by PCI bridges (I/O, memory, prefetchable memory).  I asked you before
-about using something more descriptive here; do you have any ideas?  I
-think even PCI_BRIDGE_RESOURCE_NUM (4) would be better, because I think
-that's the number of bridge windows we support (CardBus bridges have
-four windows, regular PCI bridges only have three).  For regular PCI
-bridges, that fourth window should be NULL, so it could easily be
-skipped here.
+I did manage to get it set up and reproduced today.  I'll work on
+debugging it tomorrow.  Races are always so fun to find....
 
-> +	    idx++) {
-> +		r = &dev->resource[idx];
-> +		if ((r->flags & type_mask) != type)
-> +			continue;
-> +		if (!r->parent)
-> +			continue;
-> +		/*
-> +		 * if there are children under that, we should release them
-> +		 *  all
-> +		 */
-> +		release_child_resources(r);
-
-Sorry for my ignorance here, but is it possible there's a driver using
-any of these child devices?
-
-> +		if (!release_resource(r)) {
-> +			dev_printk(KERN_DEBUG, &dev->dev,
-> +				 "resource %d %pR released\n", idx, r);
-> +			/* keep the old size */
-> +			r->end = resource_size(r) - 1;
-> +			r->start = 0;
-> +			r->flags = 0;
-> +			changed = true;
-> +		}
-> +	}
-> +
-> +	if (changed) {
-> +		if (type & IORESOURCE_PREFETCH) {
-> +			/* avoiding touch the one without PREF */
-> +			type = IORESOURCE_PREFETCH;
-> +		}
-
-Again, it's probably perfectly obvious why we need to leave the
-non-prefetchable window untouched, but I don't know the reason.  Can you
-add a comment about why that's important?
-
-> +		__pci_setup_bridge(bus, type);
-> +	}
-> +}
-> +
-> +/*
-> + * try to release pci bridge resources that is from leaf bridge,
-> + * so we can allocate big new one later
-> + * check:
-> + *    0: only release the bridge and only the bridge is leaf
-> + *    1: release all down side bridge for third shoot
-> + */
-> +static void __ref pci_bus_release_unused_bridge_res(struct pci_bus *bus,
-> +						    unsigned long type,
-> +						    int check_leaf)
-> +{
-> +	struct pci_dev *dev;
-> +	bool is_leaf_bridge = true;
-> +
-> +	list_for_each_entry(dev, &bus->devices, bus_list) {
-> +		struct pci_bus *b = dev->subordinate;
-> +		if (!b)
-> +			continue;
-> +
-> +		switch (dev->class >> 8) {
-> +		case PCI_CLASS_BRIDGE_CARDBUS:
-> +			is_leaf_bridge = false;
-> +			break;
-> +
-> +		case PCI_CLASS_BRIDGE_PCI:
-> +		default:
-> +			is_leaf_bridge = false;
-> +			if (!check_leaf)
-> +				pci_bus_release_unused_bridge_res(b, type,
-> +							 check_leaf);
-> +			break;
-> +		}
-> +	}
-> +
-> +	/* The root bus? */
-> +	if (!bus->self)
-> +		return;
-> +
-> +	switch (bus->self->class >> 8) {
-> +	case PCI_CLASS_BRIDGE_CARDBUS:
-> +		break;
-> +
-> +	case PCI_CLASS_BRIDGE_PCI:
-
-Sorry for my ignorance again.  Why do we have to treat CardBus bridges
-so much differently?  I realize their windows are programmed a bit
-differently, but I don't know what the conceptual difference is as far
-as a bridge window being too small to accomodate all downstream devices.
-
-> +	default:
-> +		if ((check_leaf && is_leaf_bridge) || !check_leaf)
-> +			pci_bridge_release_unused_res(bus, type);
-> +		break;
-> +	}
-> +}
-> +
->  static void pci_bus_dump_res(struct pci_bus *bus)
->  {
->          int i;
-
-Bjorn
-
+-Eric
 
