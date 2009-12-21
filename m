@@ -1,55 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZLUKP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZLUKUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462AbZLUKP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 05:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZLUKP5
+	id S1753604AbZLUKUk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 05:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZLUKUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 05:15:57 -0500
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:41709 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbZLUKP4 (ORCPT
+	Mon, 21 Dec 2009 05:20:40 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55138 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbZLUKUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 05:15:56 -0500
-Date: Mon, 21 Dec 2009 11:15:49 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: kprobes: get rid of distinct type warning
-Message-ID: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com>
+	Mon, 21 Dec 2009 05:20:39 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       Anders Grafstrom <anders.grafstrom@netinsight.net>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: [PATCH] mtd: mtdoops: mtdoops works with kexec correctly
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>
+Message-Id: <20091221191254.089E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 21 Dec 2009 19:20:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Every time I see this:
+commit 2e386e4ba(mtdoops: refactor as a kmsg_dumper) is very good patch.
+but unfortunately it doesn't works with kexec and few embedded user need
+to use kexec. there is no reason to don't implement it. it isn't so
+hard.
 
-kernel/kprobes.c: In function 'register_kretprobe':
-kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
-
-I'm wondering if something changed in common code and we need to do
-something for s390. Apparently that's not the case.
-Let's get rid of this annoying warning.
-
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+FAQ
 ---
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Q. Why KMSG_DUMP_OOPS is insufficient?
+ A. Because crash_kexec() is called before KMSG_DUMP_OOPS if
+    panic_on_oops==1.
 
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -1035,7 +1035,7 @@ int __kprobes register_kretprobe(struct 
- 	/* Pre-allocate memory for max kretprobe instances */
- 	if (rp->maxactive <= 0) {
- #ifdef CONFIG_PREEMPT
--		rp->maxactive = max(10, 2 * num_possible_cpus());
-+		rp->maxactive = max(10U, 2 * num_possible_cpus());
- #else
- 		rp->maxactive = num_possible_cpus();
+ Q. Why do you move KMSG_DUMP_PANIC call place?
+ A. Otherwise kmsg_dump() is called twice if kexec enabled.
+    it's annoy.
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>
+Cc: Anders Grafstrom <anders.grafstrom@netinsight.net>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: David Woodhouse <David.Woodhouse@intel.com>
+---
+ drivers/mtd/mtdoops.c     |    2 +-
+ include/linux/kmsg_dump.h |    1 +
+ kernel/kexec.c            |    4 ++++
+ kernel/panic.c            |    3 ++-
+ kernel/printk.c           |    1 +
+ 5 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
+index a714ec4..92e12df 100644
+--- a/drivers/mtd/mtdoops.c
++++ b/drivers/mtd/mtdoops.c
+@@ -322,7 +322,7 @@ static void mtdoops_do_dump(struct kmsg_dumper *dumper,
+ 	memcpy(dst + l1_cpy, s2 + s2_start, l2_cpy);
+ 
+ 	/* Panics must be written immediately */
+-	if (reason == KMSG_DUMP_PANIC) {
++	if (reason != KMSG_DUMP_OOPS) {
+ 		if (!cxt->mtd->panic_write)
+ 			printk(KERN_ERR "mtdoops: Cannot write from panic without panic_write\n");
+ 		else
+diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
+index e32aa26..24b4414 100644
+--- a/include/linux/kmsg_dump.h
++++ b/include/linux/kmsg_dump.h
+@@ -17,6 +17,7 @@
+ enum kmsg_dump_reason {
+ 	KMSG_DUMP_OOPS,
+ 	KMSG_DUMP_PANIC,
++	KMSG_DUMP_KEXEC,
+ };
+ 
+ /**
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index a9a93d9..ef077fb 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -32,6 +32,7 @@
+ #include <linux/console.h>
+ #include <linux/vmalloc.h>
+ #include <linux/swap.h>
++#include <linux/kmsg_dump.h>
+ 
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1074,6 +1075,9 @@ void crash_kexec(struct pt_regs *regs)
+ 	if (mutex_trylock(&kexec_mutex)) {
+ 		if (kexec_crash_image) {
+ 			struct pt_regs fixed_regs;
++
++			kmsg_dump(KMSG_DUMP_KEXEC);
++
+ 			crash_setup_regs(&fixed_regs, regs);
+ 			crash_save_vmcoreinfo();
+ 			machine_crash_shutdown(&fixed_regs);
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 5827f7b..c787333 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -75,7 +75,6 @@ NORET_TYPE void panic(const char * fmt, ...)
+ 	dump_stack();
  #endif
+ 
+-	kmsg_dump(KMSG_DUMP_PANIC);
+ 	/*
+ 	 * If we have crashed and we have a crash kernel loaded let it handle
+ 	 * everything else.
+@@ -83,6 +82,8 @@ NORET_TYPE void panic(const char * fmt, ...)
+ 	 */
+ 	crash_kexec(NULL);
+ 
++	kmsg_dump(KMSG_DUMP_PANIC);
++
+ 	/*
+ 	 * Note smp_send_stop is the usual smp shutdown function, which
+ 	 * unfortunately means it may not be hardened to work in a panic
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 17463ca..1751c45 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1467,6 +1467,7 @@ EXPORT_SYMBOL_GPL(kmsg_dump_unregister);
+ static const char const *kmsg_reasons[] = {
+ 	[KMSG_DUMP_OOPS]	= "oops",
+ 	[KMSG_DUMP_PANIC]	= "panic",
++	[KMSG_DUMP_KEXEC]	= "kexec",
+ };
+ 
+ static const char *kmsg_to_str(enum kmsg_dump_reason reason)
+-- 
+1.6.5.2
+
+
+
