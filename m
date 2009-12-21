@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZLUPSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZLUPUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbZLUPSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZLUPSP
+	id S1753552AbZLUPUM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 10:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZLUPUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:18:15 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:33193 "EHLO
-	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbZLUPSO convert rfc822-to-8bit (ORCPT
+	Mon, 21 Dec 2009 10:20:10 -0500
+Received: from mga06.intel.com ([134.134.136.21]:34196 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752340AbZLUPUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:18:14 -0500
-X-SpamScore: -17
-X-BigFish: VPS-17(zzab9bh1432R98dN148cMzz1202hzz5a6ciz32i6bh43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0KV0D5X-01-L6V-02
-X-M-MSG: 
-Date: Mon, 21 Dec 2009 16:18:19 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Darren Jenkins <darrenrjenkins@gmail.com>
-CC: Kernel Janitors <kernel-janitors@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dougthompson@xmission.com, bluesmoke-devel@lists.sourceforge.net
-Subject: Re: drivers/edac/ move a kfree() to after last use
-Message-ID: <20091221151819.GA16432@aftab>
-References: <1261370306.11354.52.camel@ICE-BOX>
+	Mon, 21 Dec 2009 10:20:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,431,1257148800"; 
+   d="scan'208";a="478023961"
+Message-ID: <4B2F9212.3000407@linux.intel.com>
+Date: Mon, 21 Dec 2009 16:19:46 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1261370306.11354.52.camel@ICE-BOX>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 21 Dec 2009 15:17:58.0406 (UTC) FILETIME=[C72C8A60:01CA8250]
-X-Reverse-DNS: unknown
+To: Tejun Heo <tj@kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <peterz@infradead.org>, torvalds@linux-foundation.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net
+Subject: Re: workqueue thing
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box> <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk> <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org> <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
+In-Reply-To: <4B2F83F6.2040705@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 03:38:26PM +1100, Darren Jenkins wrote:
-> 
-> Move a kfree() below the last use of the memory
-> 
-> Coverity CID: 13142
-> 
-> Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
+On 12/21/2009 15:19, Tejun Heo wrote:
+>
+> Ah... okay, there are two aspects cmwq invovles the scheduler.
+>
+> A. Concurrency management.  This is achieved by the scheduler
+>     callbacks which watches how many workers are working.
+>
+> B. Deadlock avoidance.  This requires migrating rescuers to CPUs under
+>     allocation distress.  The problem here is that
+>     set_cpus_allowed_ptr() doesn't allow migrating tasks to CPUs which
+>     are online but !active (CPU_DOWN_PREPARE).
 
-Thanks for catching that. Here's a better version that does all the
-freeing at the end of the function.
-
---
-From: Borislav Petkov <borislav.petkov@amd.com>
-Date: Mon, 21 Dec 2009 15:15:59 +0100
-Subject: [PATCH] amd64_edac: fix driver instance freeing
-
-Fix use-after-free errors by pushing all memory-freeing calls to the end
-of amd64_remove_one_instance().
-
-Reported-by: Darren Jenkins <darrenrjenkins@gmail.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- drivers/edac/amd64_edac.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 784cc5a..fb0d36b 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2929,16 +2929,15 @@ static void __devexit amd64_remove_one_instance(struct pci_dev *pdev)
- 
- 	amd64_free_mc_sibling_devices(pvt);
- 
--	kfree(pvt);
--	mci->pvt_info = NULL;
--
--	mci_lookup[pvt->mc_node_id] = NULL;
--
- 	/* unregister from EDAC MCE */
- 	amd_report_gart_errors(false);
- 	amd_unregister_ecc_decoder(amd64_decode_bus_error);
- 
- 	/* Free the EDAC CORE resources */
-+	mci->pvt_info = NULL;
-+	mci_lookup[pvt->mc_node_id] = NULL;
-+
-+	kfree(pvt);
- 	edac_mc_free(mci);
- }
- 
--- 
-1.6.5.4
+why would you get involved in what-runs-where at all? Wouldn't the scheduler
+load balancer be a useful thing ? ;-)
 
 
--- 
-Regards/Gruss,
-Boris.
+>
+> For A, it's far more efficient and robust with scheduler callbacks.
+> It's conceptually pretty simple too.
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Assuming you don't get tasks that do lots of cpu intense work and that need
+to get preempted etc...like raid5/6 sync but also the btrfs checksumming etc etc.
+That to me is the weak spot of the scheduler callback thing. We already have
+a whole thing that knows how to load balance and preempt tasks... it's called "scheduler".
+Let the scheduler do its job and just give it insight in the work (by having a runnable thread)
