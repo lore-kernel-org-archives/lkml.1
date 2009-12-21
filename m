@@ -1,104 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZLUMMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZLUMOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbZLUMMc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 07:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZLUMMb
+	id S1756673AbZLUMOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 07:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbZLUMOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 07:12:31 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:56628 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbZLUMMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 07:12:30 -0500
-Date: Mon, 21 Dec 2009 13:12:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [RFC]block: add a new flag to make request complete on
-	submitted  cpu
-Message-ID: <20091221121228.GI4489@kernel.dk>
-References: <20091221022827.GA1897@sli10-desk.sh.intel.com> <20091221091030.GF4489@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221091030.GF4489@kernel.dk>
+	Mon, 21 Dec 2009 07:14:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42197 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZLUMOT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 07:14:19 -0500
+Subject: Re: [patch 1/2] sched: Change the nohz ilb logic from pull to push
+ model
+From: Peter Zijlstra <peterz@infradead.org>
+To: venkatesh.pallipadi@intel.com
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+In-Reply-To: <20091211013056.305998000@intel.com>
+References: <20091211012748.267627000@intel.com>
+	 <20091211013056.305998000@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 13:13:15 +0100
+Message-ID: <1261397595.4314.72.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21 2009, Jens Axboe wrote:
-> On Mon, Dec 21 2009, Shaohua Li wrote:
-> > We already have a QUEUE_FLAG_SAME_COMP, which makes request complete
-> > on the first cpu of a mc/ht, but this isn't sufficient. In a system
-> > with fast block devices (intel SSD), it turns out the first cpu is
-> > bottlenect. Add a flag to make request complete on cpu where request
-> > is submitted. The flag implies QUEUE_FLAG_SAME_COMP. By default, it is off.
-> 
-> It was a lazy trick to avoid doing any round robin work in there.
-> 
-> > My test machine has two CPUs and 4 intel SSD. Without the new flag,
-> > the io thoughput is about 400m/s; with it, the thoughput is about 500m/s.
-> 
-> So I think we should just fix it, I still think the group logic makes
-> sense. But instead of always going for the first one, let it complete
-> locally if part of the group, if not send to specific submitter CPU.
+On Thu, 2009-12-10 at 17:27 -0800, venkatesh.pallipadi@intel.com wrote:
 
-Is this enough? It renames cpu to local_cpu and ccpu to target_cpu to
-make things clearer to read, the real change is that we allow local
-completion if the cpu matches OR the group matches.
+> @@ -4507,12 +4507,45 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
+>  }
+>  
+>  #ifdef CONFIG_NO_HZ
+> +
+> +/*
+> + * idle load balancing details
+> + * - One of the idle CPUs nominates itself as idle load_balancer, while
+> + *   entering idle.
+> + * - With previous logic, this idle load balancer CPU will not go into
+> + *   tickless mode when it is idle and does the idle load balancing for
+> + *   all the idle CPUs.
+> + * - With new logic, this idle load balancer CPU will also go into
+> + *   tickless mode when it is idle, just like all other idle CPUs
+> + * - When one of the busy CPUs notice that there may be an idle rebalancing
+> + *   needed, they will kick the idle load balancer, which then does idle
+> + *   load balancing for all the idle CPUs.
+> + * - As idle load balancing looks at the load of all the CPUs, not all busy
+> + *   CPUs need to do this idle load balancer kick.
+> + * - first_pick_cpu is the one of the busy CPUs which will kick
+> + *   idle load balancer when it has more than one process active. This
+> + *   eliminates the need for idle load balancing altogether when we have
+> + *   only one running process in the system (common case).
+> + * - If there are more than one busy CPU, idle load balancer may have
+> + *   to run for active_load_balance to happen (i.e., two busy CPUs are
+> + *   SMT or core siblings and can run better if they move to different
+> + *   physical CPUs). So, second_pick_cpu is the second of the busy CPUs
+> + *   which will kick idle load balancer as soon as it has any load.
+> + * - With previous logic, idle load balancer used to run at every tick.
+> + *   With new logic, idle load balancer tracks the rq->next_balance for all
+> + *   the idle CPUs and does idle load balancing only when needed.
+> + */
 
-We just want to keep it as cache local as we can, I don't think we
-should add a new sysfs flag to control group vs specific CPU completion.
-That's exposing too much detail.
+Right so like said before, this comments needs a rewrite.
 
-diff --git a/block/blk-softirq.c b/block/blk-softirq.c
-index ee9c216..300dc90 100644
---- a/block/blk-softirq.c
-+++ b/block/blk-softirq.c
-@@ -105,23 +105,28 @@ void __blk_complete_request(struct request *req)
- {
- 	struct request_queue *q = req->q;
- 	unsigned long flags;
--	int ccpu, cpu, group_cpu;
-+	int target_cpu, local_cpu, group_cpu;
- 
- 	BUG_ON(!q->softirq_done_fn);
- 
- 	local_irq_save(flags);
--	cpu = smp_processor_id();
--	group_cpu = blk_cpu_to_group(cpu);
-+	local_cpu = smp_processor_id();
-+	group_cpu = blk_cpu_to_group(local_cpu);
- 
- 	/*
- 	 * Select completion CPU
- 	 */
- 	if (test_bit(QUEUE_FLAG_SAME_COMP, &q->queue_flags) && req->cpu != -1)
--		ccpu = req->cpu;
-+		target_cpu = req->cpu;
- 	else
--		ccpu = cpu;
-+		target_cpu = local_cpu;
- 
--	if (ccpu == cpu || ccpu == group_cpu) {
-+	/*
-+	 * If the target_cpu is same as the local one or from the same group,
-+	 * complete locally
-+	 */
-+	if (target_cpu == local_cpu ||
-+	    blk_cpu_to_group(target_cpu) == group_cpu) {
- 		struct list_head *list;
- do_local:
- 		list = &__get_cpu_var(blk_cpu_done);
-@@ -135,7 +140,7 @@ do_local:
- 		 */
- 		if (list->next == &req->csd.list)
- 			raise_softirq_irqoff(BLOCK_SOFTIRQ);
--	} else if (raise_blk_irq(ccpu, req))
-+	} else if (raise_blk_irq(target_cpu, req))
- 		goto do_local;
- 
- 	local_irq_restore(flags);
+>  static struct {
+>  	atomic_t load_balancer;
+> -	cpumask_var_t cpu_mask;
+> -	cpumask_var_t ilb_grp_nohz_mask;
+> +	atomic_t first_pick_cpu;
+> +	atomic_t second_pick_cpu;
+> +	cpumask_var_t idle_cpus_mask;
+> +	cpumask_var_t tmp_nohz_mask;
 
--- 
-Jens Axboe
+I don't mind the rename, but tmp_nohz_mask is a really bad name.
+
+> +	unsigned long next_balance;	/* in jiffy units */
+>  } nohz ____cacheline_aligned = {
+>  	.load_balancer = ATOMIC_INIT(-1),
+> +	.first_pick_cpu = ATOMIC_INIT(-1),
+> +	.second_pick_cpu = ATOMIC_INIT(-1),
+>  };
+>  
+>  int get_nohz_load_balancer(void)
+
+>  /*
+> + * Kick a CPU to do the nohz balancing, if it is time for it. We pick the
+> + * nohz_load_balancer CPU (if there is one) otherwise fallback to any idle
+> + * CPU (if there is one).
+> +*/
+> +static void nohz_balancer_kick(int cpu)
+> +{
+> +	int ilb_cpu;
+> +
+> +	nohz.next_balance++;
+> +
+> +	ilb_cpu = get_nohz_load_balancer();
+> +	if (ilb_cpu < 0) {
+> +		ilb_cpu = cpumask_first(nohz.idle_cpus_mask);
+> +		if (ilb_cpu >= nr_cpu_ids)
+> +			return;
+> +	}
+> +
+> +	if (!cpu_rq(ilb_cpu)->nohz_balance_kick) {
+> +		cpu_rq(ilb_cpu)->nohz_balance_kick = 1;
+> +		resched_cpu(ilb_cpu);
+> +	}
+> +	return;
+> +}
+
+So here you simply send an resched-ipi, which requires the below hack in
+schedule()?
+
+
+> @@ -4673,28 +4722,20 @@ int select_nohz_load_balancer(int stop_tick)
+>  			if (atomic_cmpxchg(&nohz.load_balancer, cpu, -1) != cpu)
+>  				BUG();
+>  
+> +			return;
+>  		}
+>  
+> +		cpumask_set_cpu(cpu, nohz.idle_cpus_mask);
+> +		atomic_cmpxchg(&nohz.first_pick_cpu, cpu, -1);
+> +		atomic_cmpxchg(&nohz.second_pick_cpu, cpu, -1);
+
+If you were to use nr_cpu_ids here instead of -1, you get more
+consistent code in nohz_balancer_kick().
+
+
+> +	ret = atomic_cmpxchg(&nohz.first_pick_cpu, -1, cpu);
+> +	if (ret == -1 || ret == cpu) {
+> +		atomic_cmpxchg(&nohz.second_pick_cpu, cpu, -1);
+> +		if (rq->nr_running > 1)
+> +			return 1;
+> +	} else {
+> +		ret = atomic_cmpxchg(&nohz.second_pick_cpu, -1, cpu);
+> +		if (ret == -1 || ret == cpu) {
+> +			if (rq->nr_running)
+> +				return 1;
+>  		}
+>  	}
+
+Looked very funny, and took a while to understand why you're doing that,
+but yeah, I can't see a better way of doing it either.
+
+The comments confused me more than helped me understand it.
+
+> @@ -5446,8 +5490,19 @@ need_resched_nonpreemptible:
+>  
+>  	pre_schedule(rq, prev);
+>  
+> -	if (unlikely(!rq->nr_running))
+> +	if (unlikely(!rq->nr_running)) {
+> +#ifdef CONFIG_NO_HZ
+> +		if (rq->nohz_balance_kick) {
+> +			spin_unlock_irq(&rq->lock);
+> +			nohz_idle_balance(cpu, rq);
+> +			spin_lock_irq(&rq->lock);
+> +		} else {
+> +			idle_balance(cpu, rq);
+> +		}
+> +#else
+>  		idle_balance(cpu, rq);
+> +#endif
+> +	}
+
+And I think this is the wrong kind of trade-off, complicating the
+schedule()/newidle path for nohz idle balancing.
+
+nohz_balancer_kick() seems like the perfect place to use something like
+send_remote_softirq().
 
