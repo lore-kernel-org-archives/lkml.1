@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZLUEur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZLUE7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbZLUEur (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 23:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZLUEuq
+	id S1756358AbZLUE7p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 23:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZLUE7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 23:50:46 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:25100 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbZLUEuo (ORCPT
+	Sun, 20 Dec 2009 23:59:44 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:34797 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752835AbZLUE7n convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 23:50:44 -0500
-Subject: Re: [PATCH 0/12] pci: update pci bridge resources
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Alex Chiang <achiang@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-In-Reply-To: <4B2ED29B.7060108@kernel.org>
-References: <4B2BEC0E.3050909@kernel.org>
-	 <1261352672.26429.41.camel@dc7800.home>  <4B2ED29B.7060108@kernel.org>
-Content-Type: text/plain
-Date: Sun, 20 Dec 2009 21:44:52 -0700
-Message-Id: <1261370692.26429.78.camel@dc7800.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Dec 2009 23:59:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=j9vDnhm0P1OxQOEBjmMXydfBWtKXrDZP1x+4NYtp69WXX68aqq79Zdn5S1z2upBgsS
+         dcs6fMUvZ06gEO2uTbXVDIvfLy1M0LFleRWEeH7ZLmo9s60Fnbep4dzgM7rfE+NFe3QJ
+         Q9TF57ZC07FQUQG8ouVThBQndyMPweWS0cpc0=
+MIME-Version: 1.0
+In-Reply-To: <20091216191938.GB16321@kroah.com>
+References: <1260178014-16741-1-git-send-email-keng-yu.lin@canonical.com>
+	 <20091216191938.GB16321@kroah.com>
+Date: Mon, 21 Dec 2009 12:59:43 +0800
+X-Google-Sender-Auth: 1d1283547f94d4cc
+Message-ID: <d8fcdb790912202059v5e04b8a2j4fc10324c3c80fa9@mail.gmail.com>
+Subject: Re: [stable] [2.6.31.stable] Input: atkbd - add force relese key 
+	quirk for Samsung R59P/R60P/R61P
+From: =?UTF-8?B?S2VuZy1Zw7wgTGlu?= <keng-yu.lin@canonical.com>
+To: Greg KH <greg@kroah.com>
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-20 at 17:42 -0800, Yinghai Lu wrote:
-> Bjorn Helgaas wrote:
-> > On Fri, 2009-12-18 at 12:54 -0800, Yinghai Lu wrote:
-> >> this patche set is trying to update pci bridge BAR when that BAR is big enough.
-> >>
-> >> default it is disabled.
-> >>
-> >> could use pci=try=2 to enable it.
-> > 
-> > I think you mean "when the BAR is *not* big enough."  And strictly
-> > speaking, I think you're concerned with the bridge *window*, which isn't
-> > actually a bridge BAR.
-> 
-> in PCI bridge to bridge spec 1.1, page 38, 3.2.5.1 still call them bridge "Base Address Registers"
-> 
-> so should be fine we call them Bridge BAR, 
-> 
-> and we still have device BAR...
+Dear Greg:
+  This patch is not upstream. Since 2.6.32, there is an interface in
+/sys for handling the force_release events from userspace, so such
+quirk patches are no longer accepted upstream now. But this patch is
+valid for version 2.6.31 downwards.
 
-PCI bridges have optional BARs, described as you point out in section
-3.2.5.1.  These work the same as BARs on any other PCI device, and your
-patches aren't concerned with these.
+  Regards,
 
-Your patch series is primarily concerned with the bridge Base & Limit
-registers described in sections 3.2.5.6 (I/O), 3.2.5.8 (memory), and
-3.2.5.9 (prefetchable memory).  These define the address ranges
-forwarded from one bridge interface to the other.  The spec doesn't have
-a nice term for these ranges, but they're often referred to as "windows"
-or "apertures" because they are the areas where you can "see through"
-the bridge to devices on the other side.
+-Keng-Yu
 
-Bjorn
-
-
+2009/12/17 Greg KH <greg@kroah.com>:
+> I don't see the git commit id for the patch below, which is needed if it
+> is to be accepted into the -stable kernel tree.
+>
+> Do you have it?
+>
+> thanks,
+>
+> greg k-h
+>
+> On Mon, Dec 07, 2009 at 05:26:54PM +0800, Keng-Yu Lin wrote:
+>> OriginalAuthor:
+>>     Moiseev Vladimir <cdb@linkycat.com>
+>>     Alexander Huhlaev <sancheolz@gmail.com>
+>>
+>> BugLink: http://bugs.launchpad.net/bugs/253874
+>>
+>> Signed-off-by: Keng-Yu Lin <keng-yu.lin@canonical.com>
+>> ---
+>>  drivers/input/keyboard/atkbd.c |    9 +++++++++
+>>  1 files changed, 9 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+>> index 6c6a09b..abc314f 100644
+>> --- a/drivers/input/keyboard/atkbd.c
+>> +++ b/drivers/input/keyboard/atkbd.c
+>> @@ -1608,6 +1608,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+>>               .driver_data = atkbd_samsung_forced_release_keys,
+>>       },
+>>       {
+>> +             .ident = "Samsung R59P/R60P/R61P",
+>> +             .matches = {
+>> +                     DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
+>> +                     DMI_MATCH(DMI_PRODUCT_NAME, "R59P/R60P/R61P"),
+>> +             },
+>> +             .callback = atkbd_setup_forced_release,
+>> +             .driver_data = atkbd_samsung_forced_release_keys,
+>> +     },
+>> +     {
+>>               .ident = "Fujitsu Amilo PA 1510",
+>>               .matches = {
+>>                       DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
+>> --
+>> 1.6.3.3
+>>
+>> _______________________________________________
+>> stable mailing list
+>> stable@linux.kernel.org
+>> http://linux.kernel.org/mailman/listinfo/stable
+>
