@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZLUDII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZLUDQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbZLUDII (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 22:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbZLUDIH
+	id S1756593AbZLUDQO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 22:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbZLUDQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 22:08:07 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:34889 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755662AbZLUDIF (ORCPT
+	Sun, 20 Dec 2009 22:16:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59694
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756354AbZLUDQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 22:08:05 -0500
-Date: Mon, 21 Dec 2009 12:07:50 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mhiramat@redhat.com, dhowells@redhat.com
-Subject: Re: [PATCH] elf_fdpic_core_dump(): fix build break in 2.6.33-rc1
-Message-ID: <20091221030749.GA15721@linux-sh.org>
-References: <20091221.110431.189715673.d.hatayama@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221.110431.189715673.d.hatayama@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 20 Dec 2009 22:16:12 -0500
+Date: Sun, 20 Dec 2009 19:16:13 -0800 (PST)
+Message-Id: <20091220.191613.183056426.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-12-18
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091221030738.GA2398@tuxdriver.com>
+References: <20091220133800.GA4700@tuxdriver.com>
+	<20091220.182910.226760127.davem@davemloft.net>
+	<20091221030738.GA2398@tuxdriver.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 11:04:31AM +0900, Daisuke HATAYAMA wrote:
-> The commit f6151dfea21496d43dbaba32cfcd9c9f404769bc causes build
-> break, so this patch fixes it together with the correction for printk
-> format.
-> 
-> Thanks.
-> 
-> Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Sun, 20 Dec 2009 22:07:38 -0500
 
-I was about to send the same patch.. :-)
+> Anyway, might as well have one more rebase now.  I'll straighten-out
+> my trees tomorrow morning and resubmit.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Ok, thanks John.
