@@ -1,65 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbZLUVR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbZLUVTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757101AbZLUVR3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 16:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbZLUVR1
+	id S1757321AbZLUVTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 16:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbZLUVTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 16:17:27 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24664 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756998AbZLUVR0 (ORCPT
+	Mon, 21 Dec 2009 16:19:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45615 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756109AbZLUVTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 16:17:26 -0500
-Date: Mon, 21 Dec 2009 14:17:24 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-       venkatesh.pallipadi@intel.com, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/11] ACPI: early _PDC eval and unify x86/ia64
-Message-ID: <20091221211724.GB28569@ldl.fc.hp.com>
-References: <20091220190434.4274.67855.stgit@bob.kio> <20091221081550.GA1648@isilmar.linta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221081550.GA1648@isilmar.linta.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 21 Dec 2009 16:19:37 -0500
+Subject: Re: [PATCH] perf_events: improve Intel event scheduling
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       paulus@samba.org, perfmon2-devel@lists.sf.net,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
+References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
+	 <1258561957.3918.661.camel@laptop>
+	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
+	 <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
+	 <1261410040.4314.178.camel@laptop>
+	 <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
+	 <1261423869.4314.198.camel@laptop>
+	 <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 22:18:52 +0100
+Message-ID: <1261430332.4314.216.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dominik Brodowski <linux@dominikbrodowski.net>:
+On Mon, 2009-12-21 at 21:59 +0100, Stephane Eranian wrote:
+> On Mon, Dec 21, 2009 at 8:31 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Mon, 2009-12-21 at 20:00 +0100, Stephane Eranian wrote:
+> >
+> >> >  perf_disable() <-- shut down the full pmu
+> >> >
+> >> >  pmu->disable() <-- hey someone got removed (easy free the reg)
+> >> >  pmu->enable()  <-- hey someone got added (harder, check constraints)
+> >> >
+> >> >  hw_perf_group_sched_in() <-- hey a full group got added
+> >> >                              (better than multiple ->enable)
+> >> >
+> >> >  perf_enable() <-- re-enable pmu
+> >> >
+> >> >
+> >> > So ->disable() is used to track freeing, ->enable is used to add
+> >> > individual counters, check constraints etc..
+> >> >
+> >> > hw_perf_group_sched_in() is used to optimize the full group enable.
+> >> >
+> >>
+> >> Does that mean that after a disable() I can assume that there won't
+> >> be an enable() without a group_sched_in()?
+> >>
+> >> I suspect not. In fact, there is a counter-example in perf_ctx_adjust_freq().
+> >
+> > Why would that be a problem?
+> >
+> > A perf_disable() will simply disable the pmu, but not alter its
+> > configuration, perf_enable() will program the pmu and re-enable it (with
+> > the obvious optimization that if the current state and the new state
+> > match we can skip the actual programming).
+> >
+> > If a ->disable() was observed between it will simply not re-enable that
+> > particular counter, that is it will remove that counters' config, and
+> > perf_enable() can do a smart reprogram by simply no re-enabling that
+> > counter.
+> >
+> > If an ->enable() or hw_perf_group_sched_in() was observed in between,
+> > you have to recompute the full state in order to validate the
+> > availability, if that fails, no state change, if it succeeds you have a
+> > new pmu state and perf_enable() will program that.
+> >
 > 
-> On Sun, Dec 20, 2009 at 12:19:04PM -0700, Alex Chiang wrote:
-> > This does introduce a boot time namespace walk for all the CPUs
-> > in the system, looking for and evaluating _PDC. Hopefully that
-> > will not make life miserable for the giant SGI clusters. If worse
-> > comes to worse, maybe we can quirk them and avoid the namespace
-> > walk.
+> Ok, so what you are suggesting is that the assignment is actually done
+> incrementally in ->enable(). hw_group_sched_in() would simply validate
+> that a single group is sane (i.e., can be scheduled if it was alone).
+
+hw_perf_group_sched_in() can be used to do a whole group at once (see
+how a !0 return value will short-circuit the whole incremental group
+buildup), but yes ->enable() is incremental.
+
+> > In the case of perf_ctx_adjust_freq():
+> >
+> >        if (!interrupts) {
+> >                perf_disable();
+> >                event->pmu->disable(event);
+> >                atomic64_set(&hwc->period_left, 0);
+> >                event->pmu->enable(event);
+> >                perf_enable();
+> >        }
+> >
+> > You'll very likely end up with the same state you had before, but if not
+> > who cares -- its supposed to be an unlikely case.
+> >
+> > That is, the ->disable() will clear the cpu_hw_events::used_mask bit.
+> > The ->enable() will want to place the counter on its last know reg,
+> > which (not so very surprisingly) will be available, hence it will
 > 
-> Could this be done async, with completion before EC initialization?
+> Not in the case I am looking at on AMD. The counter you need to grab
+> depends on what is going on on the other cores on the socket. So
+> there is no guarantee that you will get the same. Something similar
+> exists on Nehalem but it has to do with HT.
 
-I don't think I understand your suggestion.
+Well the above code is assumed correct, so we need to make it true,
+which should not be too hard to do.
 
-On some platforms, we need to finish evaluating _PDC before we
-initialize the EC. That's what I discovered with the Envy 15. At
-that point in boot, we're single-threaded and going through early
-ACPI initialization. Each step has to finish before the next, in
-order for later initialization to succeed.
+If there are cross cpu constraints (AMD has per node constraints IIRC)
+then we need a structure that describes these (a per node structure for
+AND, a per core structure for HT), if we take a lock on this structure
+the first time we touch it in a perf_disable() region, and release it on
+perf_enable(), then we ensure those constraints remain invariant.
 
-There's nothing else going on except for waiting for _PDC to
-finish so that we can initialize the EC.
+With something like that in place the above code will still be valid,
+since the act of removing the counter will freeze all needed state to
+re-instate it.
 
-My fear was that on a huge compute cluster, walking the namespace
-for every CPU object to evaluate _PDC might take a long time, and
-is also probably unnecessary, since their hardware/firmware
-probably doesn't load dynamic tables in _PDC.
-
-In that case, my suggestion was to avoid the walk with a quirk.
-
-But maybe it's not necessary to worry about that until it's
-actually proven to be a problem.
-
-Thanks,
-/ac
+Does that make sense?
 
