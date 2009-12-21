@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbZLUVpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZLUVns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932155AbZLUVpH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 16:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbZLUVpF
+	id S1757355AbZLUVns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 16:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZLUVns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 16:45:05 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:60524 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757179AbZLUVpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 16:45:04 -0500
-Date: Mon, 21 Dec 2009 23:42:36 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-Cc: Alex Deucher <alexdeucher@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
-Subject: Re: [Oops:] radeon KMS in 2.6.33-rc1-00154-gf7b84a6
-Message-ID: <20091221214235.GA11558@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <200912212238.54069.johannes.hirte@fem.tu-ilmenau.de>
+	Mon, 21 Dec 2009 16:43:48 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:56842 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751860AbZLUVnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 16:43:47 -0500
+Message-ID: <4B2FEC10.6050900@msgid.tls.msk.ru>
+Date: Tue, 22 Dec 2009 00:43:44 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <200912212238.54069.johannes.hirte@fem.tu-ilmenau.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 21 Dec 2009 21:43:35.0916 (UTC) FILETIME=[A63462C0:01CA8286]
-X-Nokia-AV: Clean
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+CC: alain@knaff.lu, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
+References: <200912211643.18173.tvrtko.ursulin@sophos.com>
+In-Reply-To: <200912211643.18173.tvrtko.ursulin@sophos.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=804465C5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tvrtko Ursulin wrote:
+> Hi,
+> 
+> When run under VMware, LZMA compressed 2.6.33-rc1 instantly reboots in the 
+> decompression stage. At least I suppose so, because switching to GZIP makes 
+> it work.
 
-On Mon, Dec 21, 2009 at 10:38:53PM +0100, ext Johannes Hirte wrote:
->When loading the radeon module with modeset=1, the kernel oopses:
+Switch /bin/sh from dash to bash and recompile (actually relink) - it should work.
 
-[snip]
-
->Dec 21 21:58:14 datengrab firmware.sh[2542]: Cannot find  firmware file
->'radeon/R600_rlc.bin'
-
-does it have something to do with the missing firmware file ??
-
--- 
-balbi
+/mjt
