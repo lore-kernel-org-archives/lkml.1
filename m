@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZLUVPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbZLUVQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757183AbZLUVPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 16:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756998AbZLUVPw
+	id S1757310AbZLUVQq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 16:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbZLUVQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 16:15:52 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:39945 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756274AbZLUVPv (ORCPT
+	Mon, 21 Dec 2009 16:16:45 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:43988 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756274AbZLUVQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 16:15:51 -0500
-Date: Mon, 21 Dec 2009 16:15:50 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/5] PM: Make the initcall_debug style timing for
- suspend/resume complete
-In-Reply-To: <200912212203.15198.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912211612340.3328-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 Dec 2009 16:16:44 -0500
+Subject: Re: Wrong atime on recent kernels
+From: john stultz <johnstul@us.ibm.com>
+To: Petr =?UTF-8?Q?Tit=C4=9Bra?= <petr@titera.eu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4B2EB3BC.6030900@titera.eu>
+References: <4B26AB7E.9020208@titera.eu>
+	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>
+	 <4B29494B.4010305@titera.eu>
+	 <1261020388.7245.27.camel@localhost.localdomain>
+	 <4B2A1051.9010808@century.cz>
+	 <1261106021.3466.76.camel@localhost.localdomain>
+	 <4B2EA55C.4030406@titera.eu>  <4B2EB3BC.6030900@titera.eu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 13:16:14 -0800
+Message-ID: <1261430174.5293.43.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
+On Mon, 2009-12-21 at 00:31 +0100, Petr Titěra wrote: 
+> Petr Titěra napsal(a):
+> > john stultz napsal(a):
+> >> Let me know if you find anything that helps narrow this down.
+> >>
+> >
+> > I know its far fetched, but is there something what is preventing 
+> > xtime.tv_nsec to be exactly 999999999 near the end of update_wall_time 
+> > in kernel/time/timekeeping.c?
+> >
+> Just to follow up. I'm asking because I see a lot of files with access 
+> and/or modify times near the top of thousanth of second (see 
+> `/etc/sysconfig/prelink' in my example) and I thing that addition of 1 
+> to xtime.tv_nsec ath the end of update_wall_time can 'owerflow' to whole 
+> second.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Commit f2511774863487e61b56a97da07ebf8dd61d7836
-> (PM: Add initcall_debug style timing for suspend/resume) introduced
-> basic timing instrumentation, needed for a scritps/bootgraph.pl
-> equivalent or humans, but it missed the fact that bus types and
-> device classes which haven't been switched to using struct dev_pm_ops
-> objects yet need special handling.  As a result, the suspend/resume
-> timing information is only available for devices whose bus types or
-> device classes use struct dev_pm_ops objects, so the majority of
-> devices is not covered.
-> 
-> Fix this by adding basic suspend/resume timing instrumentation for
-> devices whose bus types and device classes still don't use struct
-> dev_pm_ops objects for power management.  To reduce code duplication
-> move the timing code to helper functions.
 
-A minor complaint...
+Oof! Yikes.
 
-> +/**
->   * device_resume - Execute "resume" callbacks for given device.
->   * @dev: Device to handle.
->   * @state: PM transition of the system being carried out.
-> @@ -427,7 +465,7 @@ static int device_resume(struct device *
->  			error = pm_op(dev, dev->bus->pm, state);
->  		} else if (dev->bus->resume) {
->  			pm_dev_dbg(dev, state, "legacy ");
-> -			error = dev->bus->resume(dev);
-> +			error = legacy_resume(dev, dev->bus->resume);
->  		}
->  		if (error)
->  			goto End;
-> @@ -448,7 +486,7 @@ static int device_resume(struct device *
->  			error = pm_op(dev, dev->class->pm, state);
->  		} else if (dev->class->resume) {
->  			pm_dev_dbg(dev, state, "legacy class ");
-> -			error = dev->class->resume(dev);
-> +			error = legacy_resume(dev, dev->class->resume);
->  		}
->  	}
+Yea, the sub-nanosecond rounding fix we added quite awhile back indeed
+opens a hole where xtime.tv_nsec could be exactly 1sec. Good eye!
 
-If none of the method callbacks are non-NULL, this won't print 
-anything.  The same is true for device_suspend().
+Of course, most of the timekeeping accessors handle this properly by
+normalizing the timespec before returning, so its likely just users of
+current_kernel_time() and direct accessors of xtime that might be bitten
+here. 
 
-Now maybe you don't _want_ to print anything in that case, but for
-debugging purposes it could be useful.
+And this probably was obscured before because the xtime_cache() was
+normalized. Did you verify that reverting that patch I pointed you to
+resolves the issue? If not, please do, so we can get this fixed up.
 
-Alan Stern
+Now I'm a little baffled why you see it all the time on your boxes. For
+this to trigger, you have to have an interrupt in the last ns of a
+second, and then the window for these odd filesystem stamps is only open
+for 1-10ms.
+
+Sigh. Once we get the last of the non GENERIC_TIME arches converted to
+arch_gettimeoffset, we can kill all of those rounding hacks and just
+manage the sub-nanosecond portion sanely. I'm looking forward to that
+day!
+
+
+So again, Bravo on catching this!
+
+thanks
+-john
 
