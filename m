@@ -1,149 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZLUDCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZLUDME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZLUDCR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 22:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755662AbZLUDCQ
+	id S1756563AbZLUDME (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 22:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368AbZLUDMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 22:02:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39179 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbZLUDCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 22:02:15 -0500
-Message-ID: <4B2EE5A5.2030208@kernel.org>
-Date: Mon, 21 Dec 2009 12:04:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Sun, 20 Dec 2009 22:12:00 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:45495 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756354AbZLUDL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 22:11:59 -0500
+Date: Sun, 20 Dec 2009 22:07:38 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-12-18
+Message-ID: <20091221030738.GA2398@tuxdriver.com>
+References: <20091218211945.GC2828@tuxdriver.com>
+ <20091220.001736.189688434.davem@davemloft.net>
+ <20091220133800.GA4700@tuxdriver.com>
+ <20091220.182910.226760127.davem@davemloft.net>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: torvalds@linux-foundation.org, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop>
-In-Reply-To: <1261143924.20899.169.camel@laptop>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091220.182910.226760127.davem@davemloft.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 12/18/2009 10:45 PM, Peter Zijlstra wrote:
->>    r1. The first design goal of cmwq is solving the issues the current
->>        workqueue implementation has including hard to detect
->>        deadlocks, 
+On Sun, Dec 20, 2009 at 06:29:10PM -0800, David Miller wrote:
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Sun, 20 Dec 2009 08:38:00 -0500
 > 
-> lockdep is quite proficient at finding these these days.
-
-I've been thinking there are cases which the current lockdep
-annotations can't detect but I can't think of any.  But still when
-these possible deadlocks are detected, the only solution we now have
-is to put one into a separate workqueue.  As it often is an overkill
-to create multithread workqueue for that single work, it usually ends
-up being a singlethread one, which often isn't optimal.  With cmwq,
-this problem is gone.
-
->> 	 unexpectedly long latencies caused by long running
->>        works which share the workqueue and excessive number of worker
->>        threads necessitated by each workqueue having its own workers.
+> > On Sun, Dec 20, 2009 at 12:17:36AM -0800, David Miller wrote:
+> >> From: "John W. Linville" <linville@tuxdriver.com>
+> >> Date: Fri, 18 Dec 2009 16:19:45 -0500
+> >> 
+> >> > Please let me know if there are problems!
+> >> 
+> >> Your tree is based upon Linus's not net-2.6
+> >> so when I pulled I got a lot of unrelated
+> >> commits.
+> >> 
+> >> Please fix this, thanks.
+> > 
+> > It's based on 2.6.33-rc1.  Are you not going to pull that into net-2.6?
 > 
-> works shouldn't be long running to begin with
-
-Let's discuss this below.
-
->>        cmwq is cpu affine because its target workloads are not cpu
->>        intensive.  Most works are context hungry not cpu cycle hungry
->>        and as such providing the necessary context (or concurrency)
->>        from the local CPU is the most efficient way to serve them.
+> Why in the world should I?  There are no conflicts to resolve
+> that I know of.
 > 
-> Things cannot be not cpu intensive and long running.
-
-What are you talking about?  There's a huge world outside of CPUs and
-RAMs where taking seconds or even tens of seconds isn't too strange.
-SCSI/ATA exception conditions can easily take tens of seconds which in
-turn makes anything which may depend on IO may take tens of seconds.
-
-> And this design is patently unsuited for cpu intensive tasks, hence they
-> should not be long running.
-
-Burning a lot of CPU cycles in kernel is and must be very rare
-exceptions.  Waiting for IO or other external events is far less so.
-Seriously, take a look at other async mechanisms we have - async, long
-works, SCSI EHs.  They're there to provide concurrency so that they
-can wait for *EVENTS* not to burn CPU cycles.
-
-> The only way something can be not cpu intensive and long 'running' is if
-> it got blocked that long, and the right solution is to fix that
-> contention, things should not be blocked for seconds.
-
-IOs and events.  Not CPUs or RAMs.
-
->>        The second design goal is to unify different async mechanisms
->>        in kernel.  Although cmwq wouldn't be able to serve CPU cycle
->>        intensive workload, most in-kernel async mechanisms are there
->>        to provide context and concurrency and they all can be
->>        converted to use cmwq.
+> And if there are no conflicts to resolve, pulling in Linus's
+> tree just makes future pulls into his tree more ugly.
 > 
-> Which specifically, the ones I'm aware of are mostly cpu intensive.
-
-Async which currently is only used to make ATA probing parallel.  Long
-works which are used for fscache.  SCSI/ATA EHs.  ATA polling PIO and
-probing helper workers.  To-be-implemented in-kernel media presence
-polling.  xfs or other fs IO threads.
-
-The ones you're aware of are very different from the ones I'm aware
-of.  The difference is probably coming from where we usually work on.
-CPU intensive ones require pretty different solution from the ones
-which just need the contexts to wait for events.  For the latter,
-things can be made very mechanical as the optimal level of concurrency
-is easily defined as minimal level which is just enough to avoid
-blocking other works as the resource they're competeing for - the
-contexts - isn't scarce.  And for this, the work interface is very
-well suited.
-
-For CPU intensive ones, it's more difficult as CPU cycles are in
-contention and things like fairness needs to be considered.  It's a
-different class of problem.  From what I can see, this class of
-problems are still smaller in volume than the event waiting class of
-problems.  Increasing popularities in FS end-to-end verification and
-maybe encryption are likely to increase pressure here tho.  This is
-gonna require a different solution where scheduler would play the core
-role.
-
->>    r2. The only thing necessary to support long running works is the
->>        ability to rebind workers to the cpu if it comes back online
->>        and allowing long running works will allow most existing worker
->>        pools to be served by cmwq and also make CPU down/up latencies
->>        more predictable.
+> This is pretty standard practice, but in any event you shouldn't ever
+> care.
 > 
-> That's not necessary at all, and introduces quite a lot of ugly code.
->
-> Furthermore, let me restate that having long running works is the
-> problem.
-
-I guess I explained this enough.  When IO goes wrong, in extreme
-cases, it can easily take over thirty secs to recover and that's
-required by the hardware specifications, so anything which ends up
-waiting on IO can take a pretty long time.  The only piece of code
-which is necessary to support that is the code necessary to migrate
-back tasks to CPUs when they come online again.  It's not a lot of
-ugly code.
-
->>    r3. I don't think there is any way to implement shared worker pool
->>        without forking when more concurrency is required and the
->>        actual amount of forking would be low as cmwq scales the number
->>        of idle workers to keep according to the current concurrency
->>        level and uses rather long timeout (5min) for idlers.
+> You should simply always work against net-2.6, there is no reason to
+> work against any other tree.
 > 
-> I'm still not convinced more concurrency is required.
+> This is a pretty fundamental thing, I don't know why you based against
+> Linus's tree instead of net-2.6.  Now you have to rebase already :-/
 
-Hope my explanations helped convincing you.
+My mistake!  For some reason I just thought that pulling from -rc1 was
+your normal practice -- now I can't figure what gave me that idea...
 
-Thanks.
+Anyway, might as well have one more rebase now.  I'll straighten-out
+my trees tomorrow morning and resubmit.
 
+John
 -- 
-tejun
+John W. Linville                Someday the world will need a hero, and you
+linville@tuxdriver.com                  might be all we have.  Be ready.
