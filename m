@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZLUVns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZLUVrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbZLUVns (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 16:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZLUVns
+	id S1757368AbZLUVrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 16:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZLUVrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 16:43:48 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:56842 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbZLUVnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 16:43:47 -0500
-Message-ID: <4B2FEC10.6050900@msgid.tls.msk.ru>
-Date: Tue, 22 Dec 2009 00:43:44 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Mon, 21 Dec 2009 16:47:20 -0500
+Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:39204 "EHLO
+	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757156AbZLUVrU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 16:47:20 -0500
+From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+To: felipe.balbi@nokia.com
+Subject: Re: [Oops:] radeon KMS in 2.6.33-rc1-00154-gf7b84a6
+Date: Mon, 21 Dec 2009 22:47:15 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc1; KDE/4.3.4; x86_64; ; )
+Cc: Alex Deucher <alexdeucher@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
+References: <200912212238.54069.johannes.hirte@fem.tu-ilmenau.de> <20091221214235.GA11558@nokia.com>
+In-Reply-To: <20091221214235.GA11558@nokia.com>
 MIME-Version: 1.0
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-CC: alain@knaff.lu, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
-References: <200912211643.18173.tvrtko.ursulin@sophos.com>
-In-Reply-To: <200912211643.18173.tvrtko.ursulin@sophos.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=804465C5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912212247.15265.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tvrtko Ursulin wrote:
+Am Montag 21 Dezember 2009 22:42:36 schrieb Felipe Balbi:
 > Hi,
 > 
-> When run under VMware, LZMA compressed 2.6.33-rc1 instantly reboots in the 
-> decompression stage. At least I suppose so, because switching to GZIP makes 
-> it work.
+> On Mon, Dec 21, 2009 at 10:38:53PM +0100, ext Johannes Hirte wrote:
+> >When loading the radeon module with modeset=1, the kernel oopses:
+> 
+> [snip]
+> 
+> >Dec 21 21:58:14 datengrab firmware.sh[2542]: Cannot find  firmware file
+> >'radeon/R600_rlc.bin'
+> 
+> does it have something to do with the missing firmware file ??
 
-Switch /bin/sh from dash to bash and recompile (actually relink) - it should work.
+Yes, I've tested with the firmware binary from 
+http://people.freedesktop.org/~agd5f/radeon_ucode/ now and it works. It seems 
+a fallback path is missing if no firmware is found.
 
-/mjt
+regards,
+  Johannes
