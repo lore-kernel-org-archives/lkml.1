@@ -1,63 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZLUC3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbZLUCbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbZLUC3N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 21:29:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZLUC3L
+	id S1756437AbZLUCbd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 21:31:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZLUCbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 21:29:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46742
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751345AbZLUC3K (ORCPT
+	Sun, 20 Dec 2009 21:31:32 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:57107 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753815AbZLUCbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 21:29:10 -0500
-Date: Sun, 20 Dec 2009 18:29:10 -0800 (PST)
-Message-Id: <20091220.182910.226760127.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-12-18
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091220133800.GA4700@tuxdriver.com>
-References: <20091218211945.GC2828@tuxdriver.com>
-	<20091220.001736.189688434.davem@davemloft.net>
-	<20091220133800.GA4700@tuxdriver.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Dec 2009 21:31:31 -0500
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+References: <20091221220.243954235@firstfloor.org>
+	<m1eimpm6hs.fsf@fess.ebiederm.org>
+	<20091221020427.GA25372@basil.fritz.box>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 20 Dec 2009 18:31:23 -0800
+In-Reply-To: <20091221020427.GA25372@basil.fritz.box> (Andi Kleen's message of "Mon\, 21 Dec 2009 03\:04\:28 +0100")
+Message-ID: <m17hshjbwk.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH] [0/11] SYSCTL: Use RCU to avoid races with string sysctls
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Sun, 20 Dec 2009 08:38:00 -0500
+Andi Kleen <andi@firstfloor.org> writes:
 
-> On Sun, Dec 20, 2009 at 12:17:36AM -0800, David Miller wrote:
->> From: "John W. Linville" <linville@tuxdriver.com>
->> Date: Fri, 18 Dec 2009 16:19:45 -0500
+> On Sun, Dec 20, 2009 at 05:59:59PM -0800, Eric W. Biederman wrote:
+>> Andi Kleen <andi@firstfloor.org> writes:
 >> 
->> > Please let me know if there are problems!
+>> > With BKL-less sysctls most of the writable string sysctls are racy. There
+>> > is no locking on the reader side, so a reader could see an inconsistent
+>> > string or worse miss the terminating null and walk of beyond it.
 >> 
->> Your tree is based upon Linus's not net-2.6
->> so when I pulled I got a lot of unrelated
->> commits.
+>> The walk will only extend up to the maximum length of the string.
+>> So the worst case really is inconsistent data.
+>
+> It could still miss the 0 byte and walk out, can't it?
+
+Looking again.  Yes it appears there is a small vulnerability there.
+
+The code does:
+
+	len = strlen(data);
+	if (len > maxlen)
+		len = maxlen;
+
+So we should be calling:
+   len = strnlen(data, maxlen);
+
+At which point we won't be able to walk out.
+
+The write side appears to be in need of strnlen_user
+as well, so it does not walk all of user space looking
+for null byte.
+
+>> This is an unfortunate corner case.  This is not a regression as this
+>> has been the way things have worked for years.  So probably 2.6.34
+>>  material.
+>
+> The one that's a clear regression is the core pattern one, that 
+> was protected before by the BKL. A lot of others were always
+> broken yes.
+
+Nope.  The core pattern just thought it was protected by BKL.  I did
+not change the /proc/sys code path to remove the BKL.  I don't know
+if we ever took the BKL on the /proc/sys codepath.
+
+I remember looking at the core pattern earlier and my memory is that
+sysctl is new enough that core pattern was not protected by the BKL on the
+/proc/sys path when it was introduced.
+
+There was a lot of confusing code in the sys_sysctl code path (which
+grabbed the BKL) so I expect people thought they were safe due to the
+BKL when they were not.
+
+So we have sysctl have locking problems, not new sysctl regressions.
+
+>> > This patch kit adds a new "rcu string" variant to avoid these 
+>> > problems and convers the racy users. One the writer side the strings are 
+>> > always copied to new memory and the readers use rcu_read_lock()
+>> > to get a stable view. For readers who access the string over
+>> > sleeps the reader copies the string. 
 >> 
->> Please fix this, thanks.
-> 
-> It's based on 2.6.33-rc1.  Are you not going to pull that into net-2.6?
+>> I will have to look more after the holidays.  This rcu_string looks like
+>> it introduces allocations on paths that did not use them before, which
+>> has me wondering a bit.
+>
+> On the reader side about all of them allocated before, e.g. for
+> call_usermodehelper.
 
-Why in the world should I?  There are no conflicts to resolve
-that I know of.
+That sounds like less of an issue.
 
-And if there are no conflicts to resolve, pulling in Linus's
-tree just makes future pulls into his tree more ugly.
+> If the strings were made a bit smaller this could be also 
+> put on the stack, but I didn't dare for 256 bytes. 
 
-This is pretty standard practice, but in any event you shouldn't ever
-care.
+Hmm.  rcu wise that sounds wrong, but I haven't looked into your
+cool new data structure yet.
 
-You should simply always work against net-2.6, there is no reason to
-work against any other tree.
-
-This is a pretty fundamental thing, I don't know why you based against
-Linus's tree instead of net-2.6.  Now you have to rebase already :-/
-
+Eric
