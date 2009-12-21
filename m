@@ -1,80 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZLUT63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbZLUUBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZLUT63 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 14:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbZLUT62
+	id S1756256AbZLUUBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZLUUBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 14:58:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:44553 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbZLUT60 (ORCPT
+	Mon, 21 Dec 2009 15:01:49 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:63686 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbZLUUBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 14:58:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=taZozokfgvbV+uE8FZOFx5OeA1U1LDsd55mGJc6r5BXaPHcNmXx54OvNgmg0TmypnV
-         E+FOYes/t41A9WnA7RfNdBt1VYo/i8LpjsckU3CfQFy/sIEAAmTgiHO1PVKYPlYmPEgK
-         zuc7FUr0VZjKM2H6JBEwBWF4Rv+pGFCUrBojE=
-Subject: Re: [linux-pm] [RFC] Asynchronous suspend/resume - test results
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B2F22EF.6040500@crca.org.au>
-References: <200912210140.19713.rjw@sisk.pl>  <4B2F22EF.6040500@crca.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 21:58:19 +0200
-Message-ID: <1261425499.4328.10.camel@maxim-laptop>
+	Mon, 21 Dec 2009 15:01:48 -0500
+Date: Mon, 21 Dec 2009 12:01:17 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH] trace: Kconfig cleanups
+Message-Id: <20091221120117.3fb49cdc.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Auth-Type: Internal IP
+X-Source-IP: rcsinet13.oracle.com [148.87.113.125]
+X-CT-RefId: str=0001.0A090202.4B2FD41A.0061:SCFMA4539811,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 18:25 +1100, Nigel Cunningham wrote: 
-> Hi.
-> 
-> Rafael J. Wysocki wrote:
-> > I'm not sure what the next step should be at this point.  To me, the picture is
-> > quite clear now, but perhaps we ought to run more tests on some other machines
-> > or something.  Please let me know what you think.
-> 
-> Looks great. If you do decide you want other machines tested, I'll
-> happily try the machines around here:
-> 
-> - Dell M1530
-> - Omnibook XE3-GF.
-> - Via LN10000 based Mythtv Box
-> - Desktop machine - Some Intel-based mobo I've forgotten the name of.
-> 
-> I've been quietly following the thread, but have lost track of what
-> iteration of the patch you're on, so if you'd give me a pointer to it,
-> I'd be grateful.
-> 
-> By the way, I haven't forgotten about sending some real patches for
-> swsusp (ie more than just cleanups). I'm just busy with other things and
-> also thinking carefully about what order to do things in.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I vote for ability to save all ram to the disk.
-After several days of testing I managed to make my system do s2disk
-really reliable (~300 cycles tested), but suspending when memory is
-tight still fails sometimes.
+Fix filename reference (ftrace-implementation.txt -> ftrace-design.txt).
 
-I didn't yet use your tuxonice system  though.
+Fix spelling, punctuation, grammar.
 
-Best regards,
-Maxim Levisky
+Fix help text indentation and line lengths to reduce need for horizontal
+scrolling or larger window sizes.
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc:	Steven Rostedt <rostedt@goodmis.org>
+Cc:	Frederic Weisbecker <fweisbec@gmail.com>
+Cc:	Ingo Molnar <mingo@redhat.com>
+---
+ kernel/trace/Kconfig |  116 ++++++++++++++++++++---------------------
+ 1 file changed, 58 insertions(+), 58 deletions(-)
 
-
-
-
-
-
+--- lnx-2633-rc1.orig/kernel/trace/Kconfig
++++ lnx-2633-rc1/kernel/trace/Kconfig
+@@ -12,17 +12,17 @@ config NOP_TRACER
+ config HAVE_FTRACE_NMI_ENTER
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config HAVE_FUNCTION_TRACER
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config HAVE_FUNCTION_GRAPH_TRACER
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config HAVE_FUNCTION_GRAPH_FP_TEST
+ 	bool
+@@ -34,17 +34,17 @@ config HAVE_FUNCTION_GRAPH_FP_TEST
+ config HAVE_FUNCTION_TRACE_MCOUNT_TEST
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config HAVE_DYNAMIC_FTRACE
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config HAVE_FTRACE_MCOUNT_RECORD
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config HAVE_HW_BRANCH_TRACER
+ 	bool
+@@ -52,7 +52,7 @@ config HAVE_HW_BRANCH_TRACER
+ config HAVE_SYSCALL_TRACEPOINTS
+ 	bool
+ 	help
+-	  See Documentation/trace/ftrace-implementation.txt
++	  See Documentation/trace/ftrace-design.txt
+ 
+ config TRACER_MAX_TRACE
+ 	bool
+@@ -83,7 +83,7 @@ config RING_BUFFER_ALLOW_SWAP
+ # This allows those options to appear when no other tracer is selected. But the
+ # options do not appear when something else selects it. We need the two options
+ # GENERIC_TRACER and TRACING to avoid circular dependencies to accomplish the
+-# hidding of the automatic options.
++# hiding of the automatic options.
+ 
+ config TRACING
+ 	bool
+@@ -119,7 +119,7 @@ menuconfig FTRACE
+ 	bool "Tracers"
+ 	default y if DEBUG_KERNEL
+ 	help
+-	 Enable the kernel tracing infrastructure.
++	  Enable the kernel tracing infrastructure.
+ 
+ if FTRACE
+ 
+@@ -133,7 +133,7 @@ config FUNCTION_TRACER
+ 	help
+ 	  Enable the kernel to trace every kernel function. This is done
+ 	  by using a compiler feature to insert a small, 5-byte No-Operation
+-	  instruction to the beginning of every kernel function, which NOP
++	  instruction at the beginning of every kernel function, which NOP
+ 	  sequence is then dynamically patched into a tracer call when
+ 	  tracing is enabled by the administrator. If it's runtime disabled
+ 	  (the bootup default), then the overhead of the instructions is very
+@@ -150,7 +150,7 @@ config FUNCTION_GRAPH_TRACER
+ 	  and its entry.
+ 	  Its first purpose is to trace the duration of functions and
+ 	  draw a call graph for each thread with some information like
+-	  the return value. This is done by setting the current return 
++	  the return value. This is done by setting the current return
+ 	  address on the current task structure into a stack of calls.
+ 
+ 
+@@ -173,7 +173,7 @@ config IRQSOFF_TRACER
+ 
+ 	      echo 0 > /sys/kernel/debug/tracing/tracing_max_latency
+ 
+-	  (Note that kernel size and overhead increases with this option
++	  (Note that kernel size and overhead increase with this option
+ 	  enabled. This option and the preempt-off timing option can be
+ 	  used together or separately.)
+ 
+@@ -186,7 +186,7 @@ config PREEMPT_TRACER
+ 	select TRACER_MAX_TRACE
+ 	select RING_BUFFER_ALLOW_SWAP
+ 	help
+-	  This option measures the time spent in preemption off critical
++	  This option measures the time spent in preemption-off critical
+ 	  sections, with microsecond accuracy.
+ 
+ 	  The default measurement method is a maximum search, which is
+@@ -195,7 +195,7 @@ config PREEMPT_TRACER
+ 
+ 	      echo 0 > /sys/kernel/debug/tracing/tracing_max_latency
+ 
+-	  (Note that kernel size and overhead increases with this option
++	  (Note that kernel size and overhead increase with this option
+ 	  enabled. This option and the irqs-off timing option can be
+ 	  used together or separately.)
+ 
+@@ -222,7 +222,7 @@ config ENABLE_DEFAULT_TRACERS
+ 	depends on !GENERIC_TRACER
+ 	select TRACING
+ 	help
+-	  This tracer hooks to various trace points in the kernel
++	  This tracer hooks to various trace points in the kernel,
+ 	  allowing the user to pick and choose which trace point they
+ 	  want to trace. It also includes the sched_switch tracer plugin.
+ 
+@@ -265,19 +265,19 @@ choice
+ 	 The likely/unlikely profiler only looks at the conditions that
+ 	 are annotated with a likely or unlikely macro.
+ 
+-	 The "all branch" profiler will profile every if statement in the
++	 The "all branch" profiler will profile every if-statement in the
+ 	 kernel. This profiler will also enable the likely/unlikely
+-	 profiler as well.
++	 profiler.
+ 
+-	 Either of the above profilers add a bit of overhead to the system.
+-	 If unsure choose "No branch profiling".
++	 Either of the above profilers adds a bit of overhead to the system.
++	 If unsure, choose "No branch profiling".
+ 
+ config BRANCH_PROFILE_NONE
+ 	bool "No branch profiling"
+ 	help
+-	 No branch profiling. Branch profiling adds a bit of overhead.
+-	 Only enable it if you want to analyse the branching behavior.
+-	 Otherwise keep it disabled.
++	  No branch profiling. Branch profiling adds a bit of overhead.
++	  Only enable it if you want to analyse the branching behavior.
++	  Otherwise keep it disabled.
+ 
+ config PROFILE_ANNOTATED_BRANCHES
+ 	bool "Trace likely/unlikely profiler"
+@@ -288,7 +288,7 @@ config PROFILE_ANNOTATED_BRANCHES
+ 
+ 	  /sys/kernel/debug/tracing/profile_annotated_branch
+ 
+-	  Note: this will add a significant overhead, only turn this
++	  Note: this will add a significant overhead; only turn this
+ 	  on if you need to profile the system's use of these macros.
+ 
+ config PROFILE_ALL_BRANCHES
+@@ -305,7 +305,7 @@ config PROFILE_ALL_BRANCHES
+ 
+ 	  This configuration, when enabled, will impose a great overhead
+ 	  on the system. This should only be enabled when the system
+-	  is to be analyzed
++	  is to be analyzed in much detail.
+ endchoice
+ 
+ config TRACING_BRANCHES
+@@ -335,7 +335,7 @@ config POWER_TRACER
+ 	depends on X86
+ 	select GENERIC_TRACER
+ 	help
+-	  This tracer helps developers to analyze and optimize the kernels
++	  This tracer helps developers to analyze and optimize the kernel's
+ 	  power management decisions, specifically the C-state and P-state
+ 	  behavior.
+ 
+@@ -391,14 +391,14 @@ config HW_BRANCH_TRACER
+ 	select GENERIC_TRACER
+ 	help
+ 	  This tracer records all branches on the system in a circular
+-	  buffer giving access to the last N branches for each cpu.
++	  buffer, giving access to the last N branches for each cpu.
+ 
+ config KMEMTRACE
+ 	bool "Trace SLAB allocations"
+ 	select GENERIC_TRACER
+ 	help
+ 	  kmemtrace provides tracing for slab allocator functions, such as
+-	  kmalloc, kfree, kmem_cache_alloc, kmem_cache_free etc.. Collected
++	  kmalloc, kfree, kmem_cache_alloc, kmem_cache_free, etc. Collected
+ 	  data is then fed to the userspace application in order to analyse
+ 	  allocation hotspots, internal fragmentation and so on, making it
+ 	  possible to see how well an allocator performs, as well as debug
+@@ -417,15 +417,15 @@ config WORKQUEUE_TRACER
+ 	bool "Trace workqueues"
+ 	select GENERIC_TRACER
+ 	help
+-	  The workqueue tracer provides some statistical informations
++	  The workqueue tracer provides some statistical information
+           about each cpu workqueue thread such as the number of the
+           works inserted and executed since their creation. It can help
+-          to evaluate the amount of work each of them have to perform.
++          to evaluate the amount of work each of them has to perform.
+           For example it can help a developer to decide whether he should
+-          choose a per cpu workqueue instead of a singlethreaded one.
++          choose a per-cpu workqueue instead of a singlethreaded one.
+ 
+ config BLK_DEV_IO_TRACE
+-	bool "Support for tracing block io actions"
++	bool "Support for tracing block IO actions"
+ 	depends on SYSFS
+ 	depends on BLOCK
+ 	select RELAY
+@@ -456,15 +456,15 @@ config KPROBE_EVENT
+ 	select TRACING
+ 	default y
+ 	help
+-	  This allows the user to add tracing events (similar to tracepoints) on the fly
+-	  via the ftrace interface. See Documentation/trace/kprobetrace.txt
+-	  for more details.
++	  This allows the user to add tracing events (similar to tracepoints)
++	  on the fly via the ftrace interface. See
++	  Documentation/trace/kprobetrace.txt for more details.
+ 
+ 	  Those events can be inserted wherever kprobes can probe, and record
+ 	  various register and memory values.
+ 
+-	  This option is also required by perf-probe subcommand of perf tools. If
+-	  you want to use perf tools, this option is strongly recommended.
++	  This option is also required by perf-probe subcommand of perf tools.
++	  If you want to use perf tools, this option is strongly recommended.
+ 
+ config DYNAMIC_FTRACE
+ 	bool "enable/disable ftrace tracepoints dynamically"
+@@ -472,32 +472,32 @@ config DYNAMIC_FTRACE
+ 	depends on HAVE_DYNAMIC_FTRACE
+ 	default y
+ 	help
+-         This option will modify all the calls to ftrace dynamically
+-	 (will patch them out of the binary image and replaces them
+-	 with a No-Op instruction) as they are called. A table is
+-	 created to dynamically enable them again.
+-
+-	 This way a CONFIG_FUNCTION_TRACER kernel is slightly larger, but otherwise
+-	 has native performance as long as no tracing is active.
+-
+-	 The changes to the code are done by a kernel thread that
+-	 wakes up once a second and checks to see if any ftrace calls
+-	 were made. If so, it runs stop_machine (stops all CPUS)
+-	 and modifies the code to jump over the call to ftrace.
++          This option will modify all the calls to ftrace dynamically
++	  (will patch them out of the binary image and replace them
++	  with a No-Op instruction) as they are called. A table is
++	  created to dynamically enable them again.
++
++	  This way a CONFIG_FUNCTION_TRACER kernel is slightly larger, but
++	  otherwise has native performance as long as no tracing is active.
++
++	  The changes to the code are done by a kernel thread that
++	  wakes up once a second and checks to see if any ftrace calls
++	  were made. If so, it runs stop_machine (stops all CPUS)
++	  and modifies the code to jump over the call to ftrace.
+ 
+ config FUNCTION_PROFILER
+ 	bool "Kernel function profiler"
+ 	depends on FUNCTION_TRACER
+ 	default n
+ 	help
+-	 This option enables the kernel function profiler. A file is created
+-	 in debugfs called function_profile_enabled which defaults to zero.
+-	 When a 1 is echoed into this file profiling begins, and when a
+-	 zero is entered, profiling stops. A file in the trace_stats
+-	 directory called functions, that show the list of functions that
+-	 have been hit and their counters.
++	  This option enables the kernel function profiler. A file is created
++	  in debugfs called function_profile_enabled which defaults to zero.
++	  When a 1 is echoed into this file profiling begins, and when a
++	  zero is entered, profiling stops. A "functions" file is created in
++	  the trace_stats directory; this file shows the list of functions that
++	  have been hit and their counters.
+ 
+-	 If in doubt, say N
++	  If in doubt, say N.
+ 
+ config FTRACE_MCOUNT_RECORD
+ 	def_bool y
+@@ -556,8 +556,8 @@ config RING_BUFFER_BENCHMARK
+ 	tristate "Ring buffer benchmark stress tester"
+ 	depends on RING_BUFFER
+ 	help
+-	  This option creates a test to stress the ring buffer and bench mark it.
+-	  It creates its own ring buffer such that it will not interfer with
++	  This option creates a test to stress the ring buffer and benchmark it.
++	  It creates its own ring buffer such that it will not interfere with
+ 	  any other users of the ring buffer (such as ftrace). It then creates
+ 	  a producer and consumer that will run for 10 seconds and sleep for
+ 	  10 seconds. Each interval it will print out the number of events
+@@ -566,7 +566,7 @@ config RING_BUFFER_BENCHMARK
+ 	  It does not disable interrupts or raise its priority, so it may be
+ 	  affected by processes that are running.
+ 
+-	  If unsure, say N
++	  If unsure, say N.
+ 
+ endif # FTRACE
+ 
