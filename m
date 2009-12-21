@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbZLURZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZLURRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756947AbZLURZl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 12:25:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZLURZj
+	id S1755932AbZLURRp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 12:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZLURRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 12:25:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56963 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755862AbZLURZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 12:25:38 -0500
-Date: Mon, 21 Dec 2009 09:14:45 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH] Driver core: export platform_device_register_data as a
- GPL symbol
-Message-ID: <20091221171445.GA27870@suse.de>
-References: <1261413668-30145-1-git-send-email-vapier@gentoo.org>
- <20091221164619.GA27521@suse.de>
- <8bd0f97a0912210905s1a9512ffp45bf77555b3685df@mail.gmail.com>
+	Mon, 21 Dec 2009 12:17:44 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38325 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbZLURRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 12:17:44 -0500
+Message-ID: <4B2FAD7B.7050701@zytor.com>
+Date: Mon, 21 Dec 2009 09:16:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0912210905s1a9512ffp45bf77555b3685df@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix size for ex trampoline with 32bit
+References: <4B2F237F.3040909@kernel.org>
+In-Reply-To: <4B2F237F.3040909@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 12:05:40PM -0500, Mike Frysinger wrote:
-> On Mon, Dec 21, 2009 at 11:46, Greg KH wrote:
-> > On Mon, Dec 21, 2009 at 11:41:08AM -0500, Mike Frysinger wrote:
-> >> This allows MFD's to register/bind drivers for their sub devices while
-> >> still being compiled as a module.
-> >
-> > Is this a problem that we need to get resolved in .33, or older kernels,
-> > or just for .34?
+On 12/20/2009 11:27 PM, Yinghai Lu wrote:
 > 
-> the functionality is in place now, so it could be used in .33.  but it
-> isnt that big of a deal to simply say the mfd core cant be built as a
-> module right now.
 > 
-> so, it'd be nice for .33, but if it's too much hassle, .34 is OK.
+> fix for error that is introduced by
+> | x86: Use find_e820() instead of hard coded trampoline address
+> 
+> it should end with PAGE_SIZE + PAGE_SIZE
+> 
 
-Ok, I'll queue it up for .33, as it keeps an in-kernel driver from
-working properly now.
+2*PAGE_SIZE?
 
-thanks,
+	-hpa
 
-greg k-h
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
