@@ -1,119 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbZLUXtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZLUXwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751726AbZLUXtM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 18:49:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbZLUXtJ
+	id S1751773AbZLUXwT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 18:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbZLUXwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 18:49:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57511 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbZLUXtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 18:49:08 -0500
-Message-ID: <4B3009DC.7020407@kernel.org>
-Date: Tue, 22 Dec 2009 08:50:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Mon, 21 Dec 2009 18:52:18 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:56933 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbZLUXwR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 18:52:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=MYjtxcmiftsw3DdN/XDi9qQSIEbRc0v4oRg5LvVMaDM+NNqgtzCq6ActOxeP6l4Pvt
+         8zHM8VMm7KxD+kHMko6wXAhWTDscmK7seM91nTDCEciXH19zTUuQjdMFXfEF1D5rTXfU
+         lto5sVpI+0BfmB9HZ4Bb6iaEF3CYtoaibRSsc=
+Message-ID: <4B300A2A.8040305@gmail.com>
+Date: Mon, 21 Dec 2009 16:52:10 -0700
+From: "Berck E. Nash" <flyboy@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: torvalds@linux-foundation.org, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org>	 <1261143924.20899.169.camel@laptop>  <4B2EE5A5.2030208@kernel.org>	 <1261387377.4314.37.camel@laptop>  <4B2F7879.2080901@kernel.org> <1261405604.4314.154.camel@laptop>
-In-Reply-To: <1261405604.4314.154.camel@laptop>
-X-Enigmail-Version: 1.0
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: sky2 panic in 2.6.32.1 under load
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Since 2.6.32, I've been getting kernel panics under heavy network load
+(bittorrent usage).
 
-On 12/21/2009 11:26 PM, Peter Zijlstra wrote:
->> I think you're primarily concerned with the scheduler modifications
-> 
-> No I think the whole wq redesign sucks chunks, because it:
-> 
->  1) looses the queue property
+[ 8673.345873] sky2 eth0: receiver hang detected
+[ 8673.350368] sky2 eth0: disabling interface
+[ 8673.354749] BUG: unable to handle kernel NULL pointer dereference at
+0000000000000010
+[ 8673.359748] IP: [<ffffffffa00373d3>] sky2_xmit_frame+0x321/0x5d8 [sky2]
+[ 8673.364675] PGD a09a6067 PUD a09a5067 PMD 0
+[ 8673.373838] Oops: 0002 [#1] SMP
+[ 8673.373838] last sysfs file: /sys/devices/platform/coretemp.1/temp1_label
+[ 8673.383900] CPU 0
+[ 8673.383900] Modules linked in: nfsd exportfs nfs lockd nfs_acl
+auth_rpcgss sunrpc nls_cp437 msdos fat kvm_intel kvm fuse snd_rtctimer
+hwmon_vid nvidia(P) usbhid tuner_simple tuner_types wm8775 tda9887
+snd_hda_codec_realtek tda8290 snd_hda_intel tuner snd_hda_codec
+snd_pcm_oss snd_mixer_oss snd_pcm cx25840 snd_seq_dummy snd_seq_oss
+snd_seq_midi_event ivtv snd_seq i2c_algo_bit cx2341x v4l2_common
+snd_timer videodev uhci_hcd snd_seq_device v4l1_compat ehci_hcd snd
+v4l2_compat_ioctl32 i2c_i801 soundcore snd_page_alloc floppy sky2
+usbcore tveeprom
+[ 8673.435268] Pid: 4, comm: ksoftirqd/0 Tainted: P           2.6.32.1
+#3 P5W DH Deluxe
+[ 8673.438943] RIP: 0010:[<ffffffffa00373d3>]  [<ffffffffa00373d3>]
+sky2_xmit_frame+0x321/0x5d8 [sky2]
+[ 8673.448539] RSP: 0018:ffff880001603df8  EFLAGS: 00010246
+[ 8673.458678] RAX: 0000000000000000 RBX: ffff8800bd201d40 RCX:
+0000000000000000
+[ 8673.465016] RDX: 0000000000000000 RSI: 000000000000008c RDI:
+0000000000000000
+[ 8673.472396] RBP: ffff880001603e48 R08: 0000000000000001 R09:
+0000000000000000
+[ 8673.474083] R10: 000000000000001e R11: 0000000000000ef8 R12:
+ffff88009bf3ab48
+[ 8673.484317] R13: ffff8800bef4d000 R14: 0000000000000000 R15:
+00000000955fa87e
+[ 8673.492381] FS:  0000000000000000(0000) GS:ffff880001600000(0000)
+knlGS:0000000000000000
+[ 8673.501448] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[ 8673.509707] CR2: 0000000000000010 CR3: 00000000a09bf000 CR4:
+00000000000026f0
+[ 8673.514146] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+0000000000000000
+[ 8673.520661] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
+0000000000000400
+[ 8673.528842] Process ksoftirqd/0 (pid: 4, threadinfo ffff8800bf8b4000,
+task ffff8800bf8a8650)
+[ 8673.539212] Stack:
+[ 8673.539212]  ffff8800992f5980 ffff8800955fa87e ffff8800bd201800
+000000428122a659
+[ 8673.548658] <0> ffff880001603e48 ffff88009bf3ab48 ffff8800992f5980
+ffffffff813eaf30
+[ 8673.556929] <0> ffff8800bd201800 ffff8800bef03940 ffff880001603e98
+ffffffff81231de8
+[ 8673.565432] Call Trace:
+[ 8673.565432]  <IRQ>
+[ 8673.565432]  [<ffffffff81231de8>] dev_hard_start_xmit+0x21c/0x2b7
+[ 8673.574516]  [<ffffffff81041746>] ? run_timer_softirq+0x4f/0x1c9
+[ 8673.579515]  [<ffffffff81240252>] sch_direct_xmit+0x5e/0x154
+[ 8673.584559]  [<ffffffff81240404>] __qdisc_run+0xbc/0xd5
+[ 8673.592673]  [<ffffffff8122fb19>] net_tx_action+0xbb/0x10e
+[ 8673.598719]  [<ffffffff8103dc16>] __do_softirq+0x91/0x11b
+[ 8673.601787]  [<ffffffff8100be9c>] call_softirq+0x1c/0x28
+[ 8673.609833]  <EOI>
+[ 8673.610994]  [<ffffffff8100d907>] do_softirq+0x33/0x6b
+[ 8673.614419]  [<ffffffff8103d71e>] ksoftirqd+0x60/0xd7
+[ 8673.620082]  [<ffffffff8103d6be>] ? ksoftirqd+0x0/0xd7
+[ 8673.620082]  [<ffffffff8104aee7>] kthread+0x7a/0x82
+[ 8673.629310]  [<ffffffff8100bd9a>] child_rip+0xa/0x20
+[ 8673.634137]  [<ffffffff8104ae6d>] ? kthread+0x0/0x82
+[ 8673.639492]  [<ffffffff8100bd90>] ? child_rip+0x0/0x20
+[ 8673.647639] Code: 06 00 00 00 00 89 08 66 c7 40 04 00 00 c6 40 06 01
+c6 40 07 9f 41 0f b7 c6 48 89 c7 48 c1 e0 03 48 c1 e7 05 48 89 f9 48 03
+4b 20 <4c> 89 79 10 48 c7 41 08 01 00 00 00 8b 75 cc 89 71 18 48 03 7b
+[ 8673.667726] RIP  [<ffffffffa00373d3>] sky2_xmit_frame+0x321/0x5d8 [sky2]
+[ 8673.674902]  RSP <ffff880001603df8>
+[ 8673.674902] CR2: 0000000000000010
+[ 8673.682956] hda-intel: IRQ timing workaround is activated for card
+#0. Suggest a bigger bdl_pos_adj.
+[ 8673.683015] ---[ end trace 2c387977cf1c7c9a ]---
+[ 8673.683017] Kernel panic - not syncing: Fatal exception in interrupt
+[ 8673.683020] Pid: 4, comm: ksoftirqd/0 Tainted: P      D    2.6.32.1 #3
+[ 8673.683021] Call Trace:
+[ 8673.683023]  <IRQ>  [<ffffffff8129839d>] panic+0x75/0x11c
+[ 8673.683030]  [<ffffffff8100e9a7>] oops_end+0x81/0x8e
+[ 8673.683033]  [<ffffffff81026e5f>] no_context+0x1ee/0x1fd
+[ 8673.683036]  [<ffffffff81032a6d>] ? find_busiest_group+0x387/0x8d8
+[ 8673.683039]  [<ffffffff81026fe0>] __bad_area_nosemaphore+0x172/0x195
+[ 8673.683041]  [<ffffffff81027011>] bad_area_nosemaphore+0xe/0x10
+[ 8673.683044]  [<ffffffff8102724b>] do_page_fault+0x114/0x252
+[ 8673.683047]  [<ffffffff8129a97f>] page_fault+0x1f/0x30
+[ 8673.683054]  [<ffffffffa00373d3>] ? sky2_xmit_frame+0x321/0x5d8 [sky2]
+[ 8673.683058]  [<ffffffffa00371b8>] ? sky2_xmit_frame+0x106/0x5d8 [sky2]
+[ 8673.683061]  [<ffffffff81231de8>] dev_hard_start_xmit+0x21c/0x2b7
+[ 8673.683065]  [<ffffffff81041746>] ? run_timer_softirq+0x4f/0x1c9
+[ 8673.683067]  [<ffffffff81240252>] sch_direct_xmit+0x5e/0x154
+[ 8673.683070]  [<ffffffff81240404>] __qdisc_run+0xbc/0xd5
+[ 8673.683072]  [<ffffffff8122fb19>] net_tx_action+0xbb/0x10e
+[ 8673.683075]  [<ffffffff8103dc16>] __do_softirq+0x91/0x11b
+[ 8673.683078]  [<ffffffff8100be9c>] call_softirq+0x1c/0x28
+[ 8673.683079]  <EOI>  [<ffffffff8100d907>] do_softirq+0x33/0x6b
+[ 8673.683083]  [<ffffffff8103d71e>] ksoftirqd+0x60/0xd7
+[ 8673.683085]  [<ffffffff8103d6be>] ? ksoftirqd+0x0/0xd7
+[ 8673.683088]  [<ffffffff8104aee7>] kthread+0x7a/0x82
+[ 8673.683090]  [<ffffffff8100bd9a>] child_rip+0xa/0x20
+[ 8673.683093]  [<ffffffff8104ae6d>] ? kthread+0x0/0x82
+[ 8673.683095]  [<ffffffff8100bd90>] ? child_rip+0x0/0x20
 
-Restored with max_active based ST workqueue implementation.
+Note that sometimes I get the receiver hang and things continue without
+the crash:
 
->  2) doesn't deal with cpu heavy tasks/wakeup parallelism
+[ 1219.346571] sky2 eth0: receiver hang detected
+[ 1219.351145] sky2 eth0: disabling interface
+[ 1219.357389] sky2 eth0: enabling interface
+[ 1222.572980] sky2 eth0: Link is up at 1000 Mbps, full duplex, flow
+control both
 
-workqueue was never suited for this.  MT workqueues have strong CPU
-affinity which doesn't make sense for CPU-heavy workloads.  ST
-workqueues can't take advantage of parallelism.  We can easily mark
-some workqueues as not contributing to concurrency accounting such
-that works queued for such wqs are always considered blocked for MT
-CPU-heavy workloads.  But I don't think that's the right use of
-workqueues.  For CPU-heavy workloads, let's use something which is
-more suited to the job.  Something which can take advantage of
-parallelism.
+Please CC as I'm not subscribed.
 
->  3) gets fragile at memory-pressure/reclaim
-
-Shared dynamic pool is going to be affected by memory pressure no
-matter how you implement it.  cmwq tries to maintain stable level of
-workers and has forward progress guarantee.  If you're gonna do shared
-pool, it can't get much better.
-
->  4) didn't consider the RT needs
-
-Can you be more specific?  What RT needs?  It's pretty difficult to
-tell when there's no in-kernel user and any shared worker pool would
-have pretty similar properties as cmwq.
-
-> Also, I think that whole move tasks back on online stuff is utter crazy,
-> just move then to another cpu and leave them there.
-
-Can you be more specific?  Why is it crazy when moving to online but
-!active cpu is necessary anyway?
-
-> Also, I don't think it can properly warn of simple AB-BA flush
-> deadlocks, where work A flushes B and B flushes A.
-
-During transformation, I lost per-work lockdep annoation in flush_work
-path which used to go through wait_on_work().  It can easily be
-restored.  Nothing changed at per-work level.  The same lockdep
-annoations will work.
-
-> (I also don't much like the colour coding flush implementation, but I
-> haven't spend a lot of time considering alternatives)
-
-When you can come up with much better one, let me know.  Will be happy
-to replace the current one.
-
->> and think that the choose-between-two-masks on migration is ugly.  I
->> agree it's not the prettiest thing in this world but then again it's
->> not a lot of code.  The reason why it looks ugly is because the way
->> migration is implemented and parameter is passed in.  API-wise, I
->> think making kthread_bind() synchronized against cpu onliness should
->> be pretty clean.
-> 
-> Assuming you only migrate blocked tasks the current kthread_bind()
-> should suit your needs -- I recently reworked most of the migration
-> logic.
-
-Okay, that requires another thread which would watch whether those
-rescuers which need to be migrated are scheduled out and a mechanism
-to make sure they stay scheduled out.  After the "migration" thread
-makes that sure, it would call kthread_bind() and wake up the migrated
-rescuers, right?  That's basically what the scheduler "migration"
-mechanism does.  Why implement it again?
-
-> But as it stands I don't think its wise to replace the current workqueue
-> implementation with this, esp since there are known heavy CPU users
-> using it, nor have you addressed the queueing issue (or is that the
-> restoration of the single-queue workqueue?)
-
-The queueing one is addressed and which CPU-heavy users are you
-talking about?  Workqueues have always been CPU-affine.  Not much
-changes for its users by cmwq.
-
-Thanks.
-
--- 
-tejun
+Thanks,
+Berck Nash
