@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZLUQnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZLUQne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbZLUQnY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 11:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZLUQnV
+	id S1756841AbZLUQne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 11:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbZLUQna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 11:43:21 -0500
-Received: from pmx1.sophos.com ([213.31.172.16]:51033 "EHLO pmx1.sophos.com"
+	Mon, 21 Dec 2009 11:43:30 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:34465 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752873AbZLUQnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 11:43:20 -0500
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: alain@knaff.lu
-Subject: 2.6.33-rc1: LZMA kernel fails to decompress
-Date: Mon, 21 Dec 2009 16:43:18 +0000
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Message-Id: <200912211643.18173.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 21/12/2009 16:43:18,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 21/12/2009 16:43:18,
-	Serialize complete at 21/12/2009 16:43:18
-X-TNEFEvaluated: 1
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Disposition: inline
+	id S1756831AbZLUQn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 11:43:27 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] nommu: implement vmap/vunmap with kmalloc
+Date: Mon, 21 Dec 2009 11:44:26 -0500
+Message-Id: <1261413866-30634-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.4
+In-Reply-To: <8bd0f97a0910052125m4327fef3i47e3b549938802f9@mail.gmail.com>
+References: <8bd0f97a0910052125m4327fef3i47e3b549938802f9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+git-svn-id: svn://localhost/svn/linux-kernel/trunk@7693 526b6c2d-f592-4532-a319-5dd88ccb003d
+---
+ mm/nommu.c |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
 
-Hi,
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 8687973..d28ab94 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -360,14 +360,26 @@ EXPORT_SYMBOL(vmalloc_32_user);
+ 
+ void *vmap(struct page **pages, unsigned int count, unsigned long flags, pgprot_t prot)
+ {
+-	BUG();
+-	return NULL;
++	unsigned int i;
++	void *new_map, *page_data;
++
++	new_map = kmalloc(count << PAGE_SHIFT, GFP_KERNEL);
++	if (!new_map)
++		return NULL;
++
++	for (i = 0; i < count; ++i) {
++		page_data = kmap(pages[i]);
++		memcpy(new_map + (i << PAGE_SHIFT), page_data, PAGE_SIZE);
++		kunmap(page_data);
++	}
++
++	return new_map;
+ }
+ EXPORT_SYMBOL(vmap);
+ 
+ void vunmap(const void *addr)
+ {
+-	BUG();
++	kfree(addr);
+ }
+ EXPORT_SYMBOL(vunmap);
+ 
+-- 
+1.6.5.4
 
-When run under VMware, LZMA compressed 2.6.33-rc1 instantly reboots in the 
-decompression stage. At least I suppose so, because switching to GZIP makes 
-it work.
-
-Kernel was configured via make oldconfig from a working 2.6.32-rc6. Only other 
-difference is that kprobes are disabled in 33-rc1 and enabled in 32-rc6.
-
-CPU on the server is Xeon 5110 if it helps.
-
-I can post the .config if needed, in fact since I will be away after today, I 
-will do it right now. But as a reply to this to ensure at least this post is 
-not eaten by vger filters.
-
-Tvrtko
