@@ -1,316 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbZLUUgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbZLUUgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932143AbZLUUgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 15:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbZLUUgg
+	id S1757113AbZLUUgU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZLUUgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 15:36:36 -0500
-Received: from RELAY-01.ANDREW.CMU.EDU ([128.2.10.212]:48450 "EHLO
-	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757123AbZLUUgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 15:36:35 -0500
-Date: Mon, 21 Dec 2009 15:35:15 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       lizf@cn.fujitsu.com, akpm@linux-foundation.org, menage@google.com,
-       bblum@andrew.cmu.edu
-Subject: [PATCH 1/4] cgroups: revamp subsys array
-Message-ID: <20091221203515.GB5683@andrew.cmu.edu>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	containers@lists.linux-foundation.org, lizf@cn.fujitsu.com,
-	akpm@linux-foundation.org, menage@google.com
-References: <20091221203253.GA5683@andrew.cmu.edu>
+	Mon, 21 Dec 2009 15:36:19 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:46394 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751860AbZLUUgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 15:36:18 -0500
+Date: Mon, 21 Dec 2009 20:36:10 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/4] Documentation: update tracepoint-analysis.txt
+Message-ID: <20091221203610.GE23345@csn.ul.ie>
+References: <4B2C0D70.4030707@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="cgroups-revamp-subsys-array.patch"
-In-Reply-To: <20091221203253.GA5683@andrew.cmu.edu>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B2C0D70.4030707@oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make subsys[] able to be dynamically populated to support modular subsystems
+On Fri, Dec 18, 2009 at 03:17:04PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix grammar, spelling, punctuation, hyphenation, section numbering.
+> Tell what PCL means.
+> 
 
-From: Ben Blum <bblum@andrew.cmu.edu>
+Thanks.
 
-This patch reworks the way the subsys[] array is used so that subsystems can
-register themselves after boot time, and enables the internals of cgroups to
-be able to handle when subsystems are not present or may appear/disappear.
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
 
-Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
----
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
- include/linux/cgroup.h |    8 ++++-
- kernel/cgroup.c        |   77 +++++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 68 insertions(+), 17 deletions(-)
+> ---
+>  Documentation/trace/tracepoint-analysis.txt |   60 ++++++++++++++--------------
+>  1 file changed, 30 insertions(+), 30 deletions(-)
+> 
+> --- lnx-2633-rc1.orig/Documentation/trace/tracepoint-analysis.txt
+> +++ lnx-2633-rc1/Documentation/trace/tracepoint-analysis.txt
+> @@ -10,8 +10,8 @@ Tracepoints (see Documentation/trace/tra
+>  creating custom kernel modules to register probe functions using the event
+>  tracing infrastructure.
+>  
+> -Simplistically, tracepoints will represent an important event that when can
+> -be taken in conjunction with other tracepoints to build a "Big Picture" of
+> +Simplistically, tracepoints represent important events that can be
+> +taken in conjunction with other tracepoints to build a "Big Picture" of
+>  what is going on within the system. There are a large number of methods for
+>  gathering and interpreting these events. Lacking any current Best Practises,
+>  this document describes some of the methods that can be used.
+> @@ -33,12 +33,12 @@ calling
+>  
+>  will give a fair indication of the number of events available.
+>  
+> -2.2 PCL
+> +2.2 PCL (Performance Counters for Linux)
+>  -------
+>  
+> -Discovery and enumeration of all counters and events, including tracepoints
+> +Discovery and enumeration of all counters and events, including tracepoints,
+>  are available with the perf tool. Getting a list of available events is a
+> -simple case of
+> +simple case of:
+>  
+>    $ perf list 2>&1 | grep Tracepoint
+>    ext4:ext4_free_inode                     [Tracepoint event]
+> @@ -49,19 +49,19 @@ simple case of
+>    [ .... remaining output snipped .... ]
+>  
+>  
+> -2. Enabling Events
+> +3. Enabling Events
+>  ==================
+>  
+> -2.1 System-Wide Event Enabling
+> +3.1 System-Wide Event Enabling
+>  ------------------------------
+>  
+>  See Documentation/trace/events.txt for a proper description on how events
+>  can be enabled system-wide. A short example of enabling all events related
+> -to page allocation would look something like
+> +to page allocation would look something like:
+>  
+>    $ for i in `find /sys/kernel/debug/tracing/events -name "enable" | grep mm_`; do echo 1 > $i; done
+>  
+> -2.2 System-Wide Event Enabling with SystemTap
+> +3.2 System-Wide Event Enabling with SystemTap
+>  ---------------------------------------------
+>  
+>  In SystemTap, tracepoints are accessible using the kernel.trace() function
+> @@ -86,7 +86,7 @@ were allocating the pages.
+>            print_count()
+>    }
+>  
+> -2.3 System-Wide Event Enabling with PCL
+> +3.3 System-Wide Event Enabling with PCL
+>  ---------------------------------------
+>  
+>  By specifying the -a switch and analysing sleep, the system-wide events
+> @@ -107,16 +107,16 @@ for a duration of time can be examined.
+>  Similarly, one could execute a shell and exit it as desired to get a report
+>  at that point.
+>  
+> -2.4 Local Event Enabling
+> +3.4 Local Event Enabling
+>  ------------------------
+>  
+>  Documentation/trace/ftrace.txt describes how to enable events on a per-thread
+>  basis using set_ftrace_pid.
+>  
+> -2.5 Local Event Enablement with PCL
+> +3.5 Local Event Enablement with PCL
+>  -----------------------------------
+>  
+> -Events can be activate and tracked for the duration of a process on a local
+> +Events can be activated and tracked for the duration of a process on a local
+>  basis using PCL such as follows.
+>  
+>    $ perf stat -e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
+> @@ -131,18 +131,18 @@ basis using PCL such as follows.
+>  
+>      0.973913387  seconds time elapsed
+>  
+> -3. Event Filtering
+> +4. Event Filtering
+>  ==================
+>  
+>  Documentation/trace/ftrace.txt covers in-depth how to filter events in
+>  ftrace.  Obviously using grep and awk of trace_pipe is an option as well
+>  as any script reading trace_pipe.
+>  
+> -4. Analysing Event Variances with PCL
+> +5. Analysing Event Variances with PCL
+>  =====================================
+>  
+>  Any workload can exhibit variances between runs and it can be important
+> -to know what the standard deviation in. By and large, this is left to the
+> +to know what the standard deviation is. By and large, this is left to the
+>  performance analyst to do it by hand. In the event that the discrete event
+>  occurrences are useful to the performance analyst, then perf can be used.
+>  
+> @@ -166,7 +166,7 @@ In the event that some higher-level even
+>  aggregation of discrete events, then a script would need to be developed.
+>  
+>  Using --repeat, it is also possible to view how events are fluctuating over
+> -time on a system wide basis using -a and sleep.
+> +time on a system-wide basis using -a and sleep.
+>  
+>    $ perf stat -e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
+>  		-e kmem:mm_pagevec_free \
+> @@ -180,7 +180,7 @@ time on a system wide basis using -a and
+>  
+>      1.002251757  seconds time elapsed   ( +-   0.005% )
+>  
+> -5. Higher-Level Analysis with Helper Scripts
+> +6. Higher-Level Analysis with Helper Scripts
+>  ============================================
+>  
+>  When events are enabled the events that are triggering can be read from
+> @@ -190,11 +190,11 @@ be gathered on-line as appropriate. Exam
+>  
+>    o Reading information from /proc for the PID that triggered the event
+>    o Deriving a higher-level event from a series of lower-level events.
+> -  o Calculate latencies between two events
+> +  o Calculating latencies between two events
+>  
+>  Documentation/trace/postprocess/trace-pagealloc-postprocess.pl is an example
+>  script that can read trace_pipe from STDIN or a copy of a trace. When used
+> -on-line, it can be interrupted once to generate a report without existing
+> +on-line, it can be interrupted once to generate a report without exiting
+>  and twice to exit.
+>  
+>  Simplistically, the script just reads STDIN and counts up events but it
+> @@ -212,12 +212,12 @@ also can do more such as
+>      processes, the parent process responsible for creating all the helpers
+>      can be identified
+>  
+> -6. Lower-Level Analysis with PCL
+> +7. Lower-Level Analysis with PCL
+>  ================================
+>  
+> -There may also be a requirement to identify what functions with a program
+> +There may also be a requirement to identify what functions within a program
+>  were generating events within the kernel. To begin this sort of analysis, the
+> -data must be recorded. At the time of writing, this required root
+> +data must be recorded. At the time of writing, this required root:
+>  
+>    $ perf record -c 1 \
+>  	-e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
+> @@ -253,11 +253,11 @@ perf report.
+>    # (For more details, try: perf report --sort comm,dso,symbol)
+>    #
+>  
+> -According to this, the vast majority of events occured triggered on events
+> -within the VDSO. With simple binaries, this will often be the case so lets
+> +According to this, the vast majority of events triggered on events
+> +within the VDSO. With simple binaries, this will often be the case so let's
+>  take a slightly different example. In the course of writing this, it was
+> -noticed that X was generating an insane amount of page allocations so lets look
+> -at it
+> +noticed that X was generating an insane amount of page allocations so let's look
+> +at it:
+>  
+>    $ perf record -c 1 -f \
+>  		-e kmem:mm_page_alloc -e kmem:mm_page_free_direct \
+> @@ -280,8 +280,8 @@ This was interrupted after a few seconds
+>    # (For more details, try: perf report --sort comm,dso,symbol)
+>    #
+>  
+> -So, almost half of the events are occuring in a library. To get an idea which
+> -symbol.
+> +So, almost half of the events are occurring in a library. To get an idea which
+> +symbol:
+>  
+>    $ perf report --sort comm,dso,symbol
+>    # Samples: 27666
+> @@ -297,7 +297,7 @@ symbol.
+>         0.01%     Xorg  /opt/gfx-test/lib/libpixman-1.so.0.13.1  [.] get_fast_path
+>         0.00%     Xorg  [kernel]                                 [k] ftrace_trace_userstack
+>  
+> -To see where within the function pixmanFillsse2 things are going wrong
+> +To see where within the function pixmanFillsse2 things are going wrong:
+>  
+>    $ perf annotate pixmanFillsse2
+>    [ ... ]
+> 
+> 
 
-
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 642a47f..d7f1545 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -41,13 +41,17 @@ extern int cgroupstats_build(struct cgroupstats *stats,
- 
- extern struct file_operations proc_cgroup_operations;
- 
--/* Define the enumeration of all cgroup subsystems */
-+/* Define the enumeration of all builtin cgroup subsystems */
- #define SUBSYS(_x) _x ## _subsys_id,
- enum cgroup_subsys_id {
- #include <linux/cgroup_subsys.h>
--	CGROUP_SUBSYS_COUNT
-+	CGROUP_BUILTIN_SUBSYS_COUNT
- };
- #undef SUBSYS
-+/* This define indicates the maximum number of subsystems that can be loaded
-+ * at once. We limit to this many since cgroupfs_root has subsys_bits to keep
-+ * track of all of them. */
-+#define CGROUP_SUBSYS_COUNT (BITS_PER_BYTE*sizeof(unsigned long))
- 
- /* Per-subsystem/per-cgroup state maintained by the system. */
- struct cgroup_subsys_state {
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 7af6168..ece9321 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -56,10 +56,12 @@
- 
- static DEFINE_MUTEX(cgroup_mutex);
- 
--/* Generate an array of cgroup subsystem pointers */
-+/* Generate an array of cgroup subsystem pointers. At boot time, this is
-+ * populated up to CGROUP_BUILTIN_SUBSYS_COUNT, and modular subsystems are
-+ * registered after that. The mutable section of this array is protected by
-+ * cgroup_mutex. */
- #define SUBSYS(_x) &_x ## _subsys,
--
--static struct cgroup_subsys *subsys[] = {
-+static struct cgroup_subsys *subsys[CGROUP_SUBSYS_COUNT] = {
- #include <linux/cgroup_subsys.h>
- };
- 
-@@ -433,8 +435,9 @@ static struct css_set *find_existing_css_set(
- 	struct hlist_node *node;
- 	struct css_set *cg;
- 
--	/* Built the set of subsystem state objects that we want to
--	 * see in the new css_set */
-+	/* Build the set of subsystem state objects that we want to see in the
-+	 * new css_set. while subsystems can change globally, the entries here
-+	 * won't change, so no need for locking. */
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		if (root->subsys_bits & (1UL << i)) {
- 			/* Subsystem is in this hierarchy. So we want
-@@ -869,7 +872,9 @@ void cgroup_release_and_wakeup_rmdir(struct cgroup_subsys_state *css)
- 	css_put(css);
- }
- 
--
-+/*
-+ * Call with cgroup_mutex held.
-+ */
- static int rebind_subsystems(struct cgroupfs_root *root,
- 			      unsigned long final_bits)
- {
-@@ -877,6 +882,8 @@ static int rebind_subsystems(struct cgroupfs_root *root,
- 	struct cgroup *cgrp = &root->top_cgroup;
- 	int i;
- 
-+	BUG_ON(!mutex_is_locked(&cgroup_mutex));
-+
- 	removed_bits = root->actual_subsys_bits & ~final_bits;
- 	added_bits = final_bits & ~root->actual_subsys_bits;
- 	/* Check that any added subsystems are currently free */
-@@ -885,6 +892,10 @@ static int rebind_subsystems(struct cgroupfs_root *root,
- 		struct cgroup_subsys *ss = subsys[i];
- 		if (!(bit & added_bits))
- 			continue;
-+		/* nobody should tell us to do a subsys that doesn't exist:
-+		 * parse_cgroupfs_options should catch that case and refcounts
-+		 * ensure that subsystems won't disappear once selected. */
-+		BUG_ON(ss == NULL);
- 		if (ss->root != &rootnode) {
- 			/* Subsystem isn't free */
- 			return -EBUSY;
-@@ -904,6 +915,7 @@ static int rebind_subsystems(struct cgroupfs_root *root,
- 		unsigned long bit = 1UL << i;
- 		if (bit & added_bits) {
- 			/* We're binding this subsystem to this hierarchy */
-+			BUG_ON(ss == NULL);
- 			BUG_ON(cgrp->subsys[i]);
- 			BUG_ON(!dummytop->subsys[i]);
- 			BUG_ON(dummytop->subsys[i]->cgroup != dummytop);
-@@ -917,6 +929,7 @@ static int rebind_subsystems(struct cgroupfs_root *root,
- 			mutex_unlock(&ss->hierarchy_mutex);
- 		} else if (bit & removed_bits) {
- 			/* We're removing this subsystem */
-+			BUG_ON(ss == NULL);
- 			BUG_ON(cgrp->subsys[i] != dummytop->subsys[i]);
- 			BUG_ON(cgrp->subsys[i]->cgroup != cgrp);
- 			mutex_lock(&ss->hierarchy_mutex);
-@@ -929,6 +942,7 @@ static int rebind_subsystems(struct cgroupfs_root *root,
- 			mutex_unlock(&ss->hierarchy_mutex);
- 		} else if (bit & final_bits) {
- 			/* Subsystem state should already exist */
-+			BUG_ON(ss == NULL);
- 			BUG_ON(!cgrp->subsys[i]);
- 		} else {
- 			/* Subsystem state shouldn't exist */
-@@ -971,14 +985,18 @@ struct cgroup_sb_opts {
- 
- };
- 
--/* Convert a hierarchy specifier into a bitmask of subsystems and
-- * flags. */
-+/*
-+ * Convert a hierarchy specifier into a bitmask of subsystems and flags. Call
-+ * with cgroup_mutex held to protect the subsys[] array.
-+ */
- static int parse_cgroupfs_options(char *data,
- 				     struct cgroup_sb_opts *opts)
- {
- 	char *token, *o = data ?: "all";
- 	unsigned long mask = (unsigned long)-1;
- 
-+	BUG_ON(!mutex_is_locked(&cgroup_mutex));
-+
- #ifdef CONFIG_CPUSETS
- 	mask = ~(1UL << cpuset_subsys_id);
- #endif
-@@ -994,6 +1012,8 @@ static int parse_cgroupfs_options(char *data,
- 			opts->subsys_bits = 0;
- 			for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 				struct cgroup_subsys *ss = subsys[i];
-+				if (ss == NULL)
-+					continue;
- 				if (!ss->disabled)
- 					opts->subsys_bits |= 1ul << i;
- 			}
-@@ -1038,6 +1058,8 @@ static int parse_cgroupfs_options(char *data,
- 			int i;
- 			for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 				ss = subsys[i];
-+				if (ss == NULL)
-+					continue;
- 				if (!strcmp(token, ss->name)) {
- 					if (!ss->disabled)
- 						set_bit(i, &opts->subsys_bits);
-@@ -1291,7 +1313,9 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 	struct cgroupfs_root *new_root;
- 
- 	/* First find the desired set of subsystems */
-+	mutex_lock(&cgroup_mutex);
- 	ret = parse_cgroupfs_options(data, &opts);
-+	mutex_unlock(&cgroup_mutex);
- 	if (ret)
- 		goto out_err;
- 
-@@ -3277,8 +3301,12 @@ static void cgroup_lock_hierarchy(struct cgroupfs_root *root)
- 	/* We need to take each hierarchy_mutex in a consistent order */
- 	int i;
- 
-+	/* no worry about a race with rebind_subsystems that might mess up the
-+	 * locking order, since both parties are under cgroup_mutex. */
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
-+		if (ss == NULL)
-+			continue;
- 		if (ss->root == root)
- 			mutex_lock(&ss->hierarchy_mutex);
- 	}
-@@ -3290,6 +3318,8 @@ static void cgroup_unlock_hierarchy(struct cgroupfs_root *root)
- 
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
-+		if (ss == NULL)
-+			continue;
- 		if (ss->root == root)
- 			mutex_unlock(&ss->hierarchy_mutex);
- 	}
-@@ -3410,11 +3440,14 @@ static int cgroup_has_css_refs(struct cgroup *cgrp)
- 	 * synchronization other than RCU, and the subsystem linked
- 	 * list isn't RCU-safe */
- 	int i;
-+	/* we won't need to lock the subsys array, because the subsystems
-+	 * we're concerned about aren't going anywhere since our cgroup root
-+	 * has a reference on them. */
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
- 		struct cgroup_subsys_state *css;
--		/* Skip subsystems not in this hierarchy */
--		if (ss->root != cgrp->root)
-+		/* Skip subsystems not present or not in this hierarchy */
-+		if (ss == NULL || ss->root != cgrp->root)
- 			continue;
- 		css = cgrp->subsys[ss->subsys_id];
- 		/* When called from check_for_release() it's possible
-@@ -3635,7 +3668,8 @@ int __init cgroup_init_early(void)
- 	for (i = 0; i < CSS_SET_TABLE_SIZE; i++)
- 		INIT_HLIST_HEAD(&css_set_table[i]);
- 
--	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+	/* at bootup time, we don't worry about modular subsystems */
-+	for (i = 0; i < CGROUP_BUILTIN_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
- 
- 		BUG_ON(!ss->name);
-@@ -3670,7 +3704,8 @@ int __init cgroup_init(void)
- 	if (err)
- 		return err;
- 
--	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+	/* at bootup time, we don't worry about modular subsystems */
-+	for (i = 0; i < CGROUP_BUILTIN_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
- 		if (!ss->early_init)
- 			cgroup_init_subsys(ss);
-@@ -3779,9 +3814,14 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
- 	int i;
- 
- 	seq_puts(m, "#subsys_name\thierarchy\tnum_cgroups\tenabled\n");
-+	/* ideally we don't want subsystems moving around while we do this.
-+	 * cgroup_mutex is also necessary to guarantee an atomic snapshot of
-+	 * subsys/hierarchy state. */
- 	mutex_lock(&cgroup_mutex);
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
-+		if (ss == NULL)
-+			continue;
- 		seq_printf(m, "%s\t%d\t%d\t%d\n",
- 			   ss->name, ss->root->hierarchy_id,
- 			   ss->root->number_of_cgroups, !ss->disabled);
-@@ -3841,7 +3881,10 @@ void cgroup_fork_callbacks(struct task_struct *child)
- {
- 	if (need_forkexit_callback) {
- 		int i;
--		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		/* forkexit callbacks are only supported for builtin modules,
-+		 * and the builtin section of the subsys array is immutable,
-+		 * so we don't need to lock the subsys array here. */
-+		for (i = 0; i < CGROUP_BUILTIN_SUBSYS_COUNT; i++) {
- 			struct cgroup_subsys *ss = subsys[i];
- 			if (ss->fork)
- 				ss->fork(ss, child);
-@@ -3912,7 +3955,9 @@ void cgroup_exit(struct task_struct *tsk, int run_callbacks)
- 	struct css_set *cg;
- 
- 	if (run_callbacks && need_forkexit_callback) {
--		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		/* modular subsystems can't use callbacks, so no need to lock
-+		 * the subsys array */
-+		for (i = 0; i < CGROUP_BUILTIN_SUBSYS_COUNT; i++) {
- 			struct cgroup_subsys *ss = subsys[i];
- 			if (ss->exit)
- 				ss->exit(ss, tsk);
-@@ -4221,7 +4266,9 @@ static int __init cgroup_disable(char *str)
- 		if (!*token)
- 			continue;
- 
--		for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		/* cgroup_disable, being at boot time, can't know about module
-+		 * subsystems, so we don't worry about them. */
-+		for (i = 0; i < CGROUP_BUILTIN_SUBSYS_COUNT; i++) {
- 			struct cgroup_subsys *ss = subsys[i];
- 
- 			if (!strcmp(token, ss->name)) {
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
