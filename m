@@ -1,32 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZLUPWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZLUPWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbZLUPWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZLUPWk
+	id S1754996AbZLUPWt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 10:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZLUPWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:22:40 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:36965 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752186AbZLUPWj (ORCPT
+	Mon, 21 Dec 2009 10:22:47 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:24872
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754284AbZLUPWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:22:39 -0500
+	Mon, 21 Dec 2009 10:22:43 -0500
 X-SpamScore: 1
 X-BigFish: VPS1(zzab9bhzz1202hzzz32i6bh61h)
 X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KV0DD4-01-LCP-02
+X-WSS-ID: 0KV0DD4-02-36K-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@redhat.com>
 CC: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Shaun Ruffell <sruffell@digium.com>, stable@kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 1/2] dma-debug: Do not add notifier when dma debugging is disabled.
-Date: Mon, 21 Dec 2009 16:22:08 +0100
-Message-ID: <1261408929-6261-2-git-send-email-joerg.roedel@amd.com>
+       Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
+Subject: [PATCH 2/2] x86/amd-iommu: Fix initialization failure panic
+Date: Mon, 21 Dec 2009 16:22:09 +0100
+Message-ID: <1261408929-6261-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.5.4
 In-Reply-To: <1261408929-6261-1-git-send-email-joerg.roedel@amd.com>
 References: <1261408929-6261-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 21 Dec 2009 15:22:13.0397 (UTC) FILETIME=[5F291450:01CA8251]
+X-OriginalArrivalTime: 21 Dec 2009 15:22:13.0413 (UTC) FILETIME=[5F2B8550:01CA8251]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: ausb3extmailp02.amd.com
@@ -34,52 +33,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shaun Ruffell <sruffell@digium.com>
-
-If CONFIG_HAVE_DMA_API_DEBUG is defined and "dma_debug=off" is
-specified on the kernel command line, when you detach a driver from a
-device you can cause the following NULL pointer dereference:
-
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<c0580d35>] dma_debug_device_change+0x5d/0x117
-
-The problem is that the dma_debug_device_change notifier function is
-added to the bus notifier chain even though the dma_entry_hash array
-was never initialized.  If dma debugging is disabled, this patch both
-prevents dma_debug_device_change notifiers from being added to the
-chain, and additionally ensures that the dma_debug_device_change
-notifier function is a no-op.
+The assumption that acpi_table_parse passes the return value
+of the hanlder function to the caller proved wrong
+recently. The return value of the handler function is
+totally ignored. This makes the initialization code for AMD
+IOMMU buggy in a way that could cause a kernel panic on
+initialization. This patch fixes the issue in the AMD IOMMU
+driver.
 
 Cc: stable@kernel.org
-Signed-off-by: Shaun Ruffell <sruffell@digium.com>
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- lib/dma-debug.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index d9b08e0..7399744 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -676,6 +676,8 @@ static int dma_debug_device_change(struct notifier_block *nb,
- 	struct device *dev = data;
- 	int count;
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 1dca9c3..fb490ce 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -138,6 +138,11 @@ int amd_iommus_present;
+ bool amd_iommu_np_cache __read_mostly;
  
-+	if (global_disable)
-+		return;
- 
- 	switch (action) {
- 	case BUS_NOTIFY_UNBOUND_DRIVER:
-@@ -697,6 +699,9 @@ void dma_debug_add_bus(struct bus_type *bus)
- {
- 	struct notifier_block *nb;
- 
-+	if (global_disable)
-+		return;
+ /*
++ * Set to true if ACPI table parsing and hardware intialization went properly
++ */
++static bool amd_iommu_initialized;
 +
- 	nb = kzalloc(sizeof(struct notifier_block), GFP_KERNEL);
- 	if (nb == NULL) {
- 		pr_err("dma_debug_add_bus: out of memory\n");
++/*
+  * List of protection domains - used during resume
+  */
+ LIST_HEAD(amd_iommu_pd_list);
+@@ -929,6 +934,8 @@ static int __init init_iommu_all(struct acpi_table_header *table)
+ 	}
+ 	WARN_ON(p != end);
+ 
++	amd_iommu_initialized = true;
++
+ 	return 0;
+ }
+ 
+@@ -1263,6 +1270,9 @@ static int __init amd_iommu_init(void)
+ 	if (acpi_table_parse("IVRS", init_iommu_all) != 0)
+ 		goto free;
+ 
++	if (!amd_iommu_initialized)
++		goto free;
++
+ 	if (acpi_table_parse("IVRS", init_memory_definitions) != 0)
+ 		goto free;
+ 
 -- 
 1.6.5.4
 
