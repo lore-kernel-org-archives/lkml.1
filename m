@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZLUQlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZLUQkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395AbZLUQlN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 11:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZLUQlL
+	id S1753204AbZLUQkM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 11:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZLUQkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 11:41:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28699 "EHLO mx1.redhat.com"
+	Mon, 21 Dec 2009 11:40:10 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:35107 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbZLUQlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 11:41:08 -0500
-Message-ID: <4B2FA4F2.8000401@redhat.com>
-Date: Mon, 21 Dec 2009 18:40:18 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com> <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws>
-In-Reply-To: <4B2FA42F.3070408@codemonkey.ws>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751050AbZLUQkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 11:40:09 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: [PATCH] Driver core: export platform_device_register_data as a GPL symbol
+Date: Mon, 21 Dec 2009 11:41:08 -0500
+Message-Id: <1261413668-30145-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/21/2009 06:37 PM, Anthony Liguori wrote:
-> Since virtio-pci supports MSI-X, there should be no IO exits on 
-> host->guest notification other than EOI in the virtual APIC.  This is 
-> a light weight exit today and will likely disappear entirely with 
-> newer hardware.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-I'm working on disappearing EOI exits on older hardware as well.  Same 
-idea as the old TPR patching, without most of the magic.
+This allows MFD's to register/bind drivers for their sub devices while
+still being compiled as a module.
 
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/base/platform.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 9d2ee25..58efaf2 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -441,6 +441,7 @@ error:
+ 	platform_device_put(pdev);
+ 	return ERR_PTR(retval);
+ }
++EXPORT_SYMBOL_GPL(platform_device_register_data);
+ 
+ static int platform_drv_probe(struct device *_dev)
+ {
 -- 
-error compiling committee.c: too many arguments to function
+1.6.5.4
 
