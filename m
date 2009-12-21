@@ -1,81 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbZLUWHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZLUWXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757326AbZLUWHs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 17:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZLUWHq
+	id S1755907AbZLUWXx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 17:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbZLUWXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 17:07:46 -0500
-Received: from p01c12o143.mxlogic.net ([208.65.145.66]:35879 "EHLO
-	p01c12o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757271AbZLUWHp convert rfc822-to-8bit (ORCPT
+	Mon, 21 Dec 2009 17:23:52 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:5746 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755543AbZLUWXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 17:07:45 -0500
-X-MXL-Hash: 4b2ff1b17b018f70-bbdf6607c0bc8f6f87ad0fa125d2d9d7bf8e8b43
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 21 Dec 2009 17:23:51 -0500
+X-Trace: 308437570/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AikBAE+EL0tPRRyw/2dsb2JhbAAIkDgBxiWELgQ
+X-IronPort-AV: E=Sophos;i="4.47,433,1257120000"; 
+   d="scan'208";a="308437570"
+Date: Mon, 21 Dec 2009 22:23:47 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Jiri Kosina <jkosina@suse.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: fix 2.6.32 slowdown in heavy swapping
+Message-ID: <Pine.LNX.4.64.0912212214420.10033@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.32 3/3] net: Make ks8851 snl work under Beagle Zippy combo board
-Date: Mon, 21 Dec 2009 14:07:14 -0800
-Message-ID: <14385191E87B904DBD836449AA30269D538A55@MORGANITE.micrel.com>
-In-Reply-To: <14385191E87B904DBD836449AA30269D4F2135@MORGANITE.micrel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.32 3/3] net: Make ks8851 snl work under Beagle Zippy combo board
-Thread-Index: Acp0dXNlLZArAeE4TvSZpH/UxTb2MQAB1LkgA4LC7SA=
-References: <14385191E87B904DBD836449AA30269D021A42@MORGANITE.micrel.com> <20091203.160511.211490797.davem@davemloft.net> <14385191E87B904DBD836449AA30269D4F2135@MORGANITE.micrel.com>
-From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <ben@simtec.co.uk>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 21 Dec 2009 22:07:43.0026 (UTC) FILETIME=[04BFD920:01CA828A]
-X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009113001)]
-X-MAIL-FROM: <tristram.ha@micrel.com>
-X-SOURCE-IP: [65.218.208.2]
-X-AnalysisOut: [v=1.0 c=1 a=7GNLPhxcCykA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
-X-AnalysisOut: [a=PLuOMZxuCo_0GHCXCEIA:9 a=suxH41XcilWWMxlk4aPl1vtR0aUA:4]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ha, Tristram wrote:
-> David Miller wrote:
->> 
->> You say "may not be necessary", do you actually know for sure?
->> 
->> This seems questionable, if the interrupt disabling was there for a
->> reason what has changed to make it such that it is no longer
-necessary?
-> 
-> I have tested the KSZ8851 SNL driver using the OMAP Beagle Zippy combo
-board, developed by Tin
-> Can Tools.  Ben Dooks, who implemented the original driver, has his
-own KSZ8851 SNL evaluation
-> board, but he probably did not run any performance test on the driver.
-I did sent him the
-> changes before so that he can verify on his board, but I have not
-received any response.   
-> 
-> So I really do not know if interrupt disabling is necessary or not.
-But from my understanding
-> of the SPI network driver model, it is almost required the interrupt
-be edge triggered, as the
-> hardware interrupt cannot be disabled inside the actual interrupt
-handling routine.  So if the
-> interrupt is level triggered, the interrupt routine will be called
-continually, and there is no
-> chance for the workqueue to disable the interrupt.  As the interrupt
-is edge triggered, I do not
-> think the interrupt needs to be disabled.     
+Hi Mel,
 
-The "[PATCH 2.6.33] net: Fix ks8851 snl receive problem" I just
-submitted turns off hardware interrupt during interrupt handling.  That
-makes the disable_irq() call really unnecessary when the interrupt is
-edge-triggered.  The code also works when the interrupt is
-level-triggered under Beagle Zippy combo board, but theoretically the
-disable_irq() is required when the interrupt is level-triggered.  When I
-first worked on the ks8851 driver I was using Linux 2.6.22, and the
-level-triggered interrupt code did not work.  That is why I changed the
-code to edge-triggered.
+Sorry to spring this upon you, when you've already mentioned that
+you'll be offline shortly - maybe I'm too late, please don't let it
+spoil your break, feel free not to respond for a couple of weeks.
+
+I've sat quite a while on this, bisecting and trying to narrow
+it down and experimenting with different fixes; but I've failed
+to reproduce it with anything simpler than my kernel builds on
+tmpfs loop swapping tests, and it's only obvious on the PowerPC G5.
+
+The problem is that those swapping builds run about 20% slower in
+2.6.32 than 2.6.31 (and look as if they run increasingly slowly,
+though I'm not certain of that); and surprisingly it bisected
+down to your commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+page-allocator: split per-cpu list into one-list-per-migrate-type
+
+It then took me a long while to insert the vital printk which
+revealed the now obvious problem: MIGRATE_RESERVE pages are being
+put on the MIGRATE_MOVABLE list, then freed as MIGRATE_MOVABLE.
+Which I assume gradually depletes the intended reserve?
+
+The simplest, straight bugfix, patch is the one below: rely on
+page_private instead of migratetype when freeing.  But three plausible
+alternatives have occurred to me, and each has its own advantages.
+All four bring the timing back to around what it used to be.
+
+Whereas this patch below uses the migratetype in page_private(page),
+the other three remove that as now redundant.  In the second version
+free_hot_cold_page() does immediate free_one_page() of MIGRATE_RESERVEs
+just like MIGRATE_ISOLATEs, so they never get on the MIGRATE_MOVABLE list.
+
+In the third and fourth versions I've raised MIGRATE_PCPTYPES to 4,
+so there's a list of MIGRATE_RESERVEs: in the third, buffered_rmqueue()
+supplies pages from there if rmqueue_bulk() left list empty (that seems
+closest to 2.6.31 behaviour); the same in the fourth, except only when
+trying for MIGRATE_MOVABLE pages (that seems closer to your intention).
+
+In my peculiar testing (on two machines: though the slowdown was much
+less noticeable on Dell P4 x86_64, these fixes do show improvements),
+fix 2 appears slightly the fastest, and fix 3 the one with least
+variance.  But take that with a handful of salt, the likelihood
+is that further tests on other machines would show differently.
+
+Mel, do you have a feeling for which fix is the _right_ fix?
+
+I don't, and I'd rather hold back from signing off a patch, until
+we have your judgement.  But here is the first version of the fix,
+in case anyone else has noticed a slowdown in heavy swapping and
+wants to try it.
+
+Thanks,
+Hugh
+
+---
+
+ mm/page_alloc.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- 2.6.33-rc1/mm/page_alloc.c	2009-12-18 11:42:54.000000000 +0000
++++ linux/mm/page_alloc.c	2009-12-20 19:10:50.000000000 +0000
+@@ -555,8 +555,9 @@ static void free_pcppages_bulk(struct zo
+ 			page = list_entry(list->prev, struct page, lru);
+ 			/* must delete as __free_one_page list manipulates */
+ 			list_del(&page->lru);
+-			__free_one_page(page, zone, 0, migratetype);
+-			trace_mm_page_pcpu_drain(page, 0, migratetype);
++			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
++			__free_one_page(page, zone, 0, page_private(page));
++			trace_mm_page_pcpu_drain(page, 0, page_private(page));
+ 		} while (--count && --batch_free && !list_empty(list));
+ 	}
+ 	spin_unlock(&zone->lock);
