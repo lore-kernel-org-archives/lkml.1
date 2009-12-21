@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbZLUOmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbZLUOsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754935AbZLUOmt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 09:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZLUOms
+	id S1751848AbZLUOsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 09:48:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZLUOsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 09:42:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54557 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbZLUOmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 09:42:47 -0500
-Date: Mon, 21 Dec 2009 09:42:24 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org,
-       nauman@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, Alan.Brunelle@hp.com
-Subject: Re: [RFC] CFQ group scheduling structure organization
-Message-ID: <20091221144223.GA10994@redhat.com>
-References: <1261003980-10115-1-git-send-email-vgoyal@redhat.com> <4e5e476b0912170341h7ba632akddb921c996a36f73@mail.gmail.com> <4B2AC59D.2010004@ds.jp.nec.com> <20091221121619.GJ4489@kernel.dk>
+	Mon, 21 Dec 2009 09:48:35 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:39310 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZLUOsd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 09:48:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=R2k29KdUgz5L+N3jwkEjhgqk9KN36HkVVx/jlrH3Tj/2qpfYX+bwjMQrbrn8SpNW1B
+         ldXAuov6B+PCH34f4/xi0IgOUKgWkm82yBI/m7gFV5qFPvdZw2x99V8uSJ6QGSwCOi6m
+         rmISK3Iq7cOO+KulKWAmvq34NQdiutizEuY8k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221121619.GJ4489@kernel.dk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200912210204.08583.rob@landley.net>
+References: <200912202342.16806.rob@landley.net>
+	 <73c1f2160912202306y8e3e394mb3b4ddcf24caacc1@mail.gmail.com>
+	 <200912210204.08583.rob@landley.net>
+Date: Mon, 21 Dec 2009 09:48:31 -0500
+Message-ID: <73c1f2160912210648j2a8790b6ue611503ef931a77b@mail.gmail.com>
+Subject: Re: Why is ARCH m68k hardwired into drivers/net/wan/Makefile?
+From: Brian Gerst <brgerst@gmail.com>
+To: Rob Landley <rob@landley.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 01:16:19PM +0100, Jens Axboe wrote:
-> On Thu, Dec 17 2009, Munehiro Ikeda wrote:
-> > Hello,
-> >
-> > Corrado Zoccolo wrote, on 12/17/2009 06:41 AM:
-> >> Hi,
-> >> On Wed, Dec 16, 2009 at 11:52 PM, Vivek Goyal<vgoyal@redhat.com>  wrote:
-> >>> Hi All,
-> >>>
-> >>> With some basic group scheduling support in CFQ, there are few questions
-> >>> regarding how group structure should look like in CFQ.
-> >>>
-> >>> Currently, grouping looks as follows. A, and B are two cgroups created by
-> >>> user.
-> >>>
-> >>> [snip]
-> >>>
-> >>> Proposal 4:
-> >>> ==========
-> >>> Treat task and group at same level. Currently groups are at top level and
-> >>> at second level are tasks. View the whole hierarchy as follows.
-> >>>
-> >>>
-> >>>                         service-tree
-> >>>                         /   |  \  \
-> >>>                        T1   T2  G1 G2
-> >>>
-> >>> Here T1 and T2 are two tasks in root group and G1 and G2 are two cgroups
-> >>> created under root.
-> >>>
-> >>> In this kind of scheme, any RT task in root group will still be system
-> >>> wide RT even if we create groups G1 and G2.
-> >>>
-> >>> So what are the issues?
-> >>>
-> >>> - I talked to few folks and everybody found this scheme not so intutive.
-> >>>   Their argument was that once I create a cgroup, say A,  under root, then
-> >>>   bandwidth should be divided between "root" and "A" proportionate to
-> >>>   the weight.
-> >>>
-> >>>   It is not very intutive that group is competing with all the tasks
-> >>>   running in root group. And disk share of newly created group will change
-> >>>   if more tasks fork in root group. So it is highly dynamic and not
-> >>>   static hence un-intutive.
-> >
-> > I agree it might be dynamic but I don't think it's un-intuitive.
-> > I think it's reasonable that disk share of a group is
-> > influenced by the number of tasks running in root group,
-> > because the root group is shared by the tasks and groups from
-> > the viewpoint of cgroup I/F, and they really share disk bandwidth.
-> 
-> Agree, this is my preferred solution as well. There are definitely valid
-> cases for both doing system wide RT and system wide idle, and there are
-> definitely valid reasons for doing that inside a single group as well.
-> 
+On Mon, Dec 21, 2009 at 3:04 AM, Rob Landley <rob@landley.net> wrote:
+> On Monday 21 December 2009 01:06:38 Brian Gerst wrote:
+>> On Mon, Dec 21, 2009 at 12:42 AM, Rob Landley <rob@landley.net> wrote:
+>> > Anyone have an opinion on this?
+>> >
+>> > From drivers/net/wan/Makefile:
+>> >>ifeq ($(ARCH),m68k)
+>> >>  AS68K = $(AS)
+>> >>  LD68K = $(LD)
+>> >>else
+>> >>  AS68K = as68k
+>> >>  LD68K = ld68k
+>> >>endif
+>>
+>> Looks like it's to build firmware to run on the card.
+>
+> Sure, I'm just wondering why such obvious arch-specific code is outside the
+> arch/m68k directory.
+>
+> In theory, when you're building for m68k, you supply appropriate AS and LD
+> values already (or the rest of the kernel won't build).  If you're not
+> building for m68k and this driver only supports m68k, then the config should
+> prevent you from selecting it.  So why is on earth is architecture-specific
+> tool selection being done in drivers/net/wan?
 
-Thanks Jens. I will write a patch to implement above.
+The m68k processor that this firmware is being built for is embedded
+on the device, not the main system cpu.  You can have one of these
+cards on any system, not just m68k.
 
-Vivek
+PS. always CC the list with replies.
+
+--
+Brian Gerst
