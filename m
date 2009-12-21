@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZLUBqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZLUBxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756393AbZLUBqe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 20:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbZLUBqd
+	id S1756533AbZLUBxo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 20:53:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbZLUBxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 20:46:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38121 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756279AbZLUBqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 20:46:32 -0500
-Message-ID: <4B2ED310.1070709@kernel.org>
-Date: Sun, 20 Dec 2009 17:44:48 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 20 Dec 2009 20:53:43 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51886 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756368AbZLUBxn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 20:53:43 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH BUGFIX] [RESEND] mm: Pass mm->flags as a coredump parameter for consistency
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Roland McGrath <roland@redhat.com>,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091218165006.18457.52191.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091218165006.18457.52191.stgit@dhcp-100-2-132.bos.redhat.com>
+Message-Id: <20091221104717.088B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Alex Chiang <achiang@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 4/12] pci: add failed_list to record failed one for	pci_bus_assign_resources
- -v2
-References: <4B2BE9DD.3040504@kernel.org>  <4B2BEC2C.7030503@kernel.org> <1261352711.26429.43.camel@dc7800.home>
-In-Reply-To: <1261352711.26429.43.camel@dc7800.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 21 Dec 2009 10:53:39 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Fri, 2009-12-18 at 12:55 -0800, Yinghai Lu wrote:
->> so later we can do sth with those failed one
->>
->> -v2: store start, end, flags aside. so could keep res cleared when assign
->>      failed. and make following assignment of its children do not go wild
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> ---
->>  drivers/pci/setup-bus.c |   66 +++++++++++++++++++++++++++++++++++++++++++++---
->>  1 file changed, 62 insertions(+), 4 deletions(-)
->>
->> Index: linux-2.6/drivers/pci/setup-bus.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/pci/setup-bus.c
->> +++ linux-2.6/drivers/pci/setup-bus.c
->> @@ -27,7 +27,52 @@
->>  #include <linux/slab.h>
->>  #include "pci.h"
->>  
->> -static void pbus_assign_resources_sorted(const struct pci_bus *bus)
->> +struct resource_list_x {
->> +	struct resource_list_x *next;
->> +	struct resource *res;
->> +	struct pci_dev *dev;
->> +	resource_size_t start;
->> +	resource_size_t end;
->> +	unsigned long flags;
->> +};
->> +
->> +static void add_to_failed_list(struct resource_list_x *head,
->> +				 struct pci_dev *dev, struct resource *res)
->> +{
->> +	struct resource_list_x *list = head;
->> +	struct resource_list_x *ln = list->next;
->> +	struct resource_list_x *tmp;
->> +
->> +	tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
->> +	if (!tmp) {
->> +		pr_warning("add_to_failed_list: kmalloc() failed!\n");
->> +		return;
->> +	}
->> +
->> +	tmp->next = ln;
->> +	tmp->res = res;
->> +	tmp->dev = dev;
->> +	tmp->start = res->start;
->> +	tmp->end = res->end;
->> +	tmp->flags = res->flags;
->> +	list->next = tmp;
->> +}
->> +
->> +static void free_failed_list(struct resource_list_x *head)
->> +{
->> +	struct resource_list_x *list, *tmp;
->> +
->> +	for (list = head->next; list;) {
->> +		tmp = list;
->> +		list = list->next;
->> +		kfree(tmp);
->> +	}
->> +
->> +	head->next = NULL;
->> +}
+> Pass mm->flags as a coredump parameter for consistency.
 > 
-> This patch adds a call to add_to_failed_list(), but no call to
-> free_failed_list(), so at first glance, this patch appears to introduce
-> a leak.  I see that it actually doesn't because you pass around a NULL
-> 'fail_head', so you never actually call add_to_failed_list(), but it
-> would make more sense if you added the alloc and matching free in a
-> single patch.
+>  ---
+> 1787         if (mm->core_state || !get_dumpable(mm)) {  <- (1)
+> 1788                 up_write(&mm->mmap_sem);
+> 1789                 put_cred(cred);
+> 1790                 goto fail;
+> 1791         }
+> 1792
+> [...]
+> 1798         if (get_dumpable(mm) == 2) {    /* Setuid core dump mode */ <-(2)
+> 1799                 flag = O_EXCL;          /* Stop rewrite attacks */
+> 1800                 cred->fsuid = 0;        /* Dump root private */
+> 1801         }
+>  ---
+> 
+> Since dumpable bits are not protected by lock, there is a
+> chance to change these bits between (1) and (2).
+> 
+> To solve this issue, this patch copies mm->flags to
+> coredump_params.mm_flags at the beginning of do_coredump()                      and uses it instead of get_dumpable() while dumping core.
+> 
+> This copy is also passed to binfmt->core_dump, since
+> elf*_core_dump() uses dump_filter bits in mm->flags.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Roland McGrath <roland@redhat.com>
+> Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-free_failed_list will free them all.
+looks good to me.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
 
-YH
+
+
