@@ -1,61 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZLUKhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZLUDDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbZLUKhI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 05:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZLUKhG
+	id S1756421AbZLUDDN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 22:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZLUDDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 05:37:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39268 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752793AbZLUKhE (ORCPT
+	Sun, 20 Dec 2009 22:03:12 -0500
+Received: from mga10.intel.com ([192.55.52.92]:20386 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752563AbZLUDDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 05:37:04 -0500
-Subject: Re: workqueue thing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <andi@firstfloor.org>,
-       Tejun Heo <tj@kernel.org>, torvalds@linux-foundation.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net
-In-Reply-To: <20091221091754.GG4489@kernel.dk>
-References: <1261141088-2014-1-git-send-email-tj@kernel.org>
-	 <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box>
-	 <4B2B9949.1000608@linux.intel.com>  <20091221091754.GG4489@kernel.dk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 11:35:28 +0100
-Message-ID: <1261391728.4314.49.camel@laptop>
+	Sun, 20 Dec 2009 22:03:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,427,1257148800"; 
+   d="scan'208";a="524943841"
+Date: Mon, 21 Dec 2009 05:38:29 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
+       chaohong.guo@intel.com, youquan.song@intel.com
+Subject: [Resend PATCH]crypto: Fix complain about lack test for internal used algorithm
+Message-ID: <20091221103829.GA22144@youquan-linux.bj.intel.com>
+References: <20091211034711.GA2773@suse.de> <200912102013.59329.david-b@pacbell.net> <20091211043849.GA18007@suse.de> <1260509771.12346.138.camel@localhost> <20091211132321.GA17228@youquan-linux.bj.intel.com> <20091211060448.GA28704@gondor.apana.org.au> <20091219094043.GA23639@youquan-linux.bj.intel.com> <20091219022917.GA19431@gondor.apana.org.au> <20091219150736.GA5368@youquan-linux.bj.intel.com> <20091219094240.GA21546@gondor.apana.org.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091219094240.GA21546@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 10:17 +0100, Jens Axboe wrote:
-> On Fri, Dec 18 2009, Arjan van de Ven wrote:
-> > in addition, threads are cheap. Linux has no technical problem with
-> > running 100's of kernel threads (if not 1000s); they cost basically a
-> > task struct and a stack (2 pages) each and that's about it.  making an
-> > elaborate-and-thus-fragile design to save a few kernel threads is
-> > likely a bad design direction...
-> 
-> One would hope not, since that is by no means outside of what you see on
-> boxes today... Thousands. The fact that they are cheap, is not an
-> argument against doing it right. Conceptually, I think the concurrency
-> managed work queue pool is a much cleaner (and efficient) design.
+When load aesni-intel and ghash_clmulni-intel driver,kernel will complain no
+ test for some internal used algorithm.
+The strange information as following:
 
-If your only concern is the number if idle threads, and it reads like
-that, then there is a much easier solution for that.
+alg: No test for __aes-aesni (__driver-aes-aesni)
+alg: No test for __ecb-aes-aesni (__driver-ecb-aes-aesni)
+alg: No test for __cbc-aes-aesni (__driver-cbc-aes-aesni)
+alg: No test for __ecb-aes-aesni (cryptd(__driver-ecb-aes-aesni)
+alg: No test for __ghash (__ghash-pclmulqdqni)
+alg: No test for __ghash (cryptd(__ghash-pclmulqdqni))
 
-But I tend to agree with Arjan, who cares if there's thousands idle
-threads around.
+This patch add NULL test entries for these algorithm and driver.  
 
-The fact is that this concurrent workqueue stuff really only works with
-works that don't consume CPU, and that's simply not the case today,
-there are a number of workqueue users which really do burn CPU.
+Signed-off-by: Youquan, Song <youquan.song@intel.com>
+Signed-off-by: Ying, Huang <ying.huang@intel.com>
+---
 
-But even then, the corner cases introduced by memory pressure and
-reclaim just make the whole thing an utterly fragile mess.
 
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index f70ce52..e934eca 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -1477,9 +1477,54 @@ static int alg_test_cprng(const struct alg_test_desc *desc, const char *driver,
+ 	return err;
+ }
+ 
++static int alg_test_null(const struct alg_test_desc *desc,
++			     const char *driver, u32 type, u32 mask)
++{
++	return 0;
++}
++
+ /* Please keep this list sorted by algorithm name. */
+ static const struct alg_test_desc alg_test_descs[] = {
+ 	{
++		.alg = "__driver-cbc-aes-aesni",
++		.test = alg_test_null,
++		.suite = {
++			.cipher = {
++				.enc = {
++					.vecs = NULL,
++					.count = 0
++				},
++				.dec = {
++					.vecs = NULL,
++					.count = 0
++				}
++			}
++		}
++	}, {
++		.alg = "__driver-ecb-aes-aesni",
++		.test = alg_test_null,
++		.suite = {
++			.cipher = {
++				.enc = {
++					.vecs = NULL,
++					.count = 0
++				},
++				.dec = {
++					.vecs = NULL,
++					.count = 0
++				}
++			}
++		}
++	}, {
++		.alg = "__ghash-pclmulqdqni",
++		.test = alg_test_null,
++		.suite = {
++			.hash = {
++				.vecs = NULL,
++				.count = 0
++			}
++		}
++	}, {
+ 		.alg = "ansi_cprng",
+ 		.test = alg_test_cprng,
+ 		.fips_allowed = 1,
+@@ -1623,6 +1668,30 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		.alg = "cryptd(__driver-ecb-aes-aesni)",
++		.test = alg_test_null,
++		.suite = {
++			.cipher = {
++				.enc = {
++					.vecs = NULL,
++					.count = 0
++				},
++				.dec = {
++					.vecs = NULL,
++					.count = 0
++				}
++			}
++		}
++	}, {
++		.alg = "cryptd(__ghash-pclmulqdqni)",
++		.test = alg_test_null,
++		.suite = {
++			.hash = {
++				.vecs = NULL,
++				.count = 0
++			}
++		}
++	}, {
+ 		.alg = "ctr(aes)",
+ 		.test = alg_test_skcipher,
+ 		.fips_allowed = 1,
+@@ -1669,6 +1738,21 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		.alg = "ecb(__aes-aesni)",
++		.test = alg_test_null,
++		.suite = {
++			.cipher = {
++				.enc = {
++					.vecs = NULL,
++					.count = 0
++				},
++				.dec = {
++					.vecs = NULL,
++					.count = 0
++				}
++			}
++		}
++	}, {
+ 		.alg = "ecb(aes)",
+ 		.test = alg_test_skcipher,
+ 		.fips_allowed = 1,
