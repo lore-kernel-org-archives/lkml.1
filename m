@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZLUPUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZLUPXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbZLUPUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZLUPUK
+	id S1755470AbZLUPXO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 10:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZLUPXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:20:10 -0500
-Received: from mga06.intel.com ([134.134.136.21]:34196 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752340AbZLUPUJ (ORCPT
+	Mon, 21 Dec 2009 10:23:12 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:13139
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752808AbZLUPXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:20:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,431,1257148800"; 
-   d="scan'208";a="478023961"
-Message-ID: <4B2F9212.3000407@linux.intel.com>
-Date: Mon, 21 Dec 2009 16:19:46 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 21 Dec 2009 10:23:10 -0500
+X-SpamScore: -12
+X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KV0DCZ-02-36E-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [git pull] IOMMU updates for 2.6.33-rc1
+Date: Mon, 21 Dec 2009 16:22:07 +0100
+Message-ID: <1261408929-6261-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.5.4
+X-OriginalArrivalTime: 21 Dec 2009 15:22:13.0382 (UTC) FILETIME=[5F26CA60:01CA8251]
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       Peter Zijlstra <peterz@infradead.org>, torvalds@linux-foundation.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box> <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk> <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org> <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
-In-Reply-To: <4B2F83F6.2040705@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/21/2009 15:19, Tejun Heo wrote:
->
-> Ah... okay, there are two aspects cmwq invovles the scheduler.
->
-> A. Concurrency management.  This is achieved by the scheduler
->     callbacks which watches how many workers are working.
->
-> B. Deadlock avoidance.  This requires migrating rescuers to CPUs under
->     allocation distress.  The problem here is that
->     set_cpus_allowed_ptr() doesn't allow migrating tasks to CPUs which
->     are online but !active (CPU_DOWN_PREPARE).
-
-why would you get involved in what-runs-where at all? Wouldn't the scheduler
-load balancer be a useful thing ? ;-)
+Hi Ingo,
 
 
->
-> For A, it's far more efficient and robust with scheduler callbacks.
-> It's conceptually pretty simple too.
+The following changes since commit 55639353a0035052d9ea6cfe4dde0ac7fcbb2c9f:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc1
 
-Assuming you don't get tasks that do lots of cpu intense work and that need
-to get preempted etc...like raid5/6 sync but also the btrfs checksumming etc etc.
-That to me is the weak spot of the scheduler callback thing. We already have
-a whole thing that knows how to load balance and preempt tasks... it's called "scheduler".
-Let the scheduler do its job and just give it insight in the work (by having a runnable thread)
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu/fixes
+
+Joerg Roedel (2):
+      x86/amd-iommu: Fix initialization failure panic
+      Merge branches 'dma-debug/fixes' and 'amd-iommu/fixes' into iommu/fixes
+
+Shaun Ruffell (1):
+      dma-debug: Do not add notifier when dma debugging is disabled.
+
+ arch/x86/kernel/amd_iommu_init.c |   10 ++++++++++
+ lib/dma-debug.c                  |    5 +++++
+
+These two patches fix possible kernel null-pointer dereferences in the
+initialization path of AMD IOMMU and the device notifier path of
+dma-debug. Please pull.
+
+	Joerg
+
+ 2 files changed, 15 insertions(+), 0 deletions(-)
+
