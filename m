@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbZLUMXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbZLUMhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbZLUMXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 07:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZLUMW7
+	id S1756724AbZLUMhM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 07:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZLUMhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 07:22:59 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44995 "EHLO mx2.suse.de"
+	Mon, 21 Dec 2009 07:37:10 -0500
+Received: from k66.ru ([87.224.128.21]:51748 "EHLO k66.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753404AbZLUMW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 07:22:59 -0500
-Message-ID: <4B2F68AA.2020102@suse.cz>
-Date: Mon, 21 Dec 2009 13:23:06 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751261AbZLUMhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 07:37:08 -0500
+Date: Mon, 21 Dec 2009 17:36:48 +0500
+From: Andrey Rahmatullin <wrar@altlinux.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
+       netdev@vger.kernel.org
+Subject: Re: via_rhine kernel crashes in 2.6.32
+Message-ID: <20091221123648.GC5269@wrars-comp.wrarsdomain>
+References: <20091219111206.GA5307@wrars-comp.wrarsdomain>
+ <20091220200343.GA5427@wrars-comp.wrarsdomain>
+ <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de>
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Sam Ravnborg <sam@ravnborg.org>,
-       Michael Guntsche <mike@it-loops.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: correct size calculation of bzImgae / fix x86
- boot
-References: <20091219233457.GA4288@trillian.comsick.at>	<20091220084656.GA485@merkur.ravnborg.org>	<20091220091138.GA1793@trillian.comsick.at>	<20091220100344.GA6614@merkur.ravnborg.org>	<4B2E084D.6080105@msgid.tls.msk.ru> <m2y6kxetu8.fsf@igel.home>
-In-Reply-To: <m2y6kxetu8.fsf@igel.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="JWEK1jqKZ6MHAcjA"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de>
+X-Operating-System: ALT Linux Sisyphus
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: Mutt/1.5.20 (2009-06-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab napsal(a):
-> Does dash's printf support %b?  Then this should work.
 
-Good idea. %b is specified by posix, so there is hope :). Does Andreas'
-patch work for others as well? I'd like to fix this upstream ASAP, OTOH
-right now it's broken "only" for dash users, so let's not rush and make
-it even worse.
+--JWEK1jqKZ6MHAcjA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Michal
-> 
-> Andreas.
-> 
-> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-> index cd815ac..340813d 100644
-> --- a/scripts/Makefile.lib
-> +++ b/scripts/Makefile.lib
-> @@ -213,14 +213,16 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
->  
->  # Bzip2 and LZMA do not include size in file... so we have to fake that;
->  # append the size as a 32-bit littleendian number as gzip does.
-> -size_append = printf $(shell						\
-> +size_append = printf %b $$(						\
->  dec_size=0;								\
->  for F in $1; do								\
->  	fsize=$$(stat -c "%s" $$F);					\
->  	dec_size=$$(expr $$dec_size + $$fsize);				\
->  done;									\
-> -printf "%08x" $$dec_size |						\
-> -	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
-> +for i in 1 2 3 4; do							\
-> +	printf '\\%04o' $$(expr $$dec_size % 256);			\
-> +  	dec_size=$$(expr $$dec_size / 256);				\
-> +done									\
->  )
+On Mon, Dec 21, 2009 at 04:03:06AM -0800, Christian Kujau wrote:
+> Wow, I had to rotate my laptop here. In you first posting [0] you said yo=
+u=20
+> "upgraded to .32" but had crashes in .30 too. What was the last working=
+=20
+> kernel?
+It was 2.6.31, but as I've already said I'm not sure it was because of
+kernel version alone.
+
+> In the .jpgs one can see something along the lines of=20
+> schedule_timeout, napi_disable, rhine_tx_timeout - the only patch I could=
+=20
+> find touching these things [1] altogether is rather old, from 2.6.24. Is=
+=20
+> 2.6.29 working for you?=20
+Well, I can try some old versions.
+
+--=20
+WBR, wRAR (ALT Linux Team)
+
+--JWEK1jqKZ6MHAcjA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBCAAGBQJLL2vfAAoJEOih81koZvPBIWQH/1mhgrqs4xdI9eyp3Tec5Q4s
+GigXo6Mr+mLyCOkBZZI9eqeiQL0+bEsGKDQOgTwn4rRMaz8dUGv0T2dBZTdm03Ab
+Nf7Ud4niI+GmKJxllWpdNcsNhoMqv4Ne+01feFsoXzmjf2Sfb/kCFTxlhXixglSI
+qPaDBIK6JwvwqI62MsEA0MskpT5sMkaj0PuO2p41lV8V5SWiZv1BUDolxdu1+9bY
+yf95HNr4w/89NSfqv0Nap/tplXpfeHg7lGrMLqnry7Jl1Genaggiwgz9dTiaiyMo
+xK6+xMCd79W1vyWb1lStn+DsmDwg0Ha1w6UbbsadgT9upDZJ433g5klH7JgIraM=
+=4Q1K
+-----END PGP SIGNATURE-----
+
+--JWEK1jqKZ6MHAcjA--
