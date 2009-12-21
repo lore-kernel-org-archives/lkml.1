@@ -1,86 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbZLURnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZLURo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751965AbZLURnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 12:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZLURnQ
+	id S1753619AbZLURo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 12:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZLURoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 12:43:16 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:50264 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZLURnP (ORCPT
+	Mon, 21 Dec 2009 12:44:25 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:37606 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbZLURoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 12:43:15 -0500
-From: Ritesh Raj Sarraf <rrs@researchut.com>
-Organization: RESEARCHUT
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.33-rc1 build failure: copy_from_user() buffer size is not provably correct
-Date: Mon, 21 Dec 2009 23:12:58 +0530
-User-Agent: KMail/1.12.4 (Linux/2.6.32-trunk-686; KDE/4.3.4; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <0io307-9ti.ln1@news.researchut.com> <20091221091330.GA22867@elte.hu> <4B2FADC5.3020709@zytor.com>
-In-Reply-To: <4B2FADC5.3020709@zytor.com>
-X-Face: f->Rbf[[J{vnguEZ~[KiVewkyV<sub[{z7X`jiAw--8?<Bxu6|9{5k8)
- =?utf-8?q?=7ELaeG=7B!=7B=23E=231=26m=0A=09Bc!F4=60CU?=(_*HuAJQ-Hg&)#RE1")sigixu$KY[)NcvLJaOZ*-Zn}b#]Jfbq<
- =?utf-8?q?j=2Eoz-esxTAb=0A=091Qk=27+nbo=7BN4jin0tUESU=3F?=)N%8xqWJdxI6K~@e_6b83P.X.iv13r,7IFuXz2-#7&`XI<
- =?utf-8?q?z=5B!=0A=09u5FK=5BVG=24fDTT=25YDboR+?=>)R._R#}#`Jx~Z6e{oT{c0xZxa8=H>$|DqF@(
- =?utf-8?q?XR7n=7C2D=3Dp7=25oVp=0A=09=3D=5E=3F2729y=5D8A?="Vi8w@V#DwL^XqM(,O^;z~i+@'G-&QIvYnOH
+	Mon, 21 Dec 2009 12:44:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=SwlzLa7QFbAOueWADTYVFUaAS1PasmNW6O0FvSRXtXgO0frdhS85N2saA1OM/jKz2i
+         B9y7yw5KDjgjG8RAcAVKK2jbaDHrpiHMFXqkd7DFDYYy/HCPaaZCAjrO6BOISEOJQ9On
+         P1wiUwmcUIlsvQR2fZRdKDlJ/jLqCITlzmsG0=
+Message-ID: <4B2FB3F1.5080808@gmail.com>
+Date: Mon, 21 Dec 2009 12:44:17 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3537085.z8e2dT16WW";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912212312.58988.rrs@researchut.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com> <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws>
+In-Reply-To: <4B2FAE7B.9030005@codemonkey.ws>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigB62B8801782B5A8A07FEA861"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3537085.z8e2dT16WW
-Content-Type: Text/Plain;
-  charset="utf-8"
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB62B8801782B5A8A07FEA861
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Monday 21 Dec 2009 22:47:57 H. Peter Anvin wrote:
-> > I've Cc:-ed more folks.
-> >=20
+On 12/21/09 12:20 PM, Anthony Liguori wrote:
+> On 12/21/2009 10:46 AM, Gregory Haskins wrote:
+>> The very best you can hope to achieve is 1:1 EOI per signal (though
+>> today virtio-pci is even worse than that).  As I indicated above, I ca=
+n
+>> eliminate more than 50% of even the EOIs in trivial examples, and even=
+
+>> more as we scale up the number of devices or the IO load (or both).
+>>   =20
 >=20
-> That is the error report that he is describing.  What version of gcc
-> is he using?  It might be dumber than the one I have.
+> If optimizing EOI is the main technical advantage of vbus, then surely
+> we could paravirtualize EOI access and get that benefit in KVM without
+> introducing a whole new infrastructure, no?
+
+No, because I never claimed optimizing EOI was the main/only advantage.
+ The feature set has all been covered in extensive detail in the lists,
+however, so I will defer you to google for the archives for your reading
+pleasure.
+
 >=20
-debian-build:~# gcc --version
-gcc (Debian 4.4.2-5) 4.4.2
+>>> This is a
+>>> light weight exit today and will likely disappear entirely with newer=
+
+>>> hardware.
+>>>     =20
+>> By that argument, this is all moot.  New hardware will likely obsolete=
+
+>> the need for venet or virtio-net anyway.
+>=20
+> Not at all.
+
+Well, surely something like SR-IOV is moving in that direction, no?
+
+> But let's focus on concrete data.  For a given workload,
+> how many exits do you see due to EOI?
+
+Its of course highly workload dependent, and I've published these
+details in the past, I believe.  Off the top of my head, I recall that
+virtio-pci tends to throw about 65k exits per second, vs about 32k/s for
+venet on a 10GE box, but I don't recall what ratio of those exits are
+EOI.  To be perfectly honest, I don't care.  I do not discriminate
+against the exit type...I want to eliminate as many as possible,
+regardless of the type.  That's how you go fast and yet use less CPU.
+
+>  They should be relatively rare
+> because obtaining good receive batching is pretty easy.
+
+Batching is poor mans throughput (its easy when you dont care about
+latency), so we generally avoid as much as possible.
+
+> Considering
+> these are lightweight exits (on the order of 1-2us),
+
+APIC EOIs on x86 are MMIO based, so they are generally much heavier than
+that.  I measure at least 4-5us just for the MMIO exit on my Woodcrest,
+never mind executing the locking/apic-emulation code.
+
+> you need an awfully
+> large amount of interrupts before you get really significant performanc=
+e
+> impact.  You would think NAPI would kick in at this point anyway.
+>
+
+Whether NAPI can kick in or not is workload dependent, and it also does
+not address coincident events.  But on that topic, you can think of
+AlacrityVM's interrupt controller as "NAPI for interrupts", because it
+operates on the same principle.  For what its worth, it also operates on
+a "NAPI for hypercalls" concept too.
+
+> Do you have data demonstrating the advantage of EOI mitigation?
+
+I have non-scientifically gathered numbers in my notebook that put it on
+average of about 55%-60% reduction in EOIs for inbound netperf runs, for
+instance.  I don't have time to gather more in the near term, but its
+typically in that range for a chatty enough workload, and it goes up as
+you add devices.  I would certainly formally generate those numbers when
+I make another merge request in the future, but I don't have them now.
+
+Kind Regards,
+-Greg
 
 
-Regards,
-Ritesh
-=2D-=20
-Ritesh Raj Sarraf
-RESEARCHUT - http://www.researchut.com
-"Necessity is the mother of invention."
-
---nextPart3537085.z8e2dT16WW
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--------------enigB62B8801782B5A8A07FEA861
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iQIcBAABCgAGBQJLL7OiAAoJEKY6WKPy4XVpemUQAKS2cleRlfmto5WODbaHJHdO
-OzayEh/Xhwb1+Irn6jnfZAHyKJSvI4jALDOfCdIo0boz1l4nQKeaC4GduO3Ro/qd
-hckYfDycgqJDVFTC6NRtaK1DvTPnHIltZQ/qzjT+rkrOQ2m1x9UiHXL0YI+dk/rE
-s2VlTBEYD5cbqMe8wEdqYVMRDUlswiyMybQpAtxsOR1yyMcviD3w6NwaSTW89/mJ
-HqBnOeg3hMJTZF8701soCOqBohmELVrPiQizAqvn0v8KE3pDzFICVk+Ep6FeDi+Y
-4+U+Y7hv6iI+VnAVxLAtsSWnHi7TH+sIM1lud/nQD8l0P9PTPPwXyYshO6+wWTNO
-Xplga0iRHYCc1DIcl7m9U387bzFAwN47m+iC41TevQvM8musJIMbfeyo3AIfubJi
-gBg0gEvyfBJ77ZclnGwfxeQWQ88B9RaXxHKPX8rvjOsz+9a4GczfmbhRApLTl0gi
-IU++j6+wKgRghU055RmhGhCTNGwmtxFq69qB3S86pWlGplG7qQGU0r/8r25qNiD6
-o/6J8CWjmHWkDV89wqgjvNGNEfyru6l30GrqErjbRMao8oQ8F02GPwEn9WHrjT2R
-285oC+7YAPxXMxp/lm8OZkoFTs6CAJgBtM3Mm/9qY0TMmmHkL5QaQr8BQlqZqO5Y
-fREEK1V8pNJKCsNPNLW6
-=nNCM
+iEYEARECAAYFAksvs/IACgkQP5K2CMvXmqE3lACfU/MB++J44MGGilA1v+0/jVGN
+D7YAoI1ohE5cdr5/MZJpsQFS7nPki1FW
+=WA19
 -----END PGP SIGNATURE-----
 
---nextPart3537085.z8e2dT16WW--
+--------------enigB62B8801782B5A8A07FEA861--
