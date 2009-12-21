@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZLUJez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZLUJfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZLUJez (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 04:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZLUJey
+	id S1756110AbZLUJfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 04:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbZLUJfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 04:34:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50582 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755606AbZLUJex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 04:34:53 -0500
-Date: Mon, 21 Dec 2009 10:34:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: different symbol address between System.map and
- /proc/kallsyms
-Message-ID: <20091221093432.GA30720@elte.hu>
-References: <4B2ECD47.7040202@cn.fujitsu.com>
- <4B2F1630.7090406@zytor.com>
- <4B2F3C40.6030601@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B2F3C40.6030601@cn.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 21 Dec 2009 04:35:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45525 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755774AbZLUJfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 04:35:45 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18w2iwipTIwdhYnFBz+BvMnAt5yPLbXAJtzATOb45
+	ZvIpbRqTCjQ2Qv
+Subject: Re: [stable] Regression in 2.6.32.2: segfault on halt
+From: Mike Galbraith <efault@gmx.de>
+To: Holger =?ISO-8859-1?Q?Hoffst=E4tte?= 
+	<holger.hoffstaette@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1261387782.25983.5.camel@marge.simson.net>
+References: <pan.2009.12.19.15.10.48.851500@googlemail.com>
+	 <20091220054847.GF32739@1wt.eu> <4B2E10C6.7050304@googlemail.com>
+	 <20091220130616.GC9719@1wt.eu>  <4B2E264E.4090805@googlemail.com>
+	 <1261319400.6105.27.camel@marge.simson.net> <4B2E4056.50708@googlemail.com>
+	 <1261339759.9188.4.camel@marge.simson.net>
+	 <4B2EA5F8.4030907@googlemail.com>
+	 <1261372511.6048.3.camel@marge.simson.net>
+	 <4B2F3DD3.5090506@googlemail.com>
+	 <1261387782.25983.5.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 10:35:41 +0100
+Message-Id: <1261388141.25983.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(hm, linux@vger.kernel.org bounces, changes to linux-kernel@vger.kernel.org)
 
-* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
-
-> 
-> 
-> H. Peter Anvin wrote:
-> 
+On Mon, 2009-12-21 at 10:29 +0100, Mike Galbraith wrote:
+> On Mon, 2009-12-21 at 10:20 +0100, Holger Hoffstätte wrote:
+> > (back on list)
 > > 
-> > That is normal if you have a relocatable kernel which has been loaded at
-> > the non-compile-time default address.
+> > Mike Galbraith wrote:
+> > > OK, please try the below.  If that fixes the problem, woohoo.  If not,
+> > > it'd be best to try pulling/trying full tip to see _if_ there's an
+> > > existing fix.
+> > > 
+> > > commit 6ad4c18884e864cf4c77f9074d3d1816063f99cd
+> > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > Date:   Wed Nov 25 13:31:39 2009 +0100
+> > > 
+> > >     sched: Fix balance vs hotplug race
 > > 
+> > Woohoo! :)
+> > I ironed this over a clean .32.2 and halt works fine again, without
+> > reverting anything. Guess this should go into the next stable ASAP.
 > 
-> Yeah, i see, thank you very much.
+> Excellent (color _me_ relieved;).  Thanks a bunch for confirmation.
 > 
-> But, anyway, perf should know this case, i'll fix it.
+> 	-Mike
 
-Yeah. It's even a bugfix so if you fix it we can put it into 2.6.33 as well if 
-it tests out reasonably well.
-
-Thanks,
-
-	Ingo
