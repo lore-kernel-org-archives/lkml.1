@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZLUWoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZLUWqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbZLUWoh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 17:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZLUWog
+	id S1755872AbZLUWqg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 17:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZLUWqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 17:44:36 -0500
-Received: from xenotime.net ([72.52.64.118]:56576 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750848AbZLUWog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 17:44:36 -0500
-Date: Mon, 21 Dec 2009 14:44:32 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Takashi Iwai <tiwai@suse.de>,
-       Xiaotian Feng <xtfeng@gmail.com>, Amerigo Wang <amwang@redhat.com>,
-       linux-kernel@vger.kernel.org, Corentin Chary <corentincj@iksaif.net>,
-       ibm-acpi-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, akpm@linux-foundation.org,
-       helight.xu@gmail.com
-Subject: Re: [Patch] thinkpad_acpi: fix a build error
-Message-Id: <20091221144432.81702725.rdunlap@xenotime.net>
-In-Reply-To: <1261435136.4041.152.camel@localhost.localdomain>
-References: <20091218093132.4415.23424.sendpatchset@localhost.localdomain>
-	<7b6bb4a50912180142u5e66fa88odb7cd3b6fa1a2ba2@mail.gmail.com>
-	<s5hhbrowpty.wl%tiwai@suse.de>
-	<20091218142815.GB15898@khazad-dum.debian.net>
-	<1261435136.4041.152.camel@localhost.localdomain>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Dec 2009 17:46:35 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53689
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754907AbZLUWqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 17:46:35 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Why is ARCH m68k hardwired into drivers/net/wan/Makefile?
+Date: Mon, 21 Dec 2009 16:46:31 -0600
+User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <200912202342.16806.rob@landley.net> <10f740e80912210157y7b506677q6a40b40435b4634f@mail.gmail.com>
+In-Reply-To: <10f740e80912210157y7b506677q6a40b40435b4634f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912211646.32326.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Dec 2009 14:38:56 -0800 Marcel Holtmann wrote:
+On Monday 21 December 2009 03:57:49 Geert Uytterhoeven wrote:
+> On Mon, Dec 21, 2009 at 06:42, Rob Landley <rob@landley.net> wrote:
+> > Anyone have an opinion on this?
+> >
+> > From drivers/net/wan/Makefile:
+>
+> You cut one important line here:
+> | ifeq ($(CONFIG_WANXL_BUILD_FIRMWARE),y)
+> |
+> >>ifeq ($(ARCH),m68k)
+> >>  AS68K = $(AS)
+> >>  LD68K = $(LD)
+> >>else
+> >>  AS68K = as68k
+> >>  LD68K = ld68k
+> >>endif
+>
+> The corresponding Kconfig entry reads:
+>
+> config WANXL_BUILD_FIRMWARE
+>         bool "rebuild wanXL firmware"
+>         depends on WANXL && !PREVENT_FIRMWARE_BUILD
+>         help
+>           Allows you to rebuild firmware run by the QUICC processor.
+>           It requires as68k, ld68k and hexdump programs.
+>
+>           You should never need this option, say N.
+>
+> Gr{oetje,eeting}s,
 
-> Hi Henrique,
-> 
-> > > The patch isn't correct (I guess the upstream fix is same?).
-> > > 
-> > > CONFIG_SOUND is a global config for sound subsystem.  The relevant
-> > > functions are ALSA core part, which is CONFIG_SND.
-> > > So, the fix should be:
-> > > 
-> > > 	depends on SND
-> > > 
-> > > instead.
-> > 
-> > Indeed.  Ingo already fixed that too.
-> > 
-> > Although I personally would prefer:
-> > select SOUND
-> > select SND
-> > 
-> > But anything that stops the build errors will do for now.
-> 
-> I still haven't seen this patch in Linus' tree. And you do need select
-> SOUND and SND. Otherwise you still get build errors. I have tested this
-> on my machine. So can someone please submit a proper patch to get this
-> fixed.
+Ah, the card has an onboard m68k processor, separate from the host CPU.
 
-Ugh.  Please don't 'select' to build an entire subsystem.
-
----
-~Randy
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
