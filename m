@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZLUBUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbZLUBUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbZLUBUM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 20:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755854AbZLUBUL
+	id S1756401AbZLUBUd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 20:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbZLUBUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 20:20:11 -0500
-Received: from mail.perches.com ([173.55.12.10]:1360 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbZLUBUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 20:20:09 -0500
-Subject: Re: sched: restore sanity
-From: Joe Perches <joe@perches.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, San Mehat <san@google.com>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091221014848.7833c875@infradead.org>
-References: <1261315437.4314.6.camel@laptop>
-	 <20091220144925.GA19608@elte.hu> <1261320715.4314.9.camel@laptop>
-	 <236ccac0912200703g464912b1r421497ebf3b6ebc6@mail.gmail.com>
-	 <236ccac0912200705i369d00d1v42603a00e92039b6@mail.gmail.com>
-	 <1261322387.4314.22.camel@laptop>
-	 <1261329743.30458.179.camel@Joe-Laptop.home>
-	 <20091220191725.1799eab7@infradead.org>
-	 <1261333310.30458.205.camel@Joe-Laptop.home>
-	 <20091221014848.7833c875@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 20 Dec 2009 17:20:08 -0800
-Message-ID: <1261358408.30458.242.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Dec 2009 20:20:30 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37699 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756362AbZLUBU2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 20:20:28 -0500
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <20091221220.243954235@firstfloor.org>
+To: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       ebiederm@xmission.com
+Subject: [PATCH] [0/11] SYSCTL: Use RCU to avoid races with string sysctls
+Date: Mon, 21 Dec 2009 02:20:21 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 01:48 +0100, Arjan van de Ven wrote:
-> but you still have a "multiline message" (the atomic schedule oops like
-> dump) that now is half printk half pr_*... where pr_ is just a silly
-> wrapper around printk now that the prefixing etc is gone.
 
-Nope.  That's what pr_cont does.
+With BKL-less sysctls most of the writable string sysctls are racy. There
+is no locking on the reader side, so a reader could see an inconsistent
+string or worse miss the terminating null and walk of beyond it.
 
-There could be some extension that does a better job
-of avoiding multiple process message interleaving.
+This patch kit adds a new "rcu string" variant to avoid these 
+problems and convers the racy users. One the writer side the strings are 
+always copied to new memory and the readers use rcu_read_lock()
+to get a stable view. For readers who access the string over
+sleeps the reader copies the string. 
 
-> > I believe kernel log output is specifically _not_ guaranteed
-> > and should not be so guaranteed to remain stable across
-> > versions.
-> 
-> changing it gratuitously is bad though. There *are* scripts out there
-> parsing oopses. Yes they change as kernels change, but changing
-> the output of oopses for silly reasons is just hostile 
+This is all hidden in a new generic "rcu_string" ADT which can be also 
+used for other purposes.
 
-Yup.  sched should have not had pr_fmt defined.
-oh well.
+This finally implements all the letters in RCU, most other users
+leave out the 'C'.
 
+I also fixed the zone order list sysctl to use a mutex to avoid
+racing with itself. 
+
+I left some obscure users in architectures (sparc, mips) alone and audited
+all of the others. The sparc reboot_cmd one has references to asm files
+which I didn't want to touch and the mips variant seemd just too obscure.
+
+All the others are not racy.
+
+-Andi
