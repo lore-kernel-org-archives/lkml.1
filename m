@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZLULRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZLULSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754292AbZLULRM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 06:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbZLULRL
+	id S1756362AbZLULSI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 06:18:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZLULSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 06:17:11 -0500
-Received: from mga06.intel.com ([134.134.136.21]:39658 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752087AbZLULRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 06:17:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,430,1257148800"; 
-   d="scan'208";a="477972356"
-Message-ID: <4B2F592C.4000504@linux.intel.com>
-Date: Mon, 21 Dec 2009 12:17:00 +0100
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Mon, 21 Dec 2009 06:18:07 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40194 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752593AbZLULSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 06:18:03 -0500
+Date: Mon, 21 Dec 2009 16:47:59 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: kprobes: get rid of distinct type warning
+Message-ID: <20091221111759.GA12670@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Peter Zijlstra <peterz@infradead.org>,
-       Tejun Heo <tj@kernel.org>, torvalds@linux-foundation.org,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box> <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk> <20091221110929.GF25372@basil.fritz.box>
-In-Reply-To: <20091221110929.GF25372@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/21/2009 12:09, Andi Kleen wrote:
-> On Mon, Dec 21, 2009 at 10:17:54AM +0100, Jens Axboe wrote:
->> On Fri, Dec 18 2009, Arjan van de Ven wrote:
->>> in addition, threads are cheap. Linux has no technical problem with
->>> running 100's of kernel threads (if not 1000s); they cost basically a
->>> task struct and a stack (2 pages) each and that's about it.  making an
->>> elaborate-and-thus-fragile design to save a few kernel threads is
->>> likely a bad design direction...
->>
->> One would hope not, since that is by no means outside of what you see on
->> boxes today... Thousands. The fact that they are cheap, is not an
->> argument against doing it right. Conceptually, I think the concurrency
->> managed work queue pool is a much cleaner (and efficient) design.
->
-> Agreed. Even if possible thousands of threads waste precious cache.
+On Mon, Dec 21, 2009 at 11:15:49AM +0100, Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> Every time I see this:
+> 
+> kernel/kprobes.c: In function 'register_kretprobe':
+> kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
+> 
+> I'm wondering if something changed in common code and we need to do
+> something for s390. Apparently that's not the case.
+> Let's get rid of this annoying warning.
+> 
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-only used ones waste cache ;-)
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-> And they look ugly in ps.
-
-that we could solve by making them properly threads of each other; ps and co
-already (at least by default) fold threads of the same program into one.
-
->
-> Also the nice thing about dynamically sizing the thread pool
-> is that if something bad (error condition that takes long) happens
-> in one work queue for a specific subsystem there's still a chance
-> to make process with other operations in the same subsystem.
-
-yup
-same is true for hitting some form of contention; just make an extra thread
-so that the rest can continue.
+Thanks Heiko. I'd tested this on x86 and powerpc and neither throws the
+warning. No wonder I missed it.
