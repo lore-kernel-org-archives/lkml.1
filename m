@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZLUSSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751485AbZLUSe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbZLUSSq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 13:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZLUSSp
+	id S1751485AbZLUSe0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 13:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZLUSeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 13:18:45 -0500
-Received: from k66.ru ([87.224.128.21]:62727 "EHLO k66.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756072AbZLUSSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 13:18:44 -0500
-Date: Mon, 21 Dec 2009 23:18:40 +0500
-From: Andrey Rahmatullin <wrar@altlinux.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
-       netdev@vger.kernel.org
-Subject: Re: via_rhine kernel crashes in 2.6.32
-Message-ID: <20091221181839.GA5232@wrars-comp.wrarsdomain>
-References: <20091219111206.GA5307@wrars-comp.wrarsdomain>
- <20091220200343.GA5427@wrars-comp.wrarsdomain>
- <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de>
-X-Operating-System: ALT Linux Sisyphus
-X-Jabber-Id: wrar@altlinux.org
-User-Agent: Mutt/1.5.20 (2009-06-23)
+	Mon, 21 Dec 2009 13:34:25 -0500
+Received: from 28dayslater.mr.itd.umich.edu ([141.211.12.118]:53597 "EHLO
+	28dayslater.mr.itd.umich.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750965AbZLUSeZ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 13:34:25 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Dec 2009 13:34:24 EST
+From: Mike Garrison <mcgarr@umich.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Subject: 2.6.32.2: undefined reference to `__udivdi3'
+Date: Mon, 21 Dec 2009 13:22:45 -0500
+Message-Id: <61FF0336-4E17-4EE5-9471-01360A6F7D29@umich.edu>
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0 (Apple Message framework v1077)
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Same problem as Arvids and Andreas:
 
---0OAP2g/MAC+5xKAE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `menu_select':
+menu.c:(.text+0x139711): undefined reference to `__udivdi3'
+make: *** [.tmp_vmlinux1] Error 1
 
-On Mon, Dec 21, 2009 at 04:03:06AM -0800, Christian Kujau wrote:
-> In the .jpgs one can see something along the lines of=20
-> schedule_timeout, napi_disable, rhine_tx_timeout - the only patch I could=
-=20
-> find touching these things [1] altogether is rather old, from 2.6.24. Is=
-=20
-> 2.6.29 working for you?=20
-I've installed 2.6.27, the earliest kernel supported by udev 149. I
-started to download two large files to my second machine (maybe 700 or
-1000 Kbyte/s combined). Nothing happened. I stopped the downloads and
-started deluged. The kernel showed "netdev watchdog timeout", but nothing
-else happened. deluged opened something like 100 TCP connections and
-started to upload some data at ~20 Kbyte/s. Nothing happened. I resumed
-one of downloads, waited for some time, nothing happened. I resumed the
-second download, the kernel crashed into an endless stream of backtraces
-(did 2.6.27 support pause_on_oops?), containing "whatever from the idle
-thread", or smth like that, which was also in other crash logs.
+Reading specs from /usr/lib/gcc/i686-pc-linux-gnu/3.4.5/specs
+Configured with: ./configure --prefix=/usr --enable-shared --enable-languages=c,c++ --enable-threads=posix --with-slibdir=/lib --enable-__cxa_atexit --enable-clocale=gnu
+Thread model: posix
+gcc version 3.4.5
 
---=20
-WBR, wRAR (ALT Linux Team)
+This is a custom build of Linux based on Linux From Scratch. I've had no issues with 2.6.31.X
 
---0OAP2g/MAC+5xKAE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBCAAGBQJLL7v/AAoJEOih81koZvPB8gUIAJmID1m6CAMCbowGQusATYdc
-yGMQCXw8XXpzbH25vRwpWBMTiGVrsF/Wfnuk/bq6pHf2vMw4xFuOcIsJoWagb5Pn
-p0bRspYFV9lltRyE/5b1hNjhAljnfXjO0znL2Wrx5ylYzc5reNKhw5pH/IzVNT8E
-af62iJbxiEdIyHmr8lYBDAQIE8H7ThYYFQXSRYbu06CDGHDPQ7azgAkB88GFI1ls
-DxlKJFqNzeqOy3sG+63Gf/3GNRXZjGsTPBBDo9aJ10fJLK3hti8FU/Xem510xc8n
-DP36wIZqJzk1U5W9MHCthvX0NbUj+4hL39VN+kJsKILyBlqf6w9kZJRpLmC5bpw=
-=I4vV
------END PGP SIGNATURE-----
-
---0OAP2g/MAC+5xKAE--
+--
+Mike Garrison
