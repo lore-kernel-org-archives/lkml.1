@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbZLUUpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZLUUqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbZLUUpH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 15:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZLUUpF
+	id S1757201AbZLUUqZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZLUUqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 15:45:05 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34284 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750834AbZLUUpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 15:45:03 -0500
-X-Authenticated: #815327
-X-Provags-ID: V01U2FsdGVkX19pW6FNDexpd+ybFzEUVJuBw4t83qKJ8mdMfPhYku
-	Cj5fIM3y216THr
-Date: Mon, 21 Dec 2009 21:44:27 +0100
-From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [REGRESSION] System wakeup by time not working anymore on
- 2.6.32 (bisected)
-Message-ID: <20091221214427.5b715e33@highlander.home.lan>
-In-Reply-To: <alpine.LFD.2.00.0912162311270.10371@localhost.localdomain>
-References: <20091203190610.1af77642@highlander.home.lan>
-	<alpine.LFD.2.00.0912162311270.10371@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/BTpLGJUs0hrQkQ4kATo+a6G"; protocol="application/pgp-signature"
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+	Mon, 21 Dec 2009 15:46:24 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:43820 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757118AbZLUUqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 15:46:24 -0500
+X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7nsXJ75k/CpbGRgUpU
+X-RZG-CLASS-ID: mo00
+Message-ID: <4B2FDE9F.1070108@hartkopp.net>
+Date: Mon, 21 Dec 2009 21:46:23 +0100
+From: Oliver Hartkopp <socketcan@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Alexander Strakh <strakh@ispras.ru>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Donald Becker <becker@scyld.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 3c507.c: remove unused NULL pointer check
+References: <200912211923.58735.strakh@ispras.ru>	<4B2FA8C7.3010509@hartkopp.net> <20091221123111.4498b17c@nehalam>
+In-Reply-To: <20091221123111.4498b17c@nehalam>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/BTpLGJUs0hrQkQ4kATo+a6G
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Stephen Hemminger wrote:
+> On Mon, 21 Dec 2009 17:56:39 +0100
+> Oliver Hartkopp <socketcan@hartkopp.net> wrote:
+> 
+>> Alexander Strakh wrote:
+>>> 	In driver drivers/net/3c507.c in function Iirqreturn_t el16_interrupt:
+>>> 1. If in line 555 dev = NULL then we goto line 556
+>>> 2. In line 556 we have null dereference because pr_err called with dev->name 
+>>> in third parameter.
+>>>  555        if (dev == NULL) {
+>>>  556                pr_err("%s: net_interrupt(): irq %d for unknown device.
+>>> \n",
+>>>  557                        dev->name, irq);
+>>>  558                return IRQ_NONE;
+>>>  559        }
+>>>
+>>> Found by Linux Device Drivers Verification (Svace detector)
+>>>
+>>> Remove unused NULL pointer check.
 
-On Wed, 16 Dec 2009 23:12:10 -0500 (EST)
-Len Brown <lenb@kernel.org> wrote:
+> 
+> Interrupts will never be called with third parameter of NULL. It is really
+> bogus impossible to reach code.
+> 
 
-> offhand, no.
-> Is it possible to bisect?
+You're right! I just did not verify the direct assignment of dev = dev_id ...
 
-I managed to bisect it :)
+Btw. the description for the reason of this patch remains unsuitably as the
+problem is not the potential dereferencing of dev->name in pr_err() here.
 
-abd6633c67925f90775bb74755f9c547e30f1f20 is the first bad commit
-commit abd6633c67925f90775bb74755f9c547e30f1f20
-Author: David H=C3=A4rdeman <david@hardeman.nu>
-Date:   Mon Sep 21 17:04:52 2009 -0700
+It should better be something like this (partly stolen from your answer):
 
-    pnp: add a shutdown method to pnp drivers
-   =20
-    The shutdown method is used by the winbond cir driver to setup the
-    hardware for wake-from-S5.
-   =20
-    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-    Signed-off-by: David H=C3=A4rdeman <david@hardeman.nu>
-    Cc: Dmitry Torokhov <dtor@mail.ru>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+   Interrupts will never be called with dev_id parameter of NULL.
+   This patch removes the obsolete, unreachable code.
 
-:040000 040000 139dee164ad8e41d197db5c2bce9f22c9f14eee0 220a88576f5019f87b1=
-f73848536fef21882d518 M	drivers
-:040000 040000 1eee7adea06c20f301cfe1113a5b07e24e781ecb cb34aceb245225ce428=
-34b3403f6b21dece23ae0 M	include
+Regards,
+Oliver
 
 
-Reverting abd6633c67925f90775bb74755f9c547e30f1f20 solves the problem for m=
-e.
 
-=20
-> thanks,
-> Len Brown, Intel Open Source Technology Center
-
-Regards
-Malte
-
---Sig_/BTpLGJUs0hrQkQ4kATo+a6G
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksv3isACgkQ4q3E2oMjYtW/FwCcD02tQ1ogsp7k7ekIslrmQAT+
-36EAniDWI2CKhZmT40T8P/0BaCk87o0l
-=GP6Q
------END PGP SIGNATURE-----
-
---Sig_/BTpLGJUs0hrQkQ4kATo+a6G--
