@@ -1,31 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbZLUEin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZLUEk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbZLUEin (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 23:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZLUEim
+	id S1753392AbZLUEk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 23:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZLUEkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 23:38:42 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:40466 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbZLUEil (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 23:38:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=uFOPFeKqtbAcOoULasy3yjCFasqndOVkV58Nwi4TtomdjHbNtCO7+yBcyHd5a7qsaG
-         nocRVgHdWJm7T/abucIo47+zUruJHF3MSY25VWBGQ2e5OnXq7y4ecS6GVnQCC4ECK9zu
-         lIYVRgNL/LObe2gLRECSBs8v/rESyweLdouPU=
-Subject: drivers/edac/ move a kfree() to after last use
-From: Darren Jenkins <darrenrjenkins@gmail.com>
-To: Kernel Janitors <kernel-janitors@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dougthompson@xmission.com, borislav.petkov@amd.com
-Cc: bluesmoke-devel@lists.sourceforge.net
+	Sun, 20 Dec 2009 23:40:25 -0500
+Received: from gate.crashing.org ([63.228.1.57]:39650 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbZLUEkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 23:40:25 -0500
+Subject: Re: [PATCH] Move -fno-dwarf2-cfi-asm to powerpc only
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       kyle@redhat.com, mmarek@suse.cz
+In-Reply-To: <20091221012351.GA24720@basil.fritz.box>
+References: <20091221012351.GA24720@basil.fritz.box>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 15:38:26 +1100
-Message-ID: <1261370306.11354.52.camel@ICE-BOX>
+Date: Mon, 21 Dec 2009 15:39:10 +1100
+Message-ID: <1261370350.2173.124.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -33,28 +26,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-12-21 at 02:23 +0100, Andi Kleen wrote:
+> Move -fno-dwarf2-cfi-asm to powerpc only
+> 
+> Better dwarf2 unwind information is a good thing, it allows better
+> debugging with kgdb and crash and helps systemtap.
+> 
+> commit 003086497f07f7f1e67c0c295e261740f822b377 disabled some CFI
+> information globally to work around a module loader bug on powerpc.
+> 
+> But this disables the better unwind tables for all architectures,
+> not just powerpc. Move the workaround to powerpc and also 
+> add a suitable comment that's it really a workaround.
+> 
+> This improves dwarf2 unwind tables on x86 at least.
 
-Move a kfree() below the last use of the memory
+Heh, I don't remember the original problem but yeah, that's definitely
+not something to keep in generic Makefiles and in fact we should fix the
+problem on the powerpc side. I'll have a look.
 
-Coverity CID: 13142
+Cheers,
+Ben.
 
-Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index df5b684..15b8b3c 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2925,10 +2925,10 @@ static void __devexit
-amd64_remove_one_instance(struct pci_dev *pdev)
- 
- 	amd64_free_mc_sibling_devices(pvt);
- 
--	kfree(pvt);
- 	mci->pvt_info = NULL;
- 
- 	mci_lookup[pvt->mc_node_id] = NULL;
-+	kfree(pvt);
- 
- 	/* unregister from EDAC MCE */
- 	amd_report_gart_errors(false);
+> Cc: kyle@redhat.com
+> Cc: benh@kernel.crashing.org
+> Cc: mmarek@suse.cz
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  Makefile              |    3 ---
+>  arch/powerpc/Makefile |    5 +++++
+>  2 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.33-rc1-ak/Makefile
+> ===================================================================
+> --- linux-2.6.33-rc1-ak.orig/Makefile
+> +++ linux-2.6.33-rc1-ak/Makefile
+> @@ -570,9 +570,6 @@ KBUILD_CFLAGS += $(call cc-option,-Wno-p
+>  # disable invalid "can't wrap" optimizations for signed / pointers
+>  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
+>  
+> -# revert to pre-gcc-4.4 behaviour of .eh_frame
+> -KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
+> -
+>  # conserve stack if available
+>  KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
+>  
+> Index: linux-2.6.33-rc1-ak/arch/powerpc/Makefile
+> ===================================================================
+> --- linux-2.6.33-rc1-ak.orig/arch/powerpc/Makefile
+> +++ linux-2.6.33-rc1-ak/arch/powerpc/Makefile
+> @@ -112,6 +112,11 @@ KBUILD_CFLAGS += $(call cc-option,-mspe=
+>  # kernel considerably.
+>  KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
+>  
+> +# FIXME: the module load should be taught about the additional relocs
+> +# generated by this.
+> +# revert to pre-gcc-4.4 behaviour of .eh_frame
+> +KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
+> +
+>  # Never use string load/store instructions as they are
+>  # often slow when they are implemented at all
+>  KBUILD_CFLAGS		+= -mno-string
 
 
