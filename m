@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZLULUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZLUL3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZLULUb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 06:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbZLULU2
+	id S1754900AbZLUL3o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 06:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZLUL3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 06:20:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42743 "EHLO mx2.suse.de"
+	Mon, 21 Dec 2009 06:29:43 -0500
+Received: from ozlabs.org ([203.10.76.45]:60681 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756553AbZLULU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 06:20:26 -0500
-Date: Mon, 21 Dec 2009 12:20:42 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [linux-pm] Async suspend-resume patch w/ completions (was: Re:
-	Async?suspend-resume patch w/ rwsems)
-Message-ID: <20091221112042.GA12133@suse.cz>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912191557320.3712@localhost.localdomain> <20091220024142.GC4073@core.coreip.homeip.net> <200912202025.25618.rjw@sisk.pl> <20091221073915.GC3234@core.coreip.homeip.net>
+	id S1751707AbZLUL3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 06:29:42 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 0/3] vhost: fix use_mm usage
+Date: Mon, 21 Dec 2009 21:59:39 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20091220171608.GA31713@redhat.com>
+In-Reply-To: <20091220171608.GA31713@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221073915.GC3234@core.coreip.homeip.net>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912212159.39198.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 11:39:15PM -0800, Dmitry Torokhov wrote:
+On Mon, 21 Dec 2009 03:46:08 am Michael S. Tsirkin wrote:
+> This patchset fixes an issue, pointed out by Al Viro, in how vhost net
+> calls use_mm, Works fine for me, and it's pretty straightforward.  If no
+> one sees any issues with it, this will be a good candidate for 2.6.33
+> (assuming vhost net itself gets pulled :( ).
 
-> > On the nx6325 that appears to reduce the suspend time as much so the effect
-> > of async is not visible any more.  On the Wind it decreases the total suspend
-> > time almost by half!
-> > 
-> > Please push this patch to Linus. :-)
-> > 
-> 
-> Let's see if I manage to solicit some testers first. FWIW it seems to be
-> working on my boxes.
-> 
-> But if this works then I am not sure we even want to bother with async
-> suspend of i8042 and serios. And serio already does resume
-> asynchronously through kseriod.
+No, Linus didn't respond to either pull request.  Either he considers it a
+new driver and hence not in a hurry to enter merge window, or there's some
+other issue.
 
-I'm kind of wondering where this will break, but I don't remember why
-the RESET_BAT was put in exactly - the point of making sure the BIOS
-doesn't get confused by the advanced modes is correct, and is required
-at least when a keyboard is set to "Set 3", but RESET_BAT is a too heavy
-hammer anyway - we could just make sure to switch the kbd/mouse to
-'default' modes instead of doing a full reset.
+I've taken these fixes too, meanwhile.
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+Thanks,
+Rusty.
