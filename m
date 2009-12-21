@@ -1,138 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZLUUfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbZLUUhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbZLUUfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 15:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbZLUUfa
+	id S1757127AbZLUUhn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZLUUhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 15:35:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42890 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbZLUUf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 15:35:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Asynchronous suspend/resume - test results
-Date: Mon, 21 Dec 2009 21:36:12 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
+	Mon, 21 Dec 2009 15:37:42 -0500
+Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:48466 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbZLUUhl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 15:37:41 -0500
+Date: Mon, 21 Dec 2009 15:36:13 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujitsu.com, akpm@linux-foundation.org, menage@google.com,
+       bblum@andrew.cmu.edu
+Subject: [PATCH 2/4] cgroups: subsystem module loading interface
+Message-ID: <20091221203613.GC5683@andrew.cmu.edu>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org, lizf@cn.fujitsu.com,
+	akpm@linux-foundation.org, menage@google.com
+References: <20091221203253.GA5683@andrew.cmu.edu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912212136.12665.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="cgroups-subsys-module-interface.patch"
+In-Reply-To: <20091221203253.GA5683@andrew.cmu.edu>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 December 2009, Alan Stern wrote:
-> On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> > Hi,
-> > 
-> > After the Dmitry's suggestion to use PSMOUSE_CMD_RESET_DIS during suspend
-> > (and analogously for atkbd), I found that it reduced the suspend time
-> > significantly and changed the picture quite a bit.  For this reason I re-ran
-> > the async suspend and resume tests on the nx6325 and Wind U100.
-> > 
-> > This time I marked the following devices as "async":
-> > - all USB devices (including interfaces and endpoints)
-> > - ACPI battery
-> > - sd and its parent
-> 
-> Apparently not.  On nx6325 the sd device is 0:0:0:0, which did suspend
-> in a different thread, but its parent is target0:0:0 which suspended
-> and resumed in the main thread.  And its grandparent, host0, also
-> suspended and resumed in the main thread.
+Add interface between cgroups subsystem management and module loading
 
-Hmm.  I must have confused things, then.
+From: Ben Blum <bblum@andrew.cmu.edu>
 
-...
-> There are still some odd things going on.  Look at 
-> nx6325-async-suspend-upfront-dmesg.log.  There's a peculiar gap between 
-> 
-> [  233.176029] call 0000:00:14.2+ returned 0 after 217543 usecs
-> 
-> and
-> 
-> [  234.059948] call 0:0:0:0+ returned 0 after 1078047 usecs
-> 
-> A lot of stuff could have happened during that gap, but nothing did.  
-> That's because the target0:0:0 device was synchronous, and it was
-> waiting for its child (the long-running async 0:0:0:0) to finish.  Not
-> that it made much difference in the end, because the entire suspend
-> finished about 16 ms later.  But if there was more than one disk or if
-> the disk had been a USB drive, it would have mattered.
-> 
-> You should also make SCSI targets and hosts async.  Hosts are added in
-> drivers/scsi/hosts.c:scsi_add_host_with_dma() (in 2.6.32 this was
-> named scsi_add_host()).  Targets are added in
-> drivers/scsi/scsi_sysfs.c:scsi_target_add().  And for thoroughness,
-> SCSI devices are added in scsi_sysfs_add_sdev() in the same file.
+This patch implements rudimentary module-loading support for cgroups - namely,
+a cgroup_load_subsys (similar to cgroup_init_subsys) for use as a module
+initcall, and a struct module pointer in struct cgroup_subsys.
 
-Thanks a lot for the pointers.
+Several functions that might be wanted by modules have had EXPORT_SYMBOL added
+to them, but it's unclear exactly which functions want it and which won't.
 
-Do you think it's a good idea to mark all SCSI devices as async?  Well, for
-testing it probably is, but I doubt in general.
+Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
+---
 
-> More importantly, why did 0:0:0:0 wait almost 20 ms to begin 
-> suspending?  Undoubtedly because it was blocked, waiting for some 
-> unlogged synchronous device.  That's why you need to print out log 
-> entries for devices without methods.  In this case it was probably a 
-> class device.
+ Documentation/cgroups/cgroups.txt |    3 +
+ include/linux/cgroup.h            |    4 +
+ kernel/cgroup.c                   |  114 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 121 insertions(+), 0 deletions(-)
 
-OK
 
-> Although USB host controllers aren't the longest-running devices to
-> resume, they do tend to be on the longest paths.  Speeding them up
-> would help.  One change you could try is in the patch below.  
-> Currently when a controller has to be reset, the root hub beneath it is
-> also reset and then re-suspended.  However there's no reason to suspend
-> it if the PM core is only going to resume it a little bit later.  The
-> patch gets rid of the unnecessary suspend.  Note: I haven't tested it.
-
-OK, I'll try it.
-
-Rafael
-
+diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+index 3df4b9a..dd0d6f1 100644
+--- a/Documentation/cgroups/cgroups.txt
++++ b/Documentation/cgroups/cgroups.txt
+@@ -492,6 +492,9 @@ Each subsystem should:
+ - add an entry in linux/cgroup_subsys.h
+ - define a cgroup_subsys object called <name>_subsys
  
-> Index: usb-2.6/drivers/usb/host/ohci-hub.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ohci-hub.c
-> +++ usb-2.6/drivers/usb/host/ohci-hub.c
-> @@ -333,14 +333,12 @@ static void ohci_finish_controller_resum
->  		}
->  	}
->  
-> -	/* If needed, reinitialize and suspend the root hub */
-> +	/* If needed, reinitialize the root hub */
->  	if (need_reinit) {
->  		spin_lock_irq(&ohci->lock);
->  		hcd->state = HC_STATE_RESUMING;
-> -		ohci_rh_resume(ohci);
-> -		hcd->state = HC_STATE_QUIESCING;
-> -		ohci_rh_suspend(ohci, 0);
-> -		hcd->state = HC_STATE_SUSPENDED;
-> +		if (ohci_rh_resume(ohci) == 0)
-> +			hcd->state = HC_STATE_RUNNING;
->  		spin_unlock_irq(&ohci->lock);
->  	}
->  
-> Index: usb-2.6/drivers/usb/host/uhci-hcd.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/uhci-hcd.c
-> +++ usb-2.6/drivers/usb/host/uhci-hcd.c
-> @@ -835,7 +835,6 @@ static int uhci_pci_resume(struct usb_hc
->  
->  		/* The controller had to be reset */
->  		usb_root_hub_lost_power(hcd->self.root_hub);
-> -		suspend_rh(uhci, UHCI_RH_SUSPENDED);
->  	}
->  
->  	spin_unlock_irq(&uhci->lock);
-> 
++If a subsystem can be compiled as a module, it should also have in its
++module initcall a call to cgroup_load_subsys().
++
+ Each subsystem may export the following methods. The only mandatory
+ methods are create/destroy. Any others that are null are presumed to
+ be successful no-ops.
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index d7f1545..c8474c4 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -38,6 +38,7 @@ extern void cgroup_fork_failed(struct task_struct *p, int run_callbacks,
+ 			       unsigned long clone_flags);
+ extern int cgroupstats_build(struct cgroupstats *stats,
+ 				struct dentry *dentry);
++extern int cgroup_load_subsys(struct cgroup_subsys *ss);
+ 
+ extern struct file_operations proc_cgroup_operations;
+ 
+@@ -477,6 +478,9 @@ struct cgroup_subsys {
+ 	/* used when use_id == true */
+ 	struct idr idr;
+ 	spinlock_t id_lock;
++
++	/* should be defined only by modular subsystems */
++	struct module *module;
+ };
+ 
+ #define SUBSYS(_x) extern struct cgroup_subsys _x ## _subsys;
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index ece9321..bddf96b 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2477,6 +2477,7 @@ int cgroup_add_file(struct cgroup *cgrp,
+ 		error = PTR_ERR(dentry);
+ 	return error;
+ }
++EXPORT_SYMBOL_GPL(cgroup_add_file);
+ 
+ int cgroup_add_files(struct cgroup *cgrp,
+ 			struct cgroup_subsys *subsys,
+@@ -2491,6 +2492,7 @@ int cgroup_add_files(struct cgroup *cgrp,
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(cgroup_add_files);
+ 
+ /**
+  * cgroup_task_count - count the number of tasks in a cgroup.
+@@ -3638,7 +3640,119 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
+ 	mutex_init(&ss->hierarchy_mutex);
+ 	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
+ 	ss->active = 1;
++
++	/* this function shouldn't be used with modular subsystems, since they
++	 * need to register a subsys_id, among other things */
++	BUG_ON(ss->module);
++}
++
++/**
++ * cgroup_load_subsys: load and register a modular subsystem at runtime
++ * @ss: the subsystem to load
++ *
++ * This function should be called in a modular subsystem's initcall. If the
++ * subsytem is built as a module, it will be assigned a new subsys_id and set
++ * up for use. If the subsystem is built-in anyway, work is delegated to the
++ * simpler cgroup_init_subsys.
++ */
++int __init_or_module cgroup_load_subsys(struct cgroup_subsys *ss)
++{
++	int i;
++	struct cgroup_subsys_state *css;
++
++	/* check name and function validity */
++	if (ss->name == NULL || strlen(ss->name) > MAX_CGROUP_TYPE_NAMELEN ||
++	    ss->create == NULL || ss->destroy == NULL)
++		return -EINVAL;
++
++	/* we don't support callbacks in modular subsystems. this check is
++	 * before the ss->module check for consistency - a module that *could*
++	 * be a module should still have no callbacks for consistency. */
++	if (ss->fork || ss->exit)
++		return -EINVAL;
++
++	/* an optionally modular subsystem is built-in: we want to do nothing,
++	 * since cgroup_init_subsys will take care of it. */
++	if (ss->module == NULL) {
++		/* sanity: ss->module NULL only if the subsys is built-in and
++		 * appears in subsys[] already. */
++		BUG_ON(ss->subsys_id >= CGROUP_BUILTIN_SUBSYS_COUNT);
++		BUG_ON(subsys[ss->subsys_id] != ss);
++		return 0;
++	}
++
++	/* need to register a subsys id before anything else - for example,
++	 * init_cgroup_css needs it. */
++	mutex_lock(&cgroup_mutex);
++	/* find the first empty slot in the array */
++	for (i = CGROUP_BUILTIN_SUBSYS_COUNT; i < CGROUP_SUBSYS_COUNT; i++) {
++		if (subsys[i] == NULL)
++			break;
++	}
++	if (i == CGROUP_SUBSYS_COUNT) {
++		/* maximum number of subsystems already registered! */
++		mutex_unlock(&cgroup_mutex);
++		return -EBUSY;
++	}
++	/* assign ourselves the subsys_id */
++	ss->subsys_id = i;
++	subsys[i] = ss;
++
++	/* no ss->create seems to need anything important in the ss struct, so
++	 * this can happen first (i.e. before the rootnode attachment). */
++	css = ss->create(ss, dummytop);
++	if (IS_ERR(css)) {
++		/* failure case - need to deassign the subsys[] slot. */
++		subsys[i] = NULL;
++		mutex_unlock(&cgroup_mutex);
++		return PTR_ERR(css);
++	}
++
++	list_add(&ss->sibling, &rootnode.subsys_list);
++	ss->root = &rootnode;
++
++	/* our new subsystem will be attached to the dummy hierarchy. */
++	init_cgroup_css(css, ss, dummytop);
++	/* now we need to entangle the css into the existing css_sets. unlike
++	 * in cgroup_init_subsys, there are now multiple css_sets, so each one
++	 * will need a new pointer to it; done by iterating the css_set_table.
++	 * furthermore, modifying the existing css_sets will corrupt the hash
++	 * table state, so each changed css_set will need its hash recomputed.
++	 * this is all done under the css_set_lock. */
++	write_lock(&css_set_lock);
++	for (i = 0; i < CSS_SET_TABLE_SIZE; i++) {
++		struct css_set *cg;
++		struct hlist_node *node, *tmp;
++		struct hlist_head *bucket = &css_set_table[i], *new_bucket;
++		hlist_for_each_entry_safe(cg, node, tmp, bucket, hlist) {
++			/* skip entries that we already rehashed */
++			if (cg->subsys[ss->subsys_id])
++				continue;
++			/* remove existing entry */
++			hlist_del(&cg->hlist);
++			/* set new value */
++			cg->subsys[ss->subsys_id] = css;
++			/* recompute hash and restore entry */
++			new_bucket = css_set_hash(cg->subsys);
++			hlist_add_head(&cg->hlist, new_bucket);
++		}
++	}
++	write_unlock(&css_set_lock);
++
++	mutex_init(&ss->hierarchy_mutex);
++	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
++	ss->active = 1;
++
++	/* pin the subsystem's module so it doesn't go away. this shouldn't
++	 * fail, since the module's initcall calls us.
++	 * TODO: with module unloading, move this elsewhere */
++	BUG_ON(!try_module_get(ss->module));
++
++	/* success! */
++	mutex_unlock(&cgroup_mutex);
++	return 0;
+ }
++EXPORT_SYMBOL_GPL(cgroup_load_subsys);
+ 
+ /**
+  * cgroup_init_early - cgroup initialization at system boot
