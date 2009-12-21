@@ -1,354 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZLUDku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751804AbZLUDnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751529AbZLUDku (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 22:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbZLUDkt
+	id S1751804AbZLUDnf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 22:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZLUDne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 22:40:49 -0500
-Received: from mga03.intel.com ([143.182.124.21]:35028 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbZLUDks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 22:40:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="225060754"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Date: Mon, 21 Dec 2009 11:40:11 +0800
-Subject: [PATCH ] memory-hotplug: create /sys/firmware/memmap entry for new
- memory(v3)
-Thread-Topic: [PATCH ] memory-hotplug: create /sys/firmware/memmap entry for
- new memory(v3)
-Thread-Index: AcqB70zPWZm5WA+GQnS23vdjpmKcLg==
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE86030203701@shzsmsx502.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_DA586906BA1FFC4384FCFD6429ECE86030203701shzsmsx502ccrco_"
-MIME-Version: 1.0
+	Sun, 20 Dec 2009 22:43:34 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37558
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751345AbZLUDne convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 22:43:34 -0500
+Date: Sun, 20 Dec 2009 19:43:35 -0800 (PST)
+Message-Id: <20091220.194335.39201371.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_DA586906BA1FFC4384FCFD6429ECE86030203701shzsmsx502ccrco_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-Resend the patch(v3) after the review by the mailing list, thanks so much f=
-or Dave Hansen's comments.
+Here are the bug fixes which have accumulated over the past
+week or so.
 
-memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
+1) gc_min_interval_ms ipv6 sysctl doesn't update per-namespace
+   properly, fix from Alexey Dobriyan.
 
-Interface firmware_map_add was not called in explicit, Remove it and add fu=
-nction
-firmware_map_add_hotplug as hotplug interface of memmap.
+2) Bluetooth bug fixes from Gustavo F. Padovan, Oliver Neukum,
+   Roel Kluin, and Andrei Emeltchenko.
 
-When we hot-add new memory, sysfs does not export memmap entry for it. we a=
-dd
- a call in function add_memory to function firmware_map_add_hotplug.
+3) Fix e1000e LED settings on 82571 and 82572 chips, fix from
+   Bruce Allan.
 
-Add a new function add_sysfs_fw_map_entry to create memmap entry, it can av=
-oid=20
-duplicated codes.
+4) bnx2 crash in reset_task fix from Breno Leitao.
 
-Thanks for the careful review from Fengguang Wu and Dave Hansen.
+5) TI DaVinci EMAC MDIO bus frequence programming fix from
+   Nageswari Srinivasan.
 
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-Acked-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Acked-by: Dave Hansen <dave@linux.vnet.ibm.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
----
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index 56f9234..ec8c3d4 100644
---- a/drivers/firmware/memmap.c
-+++ b/drivers/firmware/memmap.c
-@@ -123,52 +123,75 @@ static int firmware_map_add_entry(u64 start, u64 end,
- }
-=20
- /**
-- * firmware_map_add() - Adds a firmware mapping entry.
-+ * Add memmap entry on sysfs
-+ */
-+static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry) {
-+	static int map_entries_nr;
-+	static struct kset *mmap_kset;
-+
-+	if (!mmap_kset) {
-+		mmap_kset =3D kset_create_and_add("memmap", NULL, firmware_kobj);
-+		if (WARN_ON(!mmap_kset))
-+			return -ENOMEM;
-+	}
-+
-+	entry->kobj.kset =3D mmap_kset;
-+	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
-+		kobject_put(&entry->kobj);
-+
-+	return 0;
-+}
-+
-+/**
-+ * firmware_map_add_early() - Adds a firmware mapping entry.
-  * @start: Start of the memory range.
-  * @end:   End of the memory range (inclusive).
-  * @type:  Type of the memory range.
-  *
-- * This function uses kmalloc() for memory
-- * allocation. Use firmware_map_add_early() if you want to use the bootmem
-- * allocator.
-+ * Adds a firmware mapping entry. This function uses the bootmem allocator
-+ * for memory allocation.
-  *
-  * That function must be called before late_initcall.
-  *
-  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-  **/
--int firmware_map_add(u64 start, u64 end, const char *type)
-+int __init firmware_map_add_early(u64 start, u64 end, const char *type)
- {
- 	struct firmware_map_entry *entry;
-=20
--	entry =3D kmalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
--	if (!entry)
-+	entry =3D alloc_bootmem(sizeof(struct firmware_map_entry));
-+	if (WARN_ON(!entry))
- 		return -ENOMEM;
-=20
- 	return firmware_map_add_entry(start, end, type, entry);
- }
-=20
- /**
-- * firmware_map_add_early() - Adds a firmware mapping entry.
-+ * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-+ * memory hotplug.
-  * @start: Start of the memory range.
-  * @end:   End of the memory range (inclusive).
-  * @type:  Type of the memory range.
-  *
-- * Adds a firmware mapping entry. This function uses the bootmem allocator
-- * for memory allocation. Use firmware_map_add() if you want to use kmallo=
-c().
-- *
-- * That function must be called before late_initcall.
-+ * Adds a firmware mapping entry. This function is for memory hotplug, it =
-is
-+ * simiar with function firmware_map_add_early. the only difference is tha=
-t
-+ * it will create the syfs entry dynamically.
-  *
-  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-  **/
--int __init firmware_map_add_early(u64 start, u64 end, const char *type)
-+int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *typ=
-e)
- {
- 	struct firmware_map_entry *entry;
-=20
--	entry =3D alloc_bootmem(sizeof(struct firmware_map_entry));
-+	entry =3D kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
- 	if (WARN_ON(!entry))
- 		return -ENOMEM;
-=20
--	return firmware_map_add_entry(start, end, type, entry);
-+	firmware_map_add_entry(start, end, type, entry);
-+	/* create the memmap entry */
-+	add_sysfs_fw_map_entry(entry);
-+
-+	return 0;
- }
-=20
- /*
-@@ -214,18 +237,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
-  */
- static int __init memmap_init(void)
- {
--	int i =3D 0;
- 	struct firmware_map_entry *entry;
--	struct kset *memmap_kset;
--
--	memmap_kset =3D kset_create_and_add("memmap", NULL, firmware_kobj);
--	if (WARN_ON(!memmap_kset))
--		return -ENOMEM;
-=20
- 	list_for_each_entry(entry, &map_entries, list) {
--		entry->kobj.kset =3D memmap_kset;
--		if (kobject_add(&entry->kobj, NULL, "%d", i++))
--			kobject_put(&entry->kobj);
-+		add_sysfs_fw_map_entry(entry);
- 	}
-=20
- 	return 0;
-diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
-index 875451f..c6dcc1d 100644
---- a/include/linux/firmware-map.h
-+++ b/include/linux/firmware-map.h
-@@ -24,17 +24,17 @@
-  */
- #ifdef CONFIG_FIRMWARE_MEMMAP
-=20
--int firmware_map_add(u64 start, u64 end, const char *type);
- int firmware_map_add_early(u64 start, u64 end, const char *type);
-+int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-=20
- #else /* CONFIG_FIRMWARE_MEMMAP */
-=20
--static inline int firmware_map_add(u64 start, u64 end, const char *type)
-+static inline int firmware_map_add_early(u64 start, u64 end, const char *t=
-ype)
- {
- 	return 0;
- }
-=20
--static inline int firmware_map_add_early(u64 start, u64 end, const char *t=
-ype)
-+static inline int firmware_map_add_hotplug(u64 start, u64 end, const char =
-*type)
- {
- 	return 0;
- }
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 030ce8a..78e34e6 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -28,6 +28,7 @@
- #include <linux/pfn.h>
- #include <linux/suspend.h>
- #include <linux/mm_inline.h>
-+#include <linux/firmware-map.h>
-=20
- #include <asm/tlbflush.h>
-=20
-@@ -523,6 +524,9 @@ int __ref add_memory(int nid, u64 start, u64 size)
- 		BUG_ON(ret);
- 	}
-=20
-+	/* create new memmap entry */
-+	firmware_map_add_hotplug(start, start + size, "System RAM");
-+
- 	goto out;
-=20
- error:
+6) e100 regression fix from Roger Oksanen.  When we moved this
+   driver over to pci pools, we added a subtle bug because
+   pci pool objects, unlike pci_alloc_consistent() allocations,
+   do not get bzero()'d out for the caller.
 
-Thanks & Regards,
-Shaohui
+7) gianfar fixes from Sandeep Gopalpet.
 
+8) netxen sysfs fix from Stephen Hemminger
 
+9) mISDN needs to use DECLARE_COMPLETION_ONSTACK, fix from Yong Zhang
 
+Please pull, thanks a lot!
 
---_002_DA586906BA1FFC4384FCFD6429ECE86030203701shzsmsx502ccrco_
-Content-Type: application/octet-stream; name=
-	"memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch"
-Content-Description: memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch
-Content-Disposition: attachment; filename=
-	"memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch";
-	size=5746; creation-date="Fri, 18 Dec 2009 16:26:02 GMT";
-	modification-date="Mon, 21 Dec 2009 09:38:34 GMT"
-Content-Transfer-Encoding: base64
+The following changes since commit dd59f6c76b265ed2ff18b497d6105a9511b1feb1:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../mattst88/alpha-2.6
 
-bWVtb3J5LWhvdHBsdWc6IGNyZWF0ZSAvc3lzL2Zpcm13YXJlL21lbW1hcCBlbnRyeSBmb3IgaG90
-LWFkZGVkIG1lbW9yeQoKSW50ZXJmYWNlIGZpcm13YXJlX21hcF9hZGQgd2FzIG5vdCBjYWxsZWQg
-aW4gZXhwbGljaXQsIFJlbW92ZSBpdCBhbmQgYWRkIGZ1bmN0aW9uCmZpcm13YXJlX21hcF9hZGRf
-aG90cGx1ZyBhcyBob3RwbHVnIGludGVyZmFjZSBvZiBtZW1tYXAuCgpXaGVuIHdlIGhvdC1hZGQg
-bmV3IG1lbW9yeSwgc3lzZnMgZG9lcyBub3QgZXhwb3J0IG1lbW1hcCBlbnRyeSBmb3IgaXQuIHdl
-IGFkZAogYSBjYWxsIGluIGZ1bmN0aW9uIGFkZF9tZW1vcnkgdG8gZnVuY3Rpb24gZmlybXdhcmVf
-bWFwX2FkZF9ob3RwbHVnLgoKQWRkIGEgbmV3IGZ1bmN0aW9uIGFkZF9zeXNmc19md19tYXBfZW50
-cnkgdG8gY3JlYXRlIG1lbW1hcCBlbnRyeSwgaXQgY2FuIGF2b2lkIApkdXBsaWNhdGVkIGNvZGVz
-LgoKVGhhbmtzIGZvciB0aGUgY2FyZWZ1bCByZXZpZXcgZnJvbSBGZW5nZ3VhbmcgV3UgYW5kIERh
-dmUgSGFuc2VuLgoKU2lnbmVkLW9mZi1ieTogU2hhb2h1aSBaaGVuZyA8c2hhb2h1aS56aGVuZ0Bp
-bnRlbC5jb20+CkFja2VkLWJ5OiBBbmRpIEtsZWVuIDxha0BsaW51eC5pbnRlbC5jb20+CkFja2Vk
-LWJ5OiBZYXN1bm9yaSBHb3RvIDx5LWdvdG9AanAuZnVqaXRzdS5jb20+CkFja2VkLWJ5OiBEYXZl
-IEhhbnNlbiA8ZGF2ZUBsaW51eC52bmV0LmlibS5jb20+ClJldmlld2VkLWJ5OiBXdSBGZW5nZ3Vh
-bmcgPGZlbmdndWFuZy53dUBpbnRlbC5jb20+Ci0tLQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9maXJt
-d2FyZS9tZW1tYXAuYyBiL2RyaXZlcnMvZmlybXdhcmUvbWVtbWFwLmMKaW5kZXggNTZmOTIzNC4u
-ZWM4YzNkNCAxMDA2NDQKLS0tIGEvZHJpdmVycy9maXJtd2FyZS9tZW1tYXAuYworKysgYi9kcml2
-ZXJzL2Zpcm13YXJlL21lbW1hcC5jCkBAIC0xMjMsNTIgKzEyMyw3NSBAQCBzdGF0aWMgaW50IGZp
-cm13YXJlX21hcF9hZGRfZW50cnkodTY0IHN0YXJ0LCB1NjQgZW5kLAogfQogCiAvKioKLSAqIGZp
-cm13YXJlX21hcF9hZGQoKSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5LgorICogQWRk
-IG1lbW1hcCBlbnRyeSBvbiBzeXNmcworICovCitzdGF0aWMgaW50IGFkZF9zeXNmc19md19tYXBf
-ZW50cnkoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSAqZW50cnkpIHsKKwlzdGF0aWMgaW50IG1h
-cF9lbnRyaWVzX25yOworCXN0YXRpYyBzdHJ1Y3Qga3NldCAqbW1hcF9rc2V0OworCisJaWYgKCFt
-bWFwX2tzZXQpIHsKKwkJbW1hcF9rc2V0ID0ga3NldF9jcmVhdGVfYW5kX2FkZCgibWVtbWFwIiwg
-TlVMTCwgZmlybXdhcmVfa29iaik7CisJCWlmIChXQVJOX09OKCFtbWFwX2tzZXQpKQorCQkJcmV0
-dXJuIC1FTk9NRU07CisJfQorCisJZW50cnktPmtvYmoua3NldCA9IG1tYXBfa3NldDsKKwlpZiAo
-a29iamVjdF9hZGQoJmVudHJ5LT5rb2JqLCBOVUxMLCAiJWQiLCBtYXBfZW50cmllc19ucisrKSkK
-KwkJa29iamVjdF9wdXQoJmVudHJ5LT5rb2JqKTsKKworCXJldHVybiAwOworfQorCisvKioKKyAq
-IGZpcm13YXJlX21hcF9hZGRfZWFybHkoKSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5
-LgogICogQHN0YXJ0OiBTdGFydCBvZiB0aGUgbWVtb3J5IHJhbmdlLgogICogQGVuZDogICBFbmQg
-b2YgdGhlIG1lbW9yeSByYW5nZSAoaW5jbHVzaXZlKS4KICAqIEB0eXBlOiAgVHlwZSBvZiB0aGUg
-bWVtb3J5IHJhbmdlLgogICoKLSAqIFRoaXMgZnVuY3Rpb24gdXNlcyBrbWFsbG9jKCkgZm9yIG1l
-bW9yeQotICogYWxsb2NhdGlvbi4gVXNlIGZpcm13YXJlX21hcF9hZGRfZWFybHkoKSBpZiB5b3Ug
-d2FudCB0byB1c2UgdGhlIGJvb3RtZW0KLSAqIGFsbG9jYXRvci4KKyAqIEFkZHMgYSBmaXJtd2Fy
-ZSBtYXBwaW5nIGVudHJ5LiBUaGlzIGZ1bmN0aW9uIHVzZXMgdGhlIGJvb3RtZW0gYWxsb2NhdG9y
-CisgKiBmb3IgbWVtb3J5IGFsbG9jYXRpb24uCiAgKgogICogVGhhdCBmdW5jdGlvbiBtdXN0IGJl
-IGNhbGxlZCBiZWZvcmUgbGF0ZV9pbml0Y2FsbC4KICAqCiAgKiBSZXR1cm5zIDAgb24gc3VjY2Vz
-cywgb3IgLUVOT01FTSBpZiBubyBtZW1vcnkgY291bGQgYmUgYWxsb2NhdGVkLgogICoqLwotaW50
-IGZpcm13YXJlX21hcF9hZGQodTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBjaGFyICp0eXBlKQor
-aW50IF9faW5pdCBmaXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFydCwgdTY0IGVuZCwgY29u
-c3QgY2hhciAqdHlwZSkKIHsKIAlzdHJ1Y3QgZmlybXdhcmVfbWFwX2VudHJ5ICplbnRyeTsKIAot
-CWVudHJ5ID0ga21hbGxvYyhzaXplb2Yoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSksIEdGUF9B
-VE9NSUMpOwotCWlmICghZW50cnkpCisJZW50cnkgPSBhbGxvY19ib290bWVtKHNpemVvZihzdHJ1
-Y3QgZmlybXdhcmVfbWFwX2VudHJ5KSk7CisJaWYgKFdBUk5fT04oIWVudHJ5KSkKIAkJcmV0dXJu
-IC1FTk9NRU07CiAKIAlyZXR1cm4gZmlybXdhcmVfbWFwX2FkZF9lbnRyeShzdGFydCwgZW5kLCB0
-eXBlLCBlbnRyeSk7CiB9CiAKIC8qKgotICogZmlybXdhcmVfbWFwX2FkZF9lYXJseSgpIC0gQWRk
-cyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuCisgKiBmaXJtd2FyZV9tYXBfYWRkX2hvdHBsdWco
-KSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5IHdoZW4gd2UgZG8KKyAqIG1lbW9yeSBo
-b3RwbHVnLgogICogQHN0YXJ0OiBTdGFydCBvZiB0aGUgbWVtb3J5IHJhbmdlLgogICogQGVuZDog
-ICBFbmQgb2YgdGhlIG1lbW9yeSByYW5nZSAoaW5jbHVzaXZlKS4KICAqIEB0eXBlOiAgVHlwZSBv
-ZiB0aGUgbWVtb3J5IHJhbmdlLgogICoKLSAqIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5
-LiBUaGlzIGZ1bmN0aW9uIHVzZXMgdGhlIGJvb3RtZW0gYWxsb2NhdG9yCi0gKiBmb3IgbWVtb3J5
-IGFsbG9jYXRpb24uIFVzZSBmaXJtd2FyZV9tYXBfYWRkKCkgaWYgeW91IHdhbnQgdG8gdXNlIGtt
-YWxsb2MoKS4KLSAqCi0gKiBUaGF0IGZ1bmN0aW9uIG11c3QgYmUgY2FsbGVkIGJlZm9yZSBsYXRl
-X2luaXRjYWxsLgorICogQWRkcyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuIFRoaXMgZnVuY3Rp
-b24gaXMgZm9yIG1lbW9yeSBob3RwbHVnLCBpdCBpcworICogc2ltaWFyIHdpdGggZnVuY3Rpb24g
-ZmlybXdhcmVfbWFwX2FkZF9lYXJseS4gdGhlIG9ubHkgZGlmZmVyZW5jZSBpcyB0aGF0CisgKiBp
-dCB3aWxsIGNyZWF0ZSB0aGUgc3lmcyBlbnRyeSBkeW5hbWljYWxseS4KICAqCiAgKiBSZXR1cm5z
-IDAgb24gc3VjY2Vzcywgb3IgLUVOT01FTSBpZiBubyBtZW1vcnkgY291bGQgYmUgYWxsb2NhdGVk
-LgogICoqLwotaW50IF9faW5pdCBmaXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFydCwgdTY0
-IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKK2ludCBfX21lbWluaXQgZmlybXdhcmVfbWFwX2FkZF9o
-b3RwbHVnKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKIHsKIAlzdHJ1Y3Qg
-ZmlybXdhcmVfbWFwX2VudHJ5ICplbnRyeTsKIAotCWVudHJ5ID0gYWxsb2NfYm9vdG1lbShzaXpl
-b2Yoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSkpOworCWVudHJ5ID0ga3phbGxvYyhzaXplb2Yo
-c3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSksIEdGUF9BVE9NSUMpOwogCWlmIChXQVJOX09OKCFl
-bnRyeSkpCiAJCXJldHVybiAtRU5PTUVNOwogCi0JcmV0dXJuIGZpcm13YXJlX21hcF9hZGRfZW50
-cnkoc3RhcnQsIGVuZCwgdHlwZSwgZW50cnkpOworCWZpcm13YXJlX21hcF9hZGRfZW50cnkoc3Rh
-cnQsIGVuZCwgdHlwZSwgZW50cnkpOworCS8qIGNyZWF0ZSB0aGUgbWVtbWFwIGVudHJ5ICovCisJ
-YWRkX3N5c2ZzX2Z3X21hcF9lbnRyeShlbnRyeSk7CisKKwlyZXR1cm4gMDsKIH0KIAogLyoKQEAg
-LTIxNCwxOCArMjM3LDEwIEBAIHN0YXRpYyBzc2l6ZV90IG1lbW1hcF9hdHRyX3Nob3coc3RydWN0
-IGtvYmplY3QgKmtvYmosCiAgKi8KIHN0YXRpYyBpbnQgX19pbml0IG1lbW1hcF9pbml0KHZvaWQp
-CiB7Ci0JaW50IGkgPSAwOwogCXN0cnVjdCBmaXJtd2FyZV9tYXBfZW50cnkgKmVudHJ5OwotCXN0
-cnVjdCBrc2V0ICptZW1tYXBfa3NldDsKLQotCW1lbW1hcF9rc2V0ID0ga3NldF9jcmVhdGVfYW5k
-X2FkZCgibWVtbWFwIiwgTlVMTCwgZmlybXdhcmVfa29iaik7Ci0JaWYgKFdBUk5fT04oIW1lbW1h
-cF9rc2V0KSkKLQkJcmV0dXJuIC1FTk9NRU07CiAKIAlsaXN0X2Zvcl9lYWNoX2VudHJ5KGVudHJ5
-LCAmbWFwX2VudHJpZXMsIGxpc3QpIHsKLQkJZW50cnktPmtvYmoua3NldCA9IG1lbW1hcF9rc2V0
-OwotCQlpZiAoa29iamVjdF9hZGQoJmVudHJ5LT5rb2JqLCBOVUxMLCAiJWQiLCBpKyspKQotCQkJ
-a29iamVjdF9wdXQoJmVudHJ5LT5rb2JqKTsKKwkJYWRkX3N5c2ZzX2Z3X21hcF9lbnRyeShlbnRy
-eSk7CiAJfQogCiAJcmV0dXJuIDA7CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2Zpcm13YXJl
-LW1hcC5oIGIvaW5jbHVkZS9saW51eC9maXJtd2FyZS1tYXAuaAppbmRleCA4NzU0NTFmLi5jNmRj
-YzFkIDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L2Zpcm13YXJlLW1hcC5oCisrKyBiL2luY2x1
-ZGUvbGludXgvZmlybXdhcmUtbWFwLmgKQEAgLTI0LDE3ICsyNCwxNyBAQAogICovCiAjaWZkZWYg
-Q09ORklHX0ZJUk1XQVJFX01FTU1BUAogCi1pbnQgZmlybXdhcmVfbWFwX2FkZCh1NjQgc3RhcnQs
-IHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUpOwogaW50IGZpcm13YXJlX21hcF9hZGRfZWFybHko
-dTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBjaGFyICp0eXBlKTsKK2ludCBmaXJtd2FyZV9tYXBf
-YWRkX2hvdHBsdWcodTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBjaGFyICp0eXBlKTsKIAogI2Vs
-c2UgLyogQ09ORklHX0ZJUk1XQVJFX01FTU1BUCAqLwogCi1zdGF0aWMgaW5saW5lIGludCBmaXJt
-d2FyZV9tYXBfYWRkKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKK3N0YXRp
-YyBpbmxpbmUgaW50IGZpcm13YXJlX21hcF9hZGRfZWFybHkodTY0IHN0YXJ0LCB1NjQgZW5kLCBj
-b25zdCBjaGFyICp0eXBlKQogewogCXJldHVybiAwOwogfQogCi1zdGF0aWMgaW5saW5lIGludCBm
-aXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlw
-ZSkKK3N0YXRpYyBpbmxpbmUgaW50IGZpcm13YXJlX21hcF9hZGRfaG90cGx1Zyh1NjQgc3RhcnQs
-IHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUpCiB7CiAJcmV0dXJuIDA7CiB9CmRpZmYgLS1naXQg
-YS9tbS9tZW1vcnlfaG90cGx1Zy5jIGIvbW0vbWVtb3J5X2hvdHBsdWcuYwppbmRleCAwMzBjZThh
-Li43OGUzNGU2IDEwMDY0NAotLS0gYS9tbS9tZW1vcnlfaG90cGx1Zy5jCisrKyBiL21tL21lbW9y
-eV9ob3RwbHVnLmMKQEAgLTI4LDYgKzI4LDcgQEAKICNpbmNsdWRlIDxsaW51eC9wZm4uaD4KICNp
-bmNsdWRlIDxsaW51eC9zdXNwZW5kLmg+CiAjaW5jbHVkZSA8bGludXgvbW1faW5saW5lLmg+Cisj
-aW5jbHVkZSA8bGludXgvZmlybXdhcmUtbWFwLmg+CiAKICNpbmNsdWRlIDxhc20vdGxiZmx1c2gu
-aD4KIApAQCAtNTIzLDYgKzUyNCw5IEBAIGludCBfX3JlZiBhZGRfbWVtb3J5KGludCBuaWQsIHU2
-NCBzdGFydCwgdTY0IHNpemUpCiAJCUJVR19PTihyZXQpOwogCX0KIAorCS8qIGNyZWF0ZSBuZXcg
-bWVtbWFwIGVudHJ5ICovCisJZmlybXdhcmVfbWFwX2FkZF9ob3RwbHVnKHN0YXJ0LCBzdGFydCAr
-IHNpemUsICJTeXN0ZW0gUkFNIik7CisKIAlnb3RvIG91dDsKIAogZXJyb3I6Cg==
+are available in the git repository at:
 
---_002_DA586906BA1FFC4384FCFD6429ECE86030203701shzsmsx502ccrco_--
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alexey Dobriyan (1):
+      netns: fix net.ipv6.route.gc_min_interval_ms in netns
+
+Andrei Emeltchenko (1):
+      Bluetooth: Fix L2CAP locking scheme regression
+
+Breno Leitao (2):
+      bnx2: reset_task is crashing the kernel. Fixing it.
+      bnx2: fixing a timout error due not refreshing TX timers correctly
+
+Bruce Allan (1):
+      e1000e: LED settings in EEPROM ignored on 82571 and 82572
+
+Gustavo F. Padovan (2):
+      Bluetooth: Fix unset of RemoteBusy flag for L2CAP
+      Bluetooth: Ack L2CAP I-frames before retransmit missing packet
+
+Michael Chan (1):
+      bnx2: Fix bnx2_netif_stop() merge error.
+
+Nageswari Srinivasan (1):
+      TI DaVinci EMAC: Fix MDIO bus frequency configuration
+
+Oliver Neukum (1):
+      Bluetooth: Prevent ill-timed autosuspend in USB driver
+
+Roel Kluin (2):
+      Bluetooth: Fix PTR_ERR return of wrong pointer in hidp_setup_hid()
+      broadcom: bcm54xx_shadow_read() errors ignored in bcm54xx_adjust_rxrefclk()
+
+Roger Oksanen (1):
+      e100: Fix broken cbs accounting due to missing memset.
+
+Sandeep Gopalpet (3):
+      gianfar: Fix a filer bug
+      gianfar: Fix stats support
+      gianfar: Fix bit definitions of IMASK_GRSC and IMASK_GTSC
+
+Stephen Hemminger (1):
+      netxen: use module parameter correctly
+
+Uwe Kleine-König (1):
+      can/at91: don't check platform_get_irq's return value against zero
+
+Yang Hongyang (1):
+      ipv6: fix an oops when force unload ipv6 module
+
+Yong Zhang (1):
+      mISDN: use DECLARE_COMPLETION_ONSTACK for non-constant completion
+
+ drivers/bluetooth/btusb.c            |    1 +
+ drivers/isdn/mISDN/l1oip_core.c      |    2 +-
+ drivers/net/bnx2.c                   |   12 ++++++-
+ drivers/net/can/at91_can.c           |    2 +-
+ drivers/net/davinci_emac.c           |    2 +-
+ drivers/net/e100.c                   |    2 +-
+ drivers/net/e1000e/82571.c           |    6 ---
+ drivers/net/gianfar.c                |   50 +++++++++++++++++++++++++----
+ drivers/net/gianfar.h                |   18 +++++++++-
+ drivers/net/netxen/netxen_nic_main.c |   57 ++--------------------------------
+ drivers/net/phy/broadcom.c           |    3 +-
+ net/bluetooth/hidp/core.c            |    2 +-
+ net/bluetooth/l2cap.c                |    5 ++-
+ net/ipv6/reassembly.c                |    3 +-
+ net/ipv6/route.c                     |    1 +
+ 15 files changed, 86 insertions(+), 80 deletions(-)
