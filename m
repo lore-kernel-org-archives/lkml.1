@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbZLUVQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbZLUVR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbZLUVQq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 16:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbZLUVQp
+	id S1757101AbZLUVR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 16:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbZLUVR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 16:16:45 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:43988 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756274AbZLUVQo (ORCPT
+	Mon, 21 Dec 2009 16:17:27 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:24664 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756998AbZLUVR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 16:16:44 -0500
-Subject: Re: Wrong atime on recent kernels
-From: john stultz <johnstul@us.ibm.com>
-To: Petr =?UTF-8?Q?Tit=C4=9Bra?= <petr@titera.eu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4B2EB3BC.6030900@titera.eu>
-References: <4B26AB7E.9020208@titera.eu>
-	 <1f1b08da0912141345ia574429k8b3e2fb73fdddb30@mail.gmail.com>
-	 <4B29494B.4010305@titera.eu>
-	 <1261020388.7245.27.camel@localhost.localdomain>
-	 <4B2A1051.9010808@century.cz>
-	 <1261106021.3466.76.camel@localhost.localdomain>
-	 <4B2EA55C.4030406@titera.eu>  <4B2EB3BC.6030900@titera.eu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 13:16:14 -0800
-Message-ID: <1261430174.5293.43.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 21 Dec 2009 16:17:26 -0500
+Date: Mon, 21 Dec 2009 14:17:24 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>,
+       venkatesh.pallipadi@intel.com, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] ACPI: early _PDC eval and unify x86/ia64
+Message-ID: <20091221211724.GB28569@ldl.fc.hp.com>
+References: <20091220190434.4274.67855.stgit@bob.kio> <20091221081550.GA1648@isilmar.linta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091221081550.GA1648@isilmar.linta.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 00:31 +0100, Petr Titěra wrote: 
-> Petr Titěra napsal(a):
-> > john stultz napsal(a):
-> >> Let me know if you find anything that helps narrow this down.
-> >>
-> >
-> > I know its far fetched, but is there something what is preventing 
-> > xtime.tv_nsec to be exactly 999999999 near the end of update_wall_time 
-> > in kernel/time/timekeeping.c?
-> >
-> Just to follow up. I'm asking because I see a lot of files with access 
-> and/or modify times near the top of thousanth of second (see 
-> `/etc/sysconfig/prelink' in my example) and I thing that addition of 1 
-> to xtime.tv_nsec ath the end of update_wall_time can 'owerflow' to whole 
-> second.
+* Dominik Brodowski <linux@dominikbrodowski.net>:
+> 
+> On Sun, Dec 20, 2009 at 12:19:04PM -0700, Alex Chiang wrote:
+> > This does introduce a boot time namespace walk for all the CPUs
+> > in the system, looking for and evaluating _PDC. Hopefully that
+> > will not make life miserable for the giant SGI clusters. If worse
+> > comes to worse, maybe we can quirk them and avoid the namespace
+> > walk.
+> 
+> Could this be done async, with completion before EC initialization?
 
+I don't think I understand your suggestion.
 
-Oof! Yikes.
+On some platforms, we need to finish evaluating _PDC before we
+initialize the EC. That's what I discovered with the Envy 15. At
+that point in boot, we're single-threaded and going through early
+ACPI initialization. Each step has to finish before the next, in
+order for later initialization to succeed.
 
-Yea, the sub-nanosecond rounding fix we added quite awhile back indeed
-opens a hole where xtime.tv_nsec could be exactly 1sec. Good eye!
+There's nothing else going on except for waiting for _PDC to
+finish so that we can initialize the EC.
 
-Of course, most of the timekeeping accessors handle this properly by
-normalizing the timespec before returning, so its likely just users of
-current_kernel_time() and direct accessors of xtime that might be bitten
-here. 
+My fear was that on a huge compute cluster, walking the namespace
+for every CPU object to evaluate _PDC might take a long time, and
+is also probably unnecessary, since their hardware/firmware
+probably doesn't load dynamic tables in _PDC.
 
-And this probably was obscured before because the xtime_cache() was
-normalized. Did you verify that reverting that patch I pointed you to
-resolves the issue? If not, please do, so we can get this fixed up.
+In that case, my suggestion was to avoid the walk with a quirk.
 
-Now I'm a little baffled why you see it all the time on your boxes. For
-this to trigger, you have to have an interrupt in the last ns of a
-second, and then the window for these odd filesystem stamps is only open
-for 1-10ms.
+But maybe it's not necessary to worry about that until it's
+actually proven to be a problem.
 
-Sigh. Once we get the last of the non GENERIC_TIME arches converted to
-arch_gettimeoffset, we can kill all of those rounding hacks and just
-manage the sub-nanosecond portion sanely. I'm looking forward to that
-day!
-
-
-So again, Bravo on catching this!
-
-thanks
--john
+Thanks,
+/ac
 
