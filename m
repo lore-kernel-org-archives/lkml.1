@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZLUPnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZLUPrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZLUPnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:43:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZLUPnk
+	id S1756270AbZLUPrb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 10:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbZLUPrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:43:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53125 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755889AbZLUPnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:43:39 -0500
-Message-ID: <4B2F978D.7010602@redhat.com>
-Date: Mon, 21 Dec 2009 17:43:09 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 21 Dec 2009 10:47:31 -0500
+Received: from [95.15.174.111] ([95.15.174.111]:1544 "HELO hasan.local"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+	id S1756070AbZLUPra convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 10:47:30 -0500
+X-Greylist: delayed 6216 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Dec 2009 10:47:29 EST
+Reply-To: definegizemi.com@hotmail.com
+Message-ID: <0c1baaa0b4b6b9422e945081183f2847@hotmail.com>
+From: "efsane" <definegizemi.com@hotmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: Antik  Gizemler
+Date: Mon, 21 Dec 2009 17:47:06 +0200
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com>
-In-Reply-To: <4B2F9582.5000002@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="iso-8859-9"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/21/2009 05:34 PM, Gregory Haskins wrote:
->
->> I think it would be fair to point out that these patches have been objected to
->> by the KVM folks quite extensively,
->>      
-> Actually, these patches have nothing to do with the KVM folks.  You are
-> perhaps confusing this with the hypervisor-side discussion, of which
-> there is indeed much disagreement.
->    
 
-This is true, though these drivers are fairly pointless for 
-virtualization without the host side support.
+Antik  Eserler, Antik  Paralar, Arkeoloji, Antik  Kentler, Antik  Dünya ve 
+Definecilik Hobiniz varsa 
 
-I did have a few issues with the guest drivers:
-- the duplication of effort wrt virtio.  These drivers don't cover 
-exactly the same problem space, but nearly so.
-- no effort at scalability - all interrupts are taken on one cpu
-- the patches introduce a new virtual interrupt controller for dubious 
-(IMO) benefits
+Size Aþaðýdaki Siteyi  incelemenizi Öneriyoruz
 
->  From my research, the reason why virt in general, and KVM in particular
-> suffers on the IO performance front is as follows: IOs
-> (traps+interrupts) are more expensive than bare-metal, and real hardware
-> is naturally concurrent (your hbas and nics are effectively parallel
-> execution engines, etc).
->
-> Assuming my observations are correct, in order to squeeze maximum
-> performance from a given guest, you need to do three things:  A)
-> eliminate as many IOs as you possibly can, B) reduce the cost of the
-> ones you can't avoid, and C) run your algorithms in parallel to emulate
-> concurrent silicon.
->    
+http://www.definegizemi.com/
 
-All these are addressed by vhost-net without introducing new drivers.
+Paylaþým  Formu  :  http://www.definegizemi.com/forum/
 
--- 
-error compiling committee.c: too many arguments to function
+Saygýlarýmla
+A.Vecdi Çoban
+
+
+
+
 
