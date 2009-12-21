@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbZLUCLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZLUCUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932125AbZLUCLi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 21:11:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZLUCLh
+	id S1755741AbZLUCUB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 21:20:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZLUCT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 21:11:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7765 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbZLUCLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 21:11:37 -0500
-Message-ID: <4B2ED9F4.5050109@redhat.com>
-Date: Sun, 20 Dec 2009 21:14:12 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sun, 20 Dec 2009 21:19:59 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:7840 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbZLUCT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Dec 2009 21:19:58 -0500
+Date: Sun, 20 Dec 2009 19:19:57 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 01/11] ACPI: processor: call _PDC early
+Message-ID: <20091221021957.GB7127@ldl.fc.hp.com>
+References: <20091220192731.5545.20582.stgit@bob.kio> <20091220193028.5545.171.stgit@bob.kio> <1261359292.10432.97.camel@minggr.sh.intel.com>
 MIME-Version: 1.0
-To: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] elf_fdpic_core_dump(): fix build break in 2.6.33-rc1
-References: <20091221.110431.189715673.d.hatayama@jp.fujitsu.com>
-In-Reply-To: <20091221.110431.189715673.d.hatayama@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261359292.10432.97.camel@minggr.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Daisuke HATAYAMA wrote:
-> The commit f6151dfea21496d43dbaba32cfcd9c9f404769bc causes build
-> break, so this patch fixes it together with the correction for printk
-> format.
+* Lin Ming <ming.m.lin@intel.com>:
+> On Mon, 2009-12-21 at 03:30 +0800, Alex Chiang wrote:
+> > We discovered that at least one machine (HP Envy), methods in the DSDT
+> > attempt to call external methods defined in a dynamically loaded SSDT.
+> > 
+> > Unfortunately, the DSDT methods we are trying to call are part of the
+> > EC initialization, which happens very early, and the the dynamic SSDT
+> > is only loaded when a processor _PDC method runs much later.
+> > 
+> > This results in namespace lookup errors for the (as of yet) undefined
+> > methods.
+> > 
+> > Since Windows doesn't have any issues with this machine, we take it
+> > as a hint that they must be evaluating _PDC much earlier than we are.
+> > 
+> > Thus, the proper thing for Linux to do should be to match the Windows
+> > implementation more closely.
+> > 
+> > Provide a mechanism to call _PDC before we enable the EC. Doing so loads
+> > the dynamic tables, and allows the EC to be enabled correctly.
+> > 
+> > The ACPI processor driver will still evaluate _PDC in its .add() method
+> > to cover the hotplug case.
+> > 
+> > Resolves: http://bugzilla.kernel.org/show_bug.cgi?id=14824
+> > 
+> > diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+> > @@ -888,6 +888,8 @@ static int __init acpi_bus_init(void)
+> >  		goto error1;
+> >  	}
+> >  
+> > +	acpi_early_processor_set_pdc();
 > 
-> Thanks.
+> acpi_bus_init(...) {
+> 	acpi_ec_ecdt_probe();
 > 
-> Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-
-Thanks for fixing that! looks good to me.
-
-Reviewed-by: Masami Hiramatsu <mhiramat@redhat.com>
-
-> ---
->  fs/binfmt_elf_fdpic.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+> 	acpi_initialize_objects(ACPI_FULL_INITIALIZATION);
 > 
-> diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-> index c25256a..b0f2732 100644
-> --- a/fs/binfmt_elf_fdpic.c
-> +++ b/fs/binfmt_elf_fdpic.c
-> @@ -1798,11 +1798,11 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
->  	ELF_CORE_WRITE_EXTRA_DATA;
->  #endif
->  
-> -	if (file->f_pos != offset) {
-> +	if (cprm->file->f_pos != offset) {
->  		/* Sanity check */
->  		printk(KERN_WARNING
-> -		       "elf_core_dump: file->f_pos (%lld) != offset (%lld)\n",
-> -		       file->f_pos, offset);
-> +		       "elf_fdpic_core_dump: cprm->file->f_pos (%lld) != offset (%lld)\n",
-> +		       cprm->file->f_pos, offset);
->  	}
->  
->  end_coredump:
+> 	acpi_early_processor_set_pdc();
+> 
+> 	acpi_boot_ec_enable();
+> }
+> 
+> EC space handler may be installed in acpi_ec_ecdt_probe or
+> acpi_boot_ec_enable.  In your machine(HP Envy), EC space
+> handler is installed in acpi_boot_ec_enable.
 
--- 
-Masami Hiramatsu
+Correct.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+> It seems that this patch does not fix the problem if EC space
+> hanlder is installed in acpi_ec_ecdt_probe, right?
 
-e-mail: mhiramat@redhat.com
+Also correct.
+
+But this patch is a reaction to reported behavior of a machine in
+the field, with a shipping BIOS, and the problem was that we
+only installed the handler in acpi_boot_ec_enable().
+
+> But clearly, we can not put acpi_early_processor_set_pdc before
+> acpi_ec_ecdt_probe because ACPI namespace objects have not been
+> initialized yet at that time.
+> 
+> Looks like a "chicken or the egg" problem.
+> Which came first, the chicken or the egg?
+
+I understand the point you are making, but in this case, we do
+know which came first (the chicken ;).
+
+Maybe in the future, we'll be surprised again and discover that
+we need to evaluate _PDC even earlier, but I prefer to fix that
+problem later, if it ever occurs, than to worry about it now.
+
+This patch fixes a real issue, so I prefer to focus on that
+instead of worrying about a theoretical issue.
+
+Thanks,
+/ac, unless Len tells me I'm wrong
 
