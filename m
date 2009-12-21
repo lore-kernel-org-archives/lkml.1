@@ -1,164 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZLUPmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZLUOdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbZLUPmk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZLUPmj
+	id S1754388AbZLUOdv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 09:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZLUOdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:42:39 -0500
-Received: from host83.b4.nw.com.tr ([77.245.147.83]:52400 "EHLO
-	srv72999.trdns.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbZLUPmi convert rfc822-to-8bit (ORCPT
+	Mon, 21 Dec 2009 09:33:50 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:52191 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753257AbZLUOdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:42:38 -0500
-Reply-To: src-psikoteknikbelgesi@gmail.com
-Message-ID: <6bbbed8ec39bcc849e5869392baa74eb@gmail.com>
-From: "=?iso-8859-9?B?VFJBRt1LIFAuTQ==?=" 
-	<src-psikoteknikbelgesi@gmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Bilgi:
-Date: Mon, 21 Dec 2009 16:32:37 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
+	Mon, 21 Dec 2009 09:33:49 -0500
+Date: Mon, 21 Dec 2009 15:33:41 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Anders Grafstrom <anders.grafstrom@netinsight.net>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mtd: mtdoops: mtdoops works with kexec correctly
+Message-ID: <20091221153341.2bece1d3@marrow.netinsight.se>
+In-Reply-To: <20091221191254.089E.A69D9226@jp.fujitsu.com>
+References: <20091221191254.089E.A69D9226@jp.fujitsu.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SRC PSÝKOTEKNÝK MERKEZÝ 
-
-SRC ve PSÝKOTEKNÝK BELGELERÝ 31.12.2009 TARÝHÝNE KADAR SORULMAZ 01.01.2010 TARÝHÝNDEN SONRA TRAFÝKTE YAPILACAK UYGULAMALARDA 
-SRC VE PSÝKOTEKNÝK BELGESÝ BULUNDURMAYAN SÜRÜCÜLERE VE ARAÇ SAHÝPLERÝNE CEZAÝ ÝÞLEM UYGULANACAKTIR. 
-
-HER TÜRLÜ KAMYON, KAMYONET, OTOBÜS,MÝNÜBÜS,ÇEKÝCÝ, YARI RÖMORK, TANKER V.B. ARAÇLARI KULLANAN SÜRÜCÜLER, 31.12.2009 TARÝHÝNE KADAR SRC VE PSÝKOTEKNÝK BELGESÝ ALMAK ZORUNDADIRLAR.  (25.02.2003 EHLÝYETE VE SSK GÝRÝÞÝNE SAHÝP OLANLAR, SRC BELGESÝNÝ EÐÝTÝME VE SINAVA KATILMAKSIZIN DOÐRUDAN ALMA HAKKINA SAHÝPTÝRLER. 
-
- DÝKKAT!! SON MÜRACAAT TARÝHÝ 27.12.2009 
-
-
-SRC EÐÝTÝM; 
-
-25.02.2003 ÖNCESÝ EHLÝYETÝ VE SSK'SI OLMAYAN SÜRÜCÜLERÝNÝZ 28 SAAT'LÝK EÐÝTÝME VE BAKANLIÐIN AÇTIÐI SINAVA KATILIP %60 BAÞARI SAÐLAYIP BELGELERÝNÝ ALABÝLECEKLER, 
-
-
-(1) - (ÝÞVERENLERE) -31.12.2009 TARÝHÝ ÝTÝBARÝYLE ÞOFÖRLERÝNÝZÝN ÝÞLERÝNE DEVAM EDEBÝLMELERÝ ÝÇÝN MUTLAK SURETTE SRC VE PSÝKOTEKNÝK BELGELERÝ ÜZERÝNDE DURMALIDIRLAR. AKSÝ HALDE SÜRÜCÜ ARKADAÞA CEZAÝ ÝÞLEM UYGULANDIÐI GÝBÝ ARAÇTA BAÐLANACAKTIR. 
-
-(2) - (SÜRÜCÜ ARKADAÞLARA)-31.12.2009 TARÝHÝ ÝTÝBARÝYLE ÝÞVERENLER PSÝKOTEKNÝK BELGESÝ OLMAYAN SÜRÜCÜLERE ARAÇLARINI VEREMEYECEKLERÝ ÝÇÝN ÝÞÝ BIRAKMANIZ DAHÝ SÖZ KONUSU OLABÝLÝR, BU SEBEPTEN DOLAYI BÝRAN ÖNCE KAYDINIZI YAPTIRIP BELGENÝZÝ ALINIZ. 
-
-
-
-HATIRLATMA ! 
-YAPILACAK UYGULAMALARDA SRC VE PSÝKOTEKNÝK BELGESÝ BULUNDURMAMASI DURUMUNDA (FÝRMA'YA 5000YTL SÜRÜCÜ ARKADAÞLARA 250YTL) CEZAÝ ÝÞLEM UYGULANACAKTIR. 
-
-
-
-ÖNEMLÝ NOT LÜTFEN OKUYUN : 
-TRAFÝK KAZSINA KARIÞAN SÜRÜCÜNÜN PSÝKOTEKNÝK DEÐERLENDÝRME BELGESÝ YOK ÝSE SÝGORTA ÞÝRKETLERÝ TARAFINDAN HASAR ÖDEMESÝ YAPILMAMAKTADIR. 
-
-KISACASI SÜRÜCÜLERÝNÝZÝN BELGELERÝNÝN OLMAMASI DÝREKT OLARAK FÝRMANIZI ETKÝLEMEKTEDÝR. 
-
-PSÝKOTEKNÝK BELGESÝ NEDÝR? 
-
-Çalýþma psikolojisinin bir dalý olan psikoteknik deðerlendirme, bireyin belirli bir iþteki yeterliliðinin ortaya konmasý amacýyla, gerekli bedensel ve zihinsel özelliklerinin testler aracýlýðýyla ölçülmesidir. Baþka bir deyiþle psikoteknik deðerlendirme, bireyin belirli bir iþe uygun olup olmadýðýný anlamaya yönelik olarak tasarlanmýþ bir inceleme-deðerlendirme yöntemidir. 
-
-
-SRC BELGESÝ NEDÝR? 
-
-SRC Mesleki Yeterlilik belgesi; Ulaþtýrma Bakanlýðýnca firmalara kayýtlý araçlarý kullanan sürücülerin almasý Gereken zorunlu bir belgedir. 
-Sürücü (Src): Karayolunda motorlu bir aracý veya taþýtý sevk ve idare eden kiþiyi, ifade eder. 
-
-
-DENETÝM YAPACAK BÝRÝMLER; 
-
-ULAÞTIRMA BAKANLIÐINA BAÐLI 30 BÝN SÝVÝL MEMUR,JANDARMA TRAFÝK, 
-TRAFÝK POLÝSÝ,TRAFÝK ZABITASI 
------------------------------------------------------------------------------ 
-UYGULAMA 
-
-SÜRÜCÜLERDE PSÝKOTEKNÝK DEÐERLENDÝRME 
-
-Sürücülerin güvenli araç kullanmalarýný saðlayan zihinsel özelliklerinin (algý, dikkat, hafýza, muhakeme vb.); Psikomotor yetenek ve becerilerinin (tepki hýzý, göz, el, ayak koordinasyonu vb.); tutum-davranýþ, alýþkanlýk ve kiþilik özelliklerinin (risk alma, saldýrganlýk, sorumluluk, öz kontrol vb.) ölçülmesi ve sürücülük açýsýndan uygunluðu-yeterliliði hakkýnda bir sonuca varýlmasýdýr. 
-
-Standart, tarafsýz, Bilimsel, Deðerlendirme 
-
-Psikoteknik merkezimiz güler yüzlü personeli ve beþ ayrý þubesiyle müþteri odaklý Tarafsýz ,Standart ve Bilimsel kriterlere uygun olarak Psikoteknik deðerlendirme, Psikiyatri muayenesi ve sürücü davranýþ analiziyle sizlere hizmet vermektedir. 
-
-(GEÇ KALMADAN BELGELERÝNÝZÝ ALIN) 
-
-FÝRMANIZ ADINA KAYITLI ARAÇLARINIZ VAR ÝSE ARACINIZI KULLANAN SÜRÜCÜ ARKADAÞALARIN SRC VE PSÝKOTEKNÝK BELGESÝYLE TRAFÝÐE ÇIKILMASI ULAÞTIRMA BAKANLIÐI TARAFINDAN ZORUNLU KILINMIÞTIR. 
-
-
-YÖNETMELÝKLER 
-
-25.02.2004 tarih ve 25384 sayýlý resmi gazetede yayýnlanan KARAYOLU TAÞIMA YÖNETMELÝÐÝ 60. maddesi 'e' bendine göre profesyonel sürücülere Psikoteknik degerlendirme yapmaktadýr. Ayný yönetmeliðin 73 üncü maddesine göre bu deðerlendirmeyi yaptýrmayan sürücüleri çalýþtýran firmalar için para cezasý, yetki belgesinin iptali ile ceza koþullarý belirtilmiþtir. 
-
-
-ÝLGÝLÝ KANUN RESMÝ GAZETE'DE YAYINLANMIÞTIR. 
-
-25.02.2004 tarih ve 25384 sayýlý Resmi Gazete(KTY Aslý) 
-
-08.09.2004 tarih ve 25577 sayýlý Resmi Gazete(1.Deðiþiklik) 
-
-15.12.2004 tarih ve 25671 sayýlý Resmi Gazete(2.Deðiþiklik) 
-
-26.02.2005 tarih ve 25739 sayýlý Resmi Gazete(3.Deðiþiklik) 
-
-09.09. 2005tarih ve 25931 sayýlý Resmi Gazete(4.Deðiþiklik) 
-
-18.01.2006 tarihi ve 26053 sayýlý Resmi Gazete(5.Deðiþiklik) 
-
-
-SRC BELGESÝ VE PSÝKOTEKNÝK TEST YAPTIRMANIZ YASA GEREÐÝ ZORUNLUDUR 
-
-T.C Ulaþtýrma Bakanlýðý 4925 Sayýlý Karayolu Kanunu 
-
-Bu yazý T.C. ULAÞTIRMA BAKANLIÐI Resmi sitesinden alýnmýþtýr. 
-
-http://www.kugm.gov.tr/ 
-
-
-
-Not: Hafta Sonu Açýk Olmayan Psikoteknik Merkezlerimiz Denetimler Baþlayacaðýdan 
-
-Cumartesi ve Pazar Günleride Açýk Olup Hizmet Vermektedir. 
-
-
-Not:Sürücülerin merkezlerimizde daha rahat ve hýzlý bir þekilde testten geçebilmesi için 
-
-gelmeden önce mutlaka randevu alýnmasý gerekmektedir. 
-
-
-ÖNEMLÝ NOT: RANDEVUSUZ GELENLERE ÝÞLEM YAPILMAZ GELEN TÜM SÜRÜCÜ ARKADAÞLARIN RANDEVU ALMASI ZORUNLU. 
-
-
-GEREKLÝ EVRAKLAR; 
-
-
-Src Belgesi Gerkli evraklar: 2 Resim, Kimlik fotokopisi, Ehliyet fotokopisi 
-
-Psikoteknik Belgesi Gerkli evraklar: 3 Resim, Kimlik fotokopisi, Ehliyet fotokopisi 
-
-Not:Evraklarýnýzý hazýrladýktan sonra lütfen bizimle irtibata geçiniz. 
-
-
-Konu Hakkýnda Detaylý Bilgi'yi ve Randevunuzu 
-
-Müþteri Danýþmanýmýz 
-
-Lokman' Bey'den Alabilirsiniz. 
-
-
-
-ÝLETÝÞÝM : 12 SAAT ULAÞABÝLECEÐÝNÝZ ÝLGÝLÝ TELEFONLAR. 
-
-GSM : 0532.603.00.50 
-0554.979.32.93 
-0554.395.70.87 
-
-E-mail : 
-info@srcpsikoteknikmerkezi.com 
-lokman@srcpsikoteknikmerkezi.com 
-
-www.srcpsikoteknikmerkezi.com
-
-
+On Mon, 21 Dec 2009 19:20:35 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> commit 2e386e4ba(mtdoops: refactor as a kmsg_dumper) is very good patch.
+> but unfortunately it doesn't works with kexec and few embedded user need
+> to use kexec. there is no reason to don't implement it. it isn't so
+> hard.
+> 
+> FAQ
+> ---
+>  Q. Why KMSG_DUMP_OOPS is insufficient?
+>  A. Because crash_kexec() is called before KMSG_DUMP_OOPS if
+>     panic_on_oops==1.
+> 
+>  Q. Why do you move KMSG_DUMP_PANIC call place?
+>  A. Otherwise kmsg_dump() is called twice if kexec enabled.
+>     it's annoy.
+
+I think it would be better to describe these comments in text instead
+of as FAQs. Because of the --- it's also removed from the git log.
+Maybe something like
+
+	kmsg_dump: Dump on crash_kexec as well
+
+	crash_kexec gets called before kmsg_dump(KMSG_DUMP_OOPS) if
+	panic_on_oops is set, so the kernel log buffer is not stored
+	for this case.
+
+	This patch adds a KMSG_DUMP_KEXEC dump type which gets called
+	when crash_kexec() is invoked. To avoid getting double dumps,
+	the old KMSG_DUMP_PANIC is moved below crash_kexec(). The
+	mtdoops driver is modified to handle KMSG_DUMP_KEXEC in the
+	same way as a panic.
+
+
+Other than that, it looks fine to me. I've done basic testing against
+2.6.33-rc1, but unfortunately without kexec support.
+
+Acked-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+
+// Simon
 
