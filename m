@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZLULyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZLULzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbZLULyP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 06:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZLULyN
+	id S1756663AbZLULzI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 06:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbZLULzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 06:54:13 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:36504 "EHLO
+	Mon, 21 Dec 2009 06:55:06 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:53525 "EHLO
 	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753753AbZLULyM (ORCPT
+	with ESMTP id S1756608AbZLULzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 06:54:12 -0500
+	Mon, 21 Dec 2009 06:55:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=WMHpP56BLmpOQz3qwO3AFLL6atf24BW05ybeLq7DdZ2P68mwO3fqsyH5WuULp3IQ95
-         bXyv3/iPmImd/chRbz1GP3sFcQeWD9suL4dbHn5g0iqThjn/W16dwrNmPwSm7tazUP4H
-         sleFTebxtoXUfZqmBmuZCQD8mBE5DeHTQlbN0=
-Message-ID: <4B2F629F.1000401@gmail.com>
-Date: Mon, 21 Dec 2009 19:57:19 +0800
+        b=Fjlt4tErSjDh0h093/W8JDZ31yypeLy/LRZTH05eaMdasxkX3ob7vvsJ5FGq3tEAAT
+         QUCGzRjgi/RqGNZl4eqfIZXbWsRweohSk6JUR3hYk5KQGBnprtV6MiVHl8zw4IhkjwQo
+         KtX7RHbtEdy1yJljFgMYIlkOamiXK0XoV17B0=
+Message-ID: <4B2F62D3.6020309@gmail.com>
+Date: Mon, 21 Dec 2009 19:58:11 +0800
 From: Liuwenyi <qingshenlwy@gmail.com>
 Reply-To: qingshenlwy@gmail.com
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-To: tytso@mit.edu, adilger@sun.com, viro@zeniv.linux.org.uk, jmorris@namei.org,
-       joel.becker@oracle.com, serue@us.ibm.com, hch@lst.de,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       onlyflyer@gmail.com, strongzgy@gmail.com
-Subject: [PATCHv2 05/12]posix_acl: Add the check items
+To: viro@zeniv.linux.org.uk, hch@lst.de, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, strongzgy@gmail.com, onlyflyer@gmail.com
+Subject: [PATCHv2 06/12]posix_acl: Add the check items
 Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,41 +37,80 @@ Including nullpointer check and PTR_ERR check.
 
 ---
 Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Andreas Dilger <adilger@sun.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: James Morris <jmorris@namei.org>
-Cc: Joel Becker <joel.becker@oracle.com>
-Cc: Serge Hallyn <serue@us.ibm.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
 Cc: Christoph Hellwig <hch@lst.de>
-Cc: linux-ext4@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 
 ---
-diff --git a/fs/ext4/acl.c b/fs/ext4/acl.c
-index 8a2a29d..aeb41ca 100644
---- a/fs/ext4/acl.c
-+++ b/fs/ext4/acl.c
-@@ -430,13 +430,11 @@ ext4_xattr_set_acl(struct dentry *dentry, const
-char *name, const void *value,
+diff --git a/fs/generic_acl.c b/fs/generic_acl.c
+index 5545803..5d88218 100644
+--- a/fs/generic_acl.c
++++ b/fs/generic_acl.c
+@@ -68,6 +68,7 @@ generic_acl_set(struct dentry *dentry, const char
+*name, const void *value,
+struct inode *inode = dentry->d_inode;
+struct posix_acl *acl = NULL;
+int error;
++ mode_t mode;
 
-if (value) {
-acl = posix_acl_from_xattr(value, size);
-- if (IS_ERR(acl))
-- return PTR_ERR(acl);
-- else if (acl) {
+if (strcmp(name, "") != 0)
+return -EINVAL;
+@@ -80,32 +81,31 @@ generic_acl_set(struct dentry *dentry, const char
+*name, const void *value,
+if (IS_ERR(acl))
+return PTR_ERR(acl);
+}
+- if (acl) {
+- mode_t mode;
+
 - error = posix_acl_valid(acl);
 - if (error)
-- goto release_and_out;
-- }
-+
 + error = posix_acl_valid(acl);
 + if (error)
-+ goto release_and_out;
++ goto failed;
 +
-} else
-acl = NULL;
-
++ switch (type) {
++ case ACL_TYPE_ACCESS:
++ mode = inode->i_mode;
++ error = posix_acl_equiv_mode(acl, &mode);
++ if (error < 0)
+goto failed;
+- switch (type) {
+- case ACL_TYPE_ACCESS:
+- mode = inode->i_mode;
+- error = posix_acl_equiv_mode(acl, &mode);
+- if (error < 0)
+- goto failed;
+- inode->i_mode = mode;
+- if (error == 0) {
+- posix_acl_release(acl);
+- acl = NULL;
+- }
+- break;
+- case ACL_TYPE_DEFAULT:
+- if (!S_ISDIR(inode->i_mode)) {
+- error = -EINVAL;
+- goto failed;
+- }
+- break;
++ inode->i_mode = mode;
++ if (error == 0) {
++ posix_acl_release(acl);
++ acl = NULL;
+}
++ break;
++ case ACL_TYPE_DEFAULT:
++ if (!S_ISDIR(inode->i_mode)) {
++ error = -EINVAL;
++ goto failed;
++ }
++ break;
+}
++
+set_cached_acl(inode, type, acl);
+error = 0;
+failed:
 
 -- 
 Best Regards,
