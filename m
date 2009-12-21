@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZLURFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZLURGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZLURFr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 12:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbZLURFp
+	id S1756883AbZLURGR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 12:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbZLURGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 12:05:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24686 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751415AbZLURFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 12:05:44 -0500
-Message-ID: <4B2FAAC2.4080007@redhat.com>
-Date: Mon, 21 Dec 2009 19:05:06 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 21 Dec 2009 12:06:09 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:35685 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756907AbZLURGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 12:06:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=lxuA3gir5Ae/6hscJKBPFQ7Ttq/9yKohyzzHET0pBWZmu3nI42IUfcODb3YABVtPXc
+         bsCtaRomuSyzP6sbneFunG54+VzB/k7L6dZ9uNY5enZb/zZRVk9miIfXw/wS//6zSr6s
+         YzTw1oKcOJDYiwf3mYM1x48URI+piY3s6yWho=
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com> <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA4F2.8000401@redhat.com> <4B2FA8D4.3050206@gmail.com>
-In-Reply-To: <4B2FA8D4.3050206@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091221164619.GA27521@suse.de>
+References: <1261413668-30145-1-git-send-email-vapier@gentoo.org> 
+	<20091221164619.GA27521@suse.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 21 Dec 2009 12:05:40 -0500
+Message-ID: <8bd0f97a0912210905s1a9512ffp45bf77555b3685df@mail.gmail.com>
+Subject: Re: [PATCH] Driver core: export platform_device_register_data as a 
+	GPL symbol
+To: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/21/2009 06:56 PM, Gregory Haskins wrote:
->> I'm working on disappearing EOI exits on older hardware as well.  Same
->> idea as the old TPR patching, without most of the magic.
->>
->>      
-> While I applaud any engineering effort that results in more optimal
-> execution, if you are talking about what we have discussed in the past
-> its not quite in the same league as my proposal.
->    
+On Mon, Dec 21, 2009 at 11:46, Greg KH wrote:
+> On Mon, Dec 21, 2009 at 11:41:08AM -0500, Mike Frysinger wrote:
+>> This allows MFD's to register/bind drivers for their sub devices while
+>> still being compiled as a module.
+>
+> Is this a problem that we need to get resolved in .33, or older kernels,
+> or just for .34?
 
-I don't doubt this for a minute.
+the functionality is in place now, so it could be used in .33.  but it
+isnt that big of a deal to simply say the mfd core cant be built as a
+module right now.
 
-> You are talking about the ability to optimize the final EOI if there are
-> no pending interrupts remaining, right?  The problem with this approach
-> is it addresses the wrong side of the curve: That is, it optimizes the
-> code as its about to go io-idle.  You still have to take an extra exit
-> for each injection during the heat of battle, which is when you actually
-> need it most.
->    
-
-No, it's completely orthogonal.  An interrupt is injected, the handler 
-disables further interrupts and EOIs, then schedules the rest of the 
-handling code.  So long as there as packets in the ring interrupts won't 
-be enabled and hence there won't be any reinjections.
-
-Different interrupt sources still need different interrupts, but as all 
-of your tests have been single-interface, this can't be the reason for 
-your performance.
-
--- 
-error compiling committee.c: too many arguments to function
-
+so, it'd be nice for .33, but if it's too much hassle, .34 is OK.
+-mike
