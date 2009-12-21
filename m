@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZLUPWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZLUPXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbZLUPWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 10:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZLUPWr
+	id S1755562AbZLUPXX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 10:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZLUPXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 10:22:47 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:24872
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754284AbZLUPWn (ORCPT
+	Mon, 21 Dec 2009 10:23:21 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:61049 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754284AbZLUPXT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 10:22:43 -0500
-X-SpamScore: 1
-X-BigFish: VPS1(zzab9bhzz1202hzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KV0DD4-02-36K-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
-Subject: [PATCH 2/2] x86/amd-iommu: Fix initialization failure panic
-Date: Mon, 21 Dec 2009 16:22:09 +0100
-Message-ID: <1261408929-6261-3-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.5.4
-In-Reply-To: <1261408929-6261-1-git-send-email-joerg.roedel@amd.com>
-References: <1261408929-6261-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 21 Dec 2009 15:22:13.0413 (UTC) FILETIME=[5F2B8550:01CA8251]
+	Mon, 21 Dec 2009 10:23:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=lvhzZ1daf1sAJm8eVahV8LV/mM4vAAWsfarVUr+C4bKxsIFyS7XVZNN74++KgQ+4pg
+         Ocyr2mHyDOnVhMPWLNfov/LVRCssTk1ZtsXaLAVQzzEstwpeM+vOBklZTlOcmEvP8/D7
+         dKle7R+Q3WOeVvi52+UaXL0pP3gCn8cmex2Jk=
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+In-Reply-To: <1261387359-1933-1-git-send-email-wenji.huang@oracle.com>
+References: <1261387359-1933-1-git-send-email-wenji.huang@oracle.com>
+Date: Mon, 21 Dec 2009 16:23:17 +0100
+X-Google-Sender-Auth: 12fca45567e8cd9c
+Message-ID: <520f0cf10912210723j1ac91183n3d7970b96b95ef23@mail.gmail.com>
+Subject: Re: [PATCH] perf: fix incorrect return value for else case
+From: John Kacur <jkacur@redhat.com>
+To: Wenji Huang <wenji.huang@oracle.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, mingo@elte.hu,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The assumption that acpi_table_parse passes the return value
-of the hanlder function to the caller proved wrong
-recently. The return value of the handler function is
-totally ignored. This makes the initialization code for AMD
-IOMMU buggy in a way that could cause a kernel panic on
-initialization. This patch fixes the issue in the AMD IOMMU
-driver.
+On Mon, Dec 21, 2009 at 10:22 AM, Wenji Huang <wenji.huang@oracle.com> wrote:
+> Return original cmd instead of adding prefix.
+>
+> Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+> ---
+>  tools/perf/builtin-help.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/tools/perf/builtin-help.c b/tools/perf/builtin-help.c
+> index 9f810b1..ca77df5 100644
+> --- a/tools/perf/builtin-help.c
+> +++ b/tools/perf/builtin-help.c
+> @@ -317,7 +317,7 @@ static const char *cmd_to_page(const char *perf_cmd)
+>        else if (is_perf_command(perf_cmd))
+>                return prepend("perf-", perf_cmd);
+>        else
+> -               return prepend("perf-", perf_cmd);
+> +               return perf_cmd;
+>  }
+>
+>  static void setup_man_path(void)
+> --
+> 1.5.6
 
-Cc: stable@kernel.org
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu_init.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+Sorry - I believe we should NAK this patch.
+It would turn the following
 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index 1dca9c3..fb490ce 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -138,6 +138,11 @@ int amd_iommus_present;
- bool amd_iommu_np_cache __read_mostly;
- 
- /*
-+ * Set to true if ACPI table parsing and hardware intialization went properly
-+ */
-+static bool amd_iommu_initialized;
-+
-+/*
-  * List of protection domains - used during resume
-  */
- LIST_HEAD(amd_iommu_pd_list);
-@@ -929,6 +934,8 @@ static int __init init_iommu_all(struct acpi_table_header *table)
- 	}
- 	WARN_ON(p != end);
- 
-+	amd_iommu_initialized = true;
-+
- 	return 0;
- }
- 
-@@ -1263,6 +1270,9 @@ static int __init amd_iommu_init(void)
- 	if (acpi_table_parse("IVRS", init_iommu_all) != 0)
- 		goto free;
- 
-+	if (!amd_iommu_initialized)
-+		goto free;
-+
- 	if (acpi_table_parse("IVRS", init_memory_definitions) != 0)
- 		goto free;
- 
--- 
-1.6.5.4
+./perf nonsuchcmd --help
+No manual entry for perf-nonsuchcmd
 
+into
 
+./perf nonsuchcmd --help
+No manual entry for nonsuchcmd
+
+The former is correct, the name of the man page includes the prefix "perf-"
+
+NAK
+
+(cc-ing Frederic in case he sees it differently)
+
+Thank You
+
+John Kacur
