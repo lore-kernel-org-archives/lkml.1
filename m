@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbZLUMC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZLUMDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbZLUMC2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 07:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbZLUMC1
+	id S1756694AbZLUMDP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 07:03:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZLUMDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 07:02:27 -0500
-Received: from mtagate7.uk.ibm.com ([194.196.100.167]:35513 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbZLUMC1 (ORCPT
+	Mon, 21 Dec 2009 07:03:13 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:64525 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753032AbZLUMDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 07:02:27 -0500
-Date: Mon, 21 Dec 2009 13:02:24 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: kprobes: get rid of distinct type warning
-Message-ID: <20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
-References: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com>
- <20091221111759.GA12670@in.ibm.com>
+	Mon, 21 Dec 2009 07:03:12 -0500
+Date: Mon, 21 Dec 2009 04:03:06 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Andrey Rahmatullin <wrar@altlinux.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
+       netdev@vger.kernel.org
+Subject: Re: via_rhine kernel crashes in 2.6.32
+In-Reply-To: <20091220200343.GA5427@wrars-comp.wrarsdomain>
+Message-ID: <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de>
+References: <20091219111206.GA5307@wrars-comp.wrarsdomain> <20091220200343.GA5427@wrars-comp.wrarsdomain>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221111759.GA12670@in.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/8r5b30UFt61xfAROiDegeZ3v5yjjj8AR1+Wy
+ YhQskUg/YekMPHWDekSkKMv7iiBmHLNprjBx5UOcccYX0OX2//
+ M25Rz7/0K4DGoVMI7tBFA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 04:47:59PM +0530, Ananth N Mavinakayanahalli wrote:
-> On Mon, Dec 21, 2009 at 11:15:49AM +0100, Heiko Carstens wrote:
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > Every time I see this:
-> > 
-> > kernel/kprobes.c: In function 'register_kretprobe':
-> > kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
-> > 
-> > I'm wondering if something changed in common code and we need to do
-> > something for s390. Apparently that's not the case.
-> > Let's get rid of this annoying warning.
-> > 
-> > Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> 
-> Thanks Heiko. I'd tested this on x86 and powerpc and neither throws the
-> warning. No wonder I missed it.
+[netdev Cc'ed]
 
-Of course the patch wouldn't help for CONFIG_PREEMPT and !CONFIG_SMP since
-we would have a comparison of a signed and and unsigned value again *sigh*.
+On Mon, 21 Dec 2009 at 01:03, Andrey Rahmatullin wrote:
+> Here are the proper screenshots from 2.6.33-rc1:
+> http://wrar.name/temp/P1010724.JPG
+> http://wrar.name/temp/P1010725.JPG
 
-So here's an updated version that should always work:
+Wow, I had to rotate my laptop here. In you first posting [0] you said you 
+"upgraded to .32" but had crashes in .30 too. What was the last working 
+kernel?
 
-Subject: [PATCH] kprobes: get rid of distinct type warning
+In the .jpgs one can see something along the lines of 
+schedule_timeout, napi_disable, rhine_tx_timeout - the only patch I could 
+find touching these things [1] altogether is rather old, from 2.6.24. Is 
+2.6.29 working for you? 
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Christian.
 
-Every time I see this:
+[0] http://lkml.org/lkml/2009/12/19/36
+[1] http://lists.openwall.net/netdev/2007/08/28/13
+-- 
+BOFH excuse #19:
 
-kernel/kprobes.c: In function 'register_kretprobe':
-kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
-
-I'm wondering if something changed in common code and we need to do
-something for s390. Apparently that's not the case.
-Let's get rid of this annoying warning.
-
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -1035,7 +1035,7 @@ int __kprobes register_kretprobe(struct 
- 	/* Pre-allocate memory for max kretprobe instances */
- 	if (rp->maxactive <= 0) {
- #ifdef CONFIG_PREEMPT
--		rp->maxactive = max(10, 2 * num_possible_cpus());
-+		rp->maxactive = max_t(unsigned int, 10, 2*num_possible_cpus());
- #else
- 		rp->maxactive = num_possible_cpus();
- #endif
+floating point processor overflow
