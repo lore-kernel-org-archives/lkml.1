@@ -1,162 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZLUDDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZLUKuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756421AbZLUDDN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 22:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZLUDDM
+	id S1755841AbZLUKuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 05:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZLUKuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 22:03:12 -0500
-Received: from mga10.intel.com ([192.55.52.92]:20386 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752563AbZLUDDM (ORCPT
+	Mon, 21 Dec 2009 05:50:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:59034 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754616AbZLUKuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Dec 2009 22:03:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,427,1257148800"; 
-   d="scan'208";a="524943841"
-Date: Mon, 21 Dec 2009 05:38:29 -0500
-From: "Youquan,Song" <youquan.song@linux.intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
-       chaohong.guo@intel.com, youquan.song@intel.com
-Subject: [Resend PATCH]crypto: Fix complain about lack test for internal used algorithm
-Message-ID: <20091221103829.GA22144@youquan-linux.bj.intel.com>
-References: <20091211034711.GA2773@suse.de> <200912102013.59329.david-b@pacbell.net> <20091211043849.GA18007@suse.de> <1260509771.12346.138.camel@localhost> <20091211132321.GA17228@youquan-linux.bj.intel.com> <20091211060448.GA28704@gondor.apana.org.au> <20091219094043.GA23639@youquan-linux.bj.intel.com> <20091219022917.GA19431@gondor.apana.org.au> <20091219150736.GA5368@youquan-linux.bj.intel.com> <20091219094240.GA21546@gondor.apana.org.au>
-Mime-Version: 1.0
+	Mon, 21 Dec 2009 05:50:15 -0500
+Date: Mon, 21 Dec 2009 11:50:10 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] [0/11] SYSCTL: Use RCU to avoid races with string
+	sysctls
+Message-ID: <20091221105010.GC25372@basil.fritz.box>
+References: <b6fcc0a0912202357g269722f2ra2cb136396e8186e@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091219094240.GA21546@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <b6fcc0a0912202357g269722f2ra2cb136396e8186e@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When load aesni-intel and ghash_clmulni-intel driver,kernel will complain no
- test for some internal used algorithm.
-The strange information as following:
+On Mon, Dec 21, 2009 at 09:57:32AM +0200, Alexey Dobriyan wrote:
+> > new = alloc_rcu_string(MAX_GLOBAL_SIZE, GFP_KERNEL);
+> 
+> I think adding failure mode is not right.
+> We can get away with per-sysctl-string spinlock and not introduce yet
+> another API.
 
-alg: No test for __aes-aesni (__driver-aes-aesni)
-alg: No test for __ecb-aes-aesni (__driver-ecb-aes-aesni)
-alg: No test for __cbc-aes-aesni (__driver-cbc-aes-aesni)
-alg: No test for __ecb-aes-aesni (cryptd(__driver-ecb-aes-aesni)
-alg: No test for __ghash (__ghash-pclmulqdqni)
-alg: No test for __ghash (cryptd(__ghash-pclmulqdqni))
+You mean when running out of memory here?
 
-This patch add NULL test entries for these algorithm and driver.  
+When this runs out of memory the system will be not usable anyways
+and on the last legs and likely in a deadly swap storm. 
 
-Signed-off-by: Youquan, Song <youquan.song@intel.com>
-Signed-off-by: Ying, Huang <ying.huang@intel.com>
----
+-Andi
 
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index f70ce52..e934eca 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -1477,9 +1477,54 @@ static int alg_test_cprng(const struct alg_test_desc *desc, const char *driver,
- 	return err;
- }
- 
-+static int alg_test_null(const struct alg_test_desc *desc,
-+			     const char *driver, u32 type, u32 mask)
-+{
-+	return 0;
-+}
-+
- /* Please keep this list sorted by algorithm name. */
- static const struct alg_test_desc alg_test_descs[] = {
- 	{
-+		.alg = "__driver-cbc-aes-aesni",
-+		.test = alg_test_null,
-+		.suite = {
-+			.cipher = {
-+				.enc = {
-+					.vecs = NULL,
-+					.count = 0
-+				},
-+				.dec = {
-+					.vecs = NULL,
-+					.count = 0
-+				}
-+			}
-+		}
-+	}, {
-+		.alg = "__driver-ecb-aes-aesni",
-+		.test = alg_test_null,
-+		.suite = {
-+			.cipher = {
-+				.enc = {
-+					.vecs = NULL,
-+					.count = 0
-+				},
-+				.dec = {
-+					.vecs = NULL,
-+					.count = 0
-+				}
-+			}
-+		}
-+	}, {
-+		.alg = "__ghash-pclmulqdqni",
-+		.test = alg_test_null,
-+		.suite = {
-+			.hash = {
-+				.vecs = NULL,
-+				.count = 0
-+			}
-+		}
-+	}, {
- 		.alg = "ansi_cprng",
- 		.test = alg_test_cprng,
- 		.fips_allowed = 1,
-@@ -1623,6 +1668,30 @@ static const struct alg_test_desc alg_test_descs[] = {
- 			}
- 		}
- 	}, {
-+		.alg = "cryptd(__driver-ecb-aes-aesni)",
-+		.test = alg_test_null,
-+		.suite = {
-+			.cipher = {
-+				.enc = {
-+					.vecs = NULL,
-+					.count = 0
-+				},
-+				.dec = {
-+					.vecs = NULL,
-+					.count = 0
-+				}
-+			}
-+		}
-+	}, {
-+		.alg = "cryptd(__ghash-pclmulqdqni)",
-+		.test = alg_test_null,
-+		.suite = {
-+			.hash = {
-+				.vecs = NULL,
-+				.count = 0
-+			}
-+		}
-+	}, {
- 		.alg = "ctr(aes)",
- 		.test = alg_test_skcipher,
- 		.fips_allowed = 1,
-@@ -1669,6 +1738,21 @@ static const struct alg_test_desc alg_test_descs[] = {
- 			}
- 		}
- 	}, {
-+		.alg = "ecb(__aes-aesni)",
-+		.test = alg_test_null,
-+		.suite = {
-+			.cipher = {
-+				.enc = {
-+					.vecs = NULL,
-+					.count = 0
-+				},
-+				.dec = {
-+					.vecs = NULL,
-+					.count = 0
-+				}
-+			}
-+		}
-+	}, {
- 		.alg = "ecb(aes)",
- 		.test = alg_test_skcipher,
- 		.fips_allowed = 1,
+-- 
+ak@linux.intel.com -- Speaking for myself only.
