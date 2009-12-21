@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZLUBVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbZLUBUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZLUBVt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Dec 2009 20:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbZLUBUd
+	id S1756416AbZLUBUf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Dec 2009 20:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbZLUBU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Dec 2009 20:20:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37705 "EHLO
+	Sun, 20 Dec 2009 20:20:29 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37712 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756364AbZLUBU2 (ORCPT
+	with ESMTP id S1756354AbZLUBU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 20 Dec 2009 20:20:28 -0500
 From: Andi Kleen <andi@firstfloor.org>
@@ -15,155 +15,75 @@ References: <20091221220.243954235@firstfloor.org>
 In-Reply-To: <20091221220.243954235@firstfloor.org>
 To: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
        ebiederm@xmission.com
-Subject: [PATCH] [3/11] SYSCTL: Add proc_rcu_string to manage sysctls using rcu strings
-Message-Id: <20091221012024.A0828B158A@basil.firstfloor.org>
-Date: Mon, 21 Dec 2009 02:20:24 +0100 (CET)
+Subject: [PATCH] [4/11] SYSCTL: Use RCU strings for core_pattern sysctl
+Message-Id: <20091221012025.A2FA2B158A@basil.firstfloor.org>
+Date: Mon, 21 Dec 2009 02:20:25 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add a helper to use the new rcu strings for managing access
-to text sysctls. Conversions will be in follow-on patches.
-
-An alternative would be to use seqlocks here, but RCU seemed
-cleaner.
+As a bonus this removes one use of the BKL.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/sysctl.h |    2 +
- kernel/sysctl.c        |   66 +++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/sysctl_check.c  |    1 
- 3 files changed, 69 insertions(+)
+ fs/exec.c       |    9 ++++-----
+ kernel/sysctl.c |    6 +++---
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.33-rc1-ak/include/linux/sysctl.h
+Index: linux-2.6.33-rc1-ak/fs/exec.c
 ===================================================================
---- linux-2.6.33-rc1-ak.orig/include/linux/sysctl.h
-+++ linux-2.6.33-rc1-ak/include/linux/sysctl.h
-@@ -969,6 +969,8 @@ typedef int proc_handler (struct ctl_tab
+--- linux-2.6.33-rc1-ak.orig/fs/exec.c
++++ linux-2.6.33-rc1-ak/fs/exec.c
+@@ -62,7 +62,7 @@
+ #include "internal.h"
  
- extern int proc_dostring(struct ctl_table *, int,
- 			 void __user *, size_t *, loff_t *);
-+extern int proc_rcu_string(struct ctl_table *, int,
-+			 void __user *, size_t *, loff_t *);
- extern int proc_dointvec(struct ctl_table *, int,
- 			 void __user *, size_t *, loff_t *);
- extern int proc_dointvec_minmax(struct ctl_table *, int,
+ int core_uses_pid;
+-char core_pattern[CORENAME_MAX_SIZE] = "core";
++char *core_pattern = "core";
+ unsigned int core_pipe_limit;
+ int suid_dumpable = 0;
+ 
+@@ -1825,12 +1825,11 @@ void do_coredump(long signr, int exit_co
+ 	clear_thread_flag(TIF_SIGPENDING);
+ 
+ 	/*
+-	 * lock_kernel() because format_corename() is controlled by sysctl, which
+-	 * uses lock_kernel()
++	 * Protect corename by RCU vs proc_rcu_string()
+ 	 */
+- 	lock_kernel();
++	rcu_read_lock();
+ 	ispipe = format_corename(corename, signr);
+-	unlock_kernel();
++	rcu_read_unlock();
+ 
+ 	if ((!ispipe) && (cprm.limit < binfmt->min_coredump))
+ 		goto fail_unlock;
 Index: linux-2.6.33-rc1-ak/kernel/sysctl.c
 ===================================================================
 --- linux-2.6.33-rc1-ak.orig/kernel/sysctl.c
 +++ linux-2.6.33-rc1-ak/kernel/sysctl.c
-@@ -50,6 +50,7 @@
- #include <linux/ftrace.h>
- #include <linux/slow-work.h>
- #include <linux/perf_event.h>
-+#include <linux/rcustring.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -2016,6 +2017,60 @@ static int _proc_do_string(void* data, i
- }
- 
- /**
-+ * proc_rcu_string - sysctl string with rcu protection
-+ * @table: the sysctl table
-+ * @write: %TRUE if this is a write to the sysctl file
-+ * @buffer: the user buffer
-+ * @lenp: the size of the user buffer
-+ * @ppos: file position
-+ *
-+ * Handle a string sysctl similar to proc_dostring.
-+ * The main difference is that the data pointer in the table
-+ * points to a pointer to a string. The string should be initially
-+ * pointing to a statically allocated (as a C object, not on the heap)
-+ * default. When it is replaced old uses will be protected by
-+ * RCU. The reader should use rcu_read_lock()/unlock() or
-+ * access_rcu_string().
-+ */
-+int proc_rcu_string(struct ctl_table *table, int write,
-+		void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	int ret;
-+
-+	if (write) {
-+		/* protect writers against each other */
-+		static DEFINE_MUTEX(rcu_string_mutex);
-+		char *old;
-+		char *new;
-+
-+		new = alloc_rcu_string(table->maxlen, GFP_KERNEL);
-+		if (!new)
-+			return -ENOMEM;
-+		mutex_lock(&rcu_string_mutex);
-+		old = *(char **)(table->data);
-+		strcpy(new, old);
-+		ret = _proc_do_string(new, table->maxlen, write, buffer, lenp, ppos);
-+		rcu_assign_pointer(*(char **)(table->data), new);
-+		/*
-+		 * For the first initialization allow constant strings.
-+		 */
-+		if (!kernel_address((unsigned long)old))
-+			free_rcu_string(old);
-+		mutex_unlock(&rcu_string_mutex);
-+	} else {
-+		char *str;
-+
-+		str = access_rcu_string(*(char **)(table->data), table->maxlen,
-+					GFP_KERNEL);
-+		if (!str)
-+			return -ENOMEM;
-+		ret = _proc_do_string(str, table->maxlen, write, buffer, lenp, ppos);
-+		kfree(str);
-+	}
-+	return ret;
-+}
-+
-+/**
-  * proc_dostring - read a string sysctl
-  * @table: the sysctl table
-  * @write: %TRUE if this is a write to the sysctl file
-@@ -2030,6 +2085,10 @@ static int _proc_do_string(void* data, i
-  * and a newline '\n' is added. It is truncated if the buffer is
-  * not large enough.
-  *
-+ * WARNING: this should be only used for read only strings
-+ * or when you have a wrapper with special locking. Otherwise
-+ * use proc_rcu_string to avoid races with the consumer.
-+ *
-  * Returns 0 on success.
-  */
- int proc_dostring(struct ctl_table *table, int write,
-@@ -2614,6 +2673,12 @@ int proc_dostring(struct ctl_table *tabl
- 	return -ENOSYS;
- }
- 
-+int proc_rcu_string(struct ctl_table *table, int write,
-+		  void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+
- int proc_dointvec(struct ctl_table *table, int write,
- 		  void __user *buffer, size_t *lenp, loff_t *ppos)
- {
-@@ -2670,6 +2735,7 @@ EXPORT_SYMBOL(proc_dointvec_minmax);
- EXPORT_SYMBOL(proc_dointvec_userhz_jiffies);
- EXPORT_SYMBOL(proc_dointvec_ms_jiffies);
- EXPORT_SYMBOL(proc_dostring);
-+EXPORT_SYMBOL(proc_rcu_string);
- EXPORT_SYMBOL(proc_doulongvec_minmax);
- EXPORT_SYMBOL(proc_doulongvec_ms_jiffies_minmax);
- EXPORT_SYMBOL(register_sysctl_table);
-Index: linux-2.6.33-rc1-ak/kernel/sysctl_check.c
-===================================================================
---- linux-2.6.33-rc1-ak.orig/kernel/sysctl_check.c
-+++ linux-2.6.33-rc1-ak/kernel/sysctl_check.c
-@@ -131,6 +131,7 @@ int sysctl_check_table(struct nsproxy *n
- 				set_fail(&fail, table, "Directory with extra2");
- 		} else {
- 			if ((table->proc_handler == proc_dostring) ||
-+			    (table->proc_handler == proc_rcu_string) ||
- 			    (table->proc_handler == proc_dointvec) ||
- 			    (table->proc_handler == proc_dointvec_minmax) ||
- 			    (table->proc_handler == proc_dointvec_jiffies) ||
+@@ -75,7 +75,7 @@ extern int sysctl_oom_dump_tasks;
+ extern int max_threads;
+ extern int core_uses_pid;
+ extern int suid_dumpable;
+-extern char core_pattern[];
++extern char *core_pattern;
+ extern unsigned int core_pipe_limit;
+ extern int pid_max;
+ extern int min_free_kbytes;
+@@ -399,10 +399,10 @@ static struct ctl_table kern_table[] = {
+ 	},
+ 	{
+ 		.procname	= "core_pattern",
+-		.data		= core_pattern,
++		.data		= &core_pattern,
+ 		.maxlen		= CORENAME_MAX_SIZE,
+ 		.mode		= 0644,
+-		.proc_handler	= proc_dostring,
++		.proc_handler	= proc_rcu_string,
+ 	},
+ 	{
+ 		.procname	= "core_pipe_limit",
