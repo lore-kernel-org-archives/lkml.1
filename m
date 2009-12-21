@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZLUMDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZLUMBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbZLUMDP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 07:03:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZLUMDN
+	id S1756553AbZLUMBp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 07:01:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZLUMBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 07:03:13 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:64525 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753032AbZLUMDM (ORCPT
+	Mon, 21 Dec 2009 07:01:44 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:62376 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbZLUMBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 07:03:12 -0500
-Date: Mon, 21 Dec 2009 04:03:06 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Andrey Rahmatullin <wrar@altlinux.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
-       netdev@vger.kernel.org
-Subject: Re: via_rhine kernel crashes in 2.6.32
-In-Reply-To: <20091220200343.GA5427@wrars-comp.wrarsdomain>
-Message-ID: <alpine.DEB.2.01.0912210352200.3483@bogon.housecafe.de>
-References: <20091219111206.GA5307@wrars-comp.wrarsdomain> <20091220200343.GA5427@wrars-comp.wrarsdomain>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Mon, 21 Dec 2009 07:01:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Q+Kbqjj/A/dpIHKwNZ0VRxf16phg1RFPEyh1X78wtImv3yqmSWRzd4E6G15i8j0nIL
+         6kjo00DBFqesyUn430Hz8Cldg3LxJZg5ZvIyBcjxmbw3xtE6euWChYoMgSd4lW0LDT3Q
+         cHYa88jzqLiDVbLUH2N9jXbhIvAcSdGXjNNsQ=
+Message-ID: <4B2F6407.4060805@gmail.com>
+Date: Mon, 21 Dec 2009 20:03:19 +0800
+From: Liuwenyi <qingshenlwy@gmail.com>
+Reply-To: qingshenlwy@gmail.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/8r5b30UFt61xfAROiDegeZ3v5yjjj8AR1+Wy
- YhQskUg/YekMPHWDekSkKMv7iiBmHLNprjBx5UOcccYX0OX2//
- M25Rz7/0K4DGoVMI7tBFA==
+To: aelder@sgi.com, xfs-masters@oss.sgi.com, hch@lst.de,
+       viro@zeniv.linux.org.uk, sandeen@sandeen.net, joel.becker@oracle.com,
+       xfs@oss.sgi.com, linux-kernel@vger.kernel.org, strongzgy@gmail.com,
+       onlyflyer@gmail.com
+Subject: [PATCHv2 12/12]posix_acl: Add the check items
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[netdev Cc'ed]
+move the ACL validation check in to fs/posix_acl.c.
+Including nullpointer check and PTR_ERR check.
 
-On Mon, 21 Dec 2009 at 01:03, Andrey Rahmatullin wrote:
-> Here are the proper screenshots from 2.6.33-rc1:
-> http://wrar.name/temp/P1010724.JPG
-> http://wrar.name/temp/P1010725.JPG
+---
+Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
+Cc: Alex Elder <aelder@sgi.com>
+Cc: xfs-masters@oss.sgi.com
+Cc :Christoph Hellwig <hch@lst.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Eric Sandeen <sandeen@sandeen.net>
+Cc: Joel Becker <joel.becker@oracle.com>
+Cc: xfs@oss.sgi.com
+Cc: linux-kernel@vger.kernel.org
 
-Wow, I had to rotate my laptop here. In you first posting [0] you said you 
-"upgraded to .32" but had crashes in .30 too. What was the last working 
-kernel?
+---
+diff --git a/fs/xfs/linux-2.6/xfs_acl.c b/fs/xfs/linux-2.6/xfs_acl.c
+index 2512125..3de2533 100644
+--- a/fs/xfs/linux-2.6/xfs_acl.c
++++ b/fs/xfs/linux-2.6/xfs_acl.c
+@@ -392,17 +392,6 @@ xfs_xattr_acl_set(struct dentry *dentry, const char
+*name,
+goto set_acl;
 
-In the .jpgs one can see something along the lines of 
-schedule_timeout, napi_disable, rhine_tx_timeout - the only patch I could 
-find touching these things [1] altogether is rather old, from 2.6.24. Is 
-2.6.29 working for you? 
+acl = posix_acl_from_xattr(value, size);
+- if (!acl) {
+- /*
+- * acl_set_file(3) may request that we set default ACLs with
+- * zero length -- defend (gracefully) against that here.
+- */
+- goto out;
+- }
+- if (IS_ERR(acl)) {
+- error = PTR_ERR(acl);
+- goto out;
+- }
 
-Christian.
+error = posix_acl_valid(acl);
+if (error)
 
-[0] http://lkml.org/lkml/2009/12/19/36
-[1] http://lists.openwall.net/netdev/2007/08/28/13
 -- 
-BOFH excuse #19:
+Best Regards,
+Liuwenyi
 
-floating point processor overflow
