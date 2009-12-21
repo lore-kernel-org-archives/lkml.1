@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbZLUUlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZLUUnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757171AbZLUUlp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 15:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZLUUlo
+	id S1757178AbZLUUnJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 15:43:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757151AbZLUUnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 15:41:44 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:49944 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757114AbZLUUln (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 15:41:43 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       joe@perches.com, torvalds@linux-foundation.org, peterz@infradead.org,
-       efault@gmx.de, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/urgent] sched: Restore printk sanity
-In-Reply-To: Your message of "Sun, 20 Dec 2009 18:00:38 GMT."
-             <tip-6c9a74afc5d95321e33a727b3c563f3e7d6c4a5c@git.kernel.org>
-From: Valdis.Kletnieks@vt.edu
-References: <1261315437.4314.6.camel@laptop>
-            <tip-6c9a74afc5d95321e33a727b3c563f3e7d6c4a5c@git.kernel.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1261428024_3965P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 21 Dec 2009 15:43:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47005 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757086AbZLUUnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 15:43:06 -0500
+Message-ID: <4B2FDD7D.1000906@kernel.org>
+Date: Mon, 21 Dec 2009 12:41:33 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix size for ex trampoline with 32bit
+References: <4B2F237F.3040909@kernel.org> <4B2FAD7B.7050701@zytor.com>
+In-Reply-To: <4B2FAD7B.7050701@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Mon, 21 Dec 2009 15:40:24 -0500
-Message-ID: <25268.1261428024@localhost>
-X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A02020A.4B2FDD38.027A,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1261428024_3965P
-Content-Type: text/plain; charset=us-ascii
+H. Peter Anvin wrote:
+> On 12/20/2009 11:27 PM, Yinghai Lu wrote:
+>>
+>> fix for error that is introduced by
+>> | x86: Use find_e820() instead of hard coded trampoline address
+>>
+>> it should end with PAGE_SIZE + PAGE_SIZE
+>>
+> 
+> 2*PAGE_SIZE?
 
-On Sun, 20 Dec 2009 18:00:38 GMT, tip-bot for Peter Zijlstra said:
-> Commit-ID:  6c9a74afc5d95321e33a727b3c563f3e7d6c4a5c
+should be the same. 
 
-> @@ -7828,44 +7828,48 @@ static int sched_domain_debug_one(struct sched_domain
- *sd, int cpu, int level,
->  	printk(KERN_DEBUG "%*s domain %d: ", level, "", level);
->  
->  	if (!(sd->flags & SD_LOAD_BALANCE)) {
-> -		pr_cont("does not load-balance\n");
-> +		printk("does not load-balance\n");
+just try to restore to old one before i broke it.
 
-printk(KERN_CONT  perhaps?
-
-
-
-
---==_Exmh_1261428024_3965P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLL904cC3lWbTT17ARAgJCAJ40ue3KUhZNmaVeQwFZgjdmCu8zhwCeIfzo
-uXsb/g/08NET2MdbFg7D2ts=
-=grAF
------END PGP SIGNATURE-----
-
---==_Exmh_1261428024_3965P--
-
+YH
