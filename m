@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZLVXFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZLVXHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbZLVXFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 18:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZLVXFj
+	id S1755539AbZLVXHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 18:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZLVXHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 18:05:39 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61976 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755347AbZLVXDs (ORCPT
+	Tue, 22 Dec 2009 18:07:09 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56891 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755348AbZLVXDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 18:03:48 -0500
+	Tue, 22 Dec 2009 18:03:46 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 22 Dec 2009 15:02:29 -0800
+Date: Tue, 22 Dec 2009 15:02:30 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 09/14] pci: introduce pci_assign_unassigned_bridge_resources
+Subject: [PATCH 10/14] pci: pciehp clean flow in pciehp_configure_device
 In-reply-to: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,168 +24,76 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1261522954-12591-10-git-send-email-yinghai@kernel.org>
+Message-id: <1261522954-12591-11-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 References: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for pciehp to use it later
-
-pci_setup_bridge() will not check enabled for the slot bridge, otherwise
-update res is not updated to bridge BAR. that is bridge is enabled already for
-port service.
-
--v2: update it with resource_list_x
+move out bus_size_bridges and assign resources out of pciehp_add_bridge()
+and at last do them all together one time including slot bridge, to avoid to
+call assign resources several times, when there are several bridges under the
+slot bridge.
+use pci_assign_nassigned_bridge_resources
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/setup-bus.c |   93 +++++++++++++++++++++++++++++++++++++++++++++--
- include/linux/pci.h     |    1 +
- 2 files changed, 90 insertions(+), 4 deletions(-)
+ drivers/pci/hotplug/pciehp_pci.c |   23 +++++++++++++++++------
+ 1 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 6b8491d..056b98d 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -71,6 +71,50 @@ static void free_failed_list(struct resource_list_x *head)
- 	head->next = NULL;
+diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
+index 2173310..0a16444 100644
+--- a/drivers/pci/hotplug/pciehp_pci.c
++++ b/drivers/pci/hotplug/pciehp_pci.c
+@@ -53,17 +53,15 @@ static int __ref pciehp_add_bridge(struct pci_dev *dev)
+ 		busnr = pci_scan_bridge(parent, dev, busnr, pass);
+ 	if (!dev->subordinate)
+ 		return -1;
+-	pci_bus_size_bridges(dev->subordinate);
+-	pci_bus_assign_resources(parent);
+-	pci_enable_bridges(parent);
+-	pci_bus_add_devices(parent);
++
+ 	return 0;
  }
  
-+static void pdev_assign_resources_sorted(struct pci_dev *dev,
-+				 struct resource_list_x *fail_head)
-+{
-+	struct resource *res;
-+	struct resource_list head, *list, *tmp;
-+	int idx;
-+	u16 class = dev->class >> 8;
-+
-+	head.next = NULL;
-+
-+	/* Don't touch classless devices or host bridges or ioapics.  */
-+	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
-+		return;
-+
-+	/* Don't touch ioapic devices already enabled by firmware */
-+	if (class == PCI_CLASS_SYSTEM_PIC) {
-+		u16 command;
-+		pci_read_config_word(dev, PCI_COMMAND, &command);
-+		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
-+			return;
-+	}
-+
-+	pdev_sort_resources(dev, &head);
-+
-+	for (list = head.next; list;) {
-+		res = list->res;
-+		idx = res - &list->dev->resource[0];
-+		if (pci_assign_resource(list->dev, idx)) {
-+			if (fail_head && !pci_is_root_bus(list->dev->bus)) {
-+				/*
-+				 * device need to keep flags and size
-+				 * for second try
-+				 */
-+				add_to_failed_list(fail_head, list->dev, res);
-+			}
-+			res->start = 0;
-+			res->end = 0;
-+			res->flags = 0;
-+		}
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+}
- static void pbus_assign_resources_sorted(const struct pci_bus *bus,
- 					 struct resource_list_x *fail_head)
+ int pciehp_configure_device(struct slot *p_slot)
  {
-@@ -278,9 +322,6 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
- {
- 	struct pci_dev *bridge = bus->self;
- 
--	if (pci_is_enabled(bridge))
--		return;
--
- 	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
- 		 bus->secondary, bus->subordinate);
- 
-@@ -651,7 +692,8 @@ static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
--			pci_setup_bridge(b);
-+			if (!pci_is_enabled(dev))
-+				pci_setup_bridge(b);
- 			break;
- 
- 		case PCI_CLASS_BRIDGE_CARDBUS:
-@@ -672,6 +714,34 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pci_bus_assign_resources);
- 
-+static void __ref __pci_bridge_assign_resources(const struct pci_dev *bridge,
-+					 struct resource_list_x *fail_head)
-+{
-+	struct pci_bus *b;
-+
-+	pdev_assign_resources_sorted((struct pci_dev *)bridge, fail_head);
-+
-+	b = bridge->subordinate;
-+	if (!b)
-+		return;
-+
-+	__pci_bus_assign_resources(b, fail_head);
-+
-+	switch (bridge->class >> 8) {
-+	case PCI_CLASS_BRIDGE_PCI:
-+		pci_setup_bridge(b);
-+		break;
-+
-+	case PCI_CLASS_BRIDGE_CARDBUS:
-+		pci_setup_cardbus(b);
-+		break;
-+
-+	default:
-+		dev_info(&bridge->dev, "not setting up bridge for bus "
-+			 "%04x:%02x\n", pci_domain_nr(b), b->number);
-+		break;
-+	}
-+}
- static void pci_bridge_release_unused_res(struct pci_bus *bus,
- 					  unsigned long type)
- {
-@@ -932,3 +1002,18 @@ enable_and_dump:
- 		pci_bus_dump_resources(bus);
- 	}
- }
-+
-+void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge)
-+{
-+	struct pci_bus *bus;
+ 	struct pci_dev *dev;
+-	struct pci_bus *parent = p_slot->ctrl->pcie->port->subordinate;
++	struct pci_dev *bridge = p_slot->ctrl->pcie->port;
 +	struct pci_bus *parent = bridge->subordinate;
-+	int retval;
+ 	int num, fn;
+ 	struct controller *ctrl = p_slot->ctrl;
+ 
+@@ -96,12 +94,25 @@ int pciehp_configure_device(struct slot *p_slot)
+ 				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)) {
+ 			pciehp_add_bridge(dev);
+ 		}
++		pci_dev_put(dev);
++	}
 +
-+	pci_bus_size_bridges(parent);
-+	pci_clear_master(bridge);
-+	__pci_bridge_assign_resources(bridge, NULL);
-+	retval = pci_reenable_device(bridge);
-+	pci_set_master(bridge);
-+	pci_enable_bridges(parent);
-+}
-+EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 5da0690..31fec6f 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -771,6 +771,7 @@ void pci_bus_assign_resources(const struct pci_bus *bus);
- void pci_bus_size_bridges(struct pci_bus *bus);
- int pci_claim_resource(struct pci_dev *, int);
- void pci_assign_unassigned_resources(void);
-+void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
- void pdev_enable_device(struct pci_dev *);
- void pdev_sort_resources(struct pci_dev *, struct resource_list *);
- int pci_enable_resources(struct pci_dev *, int mask);
++	pci_assign_unassigned_bridge_resources(bridge);
++
++	for (fn = 0; fn < 8; fn++) {
++		dev = pci_get_slot(parent, PCI_DEVFN(0, fn));
++		if (!dev)
++			continue;
++		if ((dev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
++			pci_dev_put(dev);
++			continue;
++		}
+ 		pci_configure_slot(dev);
+ 		pci_dev_put(dev);
+ 	}
+ 
+-	pci_bus_assign_resources(parent);
+ 	pci_bus_add_devices(parent);
++
+ 	return 0;
+ }
+ 
 -- 
 1.6.0.2
 
