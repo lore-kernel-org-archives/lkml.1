@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbZLVVvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZLVWHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492AbZLVVvy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 16:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZLVVvx
+	id S1753189AbZLVWHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 17:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZLVWHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 16:51:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56756 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751730AbZLVVvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 16:51:53 -0500
-Date: Tue, 22 Dec 2009 13:50:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Smith, GeoffX" <geoffx.smith@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, stable@kernel.org
-Subject: Re: [PATCH] prctl: return timerslack through pointer
-Message-Id: <20091222135041.b24abeff.akpm@linux-foundation.org>
-In-Reply-To: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE12F3@orsmsx510.amr.corp.intel.com>
-References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE12F3@orsmsx510.amr.corp.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Dec 2009 17:07:36 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:52275 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbZLVWHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 17:07:35 -0500
+X-Greylist: delayed 586 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Dec 2009 17:07:35 EST
+X-Bogosity: Ham, spamicity=0.000012
+Message-ID: <4B3140E8.5080104@tuxonice.net>
+Date: Wed, 23 Dec 2009 08:58:00 +1100
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Pedro Ribeiro <pedrib@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: WARN_ON at line 380 in kernel/smp.c under 2.6.32.2 + TuxOnIce
+ + KDB
+References: <74fd948d0912220851v354b1704xa55fc3c88e1c300c@mail.gmail.com>	 <1261502431.4937.38.camel@laptop>	 <74fd948d0912221116l477a8a71w1feadc1341fc6e21@mail.gmail.com> <1261510020.4937.73.camel@laptop>
+In-Reply-To: <1261510020.4937.73.camel@laptop>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=8B613241
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009 16:17:15 -0800
-"Smith, GeoffX" <geoffx.smith@intel.com> wrote:
+Hi.
 
-> This patch fixes the semantics of prctl() option PR_GET_TIMERSLACK
-> to pass the return value through *arg2.
+Peter Zijlstra wrote:
+> On Tue, 2009-12-22 at 19:16 +0000, Pedro Ribeiro wrote:
+>> On Tue, Dec 22, 2009 at 5:20 PM, Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> With this change, the option now follows the same conventions as the
-> other "get" options added since 2.6.0, and also brings it into
-> conformance with the advice in chapter 16 of Documentation/CodingStyle.
+>>> If you'd enable frame pointers the strack traces would be clearer, but
+>>> it looks like a bug in tux on ice, doing kmap_high() with IRQs disabled
+>>> or something like that.
 > 
-> In addition, it effectively doubles the range of time slack to 4.29
-> seconds (on a 32-bit architecture).
+>> I enabled frame pointers, is this more useful?
+>> http://img684.imageshack.us/img684/5118/dsc01206m.jpg
+>> http://img96.imageshack.us/img96/5493/dsc01207k.jpg
+>> http://img33.imageshack.us/img33/7470/dsc01208lp.jpg
 > 
-> The timer slack feature was only added in Sep 2009 (new in 2.6.32.1), 
-> so there are not any production applications to break.  I have also 
-> repaired some unmatched signed/unsigned mismatches in timer slack
-> calculations.
+> Those read more clearly indeed, thanks!
 > 
+> It really looks like what I said above, in that tux on ice is calling
+> kmap() from an inappropriate context.
 
-If we're going to do this then we should backport the patch into
-2.6.32.x as well.  And I agree that there is time to make this change.
+Ah, I know now what's going on now. You're right. In working around a
+reported problem, I've triggered the warning. I'll give it some more
+consideration.
 
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index 20ccfb5..e01da12 100644
-
-You omitted the Signed-off-by: line (described in
-Documentation/SubmittingPatches).  Please send one.
-
+Nigel
