@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbZLVVKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZLVVMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbZLVVKo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 16:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZLVVKm
+	id S1755098AbZLVVMV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 16:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZLVVMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 16:10:42 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:17322 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZLVVKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 16:10:41 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=I5ecopzs8iAfg0esxWLlo6/LiCRn5ZPdJDONVYD98+EdKyQ+G5UxUdo+dJi0u0lZG
-	YMutRSUXW11nPolzTmaqQ==
-MIME-Version: 1.0
-In-Reply-To: <20091218170407.GA1396@ucw.cz>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	 <20091218170407.GA1396@ucw.cz>
-Date: Tue, 22 Dec 2009 13:10:36 -0800
-Message-ID: <4352991a0912221310k40f42498nba2081011398c7e@mail.gmail.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the 
-	Linux Kernel
-From: Salman Qazi <sqazi@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+	Tue, 22 Dec 2009 16:12:18 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:47309 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002AbZLVVMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 16:12:17 -0500
+Subject: Please revert xtime_cache removal
+From: john stultz <johnstul@us.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Petr =?UTF-8?Q?Tit=C4=9Bra?= <P.Titera@century.cz>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 13:12:11 -0800
+Message-ID: <1261516331.3508.32.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 9:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi
->
->
->> Why not use voltage and frequency scaling?
->>
->> Forced Idle Injection is more effective[1] and more widely available.
->> Even with voltage and frequency scaling, interpolation is needed
->> between the available settings.  So, if we did use voltage and
->
-> It is only more efficient on new hardware.
->
-> You should also explain 'why not throttling' because that is actually
-> designed for power capping.
+Hey Linus,
 
-Do you mean t-states?
+	Please revert commit 7bc7d637452383d56ba4368d4336b0dde1bb476d - "Time:
+Remove xtime_cache".
 
->
->> Application to Laptops and Cellphones:
->>
->> Imagine being in a tent in Death Valley with a laptop.  You are bored,
->> and you want to watch a movie.  However, you also want to do your best
->> to make the battery last and watch as much of the movie as possible.
->> Forced idle power capping is a solution.  If your machine has a knob
->> that allows you to control the available power, you can turn that knob
->> until your video starts getting choppy.  And then, turn the knob back
->
-> That's bad example. Video player should already sleep between frames.
+Petr Titěra reported an issue where he saw odd atime regressions with
+2.6.33 where there were a full second worth of nanoseconds in the
+nanoseconds field. 
 
-Yes, the video player should sleep.  However, there will be other
-things running.  And certainly, it is possible to cap the power and
-discriminate so that those things are prevented from running while the
-video player is allowed to run with minimal latency impact.
+He also reviewed the time code and narrowed down the problem: unhandled
+overflow of the nanosecond field caused by rounding up the
+sub-nanosecond accumulated time.
 
->
-> Better example would be 'make video so choppy that expected battery
-> time rises over length ov movie.
->
-> (And yes, this would have been useful for me on notebook with failed
-> fan and ineffective throttling).
->
->
->                                                                Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+
+Details:
+
+* At the end of update_wall_time(), we currently round up the
+sub-nanosecond portion of accumulated time when storing it into xtime.
+This was added to avoid time inconsistencies caused when the
+sub-nanosecond portion was truncated when storing into xtime.
+Unfortunately we don't handle the possible second overflow caused by
+that rounding.
+
+* Previously the xtime_cache code hid this overflow by normalizing the
+xtime value when storing into the xtime_cache. 
+
+* We could try to handle the second overflow after the rounding up, but
+since this affects the timekeeping's internal state, this would further
+complicate the next accumulation cycle, causing small errors in ntp
+steering. As much as I'd like to get rid of it, the xtime_cache code is
+known to work.
+
+* The correct fix is really to include the sub-nanosecond portion in the
+timekeeping accessor function, so we don't need to round up at during
+accumulation. This would greatly simplify the accumulation code.
+Unfortunately, we can't do this safely until the last three
+non-GENERIC_TIME arches (sparc32, arm, cris) are converted  (those
+patches are in -mm) and we kill off the spots where arches set xtime
+directly. This is all 2.6.34 material, so I think reverting the
+xtime_cache change is the best approach for now.
+
+
+Many thanks to Petr for both reporting and finding the issue! 
+
+thanks again,
+-john
+
