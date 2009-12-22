@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZLVWHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZLVV6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbZLVWHi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 17:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZLVWHg
+	id S1752778AbZLVV6z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 16:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZLVV6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 17:07:36 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:52275 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbZLVWHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 17:07:35 -0500
-X-Greylist: delayed 586 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Dec 2009 17:07:35 EST
-X-Bogosity: Ham, spamicity=0.000012
-Message-ID: <4B3140E8.5080104@tuxonice.net>
-Date: Wed, 23 Dec 2009 08:58:00 +1100
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Pedro Ribeiro <pedrib@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: WARN_ON at line 380 in kernel/smp.c under 2.6.32.2 + TuxOnIce
- + KDB
-References: <74fd948d0912220851v354b1704xa55fc3c88e1c300c@mail.gmail.com>	 <1261502431.4937.38.camel@laptop>	 <74fd948d0912221116l477a8a71w1feadc1341fc6e21@mail.gmail.com> <1261510020.4937.73.camel@laptop>
-In-Reply-To: <1261510020.4937.73.camel@laptop>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=8B613241
-Content-Type: text/plain; charset=UTF-8
+	Tue, 22 Dec 2009 16:58:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33801 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751669AbZLVV6y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 16:58:54 -0500
+Date: Tue, 22 Dec 2009 13:58:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: [PATCH 0/7] utrace/ptrace
+Message-Id: <20091222135809.1ab10869.akpm@linux-foundation.org>
+In-Reply-To: <20091218011116.GA29534@redhat.com>
+References: <20091218011116.GA29534@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, 18 Dec 2009 02:11:16 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Peter Zijlstra wrote:
-> On Tue, 2009-12-22 at 19:16 +0000, Pedro Ribeiro wrote:
->> On Tue, Dec 22, 2009 at 5:20 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> Hello.
 > 
->>> If you'd enable frame pointers the strack traces would be clearer, but
->>> it looks like a bug in tux on ice, doing kmap_high() with IRQs disabled
->>> or something like that.
+> This is the new iteration of Roland's utrace patch, this time
+> with "rewrite-ptrace-via-utrace" + cleanups in utrace core.
 > 
->> I enabled frame pointers, is this more useful?
->> http://img684.imageshack.us/img684/5118/dsc01206m.jpg
->> http://img96.imageshack.us/img96/5493/dsc01207k.jpg
->> http://img33.imageshack.us/img33/7470/dsc01208lp.jpg
-> 
-> Those read more clearly indeed, thanks!
-> 
-> It really looks like what I said above, in that tux on ice is calling
-> kmap() from an inappropriate context.
 
-Ah, I know now what's going on now. You're right. In working around a
-reported problem, I've triggered the warning. I'll give it some more
-consideration.
+So... should we merge this?
 
-Nigel
+I'll confess that I've rather forgotten why we might want this.
+
+> It allows for multiple separate tracing engines to work
+> in parallel without interfering with each other.  Higher-level tracing
+> facilities can be implemented as loadable kernel modules using this layer.
+
+That's a bit brief.  Do you have a nicer sales brochure?  What are
+these "separate tracing engines" and what is their merge status and why
+would we want any of them, for what purpose?  etc.
+
+IOW: give us a reason!
