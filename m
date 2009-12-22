@@ -1,94 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZLVVO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZLVVP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbZLVVO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 16:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZLVVOZ
+	id S1755170AbZLVVP2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 16:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZLVVP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 16:14:25 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:41976 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbZLVVOY (ORCPT
+	Tue, 22 Dec 2009 16:15:26 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:33033 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755085AbZLVVPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 16:14:24 -0500
-Message-ID: <4B3136AA.50204@codemonkey.ws>
-Date: Tue, 22 Dec 2009 15:14:18 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 22 Dec 2009 16:15:25 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=vmmzPLjTKZcVt6WMye5LrAc9wpBlRZkhi4JUvtYvuOMYOIxyoMNwlQ+x2z48Bmsak
+	BxxA6YfTW4SjQ53oo5kxw==
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+In-Reply-To: <20091221085713.GA1622@ucw.cz>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+	 <20091221085713.GA1622@ucw.cz>
+Date: Tue, 22 Dec 2009 13:15:21 -0800
+Message-ID: <4352991a0912221315y5ba409cbh26baa5937cdf2f76@mail.gmail.com>
+Subject: Re: RFC: A proposal for power capping through forced idle in the 
+	Linux Kernel
+From: Salman Qazi <sqazi@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box> <4B30F375.6050103@codemonkey.ws> <20091222173326.GH10314@basil.fritz.box>
-In-Reply-To: <20091222173326.GH10314@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22/2009 11:33 AM, Andi Kleen wrote:
->> We're not talking about vaporware.  vhost-net exists.
->>      
-> Is it as fast as the alacrityvm setup then e.g. for network traffic?
+On Mon, Dec 21, 2009 at 12:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
 >
-> Last I heard the first could do wirespeed 10Gbit/s on standard hardware.
->    
+>> Google is implementing power capping, a technology that improves the
+>> power efficiency of data centers. There are also some interesting
+>> applications of this technology for laptops and cell phones.  Google
+>> aims to send most of its Linux technology upstream. So, how can we get
+>> this feature into the mainline kernel?
+> ...
+>> Aside from this, every cgroup has a new quantity added to the CPU
+>> component called "Power Capping Priority".  This quantity indicates
+>> the order in which the scheduler attributes the time spent injecting
+>> idle cycles to specific processes.  This allows us to discriminate
+>> among processes when it comes to accounting for the injected idle
+>> time.  There is also an indication of interactivity versus batch for
+>> the cgroup provided in the CPU component of the cgroup.
+>>
+>> Basic Algorithm:
+>>
+>> Rather than blindly blasting the machine with the minimum required
+>> idle cycles, our implementation keeps track of naturally occurring
+>> idle cycles as follows:
+>
+> (Rather complex algorithm snipped)
+>
+> Well.. having all this complexity just for forcing idle... And it
+> still will not work, right? Linux kernel is not real time, so you
+> can't guarantee anything.
 
-I'm very wary of any such claims.  As far as I know, no one has done an 
-exhaustive study of vbus and published the results.  This is why it's so 
-important to understand why the results are what they are when we see 
-numbers posted.
+The purpose of all the "complexity" is to avoid injecting idle cycles
+when the machine is already sufficiently idle.  That is, to lower the
+impact when the feature is not needed.  And you are right, there are
+no hard guarantees.  A lot of the practical use will rest on empirical
+data.
 
-For instance, check out 
-http://www.redhat.com/f/pdf/summit/cwright_11_open_source_virt.pdf slide 32.
+>
+> OTOH realtime people already have tools you could make good use of:
+> your power capping approach looks like 'high priority idle task that
+> needs to run for 2 seconds every 5 seconds' or something...
+>
+> Talk to rt people?
 
-These benchmarks show KVM without vhost-net pretty closely pacing 
-native.  With large message sizes, it's awfully close to line rate.
+At the core of it, you are correct.  However, in our implementation it
+also avoids running when the system is already idle and operates at
+much finer granularities than seconds.
 
-Comparatively speaking, consider 
-http://developer.novell.com/wiki/index.php/AlacrityVM/Results
+Which specific tools are you referring to?  Real-time Linux as a whole
+is a trade off:  one gets predictable latency in exchange for some
+performance.  Any specific contacts that I should direct my inquiries
+to?
 
-vbus here is pretty far off of native and virtio-net is ridiculus.
-
-Why are the results so different?  Because benchmarking is fickle and 
-networking performance is complicated.  No one benchmarking scenario is 
-going to give you a very good picture overall.  It's also relatively 
-easy to stack the cards in favor of one approach verses another.  The 
-virtio-net setup probably made extensive use of pinning and other tricks 
-to make things faster than a normal user would see them.  It ends up 
-creating a perfect combination of batching which is pretty much just 
-cooking the mitigation schemes to do extremely well for one benchmark.
-
-This is why it's so important to look at vbus from the perspective of 
-critically asking, what precisely makes it better than virtio.  A couple 
-benchmarks on a single piece of hardware does not constitute an 
-existence proof that it's better overall.
-
-There are a ton of differences between virtio and vbus because vbus was 
-written in a vacuum wrt virtio.  I'm not saying we are totally committed 
-to virtio no matter what, but it should take a whole lot more than a 
-couple netperf runs on a single piece of hardware for a single kind of 
-driver to justify replacing it.
-
-> Can vhost-net do the same thing?
-
-I think the fundamentally question is, what makes vbus better than 
-vhost-net?  vhost-net exists and is further along upstream than vbus is 
-at the moment.  If that question cannot be answered with technical facts 
-and numbers to back them up, then we're just arguing for the sake of 
-arguing.
-
-Regards,
-
-Anthony Liguori
-
-> -Andi
->    
-
+>                                                                Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
