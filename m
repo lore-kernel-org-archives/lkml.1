@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZLVWCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZLVWFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZLVWCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 17:02:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZLVWCi
+	id S1753004AbZLVWFz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 17:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZLVWFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 17:02:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47496 "EHLO ogre.sisk.pl"
+	Tue, 22 Dec 2009 17:05:54 -0500
+Received: from mga01.intel.com ([192.55.52.88]:25116 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752696AbZLVWCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 17:02:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] PM fixes and updates for 2.6.33
-Date: Tue, 22 Dec 2009 23:03:05 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
+	id S1751340AbZLVWFy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 17:05:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,438,1257148800"; 
+   d="scan'208";a="525565502"
+From: "Smith, GeoffX" <geoffx.smith@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
+       "stable@kernel.org" <stable@kernel.org>
+Date: Tue, 22 Dec 2009 14:05:50 -0800
+Subject: RE: [PATCH] prctl: return timerslack through pointer
+Thread-Topic: [PATCH] prctl: return timerslack through pointer
+Thread-Index: AcqDUOIIL8zTjy/8Sc+njMy2rlrr2AAATBjQ
+Message-ID: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE17CD@orsmsx510.amr.corp.intel.com>
+References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE12F3@orsmsx510.amr.corp.intel.com>
+ <20091222135041.b24abeff.akpm@linux-foundation.org>
+In-Reply-To: <20091222135041.b24abeff.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912222303.05698.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Oops, my oversight.  In re: any patch I submitted 12/17/2009:
 
-Please pull power management fixes and updates for 2.6.33 from:
+Signed-off-by: Geoff Smith <geoffx.smith@intel.com>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Tuesday, December 22, 2009 1:51 PM
+To: Smith, GeoffX
+Cc: linux-kernel@vger.kernel.org; Arjan van de Ven; stable@kernel.org
+Subject: Re: [PATCH] prctl: return timerslack through pointer
 
-They include:
+On Thu, 17 Dec 2009 16:17:15 -0800
+"Smith, GeoffX" <geoffx.smith@intel.com> wrote:
 
-* Fix for commit f2511774863487e61b56a97da07ebf8dd61d7836
-  (PM: Add initcall_debug style timing for suspend/resume)
-  adding the timing instrumentation for devices that haven't been switched
-  to struct dev_pm_ops yet.
+> This patch fixes the semantics of prctl() option PR_GET_TIMERSLACK
+> to pass the return value through *arg2.
+> 
+> With this change, the option now follows the same conventions as the
+> other "get" options added since 2.6.0, and also brings it into
+> conformance with the advice in chapter 16 of Documentation/CodingStyle.
+> 
+> In addition, it effectively doubles the range of time slack to 4.29
+> seconds (on a 32-bit architecture).
+> 
+> The timer slack feature was only added in Sep 2009 (new in 2.6.32.1), 
+> so there are not any production applications to break.  I have also 
+> repaired some unmatched signed/unsigned mismatches in timer slack
+> calculations.
+> 
 
-* Total device suspend and resume time reporting.
+If we're going to do this then we should backport the patch into
+2.6.32.x as well.  And I agree that there is time to make this change.
 
-* Runtime PM core fix from Alan Stern.
+> diff --git a/kernel/sys.c b/kernel/sys.c
+> index 20ccfb5..e01da12 100644
 
-* Runtime PM enhancement allowing the core to call device type or device
-  class callbacks if bus type callbacks are not defined.
-
-* Runtime PM documentation update from Alan Stern.
-
-
- Documentation/power/runtime_pm.txt |  223 ++++++++++++++++++++++--------------
- drivers/base/power/main.c          |  128 +++++++++++++++++----
- drivers/base/power/runtime.c       |   45 +++++++
- 3 files changed, 288 insertions(+), 108 deletions(-)
-
----------------
-
-Alan Stern (2):
-      PM: Use pm_runtime_put_sync in system resume
-      PM: Runtime PM documentation update
-
-Rafael J. Wysocki (3):
-      PM: Make the initcall_debug style timing for suspend/resume complete
-      PM: Measure device suspend and resume times
-      PM / Runtime: Use device type and device class callbacks
+You omitted the Signed-off-by: line (described in
+Documentation/SubmittingPatches).  Please send one.
 
