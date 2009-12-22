@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZLVHzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbZLVH60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbZLVHzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 02:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZLVHzf
+	id S1752978AbZLVH60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 02:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZLVH6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 02:55:35 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:42411 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbZLVHze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 02:55:34 -0500
-Date: Tue, 22 Dec 2009 02:54:59 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
-In-reply-to: <4B3035B0.9030303@kernel.org>
-Message-id: <alpine.LFD.2.00.0912220253080.7435@localhost.localdomain>
-References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
- <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com>
- <alpine.LFD.2.00.0912212107560.5520@localhost.localdomain>
- <4B3035B0.9030303@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Dec 2009 02:58:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41924 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752292AbZLVH6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 02:58:24 -0500
+Date: Tue, 22 Dec 2009 08:57:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+Message-ID: <20091222075742.GB26467@elte.hu>
+References: <4B1D4F29.8020309@gmail.com>
+ <20091218215107.GA14946@elte.hu>
+ <4B2F9582.5000002@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2F9582.5000002@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Gregory Haskins <gregory.haskins@gmail.com> wrote:
 
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-On Mon, 21 Dec 2009, Yinghai Lu wrote:
-
-> Len Brown wrote:
-> >>> Shaohua Li (3):
-> >>>      ACPI: Add a generic API for _OSC -v2
-> >>>      ACPI: cleanup pci_root _OSC code.
-> >>>      ACPI: Add platform-wide _OSC support.
-> >> it seems these three patches broke the _OSC on my intel new systems.
+> On 12/18/09 4:51 PM, Ingo Molnar wrote:
+> > 
+> > * Gregory Haskins <gregory.haskins@gmail.com> wrote:
+> > 
+> >> Hi Linus,
 > >>
-> >> revert them fix the problem with AER and pciehp and etc
+> >> Please pull AlacrityVM guest support for 2.6.33 from:
+> >>
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/alacrityvm/linux-2.6.git
+> >> for-linus
+> >>
+> >> All of these patches have stewed in linux-next for quite a while now:
+> >>
+> >> Gregory Haskins (26):
 > > 
-> > Yinghai,
-> > does 3563ff964fdc36358cef0330936fdac28e65142a work or fail on your 
-> > system?  That is (ACPI: Add platform-wide _OSC support)
-> > on top of 2.6.32 with no other changes.
-> > 
+> > I think it would be fair to point out that these patches have been objected to 
+> > by the KVM folks quite extensively,
 > 
-> only revert that does NOT make _OSC on my system work again.
+> Actually, these patches have nothing to do with the KVM folks. [...]
 
-Does 3563ff964fdc36358cef0330936fdac28e65142a work or fail on your system? 
-I didn't ask about reverting it, I asked if it works or fails.
+That claim is curious to me - the AlacrityVM host is 90% based on KVM code, so 
+how can it not be about KVM? I just checked, most of the changes that 
+AlacrityVM host does to KVM is in adding the host side interfaces for these 
+guest drivers:
 
-If it fails, please describe how.
+ virt/kvm/Kconfig          |   11 +
+ virt/kvm/coalesced_mmio.c |   65 +++---
+ virt/kvm/coalesced_mmio.h |    1 +
+ virt/kvm/eventfd.c        |  599 +++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/ioapic.c         |  118 +++++++--
+ virt/kvm/ioapic.h         |    5 +
+ virt/kvm/iodev.h          |   55 +++--
+ virt/kvm/irq_comm.c       |  267 ++++++++++++++-------
+ virt/kvm/kvm_main.c       |  127 ++++++++--
+ virt/kvm/xinterface.c     |  587 ++++++++++++++++++++++++++++++++++++++++++++
+ 10 files changed, 1649 insertions(+), 186 deletions(-)
 
-thanks,
--Len
+ [ stat for virt/kvm/ taken as of today, AlacrityVM host tree commit 84afcc7 ]
 
+So as far as kernel code modifications of AlacrityVM goes, it's very much 
+about KVM.
+
+> [...]  You are perhaps confusing this with the hypervisor-side discussion, 
+> of which there is indeed much disagreement.
+
+Are the guest drivers living in a vacuum? The whole purpose of the AlacrityVM 
+guest drivers is to ... enable AlacrityVM support, right? So how can it be not 
+about KVM?
+
+Gregory, it would be nice if you worked _much_ harder with the KVM folks 
+before giving up. It's not like there's much valid technical disagreement that 
+i can identify in any of the threads - the strongest one i could identify was: 
+"I want to fork KVM so please let me do it, nobody is harmed, choice is good".
+
+	Ingo
