@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZLVONF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZLVObl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbZLVONF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 09:13:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZLVOND
+	id S1752432AbZLVObl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 09:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZLVObk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 09:13:03 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38014 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbZLVONB (ORCPT
+	Tue, 22 Dec 2009 09:31:40 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:60508 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751786AbZLVObj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 09:13:01 -0500
-Date: Tue, 22 Dec 2009 14:12:12 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Dave Korn <dave.korn.cygwin@googlemail.com>
-Cc: Richard Henderson <rth@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-Message-ID: <20091222141212.GA15356@n2100.arm.linux.org.uk>
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <4B2FCCE3.1090209@redhat.com> <20091221201059.GD11669@n2100.arm.linux.org.uk> <4B30D2FE.9020209@gmail.com>
+	Tue, 22 Dec 2009 09:31:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QvI8CUmQ3xes2TWcCQWTHUdC/H7XIb18cOc79SykMHYE6FE1WsEayioJ7Ov0wSqNk4
+         1/AX7biKQo8skpn29nfVYUyFfwfRmuSaeixRMhpvBUZaMhsmm2nsVYxhYzZK44negmwi
+         Xs+5ksBVD11q1Xi1+J44WEwvdqwXKFkLuofcg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B30D2FE.9020209@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091222120803.GR18217@ZenIV.linux.org.uk>
+References: <4B2F619A.8000407@gmail.com>
+	 <20091222120803.GR18217@ZenIV.linux.org.uk>
+Date: Tue, 22 Dec 2009 22:31:38 +0800
+Message-ID: <b3657a100912220631n4d69ea66x23c1296e1abc468a@mail.gmail.com>
+Subject: Re: [PATCHv2 02/12]posix_acl: Add the check items
+From: liu weni <qingshenlwy@gmail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: chris.mason@oracle.com, joel.becker@oracle.com, cjb@laptop.org,
+       jmorris@namei.org, linux-btrfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, onlyflyer@gmail.com, strongzgy@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 02:09:02PM +0000, Dave Korn wrote:
-> Russell King - ARM Linux wrote:
-> > On Mon, Dec 21, 2009 at 11:30:43AM -0800, Richard Henderson wrote:
-> >> On 12/17/2009 10:17 AM, Russell King - ARM Linux wrote:
-> >>> How is "size-optimal trap" defined?
-> >> E.g. Sparc and MIPS have "tcc" instructions that trap based on the
-> >> condition codes, and so we eliminate the branch.  That's the only
-> >> optimization we apply with __builtin_trap.
-> >>
-> >>> Let me put it another way: I want this function to terminate with an
-> >>> explicit NULL pointer dereference in every case.
-> >> Then just use that.
-> > 
-> > That's precisely what we have been using for many years.
-> 
->   I don't understand.  It should still work just fine; the original version
-> posted appears to simply lack 'volatile' on the (int *) cast.
+Hi All:
 
-Neither do I - AFAIK the existing code works fine.
+    I'm sorry for my stupid. I am crazy for fixing this bug.
+And make so much mistake.
+Maybe I need cool down and think more.
 
-I think this is just a noisy thread about people wanting to use the
-latest and greated compiler "features" whether they make sense to or
-not, and this thread should probably die until some problem has actually
-been identified.
+--
+Best Regards,
+Liuwenyi
+2009-12-22
 
-If it ain't broke, don't fix.
+
+
+2009/12/22 Al Viro <viro@zeniv.linux.org.uk>:
+> On Mon, Dec 21, 2009 at 07:52:58PM +0800, Liuwenyi wrote:
+>> @@ -102,12 +102,9 @@ static int btrfs_set_acl(struct btrfs_trans_handle
+>> *trans,
+>> char *value = NULL;
+>> mode_t mode;
+>>
+>> - if (acl) {
+>> - ret = posix_acl_valid(acl);
+>> - if (ret < 0)
+>> - return ret;
+>> - ret = 0;
+>> - }
+>> + ret = posix_acl_valid(acl);
+>> + if (ret < 0)
+>> + return ret;
+>
+> ... and now you can't remove acl from btrfs inode.  At all.
+>
+> NAK the entire series.  You are changing existing user-visible behaviour
+> for all filesystems for no reason and at least in this case it's clearly
+> wrong change.
+>
