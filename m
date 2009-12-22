@@ -1,96 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZLVUd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZLVUlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbZLVUd2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 15:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZLVUdZ
+	id S1754624AbZLVUlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 15:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZLVUlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 15:33:25 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:43137 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbZLVUdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 15:33:24 -0500
-Date: Tue, 22 Dec 2009 21:33:21 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/6] drivers/video: Correct use after free
-Message-ID: <Pine.LNX.4.64.0912222132290.28669@ask.diku.dk>
+	Tue, 22 Dec 2009 15:41:50 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:59499 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbZLVUlt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 15:41:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=a8NDRQ52nD8T8QAnxDz0aYv07VQW6/aDxrIzrN9UwHHgcjbdWBFb6a5Pjqyl9wJ2dt
+         4+W418m9GRctvq0HB/SMLbktjoBqJXrtkgY5O/ZC8wUFq/fsswYiKBYNoilCxjqaxNzQ
+         PaNDGZyxHLtShDayuahxvRrtOtdgvIP9+z0Y8=
+Message-ID: <4B312F07.6090609@gmail.com>
+Date: Tue, 22 Dec 2009 15:41:43 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com> <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws>
+In-Reply-To: <4B300EF8.8010602@codemonkey.ws>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFF5A92A3F19CFAF8937F88FA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFF5A92A3F19CFAF8937F88FA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-In the case of igafb.c, the free appears to be part of cleanup code in the
-case of an error.  The code afterwards under the #ifdef is not meaningful
-in this case, because it extensively refers to structures that have been
-freed.  Furthermore, this initialization function would seem to have failed
-in the case where the kfrees are executed, so it does not seem reasonable
-to return 0 in this case.  Some other errors in the course of the function
-cause -ENOXIO to be returned, so that is added here.
+On 12/21/09 7:12 PM, Anthony Liguori wrote:
+> On 12/21/2009 11:44 AM, Gregory Haskins wrote:
+>> Well, surely something like SR-IOV is moving in that direction, no?
+>>   =20
+>=20
+> Not really, but that's a different discussion.
 
-In panel-sharp-ls037v7dw01.c, a variable is introduced to hold the error
-code to return before freeing the structure that contains it.
+Ok, but my general point still stands.  At some level, some crafty
+hardware engineer may invent something that obsoletes the
+need for, say, PV 802.x drivers because it can hit 40GE line rate at the
+same performance level of bare metal with some kind of pass-through
+trick.  But I still do not see that as an excuse for sloppy software in
+the meantime, as there will always be older platforms, older IO cards,
+or different IO types that are not benefactors of said hw based
+optimizations.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+>=20
+>>> But let's focus on concrete data.  For a given workload,
+>>> how many exits do you see due to EOI?
+>>>     =20
+>> Its of course highly workload dependent, and I've published these
+>> details in the past, I believe.  Off the top of my head, I recall that=
 
-// <smpl>
-@@
-expression x,e;
-identifier f;
-iterator I;
-statement S;
-@@
+>> virtio-pci tends to throw about 65k exits per second, vs about 32k/s f=
+or
+>> venet on a 10GE box, but I don't recall what ratio of those exits are
+>> EOI.
+>=20
+> Was this userspace virtio-pci or was this vhost-net?
 
-*kfree(x);
-... when != &x
-    when != x = e
-    when != I(x,...) S
-*x->f
-// </smpl>
+Both, actually, though userspace is obviously even worse.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+>  If it was the
+> former, then were you using MSI-X?
 
----
- video/igafb.c                                  |    1 +
- video/omap2/displays/panel-sharp-ls037v7dw01.c |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+MSI-X
 
-diff --git a/drivers/video/igafb.c b/drivers/video/igafb.c
-index 15d2001..f18df8f 100644
---- a/drivers/video/igafb.c
-+++ b/drivers/video/igafb.c
-@@ -531,6 +531,7 @@ int __init igafb_init(void)
- 		iounmap(info->screen_base);
- 		kfree(par->mmap_map);
- 		kfree(info);
-+		return -ENXIO;
-         }
- 
- #ifdef CONFIG_SPARC
-diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-index bbe880b..8882535 100644
---- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-@@ -51,6 +51,7 @@ static struct omap_video_timings sharp_ls_timings = {
- static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
- {
- 	struct sharp_data *sd;
-+	int err;
- 
- 	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
- 		OMAP_DSS_LCD_IHS;
-@@ -65,9 +66,10 @@ static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
- 
- 	sd->vdvi_reg = regulator_get(&dssdev->dev, "vdvi");
- 	if (IS_ERR(sd->vdvi_reg)) {
-+		err = PTR_ERR(sd->vdvi_reg);
- 		kfree(sd);
- 		pr_err("failed to get VDVI regulator\n");
--		return PTR_ERR(sd->vdvi_reg);
-+		return err;
- 	}
- 
- 	return 0;
+>  If you weren't, there would be an
+> additional (rather heavy) exit per-interrupt to clear the ISR which
+> would certainly account for a large portion of the additional exits.
+>
+
+Yep, if you don't use MSI it is significantly worse as expected.
+
+
+>>    To be perfectly honest, I don't care.  I do not discriminate
+>> against the exit type...I want to eliminate as many as possible,
+>> regardless of the type.  That's how you go fast and yet use less CPU.
+>>   =20
+>=20
+> It's important to understand why one mechanism is better than another. =
+
+
+Agreed, but note _I_ already understand why.  I've certainly spent
+countless hours/emails trying to get others to understand as well, but
+it seems most are too busy to actually listen.
+
+
+> All I'm looking for is a set of bullet points that say, vbus does this,=
+
+> vhost-net does that, therefore vbus is better.  We would then either
+> say, oh, that's a good idea, let's change vhost-net to do that, or we
+> would say, hrm, well, we can't change vhost-net to do that because of
+> some fundamental flaw, let's drop it and adopt vbus.
+>=20
+> It's really that simple :-)
+
+This is all been covered ad-nauseam, directly with youself in many
+cases.  Google is your friend.
+
+Here are some tips while you research:  Do not fall into the trap of
+vhost-net vs vbus, or venet vs virtio-net, or you miss the point
+entirely.  Recall that venet was originally crafted to demonstrate the
+virtues of my three performance objectives (kill exits, reduce exit
+overhead, and run concurrently). Then there is all the stuff we are
+laying on top, like qos, real-time, advanced fabrics, and easy adoption
+for various environments (so it doesn't need to be redefined each time).
+
+Therefore if you only look at the limited feature set of virtio-net, you
+will miss the majority of the points of the framework.  virtio tried to
+capture some of these ideas, but it missed the mark on several levels
+and was only partially defined.  Incidentally, you can stil run virtio
+over vbus if desired, but so far no one has tried to use my transport.
+
+>=20
+>=20
+>>>   They should be relatively rare
+>>> because obtaining good receive batching is pretty easy.
+>>>     =20
+>> Batching is poor mans throughput (its easy when you dont care about
+>> latency), so we generally avoid as much as possible.
+>>   =20
+>=20
+> Fair enough.
+>=20
+>>> Considering
+>>> these are lightweight exits (on the order of 1-2us),
+>>>     =20
+>> APIC EOIs on x86 are MMIO based, so they are generally much heavier th=
+an
+>> that.  I measure at least 4-5us just for the MMIO exit on my Woodcrest=
+,
+>> never mind executing the locking/apic-emulation code.
+>>   =20
+>=20
+> You won't like to hear me say this, but Woodcrests are pretty old and
+> clunky as far as VT goes :-)
+
+Fair enough.
+
+>=20
+> On a modern Nehalem, I would be surprised if an MMIO exit handled in th=
+e
+> kernel was muck more than 2us.  The hardware is getting very, very
+> fast.  The trends here are very important to consider when we're lookin=
+g
+> at architectures that we potentially are going to support for a long ti=
+me.
+
+The exit you do not take will always be infinitely faster.
+
+>=20
+>>> you need an awfully
+>>> large amount of interrupts before you get really significant performa=
+nce
+>>> impact.  You would think NAPI would kick in at this point anyway.
+>>>
+>>>     =20
+>> Whether NAPI can kick in or not is workload dependent, and it also doe=
+s
+>> not address coincident events.  But on that topic, you can think of
+>> AlacrityVM's interrupt controller as "NAPI for interrupts", because it=
+
+>> operates on the same principle.  For what its worth, it also operates =
+on
+>> a "NAPI for hypercalls" concept too.
+>>   =20
+>=20
+> The concept of always batching hypercalls has certainly been explored
+> within the context of Xen.
+
+I am not talking about batching, which again is a poor mans throughput
+trick at the expense of latency.  This literally is a "NAPI" like
+signaled/polled hybrid, just going in the south direction.
+
+>  But then when you look at something like
+> KVM's hypercall support, it turns out that with sufficient cleverness i=
+n
+> the host, we don't even bother with the MMU hypercalls anymore.
+>=20
+> Doing fancy things in the guest is difficult to support from a long ter=
+m
+> perspective.  It'll more or less never work for Windows and even the la=
+g
+> with Linux makes it difficult for users to see the benefit of these
+> changes.  You get a lot more flexibility trying to solve things in the
+> host even if it's convoluted (like TPR patching).
+>=20
+>>> Do you have data demonstrating the advantage of EOI mitigation?
+>>>     =20
+>> I have non-scientifically gathered numbers in my notebook that put it =
+on
+>> average of about 55%-60% reduction in EOIs for inbound netperf runs, f=
+or
+>> instance.  I don't have time to gather more in the near term, but its
+>> typically in that range for a chatty enough workload, and it goes up a=
+s
+>> you add devices.  I would certainly formally generate those numbers wh=
+en
+>> I make another merge request in the future, but I don't have them now.=
+
+>>   =20
+>=20
+> I don't think it's possible to make progress with vbus without detailed=
+
+> performance data comparing both vbus and virtio (vhost-net).  On the
+> virtio/vhost-net side, I think we'd be glad to help gather/analyze that=
+
+> data.  We have to understand why one's better than the other and then w=
+e
+> have to evaluate whether we can bring those benefits into the later.  I=
+f
+> we can't, we merge vbus.  If we can, we fix virtio.
+
+You will need apples to apples to gain any meaningful data, and that
+means running both on the same setup on the same base kernel, etc.  My
+trees and instructions on how to run them referenced are on the
+alacrityvm site.  I can probably send you a quilt series for any recent
+kernel you may wish to try if the git tree is not sufficient.
+
+Note that if you enable zero-copy (which is on by default), you may want
+to increase the guests wmem buffers since the transmit buffer reclaim
+path is longer and you can artificially stall the guest side stack.
+Generally 1MB-2MB should suffice.  Otherwise just disable zero-copy with
+"echo 0 > /sys/vbus/devices/$dev/zcthresh" on the host.
+
+After you try basic tests, try lots of request-response and multi-homed
+configurations, and watch your exit and interrupt rates as you do so, in
+addition to the obvious metrics.
+
+Good luck, and of course ping me with any troubles getting it to run.
+
+Kind Regards,
+-Greg
+
+
+--------------enigFF5A92A3F19CFAF8937F88FA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksxLwcACgkQP5K2CMvXmqGq7wCcCeDUsWcn778bqmyD6IwBEkRc
+ZjoAnj6hsy+f/nVMtzTbUA2CWjwJ+ih8
+=3l3w
+-----END PGP SIGNATURE-----
+
+--------------enigFF5A92A3F19CFAF8937F88FA--
