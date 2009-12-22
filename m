@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbZLVXFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZLVXFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbZLVXFl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 18:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZLVXFb
+	id S1755508AbZLVXFE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 18:05:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZLVXDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 18:05:31 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61964 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755332AbZLVXDs (ORCPT
+	Tue, 22 Dec 2009 18:03:52 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56875 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755334AbZLVXDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 18:03:48 -0500
+	Tue, 22 Dec 2009 18:03:46 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 22 Dec 2009 15:02:26 -0800
+Date: Tue, 22 Dec 2009 15:02:27 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 06/14] pci: reject mmio range start from 0 on pci_bridge read
+Subject: [PATCH 07/14] pci: don't shrink bridge resources
 In-reply-to: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,84 +24,77 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1261522954-12591-7-git-send-email-yinghai@kernel.org>
+Message-id: <1261522954-12591-8-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 References: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-that is wrong.
+when we are clearing leaf bridge resource and try to get big one, we could
+shrink the bridge if there is no resource under it.
 
-exposed by that patch that doesn's shrink pci bridge res.
+let check with old resource size and make sure we are trying to get big one.
 
--v2: change to "bar reading" to "reg reading"
+-v2: keep disable window print out, still could happen on non pci hotplug system
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- drivers/pci/probe.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/pci/setup-bus.c |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 98ffb2d..4b9f56f 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -316,13 +316,17 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		limit |= (io_limit_hi << 16);
- 	}
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 9bb4435..d53b42e 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -387,7 +387,7 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size)
+ {
+ 	struct pci_dev *dev;
+ 	struct resource *b_res = find_free_bus_resource(bus, IORESOURCE_IO);
+-	unsigned long size = 0, size1 = 0;
++	unsigned long size = 0, size1 = 0, old_size;
  
--	if (base <= limit) {
-+	if (base <= limit && base) {
- 		res->flags = (io_base_lo & PCI_IO_RANGE_TYPE_MASK) | IORESOURCE_IO;
- 		if (!res->start)
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+			 "  bridge window [io  %04lx - %04lx] reg reading\n",
-+				 base, limit);
+ 	if (!b_res)
+  		return;
+@@ -412,12 +412,17 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size)
  	}
- 
- 	res = child->resource[1];
-@@ -330,11 +334,15 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 	pci_read_config_word(dev, PCI_MEMORY_LIMIT, &mem_limit_lo);
- 	base = (mem_base_lo & PCI_MEMORY_RANGE_MASK) << 16;
- 	limit = (mem_limit_lo & PCI_MEMORY_RANGE_MASK) << 16;
--	if (base <= limit) {
-+	if (base <= limit && base) {
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+		        "  bridge window [mem 0x%08lx - 0x%08lx] reg reading\n",
-+					 base, limit + 0xfffff);
- 	}
- 
- 	res = child->resource[2];
-@@ -366,7 +374,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 	if (size < min_size)
+ 		size = min_size;
++	old_size = resource_size(b_res);
++	if (old_size == 1)
++		old_size = 0;
+ /* To be fixed in 2.5: we should have sort of HAVE_ISA
+    flag in the struct pci_bus. */
+ #if defined(CONFIG_ISA) || defined(CONFIG_EISA)
+ 	size = (size & 0xff) + ((size & ~0xffUL) << 2);
  #endif
- 		}
+ 	size = ALIGN(size + size1, 4096);
++	if (size < old_size)
++		size = old_size;
+ 	if (!size) {
+ 		if (b_res->start || b_res->end)
+ 			dev_info(&bus->self->dev, "disabling bridge window "
+@@ -438,7 +443,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+ 			 unsigned long type, resource_size_t min_size)
+ {
+ 	struct pci_dev *dev;
+-	resource_size_t min_align, align, size;
++	resource_size_t min_align, align, size, old_size;
+ 	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
+ 	int order, max_order;
+ 	struct resource *b_res = find_free_bus_resource(bus, type);
+@@ -488,6 +493,11 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
  	}
--	if (base <= limit) {
-+	if (base <= limit && base) {
- 		res->flags = (mem_base_lo & PCI_PREF_RANGE_TYPE_MASK) |
- 					 IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		if (res->flags & PCI_PREF_RANGE_TYPE_64)
-@@ -374,6 +382,10 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->start = base;
- 		res->end = limit + 0xfffff;
- 		dev_printk(KERN_DEBUG, &dev->dev, "  bridge window %pR\n", res);
-+	} else {
-+		dev_printk(KERN_DEBUG, &dev->dev,
-+		     "  bridge window [mem 0x%08lx - %08lx pref] reg reading\n",
-+					 base, limit + 0xfffff);
- 	}
- }
+ 	if (size < min_size)
+ 		size = min_size;
++	old_size = resource_size(b_res);
++	if (old_size == 1)
++		old_size = 0;
++	if (size < old_size)
++		size = old_size;
  
+ 	align = 0;
+ 	min_align = 0;
 -- 
 1.6.0.2
 
