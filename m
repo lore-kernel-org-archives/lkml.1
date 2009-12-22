@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752018AbZLUX75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751415AbZLVACq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752018AbZLUX75 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 18:59:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZLUX74
+	id S1751415AbZLVACq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 19:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZLVACp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 18:59:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48636 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbZLUX7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 18:59:55 -0500
-Message-ID: <4B300C97.40409@kernel.org>
-Date: Tue, 22 Dec 2009 09:02:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Mon, 21 Dec 2009 19:02:45 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:11208 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZLVACo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 19:02:44 -0500
+Date: Tue, 22 Dec 2009 00:02:45 +0000
+From: Jamie Iles <jamie@jamieiles.com>
+To: linux-kernel@vger.kernel.org
+Subject: perf tools symbol_conf: use_modules/try_vmlinux_path
+Message-ID: <20091221235943.GA23973@gallagher>
+Mail-Followup-To: Jamie Iles <jamie@jamieiles.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V8 07/16] Module handling: Use this_cpu_xx to dynamically
- allocate counters
-References: <20091218222617.384355422@quilx.com> <4B2F2820.5030904@kernel.org> <4B2F2AE8.7060507@kernel.org> <200912220958.16139.rusty@rustcorp.com.au>
-In-Reply-To: <200912220958.16139.rusty@rustcorp.com.au>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22/2009 08:28 AM, Rusty Russell wrote:
-> On Mon, 21 Dec 2009 06:29:36 pm Tejun Heo wrote:
->> @@ -555,6 +556,7 @@ static void module_unload_free(struct module *mod)
->>  				kfree(use);
->>  				sysfs_remove_link(i->holders_dir, mod->name);
->>  				/* There can be at most one match. */
->> +				free_percpu(i->refptr);
->>  				break;
->>  			}
->>  		}
-> 
-> This looks very wrong.
+Commit 75be6cf (perf symbols: Make symbol_conf global) does what it says
+on the tin, but also initialises the member fields use_modules and
+try_vmlinux_path to true rather than the 'false' value they would have
+had when symbol_conf was static.
 
-Indeed, thanks for spotting it.  Christoph, I'm rolling back all
-patches from this series.  Please re-post with updates.
+When there is no vmlinux on the system and modules loaded, perf top will
+not show any kernel symbols and perf report will only list raw IP's
+rather than symbol names. Unloading the modules will give normal output.
 
-Thanks.
+The patch below fixes the problem for my box with no vmlinux and still
+works on my desktop with a vmlinux present but I don't understand the
+symbol code in perf enough to be sure that this is 100% correct.
 
+Jamie
+
+[PATCH] perf symbols: don't use modules or try vmlinux unless needed
+
+Commit 75be6cf (perf symbols: Make symbol_conf global) does what it says
+on the tin, but also initialises the member fields use_modules and
+try_vmlinux_path to true rather than the 'false' value they would have
+had when symbol_conf was static.
+
+Restore previous behaviour by initialising these fields to false.
+
+Signed-off-by: Jamie Iles <jamie@jamieiles.com>
+---
+ tools/perf/util/symbol.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index ab92763..be9f17b 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -39,8 +39,8 @@ static char **vmlinux_path;
+ 
+ struct symbol_conf symbol_conf = {
+ 	.exclude_other	  = true,
+-	.use_modules	  = true,
+-	.try_vmlinux_path = true,
++	.use_modules	  = false,
++	.try_vmlinux_path = false,
+ };
+ 
+ bool dso__loaded(const struct dso *self, enum map_type type)
 -- 
-tejun
+1.6.5.2
