@@ -1,162 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZLVQl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZLVQvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbZLVQl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 11:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbZLVQl5
+	id S1753709AbZLVQvX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 11:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZLVQvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 11:41:57 -0500
-Received: from mail.nec-labs.com ([138.15.200.209]:50874 "EHLO
-	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753517AbZLVQl4 (ORCPT
+	Tue, 22 Dec 2009 11:51:22 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43728 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZLVQvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 11:41:56 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-From: Steve Rago <sar@nec-labs.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20091222015907.GA6223@localhost>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
-	 <1261232747.1947.194.camel@serenity>  <20091222015907.GA6223@localhost>
-Content-Type: text/plain
-Date: Tue, 22 Dec 2009 11:41:53 -0500
-Message-Id: <1261500113.13028.78.camel@serenity>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 11:51:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=YN8XeWMm7wPtpUrEaMmFl95hoX/KnvR2BBagQjiY53Bn/x/XBdI+FnX7X/ER0yXIi0
+         yaG8yoZWWG4oNeHx0RZojbfxEpH5LGeDnlGdaCNWbyJSsp7w2/+5xPA3Fw2985E87PRV
+         eKXQywS20IfhTpJRFUlPF4WNUYz5K/wjPjooY=
+MIME-Version: 1.0
+Date: Tue, 22 Dec 2009 16:51:20 +0000
+Message-ID: <74fd948d0912220851v354b1704xa55fc3c88e1c300c@mail.gmail.com>
+Subject: WARN_ON at line 380 in kernel/smp.c under 2.6.32.2 + TuxOnIce + KDB
+From: Pedro Ribeiro <pedrib@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-On Tue, 2009-12-22 at 09:59 +0800, Wu Fengguang wrote:
-> Steve,
-> 
-> On Sat, Dec 19, 2009 at 10:25:47PM +0800, Steve Rago wrote:
-> > 
-> > On Sat, 2009-12-19 at 20:20 +0800, Wu Fengguang wrote:
-> > > 
-> > > On Thu, Dec 17, 2009 at 04:17:57PM +0800, Peter Zijlstra wrote:
-> > > > On Wed, 2009-12-16 at 21:03 -0500, Steve Rago wrote:
-> > > > > Eager Writeback for NFS Clients
-> > > > > -------------------------------
-> > > > > Prevent applications that write large sequential streams of data (like backup, for example)
-> > > > > from entering into a memory pressure state, which degrades performance by falling back to
-> > > > > synchronous operations (both synchronous writes and additional commits).
-> > > 
-> > > What exactly is the "memory pressure state" condition?  What's the
-> > > code to do the "synchronous writes and additional commits" and maybe
-> > > how they are triggered?
-> > 
-> > Memory pressure occurs when most of the client pages have been dirtied
-> > by an application (think backup server writing multi-gigabyte files that
-> > exceed the size of main memory).  The system works harder to be able to
-> > free dirty pages so that they can be reused.  For a local file system,
-> > this means writing the pages to disk.  For NFS, however, the writes
-> > leave the pages in an "unstable" state until the server responds to a
-> > commit request.  Generally speaking, commit processing is far more
-> > expensive than write processing on the server; both are done with the
-> > inode locked, but since the commit takes so long, all writes are
-> > blocked, which stalls the pipeline.
-> 
-> Let me try reiterate the problem with code, please correct me if I'm
-> wrong.
-> 
-> 1) normal fs sets I_DIRTY_DATASYNC when extending i_size, however NFS
->    will set the flag for any pages written -- why this trick? To
->    guarantee the call of nfs_commit_inode()? Which unfortunately turns
->    almost every server side NFS write into sync writes..
+I've been asked by Nigel Cunningham of TuxOnIce to forward this bug here.
 
-Not really.  The commit needs to be sent, but the writes are still
-asynchronous.  It's just that the pages can't be recycled until they are
-on stable storage.
+While resuming from hibernate (using TuxOnIce) I'm seeing the WARN_ON
+at line 380 in kernel/smp.c trigger from a kmap_high call right after
+secondary processors have been brought down (the previous message is
+"CPU1 is down").
 
-> 
->  writeback_single_inode:
->     do_writepages
->       nfs_writepages
->         nfs_writepage ----[short time later]---> nfs_writeback_release*
->                                                    nfs_mark_request_commit
->                                                      __mark_inode_dirty(I_DIRTY_DATASYNC);
->                                     
->     if (I_DIRTY_SYNC || I_DIRTY_DATASYNC)  <---- so this will be true for most time
->       write_inode
->         nfs_write_inode
->           nfs_commit_inode
-> 
-> 
-> 2) NFS commit stops pipeline because it sleep&wait inside i_mutex,
->    which blocks all other NFSDs trying to write/writeback the inode.
-> 
->    nfsd_sync:
->      take i_mutex
->        filemap_fdatawrite
->        filemap_fdatawait
->      drop i_mutex
->      
->    If filemap_fdatawait() can be moved out of i_mutex (or just remove
->    the lock), we solve the root problem:
-> 
->    nfsd_sync:
->      [take i_mutex]
->        filemap_fdatawrite  => can also be blocked, but less a problem
->      [drop i_mutex]
->        filemap_fdatawait
->  
->    Maybe it's a dumb question, but what's the purpose of i_mutex here?
->    For correctness or to prevent livelock? I can imagine some livelock
->    problem here (current implementation can easily wait for extra
->    pages), however not too hard to fix.
+I only have pictures of the backtrace (readable but not very good
+quality, sorry).
+http://img51.imageshack.us/img51/2312/stacktrace1.jpg
+http://img195.imageshack.us/img195/3646/stacktrace2.jpg
 
-Commits and writes on the same inode need to be serialized for
-consistency (write can change the data and metadata; commit [fsync]
-needs to provide guarantees that the written data are stable). The
-performance problem arises because NFS writes are fast (they generally
-just deposit data into the server's page cache), but commits can take a
-long time, especially if there is a lot of cached data to flush to
-stable storage.
+At first I thought this was related to my battery saving script
+messing with /proc/sys/vm/dirty_writeback_centisecs, but I'm not sure
+right now, it still happens with the default value, so I'm clueless.
 
-> 
-> 
-> The proposed patch essentially takes two actions in nfs_file_write()
-> - to start writeback when the per-file nr_dirty goes high
->   without committing
-> - to throttle dirtying when the per-file nr_writeback goes high
->   I guess this effectively prevents pdflush from kicking in with
->   its bad committing behavior
-> 
-> In general it's reasonable to keep NFS per-file nr_dirty low, however
-> questionable to do per-file nr_writeback throttling. This does not
-> work well with the global limits - eg. when there are many dirty
-> files, the summed-up nr_writeback will still grow out of control.
+Mind you, this does not impede the resume - it just dumps this stack
+trace and continues resuming happily.
 
-Not with the eager writeback patch.  The nr_writeback for NFS is limited
-by the woutstanding tunable parameter multiplied by the number of active
-NFS files being written.
+Some information which might be helpful:
+lspci -vv, http://pastebin.com/m2c217b4e
+dmesg, http://pastebin.com/m491ab4db
+.config, http://pastebin.com/m2e4352fe
+(the pastebin links are good for a month)
 
-> And it's more likely to impact user visible responsiveness than
-> a global limit. But my opinion can be biased -- me have a patch to
-> do global NFS nr_writeback limit ;)
+My hardware is a Lenovo T400, and I'm using 2.6.32.2 + TuxOnIce + KDB patches.
 
-What affects user-visible responsiveness is avoiding long delays and
-avoiding delays that vary widely.  Whether the limit is global or
-per-file is less important (but I'd be happy to be convinced otherwise).
-
-Steve
-
-> 
-> Thanks,
-> Fengguang
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Thanks for your help,
+Pedro
