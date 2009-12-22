@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZLVObl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZLVOmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752432AbZLVObl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 09:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZLVObk
+	id S1753336AbZLVOmH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 09:42:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZLVOmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 09:31:40 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:60508 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbZLVObj convert rfc822-to-8bit (ORCPT
+	Tue, 22 Dec 2009 09:42:05 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35599 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbZLVOmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 09:31:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QvI8CUmQ3xes2TWcCQWTHUdC/H7XIb18cOc79SykMHYE6FE1WsEayioJ7Ov0wSqNk4
-         1/AX7biKQo8skpn29nfVYUyFfwfRmuSaeixRMhpvBUZaMhsmm2nsVYxhYzZK44negmwi
-         Xs+5ksBVD11q1Xi1+J44WEwvdqwXKFkLuofcg=
-MIME-Version: 1.0
-In-Reply-To: <20091222120803.GR18217@ZenIV.linux.org.uk>
-References: <4B2F619A.8000407@gmail.com>
-	 <20091222120803.GR18217@ZenIV.linux.org.uk>
-Date: Tue, 22 Dec 2009 22:31:38 +0800
-Message-ID: <b3657a100912220631n4d69ea66x23c1296e1abc468a@mail.gmail.com>
-Subject: Re: [PATCHv2 02/12]posix_acl: Add the check items
-From: liu weni <qingshenlwy@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: chris.mason@oracle.com, joel.becker@oracle.com, cjb@laptop.org,
-       jmorris@namei.org, linux-btrfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, onlyflyer@gmail.com, strongzgy@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 22 Dec 2009 09:42:01 -0500
+Subject: [PATCH] sched:
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de
+In-Reply-To: <1261463382.2923.1.camel@localhost>
+References: <1261441037.3273.254.camel@localhost>
+	 <1261471720.4937.9.camel@laptop>  <1261463382.2923.1.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 15:41:22 +0100
+Message-ID: <1261492882.4937.34.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All:
+As demonstrated by Eric, we really need to call __set_task_cpu() early
+in the fork() path to properly initialize the various task state --
+specifically the cgroup state through set_task_rq().
 
-    I'm sorry for my stupid. I am crazy for fixing this bug.
-And make so much mistake.
-Maybe I need cool down and think more.
+[ we could probably fix this by explicitly calling __set_task_cpu() from
+  sched_fork(), but lets try that for the next cycle and simply revert
+  to the old behaviour for now. ]
 
---
-Best Regards,
-Liuwenyi
-2009-12-22
+Reported-by: Eric Paris <eparis@redhat.com>
+Tested-by: Eric Paris <eparis@redhat.com>, 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -2067,11 +2067,10 @@ void set_task_cpu(struct task_struct *p,
+ 
+ 	trace_sched_migrate_task(p, new_cpu);
+ 
+-	if (task_cpu(p) == new_cpu)
+-		return;
+-
+-	p->se.nr_migrations++;
+-	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
++	if (task_cpu(p) != new_cpu) {
++		p->se.nr_migrations++;
++		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
++	}
+ 
+ 	__set_task_cpu(p, new_cpu);
+ }
 
 
-
-2009/12/22 Al Viro <viro@zeniv.linux.org.uk>:
-> On Mon, Dec 21, 2009 at 07:52:58PM +0800, Liuwenyi wrote:
->> @@ -102,12 +102,9 @@ static int btrfs_set_acl(struct btrfs_trans_handle
->> *trans,
->> char *value = NULL;
->> mode_t mode;
->>
->> - if (acl) {
->> - ret = posix_acl_valid(acl);
->> - if (ret < 0)
->> - return ret;
->> - ret = 0;
->> - }
->> + ret = posix_acl_valid(acl);
->> + if (ret < 0)
->> + return ret;
->
-> ... and now you can't remove acl from btrfs inode.  At all.
->
-> NAK the entire series.  You are changing existing user-visible behaviour
-> for all filesystems for no reason and at least in this case it's clearly
-> wrong change.
->
