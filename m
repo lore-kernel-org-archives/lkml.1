@@ -1,463 +1,1151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbZLVCAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZLVCFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751466AbZLVCAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 21:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZLVB77
+	id S1752089AbZLVCFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 21:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZLVCFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 20:59:59 -0500
-Received: from mailget.neusoft.com ([210.83.25.69]:54608 "EHLO
-	mailgate.neusoft.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZLVB76 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 20:59:58 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5839"; a="5130704"
-Date: Tue, 22 Dec 2009 10:02:07 +0800 (CST)
-From: fengxiangjun <fengxiangjun@neusoft.com>
-Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
-In-reply-to: <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com>
-X-X-Sender: fengxj@darkstar.example.net
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>
-Message-id: <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_gpSUFv41//Wv9IR4XjE9JA)"
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net>
- <4B30134C.1050609@gmail.com>
- <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net>
- <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com>
+	Mon, 21 Dec 2009 21:05:33 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:33677 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750752AbZLVCFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 21:05:32 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: [PATCH] backlight: new driver for ADP8860/70 backlight devices
+Date: Mon, 21 Dec 2009 21:06:28 -0500
+Message-Id: <1261447588-16838-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
---Boundary_(ID_gpSUFv41//Wv9IR4XjE9JA)
-Content-Transfer-Encoding: base64
-Content-Type: TEXT/PLAIN; charset="utf-8"
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/backlight/Kconfig      |   11 +
+ drivers/video/backlight/Makefile     |    1 +
+ drivers/video/backlight/adp8870_bl.c |  917 ++++++++++++++++++++++++++++++++++
+ include/linux/i2c/adp8870.h          |  154 ++++++
+ 4 files changed, 1083 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/adp8870_bl.c
+ create mode 100644 include/linux/i2c/adp8870.h
 
-CllvdSBhcmUgcmlnaHQsIGl0J3MgZGVmaW5pdGVseSB0aW1pbmcgcmVsYXRlZC4KCkkganVzdCB0
-cmllZCBjYXB0dXJpbmcgdGhlIGZhaWxlZCBib290aW5nIG1lc3NhZ2UgdGhyb3VnaCBhIG51bGwg
-bW9kZW0gCmNhYmxlLCBidXQgdGhlIHByb2JsZW0gZ29lcyBhd2F5ISBJdCBzZWVtcyB0aGF0IEkg
-Y2FuJ3QgcmVwcm9kdWNlIGl0IAp3aXRoIHNlcmlhbCBjb25zb2xlIGF0dGFjaGVkLgoKZG1lc2cg
-YXR0YWNoZWQuIAoKT24gTW9uLCAyMSBEZWMgMjAwOSwgUm9iZXJ0IEhhbmNvY2sgd3JvdGU6Cgo+
-IE9uIE1vbiwgRGVjIDIxLCAyMDA5IGF0IDc6MDIgUE0sIGZlbmd4aWFuZ2p1biA8ZmVuZ3hpYW5n
-anVuQG5ldXNvZnQuY29tPiB3cm90ZToKPiA+Cj4gPiBZZWFoLCBydW5uaW5nIDIuNi4zMi4xIG5v
-dywgbm8gcHJvYmxlbS4KPiA+Cj4gPiBkbWVzZyBzaG93czoKPiA+Cj4gPiBhdGExLjAwOiBTQVRB
-IGxpbmsgdXAgMy4wIEdicHMgKFNTdGF0dXMgMTIzIFNDb250cm9sIDMwMCkKPiA+Cj4gPiBXaGVu
-IGJvb3RpbmcgMi42LjMyLjIgd2l0aCB0aGUgc2FtZSBjb25maWcsIEkgZ2V0Cj4gPgo+ID4gYXRh
-MS4wMDogU0FUQSBsaW5rIGRvd24gKFNTdGF0dXMgMCBTQ29udHJvbCAzMDEpCj4gPgo+ID4gV2Vp
-cmQuCj4gCj4gQ0NpbmcgbGludXgtaWRlIGFuZCBUZWp1bi4gQ291bGQgYmUgc29tZSBraW5kIG9m
-IHRpbWluZyBkaWZmZXJlbmNlCj4gdHJpZ2dlcmluZyB0aGUgcHJvYmxlbSwgcGVyaGFwcz8KPiAK
-PiA+Cj4gPiBPbiBNb24sIDIxIERlYyAyMDA5LCBSb2JlcnQgSGFuY29jayB3cm90ZToKPiA+Cj4g
-Pj4gT24gMTIvMjEvMjAwOSAwNToxMiBBTSwgZmVuZ3hpYW5nanVuIHdyb3RlOgo+ID4+ID4KPiA+
-PiA+IEhpLAo+ID4+ID4KPiA+PiA+IGFmdGVyIHVwZ3JhZGluZyB0byAyLjYuMzIuMiwKPiA+PiA+
-IHdpdGggdGhlIGF0dGFjaGVkIGNvbmZpZywKPiA+PiA+IGtlcm5lbCBib290aW5nIGFsd2F5cyhq
-dXN0IHRyaWVkIDEwKyB0aW1lcykgZmFpbGVkIGF0Ogo+ID4+ID4KPiA+PiA+IGF0YTEuMDA6IFNB
-VEEgbGluayBkb3duIChTU3RhdHVzIDAgU0NvbnRyb2wgMzAxKQo+ID4+ID4gLi4uCj4gPj4gPiBW
-RlM6IENhbm5vdCBvcGVuIHJvb3QgZGV2aWNlIC4uLgo+ID4+Cj4gPj4gVGhlcmUgd2VyZSBubyBs
-aWJhdGEgY2hhbmdlcyBpbiAyLjYuMzIuMiB0aGF0IHNob3VsZCBoYXZlIGFmZmVjdGVkIHRoaXMu
-IEFyZQo+ID4+IHlvdSBzdXJlIHRoZSAuY29uZmlnIGlzIHVuY2hhbmdlZD8gSGF2ZSB5b3UgcmVj
-aGVja2VkIHRoYXQgMi42LjMxLjEgc3RpbGwKPiA+PiB3b3Jrcz8KPiA+Pgo+ID4gLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gPiBDb25maWRlbnRpYWxpdHkgTm90
-aWNlOiBUaGUgaW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRoaXMgZS1tYWlsIGFuZCBhbnkgYWNj
-b21wYW55aW5nIGF0dGFjaG1lbnQocykKPiA+IGlzIGludGVuZGVkIG9ubHkgZm9yIHRoZSB1c2Ug
-b2YgdGhlIGludGVuZGVkIHJlY2lwaWVudCBhbmQgbWF5IGJlIGNvbmZpZGVudGlhbCBhbmQvb3Ig
-cHJpdmlsZWdlZCBvZgo+ID4gTmV1c29mdCBDb3Jwb3JhdGlvbiwgaXRzIHN1YnNpZGlhcmllcyBh
-bmQvb3IgaXRzIGFmZmlsaWF0ZXMuIElmIGFueSByZWFkZXIgb2YgdGhpcyBjb21tdW5pY2F0aW9u
-IGlzCj4gPiBub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwgdW5hdXRob3JpemVkIHVzZSwgZm9y
-d2FyZGluZywgcHJpbnRpbmcsIMKgc3RvcmluZywgZGlzY2xvc3VyZSBvciBjb3B5aW5nCj4gPiBp
-cyBzdHJpY3RseSBwcm9oaWJpdGVkLCBhbmQgbWF5IGJlIHVubGF3ZnVsLklmIHlvdSBoYXZlIHJl
-Y2VpdmVkIHRoaXMgY29tbXVuaWNhdGlvbiBpbiBlcnJvcixwbGVhc2UKPiA+IGltbWVkaWF0ZWx5
-IG5vdGlmeSB0aGUgc2VuZGVyIGJ5IHJldHVybiBlLW1haWwsIGFuZCBkZWxldGUgdGhlIG9yaWdp
-bmFsIG1lc3NhZ2UgYW5kIGFsbCBjb3BpZXMgZnJvbQo+ID4geW91ciBzeXN0ZW0uIFRoYW5rIHlv
-dS4KPiA+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+ID4KPiA+
-Cj4gCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpDb25maWRlbnRp
-YWxpdHkgTm90aWNlOiBUaGUgaW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRoaXMgZS1tYWlsIGFu
-ZCBhbnkgYWNjb21wYW55aW5nIGF0dGFjaG1lbnQocykgCmlzIGludGVuZGVkIG9ubHkgZm9yIHRo
-ZSB1c2Ugb2YgdGhlIGludGVuZGVkIHJlY2lwaWVudCBhbmQgbWF5IGJlIGNvbmZpZGVudGlhbCBh
-bmQvb3IgcHJpdmlsZWdlZCBvZiAKTmV1c29mdCBDb3Jwb3JhdGlvbiwgaXRzIHN1YnNpZGlhcmll
-cyBhbmQvb3IgaXRzIGFmZmlsaWF0ZXMuIElmIGFueSByZWFkZXIgb2YgdGhpcyBjb21tdW5pY2F0
-aW9uIGlzIApub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwgdW5hdXRob3JpemVkIHVzZSwgZm9y
-d2FyZGluZywgcHJpbnRpbmcsICBzdG9yaW5nLCBkaXNjbG9zdXJlIG9yIGNvcHlpbmcgCmlzIHN0
-cmljdGx5IHByb2hpYml0ZWQsIGFuZCBtYXkgYmUgdW5sYXdmdWwuSWYgeW91IGhhdmUgcmVjZWl2
-ZWQgdGhpcyBjb21tdW5pY2F0aW9uIGluIGVycm9yLHBsZWFzZSAKaW1tZWRpYXRlbHkgbm90aWZ5
-IHRoZSBzZW5kZXIgYnkgcmV0dXJuIGUtbWFpbCwgYW5kIGRlbGV0ZSB0aGUgb3JpZ2luYWwgbWVz
-c2FnZSBhbmQgYWxsIGNvcGllcyBmcm9tIAp5b3VyIHN5c3RlbS4gVGhhbmsgeW91LiAKLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCg==
-
---Boundary_(ID_gpSUFv41//Wv9IR4XjE9JA)
-Content-id: <alpine.LNX.2.00.0912221002070.1696@darkstar.example.net>
-Content-type: TEXT/PLAIN; charset=US-ASCII; name=dmesg.2.6.32.2
-Content-transfer-encoding: 7BIT
-Content-disposition: attachment; filename=dmesg.2.6.32.2
-Content-description: 
-
-Linux version 2.6.32.2 (root@darkstar) (gcc version 4.4.2 (GCC) ) #1 SMP Tue Dec 22 09:09:26 CST 2009
-Command line: BOOT_IMAGE=Linux-32.2 ro root=803 console=ttyS0 console=tty1
-KERNEL supported cpus:
-  Intel GenuineIntel
-  AMD AuthenticAMD
-  Centaur CentaurHauls
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000df7b1d00 (usable)
- BIOS-e820: 00000000df7b1d00 - 00000000df7b3d00 (ACPI NVS)
- BIOS-e820: 00000000df7b3d00 - 00000000e0000000 (reserved)
- BIOS-e820: 00000000f4000000 - 00000000f8000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fed40000 (reserved)
- BIOS-e820: 00000000fed45000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000120000000 (usable)
-DMI 2.4 present.
-last_pfn = 0x120000 max_arch_pfn = 0x400000000
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-last_pfn = 0xdf7b1 max_arch_pfn = 0x400000000
-init_memory_mapping: 0000000000000000-00000000df7b1000
-init_memory_mapping: 0000000100000000-0000000120000000
-ACPI: RSDP 00000000000e7610 00014 (v00 COMPAQ)
-ACPI: RSDT 00000000df7c3d40 00040 (v01 HPQOEM SLIC-BPC 20070413      00000000)
-ACPI: FACP 00000000df7c3de8 00074 (v01 COMPAQ BROADH2O 00000001      00000000)
-ACPI: DSDT 00000000df7c4143 094FE (v01 COMPAQ DSDT_PRJ 00000001 MSFT 0100000E)
-ACPI: FACS 00000000df7c3d00 00040
-ACPI: APIC 00000000df7c3e5c 00068 (v01 COMPAQ BROADH2O 00000001      00000000)
-ACPI: ASF! 00000000df7c3ec4 00063 (v32 COMPAQ BROADH2O 00000001      00000000)
-ACPI: MCFG 00000000df7c3f27 0003C (v01 COMPAQ BROADH2O 00000001      00000000)
-ACPI: TCPA 00000000df7c3f63 00032 (v01 COMPAQ BROADH2O 00000001      00000000)
-ACPI: SLIC 00000000df7c3f95 00176 (v01 HPQOEM SLIC-BPC 00000001      00000000)
-ACPI: HPET 00000000df7c410b 00038 (v01 COMPAQ BROADH2O 00000001      00000000)
-(7 early reservations) ==> bootmem [0000000000 - 0120000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
-  #2 [0001000000 - 000158d1ac]    TEXT DATA BSS ==> [0001000000 - 000158d1ac]
-  #3 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
-  #4 [000158e000 - 000158e0f3]              BRK ==> [000158e000 - 000158e0f3]
-  #5 [0000008000 - 000000c000]          PGTABLE ==> [0000008000 - 000000c000]
-  #6 [000000c000 - 000000d000]          PGTABLE ==> [000000c000 - 000000d000]
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  DMA32    0x00001000 -> 0x00100000
-  Normal   0x00100000 -> 0x00120000
-Movable zone start PFN for each node
-early_node_map[3] active PFN ranges
-    0: 0x00000000 -> 0x0000009f
-    0: 0x00000100 -> 0x000df7b1
-    0: 0x00100000 -> 0x00120000
-ACPI: PM-Timer IO Port: 0xf808
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
-ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-Using ACPI (MADT) for SMP configuration information
-ACPI: HPET id: 0x8086a201 base: 0xfed00000
-SMP: Allowing 2 CPUs, 0 hotplug CPUs
-Allocating PCI resources starting at e0000000 (gap: e0000000:14000000)
-NR_CPUS:2 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
-PERCPU: Embedded 25 pages/cpu @ffff880028200000 s70616 r8192 d23592 u1048576
-pcpu-alloc: s70616 r8192 d23592 u1048576 alloc=1*2097152
-pcpu-alloc: [0] 0 1 
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1030120
-Kernel command line: BOOT_IMAGE=Linux-32.2 ro root=803 console=ttyS0 console=tty1
-PID hash table entries: 4096 (order: 3, 32768 bytes)
-Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-Initializing CPU#0
-Checking aperture...
-No AGP bridge found
-PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-Placing 64MB software IO TLB between ffff880020000000 - ffff880024000000
-software IO TLB at phys 0x20000000 - 0x24000000
-Memory: 4046908k/4718592k available (3203k kernel code, 533184k absent, 137608k reserved, 1760k data, 376k init)
-SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
-Hierarchical RCU implementation.
-NR_IRQS:320
-Console: colour VGA+ 80x25
-console [tty1] enabled
-console [ttyS0] enabled
-HPET: 3 timers in total, 0 timers will be used for per-cpu timer
-Fast TSC calibration using PIT
-Detected 2394.119 MHz processor.
-Calibrating delay loop (skipped), value calculated using timer frequency.. 4788.23 BogoMIPS (lpj=23941190)
-Mount-cache hash table entries: 256
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 4096K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-mce: CPU supports 6 MCE banks
-CPU0: Thermal monitoring enabled (TM2)
-using mwait in idle threads.
-ACPI: Core revision 20090903
-Setting APIC routing to flat
-..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-CPU0: Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
-Booting processor 1 APIC 0x1 ip 0x6000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4788.08 BogoMIPS (lpj=23940439)
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 4096K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-CPU1: Thermal monitoring enabled (TM2)
-CPU1: Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Brought up 2 CPUs
-Total of 2 processors activated (9576.32 BogoMIPS).
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: MCFG configuration 0: base f4000000 segment 0 buses 0 - 63
-PCI: MCFG area at f4000000 reserved in E820
-PCI: Using MMCONFIG at f4000000 - f7ffffff
-PCI: Using configuration type 1 for base access
-bio: create slab <bio-0> at 0
-ACPI: Interpreter enabled
-ACPI: (supports S0 S3 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: No dock devices found.
-ACPI Error (dsfield-0143): [CAPD] Namespace lookup failure, AE_ALREADY_EXISTS
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0._OSC] (Node ffff88011f8132e0), AE_ALREADY_EXISTS
-ACPI: Marking method _OSC as Serialized because of AE_ALREADY_EXISTS error
-ACPI Warning for \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, ACPI requires 4 (20090903/nspredef-336)
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-pci 0000:00:1a.7: PME# supported from D0 D3hot D3cold
-pci 0000:00:1a.7: PME# disabled
-pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:1b.0: PME# disabled
-pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
-pci 0000:00:1c.0: PME# disabled
-pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
-pci 0000:00:1c.1: PME# disabled
-pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
-pci 0000:00:1d.7: PME# disabled
-pci 0000:00:1f.0: quirk: region f800-f87f claimed by ICH6 ACPI/GPIO/TCO
-pci 0000:00:1f.0: quirk: region fa00-fa3f claimed by ICH6 GPIO
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0400 (mask 007f)
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 2 PIO at 0480 (mask 000f)
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 3 PIO at 0cb0 (mask 000f)
-pci 0000:00:1f.2: PME# supported from D3hot
-pci 0000:00:1f.2: PME# disabled
-pci 0000:00:1f.5: PME# supported from D3hot
-pci 0000:00:1f.5: PME# disabled
-pci 0000:3f:00.0: PME# supported from D3hot D3cold
-pci 0000:3f:00.0: PME# disabled
-pci 0000:00:1e.0: transparent bridge
-ACPI Error (dsfield-0143): [CAPD] Namespace lookup failure, AE_ALREADY_EXISTS
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0._OSC] (Node ffff88011f8132e0), AE_ALREADY_EXISTS
-ACPI Warning for \_SB_.PCI0._OSC: Parameter count mismatch - ASL declared 5, ACPI requires 4 (20090903/nspredef-336)
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 *10 11 14 15)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *10 11 14 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 *5 6 7 10 11 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 10 11 14 15) *0, disabled.
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 10 *11 14 15)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 *5 6 7 10 11 14 15)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 *10 11 14 15)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 11 14 15) *0, disabled.
-vgaarb: device added: PCI:0000:00:02.0,decodes=io+mem,owns=io+mem,locks=none
-vgaarb: loaded
-SCSI subsystem initialized
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-PCI: Using ACPI for IRQ routing
-hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-hpet0: 3 comparators, 64-bit 14.318180 MHz counter
-Switching to clocksource tsc
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp 00:0d: io resource (0xf800-0xf81f) overlaps 0000:00:1f.0 BAR 7 (0xf800-0xf87f), disabling
-pnp 00:0d: io resource (0xf820-0xf83f) overlaps 0000:00:1f.0 BAR 7 (0xf800-0xf87f), disabling
-pnp 00:0d: io resource (0xf840-0xf85f) overlaps 0000:00:1f.0 BAR 7 (0xf800-0xf87f), disabling
-pnp 00:0d: io resource (0xf860-0xf87f) overlaps 0000:00:1f.0 BAR 7 (0xf800-0xf87f), disabling
-pnp: PnP ACPI: found 15 devices
-ACPI: ACPI bus type pnp unregistered
-system 00:0c: ioport range 0x4d0-0x4d1 has been reserved
-system 00:0d: ioport range 0x400-0x41f has been reserved
-system 00:0d: ioport range 0x420-0x43f has been reserved
-system 00:0d: ioport range 0x440-0x45f has been reserved
-system 00:0d: ioport range 0x460-0x47f has been reserved
-system 00:0d: ioport range 0x480-0x48f has been reserved
-system 00:0d: ioport range 0xcb0-0xcbf has been reserved
-system 00:0d: ioport range 0xfa00-0xfa3f has been reserved
-system 00:0d: ioport range 0xfc00-0xfc7f has been reserved
-system 00:0d: ioport range 0xfc80-0xfcff has been reserved
-system 00:0d: ioport range 0xfe00-0xfe7f has been reserved
-system 00:0d: ioport range 0xfe80-0xfeff has been reserved
-system 00:0e: iomem range 0x0-0x9ffff could not be reserved
-system 00:0e: iomem range 0x100000-0xdfffffff could not be reserved
-system 00:0e: iomem range 0xe4000-0xfffff could not be reserved
-system 00:0e: iomem range 0xfec01000-0xfecfffff has been reserved
-system 00:0e: iomem range 0xfed00400-0xfed3ffff has been reserved
-system 00:0e: iomem range 0xfed40000-0xffffffff could not be reserved
-system 00:0e: iomem range 0xf4000000-0xf7ffffff has been reserved
-system 00:0e: iomem range 0xcdc00-0xe3fff has been reserved
-pci 0000:00:1c.0: PCI bridge, secondary bus 0000:20
-pci 0000:00:1c.0:   IO window: 0x2000-0x2fff
-pci 0000:00:1c.0:   MEM window: 0xf0000000-0xf01fffff
-pci 0000:00:1c.0:   PREFETCH window: 0x000000f0200000-0x000000f03fffff
-pci 0000:00:1c.1: PCI bridge, secondary bus 0000:3f
-pci 0000:00:1c.1:   IO window: 0x3000-0x3fff
-pci 0000:00:1c.1:   MEM window: 0xf0600000-0xf08fffff
-pci 0000:00:1c.1:   PREFETCH window: 0x000000f0900000-0x000000f0afffff
-pci 0000:00:1e.0: PCI bridge, secondary bus 0000:07
-pci 0000:00:1e.0:   IO window: disabled
-pci 0000:00:1e.0:   MEM window: disabled
-pci 0000:00:1e.0:   PREFETCH window: disabled
-pci 0000:00:1c.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-NET: Registered protocol family 2
-IP route cache hash table entries: 131072 (order: 8, 1048576 bytes)
-TCP established hash table entries: 262144 (order: 10, 4194304 bytes)
-TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
-TCP: Hash tables configured (established 262144 bind 65536)
-TCP reno registered
-NET: Registered protocol family 1
-fuse init (API version 7.13)
-msgmni has been set to 7905
-Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
-io scheduler noop registered
-io scheduler cfq registered (default)
-input: Power Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0C:00/input/input0
-ACPI: Power Button [PBTN]
-input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input1
-ACPI: Power Button [PWRF]
-ACPI: SSDT 00000000df7ce602 00320 (v01 COMPAQ  CPU_TM2 00000001 MSFT 0100000E)
-processor LNXCPU:00: registered as cooling_device0
-processor LNXCPU:01: registered as cooling_device1
-Generic RTC Driver v1.07
-Linux agpgart interface v0.103
-agpgart-intel 0000:00:00.0: Intel 965Q Chipset
-agpgart-intel 0000:00:00.0: detected 7676K stolen memory
-agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xe0000000
-[drm] Initialized drm 1.1.0 20060810
-pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
-Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-loop: module loaded
-ata_piix 0000:00:1f.2: PCI INT B -> GSI 18 (level, low) -> IRQ 18
-ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
-scsi0 : ata_piix
-scsi1 : ata_piix
-ata1: SATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0x11c0 irq 14
-ata2: SATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0x11c8 irq 15
-ata_piix 0000:00:1f.5: PCI INT B -> GSI 18 (level, low) -> IRQ 18
-ata_piix 0000:00:1f.5: MAP [ P0 -- P1 -- ]
-scsi2 : ata_piix
-scsi3 : ata_piix
-ata3: SATA max UDMA/133 cmd 0x1218 ctl 0x1230 bmdma 0x11e0 irq 18
-ata4: SATA max UDMA/133 cmd 0x1220 ctl 0x1234 bmdma 0x11e8 irq 18
-tg3.c:v3.102 (September 1, 2009)
-tg3 0000:3f:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-eth0: Tigon3 [partno(BCM95755) rev a002] (PCI Express) MAC address 00:1b:78:b7:76:d8
-eth0: attached PHY is 5755 (10/100/1000Base-T Ethernet) (WireSpeed[1])
-eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-ata4: SATA link down (SStatus 0 SControl 300)
-ata2.00: SATA link down (SStatus 0 SControl 300)
-ata2.01: SATA link down (SStatus 4 SControl 300)
-ata3: SATA link down (SStatus 0 SControl 300)
-eth0: dma_rwctrl[76180000] dma_mask[64-bit]
-tun: Universal TUN/TAP device driver, 1.6
-tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-ata1.00: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.01: SATA link down (SStatus 4 SControl 300)
-ata1.00: ATA-7: WDC WD800JD-60LSA5, 10.01E03, max UDMA/100
-ata1.00: 156301488 sectors, multi 16: LBA48 
-ata1.00: configured for UDMA/100
-scsi 0:0:0:0: Direct-Access     ATA      WDC WD800JD-60LS 10.0 PQ: 0 ANSI: 5
-sd 0:0:0:0: [sda] 156301488 512-byte logical blocks: (80.0 GB/74.5 GiB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-ehci_hcd 0000:00:1a.7: EHCI Host Controller
-ehci_hcd 0000:00:1a.7: new USB bus registered, assigned bus number 1
-ehci_hcd 0000:00:1a.7: debug port 1
-ehci_hcd 0000:00:1a.7: irq 22, io mem 0xf0504000
- sda:
-ehci_hcd 0000:00:1a.7: USB 2.0 started, EHCI 1.00
- sda1 sda2 <
-usb usb1: configuration #1 chosen from 1 choice
- sda5 > sda3
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 4 ports detected
-ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-ehci_hcd 0000:00:1d.7: EHCI Host Controller
-ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 2
-ehci_hcd 0000:00:1d.7: debug port 1
-ehci_hcd 0000:00:1d.7: irq 20, io mem 0xf0504400
-sd 0:0:0:0: [sda] Attached SCSI disk
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 4 ports detected
-uhci_hcd: USB Universal Host Controller Interface driver
-uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-uhci_hcd 0000:00:1a.0: UHCI Host Controller
-uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus number 3
-uhci_hcd 0000:00:1a.0: irq 20, io base 0x00001100
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-uhci_hcd 0000:00:1a.1: UHCI Host Controller
-uhci_hcd 0000:00:1a.1: new USB bus registered, assigned bus number 4
-uhci_hcd 0000:00:1a.1: irq 21, io base 0x00001120
-usb usb4: configuration #1 chosen from 1 choice
-hub 4-0:1.0: USB hub found
-hub 4-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-uhci_hcd 0000:00:1d.0: UHCI Host Controller
-uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 5
-uhci_hcd 0000:00:1d.0: irq 20, io base 0x00001140
-usb usb5: configuration #1 chosen from 1 choice
-hub 5-0:1.0: USB hub found
-hub 5-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-uhci_hcd 0000:00:1d.1: UHCI Host Controller
-uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 6
-uhci_hcd 0000:00:1d.1: irq 21, io base 0x00001160
-usb usb6: configuration #1 chosen from 1 choice
-hub 6-0:1.0: USB hub found
-hub 6-0:1.0: 2 ports detected
-Initializing USB Mass Storage driver...
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-PNP: PS/2 Controller [PNP0303:KBD,PNP0f0e:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-cpuidle: using governor ladder
-cpuidle: using governor menu
-Advanced Linux Sound Architecture Driver Version 1.0.21.
-HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
-input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input2
-ALSA device list:
-  #0: HDA Intel at 0xf0500000 irq 21
-Netfilter messages via NETLINK v0.30.
-nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
-ctnetlink v0.93: registering with nfnetlink.
-ip_tables: (C) 2000-2006 Netfilter Core Team
-TCP cubic registered
-NET: Registered protocol family 17
-input: ImPS/2 Logitech Wheel Mouse as /devices/platform/i8042/serio1/input/input3
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with writeback data mode.
-VFS: Mounted root (ext3 filesystem) readonly on device 8:3.
-Freeing unused kernel memory: 376k freed
-EXT3 FS on sda3, internal journal
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sda5, internal journal
-EXT3-fs: mounted filesystem with writeback data mode.
-
---Boundary_(ID_gpSUFv41//Wv9IR4XjE9JA)--
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 09bfa96..261fa7c 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -262,3 +262,14 @@ config BACKLIGHT_ADP5520
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called adp5520_bl.
+ 
++config BACKLIGHT_ADP8870
++	tristate "Backlight Driver for ADP8870 using WLED"
++	depends on BACKLIGHT_CLASS_DEVICE && I2C
++	select NEW_LEDS
++	select LEDS_CLASS
++	help
++	  If you have a LCD backlight connected to the ADP8870,
++	  say Y here to enable this driver.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called adp8870_bl.
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 9a40554..60ac452 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -28,4 +28,5 @@ obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
+ obj-$(CONFIG_BACKLIGHT_WM831X)	+= wm831x_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADX)    += adx_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADP5520)	+= adp5520_bl.o
++obj-$(CONFIG_BACKLIGHT_ADP8870)	+= adp8870_bl.o
+ 
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+new file mode 100644
+index 0000000..5b0ced0
+--- /dev/null
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -0,0 +1,917 @@
++/*
++ * Backlight driver for Analog Devices ADP8870 Backlight Devices
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#include <linux/module.h>
++#include <linux/version.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/pm.h>
++#include <linux/platform_device.h>
++#include <linux/i2c.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/leds.h>
++#include <linux/workqueue.h>
++
++#include <linux/i2c/adp8870.h>
++#define ADP8870_EXT_FEATURES
++#define ADP8870_USE_LEDS
++
++
++#define ADP8870_MFDVID 	0x00  /* Manufacturer and device ID */
++#define ADP8870_MDCR 	0x01  /* Device mode and status */
++#define ADP8870_INT_STAT 0x02  /* Interrupts status */
++#define ADP8870_INT_EN 	0x03  /* Interrupts enable */
++#define ADP8870_CFGR 	0x04  /* Configuration register */
++#define ADP8870_BLSEL 	0x05  /* Sink enable backlight or independent */
++#define ADP8870_PWMLED 	0x06  /* PWM Enable Selection Register */
++#define ADP8870_BLOFF 	0x07  /* Backlight off timeout */
++#define ADP8870_BLDIM 	0x08  /* Backlight dim timeout */
++#define ADP8870_BLFR 	0x09  /* Backlight fade in and out rates */
++#define ADP8870_BLMX1 	0x0A  /* Backlight (Brightness Level 1-daylight) maximum current */
++#define ADP8870_BLDM1 	0x0B  /* Backlight (Brightness Level 1-daylight) dim current */
++#define ADP8870_BLMX2 	0x0C  /* Backlight (Brightness Level 2-bright) maximum current */
++#define ADP8870_BLDM2 	0x0D  /* Backlight (Brightness Level 2-bright) dim current */
++#define ADP8870_BLMX3 	0x0E  /* Backlight (Brightness Level 3-office) maximum current */
++#define ADP8870_BLDM3 	0x0F  /* Backlight (Brightness Level 3-office) dim current */
++#define ADP8870_BLMX4 	0x10  /* Backlight (Brightness Level 4-indoor) maximum current */
++#define ADP8870_BLDM4 	0x11  /* Backlight (Brightness Level 4-indoor) dim current */
++#define ADP8870_BLMX5 	0x12  /* Backlight (Brightness Level 5-dark) maximum current */
++#define ADP8870_BLDM5 	0x13  /* Backlight (Brightness Level 5-dark) dim current */
++#define ADP8870_ISCLAW 	0x1A  /* Independent sink current fade law register */
++#define ADP8870_ISCC 	0x1B  /* Independent sink current control register */
++#define ADP8870_ISCT1 	0x1C  /* Independent Sink Current Timer Register LED[7:5] */
++#define ADP8870_ISCT2 	0x1D  /* Independent Sink Current Timer Register LED[4:1] */
++#define ADP8870_ISCF 	0x1E  /* Independent sink current fade register */
++#define ADP8870_ISC1 	0x1F  /* Independent Sink Current LED1 */
++#define ADP8870_ISC2 	0x20  /* Independent Sink Current LED2 */
++#define ADP8870_ISC3 	0x21  /* Independent Sink Current LED3 */
++#define ADP8870_ISC4 	0x22  /* Independent Sink Current LED4 */
++#define ADP8870_ISC5 	0x23  /* Independent Sink Current LED5 */
++#define ADP8870_ISC6 	0x24  /* Independent Sink Current LED6 */
++#define ADP8870_ISC7 	0x25  /* Independent Sink Current LED7 (Brightness Level 1-daylight) */
++#define ADP8870_ISC7_L2 0x26  /* Independent Sink Current LED7 (Brightness Level 2-bright) */
++#define ADP8870_ISC7_L3 0x27  /* Independent Sink Current LED7 (Brightness Level 3-office) */
++#define ADP8870_ISC7_L4 0x28  /* Independent Sink Current LED7 (Brightness Level 4-indoor) */
++#define ADP8870_ISC7_L5 0x29  /* Independent Sink Current LED7 (Brightness Level 5-dark) */
++#define ADP8870_CMP_CTL 0x2D  /* ALS Comparator Control Register */
++#define ADP8870_ALS1_EN 0x2E  /* Main ALS comparator level enable */
++#define ADP8870_ALS2_EN 0x2F  /* Second ALS comparator level enable */
++#define ADP8870_ALS1_STAT 0x30  /* Main ALS Comparator Status Register */
++#define ADP8870_ALS2_STAT 0x31  /* Second ALS Comparator Status Register */
++#define ADP8870_L2TRP 	0x32  /* L2 comparator reference */
++#define ADP8870_L2HYS 	0x33  /* L2 hysteresis */
++#define ADP8870_L3TRP 	0x34  /* L3 comparator reference */
++#define ADP8870_L3HYS 	0x35  /* L3 hysteresis */
++#define ADP8870_L4TRP 	0x36  /* L4 comparator reference */
++#define ADP8870_L4HYS 	0x37  /* L4 hysteresis */
++#define ADP8870_L5TRP 	0x38  /* L5 comparator reference */
++#define ADP8870_L5HYS 	0x39  /* L5 hysteresis */
++#define ADP8870_PH1LEVL 0x40  /* First phototransistor ambient light level-low byte register */
++#define ADP8870_PH1LEVH 0x41  /* First phototransistor ambient light level-high byte register */
++#define ADP8870_PH2LEVL 0x42  /* Second phototransistor ambient light level-low byte register */
++#define ADP8870_PH2LEVH 0x43  /* Second phototransistor ambient light level-high byte register */
++
++#define ADP8870_MANUFID		0x3  /* Analog Devices AD8870 Manufacturer and device ID */
++#define ADP8870_DEVID(x)	((x) & 0xF)
++#define ADP8870_MANID(x)	((x) >> 4)
++
++/* MDCR Device mode and status */
++#define D7ALSEN      		(1 << 7)
++#define INT_CFG      		(1 << 6)
++#define NSTBY        		(1 << 5)
++#define DIM_EN       		(1 << 4)
++#define GDWN_DIS     		(1 << 3)
++#define SIS_EN       		(1 << 2)
++#define CMP_AUTOEN   		(1 << 1)
++#define BLEN         		(1 << 0)
++
++/* ADP8870_ALS1_EN Main ALS comparator level enable */
++#define L5_EN         		(1 << 3)
++#define L4_EN         		(1 << 2)
++#define L3_EN         		(1 << 1)
++#define L2_EN         		(1 << 0)
++
++#define CFGR_BLV_SHIFT		3
++#define CFGR_BLV_MASK		0x7
++#define ADP8870_FLAG_LED_MASK	0xFF
++
++#define FADE_VAL(in, out)	((0xF & (in)) | ((0xF & (out)) << 4))
++#define BL_CFGR_VAL(law, blv)	((((blv) & CFGR_BLV_MASK) << CFGR_BLV_SHIFT) | ((0x3 & (law)) << 1))
++#define ALS_CMPR_CFG_VAL(filt)	((0x7 & filt) << 1)
++
++struct adp8870_bl {
++	struct i2c_client *client;
++	struct backlight_device *bl;
++	struct adp8870_led *led;
++	struct adp8870_backlight_platform_data *pdata;
++	struct mutex lock;
++	unsigned long cached_daylight_max;
++	int id;
++	int current_brightness;
++};
++
++struct adp8870_led {
++	struct led_classdev	cdev;
++	struct work_struct	work;
++	struct i2c_client 	*client;
++	enum led_brightness	new_brightness;
++	int			id;
++	int			flags;
++};
++
++static int adp8870_read(struct i2c_client *client,
++				int reg, uint8_t *val)
++{
++	int ret;
++
++	ret = i2c_smbus_read_byte_data(client, reg);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed reading at 0x%02x\n", reg);
++		return ret;
++	}
++
++	*val = (uint8_t)ret;
++	return 0;
++}
++
++
++static int adp8870_write(struct i2c_client *client, u8 reg, u8 val)
++{
++	return i2c_smbus_write_byte_data(client, reg, val);
++}
++
++int adp8870_set_bits(struct i2c_client *client, int reg, uint8_t bit_mask)
++{
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&data->lock);
++
++	ret = adp8870_read(client, reg, &reg_val);
++
++	if (!ret && ((reg_val & bit_mask) == 0)) {
++		reg_val |= bit_mask;
++		ret = adp8870_write(client, reg, reg_val);
++	}
++
++	mutex_unlock(&data->lock);
++	return ret;
++}
++
++int adp8870_clr_bits(struct i2c_client *client, int reg, uint8_t bit_mask)
++{
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&data->lock);
++
++	ret = adp8870_read(client, reg, &reg_val);
++
++	if (!ret && (reg_val & bit_mask)) {
++		reg_val &= ~bit_mask;
++		ret = adp8870_write(client, reg, reg_val);
++	}
++
++	mutex_unlock(&data->lock);
++	return ret;
++}
++
++	/*
++	 * Independent sink / LED
++	 */
++#if defined(ADP8870_USE_LEDS)
++static void adp8870_led_work(struct work_struct *work)
++{
++	struct adp8870_led *led = container_of(work, struct adp8870_led, work);
++	adp8870_write(led->client, ADP8870_ISC1 + led->id - 1,
++			 led->new_brightness >> 1);
++}
++
++static void adp8870_led_set(struct led_classdev *led_cdev,
++			   enum led_brightness value)
++{
++	struct adp8870_led *led;
++
++	led = container_of(led_cdev, struct adp8870_led, cdev);
++	led->new_brightness = value;
++	schedule_work(&led->work);
++}
++
++static int adp8870_led_setup(struct adp8870_led *led)
++{
++	struct i2c_client *client = led->client;
++	int ret = 0;
++
++	ret = adp8870_write(client, ADP8870_ISC1 + led->id - 1, 0);
++	ret |= adp8870_set_bits(client, ADP8870_ISCC, 1 << (led->id - 1));
++
++	if (led->id > 4)
++		ret |= adp8870_set_bits(client, ADP8870_ISCT1,
++				(led->flags & 0x3) << ((led->id - 5) * 2));
++	else
++		ret |= adp8870_set_bits(client, ADP8870_ISCT2,
++				(led->flags & 0x3) << ((led->id - 1) * 2));
++
++	return ret;
++}
++
++static int __devinit adp8870_led_probe(struct i2c_client *client)
++{
++	struct adp8870_backlight_platform_data *pdata =
++		client->dev.platform_data;
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	struct adp8870_led *led, *led_dat;
++	struct led_info *cur_led;
++	int ret, i;
++
++	led = kzalloc(sizeof(*led) * pdata->num_leds, GFP_KERNEL);
++	if (led == NULL) {
++		dev_err(&client->dev, "failed to alloc memory\n");
++		return -ENOMEM;
++	}
++
++	ret = adp8870_write(client, ADP8870_ISCLAW, pdata->led_fade_law);
++	ret = adp8870_write(client, ADP8870_ISCT1,
++			(pdata->led_on_time & 0x3) << 6);
++	ret |= adp8870_write(client, ADP8870_ISCF,
++			FADE_VAL(pdata->led_fade_in, pdata->led_fade_out));
++
++	if (ret) {
++		dev_err(&client->dev, "failed to write\n");
++		goto err_free;
++	}
++
++	for (i = 0; i < pdata->num_leds; ++i) {
++		cur_led = &pdata->leds[i];
++		led_dat = &led[i];
++
++		led_dat->id = cur_led->flags & ADP8870_FLAG_LED_MASK;
++
++		if (led_dat->id > 7 || led_dat->id < 1) {
++			dev_err(&client->dev, "Invalid LED ID %d\n",
++				led_dat->id);
++			goto err;
++		}
++
++		if (pdata->bl_led_assign & (1 << (led_dat->id - 1))) {
++			dev_err(&client->dev, "LED %d used by Backlight\n",
++				led_dat->id);
++			goto err;
++		}
++
++		led_dat->cdev.name = cur_led->name;
++		led_dat->cdev.default_trigger = cur_led->default_trigger;
++		led_dat->cdev.brightness_set = adp8870_led_set;
++		led_dat->cdev.brightness = LED_OFF;
++		led_dat->flags = cur_led->flags >> FLAG_OFFT_SHIFT;
++		led_dat->client = client;
++		led_dat->new_brightness = LED_OFF;
++		INIT_WORK(&led_dat->work, adp8870_led_work);
++
++		ret = led_classdev_register(&client->dev, &led_dat->cdev);
++		if (ret) {
++			dev_err(&client->dev, "failed to register LED %d\n",
++				led_dat->id);
++			goto err;
++		}
++
++		ret = adp8870_led_setup(led_dat);
++		if (ret) {
++			dev_err(&client->dev, "failed to write\n");
++			i++;
++			goto err;
++		}
++	}
++
++	data->led = led;
++
++	return 0;
++
++err:
++	if (i > 0) {
++		for (i = i - 1; i >= 0; i--) {
++			led_classdev_unregister(&led[i].cdev);
++			cancel_work_sync(&led[i].work);
++		}
++	}
++
++err_free:
++	kfree(led);
++	return ret;
++}
++
++static int __devexit adp8870_led_remove(struct i2c_client *client)
++{
++	struct adp8870_backlight_platform_data *pdata =
++		client->dev.platform_data;
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	int i;
++
++	for (i = 0; i < pdata->num_leds; i++) {
++		led_classdev_unregister(&data->led[i].cdev);
++		cancel_work_sync(&data->led[i].work);
++	}
++
++	kfree(data->led);
++	return 0;
++}
++#else
++static int __devinit adp8870_led_probe(struct i2c_client *client)
++{
++	return 0;
++}
++
++static int __devexit adp8870_led_remove(struct i2c_client *client)
++{
++	return 0;
++}
++#endif
++
++static int adp8870_bl_set(struct backlight_device *bl, int brightness)
++{
++	struct adp8870_bl *data = bl_get_data(bl);
++	struct i2c_client *client = data->client;
++	int ret = 0;
++
++	if (data->pdata->en_ambl_sens) {
++		if ((brightness > 0) && (brightness < ADP8870_MAX_BRIGHTNESS)) {
++			/* Disable Ambient Light auto adjust */
++			ret |= adp8870_clr_bits(client, ADP8870_MDCR,
++					CMP_AUTOEN);
++			ret |= adp8870_write(client, ADP8870_BLMX1, brightness);
++		} else {
++			/*
++			 * MAX_BRIGHTNESS -> Enable Ambient Light auto adjust
++			 * restore daylight l1 sysfs brightness
++			 */
++			ret |= adp8870_write(client, ADP8870_BLMX1,
++					 data->cached_daylight_max);
++			ret |= adp8870_set_bits(client, ADP8870_MDCR,
++					 CMP_AUTOEN);
++		}
++	} else {
++		ret |= adp8870_write(client, ADP8870_BLMX1, brightness);
++	}
++
++	if (data->current_brightness && brightness == 0)
++		ret |= adp8870_set_bits(client,
++				ADP8870_MDCR, DIM_EN);
++	else if (data->current_brightness == 0 && brightness)
++		ret |= adp8870_clr_bits(client,
++				ADP8870_MDCR, DIM_EN);
++
++	if (!ret)
++		data->current_brightness = brightness;
++
++	return ret;
++}
++
++static int adp8870_bl_update_status(struct backlight_device *bl)
++{
++	int brightness = bl->props.brightness;
++	if (bl->props.power != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	return adp8870_bl_set(bl, brightness);
++}
++
++static int adp8870_bl_get_brightness(struct backlight_device *bl)
++{
++	struct adp8870_bl *data = bl_get_data(bl);
++
++	return data->current_brightness;
++}
++
++static struct backlight_ops adp8870_bl_ops = {
++	.update_status	= adp8870_bl_update_status,
++	.get_brightness	= adp8870_bl_get_brightness,
++};
++
++static int adp8870_bl_setup(struct backlight_device *bl)
++{
++	struct adp8870_bl *data = bl_get_data(bl);
++	struct i2c_client *client = data->client;
++	struct adp8870_backlight_platform_data *pdata = data->pdata;
++	int ret = 0;
++
++	ret |= adp8870_write(client, ADP8870_BLSEL, ~pdata->bl_led_assign);
++	ret |= adp8870_write(client, ADP8870_PWMLED, pdata->pwm_assign);
++	ret |= adp8870_write(client, ADP8870_BLMX1, pdata->l1_daylight_max);
++	ret |= adp8870_write(client, ADP8870_BLDM1, pdata->l1_daylight_dim);
++
++	if (pdata->en_ambl_sens) {
++		data->cached_daylight_max = pdata->l1_daylight_max;
++		ret |= adp8870_write(client, ADP8870_BLMX2,
++						pdata->l2_bright_max);
++		ret |= adp8870_write(client, ADP8870_BLDM2,
++						pdata->l2_bright_dim);
++		ret |= adp8870_write(client, ADP8870_BLMX3,
++						pdata->l3_office_max);
++		ret |= adp8870_write(client, ADP8870_BLDM3,
++						pdata->l3_office_dim);
++		ret |= adp8870_write(client, ADP8870_BLMX4,
++						pdata->l4_indoor_max);
++		ret |= adp8870_write(client, ADP8870_BLDM4,
++						pdata->l4_indor_dim);
++		ret |= adp8870_write(client, ADP8870_BLMX5,
++						pdata->l5_dark_max);
++		ret |= adp8870_write(client, ADP8870_BLDM5,
++						pdata->l5_dark_dim);
++
++		ret |= adp8870_write(client, ADP8870_L2TRP, pdata->l2_trip);
++		ret |= adp8870_write(client, ADP8870_L2HYS, pdata->l2_hyst);
++		ret |= adp8870_write(client, ADP8870_L3TRP, pdata->l3_trip);
++		ret |= adp8870_write(client, ADP8870_L3HYS, pdata->l3_hyst);
++		ret |= adp8870_write(client, ADP8870_L4TRP, pdata->l4_trip);
++		ret |= adp8870_write(client, ADP8870_L4HYS, pdata->l4_hyst);
++		ret |= adp8870_write(client, ADP8870_L5TRP, pdata->l5_trip);
++		ret |= adp8870_write(client, ADP8870_L5HYS, pdata->l5_hyst);
++		ret |= adp8870_write(client, ADP8870_ALS1_EN, L5_EN | L4_EN |
++						L3_EN | L2_EN);
++
++		ret |= adp8870_write(client, ADP8870_CMP_CTL,
++			ALS_CMPR_CFG_VAL(pdata->abml_filt));
++
++	}
++
++	ret |= adp8870_write(client, ADP8870_CFGR,
++			BL_CFGR_VAL(pdata->bl_fade_law, 0));
++
++	ret |= adp8870_write(client, ADP8870_BLFR, FADE_VAL(pdata->bl_fade_in,
++			pdata->bl_fade_out));
++
++	ret |= adp8870_set_bits(client, ADP8870_MDCR, BLEN | DIM_EN | NSTBY);
++
++	return ret;
++}
++
++static ssize_t adp8870_show(struct device *dev, char *buf, int reg)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	int error;
++	uint8_t reg_val;
++
++	mutex_lock(&data->lock);
++	error = adp8870_read(data->client, reg, &reg_val);
++	mutex_unlock(&data->lock);
++
++	if (error < 0)
++		return error;
++
++	return sprintf(buf, "%u\n", reg_val);
++}
++
++static ssize_t adp8870_store(struct device *dev, const char *buf,
++			 size_t count, int reg)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	unsigned long val;
++	int ret;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret)
++		return ret;
++
++	mutex_lock(&data->lock);
++	adp8870_write(data->client, reg, val);
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static ssize_t adp8870_bl_l5_dark_max_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX5);
++}
++
++static ssize_t adp8870_bl_l5_dark_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX5);
++}
++static DEVICE_ATTR(l5_dark_max, 0664, adp8870_bl_l5_dark_max_show,
++			adp8870_bl_l5_dark_max_store);
++
++
++static ssize_t adp8870_bl_l4_indoor_max_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX4);
++}
++
++static ssize_t adp8870_bl_l4_indoor_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX4);
++}
++static DEVICE_ATTR(l4_indoor_max, 0664, adp8870_bl_l4_indoor_max_show,
++			adp8870_bl_l4_indoor_max_store);
++
++
++static ssize_t adp8870_bl_l3_office_max_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX3);
++}
++
++static ssize_t adp8870_bl_l3_office_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX3);
++}
++
++static DEVICE_ATTR(l3_office_max, 0664, adp8870_bl_l3_office_max_show,
++			adp8870_bl_l3_office_max_store);
++
++static ssize_t adp8870_bl_l2_bright_max_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX2);
++}
++
++static ssize_t adp8870_bl_l2_bright_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX2);
++}
++static DEVICE_ATTR(l2_bright_max, 0664, adp8870_bl_l2_bright_max_show,
++			adp8870_bl_l2_bright_max_store);
++
++static ssize_t adp8870_bl_l1_daylight_max_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX1);
++}
++
++static ssize_t adp8870_bl_l1_daylight_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++
++	strict_strtoul(buf, 10, &data->cached_daylight_max);
++	return adp8870_store(dev, buf, count, ADP8870_BLMX1);
++}
++static DEVICE_ATTR(l1_daylight_max, 0664, adp8870_bl_l1_daylight_max_show,
++			adp8870_bl_l1_daylight_max_store);
++
++static ssize_t adp8870_bl_l5_dark_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM5);
++}
++
++static ssize_t adp8870_bl_l5_dark_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM5);
++}
++static DEVICE_ATTR(l5_dark_dim, 0664, adp8870_bl_l5_dark_dim_show,
++			adp8870_bl_l5_dark_dim_store);
++
++static ssize_t adp8870_bl_l4_indoor_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM4);
++}
++
++static ssize_t adp8870_bl_l4_indoor_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM4);
++}
++static DEVICE_ATTR(l4_indoor_dim, 0664, adp8870_bl_l4_indoor_dim_show,
++			adp8870_bl_l4_indoor_dim_store);
++
++
++static ssize_t adp8870_bl_l3_office_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM3);
++}
++
++static ssize_t adp8870_bl_l3_office_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM3);
++}
++static DEVICE_ATTR(l3_office_dim, 0664, adp8870_bl_l3_office_dim_show,
++			adp8870_bl_l3_office_dim_store);
++
++static ssize_t adp8870_bl_l2_bright_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM2);
++}
++
++static ssize_t adp8870_bl_l2_bright_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM2);
++}
++static DEVICE_ATTR(l2_bright_dim, 0664, adp8870_bl_l2_bright_dim_show,
++			adp8870_bl_l2_bright_dim_store);
++
++static ssize_t adp8870_bl_l1_daylight_dim_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM1);
++}
++
++static ssize_t adp8870_bl_l1_daylight_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM1);
++}
++static DEVICE_ATTR(l1_daylight_dim, 0664, adp8870_bl_l1_daylight_dim_show,
++			adp8870_bl_l1_daylight_dim_store);
++
++#ifdef ADP8870_EXT_FEATURES
++static ssize_t adp8870_bl_ambient_light_level_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	int error;
++	uint8_t reg_val;
++	uint16_t ret_val;
++
++	mutex_lock(&data->lock);
++	error = adp8870_read(data->client, ADP8870_PH1LEVL, &reg_val);
++	ret_val = reg_val;
++	error |= adp8870_read(data->client, ADP8870_PH1LEVH, &reg_val);
++	mutex_unlock(&data->lock);
++
++	if (error < 0)
++		return error;
++
++	/*
++	 * Return 13-bit conversion value for the first light sensor
++	 */
++
++	ret_val += (reg_val & 0x1F) << 8;
++
++	return sprintf(buf, "%u\n", ret_val);
++}
++static DEVICE_ATTR(ambient_light_level, 0444,
++		adp8870_bl_ambient_light_level_show, NULL);
++
++static ssize_t adp8870_bl_ambient_light_zone_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	int error;
++	uint8_t reg_val;
++
++	mutex_lock(&data->lock);
++	error = adp8870_read(data->client, ADP8870_CFGR, &reg_val);
++	mutex_unlock(&data->lock);
++
++	if (error < 0)
++		return error;
++
++	return sprintf(buf, "%u\n",
++		((reg_val >> CFGR_BLV_SHIFT) & CFGR_BLV_MASK) + 1);
++}
++
++static ssize_t adp8870_bl_ambient_light_zone_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	unsigned long val;
++	uint8_t reg_val;
++	int ret;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret)
++		return ret;
++
++	if (val == 0) {
++		/* Enable automatic ambient light sensing */
++		adp8870_set_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
++	} else if ((val > 0) && (val < 6)) {
++		/* Disable automatic ambient light sensing */
++		adp8870_clr_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
++
++		/* Set user supplied ambient light zone */
++		mutex_lock(&data->lock);
++		adp8870_read(data->client, ADP8870_CFGR, &reg_val);
++		reg_val &= ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
++		reg_val |= val << CFGR_BLV_SHIFT;
++		adp8870_write(data->client, ADP8870_CFGR, reg_val);
++		mutex_unlock(&data->lock);
++	}
++
++	return count;
++}
++static DEVICE_ATTR(ambient_light_zone, 0664,
++		adp8870_bl_ambient_light_zone_show,
++		adp8870_bl_ambient_light_zone_store);
++#endif
++
++static struct attribute *adp8870_bl_attributes[] = {
++	&dev_attr_l5_dark_max.attr,
++	&dev_attr_l5_dark_dim.attr,
++	&dev_attr_l4_indoor_max.attr,
++	&dev_attr_l4_indoor_dim.attr,
++	&dev_attr_l3_office_max.attr,
++	&dev_attr_l3_office_dim.attr,
++	&dev_attr_l2_bright_max.attr,
++	&dev_attr_l2_bright_dim.attr,
++	&dev_attr_l1_daylight_max.attr,
++	&dev_attr_l1_daylight_dim.attr,
++#ifdef ADP8870_EXT_FEATURES
++	&dev_attr_ambient_light_level.attr,
++	&dev_attr_ambient_light_zone.attr,
++#endif
++	NULL
++};
++
++static const struct attribute_group adp8870_bl_attr_group = {
++	.attrs = adp8870_bl_attributes,
++};
++
++static int __devinit adp8870_probe(struct i2c_client *client,
++					const struct i2c_device_id *id)
++{
++	struct backlight_device *bl;
++	struct adp8870_bl *data;
++	struct adp8870_backlight_platform_data *pdata =
++		client->dev.platform_data;
++	unsigned int revid;
++	uint8_t reg_val;
++	int ret;
++
++	if (!i2c_check_functionality(client->adapter,
++					I2C_FUNC_SMBUS_BYTE_DATA)) {
++		dev_err(&client->dev, "SMBUS Byte Data not Supported\n");
++		return -EIO;
++	}
++
++	if (!pdata) {
++		dev_err(&client->dev, "no platform data?\n");
++		return -EINVAL;
++	}
++
++	ret = adp8870_read(client, ADP8870_MFDVID, &reg_val);
++	if (ret < 0)
++		return -EIO;
++
++	if (ADP8870_MANID(reg_val) != ADP8870_MANUFID) {
++		dev_err(&client->dev, "failed to probe\n");
++		return -ENODEV;
++	}
++
++	revid = ADP8870_DEVID(reg_val);
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (data == NULL)
++		return -ENOMEM;
++
++	data->client = client;
++	data->pdata = pdata;
++	data->id = id->driver_data;
++	data->current_brightness = 0;
++	i2c_set_clientdata(client, data);
++
++	mutex_init(&data->lock);
++
++	bl = backlight_device_register(dev_driver_string(&client->dev),
++			&client->dev, data, &adp8870_bl_ops);
++	if (IS_ERR(bl)) {
++		dev_err(&client->dev, "failed to register backlight\n");
++		ret = PTR_ERR(bl);
++		goto out2;
++	}
++
++	bl->props.max_brightness =
++		bl->props.brightness = ADP8870_MAX_BRIGHTNESS;
++
++	data->bl = bl;
++
++	if (pdata->en_ambl_sens)
++		ret = sysfs_create_group(&bl->dev.kobj,
++			&adp8870_bl_attr_group);
++
++	if (ret) {
++		dev_err(&client->dev, "failed to register sysfs\n");
++		goto out1;
++	}
++
++	ret = adp8870_bl_setup(bl);
++	if (ret) {
++		ret = -EIO;
++		goto out;
++	}
++
++	backlight_update_status(bl);
++
++	dev_info(&client->dev, "Rev.%d Backlight\n", revid);
++
++	if (pdata->num_leds)
++		adp8870_led_probe(client);
++
++	return 0;
++
++out:
++	if (data->pdata->en_ambl_sens)
++		sysfs_remove_group(&data->bl->dev.kobj,
++			&adp8870_bl_attr_group);
++out1:
++	backlight_device_unregister(bl);
++out2:
++	i2c_set_clientdata(client, NULL);
++	kfree(data);
++
++	return ret;
++}
++
++static int __devexit adp8870_remove(struct i2c_client *client)
++{
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++
++	adp8870_clr_bits(client, ADP8870_MDCR, NSTBY);
++
++	if (data->led)
++		adp8870_led_remove(client);
++
++	if (data->pdata->en_ambl_sens)
++		sysfs_remove_group(&data->bl->dev.kobj,
++			&adp8870_bl_attr_group);
++
++	backlight_device_unregister(data->bl);
++	i2c_set_clientdata(client, NULL);
++	kfree(data);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int adp8870_i2c_suspend(struct i2c_client *client, pm_message_t message)
++{
++	adp8870_clr_bits(client, ADP8870_MDCR, NSTBY);
++
++	return 0;
++}
++
++static int adp8870_i2c_resume(struct i2c_client *client)
++{
++	adp8870_set_bits(client, ADP8870_MDCR, NSTBY);
++
++	return 0;
++}
++#else
++#define adp8870_i2c_suspend NULL
++#define adp8870_i2c_resume NULL
++#endif
++
++static const struct i2c_device_id adp8870_id[] = {
++	{ "adp8870", 0 },
++	{ "adp8860", 1 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, adp8870_id);
++
++static struct i2c_driver adp8870_driver = {
++	.driver = {
++		.name = KBUILD_MODNAME,
++	},
++	.probe    = adp8870_probe,
++	.remove   = __devexit_p(adp8870_remove),
++	.suspend = adp8870_i2c_suspend,
++	.resume  = adp8870_i2c_resume,
++	.id_table = adp8870_id,
++};
++
++static int __init adp8870_init(void)
++{
++	return i2c_add_driver(&adp8870_driver);
++}
++module_init(adp8870_init);
++
++static void __exit adp8870_exit(void)
++{
++	i2c_del_driver(&adp8870_driver);
++}
++module_exit(adp8870_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_DESCRIPTION("ADP8870 Backlight driver");
++MODULE_ALIAS("platform:adp8870-backlight");
+diff --git a/include/linux/i2c/adp8870.h b/include/linux/i2c/adp8870.h
+new file mode 100644
+index 0000000..8304de9
+--- /dev/null
++++ b/include/linux/i2c/adp8870.h
+@@ -0,0 +1,154 @@
++/*
++ * Definitions and platform data for Analog Devices
++ * Backlight drivers ADP8870
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#ifndef __LINUX_I2C_ADP8870_H
++#define __LINUX_I2C_ADP8870_H
++
++#define ID_ADP8870		8870
++#define ID_ADP8860		8860
++
++#define ADP8870_MAX_BRIGHTNESS	0x7F
++#define FLAG_OFFT_SHIFT 8
++
++/*
++ * LEDs subdevice platform data
++ */
++
++#define ADP8870_LED_DIS_BLINK	(0 << FLAG_OFFT_SHIFT)
++#define ADP8870_LED_OFFT_600ms	(1 << FLAG_OFFT_SHIFT)
++#define ADP8870_LED_OFFT_1200ms	(2 << FLAG_OFFT_SHIFT)
++#define ADP8870_LED_OFFT_1800ms	(3 << FLAG_OFFT_SHIFT)
++
++#define ADP8870_LED_ONT_200ms	0
++#define ADP8870_LED_ONT_600ms	1
++#define ADP8870_LED_ONT_800ms	2
++#define ADP8870_LED_ONT_1200ms	3
++
++#define ADP8870_LED_D7		(7)
++#define ADP8870_LED_D6		(6)
++#define ADP8870_LED_D5		(5)
++#define ADP8870_LED_D4		(4)
++#define ADP8870_LED_D3		(3)
++#define ADP8870_LED_D2		(2)
++#define ADP8870_LED_D1		(1)
++
++/*
++ * Backlight subdevice platform data
++ */
++
++#define ADP8870_BL_D7		(1 << 6)
++#define ADP8870_BL_D6		(1 << 5)
++#define ADP8870_BL_D5		(1 << 4)
++#define ADP8870_BL_D4		(1 << 3)
++#define ADP8870_BL_D3		(1 << 2)
++#define ADP8870_BL_D2		(1 << 1)
++#define ADP8870_BL_D1		(1 << 0)
++
++#define ADP8870_FADE_T_DIS	0	/* Fade Timer Disabled */
++#define ADP8870_FADE_T_300ms	1	/* 0.3 Sec */
++#define ADP8870_FADE_T_600ms	2
++#define ADP8870_FADE_T_900ms	3
++#define ADP8870_FADE_T_1200ms	4
++#define ADP8870_FADE_T_1500ms	5
++#define ADP8870_FADE_T_1800ms	6
++#define ADP8870_FADE_T_2100ms	7
++#define ADP8870_FADE_T_2400ms	8
++#define ADP8870_FADE_T_2700ms	9
++#define ADP8870_FADE_T_3000ms	10
++#define ADP8870_FADE_T_3500ms	11
++#define ADP8870_FADE_T_4000ms	12
++#define ADP8870_FADE_T_4500ms	13
++#define ADP8870_FADE_T_5000ms	14
++#define ADP8870_FADE_T_5500ms	15	/* 5.5 Sec */
++
++#define ADP8870_FADE_LAW_LINEAR 	0
++#define ADP8870_FADE_LAW_SQUARE 	1
++#define ADP8870_FADE_LAW_CUBIC1 	2
++#define ADP8870_FADE_LAW_CUBIC2 	3
++
++#define ADP8870_BL_AMBL_FILT_80ms 	0	/* Light sensor filter time */
++#define ADP8870_BL_AMBL_FILT_160ms 	1
++#define ADP8870_BL_AMBL_FILT_320ms 	2
++#define ADP8870_BL_AMBL_FILT_640ms 	3
++#define ADP8870_BL_AMBL_FILT_1280ms 	4
++#define ADP8870_BL_AMBL_FILT_2560ms 	5
++#define ADP8870_BL_AMBL_FILT_5120ms 	6
++#define ADP8870_BL_AMBL_FILT_10240ms 	7	/* 10.24 sec */
++
++	/*
++	 * Blacklight current 0..30mA
++	 */
++#define ADP8870_BL_CUR_mA(I)		((I * 127) / 30)
++
++	/*
++	 * L2 comparator current 0..1106uA
++	 */
++#define ADP8870_L2_COMP_CURR_uA(I)	((I * 255) / 1106)
++
++	/*
++	 * L3 comparator current 0..551uA
++	 */
++#define ADP8870_L3_COMP_CURR_uA(I)	((I * 255) / 551)
++
++	/*
++	 * L4 comparator current 0..275uA
++	 */
++#define ADP8870_L4_COMP_CURR_uA(I)	((I * 255) / 275)
++
++	/*
++	 * L5 comparator current 0..138uA
++	 */
++#define ADP8870_L5_COMP_CURR_uA(I)	((I * 255) / 138)
++
++struct adp8870_backlight_platform_data {
++	u8 bl_led_assign;	/* 1 = Backlight 0 = Individual LED */
++	u8 pwm_assign;		/* 1 = Enables PWM mode */
++
++	u8 bl_fade_in;		/* Backlight Fade-In Timer */
++	u8 bl_fade_out;		/* Backlight Fade-Out Timer */
++	u8 bl_fade_law;		/* fade-on/fade-off transfer characteristic */
++
++	u8 en_ambl_sens;	/* 1 = enable ambient light sensor */
++	u8 abml_filt;		/* Light sensor filter time */
++
++	u8 l1_daylight_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l1_daylight_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_bright_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_bright_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l3_office_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l3_office_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l4_indoor_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l4_indor_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l5_dark_max;		/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l5_dark_dim;		/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++
++	u8 l2_trip;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1106 uA */
++	u8 l2_hyst;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1106 uA */
++	u8 l3_trip;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 551 uA */
++	u8 l3_hyst;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 551 uA */
++	u8 l4_trip;		/* use L4_COMP_CURR_uA(I) 0 <= I <= 275 uA */
++	u8 l4_hyst;		/* use L4_COMP_CURR_uA(I) 0 <= I <= 275 uA */
++	u8 l5_trip;		/* use L5_COMP_CURR_uA(I) 0 <= I <= 138 uA */
++	u8 l5_hyst;		/* use L6_COMP_CURR_uA(I) 0 <= I <= 138 uA */
++
++	/**
++	 * Independent Current Sinks / LEDS
++	 * Sinks not assigned to the Backlight can be exposed to
++	 * user space using the LEDS CLASS interface
++	 */
++
++	int num_leds;
++	struct led_info	*leds;
++	u8 led_fade_in;		/* LED Fade-In Timer */
++	u8 led_fade_out;	/* LED Fade-Out Timer */
++	u8 led_fade_law;	/* fade-on/fade-off transfer characteristic */
++	u8 led_on_time;
++};
++
++#endif /* __LINUX_I2C_ADP8870_H */
+-- 
+1.6.5.4
 
