@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZLVU7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZLVVAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbZLVU7M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 15:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZLVU7K
+	id S1754894AbZLVVAO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 16:00:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZLVVAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 15:59:10 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46874 "EHLO e4.ny.us.ibm.com"
+	Tue, 22 Dec 2009 16:00:12 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:44276 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751290AbZLVU7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 15:59:09 -0500
-Date: Tue, 22 Dec 2009 12:59:12 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: [PATCH] [1/11] Add rcustring ADT for RCU protected strings
-Message-ID: <20091222205912.GD9279@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091221220.243954235@firstfloor.org> <20091221012022.9C5C4B160D@basil.firstfloor.org> <20091222024635.GA9279@linux.vnet.ibm.com> <20091222100553.GA10314@basil.fritz.box>
+	id S1751730AbZLVVAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 16:00:09 -0500
+Date: Tue, 22 Dec 2009 22:00:07 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: mchehab@infradead.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/media/dvb: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0912222159480.28669@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091222100553.GA10314@basil.fritz.box>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 11:05:53AM +0100, Andi Kleen wrote:
-> On Mon, Dec 21, 2009 at 06:46:35PM -0800, Paul E. McKenney wrote:
-> > My guess is that you will sooner or later need a size field, perhaps
-> > under some debug config parameter.
-> 
-> That can be gotten from ksize() if needed.
+From: Julia Lawall <julia@diku.dk>
 
-Fair enough!!!
+If the NULL test is necessary, then the dereference should be moved below
+the NULL test.
 
-> > > +/*
-> > > + * Get a local private copy of a RCU protected string.
-> > > + * Mostly useful to get a string that is stable while sleeping.
-> > > + * Caller must free returned string.
-> > > + */
-> > > +char *access_rcu_string(const char *str, int size, gfp_t gfp)
-> > > +{
-> > > +	char *copy = kmalloc(size, gfp);
-> > > +	if (!str)
-> > > +		return NULL;
-> > 
-> > Assuming that "str" points to the "str" field of a struct rcu_string,
-> > what prevents a grace period from elapsing at this point, freeing the
-> > "str" out from under us?
-> 
-> Yes, that's broken thanks. I'll move the reference into the read lock
-> section.
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Looking forward to seeing the updated version!
+// <smpl>
+@@
+type T;
+expression E;
+identifier i,fld;
+statement S;
+@@
 
-							Thanx, Paul
+- T i = E->fld;
++ T i;
+  ... when != E
+      when != i
+  if (E == NULL) S
++ i = E->fld;
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/media/dvb/dvb-usb/dw2102.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff -u -p a/drivers/media/dvb/dvb-usb/dw2102.c b/drivers/media/dvb/dvb-usb/dw2102.c
+--- a/drivers/media/dvb/dvb-usb/dw2102.c
++++ b/drivers/media/dvb/dvb-usb/dw2102.c
+@@ -470,12 +470,13 @@ static int s6x0_i2c_transfer(struct i2c_
+ 								int num)
+ {
+ 	struct dvb_usb_device *d = i2c_get_adapdata(adap);
+-	struct usb_device *udev = d->udev;
++	struct usb_device *udev;
+ 	int ret = 0;
+ 	int len, i, j;
+ 
+ 	if (!d)
+ 		return -ENODEV;
++	udev = d->udev;
+ 	if (mutex_lock_interruptible(&d->i2c_mutex) < 0)
+ 		return -EAGAIN;
+ 
