@@ -1,87 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZLVGQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZLVObz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751508AbZLVGQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 01:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZLVGQQ
+	id S1753381AbZLVObz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 09:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZLVObx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 01:16:16 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:50649 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZLVGQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 01:16:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=nKLtj4SacHw1yR4cImCGGye2/sAZWkM8rOf8vfoL8vbQexieKRhuTcUmmJb9StLBSH
-         kRYrvGqAml/VKUdnjXhJckLZEmnA0SLcAeQtWt7/48tCKFrDIrAuA5KQ6xHrITV0mQEN
-         EirG7LjmIA2EHS/MGWa/B1fDHLVyG6Mv8ZFnA=
-MIME-Version: 1.0
-In-Reply-To: <4B305680.4090304@cn.fujitsu.com>
-References: <4B2F1543.8020300@cn.fujitsu.com> <20091221064356.GA2378@elte.hu>
-	 <4B2F2588.8070501@cn.fujitsu.com> <1261406427.4314.155.camel@laptop>
-	 <1261410984.25193.8.camel@gandalf.stny.rr.com>
-	 <4B305680.4090304@cn.fujitsu.com>
-Date: Tue, 22 Dec 2009 14:16:14 +0800
-Message-ID: <2674af740912212216mb75ef54l5143576b8173acff@mail.gmail.com>
-Subject: Re: [PATCH] tracing: Fix lockdep warning in global_clock()
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: rostedt@goodmis.org, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 22 Dec 2009 09:31:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21103 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753288AbZLVObw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 09:31:52 -0500
+Subject: Re: 2.6.33-rc1 unusable due to scheduler issues, circular locking,
+ WARNs and BUGs
+From: Eric Paris <eparis@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de
+In-Reply-To: <1261471720.4937.9.camel@laptop>
+References: <1261441037.3273.254.camel@localhost>
+	 <1261471720.4937.9.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 01:29:42 -0500
+Message-ID: <1261463382.2923.1.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
->> The problem isn't with locks, it's with disabling interrupts. Lockdep
->> keeps track of every time interrupts are disabled. If something disables
->> interrupts with raw_* but then calls something that disables interrupts
->> the normal way, lockdep will detect that interrupts are being disabled
->> but they already are disabled. The internal irq disabled variable in
->> lockdep wont match reality, and this will blow up (well, disable
->> lockdep).
->>
->> So if cpu_clock disables interrupts with local_irq_* then so must
->> trace_clock_global.
->>
->
-> Looking into sched_clock.c, seems the only place that can trigger lockdep
-> is the local_irq_* in cpu_clock(), though I'm not sure for architecture-
-> specific sched_clock().
->
-> If so, I think we can use raw_local_irq_* in cpu_clock(). Actually I
-> tried it and the warning is gone.
->
+On Tue, 2009-12-22 at 09:48 +0100, Peter Zijlstra wrote:
+> On Mon, 2009-12-21 at 19:17 -0500, Eric Paris wrote:
+> > Trying to build a kernel on a 48 core x86_64 box using make -j 64 and
+> > I'm exploding in the scheduler.  I'm running (and building) kernel
+> > f7b84a6ba7eaeba4e1df8feddca1473a7db369a5  There are three distinct
+> > signatures of problems.  Some boots I'll see all 3 of these failures
+> > sometimes only 1 or 2 of them.  That's the reason they are kinda split
+> > up in dmesg.
 
-I think the reason is on local_irq_restore():
+Appears the kernel built with no oops, circular locking, or bugs.  Only
+thing in dmesg during the build was:
 
-#define local_irq_restore(flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		if (raw_irqs_disabled_flags(flags)) {	\
-			raw_local_irq_restore(flags);	\
-			trace_hardirqs_off();		\                        <======
-		} else {				\
-			trace_hardirqs_on();		\
-			raw_local_irq_restore(flags);	\
-		}					\
-	} while (0)
+DMA-API: debugging out of memory - disabling
 
-If we have a call trace like below:
-raw_local_irq_save();
-            ...
-local_irq_save();
-            ...
-local_irq_restore();
-            ...
-raw_locla_irq_save();
+I'm going to do it a number more times to be sure, but I had 100%
+failure rate before.  Sounds like this patch has got to go.
 
-Then when we leave from local_irq_restore(), current->hardirqs_enabled will
-changed by trace_hardirqs_off() to 0, this will break the all consistent.
+-Eric
 
-Thanks,
-Yong
+> > 
+> > 1) gcc/3141 is trying to acquire lock:
+> >  (&(&sem->wait_lock)->rlock){......}, at: [<ffffffff81223234>] __down_read_trylock+0x13/0x46
+> > 
+> > but task is already holding lock:
+> >  (&rq->lock){-.-.-.}, at: [<ffffffff8103dd2d>] task_rq_lock+0x51/0x83
+> 
+> This is due to the pagefalut happening while holding the rq->lock, so
+> its an artefact of 3).
+> 
+> > 2) WARN() in kernel/sched_fair.c:1001 hrtick_start_fair()
+> 
+> Worrying, but probably due to the same problem as 3)
+> 
+> > 3) NULL pointer dereference at 0000000000000168 in check_preempt_wakeup
+> >       kernel/sched_fair.c
+> 
+> Right, hard to tell where exactly it goes bang, but could you please try
+> reverting the below patch.
+> 
+> What I suspect happens is that we his the task_cpu(p)==cpu case, we then
+> don't do __set_task_cpu()->set_task_rq(), which sets the group
+> scheduling pointers (you seem to have cgroup scheduling enabled).
+> 
+> If those pointers are wild all kinds of interesting bits can happen,
+> including 3) and possibly 2).
+> 
+> If this revert doesn't help, could you please also provide the output of
+> addr2line -e vmlinux <FAULT_IP> ?
+> 
+> ---
+> commit 738d2be4301007f054541c5c4bf7fb6a361c9b3a
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Wed Dec 16 18:04:42 2009 +0100
+> 
+>     sched: Simplify set_task_cpu()
+>     
+>     Rearrange code a bit now that its a simpler function.
+>     
+>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>     Cc: Mike Galbraith <efault@gmx.de>
+>     LKML-Reference: <20091216170518.269101883@chello.nl>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index f92ce63..8a2bfd3 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2034,11 +2034,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+>  	return delta < (s64)sysctl_sched_migration_cost;
+>  }
+>  
+> -
+>  void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+>  {
+> -	int old_cpu = task_cpu(p);
+> -
+>  #ifdef CONFIG_SCHED_DEBUG
+>  	/*
+>  	 * We should never call set_task_cpu() on a blocked task,
+> @@ -2049,11 +2046,11 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+>  
+>  	trace_sched_migrate_task(p, new_cpu);
+>  
+> -	if (old_cpu != new_cpu) {
+> -		p->se.nr_migrations++;
+> -		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS,
+> -				     1, 1, NULL, 0);
+> -	}
+> +	if (task_cpu(p) == new_cpu)
+> +		return;
+> +
+> +	p->se.nr_migrations++;
+> +	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
+>  
+>  	__set_task_cpu(p, new_cpu);
+>  }
+> 
+> 
+
+
