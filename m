@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZLVUba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZLVUbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZLVUba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 15:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbZLVUb1
+	id S1754743AbZLVUbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 15:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZLVUbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 15:31:27 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:43106 "EHLO mgw2.diku.dk"
+	Tue, 22 Dec 2009 15:31:46 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:43115 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754345AbZLVUbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 15:31:25 -0500
-Date: Tue, 22 Dec 2009 21:31:23 +0100 (CET)
+	id S1754657AbZLVUbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 15:31:45 -0500
+Date: Tue, 22 Dec 2009 21:31:43 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/6] drivers/media/radio: Correct use after free
-Message-ID: <Pine.LNX.4.64.0912222131000.28669@ask.diku.dk>
+To: sameo@linux.intel.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/6] drivers/mfd: Correct use after free
+Message-ID: <Pine.LNX.4.64.0912222131230.28669@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,10 +23,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-It is not clear how to share the unlock in the case where the structure
-containing the lock has to be freed.  So the unlock is now duplicated, with
-one copy moved before the free.  The unlock label furthermore is no longer
-useful and is thus deleted.
+The structure t7l66xb should not be freed before the subsequent references
+to its fields in the arguments to clk_put.  Furthermore, this structure is
+allocated near the beginning of the function, and a goto to the label
+err_noirq appears after a successful allocation, so it would seem that the
+kfree should be moved down below this label.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -49,29 +50,24 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/radio/si470x/radio-si470x-usb.c  |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/mfd/t7l66xb.c               |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/radio/si470x/radio-si470x-usb.c b/drivers/media/radio/si470x/radio-si470x-usb.c
-index a96e1b9..a0a79c7 100644
---- a/drivers/media/radio/si470x/radio-si470x-usb.c
-+++ b/drivers/media/radio/si470x/radio-si470x-usb.c
-@@ -590,8 +590,9 @@ int si470x_fops_release(struct file *file)
- 			video_unregister_device(radio->videodev);
- 			kfree(radio->int_in_buffer);
- 			kfree(radio->buffer);
-+			mutex_unlock(&radio->disconnect_lock);
- 			kfree(radio);
--			goto unlock;
-+			goto done;
- 		}
+diff --git a/drivers/mfd/t7l66xb.c b/drivers/mfd/t7l66xb.c
+index 2fa0703..dad3768 100644
+--- a/drivers/mfd/t7l66xb.c
++++ b/drivers/mfd/t7l66xb.c
+@@ -405,12 +405,12 @@ static int t7l66xb_probe(struct platform_device *dev)
+ err_ioremap:
+ 	release_resource(&t7l66xb->rscr);
+ err_request_scr:
+-	kfree(t7l66xb);
+ 	clk_put(t7l66xb->clk48m);
+ err_clk48m_get:
+ 	clk_put(t7l66xb->clk32k);
+ err_clk32k_get:
+ err_noirq:
++	kfree(t7l66xb);
+ 	return ret;
+ }
  
- 		/* cancel read processes */
-@@ -601,7 +602,6 @@ int si470x_fops_release(struct file *file)
- 		retval = si470x_stop(radio);
- 		usb_autopm_put_interface(radio->intf);
- 	}
--unlock:
- 	mutex_unlock(&radio->disconnect_lock);
- done:
- 	return retval;
