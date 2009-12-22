@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbZLVIoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZLVIod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752176AbZLVIoO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 03:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZLVIoM
+	id S1752075AbZLVIod (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 03:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZLVIob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 03:44:12 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:51618 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbZLVIoL (ORCPT
+	Tue, 22 Dec 2009 03:44:31 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:57480 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbZLVIo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 03:44:11 -0500
-Subject: Re: [PATCH 04/10] bluetooth: add __init/__exit macros to
- drivers/bluetooth/btmrvl_sdio.c
-From: Marcel Holtmann <marcel@holtmann.org>
-To: peterhuewe@gmx.de
-Cc: Jiri Kosina <trivial@kernel.org>, kernel-janitors@vger.kernel.org,
-       Bing Zhao <bzhao@marvell.com>, Ben Hutchings <ben@decadent.org.uk>,
-       =?ISO-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-       Julia Lawall <julia@diku.dk>, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1261470861-23988-1-git-send-email-peterhuewe@gmx.de>
-References: <1261470861-23988-1-git-send-email-peterhuewe@gmx.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 00:43:42 -0800
-Message-Id: <1261471422.4041.200.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 03:44:29 -0500
+Date: Tue, 22 Dec 2009 03:43:56 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Alex Chiang <achiang@hp.com>
+Cc: venkatesh.pallipadi@intel.com, linux-acpi@vger.kernel.org,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] ACPI: early _PDC eval and unify x86/ia64
+In-reply-to: <20091220190434.4274.67855.stgit@bob.kio>
+Message-id: <alpine.LFD.2.00.0912220343140.7435@localhost.localdomain>
+References: <20091220190434.4274.67855.stgit@bob.kio>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+entire series applied to acpi-test
 
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Trivial patch which adds the __init/__exit macros to the module_init/
-> module_exit functions of
-> 
-> drivers/bluetooth/btmrvl_sdio.c
-> 
-> Please have a look at the small patch and either pull it through
-> your tree, or please ack' it so Jiri can pull it through the trivial
-> tree.
+nice cleanup, Alex.
+Unless Venki knows of something I don't about upcoming PDC-foo,
+I think it will stick.
 
-patch has been applied to my tree. Thanks.
-
-Regards
-
-Marcel
-
+thanks,
+Len Brown, Intel Open Source Technology Center
 
