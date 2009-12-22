@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbZLVBJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbZLVBKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854AbZLVBJM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 20:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZLVBJI
+	id S1753052AbZLVBKf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 20:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZLVBKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 20:09:08 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:64326 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbZLVBI5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 20:08:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=krC0qrRTR80+EXEYc3J0Y6sk/ql13WIKNowf99hDNFmhjod8cwvvKgdVui2Fwxxbgj
-         Q5h+d3tzfIAGAhc9erT6+y0eNB451LsSNbYdplC3M9p/qr4RUlv9543pi42KgoWXA7Ke
-         f5kO/lzUxwuBk1tJ+5KStcpr8xMt777+Wk3qM=
+	Mon, 21 Dec 2009 20:10:25 -0500
+Received: from ozlabs.org ([203.10.76.45]:34969 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752402AbZLVBKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 20:10:23 -0500
+Date: Tue, 22 Dec 2009 12:09:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, eranian@gmail.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       perfmon2-devel@lists.sf.net, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] perf_events: improve Intel event scheduling
+Message-ID: <20091222010941.GC31264@drongo>
+References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
+ <1258561957.3918.661.camel@laptop>
+ <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
+ <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
+ <1261410040.4314.178.camel@laptop>
+ <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
+ <1261423869.4314.198.camel@laptop>
+ <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net>
-References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net>
-	 <4B30134C.1050609@gmail.com>
-	 <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net>
-Date: Mon, 21 Dec 2009 19:08:56 -0600
-Message-ID: <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com>
-Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
-From: Robert Hancock <hancockrwd@gmail.com>
-To: fengxiangjun <fengxiangjun@neusoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 7:02 PM, fengxiangjun <fengxiangjun@neusoft.com> wrote:
->
-> Yeah, running 2.6.32.1 now, no problem.
->
-> dmesg shows:
->
-> ata1.00: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->
-> When booting 2.6.32.2 with the same config, I get
->
-> ata1.00: SATA link down (SStatus 0 SControl 301)
->
-> Weird.
+On Mon, Dec 21, 2009 at 09:59:45PM +0100, Stephane Eranian wrote:
 
-CCing linux-ide and Tejun. Could be some kind of timing difference
-triggering the problem, perhaps?
+> Ok, so what you are suggesting is that the assignment is actually done
+> incrementally in ->enable(). hw_group_sched_in() would simply validate
+> that a single group is sane (i.e., can be scheduled if it was alone).
 
->
-> On Mon, 21 Dec 2009, Robert Hancock wrote:
->
->> On 12/21/2009 05:12 AM, fengxiangjun wrote:
->> >
->> > Hi,
->> >
->> > after upgrading to 2.6.32.2,
->> > with the attached config,
->> > kernel booting always(just tried 10+ times) failed at:
->> >
->> > ata1.00: SATA link down (SStatus 0 SControl 301)
->> > ...
->> > VFS: Cannot open root device ...
->>
->> There were no libata changes in 2.6.32.2 that should have affected this. Are
->> you sure the .config is unchanged? Have you rechecked that 2.6.31.1 still
->> works?
->>
-> ---------------------------------------------------------------------------------------------------
-> Confidentiality Notice: The information contained in this e-mail and any accompanying attachment(s)
-> is intended only for the use of the intended recipient and may be confidential and/or privileged of
-> Neusoft Corporation, its subsidiaries and/or its affiliates. If any reader of this communication is
-> not the intended recipient, unauthorized use, forwarding, printing,  storing, disclosure or copying
-> is strictly prohibited, and may be unlawful.If you have received this communication in error,please
-> immediately notify the sender by return e-mail, and delete the original message and all copies from
-> your system. Thank you.
-> ---------------------------------------------------------------------------------------------------
->
->
+No, hw_group_sched_in needs to validate that this group can go on
+along with everything else that has already been enabled.  But as I
+have said, if you have the complete list of enabled events to hand,
+that's not hard.
+
+On the other hand, hw_perf_event_init does need to validate that a
+single group is sane by itself.
+
+Paul.
