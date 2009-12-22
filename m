@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZLVLmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZLVLrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753116AbZLVLmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 06:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZLVLml
+	id S1752943AbZLVLrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 06:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZLVLrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 06:42:41 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:60616 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbZLVLmk (ORCPT
+	Tue, 22 Dec 2009 06:47:14 -0500
+Received: from anguilla.debian.or.at ([86.59.21.37]:38390 "EHLO
+	anguilla.debian.or.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbZLVLrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 06:42:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=s7rod3T5t0U+Pg0047B+W3F38YiV2Qz1IIMwWB1iBfsUIdNwldA3TSmfh0QQ3CkPTd
-         RqnJd74L1U1X6brc3zyrMGv/C/zeSzqfgldpqOt8uvxZ189EgfL3lyY+vQhEep45fWl5
-         4PdDA2TKq7uXXoBx8hdn1rUFrA1BbDxp5AR8k=
+	Tue, 22 Dec 2009 06:47:13 -0500
+Date: Tue, 22 Dec 2009 12:47:11 +0100
+From: Peter Palfrader <weasel@debian.org>
+To: linux-kernel@vger.kernel.org, DSA <debian-admin@lists.debian.org>
+Subject: Re: 2.6.32.1: BUG and panic: unable to handle kernel NULL pointer dereference at 000000000000001f
+Message-ID: <20091222114711.GL13850@anguilla.noreply.org>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	DSA <debian-admin@lists.debian.org>
+References: <20091215162736.GS13850@anguilla.noreply.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0912212020450.19919@dr-wily.mit.edu>
-References: <2b41c200912211621p72eceed5tb9f9711b2f96b72e@mail.gmail.com>
-	 <alpine.DEB.1.10.0912211926100.19919@dr-wily.mit.edu>
-	 <2b41c200912211639p30927d84k9253ac7c90ac0e68@mail.gmail.com>
-	 <alpine.DEB.1.10.0912211944050.19919@dr-wily.mit.edu>
-	 <2b41c200912211710m11f1ebbbjc3d30c67e9e49944@mail.gmail.com>
-	 <alpine.DEB.1.10.0912212020450.19919@dr-wily.mit.edu>
-Date: Tue, 22 Dec 2009 12:42:35 +0100
-Message-ID: <2b41c200912220342i5ceade4bjba94615238cd872d@mail.gmail.com>
-Subject: Re: [REGRESSION] um: CONFIG_STATIC_LINK=y broken
-From: richard -rw- weinberger <richard.weinberger@gmail.com>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091215162736.GS13850@anguilla.noreply.org>
+X-PGP: 1024D/94C09C7F 5B00 C96D 5D54 AEE1 206B  AF84 DE7A AF6E 94C0 9C7F
+X-Request-PGP: http://www.palfrader.org/keys/94C09C7F.asc
+X-Accept-Language: de, en
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/22, Tim Abbott <tabbott@ksplice.com>:
-> Richard, can you test that this patch fixes the issue for you?
+On Tue, 15 Dec 2009, Peter Palfrader wrote:
 
-Using INIT_TEXT_SECTION(0) instead of INIT_TEXT_SECTION(PAGE_SIZE)
-works fine here.
-(Tested with 2.6.33-rc1 and 2.6.32)
+> we tried to upgrade a couple of our proliant servers from 2.6.31.6 to
+> 2.6.32.1.
+> 
+> On two of our DL385g1 servers we had problems booting 2.6.32.1, as they
+> paniced.
 
-//richard
+Several more do not boot .32 reliably.  Anything I can try?
+
+-- 
+                           |  .''`.  ** Debian GNU/Linux **
+      Peter Palfrader      | : :' :      The  universal
+ http://www.palfrader.org/ | `. `'      Operating System
+                           |   `-    http://www.debian.org/
