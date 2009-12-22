@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZLVOdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbZLVPAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbZLVOdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 09:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZLVOdi
+	id S1753438AbZLVPAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 10:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbZLVPAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 09:33:38 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:13505 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZLVOdh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 09:33:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=DZPCWbW8lyCaxnB/jlJwXxbqnP7R+PadkC/zPJ8CBGG9+9lfHHmVZ/ARmoiAqpoz/O
-         cBqgFB3tObxR73jChj9n4vYSrouax0MXtuS4zZtEeE5mT6v1ekdhCxZ+fMF95dJ2oiXJ
-         Y9huKBNboCtyIFFr8DEdga5tuVfQLs/iRW8BI=
-Message-ID: <4B30DC94.106@gmail.com>
-Date: Tue, 22 Dec 2009 14:49:56 +0000
-From: Dave Korn <dave.korn.cygwin@googlemail.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 22 Dec 2009 10:00:50 -0500
+Received: from k66.ru ([87.224.128.21]:55017 "EHLO k66.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbZLVPAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 10:00:49 -0500
+Date: Tue, 22 Dec 2009 20:00:45 +0500
+From: Andrey Rahmatullin <wrar@altlinux.org>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
+       netdev@vger.kernel.org
+Subject: Re: via_rhine kernel crashes in 2.6.32
+Message-ID: <20091222150045.GA5355@wrars-comp.wrarsdomain>
+References: <alpine.DEB.2.01.0912211040100.3483@bogon.housecafe.de>
+ <20091222123211.GA8546@ff.dom.local>
+ <20091222132107.GA9060@ff.dom.local>
+ <20091222133817.GA9208@ff.dom.local>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Dave Korn <dave.korn.cygwin@googlemail.com>,
-       Richard Henderson <rth@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       "gcc@gcc.gnu.org" <gcc@gcc.gnu.org>, Jamie Lokier <jamie@shareable.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
-References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091217150120.GD24967@shareable.org> <4B2A65C6.7080009@caviumnetworks.com> <84fc9c000912170917y4b2772d0n47bb4dabc74b91ef@mail.gmail.com> <20091217181718.GA4440@n2100.arm.linux.org.uk> <4B2FCCE3.1090209@redhat.com> <20091221201059.GD11669@n2100.arm.linux.org.uk> <4B30D2FE.9020209@gmail.com> <20091222141212.GA15356@n2100.arm.linux.org.uk>
-In-Reply-To: <20091222141212.GA15356@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
+Content-Disposition: inline
+In-Reply-To: <20091222133817.GA9208@ff.dom.local>
+X-Operating-System: ALT Linux Sisyphus
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: Mutt/1.5.20 (2009-06-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
 
-> [ ... ] this thread should probably die until some problem has actually
-> been identified.
-> 
-> If it ain't broke, don't fix.
+--x+6KMIRAuhnl3hBn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  <g>  Couldn't agree more.  Happy Christmas!
+On Tue, Dec 22, 2009 at 01:38:17PM +0000, Jarek Poplawski wrote:
+> > > It looks like napi_disable() should be illegal in ndo_tx_timeout().
+> > > Here is a patch which moves most of the timeout work to a workqueue,
+> > > similarly to tg3 etc. It should prevent at least one of reported
+> > > bugs. Alas I can't even check-compile it at the moment, so let me
+> > > know on any problems.
+> > It seems I needlessly changed locking btw, so here it is again.
+> Hmm... On the other hand, it definitely needs at least _bh now...
+I've tried this patch. There are lots of "Transmit timed out", but no
+crashes.
 
-    cheers,
-      DaveK
+--=20
+WBR, wRAR (ALT Linux Team)
+
+--x+6KMIRAuhnl3hBn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBCAAGBQJLMN8dAAoJEOih81koZvPBXWsH/3GW7Zv6RDRLKyxr1DOgCXQP
+9Wpgs+7hd40xhTuSAYgoXPf/7MCIlhOcooCQP7EDLSEWrLGqhO2I+gKcXRVJLrlh
+ohY9vI3xDQMFXHlo16h9qiwYZ2JXG53jBftdQacjvhIJuMB1N4Y4uRIhrLG2Ri9M
+YqyNH59gqGEULrYnAzDJkqpi4wxx9N10cz/tPjYv1FssjIZZ4AaFgqC4ZitzQU1E
+EZRrWhI8ITOU2XEcyqe2g9URwNs0YOG+qw0l+z2FLqB1qqix1KparMruInikJiBS
+RYHTfWGd5MYsck672LWrDzX899Ln9kwU5YGtQAJ3UEL7LAtxBd7V90eBhwNJnQo=
+=zAut
+-----END PGP SIGNATURE-----
+
+--x+6KMIRAuhnl3hBn--
