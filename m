@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZLVQ1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZLVQaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbZLVQ1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 11:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZLVQ1h
+	id S1754012AbZLVQaN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 11:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbZLVQaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 11:27:37 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:52707 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZLVQ1g (ORCPT
+	Tue, 22 Dec 2009 11:30:10 -0500
+Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:42799 "HELO
+	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753657AbZLVQaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 11:27:36 -0500
-Message-ID: <4B30F375.6050103@codemonkey.ws>
-Date: Tue, 22 Dec 2009 10:27:33 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com> <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box>
-In-Reply-To: <20091222162110.GG10314@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 Dec 2009 11:30:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=NJuyD6U6zTMDCJscqKpokLYPc1KrRF9lJIYLIm9DBqzzywXEEIC7EoJLGgBTRS10uvr0D+2dv6il4ICH/DxZmccC5kJBffYADjZEhotdnrbLPRgI+fOEWOWHMldPl1ue;
+Date: Tue, 22 Dec 2009 08:30:01 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>
+Subject: Re: [RFD] Asynchronous suspend/resume of PCI devices
+Message-ID: <20091222083001.10ce3948@jbarnes-x200>
+In-Reply-To: <200912200031.38775.rjw@sisk.pl>
+References: <200912200031.38775.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i586-moblin-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.217.62.130 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22/2009 10:21 AM, Andi Kleen wrote:
->> So far, the only actual technical advantage I've seen is that vbus avoids
->> EOI exits.
->>      
-> The technical advantage is that it's significantly faster today.
->    
+On Sun, 20 Dec 2009 00:31:38 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-There are two separate pieces of code in question.  There are front-end 
-drivers and there are back-end drivers.
+> Hi,
+> 
+> I'd like to know your opinions about the viability of suspending and
+> resuming PCI devices asynchronously during system-wide PM transitions
+> (suspend to RAM and hibernation).
+> 
+> Linus says it's generally dangerous, because some PCI devices may
+> indirectly depend on the others, but if that's the case, I wonder if
+> we really can power manage PCI devices at run time.
+> 
+> It follows from my experiments that suspending and resuming PCI
+> devices asynchronously doesn't lead to problems as long as we make
+> sure that every PCI device is suspended before and resumed after its
+> ACPI "shadow" partner. However, I'm not sure if this is generally
+> correct.
+> 
+> What are possible problems we can run into while doing asynchronous
+> suspend and resume of PCI devices?  What do we need to do in general
+> to avoid that problems?
+> 
+> Please tell me what you think.
 
-Right now, there are only front-end drivers in the kernel today.  The 
-combination of vbus front-end drivers and *kernel* back-end drivers are 
-faster than the *combination* of virtio front-end drivers and 
-*userspace* back-end drivers.
+AFAIK it should be *mostly* safe.  Individual drivers are generally
+independent of one another.  However, there are quite a few
+multifunction devices (some exposed as such, some exposed as multiple
+busses and devices on the same device) where interdependencies are
+possible.  In some cases, we just won't see power savings until the
+whole chip is powered down (which may require extra code in the form of
+a "bus" driver of some sort), in other cases a driver may inadvertently
+power down a piece of a device needed by another driver.
 
-vhost-net is our kernel back-end driver.  No one has yet established 
-that the combination of virtio front-end driver and kernel back-end 
-driver is really significantly slower than vbus.
+That said, the best practice for those sorts of devices is to create a
+bus driver anyway, that binds to the master device and has a few
+child drivers, so maybe even that case won't be much trouble...
 
-> Maybe your proposed alternative is as fast, or maybe it's not. Who knows?
->
->    
->> We think we understand why vbus does better than the current userspace
->> virtio backend.  That's why we're building vhost-net.  It's not done yet,
->> but our expectation is that it will do just as well if not better.
->>      
-> That's the vapourware vs working code disconnect I mentioned. One side has hard
-> numbers&working code and the other has expectations. I usually find it sad when the
-> vapourware holds up the working code.
->    
-
-We're not talking about vaporware.  vhost-net exists.
-
-Regards,
-
-Anthony Liguori
-
-> -Andi
->    
-
+Jesse
