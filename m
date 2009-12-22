@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbZLVA67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbZLVBKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597AbZLVA67 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 19:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZLVA66
+	id S1752933AbZLVBKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 20:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZLVBK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 19:58:58 -0500
-Received: from smtp110.rog.mail.re2.yahoo.com ([206.190.37.120]:23647 "HELO
-	smtp110.rog.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750970AbZLVA66 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 19:58:58 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=rogers.com;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=6I5DKy/Zf2WQU6HI1OXCTfA2IV0JrQfyIGxwxZ91tdD2ySWdpBPVcbDM0c1Rt36ZuOKDeiY9LGhPAIv5eI9w93CK8C4maIk/jUJFBaOsVeUJgbJjqjd8Ecs9yh3fLFy7qWogLTd6eBaB9/cbuD7bT6HucfS5JW/lO2AtxGvw1zI=  ;
-X-Yahoo-SMTP: rZzhDImswBA_40COIyZI42.8nAz5YXic.zo1v550XQVtX7k-
-X-YMail-OSG: TVNPudoVM1l0vM_j0vO3L6jg5rHMCytu4dKUme_LhGpZktkyW1tQi.clya3eUdUsaA--
-X-Yahoo-Newman-Property: ymail-3
-From: Shawn Starr <shawn.starr@rogers.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: [2.6.33-rc1] System timer flooding bus on Lenovo Thinkpad W500 laptop in x86_64
-Date: Mon, 21 Dec 2009 19:58:51 -0500
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc1-custom-radeon; KDE/4.3.82; x86_64; svn-1062525; 2009-12-14)
-Cc: linux-kernel@vger.kernel.org
-References: <200912211312.52769.shawn.starr@rogers.com> <4B301744.2010404@gmail.com>
-In-Reply-To: <4B301744.2010404@gmail.com>
+	Mon, 21 Dec 2009 20:10:27 -0500
+Received: from ozlabs.org ([203.10.76.45]:34978 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900AbZLVBKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 20:10:24 -0500
+Date: Tue, 22 Dec 2009 12:02:38 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       perfmon2-devel@lists.sf.net, "David S. Miller" <davem@davemloft.net>,
+       eranian@google.com
+Subject: Re: [PATCH] perf_events: improve Intel event scheduling
+Message-ID: <20091222010238.GB31264@drongo>
+References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
+ <1258561957.3918.661.camel@laptop>
+ <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
+ <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
+ <1261410040.4314.178.camel@laptop>
 MIME-Version: 1.0
-Message-Id: <200912211958.52120.shawn.starr@rogers.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261410040.4314.178.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On December 21, 2009 07:48:04 pm Robert Hancock wrote:
-> On 12/21/2009 12:12 PM, Shawn Starr wrote:
-> > Hello kernel devs,
-> >
-> > I am noticing a serious problem with the system timer flooding the bus
-> > with many interrupts for no reason. I have compiled the kernel with
-> > tickless enabled.
-> >
-> > Can someone provide me some debugging to find out why this is happening?
-> >
-> > As a comparsion my quad core box has no such issue: (Running 2.6.32-rc7)
-> > x86_64
-> >    0:         42          4          1          1   IO-APIC-edge     
-> > timer
-> 
-> That's not really a fair comparison, that box is likely using the APIC
-> timer (which will be on a different line) instead of the PC timer. Those
-> 48 interrupts likely all occurred just after boot.
-> 
-> > my Lenovo ThinkPad W500 (latest BIOS 3.11) laptop shows the system timer
-> > flooding the bus (Running 2.6.33-rc1) x86_64
-> >   0:      66775      70429   IO-APIC-edge      timer<-- keeps rising,
-> > rapidly
-> >
-> > and  afew minutes ...
-> >
-> >   0:     119849     124505   IO-APIC-edge      timer
-> >
-> > Same for Rescheduling interrupts rising just as fast with the timer.
-> >
-> > This does not look right, powertop shows:
-> >
-> > 40.0% ( 62.1)<kernel IPI>  : Rescheduling interrupts
-> > 22.9% ( 35.6)<interrupt>  : extra timer interrupt
-> > 17.0% ( 26.4)<interrupt>  : iwlagn
-> >
-> > and another sample...
-> >
-> >    54.6% (144.8)<kernel IPI>  : Rescheduling interrupts
-> >    14.6% ( 38.8)<interrupt>  : extra timer interrupt
-> >     8.5% ( 22.6)<interrupt>  : iwlagn
-> >     6.5% ( 17.2)<interrupt>  : uhci_hcd:usb6, radeon@pci:0000:01:00.0
-> >     6.5% ( 17.2)   USB device  6-1 : Microsoft Basic Optical Mouse v2.0
-> > (Microsoft )
-> >
-> > There is no cause for the rescheduling interrupts and extra timer
-> > interrupt to wakeup the CPUs so much? Are there any timer issues?
-> 
-> Can you post full dmesg and /proc/interrupts output?
-> 
+On Mon, Dec 21, 2009 at 04:40:40PM +0100, Peter Zijlstra wrote:
 
-This is found in http://bugzilla.kernel.org/show_bug.cgi?id=14354. 
+> I'm not really seeing the problem here...
+> 
+> 
+>  perf_disable() <-- shut down the full pmu
+> 
+>  pmu->disable() <-- hey someone got removed (easy free the reg)
+>  pmu->enable()  <-- hey someone got added (harder, check constraints)
+> 
+>  hw_perf_group_sched_in() <-- hey a full group got added 
+>                               (better than multiple ->enable)
+> 
+>  perf_enable() <-- re-enable pmu
+> 
+> 
+> So ->disable() is used to track freeing, ->enable is used to add
+> individual counters, check constraints etc..
+> 
+> hw_perf_group_sched_in() is used to optimize the full group enable.
+> 
+> Afaict that is what power does (Paul?) and that should I think be
+> sufficient to track x86 as well.
 
-Turning off dynticks has stopped the system timer from firing so much. But 
-there still is an underlying irq problem because especially trying the radeon 
-KMS IRQ support, typing or moving the mouse causes stalls. 
+That sounds right to me.
 
-Thanks, 
-Shawn.
+> Since sched_in() is balanced with sched_out(), the ->disable() calls
+> should provide the required information as to the occupation of the pmu.
+> I don't see the need for more hooks.
+> 
+> Paul, could you comment, since you did all this for power?
+
+On powerpc we maintain a list of currently enabled events in the arch
+code.  Does x86 do that as well?
+
+If you have the list (or array) of events easily accessible, it's
+relatively easy to check whether the whole set is feasible at any
+point, without worrying about which events were recently added.  The
+perf_event structure has a spot where the arch code can store which
+PMU register is used for that event, so you can easily optimize the
+case where the event doesn't move.
+
+Like you, I'm not seeing where the difficulty lies.  Perhaps Stephane
+could give us a detailed example if he still thinks there's a
+difficulty.
+
+Paul.
