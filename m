@@ -1,43 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751397AbZLVIYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbZLVI1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751397AbZLVIYl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 03:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZLVIYk
+	id S1751479AbZLVI1P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 03:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZLVI1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 03:24:40 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44686 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZLVIYk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 03:24:40 -0500
-Subject: Re: [PATCH] tracing: Fix lockdep warning in global_clock()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: rostedt@goodmis.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B305680.4090304@cn.fujitsu.com>
-References: <4B2F1543.8020300@cn.fujitsu.com>
-	 <20091221064356.GA2378@elte.hu>  <4B2F2588.8070501@cn.fujitsu.com>
-	 <1261406427.4314.155.camel@laptop>
-	 <1261410984.25193.8.camel@gandalf.stny.rr.com>
-	 <4B305680.4090304@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 09:23:54 +0100
-Message-ID: <1261470234.4937.1.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 03:27:14 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33877 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750991AbZLVI1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 03:27:14 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1/N84xMPzDNV5nL5dPdiY6sLPu1YCUu+TPlnZQ5vl
+	jRuaSEblQMkIUk
+From: peterhuewe@gmx.de
+To: Jiri Kosina <trivial@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/6] uwb/i1480: add __init/__exit macros
+Date: Tue, 22 Dec 2009 09:27:05 +0100
+Message-Id: <1261470431-23642-1-git-send-email-peterhuewe@gmx.de>
+X-Mailer: git-send-email 1.6.4.4
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-22 at 13:17 +0800, Li Zefan wrote:
+From: Peter Huewe <peterhuewe@gmx.de>
 
-> Looking into sched_clock.c, seems the only place that can trigger lockdep
-> is the local_irq_* in cpu_clock(), though I'm not sure for architecture-
-> specific sched_clock().
+Trivial patch which adds the __init/__exit macros to the module_init/
+module_exit functions of
 
-But why would you want to do that? that reduces the lockdep coverage for
-no good reason, just fix up the tracer.
+uwb/i1480/i1480-est.c
+
+@Jiri: As there is no maintainer, it seems it is up to you to decide :)
+
+Patch against linux-next-tree, 22. Dez 08:38:18 CET 2009
+but also present in linus tree.
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ drivers/uwb/i1480/i1480-est.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/uwb/i1480/i1480-est.c b/drivers/uwb/i1480/i1480-est.c
+index 7bf8c6f..f2eb4d8 100644
+--- a/drivers/uwb/i1480/i1480-est.c
++++ b/drivers/uwb/i1480/i1480-est.c
+@@ -54,7 +54,7 @@ static struct uwb_est_entry i1480_est_fd01[] = {
+ 		.size = sizeof(struct i1480_rceb) + 2 },
+ };
+ 
+-static int i1480_est_init(void)
++static int __init i1480_est_init(void)
+ {
+ 	int result = uwb_est_register(i1480_CET_VS1, 0x00, 0x8086, 0x0c3b,
+ 				      i1480_est_fd00,
+@@ -73,7 +73,7 @@ static int i1480_est_init(void)
+ }
+ module_init(i1480_est_init);
+ 
+-static void i1480_est_exit(void)
++static void __exit i1480_est_exit(void)
+ {
+ 	uwb_est_unregister(i1480_CET_VS1, 0x00, 0x8086, 0x0c3b,
+ 			   i1480_est_fd00, ARRAY_SIZE(i1480_est_fd00));
+-- 
+1.6.4.4
 
