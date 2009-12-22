@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbZLVC7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZLVDBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbZLVC7M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 21:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZLVC7L
+	id S1752918AbZLVDBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 22:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZLVDAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 21:59:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35494 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751050AbZLVC7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 21:59:10 -0500
-Message-ID: <4B3035B0.9030303@kernel.org>
-Date: Mon, 21 Dec 2009 18:57:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
-References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain> <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com> <alpine.LFD.2.00.0912212107560.5520@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912212107560.5520@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 Dec 2009 22:00:51 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:36379 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbZLVDAt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 22:00:49 -0500
+Subject: Re: [Patch] thinkpad_acpi: fix a build error
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "Helight.Xu" <helight.xu@gmail.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Takashi Iwai <tiwai@suse.de>,
+       Xiaotian Feng <xtfeng@gmail.com>, Amerigo Wang <amwang@redhat.com>,
+       linux-kernel@vger.kernel.org, Corentin Chary <corentincj@iksaif.net>,
+       ibm-acpi-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, akpm@linux-foundation.org
+In-Reply-To: <4B301CA3.1060704@gmail.com>
+References: <20091218093132.4415.23424.sendpatchset@localhost.localdomain>
+	 <7b6bb4a50912180142u5e66fa88odb7cd3b6fa1a2ba2@mail.gmail.com>
+	 <s5hhbrowpty.wl%tiwai@suse.de>
+	 <20091218142815.GB15898@khazad-dum.debian.net>
+	 <1261435136.4041.152.camel@localhost.localdomain>
+	 <4B301CA3.1060704@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 21 Dec 2009 19:00:20 -0800
+Message-Id: <1261450820.4041.167.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
->>> Shaohua Li (3):
->>>      ACPI: Add a generic API for _OSC -v2
->>>      ACPI: cleanup pci_root _OSC code.
->>>      ACPI: Add platform-wide _OSC support.
->> it seems these three patches broke the _OSC on my intel new systems.
->>
->> revert them fix the problem with AER and pciehp and etc
+Hi Helight,
+
+> >>> The patch isn't correct (I guess the upstream fix is same?).
+> >>>
+> >>> CONFIG_SOUND is a global config for sound subsystem.  The relevant
+> >>> functions are ALSA core part, which is CONFIG_SND.
+> >>> So, the fix should be:
+> >>>
+> >>> 	depends on SND
+> >>>
+> >>> instead.
+> >>>       
+> >> Indeed.  Ingo already fixed that too.
+> >>
+> >> Although I personally would prefer:
+> >> select SOUND
+> >> select SND
+> >>
+> >> But anything that stops the build errors will do for now.
+> >>     
+> >
+> > I still haven't seen this patch in Linus' tree. And you do need select
+> > SOUND and SND. Otherwise you still get build errors. I have tested this
+> > on my machine. So can someone please submit a proper patch to get this
+> > fixed.
+> >   
+> I think my first patch about this can fix it!
 > 
-> Yinghai,
-> does 3563ff964fdc36358cef0330936fdac28e65142a work or fail on your 
-> system?  That is (ACPI: Add platform-wide _OSC support)
-> on top of 2.6.32 with no other changes.
+> http://lkml.org/lkml/2009/12/18/141
 > 
+> I have tested it!
 
-only revert that does NOT make _OSC on my system work again.
+either depends on SND or select SND + SOUND, but one of them has to be
+pushed into Linus' tree. Personally I don't care which one.
 
-Thanks
+Regards
 
-Yinghai
+Marcel
+
+
