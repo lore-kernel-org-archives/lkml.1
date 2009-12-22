@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZLVRdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZLVRdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbZLVRdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:33:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZLVRdc
+	id S1754401AbZLVRdz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbZLVRdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:33:32 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:57656 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753853AbZLVRda (ORCPT
+	Tue, 22 Dec 2009 12:33:53 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40630 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbZLVRdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:33:30 -0500
-Date: Tue, 22 Dec 2009 18:33:26 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-Message-ID: <20091222173326.GH10314@basil.fritz.box>
-References: <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box> <4B30F375.6050103@codemonkey.ws>
+	Tue, 22 Dec 2009 12:33:53 -0500
+Date: Tue, 22 Dec 2009 17:33:49 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] vfs patches for -rc2
+Message-ID: <20091222173349.GT18217@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B30F375.6050103@codemonkey.ws>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We're not talking about vaporware.  vhost-net exists.
+Assorted cleanups and fixes.  Please pull from
+git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ master
 
-Is it as fast as the alacrityvm setup then e.g. for network traffic?
+Al Viro (2):
+      Fix f_flags/f_mode in case of lookup_instantiate_filp() from open(pathname, 3)
+      Sanitize f_flags helpers
 
-Last I heard the first could do wirespeed 10Gbit/s on standard hardware. 
-Can vhost-net do the same thing?
+Alan Cox (1):
+      jfs: Fix 32bit build warning
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Andreas Gruenbacher (1):
+      Remove obsolete comment in fs.h
+
+Arnd Bergmann (1):
+      fs/compat_ioctl.c: fix build error when !BLOCK
+
+Evgeniy Polyakov (1):
+      pohmelfs needs I_LOCK
+
+Roland Dreier (2):
+      alloc_file(): simplify handling of mnt_clone_write() errors
+      anonfd: Allow making anon files read-only
+
+ drivers/staging/pohmelfs/dir.c |    2 --
+ fs/anon_inodes.c               |    4 ++--
+ fs/compat_ioctl.c              |    2 --
+ fs/eventfd.c                   |    2 +-
+ fs/eventpoll.c                 |    2 +-
+ fs/file_table.c                |    4 +---
+ fs/internal.h                  |    7 +++++++
+ fs/jfs/super.c                 |    2 +-
+ fs/namei.c                     |    8 ++++----
+ fs/open.c                      |   13 ++++++-------
+ fs/signalfd.c                  |    2 +-
+ fs/timerfd.c                   |    2 +-
+ include/linux/fs.h             |    5 +++--
+ include/linux/namei.h          |    2 --
+ kernel/auditsc.c               |    1 -
+ kernel/perf_event.c            |    2 +-
+ security/tomoyo/file.c         |    1 -
+ virt/kvm/kvm_main.c            |    4 ++--
+ 18 files changed, 31 insertions(+), 34 deletions(-)
