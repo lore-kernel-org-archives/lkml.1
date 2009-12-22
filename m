@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZLVRSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbZLVRSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZLVRSG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:18:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZLVRR7
+	id S1754339AbZLVRSX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:18:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZLVRSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:17:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30409 "EHLO mx1.redhat.com"
+	Tue, 22 Dec 2009 12:18:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32489 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754252AbZLVRR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:17:57 -0500
+	id S1754258AbZLVRSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 12:18:00 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/4] NOMMU: Use copy_*_user_page() in access_process_vm()
+Subject: [PATCH 4/4] elf_fdpic_core_dump(): fix build break in 2.6.33-rc1
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
-       Jie Zhang <jie.zhang@analog.com>, Mike Frysinger <vapier@gentoo.org>,
-       David Howells <dhowells@redhat.com>,
-       David McCullough <david_mccullough@mcafee.com>,
-       Paul Mundt <lethal@linux-sh.org>, Greg Ungerer <gerg@uclinux.org>
-Date: Tue, 22 Dec 2009 17:17:36 +0000
-Message-ID: <20091222171736.11854.29270.stgit@warthog.procyon.org.uk>
+       Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>,
+       Paul Mundt <lethal@linux-sh.org>, David Howells <dhowells@redhat.com>
+Date: Tue, 22 Dec 2009 17:17:41 +0000
+Message-ID: <20091222171741.11854.71709.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
 References: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -33,48 +31,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jie Zhang <jie.zhang@analog.com>
+From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
 
-The MMU code uses the copy_*_user_page() variants in access_process_vm()
-rather than copy_*_user() as the former includes an icache flush.  This is
-important when doing things like setting software breakpoints with gdb.
-So switch the NOMMU code over to do the same.
+Commit f6151dfea21496d43dbaba32cfcd9c9f404769bc causes ELF-FDPIC to break
+during building, so this patch fixes it together with a correction for the
+printk format.
 
-This patch makes the reasonable assumption that copy_from_user_page() won't
-fail - which is probably fine, as we've checked the VMA from which we're
-copying is usable, and the copy is not allowed to cross VMAs.  The one case
-where it might go wrong is if the VMA is a device rather than RAM, and that
-device returns an error which - in which case rubbish will be returned rather
-than EIO.
-
-Signed-off-by: Jie Zhang <jie.zhang@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: David McCullough <david_mccullough@mcafee.com>
+Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+Reviewed-by: Masami Hiramatsu <mhiramat@redhat.com>
 Acked-by: Paul Mundt <lethal@linux-sh.org>
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- mm/nommu.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ fs/binfmt_elf_fdpic.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 
-diff --git a/mm/nommu.c b/mm/nommu.c
-index db52886..1e1ecb2 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1896,9 +1896,11 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 2917ab1..384a19f 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -1807,11 +1807,11 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
+ 	ELF_CORE_WRITE_EXTRA_DATA;
+ #endif
  
- 		/* only read or write mappings where it is permitted */
- 		if (write && vma->vm_flags & VM_MAYWRITE)
--			len -= copy_to_user((void *) addr, buf, len);
-+			copy_to_user_page(vma, NULL, addr,
-+					 (void *) addr, buf, len);
- 		else if (!write && vma->vm_flags & VM_MAYREAD)
--			len -= copy_from_user(buf, (void *) addr, len);
-+			copy_from_user_page(vma, NULL, addr,
-+					    buf, (void *) addr, len);
- 		else
- 			len = 0;
- 	} else {
+-	if (file->f_pos != offset) {
++	if (cprm->file->f_pos != offset) {
+ 		/* Sanity check */
+-		printk(KERN_WARNING
+-		       "elf_core_dump: file->f_pos (%lld) != offset (%lld)\n",
+-		       file->f_pos, offset);
++		printk(KERN_WARNING "elf_fdpic_core_dump:"
++		       " cprm->file->f_pos (%lld) != offset (%lld)\n",
++		       cprm->file->f_pos, offset);
+ 	}
+ 
+ end_coredump:
 
