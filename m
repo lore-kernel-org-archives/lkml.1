@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbZLVHXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbZLVHdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbZLVHXG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 02:23:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZLVHXB
+	id S1752736AbZLVHdb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 02:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZLVHda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 02:23:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19454 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909AbZLVHXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 02:23:00 -0500
-Date: Tue, 22 Dec 2009 09:22:13 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-Message-ID: <20091222072213.GY4490@redhat.com>
-References: <4B1D4F29.8020309@gmail.com>
- <20091218215107.GA14946@elte.hu>
- <4B2F9582.5000002@gmail.com>
- <4B2F978D.7010602@redhat.com>
- <4B2F9C85.7070202@gmail.com>
- <4B2FA42F.3070408@codemonkey.ws>
- <4B2FA655.6030205@gmail.com>
- <4B2FAE7B.9030005@codemonkey.ws>
- <4B2FB3F1.5080808@gmail.com>
+	Tue, 22 Dec 2009 02:33:30 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:41127 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZLVHd3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 02:33:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=nEApLaWxsiXmso8VkGUzqSzz7HAQjNUg9jNjbh20CLwDEddfq7s6aiMXC8y0BDXduz
+         Ll1Id16Rfq1RKFIrQXbHqwEI9tYc9hSvX9+5pW5p3+pe40HqLmQi3of7l4iL1ATuGImc
+         ikl3PkUHMHtvG4BcR1jMuA91gxdiY6R1ZUeV0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B2FB3F1.5080808@gmail.com>
+In-Reply-To: <1261324276.7227.11.camel@marge.simson.net>
+References: <1261042383.14314.0.camel@localhost> <1261195412.8240.153.camel@marge.simson.net> 
+	<1261244163.14314.62.camel@localhost> <200912200422.18314.andres@anarazel.de> 
+	<1261311050.14314.67.camel@localhost> <1261321981.6105.60.camel@marge.simson.net> 
+	<1261324276.7227.11.camel@marge.simson.net>
+From: Jason Garrett-Glaser <darkshikari@gmail.com>
+Date: Tue, 22 Dec 2009 02:33:08 -0500
+Message-ID: <28f2fcbc0912212333yd35f8a8jf0c7087b74fd3582@mail.gmail.com>
+Subject: Re: x264 benchmarks BFS vs CFS
+To: Mike Galbraith <efault@gmx.de>
+Cc: Kasper Sandberg <lkml@metanurb.dk>, Andres Freund <andres@anarazel.de>,
+       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML Mailinglist <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 12:44:17PM -0500, Gregory Haskins wrote:
-> >  They should be relatively rare
-> > because obtaining good receive batching is pretty easy.
-> 
-> Batching is poor mans throughput (its easy when you dont care about
-> latency), so we generally avoid as much as possible.
-> 
-> > Considering
-> > these are lightweight exits (on the order of 1-2us),
-> 
-> APIC EOIs on x86 are MMIO based, so they are generally much heavier than
-> that.  I measure at least 4-5us just for the MMIO exit on my Woodcrest,
-> never mind executing the locking/apic-emulation code.
-> 
-With x2apic EOIs are not MMIO any longer.
+Benchmarks for the new threading model are up, along with a few others:
 
---
-			Gleb.
+http://doom10.org/index.php?topic=78.0
+
+Interestingly enough, CFS beats BFS on zerolatency by a significant
+margin.  Unsurprisingly, given the threading model, the optimal number
+of threads is equal to the number of cores.
+
+Jason
