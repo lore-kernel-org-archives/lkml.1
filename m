@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZLVTok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZLVTpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbZLVTok (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 14:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZLVTog
+	id S1754900AbZLVTpe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 14:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZLVTpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 14:44:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35280 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754643AbZLVTof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 14:44:35 -0500
-Message-ID: <4B312155.7040308@redhat.com>
-Date: Tue, 22 Dec 2009 21:43:17 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <20091222075742.GB26467@elte.hu> <4B3103B4.4070708@gmail.com> <4B3115C1.4070303@redhat.com> <4B311ADA.4000700@gmail.com> <4B311D20.7020400@redhat.com> <4B311ECB.6040205@gmail.com> <4B312042.7010804@redhat.com> <4B3120E2.7070307@gmail.com>
-In-Reply-To: <4B3120E2.7070307@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 14:45:31 -0500
+Received: from vms173009pub.verizon.net ([206.46.173.9]:29842 "EHLO
+	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbZLVTpa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 14:45:30 -0500
+Date: Tue, 22 Dec 2009 14:45:11 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
+In-reply-to: <4B307C4D.501@kernel.org>
+Message-id: <alpine.LFD.2.00.0912221440440.5153@localhost.localdomain>
+References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
+ <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com>
+ <alpine.LFD.2.00.0912212107560.5520@localhost.localdomain>
+ <4B3035B0.9030303@kernel.org>
+ <alpine.LFD.2.00.0912220253080.7435@localhost.localdomain>
+ <4B307C4D.501@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22/2009 09:41 PM, Gregory Haskins wrote:
->
->> It means that kvm locking suddenly affects more of the kernel.
->>
->>      
-> Thats ok.  This would only be w.r.t. devices that are bound to the KVM
-> instance anyway, so they better know what they are doing (and they do).
->
->    
+On Mon, 21 Dec 2009, Yinghai Lu wrote:
 
-It's okay to the author of that device.  It's not okay to the kvm 
-developers who are still evolving the locking and have to handle all 
-devices that use xinterface.
+> Len Brown wrote:
+> > 
+> > Does 3563ff964fdc36358cef0330936fdac28e65142a work or fail on your system? 
+> > I didn't ask about reverting it, I asked if it works or fails.
+> 
+> i don't know.
+> 
+> anything i should search in the bootlog?
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Please check out a branch at the commit identified above
+and tell us if the following issue:
+
+"it seems these three patches broke the _OSC on my intel new systems."
+
+"revert them fix the problem with AER and pciehp and etc"
+
+is present or absent on that branch.
+
+If the answer is yes, when stock 2.6.32 works, then the 3 patches
+between that commit and 2.6.32 are at fault.  If the answer is no,
+yet reverting those patches helps top of tree, then the issue must
+be a merge conflict with other changes in 2.6.33.
+
+thanks,
+-Len Brown
+Intel Open Source Technolgy Center
 
