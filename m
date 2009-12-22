@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751415AbZLVACq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZLVADL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751415AbZLVACq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 19:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZLVACp
+	id S1752048AbZLVADL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 19:03:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZLVADJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 19:02:45 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:11208 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbZLVACo (ORCPT
+	Mon, 21 Dec 2009 19:03:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47546 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZLVADH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 19:02:44 -0500
-Date: Tue, 22 Dec 2009 00:02:45 +0000
-From: Jamie Iles <jamie@jamieiles.com>
-To: linux-kernel@vger.kernel.org
-Subject: perf tools symbol_conf: use_modules/try_vmlinux_path
-Message-ID: <20091221235943.GA23973@gallagher>
-Mail-Followup-To: Jamie Iles <jamie@jamieiles.com>,
-	linux-kernel@vger.kernel.org
+	Mon, 21 Dec 2009 19:03:07 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Simon Kagstrom <simon.kagstrom@netinsight.net>
+Subject: Re: [PATCH] mtd: mtdoops: mtdoops works with kexec correctly
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Anders Grafstrom <anders.grafstrom@netinsight.net>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091221153341.2bece1d3@marrow.netinsight.se>
+References: <20091221191254.089E.A69D9226@jp.fujitsu.com> <20091221153341.2bece1d3@marrow.netinsight.se>
+Message-Id: <20091222085508.1410.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 22 Dec 2009 09:03:01 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 75be6cf (perf symbols: Make symbol_conf global) does what it says
-on the tin, but also initialises the member fields use_modules and
-try_vmlinux_path to true rather than the 'false' value they would have
-had when symbol_conf was static.
+> On Mon, 21 Dec 2009 19:20:35 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > commit 2e386e4ba(mtdoops: refactor as a kmsg_dumper) is very good patch.
+> > but unfortunately it doesn't works with kexec and few embedded user need
+> > to use kexec. there is no reason to don't implement it. it isn't so
+> > hard.
+> > 
+> > FAQ
+> > ---
+> >  Q. Why KMSG_DUMP_OOPS is insufficient?
+> >  A. Because crash_kexec() is called before KMSG_DUMP_OOPS if
+> >     panic_on_oops==1.
+> > 
+> >  Q. Why do you move KMSG_DUMP_PANIC call place?
+> >  A. Otherwise kmsg_dump() is called twice if kexec enabled.
+> >     it's annoy.
+> 
+> I think it would be better to describe these comments in text instead
+> of as FAQs. Because of the --- it's also removed from the git log.
+> Maybe something like
+> 
+> 	kmsg_dump: Dump on crash_kexec as well
+> 
+> 	crash_kexec gets called before kmsg_dump(KMSG_DUMP_OOPS) if
+> 	panic_on_oops is set, so the kernel log buffer is not stored
+> 	for this case.
+> 
+> 	This patch adds a KMSG_DUMP_KEXEC dump type which gets called
+> 	when crash_kexec() is invoked. To avoid getting double dumps,
+> 	the old KMSG_DUMP_PANIC is moved below crash_kexec(). The
+> 	mtdoops driver is modified to handle KMSG_DUMP_KEXEC in the
+> 	same way as a panic.
+> 
+> 
+> Other than that, it looks fine to me. I've done basic testing against
+> 2.6.33-rc1, but unfortunately without kexec support.
+> 
+> Acked-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
 
-When there is no vmlinux on the system and modules loaded, perf top will
-not show any kernel symbols and perf report will only list raw IP's
-rather than symbol names. Unloading the modules will give normal output.
+Thanks. Your description is obviously better.
 
-The patch below fixes the problem for my box with no vmlinux and still
-works on my desktop with a vmlinux present but I don't understand the
-symbol code in perf enough to be sure that this is 100% correct.
 
-Jamie
 
-[PATCH] perf symbols: don't use modules or try vmlinux unless needed
-
-Commit 75be6cf (perf symbols: Make symbol_conf global) does what it says
-on the tin, but also initialises the member fields use_modules and
-try_vmlinux_path to true rather than the 'false' value they would have
-had when symbol_conf was static.
-
-Restore previous behaviour by initialising these fields to false.
-
-Signed-off-by: Jamie Iles <jamie@jamieiles.com>
----
- tools/perf/util/symbol.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index ab92763..be9f17b 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -39,8 +39,8 @@ static char **vmlinux_path;
- 
- struct symbol_conf symbol_conf = {
- 	.exclude_other	  = true,
--	.use_modules	  = true,
--	.try_vmlinux_path = true,
-+	.use_modules	  = false,
-+	.try_vmlinux_path = false,
- };
- 
- bool dso__loaded(const struct dso *self, enum map_type type)
--- 
-1.6.5.2
