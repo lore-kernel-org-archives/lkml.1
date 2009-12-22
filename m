@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbZLVRSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbZLVRU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbZLVRSX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZLVRSU
+	id S1754257AbZLVRU5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbZLVRUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:18:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32489 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754258AbZLVRSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:18:00 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 4/4] elf_fdpic_core_dump(): fix build break in 2.6.33-rc1
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
-       Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>,
-       Paul Mundt <lethal@linux-sh.org>, David Howells <dhowells@redhat.com>
-Date: Tue, 22 Dec 2009 17:17:41 +0000
-Message-ID: <20091222171741.11854.71709.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
-References: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 22 Dec 2009 12:20:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60850 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbZLVRUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 12:20:55 -0500
+Subject: Re: WARN_ON at line 380 in kernel/smp.c under 2.6.32.2 + TuxOnIce
+ + KDB
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pedro Ribeiro <pedrib@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Nigel Cunningham <nigel@tuxonice.net>
+In-Reply-To: <74fd948d0912220851v354b1704xa55fc3c88e1c300c@mail.gmail.com>
+References: <74fd948d0912220851v354b1704xa55fc3c88e1c300c@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 18:20:31 +0100
+Message-ID: <1261502431.4937.38.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+On Tue, 2009-12-22 at 16:51 +0000, Pedro Ribeiro wrote:
+> Hi all,
+> 
+> I've been asked by Nigel Cunningham of TuxOnIce to forward this bug here.
+> 
+> While resuming from hibernate (using TuxOnIce) I'm seeing the WARN_ON
+> at line 380 in kernel/smp.c trigger from a kmap_high call right after
+> secondary processors have been brought down (the previous message is
+> "CPU1 is down").
+> 
+> I only have pictures of the backtrace (readable but not very good
+> quality, sorry).
+> http://img51.imageshack.us/img51/2312/stacktrace1.jpg
+> http://img195.imageshack.us/img195/3646/stacktrace2.jpg
+> 
+> At first I thought this was related to my battery saving script
+> messing with /proc/sys/vm/dirty_writeback_centisecs, but I'm not sure
+> right now, it still happens with the default value, so I'm clueless.
+> 
+> Mind you, this does not impede the resume - it just dumps this stack
+> trace and continues resuming happily.
 
-Commit f6151dfea21496d43dbaba32cfcd9c9f404769bc causes ELF-FDPIC to break
-during building, so this patch fixes it together with a correction for the
-printk format.
-
-Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-Reviewed-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/binfmt_elf_fdpic.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 2917ab1..384a19f 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -1807,11 +1807,11 @@ static int elf_fdpic_core_dump(struct coredump_params *cprm)
- 	ELF_CORE_WRITE_EXTRA_DATA;
- #endif
- 
--	if (file->f_pos != offset) {
-+	if (cprm->file->f_pos != offset) {
- 		/* Sanity check */
--		printk(KERN_WARNING
--		       "elf_core_dump: file->f_pos (%lld) != offset (%lld)\n",
--		       file->f_pos, offset);
-+		printk(KERN_WARNING "elf_fdpic_core_dump:"
-+		       " cprm->file->f_pos (%lld) != offset (%lld)\n",
-+		       cprm->file->f_pos, offset);
- 	}
- 
- end_coredump:
+If you'd enable frame pointers the strack traces would be clearer, but
+it looks like a bug in tux on ice, doing kmap_high() with IRQs disabled
+or something like that.
 
