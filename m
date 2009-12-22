@@ -1,65 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZLVRNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZLVRRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZLVRNF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:13:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZLVRNE
+	id S1754180AbZLVRRm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZLVRRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:13:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:42896 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753167AbZLVRNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:13:00 -0500
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1/957ZEbfX92+jJp7pDUfGkF43OkVut51WAgD30Kr
-	wTnw6PtdQQrpyy
-Date: Tue, 22 Dec 2009 18:12:48 +0100
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Alexander Strakh <strakh@ispras.ru>
-Cc: Matthew Wilcox <willy@linux.intel.com>,
-       Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>,
-       Andy Grover <andrew.grover@intel.com>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: BUG printk with not null-terminated string in driver
- /drivers/acpi/osl.c
-Message-ID: <20091222171248.GA20318@atjola.homenet>
-References: <200912221846.02318.strakh@ispras.ru>
+	Tue, 22 Dec 2009 12:17:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752327AbZLVRRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 12:17:40 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/4] FDPIC: Respect PT_GNU_STACK exec protection markings when
+	creating NOMMU stack
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
+       Mike Frysinger <vapier@gentoo.org>, David Howells <dhowells@redhat.com>
+Date: Tue, 22 Dec 2009 17:17:25 +0000
+Message-ID: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200912221846.02318.strakh@ispras.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009.12.22 18:46:02 +0000, Alexander Strakh wrote:
->         In driver drivers/acpi/osl.c in function acpi_osi_setup:
-> 1. If in line 555 *osi_additional_string == 0 then we goto line 1039
+From: Mike Frysinger <vapier@gentoo.org>
 
-I guess that's meant to be line 1038?
+The current code will load the stack size and protection markings, but then
+only use the markings in the MMU code path.  The NOMMU code path always passes
+PROT_EXEC to the mmap() call.  While this doesn't matter to most people whilst
+the code is running, it will cause a pointless icache flush when starting every
+FDPIC application.  Typically this icache flush will be of a region on the
+order of 128KB in size, or may be the entire icache, depending on the
+facilities available on the CPU.
 
-> 2. In line 1039: if length of str > OSI_STRING_LENGTH_MAX then 
-> osi_additional_string not have 0 at the end.
-> 3. In line 1040 printk called with not null-terminated string.
+In the case where the arch default behaviour seems to be desired
+(EXSTACK_DEFAULT), we probe VM_STACK_FLAGS for VM_EXEC to determine whether we
+should be setting PROT_EXEC or not.
 
-That printk uses str, not osi_additional_string.
+For arches that support an MPU (Memory Protection Unit - an MMU without the
+virtual mapping capability), setting PROT_EXEC or not will make an important
+difference.
 
-> diff --git a/./0000/drivers/acpi/osl.c b/./0001/drivers/acpi/osl.c
-> index 02e8464..9c759f8 100644
-> --- a/./0000/drivers/acpi/osl.c
-> +++ b/./0001/drivers/acpi/osl.c
-> @@ -1037,6 +1037,7 @@ int __init acpi_osi_setup(char *str)
->  		acpi_cmdline_osi_linux(1);	/* enable */
->  	} else if (*osi_additional_string == '\0') {
->  		strncpy(osi_additional_string, str, OSI_STRING_LENGTH_MAX);
-> +		osi_additional_string[OSI_STRING_LENGTH_MAX - 1] = 0;
+It should be noted that this change also affects the executability of the brk
+region, since ELF-FDPIC has that share with the stack.  However, this is
+probably irrelevant as NOMMU programs aren't likely to use the brk region,
+preferring instead allocation via mmap().
 
-That will break the test in acpi_os_validate_interface for strings
-longer than OSI_STRING_LENGTH_MAX (incl. the NUL byte). And that's the
-only other user of osi_additional_string and doesn't require the
-terminating NUL byte. So this shouldn't be needed.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Björn
+ arch/blackfin/include/asm/page.h |    5 +++++
+ arch/frv/include/asm/page.h      |    2 --
+ fs/binfmt_elf_fdpic.c            |   13 +++++++++++--
+ 3 files changed, 16 insertions(+), 4 deletions(-)
+
+
+diff --git a/arch/blackfin/include/asm/page.h b/arch/blackfin/include/asm/page.h
+index 944a07c..1d04e40 100644
+--- a/arch/blackfin/include/asm/page.h
++++ b/arch/blackfin/include/asm/page.h
+@@ -10,4 +10,9 @@
+ #include <asm-generic/page.h>
+ #define MAP_NR(addr) (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
+ 
++#define VM_DATA_DEFAULT_FLAGS \
++	(VM_READ | VM_WRITE | \
++	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
++		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
++
+ #endif
+diff --git a/arch/frv/include/asm/page.h b/arch/frv/include/asm/page.h
+index 25c6a50..8c97068 100644
+--- a/arch/frv/include/asm/page.h
++++ b/arch/frv/include/asm/page.h
+@@ -63,12 +63,10 @@ extern unsigned long max_pfn;
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+ 
+ 
+-#ifdef CONFIG_MMU
+ #define VM_DATA_DEFAULT_FLAGS \
+ 	(VM_READ | VM_WRITE | \
+ 	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
+ 		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+-#endif
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index c25256a..2917ab1 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -171,6 +171,9 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ #ifdef ELF_FDPIC_PLAT_INIT
+ 	unsigned long dynaddr;
+ #endif
++#ifndef CONFIG_MMU
++	unsigned long stack_prot;
++#endif
+ 	struct file *interpreter = NULL; /* to shut gcc up */
+ 	char *interpreter_name = NULL;
+ 	int executable_stack;
+@@ -316,6 +319,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	 * defunct, deceased, etc. after this point we have to exit via
+ 	 * error_kill */
+ 	set_personality(PER_LINUX_FDPIC);
++	if (elf_read_implies_exec(&exec_params.hdr, executable_stack))
++		current->personality |= READ_IMPLIES_EXEC;
+ 	set_binfmt(&elf_fdpic_format);
+ 
+ 	current->mm->start_code = 0;
+@@ -377,9 +382,13 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 	if (stack_size < PAGE_SIZE * 2)
+ 		stack_size = PAGE_SIZE * 2;
+ 
++	stack_prot = PROT_READ | PROT_WRITE;
++	if (executable_stack == EXSTACK_ENABLE_X ||
++	    (executable_stack == EXSTACK_DEFAULT && VM_STACK_FLAGS & VM_EXEC))
++		stack_prot |= PROT_EXEC;
++
+ 	down_write(&current->mm->mmap_sem);
+-	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+-					 PROT_READ | PROT_WRITE | PROT_EXEC,
++	current->mm->start_brk = do_mmap(NULL, 0, stack_size, stack_prot,
+ 					 MAP_PRIVATE | MAP_ANONYMOUS |
+ 					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
+ 					 0);
+
