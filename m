@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZLVXm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZLVXqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbZLVXm2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 18:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZLVXmY
+	id S1752809AbZLVXqy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 18:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZLVXqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 18:42:24 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63212 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752292AbZLVXmF (ORCPT
+	Tue, 22 Dec 2009 18:46:50 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58183 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752258AbZLVXmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Dec 2009 18:42:05 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 22 Dec 2009 15:40:47 -0800
+Date: Tue, 22 Dec 2009 15:40:48 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 09/25] x86/pci: use u64 instead of size_t in amd_bus.c
+Subject: [PATCH 10/25] x86/pci: add cap_resource
 In-reply-to: <1261525263-13763-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -24,89 +24,112 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1261525263-13763-10-git-send-email-yinghai@kernel.org>
+Message-id: <1261525263-13763-11-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 References: <1261525263-13763-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-prepare to enable it for 32bit
+prepare for 32bit pci root bus
 
--v2: remove not needed cast
+-v2: hpa said we should compare with (resource_size_t)~0
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/pci/amd_bus.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/pci/amd_bus.c   |    8 +++++---
+ arch/x86/pci/bus_numa.c  |    3 +++
+ arch/x86/pci/intel_bus.c |    5 ++++-
+ include/linux/range.h    |    8 ++++++++
+ 4 files changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index e467071..e8bb553 100644
+index e8bb553..9bcb6fe 100644
 --- a/arch/x86/pci/amd_bus.c
 +++ b/arch/x86/pci/amd_bus.c
-@@ -82,8 +82,8 @@ static int __init early_fill_mp_bus_info(void)
- 	struct pci_root_info *info;
- 	u32 reg;
- 	struct resource *res;
--	size_t start;
--	size_t end;
-+	u64 start;
-+	u64 end;
- 	struct range range[RANGE_NUM];
- 	u64 val;
- 	u32 address;
-@@ -173,7 +173,7 @@ static int __init early_fill_mp_bus_info(void)
+@@ -201,7 +201,7 @@ static int __init early_fill_mp_bus_info(void)
  
- 		info = &pci_root_info[j];
- 		printk(KERN_DEBUG "node %d link %d: io port [%llx, %llx]\n",
--		       node, link, (u64)start, (u64)end);
-+		       node, link, start, end);
+ 	memset(range, 0, sizeof(range));
+ 	/* 0xfd00000000-0xffffffffff for HT */
+-	range[0].end = (0xfdULL<<32) - 1;
++	range[0].end = cap_resource((0xfdULL<<32) - 1);
  
- 		/* kernel only handle 16 bit only */
- 		if (end > 0xffff)
-@@ -207,7 +207,7 @@ static int __init early_fill_mp_bus_info(void)
+ 	/* need to take out [0, TOM) for RAM*/
  	address = MSR_K8_TOP_MEM1;
- 	rdmsrl(address, val);
- 	end = (val & 0xffffff800000ULL);
--	printk(KERN_INFO "TOM: %016lx aka %ldM\n", end, end>>20);
-+	printk(KERN_INFO "TOM: %016llx aka %lldM\n", end, end>>20);
- 	if (end < (1ULL<<32))
- 		subtract_range(range, RANGE_NUM, 0, end - 1);
- 
-@@ -246,7 +246,7 @@ static int __init early_fill_mp_bus_info(void)
- 		info = &pci_root_info[j];
- 
- 		printk(KERN_DEBUG "node %d link %d: mmio [%llx, %llx]",
--		       node, link, (u64)start, (u64)end);
-+		       node, link, start, end);
- 		/*
- 		 * some sick allocation would have range overlap with fam10h
- 		 * mmconf range, so need to update start and end.
-@@ -272,13 +272,13 @@ static int __init early_fill_mp_bus_info(void)
- 				endx = fam10h_mmconf_start - 1;
- 				update_res(info, start, endx, IORESOURCE_MEM, 0);
- 				subtract_range(range, RANGE_NUM, start, endx);
--				printk(KERN_CONT " ==> [%llx, %llx]", (u64)start, endx);
-+				printk(KERN_CONT " ==> [%llx, %llx]", start, endx);
- 				start = fam10h_mmconf_end + 1;
- 				changed = 1;
+@@ -286,7 +286,8 @@ static int __init early_fill_mp_bus_info(void)
  			}
- 			if (changed) {
- 				if (start <= end) {
--					printk(KERN_CONT " %s [%llx, %llx]", endx?"and":"==>", (u64)start, (u64)end);
-+					printk(KERN_CONT " %s [%llx, %llx]", endx?"and":"==>", start, end);
- 				} else {
- 					printk(KERN_CONT "%s\n", endx?"":" ==> none");
- 					continue;
-@@ -301,7 +301,7 @@ static int __init early_fill_mp_bus_info(void)
- 		address = MSR_K8_TOP_MEM2;
- 		rdmsrl(address, val);
- 		end = (val & 0xffffff800000ULL);
--		printk(KERN_INFO "TOM2: %016lx aka %ldM\n", end, end>>20);
-+		printk(KERN_INFO "TOM2: %016llx aka %lldM\n", end, end>>20);
- 		subtract_range(range, RANGE_NUM, 1ULL<<32, end - 1);
- 	}
+ 		}
  
+-		update_res(info, start, end, IORESOURCE_MEM, 1);
++		update_res(info, cap_resource(start), cap_resource(end),
++				 IORESOURCE_MEM, 1);
+ 		subtract_range(range, RANGE_NUM, start, end);
+ 		printk(KERN_CONT "\n");
+ 	}
+@@ -321,7 +322,8 @@ static int __init early_fill_mp_bus_info(void)
+ 			if (!range[i].end)
+ 				continue;
+ 
+-			update_res(info, range[i].start, range[i].end,
++			update_res(info, cap_resource(range[i].start),
++				   cap_resource(range[i].end),
+ 				   IORESOURCE_MEM, 1);
+ 		}
+ 	}
+diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
+index 7ef0970..411955f 100644
+--- a/arch/x86/pci/bus_numa.c
++++ b/arch/x86/pci/bus_numa.c
+@@ -55,6 +55,9 @@ void __init update_res(struct pci_root_info *info, resource_size_t start,
+ 	if (start > end)
+ 		return;
+ 
++	if (start == (resource_size_t)~0)
++		return;
++
+ 	if (!merge)
+ 		goto addit;
+ 
+diff --git a/arch/x86/pci/intel_bus.c b/arch/x86/pci/intel_bus.c
+index baf283a..1f15df9 100644
+--- a/arch/x86/pci/intel_bus.c
++++ b/arch/x86/pci/intel_bus.c
+@@ -6,6 +6,8 @@
+ #include <linux/dmi.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
++#include <linux/range.h>
++
+ #include <asm/pci_x86.h>
+ 
+ #include "bus_numa.h"
+@@ -85,7 +87,8 @@ static void __devinit pci_root_bus_res(struct pci_dev *dev)
+ 	mmioh_base |= ((u64)(dword & 0x7ffff)) << 32;
+ 	pci_read_config_dword(dev, IOH_LMMIOH_LIMITU, &dword);
+ 	mmioh_end |= ((u64)(dword & 0x7ffff)) << 32;
+-	update_res(info, mmioh_base, mmioh_end, IORESOURCE_MEM, 0);
++	update_res(info, cap_resource(mmioh_base), cap_resource(mmioh_end),
++			 IORESOURCE_MEM, 0);
+ 
+ 	print_ioh_resources(info);
+ }
+diff --git a/include/linux/range.h b/include/linux/range.h
+index 0789f14..17a23d2 100644
+--- a/include/linux/range.h
++++ b/include/linux/range.h
+@@ -19,4 +19,12 @@ int clean_sort_range(struct range *range, int az);
+ 
+ void sort_range(struct range *range, int nr_range);
+ 
++
++static inline resource_size_t cap_resource(u64 val)
++{
++	if (val > (resource_size_t)~0)
++		return (resource_size_t)~0;
++	else
++		return val;
++}
+ #endif
 -- 
 1.6.0.2
 
