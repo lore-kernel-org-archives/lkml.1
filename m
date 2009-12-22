@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZLVUpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZLVU7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755010AbZLVUpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 15:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZLVUps
+	id S1754029AbZLVU7M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 15:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZLVU7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 15:45:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36953 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbZLVUps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 15:45:48 -0500
-To: Soumendu Satapathy <satapathy.soumendu@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Oops in 2.6.27.39 with latest DTrace linux port
-From: Andi Kleen <andi@firstfloor.org>
-References: <b3eb0ed40912221226o56e4de26oc3119f3b0a946548@mail.gmail.com>
-Date: Tue, 22 Dec 2009 21:45:43 +0100
-In-Reply-To: <b3eb0ed40912221226o56e4de26oc3119f3b0a946548@mail.gmail.com> (Soumendu Satapathy's message of "Tue, 22 Dec 2009 15:26:11 -0500")
-Message-ID: <87ljgud9fs.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 22 Dec 2009 15:59:10 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46874 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751290AbZLVU7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 15:59:09 -0500
+Date: Tue, 22 Dec 2009 12:59:12 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: [PATCH] [1/11] Add rcustring ADT for RCU protected strings
+Message-ID: <20091222205912.GD9279@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091221220.243954235@firstfloor.org> <20091221012022.9C5C4B160D@basil.firstfloor.org> <20091222024635.GA9279@linux.vnet.ibm.com> <20091222100553.GA10314@basil.fritz.box>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091222100553.GA10314@basil.fritz.box>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soumendu Satapathy <satapathy.soumendu@gmail.com> writes:
+On Tue, Dec 22, 2009 at 11:05:53AM +0100, Andi Kleen wrote:
+> On Mon, Dec 21, 2009 at 06:46:35PM -0800, Paul E. McKenney wrote:
+> > My guess is that you will sooner or later need a size field, perhaps
+> > under some debug config parameter.
+> 
+> That can be gotten from ksize() if needed.
 
-> Hi,
->
-> http://lkml.org/lkml/2009/12/22/219
->
-> Attaching the patch for the above:-
+Fair enough!!!
 
-You need to send that to the dtrace for linux author,
-strace is not in the mainline sources.
+> > > +/*
+> > > + * Get a local private copy of a RCU protected string.
+> > > + * Mostly useful to get a string that is stable while sleeping.
+> > > + * Caller must free returned string.
+> > > + */
+> > > +char *access_rcu_string(const char *str, int size, gfp_t gfp)
+> > > +{
+> > > +	char *copy = kmalloc(size, gfp);
+> > > +	if (!str)
+> > > +		return NULL;
+> > 
+> > Assuming that "str" points to the "str" field of a struct rcu_string,
+> > what prevents a grace period from elapsing at this point, freeing the
+> > "str" out from under us?
+> 
+> Yes, that's broken thanks. I'll move the reference into the read lock
+> section.
 
-You could also encourage him/her to submit his patches for 
-review.
+Looking forward to seeing the updated version!
 
--Andi
+							Thanx, Paul
