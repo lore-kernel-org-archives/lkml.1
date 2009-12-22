@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZLVXrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZLVXr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbZLVXrd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 18:47:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZLVXqs
+	id S1753056AbZLVXr6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 18:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZLVXqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 18:46:48 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63230 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbZLVXmF (ORCPT
+	Tue, 22 Dec 2009 18:46:44 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58202 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752456AbZLVXmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Dec 2009 18:42:05 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 22 Dec 2009 15:40:52 -0800
+Date: Tue, 22 Dec 2009 15:40:53 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 14/25] x86: dynamic increase early_res array size
+Subject: [PATCH 15/25] x86: print bootmem free before pci_iommu_alloc and
+ free_all_bootmem
 In-reply-to: <1261525263-13763-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -24,110 +25,153 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1261525263-13763-15-git-send-email-yinghai@kernel.org>
+Message-id: <1261525263-13763-16-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 References: <1261525263-13763-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use early_res_count to track the num, and use find_e820 to get new buffer.
-and copy from old to new one.
+so we could double check if we have enough low pages later
 
-also clear early_res to prevent later invalid using
-
--v2 _check_and_double_early_res should take new start
+-v2: fix errors checkpatch.pl reported
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/e820.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 53 insertions(+), 0 deletions(-)
+ arch/x86/mm/init_64.c   |    2 +
+ include/linux/bootmem.h |    2 +
+ mm/bootmem.c            |   92 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 96 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 291f6d2..949d688 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -908,6 +908,48 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
- 	__reserve_early(start, end, name, 1);
- }
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 1ea79ad..f9530eb 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -654,6 +654,8 @@ void __init mem_init(void)
+ 	long codesize, reservedpages, datasize, initsize;
+ 	unsigned long absent_pages;
  
-+static void __init __check_and_double_early_res(u64 start)
-+{
-+	u64 end, size, mem;
-+	struct early_res *new;
++	print_bootmem_free();
 +
-+	/* do we have enough slots left ? */
-+	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
-+		return;
-+
-+	/* double it */
-+	end = max_pfn_mapped << PAGE_SHIFT;
-+	size = sizeof(struct early_res) * max_early_res * 2;
-+	mem = find_e820_area(start, end, size, sizeof(struct early_res));
-+
-+	if (mem == -1ULL)
-+		panic("can not find more space for early_res array");
-+
-+	new = __va(mem);
-+	/* save the first one for own */
-+	new[0].start = mem;
-+	new[0].end = mem + size;
-+	new[0].overlap_ok = 0;
-+	/* copy old to new */
-+	if (early_res == early_res_x) {
-+		memcpy(&new[1], &early_res[0],
-+			 sizeof(struct early_res) * max_early_res);
-+		memset(&new[max_early_res+1], 0,
-+			 sizeof(struct early_res) * (max_early_res - 1));
-+		early_res_count++;
-+	} else {
-+		memcpy(&new[1], &early_res[1],
-+			 sizeof(struct early_res) * (max_early_res - 1));
-+		memset(&new[max_early_res], 0,
-+			 sizeof(struct early_res) * max_early_res);
-+	}
-+	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
-+	early_res = new;
-+	max_early_res *= 2;
-+	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
-+		max_early_res, mem, mem + size - 1);
-+}
+ 	pci_iommu_alloc();
+ 
+ 	/* clear_bss() already clear the empty_zero_page */
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index b10ec49..3446bed 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -55,6 +55,8 @@ extern void free_bootmem_node(pg_data_t *pgdat,
+ extern void free_bootmem(unsigned long addr, unsigned long size);
+ extern void free_bootmem_late(unsigned long addr, unsigned long size);
+ 
++void print_bootmem_free(void);
 +
  /*
-  * Most early reservations come here.
-  *
-@@ -921,6 +963,8 @@ void __init reserve_early(u64 start, u64 end, char *name)
- 	if (start >= end)
- 		return;
- 
-+	__check_and_double_early_res(end);
-+
- 	drop_overlaps_that_are_ok(start, end);
- 	__reserve_early(start, end, name, 0);
- }
-@@ -949,6 +993,10 @@ void __init early_res_to_bootmem(u64 start, u64 end)
- 	for (i = 0; i < max_early_res && early_res[i].end; i++)
- 		count++;
- 
-+	/* need to skip first one ?*/
-+	if (early_res != early_res_x)
-+		idx = 1;
-+
- 	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
- 			 count - idx, max_early_res, start, end);
- 	for (i = idx; i < count; i++) {
-@@ -966,6 +1014,11 @@ void __init early_res_to_bootmem(u64 start, u64 end)
- 		reserve_bootmem_generic(final_start, final_end - final_start,
- 				BOOTMEM_DEFAULT);
- 	}
-+	/* clear them */
-+	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
-+	early_res = NULL;
-+	max_early_res = 0;
-+	early_res_count = 0;
+  * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
+  * the architecture-specific code should honor this).
+diff --git a/mm/bootmem.c b/mm/bootmem.c
+index 8caf744..954a7e7 100644
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -268,6 +268,98 @@ static void __init __free(bootmem_data_t *bdata,
+ 			BUG();
  }
  
- /* Check for already reserved areas */
++static void __init print_all_bootmem_free_core(bootmem_data_t *bdata)
++{
++	int aligned;
++	unsigned long *map;
++	unsigned long start, end, count = 0;
++	unsigned long free_start = -1UL, free_end = 0;
++
++	if (!bdata->node_bootmem_map)
++		return;
++
++	start = bdata->node_min_pfn;
++	end = bdata->node_low_pfn;
++
++	/*
++	 * If the start is aligned to the machines wordsize, we might
++	 * be able to count it in bulks of that order.
++	 */
++	aligned = !(start & (BITS_PER_LONG - 1));
++
++	printk(KERN_DEBUG "nid=%td start=0x%010lx end=0x%010lx aligned=%d\n",
++		bdata - bootmem_node_data, start, end, aligned);
++	map = bdata->node_bootmem_map;
++
++	while (start < end) {
++		unsigned long idx, vec;
++
++		idx = start - bdata->node_min_pfn;
++		vec = ~map[idx / BITS_PER_LONG];
++
++		if (aligned && vec == ~0UL && start + BITS_PER_LONG < end) {
++			if (free_start == -1UL) {
++				free_start = idx;
++				free_end = free_start + BITS_PER_LONG;
++			} else {
++				if (free_end == idx) {
++					free_end += BITS_PER_LONG;
++				} else {
++					/* there is gap, print old */
++					printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
++							free_start + bdata->node_min_pfn,
++							free_end + bdata->node_min_pfn);
++					free_start = idx;
++					free_end = idx + BITS_PER_LONG;
++				}
++			}
++			count += BITS_PER_LONG;
++		} else {
++			unsigned long off = 0;
++
++			while (vec && off < BITS_PER_LONG) {
++				if (vec & 1) {
++					if (free_start == -1UL) {
++						free_start = idx + off;
++						free_end = free_start + 1;
++					} else {
++						if (free_end == (idx + off)) {
++							free_end++;
++						} else {
++							/* there is gap, print old */
++							printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
++								free_start + bdata->node_min_pfn,
++								free_end + bdata->node_min_pfn);
++							free_start = idx + off;
++							free_end = free_start + 1;
++						}
++					}
++					count++;
++				}
++				vec >>= 1;
++				off++;
++			}
++		}
++		start += BITS_PER_LONG;
++	}
++
++	/* last one */
++	if (free_start != -1UL)
++		printk(KERN_DEBUG "  free [0x%010lx - 0x%010lx]\n",
++			free_start + bdata->node_min_pfn,
++			free_end + bdata->node_min_pfn);
++	printk(KERN_DEBUG "  total free 0x%010lx\n", count);
++}
++
++void __init print_bootmem_free(void)
++{
++	bootmem_data_t *bdata;
++
++	list_for_each_entry(bdata, &bdata_list, list) {
++		print_all_bootmem_free_core(bdata);
++	}
++}
++
+ static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
+ 			unsigned long eidx, int flags)
+ {
 -- 
 1.6.0.2
 
