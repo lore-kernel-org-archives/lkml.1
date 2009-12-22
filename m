@@ -1,38 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZLVSmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbZLVOkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbZLVSmV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 13:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZLVSmU
+	id S1752903AbZLVOkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 09:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZLVOky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 13:42:20 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58470 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbZLVSmT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 13:42:19 -0500
-Date: Tue, 22 Dec 2009 19:42:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       DSA <debian-admin@lists.debian.org>, linux-input@vger.kernel.org
-Subject: Re: 2.6.32.1: BUG and panic: unable to handle kernel NULL pointer
-	dereference at 000000000000001f
-Message-ID: <20091222184215.GJ10314@basil.fritz.box>
-References: <20091215162736.GS13850@anguilla.noreply.org> <871vindxkv.fsf@basil.nowhere.org> <20091222183354.GM13850@anguilla.noreply.org>
+	Tue, 22 Dec 2009 09:40:54 -0500
+Received: from smtp.ispras.ru ([83.149.198.201]:53275 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751141AbZLVOkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 09:40:53 -0500
+From: Alexander Strakh <strakh@ispras.ru>
+Organization: ISP RAS
+Date: Tue, 22 Dec 2009 18:46:02 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091222183354.GM13850@anguilla.noreply.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Matthew Wilcox <willy@linux.intel.com>,
+       Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>,
+       Andy Grover <andrew.grover@intel.com>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: BUG printk with not null-terminated string in driver /drivers/acpi/osl.c
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912221846.02318.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is a static kernel - no module support.  Anyway, I also tried
-> without CONFIG_USB_HID (which pulls in all the other HID_* things) but
-> no luck.
+        In driver drivers/acpi/osl.c in function acpi_osi_setup:
+1. If in line 555 *osi_additional_string == 0 then we goto line 1039
+2. In line 1039: if length of str > OSI_STRING_LENGTH_MAX then 
+osi_additional_string not have 0 at the end.
+3. In line 1040 printk called with not null-terminated string.
+1026 int __init acpi_osi_setup(char *str)
+1027 {
+1028         if (str == NULL || *str == '\0') {
+1029                 printk(KERN_INFO PREFIX "_OSI method disabled\n");
+1030                 acpi_gbl_create_osi_method = FALSE;
+1031         } else if (!strcmp("!Linux", str)) {
+1032                 acpi_cmdline_osi_linux(0);      /* !enable */
+1033         } else if (*str == '!') {
+1034                 if (acpi_osi_invalidate(++str) == AE_OK)
+1035                         printk(KERN_INFO PREFIX "Deleted _OSI(%s)\n", 
+str);
+1036         } else if (!strcmp("Linux", str)) {
+1037                 acpi_cmdline_osi_linux(1);      /* enable */
+1038         } else if (*osi_additional_string == '\0') {
+1039                 strncpy(osi_additional_string, str, 
+OSI_STRING_LENGTH_MAX);
+1040                 printk(KERN_INFO PREFIX "Added _OSI(%s)\n", str);
+1041         }
+1042
+1043         return 1;
+1044 }
 
-Try a make distclean + rebuild anyways.
+Found by Linux Device Drivers Verification (Svace detector)
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Add terminate symbol for string in any cases.
+
+Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+
+---
+diff --git a/./0000/drivers/acpi/osl.c b/./0001/drivers/acpi/osl.c
+index 02e8464..9c759f8 100644
+--- a/./0000/drivers/acpi/osl.c
++++ b/./0001/drivers/acpi/osl.c
+@@ -1037,6 +1037,7 @@ int __init acpi_osi_setup(char *str)
+ 		acpi_cmdline_osi_linux(1);	/* enable */
+ 	} else if (*osi_additional_string == '\0') {
+ 		strncpy(osi_additional_string, str, OSI_STRING_LENGTH_MAX);
++		osi_additional_string[OSI_STRING_LENGTH_MAX - 1] = 0;
+ 		printk(KERN_INFO PREFIX "Added _OSI(%s)\n", str);
+ 	}
+ 
