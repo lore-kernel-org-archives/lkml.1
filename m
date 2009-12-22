@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZLVS4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZLVS6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbZLVS4s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 13:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZLVS4p
+	id S1754686AbZLVS6G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 13:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbZLVS6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 13:56:45 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:60194 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbZLVS4n (ORCPT
+	Tue, 22 Dec 2009 13:58:00 -0500
+Received: from anguilla.debian.or.at ([86.59.21.37]:52843 "EHLO
+	anguilla.debian.or.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbZLVS57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 13:56:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=gWJWmWsMgz1wR73I32CFR2jEnzGWTKIaEMQZG0Jk9oPvQwqlUYftM34QHE9ftUPMY4
-         MGtY4zdOl5JMS3hi0Z0kbIyQN73Uh/vv2dukTcgDcFaBoSyVLO/8JPMUoC6B/zNaJQA6
-         aOy0EyUz6qHPT5lRZY/zXM0bkBKW0SF9x/0ho=
-Message-ID: <4B311667.5080405@gmail.com>
-Date: Tue, 22 Dec 2009 13:56:39 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 22 Dec 2009 13:57:59 -0500
+X-Greylist: delayed 1444 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Dec 2009 13:57:59 EST
+Date: Tue, 22 Dec 2009 19:57:58 +0100
+From: Peter Palfrader <weasel@debian.org>
+To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       DSA <debian-admin@lists.debian.org>, linux-input@vger.kernel.org
+Subject: Re: 2.6.32.1: BUG and panic: unable to handle kernel NULL pointer dereference at 000000000000001f
+Message-ID: <20091222185758.GN13850@anguilla.noreply.org>
+Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
+	linux-kernel@vger.kernel.org, DSA <debian-admin@lists.debian.org>,
+	linux-input@vger.kernel.org
+References: <20091215162736.GS13850@anguilla.noreply.org> <871vindxkv.fsf@basil.nowhere.org> <20091222183354.GM13850@anguilla.noreply.org>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <20091222075742.GB26467@elte.hu> <4B3103B4.4070708@gmail.com> <4B3115C1.4070303@redhat.com>
-In-Reply-To: <4B3115C1.4070303@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6C7BEE90DCC1CF66CE90B145"
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091222183354.GM13850@anguilla.noreply.org>
+X-PGP: 1024D/94C09C7F 5B00 C96D 5D54 AEE1 206B  AF84 DE7A AF6E 94C0 9C7F
+X-Request-PGP: http://www.palfrader.org/keys/94C09C7F.asc
+X-Accept-Language: de, en
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6C7BEE90DCC1CF66CE90B145
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 22 Dec 2009, Peter Palfrader wrote:
 
-On 12/22/09 1:53 PM, Avi Kivity wrote:
-> On 12/22/2009 07:36 PM, Gregory Haskins wrote:
->>
->>> Gregory, it would be nice if you worked _much_ harder with the KVM fo=
-lks
->>> before giving up.
->>>     =20
->> I think the 5+ months that I politely tried to convince the KVM folks
->> that this was a good idea was pretty generous of my employer.  The KVM=
+> > If that doesn't help perhaps disable CONFIG_HID_GYRATION,
+> > but from your other oops something more seems to be broken anyways.
+> 
+> This is a static kernel - no module support.  Anyway, I also tried
+> without CONFIG_USB_HID (which pulls in all the other HID_* things) but
+> no luck.
 
->> maintainers have ultimately made it clear they are not interested in
->> directly supporting this concept (which is their prerogative), but are=
+However, disabling all of HID (CONFIG_HID_SUPPORT=n) makes the system
+boot (Previously HID, HIDRAW and HID_SUPPORT were still enabled).
 
->> perhaps willing to support the peripheral logic needed to allow it to
->> easily interface with KVM.  I can accept that, and thus AlacrityVM was=
-
->> born.
->>   =20
->=20
-> Review pointed out locking issues with xinterface which I have not seen=
-
-> addressed.  I asked why the irqfd/ioeventfd mechanisms are insufficient=
-,
-> and you did not reply.
->=20
-
-Yes, I understand.  I've been too busy to rework the code for an
-upstream push.  I will certainly address those questions when I make the
-next attempt, but they weren't relevant to the guest side.
-
-
---------------enig6C7BEE90DCC1CF66CE90B145
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksxFmcACgkQP5K2CMvXmqG/FQCbBrkWYeSsy/McAXgIeunEVht6
-wdUAn2yXf163nKyYkPWFt3orqnFbSwBr
-=+fMG
------END PGP SIGNATURE-----
-
---------------enig6C7BEE90DCC1CF66CE90B145--
+-- 
+                           |  .''`.  ** Debian GNU/Linux **
+      Peter Palfrader      | : :' :      The  universal
+ http://www.palfrader.org/ | `. `'      Operating System
+                           |   `-    http://www.debian.org/
