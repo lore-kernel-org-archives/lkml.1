@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZLVQL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZLVQOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbZLVQL6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 11:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZLVQL5
+	id S1753576AbZLVQOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 11:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZLVQOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 11:11:57 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33634 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbZLVQL4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 11:11:56 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Oskar Schirmer <os@emlix.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] add missing include in lib/rational.c
-Date: Tue, 22 Dec 2009 17:11:50 +0100
-Message-Id: <1261498310-18985-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <20091008153037.GA13717@emlix.com>
-References: <20091008153037.GA13717@emlix.com>
+	Tue, 22 Dec 2009 11:14:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3207 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbZLVQOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 11:14:17 -0500
+Date: Tue, 22 Dec 2009 17:13:53 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, fweisbec@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] dynamic debug - adding ring buffer storage support
+Message-ID: <20091222161353.GB20225@jolsa.lab.eng.brq.redhat.com>
+References: <1261481526-17630-1-git-send-email-jolsa@redhat.com>
+ <20091222153955.GD3308@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091222153955.GD3308@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sascha Hauer <s.ha...@pengutronix.de>
+On Tue, Dec 22, 2009 at 10:39:56AM -0500, Jason Baron wrote:
+> On Tue, Dec 22, 2009 at 12:32:06PM +0100, Jiri Olsa wrote:
+> > Hi,
+> > 
+> > as I use dynamic debug sometimes, I thought it could be useful having
+> > the possibility to store the output somewhere else than dmesg.
+> > 
+> > The attached patch implements support for storing dynamic debug
+> > messages to the ring buffer.
+> > 
+> > The dynamic debug allows simple addition of new flags,
+> > so I added 'r' flag for ring buffer storage.
+> > 
+> > I used the ring buffer implementation from trace framework.
+> > 
+> > hopefuly this could be any use for others as well...
+> > plz let me know what you think,
+> > 
+> > jirka
+> > 
+> 
+> hi,
+> 
+> I like the idea of using the ring buffer for output. However, I'm not
+> sure why we need a separate one for this. I like adding the 'r' for ring
+> buffer storage, by why not just make this path call 'trace_printk()', and
+> store the string in the existing kernel tracing ring buffer? That way it
+> can interleave with other trace data as well.
 
-This fixes:
+that way you need to enable tracing as well... but thats ok I guess :)
 
-lib/rational.c:62: warning: data definition has no type or storage class
-lib/rational.c:62: warning: type defaults to 'int' in declaration of 'EXPORT_SYMBOL'
-lib/rational.c:62: warning: parameter names (without types) in function declaration
+I was investigating trace events for this, but did not find a way
+to put variable length argument inside... and I overlooked the
+trace_printk, I'll look on it and see how it fits, thanks
 
-Signed-off-by: Sascha Hauer <s.ha...@pengutronix.de>
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-Acked-by: Oskar Schirmer <os@emlix.com>
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-Hi,
+also having separate ring buffer makes the 'trace'/'trace_pipe' code
+really simple (suprissingly) compared to ftrace, and I thought
+on this place it could last for some time.. ;)
 
-Oskar Schirmer wrote:
-> > lib/rational.c:62: warning: data definition has no type or storage
-> > class
-> > lib/rational.c:62: warning: type defaults to 'int' in declaration of
-> > 'EXPORT_SYMBOL'
-> > lib/rational.c:62: warning: parameter names (without types) in
-> > function declaration
->
-> Oh yes, we didnt use it with modules up to now.
-Note this has nothing to do if the symbol is used in modules or not.
-It's just that EXPORT_SYMBOL (which publishes the symbol to the module
-linker).  I havn't checked, but I assume the compiler interprets
+jirka
 
-	EXPORT_SYMBOL(rational_best_approximation);
-
-just as declaration of a function EXPORT_SYMBOL and doesn't generate the
-needed magic to actually export rational_best_approximation.
-
-Best regards
-Uwe
----
- lib/rational.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/lib/rational.c b/lib/rational.c
-index b3c099b..3ed247b 100644
---- a/lib/rational.c
-+++ b/lib/rational.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/rational.h>
-+#include <linux/module.h>
- 
- /*
-  * calculate best rational approximation for a given fraction
--- 
-1.6.5.2
-
+> 
+> thanks,
+> 
+> -Jason
