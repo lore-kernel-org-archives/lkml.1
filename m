@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbZLVBKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZLVBKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbZLVBKf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 20:10:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZLVBKZ
+	id S1752809AbZLVBKL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 20:10:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZLVBKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 20:10:25 -0500
-Received: from ozlabs.org ([203.10.76.45]:34969 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752402AbZLVBKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 20:10:23 -0500
-Date: Tue, 22 Dec 2009 12:09:41 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       perfmon2-devel@lists.sf.net, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] perf_events: improve Intel event scheduling
-Message-ID: <20091222010941.GC31264@drongo>
-References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
- <1258561957.3918.661.camel@laptop>
- <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
- <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
- <1261410040.4314.178.camel@laptop>
- <bd4cb8900912211100n419ef5b1w5322656b034f909e@mail.gmail.com>
- <1261423869.4314.198.camel@laptop>
- <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
+	Mon, 21 Dec 2009 20:10:09 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:47628 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbZLVBKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 20:10:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=GvYlDz+0+mY7zWcSMpXqhVuYs7a8cmfo7jKMkumwGVksQN0ZGHUKllG3UjIXr51x66
+         DFsdmbsJOkOWzdz+x/M3PNfx7Fv0kAi7R6RlEC4zzZ6kh/8jk1G33vqbxsgzjTDIkIP/
+         0yBk/65VSz8CKlDM+xInfgwUDTRxkk6YY7Yuo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd4cb8900912211259u4316ec7ak8baf0da77ecd4793@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.DEB.1.10.0912211944050.19919@dr-wily.mit.edu>
+References: <2b41c200912211621p72eceed5tb9f9711b2f96b72e@mail.gmail.com>
+	 <alpine.DEB.1.10.0912211926100.19919@dr-wily.mit.edu>
+	 <2b41c200912211639p30927d84k9253ac7c90ac0e68@mail.gmail.com>
+	 <alpine.DEB.1.10.0912211944050.19919@dr-wily.mit.edu>
+Date: Tue, 22 Dec 2009 02:10:06 +0100
+Message-ID: <2b41c200912211710m11f1ebbbjc3d30c67e9e49944@mail.gmail.com>
+Subject: Re: [REGRESSION] um: CONFIG_STATIC_LINK=y broken
+From: richard -rw- weinberger <richard.weinberger@gmail.com>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 09:59:45PM +0100, Stephane Eranian wrote:
+Adding the ALIGN(PAGE_SIZE) causes the segfault.
+But I cannot tell you why. :-(
 
-> Ok, so what you are suggesting is that the assignment is actually done
-> incrementally in ->enable(). hw_group_sched_in() would simply validate
-> that a single group is sane (i.e., can be scheduled if it was alone).
+Cheers,
+//richard
 
-No, hw_group_sched_in needs to validate that this group can go on
-along with everything else that has already been enabled.  But as I
-have said, if you have the complete list of enabled events to hand,
-that's not hard.
-
-On the other hand, hw_perf_event_init does need to validate that a
-single group is sane by itself.
-
-Paul.
+2009/12/22, Tim Abbott <tabbott@ksplice.com>:
+> On Tue, 22 Dec 2009, richard -rw- weinberger wrote:
+>
+>> This is the bad changeset:
+>
+> Thanks for tracking that down.  INIT_TEXT_SECTION is:
+>
+> #define INIT_TEXT_SECTION(inittext_align)                               \
+>         . = ALIGN(inittext_align);                                      \
+>         .init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {               \
+>                 VMLINUX_SYMBOL(_sinittext) = .;                         \
+>                 INIT_TEXT                                               \
+>                 VMLINUX_SYMBOL(_einittext) = .;                         \
+>         }
+>
+> So there are only 3 code changes here:
+> (1) wrapping _sinittext and _einittext in VMLINUX_SYMBOL
+> (2) Adding the AT(ADDR(.init.text) - LOAD_OFFSET)
+> (3) The added ALIGN(PAGE_SIZE) before the start of .init.text.
+>
+> I don't yet see why any of these would be problematic; would you be
+> willing to try them and figure out the precise cause?
+>
+> I suspect it'd be easiest for you to try those individual changes
+> interactively, but if it's not trivial for you, I'd be happy to generate a
+> patch series splitting out this change into pieces for you to bisect.
+>
+> 	-Tim Abbott
+>
