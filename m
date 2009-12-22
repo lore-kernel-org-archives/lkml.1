@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZLVLLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZLVLZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZLVLLg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 06:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZLVLLf
+	id S1752552AbZLVLZf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 06:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZLVLZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 06:11:35 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39850 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbZLVLLf (ORCPT
+	Tue, 22 Dec 2009 06:25:33 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40806 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752044AbZLVLZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 06:11:35 -0500
-Subject: Re: workqueue thing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       torvalds@linux-foundation.org, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
-       johannes@sipsolutions.net
-In-Reply-To: <4B300C01.8080904@kernel.org>
-References: <1261141088-2014-1-git-send-email-tj@kernel.org>
-	 <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box>
-	 <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk>
-	 <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org>
-	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
-	 <4B2F9212.3000407@linux.intel.com>  <4B300C01.8080904@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 12:10:20 +0100
-Message-ID: <1261480220.4937.24.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 06:25:31 -0500
+Date: Tue, 22 Dec 2009 11:25:05 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Kevin Constantine <kevin.constantine@gmail.com>, netdev@vger.kernel.org,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Kernel Panics in the network stack
+Message-ID: <20091222112505.GA11410@n2100.arm.linux.org.uk>
+References: <4B309AED.7080601@gmail.com> <1261480105.29570.15.camel@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261480105.29570.15.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-22 at 09:00 +0900, Tejun Heo wrote:
+On Tue, Dec 22, 2009 at 11:08:25AM +0000, Catalin Marinas wrote:
+> On Tue, 2009-12-22 at 10:09 +0000, Eric Dumazet wrote:
+> > I found an old commit mentioning a problem with LDM instruction that
+> > could be interrupted/ restarted with a base register already changed
+> > -> we load registers with garbage.
+> [...]
+> > If the low interrupt latency mode is enabled for the CPU (from ARMv6
+> > onwards), the ldm/stm instructions are no longer atomic. An ldm instruction
+> > restoring the sp and pc registers can be interrupted immediately after sp
+> > was updated but before the pc. If this happens, the CPU restores the base
+> > register to the value before the ldm instruction but if the base register
+> > is not sp, the interrupt routine will corrupt the stack and the restarted
+> > ldm instruction will load garbage.
+> [...]
+> > I found one instance of LDM instruction in 2.6.30 that could have same problem :
+> > 
+> > __switch_to:
+> > 
+> > ...
+> >         ldm r4, {r4, r5, r6, r7, r8, r9, sl, fp, sp, pc}
 > 
-> Yeah, sure, it's not suited for offloading CPU intensive workloads
-> (checksumming and encryption basically).  Workqueue interface was
-> never meant to be used by them - it has strong cpu affinity.  We need
-> something which is more parallelism aware for those. 
+> It looks to me like it is possible to get an interrupt after SP was
+> loaded but before PC, the stack could be corrupted and PC would be
+> loaded with garbage. One instance of your oops messages looks like PC
+> corruption but the other may be caused by something else. What ARM CPU
+> are you using?
+> 
+> I'm cc'ing Russell as well, it's strange that we haven't got any issue
+> with this so far.
 
-Right, so what about cleaning that up first, then looking how many
-workqueues can be removed by converting to threaded interrupts and then
-maybe look again at some of your async things?
+We don't see the issue because we explicitly disable low latency
+interrupt mode.
 
-As to the SCSI/ATA error, have to wait for a year on hardware threads,
-why not simply use the existing work to create a one-time (non-affine)
-thread for that? Its not like it'll ever happen much.
+> You could try #undef'ing __ARCH_WANT_INTERRUPTS_ON_CTXSW in
+> arch/arm/include/asm/system.h as a sanity check for your aborts.
 
+Unfortunately, we can't do that for older ARM architectures without
+severely impacting the interrupt latency there.  Not only that, but
+the interrupt latency will be increased during any context switch.
+
+I really question the value of this "low latency interrupt" setting.
+If you're worried about interrupts being disabled for a very small
+number of bus cycles for a LDM, then you're going to be screaming
+merry hell about the places in the kernel where interrupts are masked.
+The two just do not go together.
+
+The only case for enabling the low latency interrupt mode would be if
+you have tightly controlled software which never disables interrupts.
+Linux does not fall into that category, so enabling it is pointless
+and causes unnecessary problems.
+
+Given that, the simple and obvious solution is: do not modify the kernel
+to enable low interrupt latency mode.
