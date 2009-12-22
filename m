@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZLVRGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZLVRNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZLVRGO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbZLVRGM
+	id S1754187AbZLVRNF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZLVRNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:06:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13336 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753666AbZLVRGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:06:11 -0500
-Message-ID: <4B30FC5B.80506@redhat.com>
-Date: Tue, 22 Dec 2009 19:05:31 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 22 Dec 2009 12:13:04 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42896 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753167AbZLVRNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 12:13:00 -0500
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1/957ZEbfX92+jJp7pDUfGkF43OkVut51WAgD30Kr
+	wTnw6PtdQQrpyy
+Date: Tue, 22 Dec 2009 18:12:48 +0100
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Alexander Strakh <strakh@ispras.ru>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+       Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>,
+       Andy Grover <andrew.grover@intel.com>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: BUG printk with not null-terminated string in driver
+ /drivers/acpi/osl.c
+Message-ID: <20091222171248.GA20318@atjola.homenet>
+References: <200912221846.02318.strakh@ispras.ru>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Anthony Liguori <anthony@codemonkey.ws>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com> <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box>
-In-Reply-To: <20091222162110.GG10314@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200912221846.02318.strakh@ispras.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/22/2009 06:21 PM, Andi Kleen wrote:
->> So far, the only actual technical advantage I've seen is that vbus avoids
->> EOI exits.
->>      
-> The technical advantage is that it's significantly faster today.
->
-> Maybe your proposed alternative is as fast, or maybe it's not. Who knows?
->    
+On 2009.12.22 18:46:02 +0000, Alexander Strakh wrote:
+>         In driver drivers/acpi/osl.c in function acpi_osi_setup:
+> 1. If in line 555 *osi_additional_string == 0 then we goto line 1039
 
-We're working on numbers for the proposed alternative, so we should know 
-soon.  Are the AlacrityVM folks working on having all the virtio drivers 
-for all the virtio archs?
+I guess that's meant to be line 1038?
 
-We shouldn't drop everything and switch to new code just because someone 
-came up with a new idea.  The default should be to enhance the existing 
-code.
+> 2. In line 1039: if length of str > OSI_STRING_LENGTH_MAX then 
+> osi_additional_string not have 0 at the end.
+> 3. In line 1040 printk called with not null-terminated string.
 
->> We think we understand why vbus does better than the current userspace
->> virtio backend.  That's why we're building vhost-net.  It's not done yet,
->> but our expectation is that it will do just as well if not better.
->>      
-> That's the vapourware vs working code disconnect I mentioned. One side has hard
-> numbers&working code and the other has expectations. I usually find it sad when the
-> vapourware holds up the working code.
->    
+That printk uses str, not osi_additional_string.
 
-vhost-net is working code and is queued for 2.6.33.
+> diff --git a/./0000/drivers/acpi/osl.c b/./0001/drivers/acpi/osl.c
+> index 02e8464..9c759f8 100644
+> --- a/./0000/drivers/acpi/osl.c
+> +++ b/./0001/drivers/acpi/osl.c
+> @@ -1037,6 +1037,7 @@ int __init acpi_osi_setup(char *str)
+>  		acpi_cmdline_osi_linux(1);	/* enable */
+>  	} else if (*osi_additional_string == '\0') {
+>  		strncpy(osi_additional_string, str, OSI_STRING_LENGTH_MAX);
+> +		osi_additional_string[OSI_STRING_LENGTH_MAX - 1] = 0;
 
--- 
-error compiling committee.c: too many arguments to function
+That will break the test in acpi_os_validate_interface for strings
+longer than OSI_STRING_LENGTH_MAX (incl. the NUL byte). And that's the
+only other user of osi_additional_string and doesn't require the
+terminating NUL byte. So this shouldn't be needed.
 
+Björn
