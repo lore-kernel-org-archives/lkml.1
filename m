@@ -1,143 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZLVRiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZLVRpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbZLVRiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZLVRix
+	id S1754512AbZLVRpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZLVRpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:38:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59768 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754408AbZLVRiw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:38:52 -0500
-Date: Tue, 22 Dec 2009 09:38:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mark Hounschell <markh@compro.net>
-cc: Mark Hounschell <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
+	Tue, 22 Dec 2009 12:45:16 -0500
+Received: from verein.lst.de ([213.95.11.210]:40606 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753448AbZLVRpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 12:45:15 -0500
+Date: Tue, 22 Dec 2009 18:45:00 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Eric Blake <ebb9@byu.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fdutils@fdutils.linux.lu,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Shaohua Li <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28 (Was:
- Re: Cannot format floppies under kernel 2.6.*?)
-In-Reply-To: <4B30E1B4.7000702@compro.net>
-Message-ID: <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>
-References: <4AFB3962.2020106@ntlworld.com> <4B2A3E3E.8060405@knaff.lu> <4B2A4975.8020809@compro.net> <4B2A49F4.6070402@compro.net> <4B2A4B86.8060307@knaff.lu> <4B2A4C78.10107@compro.net> <4B2A4CF7.6040000@knaff.lu> <4B2A4EC9.2030902@compro.net>
- <4B2A4FA5.5000701@knaff.lu> <4B2A5192.6090602@compro.net> <4B2A530D.3080606@knaff! .lu> <4B2A6394.3080705@knaff.lu> <alpine.LFD.2.00.0912170916420.15740@localhost.locald! omain> <4B2A98BB.5080406@knaff.lu> <alpine.LFD.2.00.0912171256560.15740@localhost.localdomain>
- <4B2AAC87.5000703@knaff.lu> <alpine.LFD.2.00.0912171440420.15740@localhost.localdomain> <4B2ABDC8.6090104@knaff.lu> <4B2B4485.6000305@cfl.rr.com> <4B2B5F86.1090403@cfl.rr.com> <alpine.LFD.2.00.0912180716400.3712@localhost.localdomain> <4B2B9F9F.7040802@compro.net>
- <alpine.LFD.2.00.0912180734220.3712@localhost.localdomain> <4B2BE05B.9050006@compro.net> <alpine.LFD.2.00.0912181213540.3712@localhost.localdomain> <4B30E1B4.7000702@compro.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       xfs@oss.sgi.com, Christoph Hellwig <hch@lst.de>
+Subject: Re: utimensat fails to update ctime
+Message-ID: <20091222174500.GA7063@lst.de>
+References: <4B2B156D.9040604@byu.net> <87aaxclr4q.fsf@devron.myhome.or.jp> <4B2F7421.10005@byu.net> <4B2F7A95.3010708@byu.net> <87hbrkjrk8.fsf@devron.myhome.or.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87hbrkjrk8.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch which I had in my QA queue for a while should fix all the
+timestamp update issues in XFS:
 
-[ Ingo, Venki and Shaohua added to cc: see the whole thread on lkml for 
-  details, but Mark is basically chasing down a situation where the floppy 
-  driver seems to have trouble formatting floppies, and it happened 
-  between 2.6.27 and .28. The trouble seems to be that a DMA transfer of a 
-  memory block transfers the wrong value for the first byte of the block.
 
-  Which should be impossible, but whatever. Some part of the system has a 
-  cached buffer that isn't flushed.
-
-  What gets _you_ guys involved is that Mark cannot reproduce the bug if 
-  HPET is disabled in the BIOS or by using 'nohpet'. He found that out by 
-  pure luck while bisecting, because some time during his bisect, his 
-  machine wouldn't even boot with HPET.
-
-  So the problem is: with HPET enabled, 2.6.27.4 _used_ to work. But 
-  2.6.28 (and current -git) does not.  Any ideas? ]
-
-On Tue, 22 Dec 2009, Mark Hounschell wrote:
-> 
-> Ok, I may have something that might help.
-> 
-> # git bisect bad
-> 26afe5f2fbf06ea0765aaa316640c4dd472310c0 is the first bad commit
-> commit 26afe5f2fbf06ea0765aaa316640c4dd472310c0
-> Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-> Date:   Fri Sep 5 18:02:18 2008 -0700
-> 
->     x86: HPET_MSI Initialise per-cpu HPET timers
-> 
->     Initialize a per CPU HPET MSI timer when possible. We retain the HPET
->     timer 0 (IRQ 0) and timer 1 (IRQ 8) as is when legacy mode is being used. We
->     setup the remaining HPET timers as per CPU MSI based timers. This per CPU
->     timer will eliminate the need for timer broadcasting with IRQ 0 when there
->     is non-functional LAPIC timer across CPU deep C-states.
-> 
->     If there are more CPUs than number of available timers, CPUs that do not
->     find any timer to use will continue using LAPIC and IRQ 0 broadcast.
-> 
->     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> And of coarse this was the first commit that I could not boot if I had hpet
-> enabled. To get this one to boot (single user mode only) I had to add the
-> the quiet cmdline option and following patch from to arch/x86/kernel/hpet.c
-> 
-> commit  5ceb1a04187553e08c6ab60d30cee7c454ee139a
-> 
-> @ -445,7 +445,7 @@ static int hpet_setup_irq(struct hpet_dev *dev)
->  {
-> 
->         if (request_irq(dev->irq, hpet_interrupt_handler,
-> -                       IRQF_SHARED|IRQF_NOBALANCING, dev->name, dev))
-> +                       IRQF_DISABLED|IRQF_NOBALANCING, dev->name, dev))
->                 return -1;
-> 
->         disable_irq(dev->irq);
-> 
-> AND add the quiet cmdline option.
-
-Ok, so we know why HPET didn't boot for you, and that was fixed later (by 
-that 5ceb1a04). But is this also when the floppy started mis-behaving?
-
-IOW, _if_ you boot with that fix from commit 5ceb1a04 (and the quiet 
-option - I wonder what that is about: do you have any ideas?), is the 
-per-CPU HPET timer commit also the commit that causes floppy problems, or 
-is this purely a "bisect when HPET became a boot-up problem"?
-
-			Linus
-
----
-> Also, of all the machines it does work on with hpets enabled, I don't see
-> the HPET2 in /proc/interupts as below.
-> 
-> 
-> cat /proc/interrupts
->            CPU0       CPU1       CPU2       CPU3
->   0:         82          0          3          0   IO-APIC-edge      timer
->   1:          0          0       1712          6   IO-APIC-edge      i8042
->   3:          0          0          6          0   IO-APIC-edge
->   4:          0          0          6          0   IO-APIC-edge
->   6:          0          0          4          0   IO-APIC-edge      floppy
->   8:          0          0         60          0   IO-APIC-edge      rtc0
->   9:          0          0          0          0   IO-APIC-fasteoi   acpi
->  12:          0          0      37798        179   IO-APIC-edge      i8042
->  14:          0          0      16462         71   IO-APIC-edge      pata_atiixp
->  15:          0          0       5713         17   IO-APIC-edge      pata_atiixp
->  16:          0          0        904          2   IO-APIC-fasteoi   aic79xx, ohci_hcd:usb2, ohci_hcd:usb4, HDA Intel, ni-pci-gpib
->  17:          0          0          2          0   IO-APIC-fasteoi   ehci_hcd:usb1, parport0, ni-pci-gpib
->  18:          0          0      49940         90   IO-APIC-fasteoi   ohci_hcd:usb5, ohci_hcd:usb6, ohci_hcd:usb7, nvidia
->  19:          0          0        703          2   IO-APIC-fasteoi   aic7xxx, ehci_hcd:usb3, ttySLG0, eth1
->  22:          0          0       1303         15   IO-APIC-fasteoi   ahci
-> 
->  24:     261763          0          0          0  HPET_MSI-edge      hpet2
-> 
->  29:          0          0        220          5   PCI-MSI-edge      sky2@pci:0000:04:00.0
-> NMI:          0          0          0          0   Non-maskable interrupts
-> LOC:        138     271356     264446     261050   Local timer interrupts
-> SPU:          0          0          0          0   Spurious interrupts
-> PMI:          0          0          0          0   Performance monitoring interrupts
-> PND:          0          0          0          0   Performance pending work
-> RES:       4511       9275       8470       8086   Rescheduling interrupts
-> CAL:       3624       8666        523       4543   Function call interrupts
-> TLB:        981       1111       1065       1058   TLB shootdowns
-> ERR:          0
-> MIS:          0
+Index: linux-2.6/fs/xfs/xfs_vnodeops.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_vnodeops.c	2009-12-21 16:24:28.470990760 +0100
++++ linux-2.6/fs/xfs/xfs_vnodeops.c	2009-12-21 16:32:41.348990760 +0100
+@@ -70,7 +70,6 @@ xfs_setattr(
+ 	uint			commit_flags=0;
+ 	uid_t			uid=0, iuid=0;
+ 	gid_t			gid=0, igid=0;
+-	int			timeflags = 0;
+ 	struct xfs_dquot	*udqp, *gdqp, *olddquot1, *olddquot2;
+ 	int			need_iolock = 1;
+ 
+@@ -135,16 +134,13 @@ xfs_setattr(
+ 	if (flags & XFS_ATTR_NOLOCK)
+ 		need_iolock = 0;
+ 	if (!(mask & ATTR_SIZE)) {
+-		if ((mask != (ATTR_CTIME|ATTR_ATIME|ATTR_MTIME)) ||
+-		    (mp->m_flags & XFS_MOUNT_WSYNC)) {
+-			tp = xfs_trans_alloc(mp, XFS_TRANS_SETATTR_NOT_SIZE);
+-			commit_flags = 0;
+-			if ((code = xfs_trans_reserve(tp, 0,
+-						     XFS_ICHANGE_LOG_RES(mp), 0,
+-						     0, 0))) {
+-				lock_flags = 0;
+-				goto error_return;
+-			}
++		tp = xfs_trans_alloc(mp, XFS_TRANS_SETATTR_NOT_SIZE);
++		commit_flags = 0;
++		code = xfs_trans_reserve(tp, 0, XFS_ICHANGE_LOG_RES(mp),
++					 0, 0, 0);
++		if (code) {
++			lock_flags = 0;
++			goto error_return;
+ 		}
+ 	} else {
+ 		if (DM_EVENT_ENABLED(ip, DM_EVENT_TRUNCATE) &&
+@@ -295,15 +291,23 @@ xfs_setattr(
+ 		 * or we are explicitly asked to change it. This handles
+ 		 * the semantic difference between truncate() and ftruncate()
+ 		 * as implemented in the VFS.
+-		 */
+-		if (iattr->ia_size != ip->i_size || (mask & ATTR_CTIME))
+-			timeflags |= XFS_ICHGTIME_MOD | XFS_ICHGTIME_CHG;
++		 *
++		 * The regular truncate() case without ATTR_CTIME and ATTR_MTIME
++		 * is a special case where we need to update the times despite
++		 * not having these flags set.  For all other operations the
++		 * VFS set these flags explicitly if it wants a timestamp
++		 * update.
++		 */
++		if (iattr->ia_size != ip->i_size &&
++		    (!(mask & (ATTR_CTIME | ATTR_MTIME)))) {
++			iattr->ia_ctime = iattr->ia_mtime =
++				current_fs_time(inode->i_sb);
++			mask |= ATTR_CTIME | ATTR_MTIME;
++		}
+ 
+ 		if (iattr->ia_size > ip->i_size) {
+ 			ip->i_d.di_size = iattr->ia_size;
+ 			ip->i_size = iattr->ia_size;
+-			if (!(flags & XFS_ATTR_DMI))
+-				xfs_ichgtime(ip, XFS_ICHGTIME_CHG);
+ 			xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+ 		} else if (iattr->ia_size <= ip->i_size ||
+ 			   (iattr->ia_size == 0 && ip->i_d.di_nextents)) {
+@@ -374,9 +378,6 @@ xfs_setattr(
+ 			ip->i_d.di_gid = gid;
+ 			inode->i_gid = gid;
+ 		}
+-
+-		xfs_trans_log_inode (tp, ip, XFS_ILOG_CORE);
+-		timeflags |= XFS_ICHGTIME_CHG;
+ 	}
+ 
+ 	/*
+@@ -393,51 +394,37 @@ xfs_setattr(
+ 
+ 		inode->i_mode &= S_IFMT;
+ 		inode->i_mode |= mode & ~S_IFMT;
+-
+-		xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+-		timeflags |= XFS_ICHGTIME_CHG;
+ 	}
+ 
+ 	/*
+ 	 * Change file access or modified times.
+ 	 */
+-	if (mask & (ATTR_ATIME|ATTR_MTIME)) {
+-		if (mask & ATTR_ATIME) {
+-			inode->i_atime = iattr->ia_atime;
+-			ip->i_d.di_atime.t_sec = iattr->ia_atime.tv_sec;
+-			ip->i_d.di_atime.t_nsec = iattr->ia_atime.tv_nsec;
+-			ip->i_update_core = 1;
+-		}
+-		if (mask & ATTR_MTIME) {
+-			inode->i_mtime = iattr->ia_mtime;
+-			ip->i_d.di_mtime.t_sec = iattr->ia_mtime.tv_sec;
+-			ip->i_d.di_mtime.t_nsec = iattr->ia_mtime.tv_nsec;
+-			timeflags &= ~XFS_ICHGTIME_MOD;
+-			timeflags |= XFS_ICHGTIME_CHG;
+-		}
+-		if (tp && (mask & (ATTR_MTIME_SET|ATTR_ATIME_SET)))
+-			xfs_trans_log_inode (tp, ip, XFS_ILOG_CORE);
++	if (mask & ATTR_ATIME) {
++		inode->i_atime = iattr->ia_atime;
++		ip->i_d.di_atime.t_sec = iattr->ia_atime.tv_sec;
++		ip->i_d.di_atime.t_nsec = iattr->ia_atime.tv_nsec;
++		ip->i_update_core = 1;
+ 	}
+-
+-	/*
+-	 * Change file inode change time only if ATTR_CTIME set
+-	 * AND we have been called by a DMI function.
+-	 */
+-
+-	if ((flags & XFS_ATTR_DMI) && (mask & ATTR_CTIME)) {
++	if (mask & ATTR_CTIME) {
+ 		inode->i_ctime = iattr->ia_ctime;
+ 		ip->i_d.di_ctime.t_sec = iattr->ia_ctime.tv_sec;
+ 		ip->i_d.di_ctime.t_nsec = iattr->ia_ctime.tv_nsec;
+ 		ip->i_update_core = 1;
+-		timeflags &= ~XFS_ICHGTIME_CHG;
++	}
++	if (mask & ATTR_MTIME) {
++		inode->i_mtime = iattr->ia_mtime;
++		ip->i_d.di_mtime.t_sec = iattr->ia_mtime.tv_sec;
++		ip->i_d.di_mtime.t_nsec = iattr->ia_mtime.tv_nsec;
++		ip->i_update_core = 1;
+ 	}
+ 
+ 	/*
+-	 * Send out timestamp changes that need to be set to the
+-	 * current time.  Not done when called by a DMI function.
++	 * And finally, log the inode core if any attribute in it
++	 * has been changed.
+ 	 */
+-	if (timeflags && !(flags & XFS_ATTR_DMI))
+-		xfs_ichgtime(ip, timeflags);
++	if (mask & (ATTR_UID|ATTR_GID|ATTR_MODE|
++		    ATTR_ATIME|ATTR_CTIME|ATTR_MTIME))
++		xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+ 
+ 	XFS_STATS_INC(xs_ig_attrchg);
+ 
+@@ -452,12 +439,10 @@ xfs_setattr(
+ 	 * mix so this probably isn't worth the trouble to optimize.
+ 	 */
+ 	code = 0;
+-	if (tp) {
+-		if (mp->m_flags & XFS_MOUNT_WSYNC)
+-			xfs_trans_set_sync(tp);
++	if (mp->m_flags & XFS_MOUNT_WSYNC)
++		xfs_trans_set_sync(tp);
+ 
+-		code = xfs_trans_commit(tp, commit_flags);
+-	}
++	code = xfs_trans_commit(tp, commit_flags);
+ 
+ 	xfs_iunlock(ip, lock_flags);
+ 
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_acl.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_acl.c	2009-12-21 16:31:51.838990759 +0100
++++ linux-2.6/fs/xfs/linux-2.6/xfs_acl.c	2009-12-21 16:32:17.471990759 +0100
+@@ -251,8 +251,9 @@ xfs_set_mode(struct inode *inode, mode_t
+ 	if (mode != inode->i_mode) {
+ 		struct iattr iattr;
+ 
+-		iattr.ia_valid = ATTR_MODE;
++		iattr.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 		iattr.ia_mode = mode;
++		iattr.ia_ctime = current_fs_time(inode->i_sb);
+ 
+ 		error = -xfs_setattr(XFS_I(inode), &iattr, XFS_ATTR_NOACL);
+ 	}
