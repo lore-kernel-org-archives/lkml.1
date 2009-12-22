@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbZLVKLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZLVKXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751721AbZLVKLb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 05:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZLVKLa
+	id S1751712AbZLVKXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 05:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZLVKXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 05:11:30 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59606 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZLVKL3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 05:11:29 -0500
-Date: Tue, 22 Dec 2009 10:11:12 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
+	Tue, 22 Dec 2009 05:23:21 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57583 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751528AbZLVKXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 05:23:20 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+8vLRRuFi8NOCsj7lZCaFSRJbPAIAtfV/BXjhzNh
+	WkibdCd+CFmOJp
+From: Peter =?utf-8?q?H=C3=BCwe?= <PeterHuewe@gmx.de>
 To: Joe Perches <joe@perches.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, San Mehat <san@google.com>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: sched: restore sanity
-Message-ID: <20091222101112.GQ18217@ZenIV.linux.org.uk>
-References: <1261315437.4314.6.camel@laptop> <20091220144925.GA19608@elte.hu> <1261320715.4314.9.camel@laptop> <236ccac0912200703g464912b1r421497ebf3b6ebc6@mail.gmail.com> <236ccac0912200705i369d00d1v42603a00e92039b6@mail.gmail.com> <1261322387.4314.22.camel@laptop> <1261329743.30458.179.camel@Joe-Laptop.home>
+Subject: Re: [PATCH] MAINTAINERS: Fix entry for uwb to include subdirectories
+Date: Tue, 22 Dec 2009 11:23:18 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: David Vrabel <david.vrabel@csr.com>, Jiri Kosina <trivial@kernel.org>,
+       kernel-janitors@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1261472760-24854-1-git-send-email-peterhuewe@gmx.de> <1261473735.1895.22.camel@Joe-Laptop.home>
+In-Reply-To: <1261473735.1895.22.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261329743.30458.179.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912221123.18969.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 09:22:23AM -0800, Joe Perches wrote:
-
-> pr_<level> offers some things printk cannot:
+Am Dienstag 22 Dezember 2009 10:22:15 schrieb Joe Perches:
+> On Tue, 2009-12-22 at 10:05 +0100, Peter Huewe wrote:
+> > This little patch removes the asterisk wildcard, in order to get the uwb
+> > maintainer when using get_maintainer.pl on anyfiles in the
+> > subdirectories of uwb.
 > 
-> o standardization, eliminates frequent missing KERN_ levels
->   and missing/typo/misspelled module prefixes  
-> o visually shorter, fewer chars used, less 80 char wrapping
-> o finer grained ability to eliminate unnecessary messages
->   for embedded systems
-> o standardized mechanism to prefix messages with module/function
-> o eventual code reduction via use of a singleton instead of
->   duplicated module/function names
-> o eventual dynamic_debug styled control of prefix by
->   module/function
+> Is this correct?
+> Does David Vrabel maintain drivers/uwb/i1480/ ?
+Okay I should have asked David first wether this is correct or not :) 
+However I created a patch earlier today for 
+uwb/i1480/i1480-est.c 
+Subject was [PATCH 1/6] uwb/i1480: add __init/__exit macros
+and was told by Marcel Holtmann:
+>> @Jiri: As there is no maintainer, it seems it is up to you to decide :)
+>actually David Vrabel is taking care of the UWB subsystem and everything
+>related to it.
 
-o leveraging the synergy between make-work job and commit count masturbation
+> 
+> > Otherwise it get_maintainer.pl does not come up with a result
+> 
+> Sure it does:
+> $ ./scripts/get_maintainer.pl -f drivers/uwb/i1480
+> Jiri Kosina <jkosina@suse.cz>
+> David Vrabel <david.vrabel@csr.com>
+> Stephen Hemminger <shemminger@vyatta.com>
+> David S. Miller <davem@davemloft.net>
+> Nick Andrew <nick@nick-andrew.net>
+> linux-kernel@vger.kernel.org
+
+But it does not yield a result for any file within i1480:
+$ ./scripts/get_maintainer.pl -f drivers/uwb/i1480/i1480-est.c
+linux-kernel@vger.kernel.org
+$
+
+Regards,
+Peter
