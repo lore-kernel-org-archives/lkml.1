@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZLVQS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZLVQUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbZLVQS5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 11:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZLVQS5
+	id S1753870AbZLVQUV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 11:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZLVQUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 11:18:57 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:54605 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbZLVQS4 (ORCPT
+	Tue, 22 Dec 2009 11:20:20 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:48177 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZLVQUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 11:18:56 -0500
-Date: Tue, 22 Dec 2009 10:17:48 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Tejun Heo <tj@kernel.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V8 07/16] Module handling: Use this_cpu_xx to
- dynamically allocate counters
-In-Reply-To: <4B300C97.40409@kernel.org>
-Message-ID: <alpine.DEB.2.00.0912221013230.12163@router.home>
-References: <20091218222617.384355422@quilx.com> <4B2F2820.5030904@kernel.org> <4B2F2AE8.7060507@kernel.org> <200912220958.16139.rusty@rustcorp.com.au> <4B300C97.40409@kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Dec 2009 11:20:18 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>
+In-Reply-To: <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity>
+	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Date: Tue, 22 Dec 2009 11:20:15 -0500
+Message-Id: <1261498815.13028.63.camel@serenity>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Dec 2009, Tejun Heo wrote:
 
-> On 12/22/2009 08:28 AM, Rusty Russell wrote:
-> > On Mon, 21 Dec 2009 06:29:36 pm Tejun Heo wrote:
-> >> @@ -555,6 +556,7 @@ static void module_unload_free(struct module *mod)
-> >>  				kfree(use);
-> >>  				sysfs_remove_link(i->holders_dir, mod->name);
-> >>  				/* There can be at most one match. */
-> >> +				free_percpu(i->refptr);
-> >>  				break;
-> >>  			}
-> >>  		}
-> >
-> > This looks very wrong.
->
-> Indeed, thanks for spotting it.  Christoph, I'm rolling back all
-> patches from this series.  Please re-post with updates.
+On Tue, 2009-12-22 at 13:25 +0100, Jan Kara wrote:
+> > I originally spent several months playing with the balance_dirty_pages
+> > algorithm.  The main drawback is that it affects more than the inodes
+> > that the caller is writing and that the control of what to do is too
+>   Can you be more specific here please?
 
-Simply drop the chunk?
+Sure;  balance_dirty_pages() will schedule writeback by the flusher
+thread once the number of dirty pages exceeds dirty_background_ratio.
+The flusher thread calls writeback_inodes_wb() to flush all dirty inodes
+associated with the bdi.  Similarly, the process dirtying the pages will
+call writeback_inodes_wbc() when it's bdi threshold has been exceeded.
+The first problem is that these functions process all dirty inodes with
+the same backing device, which can lead to excess (duplicate) flushing
+of the same inode.  Second, there is no distinction between pages that
+need to be committed and pages that have commits pending in
+NR_UNSTABLE_NFS/BDI_RECLAIMABLE (a page that has a commit pending won't
+be cleaned any faster by sending more commits).  This tends to overstate
+the amount of memory that can be cleaned, leading to additional commit
+requests.  Third, these functions generate a commit for each set of
+writes they do, which might not be appropriate.  For background writing,
+you'd like to delay the commit as long as possible.
 
+[snip]
+
+> > 
+> > Part of the patch does implement a heuristic write-behind.  See where
+> > nfs_wb_eager() is called.
+>   I believe that if we had per-bdi dirty_background_ratio and set it low
+> for NFS's bdi, then the write-behind logic would not be needed
+> (essentially the flusher thread should submit the writes to the server
+> early).
+> 
+> 								Honza
+
+Maybe so, but you still need something to prevent the process that is
+dirtying pages from continuing, because a process can always write to
+memory faster than writing to disk/network, so the flusher won't be able
+to keep up.
+
+Steve
 
