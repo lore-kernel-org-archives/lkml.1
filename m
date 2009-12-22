@@ -1,55 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbZLVM1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbZLVMcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbZLVM1A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 07:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZLVM07
+	id S1752423AbZLVMcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 07:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZLVMcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 07:26:59 -0500
-Received: from cluster-d.mailcontrol.com ([85.115.60.190]:48006 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZLVM06 (ORCPT
+	Tue, 22 Dec 2009 07:32:21 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:36685 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZLVMcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 07:26:58 -0500
-Message-ID: <4B30BAE0.5040700@csr.com>
-Date: Tue, 22 Dec 2009 12:26:08 +0000
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 22 Dec 2009 07:32:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=ooXEjCHMEd2WHRTry9o6LceYz+S2Y90z1ZJR+267/YpYGDc0OfpgsB7Tu0aIhfVP/p
+         WmEvLEdn452tU1/4EYcyrN8ztjYx1VcZOE6Lcl2CiFujk64CRspRQ6N1oe74kHYN2+qV
+         l2WyRSueLE6aUMZW5zsHjUEs4HSwhFGkdxDkg=
+Date: Tue, 22 Dec 2009 12:32:11 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: Andrey Rahmatullin <wrar@altlinux.org>,
+       LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
+       netdev@vger.kernel.org
+Subject: Re: via_rhine kernel crashes in 2.6.32
+Message-ID: <20091222123211.GA8546@ff.dom.local>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Peter Huewe <peterhuewe@gmx.de>, Jiri Kosina <trivial@kernel.org>,
-       kernel-janitors@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: Fix entry for uwb to include subdirectories
-References: <1261472760-24854-1-git-send-email-peterhuewe@gmx.de> <1261473735.1895.22.camel@Joe-Laptop.home>
-In-Reply-To: <1261473735.1895.22.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Dec 2009 12:26:08.0829 (UTC) FILETIME=[F099AED0:01CA8301]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.01.0912211040100.3483@bogon.housecafe.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Tue, 2009-12-22 at 10:05 +0100, Peter Huewe wrote:
->> This little patch removes the asterisk wildcard, in order to get the uwb
->> maintainer when using get_maintainer.pl on anyfiles in the
->> subdirectories of uwb.
+On 21-12-2009 20:32, Christian Kujau wrote:
+> On Mon, 21 Dec 2009 at 23:18, Andrey Rahmatullin wrote:
+>> I've installed 2.6.27, the earliest kernel supported by udev 149. I
+> [...]
+>> one of downloads, waited for some time, nothing happened. I resumed the
+>> second download, the kernel crashed into an endless stream of backtraces
+>> (did 2.6.27 support pause_on_oops?), containing "whatever from the idle
+>> thread", or smth like that, which was also in other crash logs.
 > 
-> Is this correct?
-> Does David Vrabel maintain drivers/uwb/i1480/ ?
+> So, 2.6.27 crashed as well. Was the backtrace similar to those on 2.6.30? 
+> I know it's a long shot, but since you seem to be able to reproduce this 
+> pretty reliably, can you try 2.6.23? Or at least something before 
+> bea3348eef27e6044b6161fd04c3152215f96411 [0]?
+> 
+> Christian.
+> 
+> [0] I'm *really* guessing here, if some netdev guru has some better
+>     understanding of the backtraces Andrey sent, please step forward.
 
-Yes, it's basically obsolete hardware that Intel no longer develops
-which is why it doesn't see many changes.  I'd just delete it except
-there's a few people actually using it.
+It looks like napi_disable() should be illegal in ndo_tx_timeout().
+Here is a patch which moves most of the timeout work to a workqueue,
+similarly to tg3 etc. It should prevent at least one of reported
+bugs. Alas I can't even check-compile it at the moment, so let me
+know on any problems.
 
-Neither the UWB or WLP maintainer entries are completely correct.  I'll
-fix them up.
+Jarek P.
 
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+---
 
+ drivers/net/via-rhine.c |   41 ++++++++++++++++++++++++++++-------------
+ 1 files changed, 28 insertions(+), 13 deletions(-)
 
-Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+diff --git a/drivers/net/via-rhine.c b/drivers/net/via-rhine.c
+index 593e01f..125406b 100644
+--- a/drivers/net/via-rhine.c
++++ b/drivers/net/via-rhine.c
+@@ -102,6 +102,7 @@ static const int multicast_filter_limit = 32;
+ #include <linux/ethtool.h>
+ #include <linux/crc32.h>
+ #include <linux/bitops.h>
++#include <linux/workqueue.h>
+ #include <asm/processor.h>	/* Processor type for cache alignment. */
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -389,6 +390,7 @@ struct rhine_private {
+ 	struct net_device *dev;
+ 	struct napi_struct napi;
+ 	spinlock_t lock;
++	struct work_struct reset_task;
+ 
+ 	/* Frequently used values: keep some adjacent for cache effect. */
+ 	u32 quirks;
+@@ -407,6 +409,7 @@ struct rhine_private {
+ static int  mdio_read(struct net_device *dev, int phy_id, int location);
+ static void mdio_write(struct net_device *dev, int phy_id, int location, int value);
+ static int  rhine_open(struct net_device *dev);
++static void rhine_reset_task(struct work_struct *work);
+ static void rhine_tx_timeout(struct net_device *dev);
+ static netdev_tx_t rhine_start_tx(struct sk_buff *skb,
+ 				  struct net_device *dev);
+@@ -775,6 +778,8 @@ static int __devinit rhine_init_one(struct pci_dev *pdev,
+ 	dev->irq = pdev->irq;
+ 
+ 	spin_lock_init(&rp->lock);
++	INIT_WORK(&rp->reset_task, rhine_reset_task);
++
+ 	rp->mii_if.dev = dev;
+ 	rp->mii_if.mdio_read = mdio_read;
+ 	rp->mii_if.mdio_write = mdio_write;
+@@ -1179,22 +1184,18 @@ static int rhine_open(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-static void rhine_tx_timeout(struct net_device *dev)
++static void rhine_reset_task(struct work_struct *work)
+ {
+-	struct rhine_private *rp = netdev_priv(dev);
+-	void __iomem *ioaddr = rp->base;
+-
+-	printk(KERN_WARNING "%s: Transmit timed out, status %4.4x, PHY status "
+-	       "%4.4x, resetting...\n",
+-	       dev->name, ioread16(ioaddr + IntrStatus),
+-	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
++	struct rhine_private *rp = container_of(work, struct rhine_private,
++					        reset_task);
++	struct net_device *dev = rp->dev;
+ 
+ 	/* protect against concurrent rx interrupts */
+ 	disable_irq(rp->pdev->irq);
+ 
+ 	napi_disable(&rp->napi);
+ 
+-	spin_lock(&rp->lock);
++	spin_lock_irq(&rp->lock);
+ 
+ 	/* clear all descriptors */
+ 	free_tbufs(dev);
+@@ -1206,7 +1207,7 @@ static void rhine_tx_timeout(struct net_device *dev)
+ 	rhine_chip_reset(dev);
+ 	init_registers(dev);
+ 
+-	spin_unlock(&rp->lock);
++	spin_unlock_irq(&rp->lock);
+ 	enable_irq(rp->pdev->irq);
+ 
+ 	dev->trans_start = jiffies;
+@@ -1214,6 +1215,19 @@ static void rhine_tx_timeout(struct net_device *dev)
+ 	netif_wake_queue(dev);
+ }
+ 
++static void rhine_tx_timeout(struct net_device *dev)
++{
++	struct rhine_private *rp = netdev_priv(dev);
++	void __iomem *ioaddr = rp->base;
++
++	printk(KERN_WARNING "%s: Transmit timed out, status %4.4x, PHY status "
++	       "%4.4x, resetting...\n",
++	       dev->name, ioread16(ioaddr + IntrStatus),
++	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
++
++	schedule_work(&rp->reset_task);
++}
++
+ static netdev_tx_t rhine_start_tx(struct sk_buff *skb,
+ 				  struct net_device *dev)
+ {
+@@ -1830,10 +1844,11 @@ static int rhine_close(struct net_device *dev)
+ 	struct rhine_private *rp = netdev_priv(dev);
+ 	void __iomem *ioaddr = rp->base;
+ 
+-	spin_lock_irq(&rp->lock);
+-
+-	netif_stop_queue(dev);
+ 	napi_disable(&rp->napi);
++	cancel_work_sync(&rp->reset_task);
++	netif_stop_queue(dev);
++
++	spin_lock_irq(&rp->lock);
+ 
+ 	if (debug > 1)
+ 		printk(KERN_DEBUG "%s: Shutting down ethercard, "
