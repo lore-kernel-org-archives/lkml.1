@@ -1,139 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbZLVXh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751628AbZLVXo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927AbZLVXh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 18:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZLVXh5
+	id S1751628AbZLVXo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 18:44:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbZLVXmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 18:37:57 -0500
-Received: from mga02.intel.com ([134.134.136.20]:7184 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbZLVXh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 18:37:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,438,1257148800"; 
-   d="scan'208";a="581418784"
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28 (Was:
- Re: Cannot format floppies under kernel 2.6.*?)
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "markh@compro.net" <markh@compro.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Hounschell <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4B310879.9050701@compro.net>
-References: <4AFB3962.2020106@ntlworld.com> <4B2A4975.8020809@compro.net>
-	 <4B2A49F4.6070402@compro.net> <4B2A4B86.8060307@knaff.lu>
-	 <4B2A4C78.10107@compro.net> <4B2A4CF7.6040000@knaff.lu>
-	 <4B2A4EC9.2030902@compro.net> <4B2A4FA5.5000701@knaff.lu>
-	 <4B2A5192.6090602@compro.net> <4B2A530D.3080606@knaff! .lu>
-	 <4B2A6394.3080705@knaff.lu>
-	 <alpine.LFD.2.00.0912170916420.15740@localhost.locald! omain>
-	 <4B2A98BB.5080406@knaff.lu>
-	 <alpine.LFD.2.00.0912171256560.15740@localhost.localdomain>
-	 <4B2AAC87.5000703@knaff.lu>
-	 <alpine.LFD.2.00.0912171440420.15740@localhost.localdomain>
-	 <4B2ABDC8.6090104@knaff.lu> <4B2B4485.6000305@cfl.rr.com>
-	 <4B2B5F86.1090403@cfl.rr.com>
-	 <alpine.LFD.2.00.0912180716400.3712@localhost.localdomain>
-	 <4B2B9F9F.7040802@compro.net>
-	 <alpine.LFD.2.00.0912180734220.3712@localhost.localdomain>
-	 <4B2BE05B.9050006@compro.net>
-	 <alpine.LFD.2.00.0912181213540.3712@localhost.localdomain>
-	 <4B30E1B4.7000702@compro.net>
-	 <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>
-	 <4B310879.9050701@compro.net>
-Content-Type: text/plain
-Date: Tue, 22 Dec 2009 15:37:56 -0800
-Message-Id: <1261525076.16916.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 18:42:07 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58135 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbZLVXmC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 18:42:02 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Tue, 22 Dec 2009 15:40:38 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH -v2 0/25] x86: use early_res instead of bootmem before slab
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       "\"Yinghai Lu" <yingai@kernrel.org>
+Message-id: <1261525263-13763-1-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-22 at 09:57 -0800, Mark Hounschell wrote:
-> On 12/22/2009 12:38 PM, Linus Torvalds wrote:
-> > 
-> > [ Ingo, Venki and Shaohua added to cc: see the whole thread on lkml for 
-> >   details, but Mark is basically chasing down a situation where the floppy 
-> >   driver seems to have trouble formatting floppies, and it happened 
-> >   between 2.6.27 and .28. The trouble seems to be that a DMA transfer of a 
-> >   memory block transfers the wrong value for the first byte of the block.
-> > 
-> >   Which should be impossible, but whatever. Some part of the system has a 
-> >   cached buffer that isn't flushed.
-> > 
-> >   What gets _you_ guys involved is that Mark cannot reproduce the bug if 
-> >   HPET is disabled in the BIOS or by using 'nohpet'. He found that out by 
-> >   pure luck while bisecting, because some time during his bisect, his 
-> >   machine wouldn't even boot with HPET.
-> > 
-> >   So the problem is: with HPET enabled, 2.6.27.4 _used_ to work. But 
-> >   2.6.28 (and current -git) does not.  Any ideas? ]
-> > 
-> > On Tue, 22 Dec 2009, Mark Hounschell wrote:
-> >>
-> >> Ok, I may have something that might help.
-> >>
-> >> # git bisect bad
-> >> 26afe5f2fbf06ea0765aaa316640c4dd472310c0 is the first bad commit
-> >> commit 26afe5f2fbf06ea0765aaa316640c4dd472310c0
-> >> Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-> >> Date:   Fri Sep 5 18:02:18 2008 -0700
-> >>
-> >>     x86: HPET_MSI Initialise per-cpu HPET timers
-> >>
-> >>     Initialize a per CPU HPET MSI timer when possible. We retain the HPET
-> >>     timer 0 (IRQ 0) and timer 1 (IRQ 8) as is when legacy mode is being used. We
-> >>     setup the remaining HPET timers as per CPU MSI based timers. This per CPU
-> >>     timer will eliminate the need for timer broadcasting with IRQ 0 when there
-> >>     is non-functional LAPIC timer across CPU deep C-states.
-> >>
-> >>     If there are more CPUs than number of available timers, CPUs that do not
-> >>     find any timer to use will continue using LAPIC and IRQ 0 broadcast.
-> >>
-> >>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> >>     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> >>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> >>
-> >> And of coarse this was the first commit that I could not boot if I had hpet
-> >> enabled. To get this one to boot (single user mode only) I had to add the
-> >> the quiet cmdline option and following patch from to arch/x86/kernel/hpet.c
-> >>
-> >> commit  5ceb1a04187553e08c6ab60d30cee7c454ee139a
-> >>
-> >> @ -445,7 +445,7 @@ static int hpet_setup_irq(struct hpet_dev *dev)
-> >>  {
-> >>
-> >>         if (request_irq(dev->irq, hpet_interrupt_handler,
-> >> -                       IRQF_SHARED|IRQF_NOBALANCING, dev->name, dev))
-> >> +                       IRQF_DISABLED|IRQF_NOBALANCING, dev->name, dev))
-> >>                 return -1;
-> >>
-> >>         disable_irq(dev->irq);
-> >>
-> >> AND add the quiet cmdline option.
-> > 
-> > Ok, so we know why HPET didn't boot for you, and that was fixed later (by 
-> > that 5ceb1a04). But is this also when the floppy started mis-behaving?
-> > 
-> 
-> Commit 26afe5f2fbf06ea0765aaa316640c4dd472310c0 is when the floppy stops
-> working
-> and also when I could no longer boot with hpet enabled.
+From: "Yinghai Lu <yingai@kernrel.org>"
 
+please check the patches regarding with early_res and bootmem
 
-I am missing something here. Commit 26afe5f2 is where system does not
-boot with HPET or is it where the floppy stops working when you boot
-with HPET enabled.
+and at last it will make use early_res instead of bootmem with x86 64bits
 
-Can you try "idle=halt" with both .27 and .28 with /proc/interrupts
-output in each case. With that option, we should be using local APIC
-timer and PIT, HPET or HPET with MSI should not really matter. Does it
-still fail with .28 with that option?
+the first two are needed for some amd_bus.c/intel_bus.c cleaning up patches too.
+so put other x86/pci related into this series
+hope that is ok to Jesse.
 
-Thanks,
-Venki
+-v2: allocate vmemmap on one node together, and also seperate early_res
 
+Thanks
+
+Yinghai
