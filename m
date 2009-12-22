@@ -1,140 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZLVTM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZLVTPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbZLVTM7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 14:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbZLVTM6
+	id S1754808AbZLVTPu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 14:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZLVTPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 14:12:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36800 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbZLVTM4 (ORCPT
+	Tue, 22 Dec 2009 14:15:49 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:51447 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbZLVTPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 14:12:56 -0500
-Date: Tue, 22 Dec 2009 14:12:55 -0500
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Jonathan May <jonathan.may@atheros.com>
-Subject: Re: lspci CorrErr- UnsuppReq- changes (was: Asus eeepc 1008HA
-	suspend issue and mac80211 suspend corner) case
-Message-ID: <20091222191255.GA30201@bombadil.infradead.org>
-References: <20091222022355.GA32508@bombadil.infradead.org>
+	Tue, 22 Dec 2009 14:15:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=uXSKirz4QXgmV7TRXsyuwZ8m+BCFeRt4zd5Q24ybbqpbbW1a6nZEBWFyfbUapOYe81
+         GkqMpb3Z6Z93EY2GWTRrAwGLXkyRMOpEcxRV4ioMYIYQcygMFcCOnWKoufeo/F+liEju
+         ikSxAUFGYojutHZ68sXf/in79HH71VdC6vOa0=
+Message-ID: <4B311ADA.4000700@gmail.com>
+Date: Tue, 22 Dec 2009 14:15:38 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091222022355.GA32508@bombadil.infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Avi Kivity <avi@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <20091222075742.GB26467@elte.hu> <4B3103B4.4070708@gmail.com> <4B3115C1.4070303@redhat.com>
+In-Reply-To: <4B3115C1.4070303@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8A6C4C5A6F8543D443E2BFB9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changing the subject to the PCI specific questions. Hoping someone
-from linux-pci can help me understand the meaning of the PCI config
-space changes a little better.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8A6C4C5A6F8543D443E2BFB9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I notice that when my device becomes unresponsive after pm-suspend both
-CorrErr+ UnsuppReq+ change to
-CorrErr- UnsuppReq- .
+On 12/22/09 1:53 PM, Avi Kivity wrote:
+> I asked why the irqfd/ioeventfd mechanisms are insufficient, and you di=
+d not reply.
+>=20
 
-These should be:
+BTW: the ioeventfd issue just fell through the cracks, so sorry about
+that.  Note that I have no specific issue with irqfd ever since the
+lockless IRQ injection code was added.
 
-#define PCI_EXP_DEVSTA          10      /* Device Status */
-#define  PCI_EXP_DEVSTA_CED     0x01    /* Correctable Error Detected */
-#define  PCI_EXP_DEVSTA_NFED    0x02    /* Non-Fatal Error Detected */
-#define  PCI_EXP_DEVSTA_FED     0x04    /* Fatal Error Detected */
-#define  PCI_EXP_DEVSTA_URD     0x08    /* Unsupported Request Detected */
-#define  PCI_EXP_DEVSTA_AUXPD   0x10    /* AUX Power Detected */
-#define  PCI_EXP_DEVSTA_TRPND   0x20    /* Transactions Pending */
+ioeventfd turned out to be suboptimal for me in the fast path for two
+reasons:
 
-I don't see the kernel using them except for in tg3 tg3_chip_reset() to
-clear the PCI_EXP_DEVSTA on PCI-express upon reset for some reason:
+1) the underlying eventfd is called in atomic context.  I had posted
+patches to Davide to address that limitation, but I believe he rejected
+them on the grounds that they are only relevant to KVM.
 
-http://lxr.linux.no/#linux+v2.6.32/drivers/net/tg3.c#L6522
+2) it cannot retain the data field passed in the PIO.  I wanted to have
+one vector that could tell me what value was written, and this cannot be
+expressed in ioeventfd.
 
-But this was added as a work around:
+Based on this, it was a better decision to add a ioevent interface to
+xinterface.  It neatly solves both problems.
 
-commit 5e7dfd0fb94abed04f59481d1ce0cc06a892048a
-Author: Matt Carlson <mcarlson@broadcom.com>
-Date:   Fri Nov 21 17:18:16 2008 -0800
+Kind Regards,
+-Greg
 
-    tg3: Prevent corruption at 10 / 100Mbps w CLKREQ
-    
-    This patch disables CLKREQ at 10Mbps and 100Mbps to workaround a TX BD
-    corruption issue.  This problem only affects the 5784 and 5761 (and
-    57780 AX) ASIC revisions.
-    
-    Signed-off-by: Matt Carlson <mcarlson@broadcom.com>
-    Signed-off-by: Michael Chan <mchan@broadcom.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Apart from this I don't see any other uses for PCI_EXP_DEVSTA_CED and
-PCI_EXP_DEVSTA_URD on the kernel as of 2.6.32 so I will likely need
-to start looking at the PCI spec to decipher this. But before I do so
-I still am curious what the lspci difference in output for these two
-on from + to - would mean for these two.
+--------------enig8A6C4C5A6F8543D443E2BFB9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-I leave below the relevant PCI sections of my last post.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-  Luis
+iEYEARECAAYFAksxGtoACgkQP5K2CMvXmqHYNwCeKP6FucL9dVcuOFWM/WV1rAdR
+gZYAn14u1/O/su3G+m1jvb1lTa8lCXN+
+=ydvF
+-----END PGP SIGNATURE-----
 
-On Mon, Dec 21, 2009 at 09:23:55PM -0500, Luis R. Rodriguez wrote:
-> As for the specific Asus eeepc 1008HA issue what I'm seeing is ath9k
-> talking to harware fine prior to suspend, disabling harware and then
-> upon resume it becomes unusable, failing at the first harware reset.
-> lspci tells me the following when the device is functional, both during
-> initial boot, and during successfull pm-suspend cycles:
-> 
-> 01:00.0 Network controller: Atheros Communications Inc. AR9285 Wireless Network Adapter (PCI-Express) (rev 01)
-> 	Subsystem: Device 1a3b:1089
-> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> 	Latency: 0, Cache Line Size: 32 bytes
-> 	Interrupt: pin A routed to IRQ 18
-> 	Region 0: Memory at fbef0000 (64-bit, non-prefetchable) [size=64K]
-> 	Capabilities: [40] Power Management version 3
-> 		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA PME(D0+,D1+,D2-,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-> 	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-> 		Address: 00000000  Data: 0000
-> 	Capabilities: [60] Express (v2) Legacy Endpoint, MSI 00
-> 		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
-> 			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-> 		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
-> 		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-> 		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <64us
-> 			ClockPM- Suprise- LLActRep- BwNot-
-> 		LnkCtl:	ASPM L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-> 		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-> 	Capabilities: [100] Advanced Error Reporting <?>
-> 	Capabilities: [140] Virtual Channel <?>
-> 	Capabilities: [160] Device Serial Number 12-14-24-ff-ff-17-15-00
-> 	Capabilities: [170] Power Budgeting <?>
-> 	Kernel driver in use: ath9k
-> 	Kernel modules: ath9k
-> 
-> I do notice a difference when resume goes bust and the ath9k device becomes unhappy. This
-> is what I see:
-> 
-> --- lspci-ok.txt	2009-12-21 17:22:24.000000000 -0800
-> +++ lspci-busted.txt	2009-12-21 17:22:50.000000000 -0800
-> @@ -16,7 +16,7 @@
->  		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
->  			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
->  			MaxPayload 128 bytes, MaxReadReq 512 bytes
-> -		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-> +		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+ TransPend-
->  		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <64us
->  			ClockPM- Suprise- LLActRep- BwNot-
->  		LnkCtl:	ASPM L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-> 
-> The line in question is the PCI device status. The CorrErr indicates
-> "Correctable Error Detected" and the UnsuppReq indicates "Unsupported
-> Request Detected". Its not entirely clear to me what exact unsupported
-> request must have been sent. I've considered getting help to look at this
-> with a PCI analyzer but first I wanted to check and see if others are seeing
-> this with the 1008HA or similar platform familes and if there are pointers
-> some can give.
+--------------enig8A6C4C5A6F8543D443E2BFB9--
