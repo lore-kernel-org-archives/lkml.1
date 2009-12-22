@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751219AbZLVILK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751397AbZLVIYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751219AbZLVILK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 03:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbZLVILI
+	id S1751397AbZLVIYl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 03:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZLVIYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 03:11:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49104 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbZLVILI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 03:11:08 -0500
-Date: Tue, 22 Dec 2009 09:10:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Carlos R. Mafra" <crmafra@aei.mpg.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: 2.6.33-rc1+ bisected (?) s2ram regression
-Message-ID: <20091222081054.GA11945@elte.hu>
-References: <20091221164608.GA3909@Pilar.aei.mpg.de>
- <1261414580.4314.181.camel@laptop>
- <20091221172333.GA5641@Pilar.aei.mpg.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221172333.GA5641@Pilar.aei.mpg.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Tue, 22 Dec 2009 03:24:40 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44686 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbZLVIYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 03:24:40 -0500
+Subject: Re: [PATCH] tracing: Fix lockdep warning in global_clock()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: rostedt@goodmis.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B305680.4090304@cn.fujitsu.com>
+References: <4B2F1543.8020300@cn.fujitsu.com>
+	 <20091221064356.GA2378@elte.hu>  <4B2F2588.8070501@cn.fujitsu.com>
+	 <1261406427.4314.155.camel@laptop>
+	 <1261410984.25193.8.camel@gandalf.stny.rr.com>
+	 <4B305680.4090304@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 09:23:54 +0100
+Message-ID: <1261470234.4937.1.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-12-22 at 13:17 +0800, Li Zefan wrote:
 
-* Carlos R. Mafra <crmafra@aei.mpg.de> wrote:
+> Looking into sched_clock.c, seems the only place that can trigger lockdep
+> is the local_irq_* in cpu_clock(), though I'm not sure for architecture-
+> specific sched_clock().
 
-> On Mo 21.Dez'09 at 17:56:20 +0100, Peter Zijlstra wrote:
-> > On Mon, 2009-12-21 at 17:46 +0100, Carlos R. Mafra wrote:
-> > > After 2.6.33-rc1 suspend to RAM (echo mem > /sys/power/state) stopped working
-> > > on my Vaio. Plain 2.6.33-rc1 is fine.
-> > 
-> > http://lkml.org/lkml/2009/12/20/88
-> 
-> I tested it now, and the patch fixes the problem.
-> Thanks Peter!
+But why would you want to do that? that reduces the lockdep coverage for
+no good reason, just fix up the tracer.
 
-I pushed the fix to Linus so it's upstream now - the fix will be in -rc2 as 
-well.
-
-Thanks,
-
-	Ingo
