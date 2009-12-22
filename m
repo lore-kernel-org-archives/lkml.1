@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZLVOmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZLVOn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbZLVOmH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 09:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZLVOmF
+	id S1753398AbZLVOn7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 09:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZLVOn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 09:42:05 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35599 "EHLO
+	Tue, 22 Dec 2009 09:43:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56448 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbZLVOmB (ORCPT
+	with ESMTP id S1752155AbZLVOn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 09:42:01 -0500
-Subject: [PATCH] sched:
+	Tue, 22 Dec 2009 09:43:58 -0500
+Subject: [PATCH] sched: Revert 738d2be, Simplify set_task_cpu()
 From: Peter Zijlstra <peterz@infradead.org>
 To: Eric Paris <eparis@redhat.com>
 Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de
@@ -18,14 +18,18 @@ In-Reply-To: <1261463382.2923.1.camel@localhost>
 References: <1261441037.3273.254.camel@localhost>
 	 <1261471720.4937.9.camel@laptop>  <1261463382.2923.1.camel@localhost>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 15:41:22 +0100
-Message-ID: <1261492882.4937.34.camel@laptop>
+Date: Tue, 22 Dec 2009 15:43:19 +0100
+Message-ID: <1261492999.4937.36.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+[ and now with Subject ]
+
+Effectively reverts 738d2be4301007f054541c5c4bf7fb6a361c9b3a.
 
 As demonstrated by Eric, we really need to call __set_task_cpu() early
 in the fork() path to properly initialize the various task state --
@@ -62,5 +66,6 @@ Index: linux-2.6/kernel/sched.c
  
  	__set_task_cpu(p, new_cpu);
  }
+
 
 
