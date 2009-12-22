@@ -1,149 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZLVNBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbZLVNBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbZLVNBw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 08:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZLVNBv
+	id S1753168AbZLVNBY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 08:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbZLVNBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 08:01:51 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51578 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbZLVNBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 08:01:50 -0500
-Message-ID: <4B30C2D1.4030006@cn.fujitsu.com>
-Date: Tue, 22 Dec 2009 21:00:01 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 0/5] perf_event: introduce 'perf timer' to analyze timer's
- behavior
-References: <4B27702F.1080507@cn.fujitsu.com> <20091215142325.GC5833@nowhere>
-In-Reply-To: <20091215142325.GC5833@nowhere>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 08:01:23 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57379 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbZLVNBX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 08:01:23 -0500
+To: =?ISO-8859-1?Q?Jean-Pierre_Andr=E9?= <jean-pierre.andre@wanadoo.fr>
+CC: hirofumi@mail.parknet.co.jp, ebb9@byu.net,
+       fuse-devel@lists.sourceforge.net, miklos@szeredi.hu, hch@lst.de,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+In-reply-to: <4B30B67A.7080703@wanadoo.fr> (message from
+	=?ISO-8859-1?Q?Jean-Pierre_Andr=E9?= on Tue, 22 Dec 2009 13:07:22
+	+0100)
+Subject: Re: [fuse-devel] utimensat fails to update ctime
+References: <4B2B156D.9040604@byu.net> <87aaxclr4q.fsf@devron.myhome.or.jp>	<4B2F7421.10005@byu.net> <4B2F7A95.3010708@byu.net>	<87hbrkjrk8.fsf@devron.myhome.or.jp> <4B304D04.6040501@byu.net>	<87d427jscr.fsf@devron.myhome.or.jp> <4B3097C4.3060803@wanadoo.fr> <874onjjnln.fsf@devron.myhome.or.jp> <4B30B67A.7080703@wanadoo.fr>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1NN4MD-0005ZG-7M@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 22 Dec 2009 14:00:57 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 22 Dec 2009, Jean-Pierre André wrote:
+> With ntfs-3g this is not directly possible, because
+> the interface does not provide flags telling which
+> timestamps should be updated. The only way would
+> be fuse feeding both values (even though unchanged)
+> before calling ntfs-3g. This is true for all versions of
+> ntfs-3g.
 
-We introduce 'perf timer' in this patchset, it can report
-number of activated/expired/canceled timers, timer latency
-and timer function runtime.
+Here's a patch for the high level lib.  If the flag_utime_omit_ok flag
+is set then the ->utimes() method will be supplied with arguments that
+correspond to utimensat (i.e. it can have UTIME_NOW and UTIME_OMIT
+values).
 
-Changlog v1->v2:
-- export HZ in timer's tracepoint, we can use it to get
-  TIMER/ITIMER_VIRTUAL/ITIMER_PROF exact latency as Ingo's
-  suggestion
+Thanks,
+Miklos
 
-- rename 'perf timer latency' to 'perf timer report',
-  because it not only show timer latency but also show timer
-  function runtime, timer activated/canceled/expired statistics
-  and canceled timer list(TODO)
-
-Below changes are all from Thomas's suggestion:
-- fix a lot of typos and bad ideas
-
-- use hash table instead of RB tree to record timer
-
-- let output information more readable
-
-- report number of activated/canceled/expired timers
-
-- support to filter timer types:
-  '--type' can do it
-
-TODO:
-- Show canceled timer list that is suggested by Thomas
-
-- Any suggestion are welcome.
-
-===============================================
-Usage:
-- record timer events:
-  #perf timer record
-  #^C
-
-- show timer statistics:
-  #perf timer report
+Index: fuse/configure.in
+===================================================================
+--- fuse.orig/configure.in	2009-12-22 12:46:44.000000000 +0100
++++ fuse/configure.in	2009-12-22 13:16:07.000000000 +0100
+@@ -53,7 +53,7 @@ fi
+ if test "$enable_mtab" = "no"; then
+ 	AC_DEFINE(IGNORE_MTAB, 1, [Don't update /etc/mtab])
+ fi
+-AC_CHECK_FUNCS([fork setxattr fdatasync])
++AC_CHECK_FUNCS([fork setxattr fdatasync utimensat])
+ AC_CHECK_MEMBERS([struct stat.st_atim])
+ AC_CHECK_MEMBERS([struct stat.st_atimespec])
  
-Statistics
-==========
-Activated timers number:
-	HRTIMER: 37199 TIMER: 828 ITIMER_PROF: 2 ITIMER_VIRTUAL: 2 ITIMER_REAL: 18 
-
-Expired timers number:
- 	HRTIMER: 34912 TIMER: 617 ITIMER_PROF: 1 ITIMER_VIRTUAL: 1 ITIMER_REAL: 1 
-
-Canceled timers number:
-  	HRTIMER: 37200 TIMER: 829 ITIMER_PROF: 1 ITIMER_VIRTUAL: 1 ITIMER_REAL: 17
+Index: fuse/include/fuse.h
+===================================================================
+--- fuse.orig/include/fuse.h	2009-12-22 12:46:44.000000000 +0100
++++ fuse/include/fuse.h	2009-12-22 13:16:07.000000000 +0100
+@@ -458,9 +458,15 @@ struct fuse_operations {
+ 	unsigned int flag_nullpath_ok : 1;
  
-- show timer latency:
-  #perf timer report --print-lat
-                            Timer Latency List
-[ Abbreviations: Avg = average; lat = latency; ts = timestamp ]
--------------------------------------------------------------------------
-     Timer     |     TYPE      | Avg-lat   ms| Max-lat   ms| Max-lat-ts s
--------------------------------------------------------------------------
-smbd           |HRTIMER        |1.563        |1.563        |40666.379    
-irqbalance     |HRTIMER        |0.842        |2.484        |40670.231    
-	...... 
-vi             |HRTIMER        |0.123        |0.123        |40637.065    
-events/1       |TIMER          |168.420      |1008.000     |40677.006    
-events/0       |TIMER          |87.759       |1008.000     |40618.009    
-	......
-main           |ITIMER_PROF    |0.000        |0.000        |40661.023    
-main           |ITIMER_VIRTUAL |0.000        |0.000        |40642.829    
-main           |ITIMER_REAL    |0.133        |0.133        |40622.731 
-
-
-- show timer function runtime:
- #perf timer report --print-runtime
-                            Timer Function Runtime List
-[ Abbreviations: Avg = average; func = function; rt = runtime; ts = timestamp ]
--------------------------------------------------------------------------------
-     Timer     | Type  |Avg-rt ms|Max-rt ms|      Max-rt-func      | Max-rt-ts s
--------------------------------------------------------------------------------
-smbd           |HRTIMER|0.020    |0.020    |hrtimer_wakeup         |40666.379
-irqbalance     |HRTIMER|0.012    |0.020    |hrtimer_wakeup         |40670.231
-	......
-events/1       |TIMER  |0.009    |0.017    |delayed_work_timer_fn  |40646.090
-events/0       |TIMER  |0.009    |0.091    |delayed_work_timer_fn  |40651.105
-
-- you can use '--print-lat' and '--print-runtime' at the same time:
- #perf timer report --print-runtime --print-lat
-
-                          Timer Latency List
-[ Abbreviations: Avg = average; lat = latency; ts = timestamp ]
--------------------------------------------------------------------------
-     Timer     |     TYPE      | Avg-lat   ms| Max-lat   ms| Max-lat-ts s
--------------------------------------------------------------------------
-smbd           |HRTIMER        |1.563        |1.563        |40666.379    
-irqbalance     |HRTIMER        |0.842        |2.484        |40670.231    
-	......
-	                       Timer Function Runtime List
-[ Abbreviations: Avg = average; func = function; rt = runtime; ts = timestamp ]
--------------------------------------------------------------------------------
-     Timer     | Type  |Avg-rt ms|Max-rt ms|      Max-rt-func      | Max-rt-ts s
--------------------------------------------------------------------------------
-smbd           |HRTIMER|0.020    |0.020    |hrtimer_wakeup         |40666.379
-irqbalance     |HRTIMER|0.012    |0.020    |hrtimer_wakeup         |40670.231
-
-- Select timer type which you are interesting:
-  #perf timer report --print-lat --type timer
-                          Timer Latency List
-[ Abbreviations: Avg = average; lat = latency; ts = timestamp ]
--------------------------------------------------------------------------
-     Timer     |     TYPE      | Avg-lat   ms| Max-lat   ms| Max-lat-ts s
--------------------------------------------------------------------------
-events/1       |TIMER          |168.420      |1008.000     |40677.006    
-events/0       |TIMER          |87.759       |1008.000     |40618.009    
-events/1       |TIMER          |57.000       |153.000      |40634.571   
-
-You can specify more types, such as: '--type timer,hrtimer'
+ 	/**
++	 * Flag indicating that the filesystem accepts special
++	 * UTIME_NOW and UTIME_OMIT values in its utimens operation.
++	 */
++	unsigned int flag_utime_omit_ok : 1;
++
++	/**
+ 	 * Reserved flags, don't set
+ 	 */
+-	unsigned int flag_reserved : 31;
++	unsigned int flag_reserved : 30;
+ 
+ 	/**
+ 	 * Ioctl
+Index: fuse/lib/fuse.c
+===================================================================
+--- fuse.orig/lib/fuse.c	2009-12-22 12:46:44.000000000 +0100
++++ fuse/lib/fuse.c	2009-12-22 13:16:07.000000000 +0100
+@@ -97,6 +97,7 @@ struct fuse {
+ 	int intr_installed;
+ 	struct fuse_fs *fs;
+ 	int nullpath_ok;
++	int utime_omit_ok;
+ 	int curr_ticket;
+ 	struct lock_queue_element *lockq;
+ };
+@@ -2119,6 +2120,29 @@ static void fuse_lib_setattr(fuse_req_t
+ 				err = fuse_fs_truncate(f->fs, path,
+ 						       attr->st_size);
+ 		}
++#ifdef HAVE_UTIMENSAT
++		if (!err && f->utime_omit_ok &&
++		    (valid & (FUSE_SET_ATTR_ATIME | FUSE_SET_ATTR_MTIME))) {
++			struct timespec tv[2];
++
++			tv[0].tv_sec = 0;
++			tv[1].tv_sec = 0;
++			tv[0].tv_nsec = UTIME_OMIT;
++			tv[1].tv_nsec = UTIME_OMIT;
++
++			if (valid & FUSE_SET_ATTR_ATIME_NOW)
++				tv[0].tv_nsec = UTIME_NOW;
++			else if (valid & FUSE_SET_ATTR_ATIME)
++				tv[0] = attr->st_atim;
++
++			if (valid & FUSE_SET_ATTR_MTIME_NOW)
++				tv[1].tv_nsec = UTIME_NOW;
++			else if (valid & FUSE_SET_ATTR_MTIME)
++				tv[1] = attr->st_mtim;
++
++			err = fuse_fs_utimens(f->fs, path, tv);
++		} else
++#endif
+ 		if (!err &&
+ 		    (valid & (FUSE_SET_ATTR_ATIME | FUSE_SET_ATTR_MTIME)) ==
+ 		    (FUSE_SET_ATTR_ATIME | FUSE_SET_ATTR_MTIME)) {
+@@ -3637,6 +3661,7 @@ static int fuse_push_module(struct fuse
+ 	newfs->m = m;
+ 	f->fs = newfs;
+ 	f->nullpath_ok = newfs->op.flag_nullpath_ok && f->nullpath_ok;
++	f->utime_omit_ok = newfs->op.flag_utime_omit_ok && f->utime_omit_ok;
+ 	return 0;
+ }
+ 
+@@ -3687,6 +3712,7 @@ struct fuse *fuse_new_common(struct fuse
+ 	fs->compat = compat;
+ 	f->fs = fs;
+ 	f->nullpath_ok = fs->op.flag_nullpath_ok;
++	f->utime_omit_ok = fs->op.flag_utime_omit_ok;
+ 
+ 	/* Oh f**k, this is ugly! */
+ 	if (!fs->op.lock) {
+@@ -3743,8 +3769,10 @@ struct fuse *fuse_new_common(struct fuse
+ 
+ 	fuse_session_add_chan(f->se, ch);
+ 
+-	if (f->conf.debug)
++	if (f->conf.debug) {
+ 		fprintf(stderr, "nullpath_ok: %i\n", f->nullpath_ok);
++		fprintf(stderr, "utime_omit_ok: %i\n", f->utime_omit_ok);
++	}
+ 
+ 	/* Trace topmost layer by default */
+ 	f->fs->debug = f->conf.debug;
+Index: fuse/example/fusexmp_fh.c
+===================================================================
+--- fuse.orig/example/fusexmp_fh.c	2009-06-19 12:24:25.000000000 +0200
++++ fuse/example/fusexmp_fh.c	2009-12-22 13:55:04.000000000 +0100
+@@ -283,6 +283,9 @@ static int xmp_ftruncate(const char *pat
+ static int xmp_utimens(const char *path, const struct timespec ts[2])
+ {
+ 	int res;
++#ifdef HAVE_UTIMENSAT
++	res = utimensat(AT_FDCWD, path, ts, AT_SYMLINK_NOFOLLOW);
++#else
+ 	struct timeval tv[2];
+ 
+ 	tv[0].tv_sec = ts[0].tv_sec;
+@@ -291,6 +294,7 @@ static int xmp_utimens(const char *path,
+ 	tv[1].tv_usec = ts[1].tv_nsec / 1000;
+ 
+ 	res = utimes(path, tv);
++#endif
+ 	if (res == -1)
+ 		return -errno;
+ 
+@@ -486,6 +490,9 @@ static struct fuse_operations xmp_oper =
+ 	.lock		= xmp_lock,
+ 
+ 	.flag_nullpath_ok = 1,
++#if HAVE_UTIMENSAT
++	.flag_utime_omit_ok = 1,
++#endif
+ };
+ 
+ int main(int argc, char *argv[])
 
