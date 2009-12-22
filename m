@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbZLVEhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZLVEXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752389AbZLVEhB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 23:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZLVEhA
+	id S1752240AbZLVEXB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 23:23:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZLVEXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 23:37:00 -0500
-Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:57238 "EHLO
-	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750917AbZLVEhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 23:37:00 -0500
-Message-ID: <4B304D04.6040501@byu.net>
-Date: Mon, 21 Dec 2009 21:37:24 -0700
-From: Eric Blake <ebb9@byu.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.23) Gecko/20090812 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
+	Mon, 21 Dec 2009 23:23:00 -0500
+Received: from mail.atheros.com ([12.36.123.2]:21503 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750917AbZLVEW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 23:22:59 -0500
+From: Sujith <Sujith.Manoharan@atheros.com>
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: utimensat fails to update ctime
-References: <4B2B156D.9040604@byu.net> <87aaxclr4q.fsf@devron.myhome.or.jp>	<4B2F7421.10005@byu.net> <4B2F7A95.3010708@byu.net> <87hbrkjrk8.fsf@devron.myhome.or.jp>
-In-Reply-To: <87hbrkjrk8.fsf@devron.myhome.or.jp>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-ID: <19248.19829.293087.367661@gargle.gargle.HOWL>
+Date: Tue, 22 Dec 2009 10:09:17 +0530
+To: Luis Rodriguez <lrodriguez@atheros.com>
+CC: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Asus eeepc 1008HA suspend issue and mac80211 suspend corner case
+In-Reply-To: <20091222022355.GA32508@bombadil.infradead.org>
+References: <20091222022355.GA32508@bombadil.infradead.org>
+X-Mailer: VM 8.0.12 under 23.1.1 (x86_64-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to OGAWA Hirofumi on 12/21/2009 8:05 AM:
->> It may also be file-system dependent.  On the machine where I saw the
->> original failure:
->>> $ uname -a
->>> Linux fencepost 2.6.26-2-xen-amd64 #1 SMP Thu Nov 5 04:27:12 UTC 2009
->>> x86_64 GNU/Linux
->> $ df -T .
->> Filesystem    Type   1K-blocks      Used Available Use% Mounted on
->> /dev/sdb1      xfs   419299328 269018656 150280672  65% /srv/data
+Luis Rodriguez wrote:
+> That log can be found here:
 > 
-> Thanks.
-> 
-> This is good point. This would be xfs issue or design. xfs seems to have
-> own special handling of ctime.
+> http://bombadil.infradead.org/~mcgrof/logs/2.6.31-with-2.6.32-wireless/irq-disabled.txt
 
-Here's another report, this time about an mtime update not happening on
-ntfs-3g.  http://thread.gmane.org/gmane.comp.gnu.coreutils.bugs/19336
+Thanks for the log.
+It's a bug in ath9k, related to PowerSave.
 
--- 
-Don't work too hard, make some time for fun as well!
+Can you test this patch ?
 
-Eric Blake             ebb9@byu.net
+diff --git a/drivers/net/wireless/ath/ath9k/main.c b/drivers/net/wireless/ath/ath9k/main.c
+index 3f5b887..419c382 100644
+--- a/drivers/net/wireless/ath/ath9k/main.c
++++ b/drivers/net/wireless/ath/ath9k/main.c
+@@ -2504,6 +2504,9 @@ static void ath9k_stop(struct ieee80211_hw *hw)
+ 		return; /* another wiphy still in use */
+ 	}
+ 
++	/* Ensure HW is awake when we try to shut it down. */
++	ath9k_ps_wakeup(sc);
++
+ 	if (ah->btcoex_hw.enabled) {
+ 		ath9k_hw_btcoex_disable(ah);
+ 		if (ah->btcoex_hw.scheme == ATH_BTCOEX_CFG_3WIRE)
+@@ -2524,8 +2527,10 @@ static void ath9k_stop(struct ieee80211_hw *hw)
+ 	/* disable HAL and put h/w to sleep */
+ 	ath9k_hw_disable(ah);
+ 	ath9k_hw_configpcipowersave(ah, 1, 1);
+-	ath9k_setpower(sc, ATH9K_PM_FULL_SLEEP);
++	ath9k_ps_restore(sc);
+ 
++	/* Finally, put the chip in FULL SLEEP mode */
++	ath9k_setpower(sc, ATH9K_PM_FULL_SLEEP);
+ 	sc->sc_flags |= SC_OP_INVALID;
+ 
+ 	mutex_unlock(&sc->mutex);
+
