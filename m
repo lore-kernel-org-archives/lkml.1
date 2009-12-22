@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZLVUbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZLVUcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZLVUbt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 15:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZLVUbq
+	id S1754817AbZLVUcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 15:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZLVUcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 15:31:46 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:43115 "EHLO mgw2.diku.dk"
+	Tue, 22 Dec 2009 15:32:12 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:51167 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657AbZLVUbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 15:31:45 -0500
-Date: Tue, 22 Dec 2009 21:31:43 +0100 (CET)
+	id S1752002AbZLVUcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 15:32:10 -0500
+Date: Tue, 22 Dec 2009 21:32:07 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: sameo@linux.intel.com, linux-kernel@vger.kernel.org,
+To: aacraid@adaptec.com, "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/6] drivers/mfd: Correct use after free
-Message-ID: <Pine.LNX.4.64.0912222131230.28669@ask.diku.dk>
+Subject: [PATCH 4/6] drivers/scsi/aacraid: Correct use after free
+Message-ID: <Pine.LNX.4.64.0912222131430.28669@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,11 +24,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The structure t7l66xb should not be freed before the subsequent references
-to its fields in the arguments to clk_put.  Furthermore, this structure is
-allocated near the beginning of the function, and a goto to the label
-err_noirq appears after a successful allocation, so it would seem that the
-kfree should be moved down below this label.
+Move the kfree after the print statement that uses the freed structure.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -50,24 +47,21 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/mfd/t7l66xb.c               |    2 +-
+ drivers/scsi/aacraid/commctrl.c     |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mfd/t7l66xb.c b/drivers/mfd/t7l66xb.c
-index 2fa0703..dad3768 100644
---- a/drivers/mfd/t7l66xb.c
-+++ b/drivers/mfd/t7l66xb.c
-@@ -405,12 +405,12 @@ static int t7l66xb_probe(struct platform_device *dev)
- err_ioremap:
- 	release_resource(&t7l66xb->rscr);
- err_request_scr:
--	kfree(t7l66xb);
- 	clk_put(t7l66xb->clk48m);
- err_clk48m_get:
- 	clk_put(t7l66xb->clk32k);
- err_clk32k_get:
- err_noirq:
-+	kfree(t7l66xb);
- 	return ret;
- }
- 
+diff --git a/drivers/scsi/aacraid/commctrl.c b/drivers/scsi/aacraid/commctrl.c
+index 0391d75..2870c16 100644
+--- a/drivers/scsi/aacraid/commctrl.c
++++ b/drivers/scsi/aacraid/commctrl.c
+@@ -655,9 +655,9 @@ static int aac_send_raw_srb(struct aac_dev* dev, void __user * arg)
+ 				/* Does this really need to be GFP_DMA? */
+ 				p = kmalloc(usg->sg[i].count,GFP_KERNEL|__GFP_DMA);
+ 				if(!p) {
+-					kfree (usg);
+ 					dprintk((KERN_DEBUG"aacraid: Could not allocate SG buffer - size = %d buffer number %d of %d\n",
+ 					  usg->sg[i].count,i,usg->count));
++					kfree(usg);
+ 					rcode = -ENOMEM;
+ 					goto cleanup;
+ 				}
