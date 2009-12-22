@@ -1,76 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZLVQaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZLVQl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZLVQaN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 11:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbZLVQaK
+	id S1753952AbZLVQl6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 11:41:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbZLVQl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 11:30:10 -0500
-Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:42799 "HELO
-	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753657AbZLVQaI (ORCPT
+	Tue, 22 Dec 2009 11:41:57 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:50874 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753517AbZLVQl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 11:30:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=NJuyD6U6zTMDCJscqKpokLYPc1KrRF9lJIYLIm9DBqzzywXEEIC7EoJLGgBTRS10uvr0D+2dv6il4ICH/DxZmccC5kJBffYADjZEhotdnrbLPRgI+fOEWOWHMldPl1ue;
-Date: Tue, 22 Dec 2009 08:30:01 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>
-Subject: Re: [RFD] Asynchronous suspend/resume of PCI devices
-Message-ID: <20091222083001.10ce3948@jbarnes-x200>
-In-Reply-To: <200912200031.38775.rjw@sisk.pl>
-References: <200912200031.38775.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i586-moblin-linux-gnu)
+	Tue, 22 Dec 2009 11:41:56 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20091222015907.GA6223@localhost>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity>  <20091222015907.GA6223@localhost>
+Content-Type: text/plain
+Date: Tue, 22 Dec 2009 11:41:53 -0500
+Message-Id: <1261500113.13028.78.camel@serenity>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.217.62.130 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Dec 2009 00:31:38 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Hi,
+On Tue, 2009-12-22 at 09:59 +0800, Wu Fengguang wrote:
+> Steve,
 > 
-> I'd like to know your opinions about the viability of suspending and
-> resuming PCI devices asynchronously during system-wide PM transitions
-> (suspend to RAM and hibernation).
+> On Sat, Dec 19, 2009 at 10:25:47PM +0800, Steve Rago wrote:
+> > 
+> > On Sat, 2009-12-19 at 20:20 +0800, Wu Fengguang wrote:
+> > > 
+> > > On Thu, Dec 17, 2009 at 04:17:57PM +0800, Peter Zijlstra wrote:
+> > > > On Wed, 2009-12-16 at 21:03 -0500, Steve Rago wrote:
+> > > > > Eager Writeback for NFS Clients
+> > > > > -------------------------------
+> > > > > Prevent applications that write large sequential streams of data (like backup, for example)
+> > > > > from entering into a memory pressure state, which degrades performance by falling back to
+> > > > > synchronous operations (both synchronous writes and additional commits).
+> > > 
+> > > What exactly is the "memory pressure state" condition?  What's the
+> > > code to do the "synchronous writes and additional commits" and maybe
+> > > how they are triggered?
+> > 
+> > Memory pressure occurs when most of the client pages have been dirtied
+> > by an application (think backup server writing multi-gigabyte files that
+> > exceed the size of main memory).  The system works harder to be able to
+> > free dirty pages so that they can be reused.  For a local file system,
+> > this means writing the pages to disk.  For NFS, however, the writes
+> > leave the pages in an "unstable" state until the server responds to a
+> > commit request.  Generally speaking, commit processing is far more
+> > expensive than write processing on the server; both are done with the
+> > inode locked, but since the commit takes so long, all writes are
+> > blocked, which stalls the pipeline.
 > 
-> Linus says it's generally dangerous, because some PCI devices may
-> indirectly depend on the others, but if that's the case, I wonder if
-> we really can power manage PCI devices at run time.
+> Let me try reiterate the problem with code, please correct me if I'm
+> wrong.
 > 
-> It follows from my experiments that suspending and resuming PCI
-> devices asynchronously doesn't lead to problems as long as we make
-> sure that every PCI device is suspended before and resumed after its
-> ACPI "shadow" partner. However, I'm not sure if this is generally
-> correct.
-> 
-> What are possible problems we can run into while doing asynchronous
-> suspend and resume of PCI devices?  What do we need to do in general
-> to avoid that problems?
-> 
-> Please tell me what you think.
+> 1) normal fs sets I_DIRTY_DATASYNC when extending i_size, however NFS
+>    will set the flag for any pages written -- why this trick? To
+>    guarantee the call of nfs_commit_inode()? Which unfortunately turns
+>    almost every server side NFS write into sync writes..
 
-AFAIK it should be *mostly* safe.  Individual drivers are generally
-independent of one another.  However, there are quite a few
-multifunction devices (some exposed as such, some exposed as multiple
-busses and devices on the same device) where interdependencies are
-possible.  In some cases, we just won't see power savings until the
-whole chip is powered down (which may require extra code in the form of
-a "bus" driver of some sort), in other cases a driver may inadvertently
-power down a piece of a device needed by another driver.
+Not really.  The commit needs to be sent, but the writes are still
+asynchronous.  It's just that the pages can't be recycled until they are
+on stable storage.
 
-That said, the best practice for those sorts of devices is to create a
-bus driver anyway, that binds to the master device and has a few
-child drivers, so maybe even that case won't be much trouble...
+> 
+>  writeback_single_inode:
+>     do_writepages
+>       nfs_writepages
+>         nfs_writepage ----[short time later]---> nfs_writeback_release*
+>                                                    nfs_mark_request_commit
+>                                                      __mark_inode_dirty(I_DIRTY_DATASYNC);
+>                                     
+>     if (I_DIRTY_SYNC || I_DIRTY_DATASYNC)  <---- so this will be true for most time
+>       write_inode
+>         nfs_write_inode
+>           nfs_commit_inode
+> 
+> 
+> 2) NFS commit stops pipeline because it sleep&wait inside i_mutex,
+>    which blocks all other NFSDs trying to write/writeback the inode.
+> 
+>    nfsd_sync:
+>      take i_mutex
+>        filemap_fdatawrite
+>        filemap_fdatawait
+>      drop i_mutex
+>      
+>    If filemap_fdatawait() can be moved out of i_mutex (or just remove
+>    the lock), we solve the root problem:
+> 
+>    nfsd_sync:
+>      [take i_mutex]
+>        filemap_fdatawrite  => can also be blocked, but less a problem
+>      [drop i_mutex]
+>        filemap_fdatawait
+>  
+>    Maybe it's a dumb question, but what's the purpose of i_mutex here?
+>    For correctness or to prevent livelock? I can imagine some livelock
+>    problem here (current implementation can easily wait for extra
+>    pages), however not too hard to fix.
 
-Jesse
+Commits and writes on the same inode need to be serialized for
+consistency (write can change the data and metadata; commit [fsync]
+needs to provide guarantees that the written data are stable). The
+performance problem arises because NFS writes are fast (they generally
+just deposit data into the server's page cache), but commits can take a
+long time, especially if there is a lot of cached data to flush to
+stable storage.
+
+> 
+> 
+> The proposed patch essentially takes two actions in nfs_file_write()
+> - to start writeback when the per-file nr_dirty goes high
+>   without committing
+> - to throttle dirtying when the per-file nr_writeback goes high
+>   I guess this effectively prevents pdflush from kicking in with
+>   its bad committing behavior
+> 
+> In general it's reasonable to keep NFS per-file nr_dirty low, however
+> questionable to do per-file nr_writeback throttling. This does not
+> work well with the global limits - eg. when there are many dirty
+> files, the summed-up nr_writeback will still grow out of control.
+
+Not with the eager writeback patch.  The nr_writeback for NFS is limited
+by the woutstanding tunable parameter multiplied by the number of active
+NFS files being written.
+
+> And it's more likely to impact user visible responsiveness than
+> a global limit. But my opinion can be biased -- me have a patch to
+> do global NFS nr_writeback limit ;)
+
+What affects user-visible responsiveness is avoiding long delays and
+avoiding delays that vary widely.  Whether the limit is global or
+per-file is less important (but I'd be happy to be convinced otherwise).
+
+Steve
+
+> 
+> Thanks,
+> Fengguang
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
