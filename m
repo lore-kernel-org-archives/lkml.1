@@ -1,190 +1,1153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZLVCX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZLVCXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbZLVCX6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 21:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbZLVCX5
+	id S1752882AbZLVCXN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 21:23:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZLVCXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 21:23:57 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50061 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbZLVCX4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 21:23:56 -0500
-Date: Mon, 21 Dec 2009 21:23:55 -0500
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Asus eeepc 1008HA suspend issue and mac80211 suspend corner case
-Message-ID: <20091222022355.GA32508@bombadil.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 21 Dec 2009 21:23:12 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:35517 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752755AbZLVCXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 21:23:11 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: [PATCH v2] backlight: new driver for ADP8860/70 backlight devices
+Date: Mon, 21 Dec 2009 21:24:10 -0500
+Message-Id: <1261448650-23133-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.4
+In-Reply-To: <1261447588-16838-1-git-send-email-vapier@gentoo.org>
+References: <1261447588-16838-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm testing ath9k on an Asus eeepc 1008HA on a 2.6.32.2 kernel
-and ran into a suspend corner case issue which we do not handle
-yet. From what I've debugged so far it appears to me ath9k is
-doing everything it should to suspend. mac80211 drivers don't
-really do much on suspend except listen to mac80211. In the
-suspend case the mac80211 first stops TX, flushes out all packets,
-tears down aggregation, removes peers (if STA this would be your
-AP), removes all interfaces and finally call the mac80211 driver
-stop() callback for the driver. The driver is expected to have
-completed the stop() successfully, it shall not fail. It should
-be noted we never disassociate from the AP, this is left to
-userspace to figure out if it wants to do this prior to suspend.
-Network manger does this, for example. If you run the supplicant
-manually though and if your AP does not kick you off you could
-end up suspending and resumeing and still have a valid auth/assoc
-to the AP.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Upon resume mac80211 first calls the mac80211 start() driver callback,
-then re-add the interfaces, then the peers (your AP), etc. The corner
-case I just ran into was that the mac80211 driver start() callback
-*can* fail if your bus is screwy. You would likely see other sorts
-of errors when this sort of thing happens but I'm not and when we
-try to start() on ath9k we fail as the harware is completely
-unresponsive. What ends up happening then currently is the driver
-will enable interrupts and obviously though since we cannot even
-reset the hardware these interrupts will have gone unhandled and
-the interrupt gets disabled by the kernel. I reproduced this on
-vanilla 2.6.32.2 but I only did get full ath9k debug logs when
-testing against 2.6.31 with 2.6.32.2 wireless bits. That log can
-be found here:
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+sorry, i had a bunch of cleanup fixes locally but forgot to squash them first
 
-http://bombadil.infradead.org/~mcgrof/logs/2.6.31-with-2.6.32-wireless/irq-disabled.txt
+ drivers/video/backlight/Kconfig      |   11 +
+ drivers/video/backlight/Makefile     |    1 +
+ drivers/video/backlight/adp8870_bl.c |  915 ++++++++++++++++++++++++++++++++++
+ include/linux/i2c/adp8870.h          |  154 ++++++
+ 4 files changed, 1081 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/adp8870_bl.c
+ create mode 100644 include/linux/i2c/adp8870.h
 
-This can be fixed by something like the following:
-
-diff --git a/net/mac80211/util.c b/net/mac80211/util.c
-index e6c08da..63d42fa 100644
---- a/net/mac80211/util.c
-+++ b/net/mac80211/util.c
-@@ -1031,7 +1031,14 @@ int ieee80211_reconfig(struct ieee80211_local *local)
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 09bfa96..261fa7c 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -262,3 +262,14 @@ config BACKLIGHT_ADP5520
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called adp5520_bl.
  
- 	/* restart hardware */
- 	if (local->open_count) {
-+		/*
-+		 * Upon resume hardware can sometimes be goofy due to
-+		 * various platform issues, so restarting the device may
-+		 * at times not work immediately. Propagate the error.
-+		 */
- 		res = drv_start(local);
-+		if (res)
-+			return res;
++config BACKLIGHT_ADP8870
++	tristate "Backlight Driver for ADP8870 using WLED"
++	depends on BACKLIGHT_CLASS_DEVICE && I2C
++	select NEW_LEDS
++	select LEDS_CLASS
++	help
++	  If you have a LCD backlight connected to the ADP8870,
++	  say Y here to enable this driver.
++
++	  To compile this driver as a module, choose M here: the module will
++	  be called adp8870_bl.
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 9a40554..60ac452 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -28,4 +28,5 @@ obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
+ obj-$(CONFIG_BACKLIGHT_WM831X)	+= wm831x_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADX)    += adx_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADP5520)	+= adp5520_bl.o
++obj-$(CONFIG_BACKLIGHT_ADP8870)	+= adp8870_bl.o
  
- 		ieee80211_led_radio(local, true);
- 	}
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+new file mode 100644
+index 0000000..d4a47e3
+--- /dev/null
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -0,0 +1,915 @@
++/*
++ * Backlight driver for Analog Devices ADP8870 Backlight Devices
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#include <linux/module.h>
++#include <linux/version.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/pm.h>
++#include <linux/platform_device.h>
++#include <linux/i2c.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/leds.h>
++#include <linux/workqueue.h>
++
++#include <linux/i2c/adp8870.h>
++#define ADP8870_EXT_FEATURES
++#define ADP8870_USE_LEDS
++
++
++#define ADP8870_MFDVID	0x00  /* Manufacturer and device ID */
++#define ADP8870_MDCR	0x01  /* Device mode and status */
++#define ADP8870_INT_STAT 0x02  /* Interrupts status */
++#define ADP8870_INT_EN	0x03  /* Interrupts enable */
++#define ADP8870_CFGR	0x04  /* Configuration register */
++#define ADP8870_BLSEL	0x05  /* Sink enable backlight or independent */
++#define ADP8870_PWMLED	0x06  /* PWM Enable Selection Register */
++#define ADP8870_BLOFF	0x07  /* Backlight off timeout */
++#define ADP8870_BLDIM	0x08  /* Backlight dim timeout */
++#define ADP8870_BLFR	0x09  /* Backlight fade in and out rates */
++#define ADP8870_BLMX1	0x0A  /* Backlight (Brightness Level 1-daylight) maximum current */
++#define ADP8870_BLDM1	0x0B  /* Backlight (Brightness Level 1-daylight) dim current */
++#define ADP8870_BLMX2	0x0C  /* Backlight (Brightness Level 2-bright) maximum current */
++#define ADP8870_BLDM2	0x0D  /* Backlight (Brightness Level 2-bright) dim current */
++#define ADP8870_BLMX3	0x0E  /* Backlight (Brightness Level 3-office) maximum current */
++#define ADP8870_BLDM3	0x0F  /* Backlight (Brightness Level 3-office) dim current */
++#define ADP8870_BLMX4	0x10  /* Backlight (Brightness Level 4-indoor) maximum current */
++#define ADP8870_BLDM4	0x11  /* Backlight (Brightness Level 4-indoor) dim current */
++#define ADP8870_BLMX5	0x12  /* Backlight (Brightness Level 5-dark) maximum current */
++#define ADP8870_BLDM5	0x13  /* Backlight (Brightness Level 5-dark) dim current */
++#define ADP8870_ISCLAW	0x1A  /* Independent sink current fade law register */
++#define ADP8870_ISCC	0x1B  /* Independent sink current control register */
++#define ADP8870_ISCT1	0x1C  /* Independent Sink Current Timer Register LED[7:5] */
++#define ADP8870_ISCT2	0x1D  /* Independent Sink Current Timer Register LED[4:1] */
++#define ADP8870_ISCF	0x1E  /* Independent sink current fade register */
++#define ADP8870_ISC1	0x1F  /* Independent Sink Current LED1 */
++#define ADP8870_ISC2	0x20  /* Independent Sink Current LED2 */
++#define ADP8870_ISC3	0x21  /* Independent Sink Current LED3 */
++#define ADP8870_ISC4	0x22  /* Independent Sink Current LED4 */
++#define ADP8870_ISC5	0x23  /* Independent Sink Current LED5 */
++#define ADP8870_ISC6	0x24  /* Independent Sink Current LED6 */
++#define ADP8870_ISC7	0x25  /* Independent Sink Current LED7 (Brightness Level 1-daylight) */
++#define ADP8870_ISC7_L2	0x26  /* Independent Sink Current LED7 (Brightness Level 2-bright) */
++#define ADP8870_ISC7_L3	0x27  /* Independent Sink Current LED7 (Brightness Level 3-office) */
++#define ADP8870_ISC7_L4	0x28  /* Independent Sink Current LED7 (Brightness Level 4-indoor) */
++#define ADP8870_ISC7_L5	0x29  /* Independent Sink Current LED7 (Brightness Level 5-dark) */
++#define ADP8870_CMP_CTL	0x2D  /* ALS Comparator Control Register */
++#define ADP8870_ALS1_EN	0x2E  /* Main ALS comparator level enable */
++#define ADP8870_ALS2_EN	0x2F  /* Second ALS comparator level enable */
++#define ADP8870_ALS1_STAT 0x30  /* Main ALS Comparator Status Register */
++#define ADP8870_ALS2_STAT 0x31  /* Second ALS Comparator Status Register */
++#define ADP8870_L2TRP	0x32  /* L2 comparator reference */
++#define ADP8870_L2HYS	0x33  /* L2 hysteresis */
++#define ADP8870_L3TRP	0x34  /* L3 comparator reference */
++#define ADP8870_L3HYS	0x35  /* L3 hysteresis */
++#define ADP8870_L4TRP	0x36  /* L4 comparator reference */
++#define ADP8870_L4HYS	0x37  /* L4 hysteresis */
++#define ADP8870_L5TRP	0x38  /* L5 comparator reference */
++#define ADP8870_L5HYS	0x39  /* L5 hysteresis */
++#define ADP8870_PH1LEVL	0x40  /* First phototransistor ambient light level-low byte register */
++#define ADP8870_PH1LEVH	0x41  /* First phototransistor ambient light level-high byte register */
++#define ADP8870_PH2LEVL	0x42  /* Second phototransistor ambient light level-low byte register */
++#define ADP8870_PH2LEVH	0x43  /* Second phototransistor ambient light level-high byte register */
++
++#define ADP8870_MANUFID		0x3  /* Analog Devices AD8870 Manufacturer and device ID */
++#define ADP8870_DEVID(x)	((x) & 0xF)
++#define ADP8870_MANID(x)	((x) >> 4)
++
++/* MDCR Device mode and status */
++#define D7ALSEN			(1 << 7)
++#define INT_CFG			(1 << 6)
++#define NSTBY			(1 << 5)
++#define DIM_EN			(1 << 4)
++#define GDWN_DIS		(1 << 3)
++#define SIS_EN			(1 << 2)
++#define CMP_AUTOEN		(1 << 1)
++#define BLEN			(1 << 0)
++
++/* ADP8870_ALS1_EN Main ALS comparator level enable */
++#define L5_EN			(1 << 3)
++#define L4_EN			(1 << 2)
++#define L3_EN			(1 << 1)
++#define L2_EN			(1 << 0)
++
++#define CFGR_BLV_SHIFT		3
++#define CFGR_BLV_MASK		0x7
++#define ADP8870_FLAG_LED_MASK	0xFF
++
++#define FADE_VAL(in, out)	((0xF & (in)) | ((0xF & (out)) << 4))
++#define BL_CFGR_VAL(law, blv)	((((blv) & CFGR_BLV_MASK) << CFGR_BLV_SHIFT) | ((0x3 & (law)) << 1))
++#define ALS_CMPR_CFG_VAL(filt)	((0x7 & filt) << 1)
++
++struct adp8870_bl {
++	struct i2c_client *client;
++	struct backlight_device *bl;
++	struct adp8870_led *led;
++	struct adp8870_backlight_platform_data *pdata;
++	struct mutex lock;
++	unsigned long cached_daylight_max;
++	int id;
++	int revid;
++	int current_brightness;
++};
++
++struct adp8870_led {
++	struct led_classdev	cdev;
++	struct work_struct	work;
++	struct i2c_client 	*client;
++	enum led_brightness	new_brightness;
++	int			id;
++	int			flags;
++};
++
++static int adp8870_read(struct i2c_client *client, int reg, uint8_t *val)
++{
++	int ret;
++
++	ret = i2c_smbus_read_byte_data(client, reg);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed reading at 0x%02x\n", reg);
++		return ret;
++	}
++
++	*val = (uint8_t)ret;
++	return 0;
++}
++
++
++static int adp8870_write(struct i2c_client *client, u8 reg, u8 val)
++{
++	return i2c_smbus_write_byte_data(client, reg, val);
++}
++
++static int adp8870_set_bits(struct i2c_client *client, int reg, uint8_t bit_mask)
++{
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&data->lock);
++
++	ret = adp8870_read(client, reg, &reg_val);
++
++	if (!ret && ((reg_val & bit_mask) == 0)) {
++		reg_val |= bit_mask;
++		ret = adp8870_write(client, reg, reg_val);
++	}
++
++	mutex_unlock(&data->lock);
++	return ret;
++}
++
++static int adp8870_clr_bits(struct i2c_client *client, int reg, uint8_t bit_mask)
++{
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	uint8_t reg_val;
++	int ret;
++
++	mutex_lock(&data->lock);
++
++	ret = adp8870_read(client, reg, &reg_val);
++
++	if (!ret && (reg_val & bit_mask)) {
++		reg_val &= ~bit_mask;
++		ret = adp8870_write(client, reg, reg_val);
++	}
++
++	mutex_unlock(&data->lock);
++	return ret;
++}
++
++/*
++ * Independent sink / LED
++ */
++#if defined(ADP8870_USE_LEDS)
++static void adp8870_led_work(struct work_struct *work)
++{
++	struct adp8870_led *led = container_of(work, struct adp8870_led, work);
++	adp8870_write(led->client, ADP8870_ISC1 + led->id - 1,
++			 led->new_brightness >> 1);
++}
++
++static void adp8870_led_set(struct led_classdev *led_cdev,
++			   enum led_brightness value)
++{
++	struct adp8870_led *led;
++
++	led = container_of(led_cdev, struct adp8870_led, cdev);
++	led->new_brightness = value;
++	schedule_work(&led->work);
++}
++
++static int adp8870_led_setup(struct adp8870_led *led)
++{
++	struct i2c_client *client = led->client;
++	int ret = 0;
++
++	ret = adp8870_write(client, ADP8870_ISC1 + led->id - 1, 0);
++	ret |= adp8870_set_bits(client, ADP8870_ISCC, 1 << (led->id - 1));
++
++	if (led->id > 4)
++		ret |= adp8870_set_bits(client, ADP8870_ISCT1,
++				(led->flags & 0x3) << ((led->id - 5) * 2));
++	else
++		ret |= adp8870_set_bits(client, ADP8870_ISCT2,
++				(led->flags & 0x3) << ((led->id - 1) * 2));
++
++	return ret;
++}
++
++static int __devinit adp8870_led_probe(struct i2c_client *client)
++{
++	struct adp8870_backlight_platform_data *pdata =
++		client->dev.platform_data;
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	struct adp8870_led *led, *led_dat;
++	struct led_info *cur_led;
++	int ret, i;
++
++	led = kzalloc(sizeof(*led) * pdata->num_leds, GFP_KERNEL);
++	if (led == NULL) {
++		dev_err(&client->dev, "failed to alloc memory\n");
++		return -ENOMEM;
++	}
++
++	ret = adp8870_write(client, ADP8870_ISCLAW, pdata->led_fade_law);
++	ret = adp8870_write(client, ADP8870_ISCT1,
++			(pdata->led_on_time & 0x3) << 6);
++	ret |= adp8870_write(client, ADP8870_ISCF,
++			FADE_VAL(pdata->led_fade_in, pdata->led_fade_out));
++
++	if (ret) {
++		dev_err(&client->dev, "failed to write\n");
++		goto err_free;
++	}
++
++	for (i = 0; i < pdata->num_leds; ++i) {
++		cur_led = &pdata->leds[i];
++		led_dat = &led[i];
++
++		led_dat->id = cur_led->flags & ADP8870_FLAG_LED_MASK;
++
++		if (led_dat->id > 7 || led_dat->id < 1) {
++			dev_err(&client->dev, "Invalid LED ID %d\n",
++				led_dat->id);
++			goto err;
++		}
++
++		if (pdata->bl_led_assign & (1 << (led_dat->id - 1))) {
++			dev_err(&client->dev, "LED %d used by Backlight\n",
++				led_dat->id);
++			goto err;
++		}
++
++		led_dat->cdev.name = cur_led->name;
++		led_dat->cdev.default_trigger = cur_led->default_trigger;
++		led_dat->cdev.brightness_set = adp8870_led_set;
++		led_dat->cdev.brightness = LED_OFF;
++		led_dat->flags = cur_led->flags >> FLAG_OFFT_SHIFT;
++		led_dat->client = client;
++		led_dat->new_brightness = LED_OFF;
++		INIT_WORK(&led_dat->work, adp8870_led_work);
++
++		ret = led_classdev_register(&client->dev, &led_dat->cdev);
++		if (ret) {
++			dev_err(&client->dev, "failed to register LED %d\n",
++				led_dat->id);
++			goto err;
++		}
++
++		ret = adp8870_led_setup(led_dat);
++		if (ret) {
++			dev_err(&client->dev, "failed to write\n");
++			i++;
++			goto err;
++		}
++	}
++
++	data->led = led;
++
++	return 0;
++
++ err:
++	for (i = i - 1; i >= 0; --i) {
++		led_classdev_unregister(&led[i].cdev);
++		cancel_work_sync(&led[i].work);
++	}
++
++ err_free:
++	kfree(led);
++
++	return ret;
++}
++
++static int __devexit adp8870_led_remove(struct i2c_client *client)
++{
++	struct adp8870_backlight_platform_data *pdata =
++		client->dev.platform_data;
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++	int i;
++
++	for (i = 0; i < pdata->num_leds; i++) {
++		led_classdev_unregister(&data->led[i].cdev);
++		cancel_work_sync(&data->led[i].work);
++	}
++
++	kfree(data->led);
++	return 0;
++}
++#else
++static int __devinit adp8870_led_probe(struct i2c_client *client)
++{
++	return 0;
++}
++
++static int __devexit adp8870_led_remove(struct i2c_client *client)
++{
++	return 0;
++}
++#endif
++
++static int adp8870_bl_set(struct backlight_device *bl, int brightness)
++{
++	struct adp8870_bl *data = bl_get_data(bl);
++	struct i2c_client *client = data->client;
++	int ret = 0;
++
++	if (data->pdata->en_ambl_sens) {
++		if ((brightness > 0) && (brightness < ADP8870_MAX_BRIGHTNESS)) {
++			/* Disable Ambient Light auto adjust */
++			ret |= adp8870_clr_bits(client, ADP8870_MDCR,
++					CMP_AUTOEN);
++			ret |= adp8870_write(client, ADP8870_BLMX1, brightness);
++		} else {
++			/*
++			 * MAX_BRIGHTNESS -> Enable Ambient Light auto adjust
++			 * restore daylight l1 sysfs brightness
++			 */
++			ret |= adp8870_write(client, ADP8870_BLMX1,
++					 data->cached_daylight_max);
++			ret |= adp8870_set_bits(client, ADP8870_MDCR,
++					 CMP_AUTOEN);
++		}
++	} else
++		ret |= adp8870_write(client, ADP8870_BLMX1, brightness);
++
++	if (data->current_brightness && brightness == 0)
++		ret |= adp8870_set_bits(client,
++				ADP8870_MDCR, DIM_EN);
++	else if (data->current_brightness == 0 && brightness)
++		ret |= adp8870_clr_bits(client,
++				ADP8870_MDCR, DIM_EN);
++
++	if (!ret)
++		data->current_brightness = brightness;
++
++	return ret;
++}
++
++static int adp8870_bl_update_status(struct backlight_device *bl)
++{
++	int brightness = bl->props.brightness;
++	if (bl->props.power != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	return adp8870_bl_set(bl, brightness);
++}
++
++static int adp8870_bl_get_brightness(struct backlight_device *bl)
++{
++	struct adp8870_bl *data = bl_get_data(bl);
++
++	return data->current_brightness;
++}
++
++static struct backlight_ops adp8870_bl_ops = {
++	.update_status	= adp8870_bl_update_status,
++	.get_brightness	= adp8870_bl_get_brightness,
++};
++
++static int adp8870_bl_setup(struct backlight_device *bl)
++{
++	struct adp8870_bl *data = bl_get_data(bl);
++	struct i2c_client *client = data->client;
++	struct adp8870_backlight_platform_data *pdata = data->pdata;
++	int ret = 0;
++
++	ret |= adp8870_write(client, ADP8870_BLSEL, ~pdata->bl_led_assign);
++	ret |= adp8870_write(client, ADP8870_PWMLED, pdata->pwm_assign);
++	ret |= adp8870_write(client, ADP8870_BLMX1, pdata->l1_daylight_max);
++	ret |= adp8870_write(client, ADP8870_BLDM1, pdata->l1_daylight_dim);
++
++	if (pdata->en_ambl_sens) {
++		data->cached_daylight_max = pdata->l1_daylight_max;
++		ret |= adp8870_write(client, ADP8870_BLMX2,
++						pdata->l2_bright_max);
++		ret |= adp8870_write(client, ADP8870_BLDM2,
++						pdata->l2_bright_dim);
++		ret |= adp8870_write(client, ADP8870_BLMX3,
++						pdata->l3_office_max);
++		ret |= adp8870_write(client, ADP8870_BLDM3,
++						pdata->l3_office_dim);
++		ret |= adp8870_write(client, ADP8870_BLMX4,
++						pdata->l4_indoor_max);
++		ret |= adp8870_write(client, ADP8870_BLDM4,
++						pdata->l4_indor_dim);
++		ret |= adp8870_write(client, ADP8870_BLMX5,
++						pdata->l5_dark_max);
++		ret |= adp8870_write(client, ADP8870_BLDM5,
++						pdata->l5_dark_dim);
++
++		ret |= adp8870_write(client, ADP8870_L2TRP, pdata->l2_trip);
++		ret |= adp8870_write(client, ADP8870_L2HYS, pdata->l2_hyst);
++		ret |= adp8870_write(client, ADP8870_L3TRP, pdata->l3_trip);
++		ret |= adp8870_write(client, ADP8870_L3HYS, pdata->l3_hyst);
++		ret |= adp8870_write(client, ADP8870_L4TRP, pdata->l4_trip);
++		ret |= adp8870_write(client, ADP8870_L4HYS, pdata->l4_hyst);
++		ret |= adp8870_write(client, ADP8870_L5TRP, pdata->l5_trip);
++		ret |= adp8870_write(client, ADP8870_L5HYS, pdata->l5_hyst);
++		ret |= adp8870_write(client, ADP8870_ALS1_EN, L5_EN | L4_EN |
++						L3_EN | L2_EN);
++
++		ret |= adp8870_write(client, ADP8870_CMP_CTL,
++			ALS_CMPR_CFG_VAL(pdata->abml_filt));
++
++	}
++
++	ret |= adp8870_write(client, ADP8870_CFGR,
++			BL_CFGR_VAL(pdata->bl_fade_law, 0));
++
++	ret |= adp8870_write(client, ADP8870_BLFR, FADE_VAL(pdata->bl_fade_in,
++			pdata->bl_fade_out));
++
++	/*
++	 * ADP8870 Rev0 requires GDWN_DIS bit set
++	 */
++
++	ret |= adp8870_set_bits(client, ADP8870_MDCR, BLEN | DIM_EN | NSTBY |
++			(data->revid == 0 ? GDWN_DIS : 0));
++
++	return ret;
++}
++
++static ssize_t adp8870_show(struct device *dev, char *buf, int reg)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	int error;
++	uint8_t reg_val;
++
++	mutex_lock(&data->lock);
++	error = adp8870_read(data->client, reg, &reg_val);
++	mutex_unlock(&data->lock);
++
++	if (error < 0)
++		return error;
++
++	return sprintf(buf, "%u\n", reg_val);
++}
++
++static ssize_t adp8870_store(struct device *dev, const char *buf,
++			 size_t count, int reg)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	unsigned long val;
++	int ret;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret)
++		return ret;
++
++	mutex_lock(&data->lock);
++	adp8870_write(data->client, reg, val);
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static ssize_t adp8870_bl_l5_dark_max_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX5);
++}
++
++static ssize_t adp8870_bl_l5_dark_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX5);
++}
++static DEVICE_ATTR(l5_dark_max, 0664, adp8870_bl_l5_dark_max_show,
++			adp8870_bl_l5_dark_max_store);
++
++
++static ssize_t adp8870_bl_l4_indoor_max_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX4);
++}
++
++static ssize_t adp8870_bl_l4_indoor_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX4);
++}
++static DEVICE_ATTR(l4_indoor_max, 0664, adp8870_bl_l4_indoor_max_show,
++			adp8870_bl_l4_indoor_max_store);
++
++
++static ssize_t adp8870_bl_l3_office_max_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX3);
++}
++
++static ssize_t adp8870_bl_l3_office_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX3);
++}
++
++static DEVICE_ATTR(l3_office_max, 0664, adp8870_bl_l3_office_max_show,
++			adp8870_bl_l3_office_max_store);
++
++static ssize_t adp8870_bl_l2_bright_max_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX2);
++}
++
++static ssize_t adp8870_bl_l2_bright_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLMX2);
++}
++static DEVICE_ATTR(l2_bright_max, 0664, adp8870_bl_l2_bright_max_show,
++			adp8870_bl_l2_bright_max_store);
++
++static ssize_t adp8870_bl_l1_daylight_max_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLMX1);
++}
++
++static ssize_t adp8870_bl_l1_daylight_max_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++
++	strict_strtoul(buf, 10, &data->cached_daylight_max);
++	return adp8870_store(dev, buf, count, ADP8870_BLMX1);
++}
++static DEVICE_ATTR(l1_daylight_max, 0664, adp8870_bl_l1_daylight_max_show,
++			adp8870_bl_l1_daylight_max_store);
++
++static ssize_t adp8870_bl_l5_dark_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM5);
++}
++
++static ssize_t adp8870_bl_l5_dark_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM5);
++}
++static DEVICE_ATTR(l5_dark_dim, 0664, adp8870_bl_l5_dark_dim_show,
++			adp8870_bl_l5_dark_dim_store);
++
++static ssize_t adp8870_bl_l4_indoor_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM4);
++}
++
++static ssize_t adp8870_bl_l4_indoor_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM4);
++}
++static DEVICE_ATTR(l4_indoor_dim, 0664, adp8870_bl_l4_indoor_dim_show,
++			adp8870_bl_l4_indoor_dim_store);
++
++
++static ssize_t adp8870_bl_l3_office_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM3);
++}
++
++static ssize_t adp8870_bl_l3_office_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM3);
++}
++static DEVICE_ATTR(l3_office_dim, 0664, adp8870_bl_l3_office_dim_show,
++			adp8870_bl_l3_office_dim_store);
++
++static ssize_t adp8870_bl_l2_bright_dim_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM2);
++}
++
++static ssize_t adp8870_bl_l2_bright_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM2);
++}
++static DEVICE_ATTR(l2_bright_dim, 0664, adp8870_bl_l2_bright_dim_show,
++			adp8870_bl_l2_bright_dim_store);
++
++static ssize_t adp8870_bl_l1_daylight_dim_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	return adp8870_show(dev, buf, ADP8870_BLDM1);
++}
++
++static ssize_t adp8870_bl_l1_daylight_dim_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	return adp8870_store(dev, buf, count, ADP8870_BLDM1);
++}
++static DEVICE_ATTR(l1_daylight_dim, 0664, adp8870_bl_l1_daylight_dim_show,
++			adp8870_bl_l1_daylight_dim_store);
++
++#ifdef ADP8870_EXT_FEATURES
++static ssize_t adp8870_bl_ambient_light_level_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	int error;
++	uint8_t reg_val;
++	uint16_t ret_val;
++
++	mutex_lock(&data->lock);
++	error = adp8870_read(data->client, ADP8870_PH1LEVL, &reg_val);
++	ret_val = reg_val;
++	error |= adp8870_read(data->client, ADP8870_PH1LEVH, &reg_val);
++	mutex_unlock(&data->lock);
++
++	if (error < 0)
++		return error;
++
++	/* Return 13-bit conversion value for the first light sensor */
++	ret_val += (reg_val & 0x1F) << 8;
++
++	return sprintf(buf, "%u\n", ret_val);
++}
++static DEVICE_ATTR(ambient_light_level, 0444,
++		adp8870_bl_ambient_light_level_show, NULL);
++
++static ssize_t adp8870_bl_ambient_light_zone_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	int error;
++	uint8_t reg_val;
++
++	mutex_lock(&data->lock);
++	error = adp8870_read(data->client, ADP8870_CFGR, &reg_val);
++	mutex_unlock(&data->lock);
++
++	if (error < 0)
++		return error;
++
++	return sprintf(buf, "%u\n",
++		((reg_val >> CFGR_BLV_SHIFT) & CFGR_BLV_MASK) + 1);
++}
++
++static ssize_t adp8870_bl_ambient_light_zone_store(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
++{
++	struct adp8870_bl *data = dev_get_drvdata(dev);
++	unsigned long val;
++	uint8_t reg_val;
++	int ret;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret)
++		return ret;
++
++	if (val == 0) {
++		/* Enable automatic ambient light sensing */
++		adp8870_set_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
++	} else if ((val > 0) && (val < 6)) {
++		/* Disable automatic ambient light sensing */
++		adp8870_clr_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
++
++		/* Set user supplied ambient light zone */
++		mutex_lock(&data->lock);
++		adp8870_read(data->client, ADP8870_CFGR, &reg_val);
++		reg_val &= ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
++		reg_val |= val << CFGR_BLV_SHIFT;
++		adp8870_write(data->client, ADP8870_CFGR, reg_val);
++		mutex_unlock(&data->lock);
++	}
++
++	return count;
++}
++static DEVICE_ATTR(ambient_light_zone, 0664,
++		adp8870_bl_ambient_light_zone_show,
++		adp8870_bl_ambient_light_zone_store);
++#endif
++
++static struct attribute *adp8870_bl_attributes[] = {
++	&dev_attr_l5_dark_max.attr,
++	&dev_attr_l5_dark_dim.attr,
++	&dev_attr_l4_indoor_max.attr,
++	&dev_attr_l4_indoor_dim.attr,
++	&dev_attr_l3_office_max.attr,
++	&dev_attr_l3_office_dim.attr,
++	&dev_attr_l2_bright_max.attr,
++	&dev_attr_l2_bright_dim.attr,
++	&dev_attr_l1_daylight_max.attr,
++	&dev_attr_l1_daylight_dim.attr,
++#ifdef ADP8870_EXT_FEATURES
++	&dev_attr_ambient_light_level.attr,
++	&dev_attr_ambient_light_zone.attr,
++#endif
++	NULL
++};
++
++static const struct attribute_group adp8870_bl_attr_group = {
++	.attrs = adp8870_bl_attributes,
++};
++
++static int __devinit adp8870_probe(struct i2c_client *client,
++					const struct i2c_device_id *id)
++{
++	struct backlight_device *bl;
++	struct adp8870_bl *data;
++	struct adp8870_backlight_platform_data *pdata =
++		client->dev.platform_data;
++	uint8_t reg_val;
++	int ret;
++
++	if (!i2c_check_functionality(client->adapter,
++					I2C_FUNC_SMBUS_BYTE_DATA)) {
++		dev_err(&client->dev, "SMBUS Byte Data not Supported\n");
++		return -EIO;
++	}
++
++	if (!pdata) {
++		dev_err(&client->dev, "no platform data?\n");
++		return -EINVAL;
++	}
++
++	ret = adp8870_read(client, ADP8870_MFDVID, &reg_val);
++	if (ret < 0)
++		return -EIO;
++
++	if (ADP8870_MANID(reg_val) != ADP8870_MANUFID) {
++		dev_err(&client->dev, "failed to probe\n");
++		return -ENODEV;
++	}
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (data == NULL)
++		return -ENOMEM;
++
++	data->revid = ADP8870_DEVID(reg_val);
++	data->client = client;
++	data->pdata = pdata;
++	data->id = id->driver_data;
++	data->current_brightness = 0;
++	i2c_set_clientdata(client, data);
++
++	mutex_init(&data->lock);
++
++	bl = backlight_device_register(dev_driver_string(&client->dev),
++			&client->dev, data, &adp8870_bl_ops);
++	if (IS_ERR(bl)) {
++		dev_err(&client->dev, "failed to register backlight\n");
++		ret = PTR_ERR(bl);
++		goto out2;
++	}
++
++	bl->props.max_brightness =
++		bl->props.brightness = ADP8870_MAX_BRIGHTNESS;
++
++	data->bl = bl;
++
++	if (pdata->en_ambl_sens)
++		ret = sysfs_create_group(&bl->dev.kobj,
++			&adp8870_bl_attr_group);
++
++	if (ret) {
++		dev_err(&client->dev, "failed to register sysfs\n");
++		goto out1;
++	}
++
++	ret = adp8870_bl_setup(bl);
++	if (ret) {
++		ret = -EIO;
++		goto out;
++	}
++
++	backlight_update_status(bl);
++
++	dev_info(&client->dev, "Rev.%d Backlight\n", data->revid);
++
++	if (pdata->num_leds)
++		adp8870_led_probe(client);
++
++	return 0;
++
++out:
++	if (data->pdata->en_ambl_sens)
++		sysfs_remove_group(&data->bl->dev.kobj,
++			&adp8870_bl_attr_group);
++out1:
++	backlight_device_unregister(bl);
++out2:
++	i2c_set_clientdata(client, NULL);
++	kfree(data);
++
++	return ret;
++}
++
++static int __devexit adp8870_remove(struct i2c_client *client)
++{
++	struct adp8870_bl *data = i2c_get_clientdata(client);
++
++	adp8870_clr_bits(client, ADP8870_MDCR, NSTBY);
++
++	if (data->led)
++		adp8870_led_remove(client);
++
++	if (data->pdata->en_ambl_sens)
++		sysfs_remove_group(&data->bl->dev.kobj,
++			&adp8870_bl_attr_group);
++
++	backlight_device_unregister(data->bl);
++	i2c_set_clientdata(client, NULL);
++	kfree(data);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int adp8870_i2c_suspend(struct i2c_client *client, pm_message_t message)
++{
++	adp8870_clr_bits(client, ADP8870_MDCR, NSTBY);
++
++	return 0;
++}
++
++static int adp8870_i2c_resume(struct i2c_client *client)
++{
++	adp8870_set_bits(client, ADP8870_MDCR, NSTBY);
++
++	return 0;
++}
++#else
++#define adp8870_i2c_suspend NULL
++#define adp8870_i2c_resume NULL
++#endif
++
++static const struct i2c_device_id adp8870_id[] = {
++	{ "adp8870", 0 },
++	{ "adp8860", 1 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, adp8870_id);
++
++static struct i2c_driver adp8870_driver = {
++	.driver = {
++		.name = KBUILD_MODNAME,
++	},
++	.probe    = adp8870_probe,
++	.remove   = __devexit_p(adp8870_remove),
++	.suspend = adp8870_i2c_suspend,
++	.resume  = adp8870_i2c_resume,
++	.id_table = adp8870_id,
++};
++
++static int __init adp8870_init(void)
++{
++	return i2c_add_driver(&adp8870_driver);
++}
++module_init(adp8870_init);
++
++static void __exit adp8870_exit(void)
++{
++	i2c_del_driver(&adp8870_driver);
++}
++module_exit(adp8870_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_DESCRIPTION("ADP8870 Backlight driver");
++MODULE_ALIAS("platform:adp8870-backlight");
+diff --git a/include/linux/i2c/adp8870.h b/include/linux/i2c/adp8870.h
+new file mode 100644
+index 0000000..8304de9
+--- /dev/null
++++ b/include/linux/i2c/adp8870.h
+@@ -0,0 +1,154 @@
++/*
++ * Definitions and platform data for Analog Devices
++ * Backlight drivers ADP8870
++ *
++ * Copyright 2009 Analog Devices Inc.
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#ifndef __LINUX_I2C_ADP8870_H
++#define __LINUX_I2C_ADP8870_H
++
++#define ID_ADP8870		8870
++#define ID_ADP8860		8860
++
++#define ADP8870_MAX_BRIGHTNESS	0x7F
++#define FLAG_OFFT_SHIFT 8
++
++/*
++ * LEDs subdevice platform data
++ */
++
++#define ADP8870_LED_DIS_BLINK	(0 << FLAG_OFFT_SHIFT)
++#define ADP8870_LED_OFFT_600ms	(1 << FLAG_OFFT_SHIFT)
++#define ADP8870_LED_OFFT_1200ms	(2 << FLAG_OFFT_SHIFT)
++#define ADP8870_LED_OFFT_1800ms	(3 << FLAG_OFFT_SHIFT)
++
++#define ADP8870_LED_ONT_200ms	0
++#define ADP8870_LED_ONT_600ms	1
++#define ADP8870_LED_ONT_800ms	2
++#define ADP8870_LED_ONT_1200ms	3
++
++#define ADP8870_LED_D7		(7)
++#define ADP8870_LED_D6		(6)
++#define ADP8870_LED_D5		(5)
++#define ADP8870_LED_D4		(4)
++#define ADP8870_LED_D3		(3)
++#define ADP8870_LED_D2		(2)
++#define ADP8870_LED_D1		(1)
++
++/*
++ * Backlight subdevice platform data
++ */
++
++#define ADP8870_BL_D7		(1 << 6)
++#define ADP8870_BL_D6		(1 << 5)
++#define ADP8870_BL_D5		(1 << 4)
++#define ADP8870_BL_D4		(1 << 3)
++#define ADP8870_BL_D3		(1 << 2)
++#define ADP8870_BL_D2		(1 << 1)
++#define ADP8870_BL_D1		(1 << 0)
++
++#define ADP8870_FADE_T_DIS	0	/* Fade Timer Disabled */
++#define ADP8870_FADE_T_300ms	1	/* 0.3 Sec */
++#define ADP8870_FADE_T_600ms	2
++#define ADP8870_FADE_T_900ms	3
++#define ADP8870_FADE_T_1200ms	4
++#define ADP8870_FADE_T_1500ms	5
++#define ADP8870_FADE_T_1800ms	6
++#define ADP8870_FADE_T_2100ms	7
++#define ADP8870_FADE_T_2400ms	8
++#define ADP8870_FADE_T_2700ms	9
++#define ADP8870_FADE_T_3000ms	10
++#define ADP8870_FADE_T_3500ms	11
++#define ADP8870_FADE_T_4000ms	12
++#define ADP8870_FADE_T_4500ms	13
++#define ADP8870_FADE_T_5000ms	14
++#define ADP8870_FADE_T_5500ms	15	/* 5.5 Sec */
++
++#define ADP8870_FADE_LAW_LINEAR 	0
++#define ADP8870_FADE_LAW_SQUARE 	1
++#define ADP8870_FADE_LAW_CUBIC1 	2
++#define ADP8870_FADE_LAW_CUBIC2 	3
++
++#define ADP8870_BL_AMBL_FILT_80ms 	0	/* Light sensor filter time */
++#define ADP8870_BL_AMBL_FILT_160ms 	1
++#define ADP8870_BL_AMBL_FILT_320ms 	2
++#define ADP8870_BL_AMBL_FILT_640ms 	3
++#define ADP8870_BL_AMBL_FILT_1280ms 	4
++#define ADP8870_BL_AMBL_FILT_2560ms 	5
++#define ADP8870_BL_AMBL_FILT_5120ms 	6
++#define ADP8870_BL_AMBL_FILT_10240ms 	7	/* 10.24 sec */
++
++	/*
++	 * Blacklight current 0..30mA
++	 */
++#define ADP8870_BL_CUR_mA(I)		((I * 127) / 30)
++
++	/*
++	 * L2 comparator current 0..1106uA
++	 */
++#define ADP8870_L2_COMP_CURR_uA(I)	((I * 255) / 1106)
++
++	/*
++	 * L3 comparator current 0..551uA
++	 */
++#define ADP8870_L3_COMP_CURR_uA(I)	((I * 255) / 551)
++
++	/*
++	 * L4 comparator current 0..275uA
++	 */
++#define ADP8870_L4_COMP_CURR_uA(I)	((I * 255) / 275)
++
++	/*
++	 * L5 comparator current 0..138uA
++	 */
++#define ADP8870_L5_COMP_CURR_uA(I)	((I * 255) / 138)
++
++struct adp8870_backlight_platform_data {
++	u8 bl_led_assign;	/* 1 = Backlight 0 = Individual LED */
++	u8 pwm_assign;		/* 1 = Enables PWM mode */
++
++	u8 bl_fade_in;		/* Backlight Fade-In Timer */
++	u8 bl_fade_out;		/* Backlight Fade-Out Timer */
++	u8 bl_fade_law;		/* fade-on/fade-off transfer characteristic */
++
++	u8 en_ambl_sens;	/* 1 = enable ambient light sensor */
++	u8 abml_filt;		/* Light sensor filter time */
++
++	u8 l1_daylight_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l1_daylight_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_bright_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l2_bright_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l3_office_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l3_office_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l4_indoor_max;	/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l4_indor_dim;	/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l5_dark_max;		/* use BL_CUR_mA(I) 0 <= I <= 30 mA */
++	u8 l5_dark_dim;		/* typ = 0, use BL_CUR_mA(I) 0 <= I <= 30 mA */
++
++	u8 l2_trip;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1106 uA */
++	u8 l2_hyst;		/* use L2_COMP_CURR_uA(I) 0 <= I <= 1106 uA */
++	u8 l3_trip;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 551 uA */
++	u8 l3_hyst;		/* use L3_COMP_CURR_uA(I) 0 <= I <= 551 uA */
++	u8 l4_trip;		/* use L4_COMP_CURR_uA(I) 0 <= I <= 275 uA */
++	u8 l4_hyst;		/* use L4_COMP_CURR_uA(I) 0 <= I <= 275 uA */
++	u8 l5_trip;		/* use L5_COMP_CURR_uA(I) 0 <= I <= 138 uA */
++	u8 l5_hyst;		/* use L6_COMP_CURR_uA(I) 0 <= I <= 138 uA */
++
++	/**
++	 * Independent Current Sinks / LEDS
++	 * Sinks not assigned to the Backlight can be exposed to
++	 * user space using the LEDS CLASS interface
++	 */
++
++	int num_leds;
++	struct led_info	*leds;
++	u8 led_fade_in;		/* LED Fade-In Timer */
++	u8 led_fade_out;	/* LED Fade-Out Timer */
++	u8 led_fade_law;	/* fade-on/fade-off transfer characteristic */
++	u8 led_on_time;
++};
++
++#endif /* __LINUX_I2C_ADP8870_H */
+-- 
+1.6.5.4
 
-But this isn't enough. And since we cannot exactly talk to hardware
-we can't try to send a deassoc as harware would be unresponsive. I
-also don't see us handling such cases before either on cfg80211 or
-mac80211, so curious what we should do. Doing the above is not enough
-since userspace will still believe it will be associated if it left
-the device in an associated state. If you end up killing userspace
-and restarting you'll end up with crawling into cfg80211/mac80211
-warnings due to the unexpected state we left things in. This is
-currently busted on 2.6.32.2 and I don't see an obvious fix, hoping
-others might.
-
-As for the specific Asus eeepc 1008HA issue what I'm seeing is ath9k
-talking to harware fine prior to suspend, disabling harware and then
-upon resume it becomes unusable, failing at the first harware reset.
-lspci tells me the following when the device is functional, both during
-initial boot, and during successfull pm-suspend cycles:
-
-01:00.0 Network controller: Atheros Communications Inc. AR9285 Wireless Network Adapter (PCI-Express) (rev 01)
-	Subsystem: Device 1a3b:1089
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0, Cache Line Size: 32 bytes
-	Interrupt: pin A routed to IRQ 18
-	Region 0: Memory at fbef0000 (64-bit, non-prefetchable) [size=64K]
-	Capabilities: [40] Power Management version 3
-		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA PME(D0+,D1+,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: 00000000  Data: 0000
-	Capabilities: [60] Express (v2) Legacy Endpoint, MSI 00
-		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
-			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-			MaxPayload 128 bytes, MaxReadReq 512 bytes
-		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <64us
-			ClockPM- Suprise- LLActRep- BwNot-
-		LnkCtl:	ASPM L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
-	Capabilities: [100] Advanced Error Reporting <?>
-	Capabilities: [140] Virtual Channel <?>
-	Capabilities: [160] Device Serial Number 12-14-24-ff-ff-17-15-00
-	Capabilities: [170] Power Budgeting <?>
-	Kernel driver in use: ath9k
-	Kernel modules: ath9k
-
-I do notice a difference when resume goes bust and the ath9k device becomes unhappy. This
-is what I see:
-
---- lspci-ok.txt	2009-12-21 17:22:24.000000000 -0800
-+++ lspci-busted.txt	2009-12-21 17:22:50.000000000 -0800
-@@ -16,7 +16,7 @@
- 		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
- 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
- 			MaxPayload 128 bytes, MaxReadReq 512 bytes
--		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
-+		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+ TransPend-
- 		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <64us
- 			ClockPM- Suprise- LLActRep- BwNot-
- 		LnkCtl:	ASPM L1 Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
-
-The line in question is the PCI device status. The CorrErr indicates
-"Correctable Error Detected" and the UnsuppReq indicates "Unsupported
-Request Detected". Its not entirely clear to me what exact unsupported
-request must have been sent. I've considered getting help to look at this
-with a PCI analyzer but first I wanted to check and see if others are seeing
-this with the 1008HA or similar platform familes and if there are pointers
-some can give.
-
-I'll consider sucking in patches to 2.6.32.2 if there is something on Linus'
-tree on 2.6.33-rc1 but so far I can't even boot 2.6.33-rc1 on this thing so
-it will have to be very selective.
-
-The only other thing that might be relevant, not sure is the APCI error
-messages I see during the first successfull resume:
-
-[  139.873054] ath9k: Starting driver with initial channel: 2462 MHz
-[  139.887477] ath9k: Attach a VIF of type: 2
-[  139.887511] ath9k: Set channel: 2462 MHz
-[  139.887516] ath9k: tx chmask: 1, rx chmask: 1
-[  139.887624] ath9k: (2462 MHz) -> (2462 MHz), chanwidth: 0
-[  139.896694] ath9k: Set HW RX filter: 0x607
-[  139.896701] ath9k: RX filter 0x0 bssid 00:22:6b:56:fd:e8 aid 0x0
-[  139.896707] ath9k: BSS Changed PREAMBLE 1
-[  139.896711] ath9k: BSS Changed CTS PROT 0
-[  139.896715] ath9k: BSS Changed ASSOC 1
-[  139.896718] ath9k: Bss Info ASSOC 1, bssid: 00:22:6b:56:fd:e8
-[  139.899489] PM: Finishing wakeup.
-[  139.899494] Restarting tasks ... done.
-[  139.934227] Open BA session requested for 00:22:6b:56:fd:e8 tid 0
-[  139.934270] activated addBA response timer on tid 0
-[  139.936192] Rx A-MPDU request on tid 0 result 0
-[  139.954281] switched off addBA timer for tid 0 
-[  139.954289] Aggregation is on for tid 0 
-[  140.571086] ACPI: EC: missing confirmations, switch off interrupt mode.
-[  141.076065] ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl] 20090521 evregion-424
-[  141.076106] ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.SBRG.EC0_.BST3] (Node f7013ea0), AE_TIME
-[  141.076205] ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.CBST] (Node f70160a8), AE_TIME
-[  141.076249] ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.BAT0._BST] (Node f7014fd8), AE_TIME
-[  141.076303] ACPI Exception: AE_TIME, Evaluating _BST 20090521 battery-385
-
-I'll note though that I've even seen the ACPI error messages even
-after a first busted resume. In that case the device already is
-unresponsive before these ACPI messages.
-
-  Luis
