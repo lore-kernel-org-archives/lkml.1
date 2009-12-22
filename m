@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZLVVP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZLVVZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbZLVVP2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 16:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZLVVP0
+	id S1755047AbZLVVZh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 16:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbZLVVZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 16:15:26 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:33033 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755085AbZLVVPZ (ORCPT
+	Tue, 22 Dec 2009 16:25:36 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:41850 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbZLVVZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 16:15:25 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=vmmzPLjTKZcVt6WMye5LrAc9wpBlRZkhi4JUvtYvuOMYOIxyoMNwlQ+x2z48Bmsak
-	BxxA6YfTW4SjQ53oo5kxw==
-MIME-Version: 1.0
-In-Reply-To: <20091221085713.GA1622@ucw.cz>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	 <20091221085713.GA1622@ucw.cz>
-Date: Tue, 22 Dec 2009 13:15:21 -0800
-Message-ID: <4352991a0912221315y5ba409cbh26baa5937cdf2f76@mail.gmail.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the 
-	Linux Kernel
-From: Salman Qazi <sqazi@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+	Tue, 22 Dec 2009 16:25:36 -0500
+Subject: Re: [PATCH 04/27] Driver core: devtmpfs: prevent concurrent
+ subdirectory creation and removal
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <cc557aab0912221056o534beb03r8ce0a98d8aaa1e36@mail.gmail.com>
+References: <20091211212642.GA6624@kroah.com>
+	 <1260570289-6997-4-git-send-email-gregkh@suse.de>
+	 <cc557aab0912210537pdc076e7p5c90303fb6a32b66@mail.gmail.com>
+	 <ac3eb2510912210637n629ec609vf838a8b572867ffa@mail.gmail.com>
+	 <cc557aab0912220610w7c3c57aaq3b6d96f6eb7085ca@mail.gmail.com>
+	 <ac3eb2510912220857g752a8d5ek20a37a79f053fb58@mail.gmail.com>
+	 <cc557aab0912221056o534beb03r8ce0a98d8aaa1e36@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 22:25:16 +0100
+Message-Id: <1261517116.2101.2.camel@yio.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 12:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> Google is implementing power capping, a technology that improves the
->> power efficiency of data centers. There are also some interesting
->> applications of this technology for laptops and cell phones.  Google
->> aims to send most of its Linux technology upstream. So, how can we get
->> this feature into the mainline kernel?
-> ...
->> Aside from this, every cgroup has a new quantity added to the CPU
->> component called "Power Capping Priority".  This quantity indicates
->> the order in which the scheduler attributes the time spent injecting
->> idle cycles to specific processes.  This allows us to discriminate
->> among processes when it comes to accounting for the injected idle
->> time.  There is also an indication of interactivity versus batch for
->> the cgroup provided in the CPU component of the cgroup.
->>
->> Basic Algorithm:
->>
->> Rather than blindly blasting the machine with the minimum required
->> idle cycles, our implementation keeps track of naturally occurring
->> idle cycles as follows:
->
-> (Rather complex algorithm snipped)
->
-> Well.. having all this complexity just for forcing idle... And it
-> still will not work, right? Linux kernel is not real time, so you
-> can't guarantee anything.
+On Tue, 2009-12-22 at 20:56 +0200, Kirill A. Shutemov wrote:
+> On Tue, Dec 22, 2009 at 6:57 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > On Tue, Dec 22, 2009 at 15:10, Kirill A. Shutemov <kirill@shutemov.name> wrote:
+> >> On Mon, Dec 21, 2009 at 4:37 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> >>> On Mon, Dec 21, 2009 at 14:37, Kirill A. Shutemov <kirill@shutemov.name> wrote:
+> >>>> v2.6.33-rc1-96-gdd59f6c:
+> >>>> I guess it can be related to this commit.
+> >>>
+> >>> The fix is already pending here:
+> >>>  http://patchwork.kernel.org/patch/68337/
+> >>
+> >> One more problem: you don't unlock dirlock if kstrdup() failed.
+> >
+> > Oh right, will send a fix tomorrow.
+> 
+> Reported-by Kirill A. Shutemov <kirill@shutemov.name>
 
-The purpose of all the "complexity" is to avoid injecting idle cycles
-when the machine is already sufficiently idle.  That is, to lower the
-impact when the feature is not needed.  And you are right, there are
-no hard guarantees.  A lot of the practical use will rest on empirical
-data.
+Thanks!
 
->
-> OTOH realtime people already have tools you could make good use of:
-> your power capping approach looks like 'high priority idle task that
-> needs to run for 2 seconds every 5 seconds' or something...
->
-> Talk to rt people?
+Kay
 
-At the core of it, you are correct.  However, in our implementation it
-also avoids running when the system is already idle and operates at
-much finer granularities than seconds.
 
-Which specific tools are you referring to?  Real-time Linux as a whole
-is a trade off:  one gets predictable latency in exchange for some
-performance.  Any specific contacts that I should direct my inquiries
-to?
 
->                                                                Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: devtmpfs: unlock mutex in case of string allocation error
+
+Reported-by: Kirill A. Shutemov <kirill@shutemov.name>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+ drivers/base/devtmpfs.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- a/drivers/base/devtmpfs.c
++++ b/drivers/base/devtmpfs.c
+@@ -101,8 +101,10 @@ static int create_path(const char *nodep
+ 
+ 		/* parent directories do not exist, create them */
+ 		path = kstrdup(nodepath, GFP_KERNEL);
+-		if (!path)
+-			return -ENOMEM;
++		if (!path) {
++			err = -ENOMEM;
++			goto out;
++		}
+ 		s = path;
+ 		for (;;) {
+ 			s = strchr(s, '/');
+@@ -117,6 +119,7 @@ static int create_path(const char *nodep
+ 		}
+ 		kfree(path);
+ 	}
++out:
+ 	mutex_unlock(&dirlock);
+ 	return err;
+ }
+
+
