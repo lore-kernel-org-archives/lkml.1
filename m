@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZLVRdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZLVRge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbZLVRdz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 12:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbZLVRdx
+	id S1754461AbZLVRge (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 12:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbZLVRgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 12:33:53 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40630 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbZLVRdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 12:33:53 -0500
-Date: Tue, 22 Dec 2009 17:33:49 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] vfs patches for -rc2
-Message-ID: <20091222173349.GT18217@ZenIV.linux.org.uk>
+	Tue, 22 Dec 2009 12:36:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2581 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753629AbZLVRgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 12:36:32 -0500
+Message-ID: <4B310374.6060109@redhat.com>
+Date: Tue, 22 Dec 2009 19:35:48 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Anthony Liguori <anthony@codemonkey.ws>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box> <4B30F375.6050103@codemonkey.ws> <20091222173326.GH10314@basil.fritz.box>
+In-Reply-To: <20091222173326.GH10314@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Assorted cleanups and fixes.  Please pull from
-git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ master
+On 12/22/2009 07:33 PM, Andi Kleen wrote:
+>> We're not talking about vaporware.  vhost-net exists.
+>>      
+> Is it as fast as the alacrityvm setup then e.g. for network traffic?
+>
+> Last I heard the first could do wirespeed 10Gbit/s on standard hardware.
+>    
 
-Al Viro (2):
-      Fix f_flags/f_mode in case of lookup_instantiate_filp() from open(pathname, 3)
-      Sanitize f_flags helpers
+That was with zero-copy IIRC, which is known broken.  There's nothing 
+alacrity-specific about zerocopy (and in fact the first zerocopy patches 
+were from Rusty).
 
-Alan Cox (1):
-      jfs: Fix 32bit build warning
+> Can vhost-net do the same thing?
+>    
 
-Andreas Gruenbacher (1):
-      Remove obsolete comment in fs.h
+I've heard unofficial numbers which approach that, but let's wait for 
+the official ones.
 
-Arnd Bergmann (1):
-      fs/compat_ioctl.c: fix build error when !BLOCK
+-- 
+error compiling committee.c: too many arguments to function
 
-Evgeniy Polyakov (1):
-      pohmelfs needs I_LOCK
-
-Roland Dreier (2):
-      alloc_file(): simplify handling of mnt_clone_write() errors
-      anonfd: Allow making anon files read-only
-
- drivers/staging/pohmelfs/dir.c |    2 --
- fs/anon_inodes.c               |    4 ++--
- fs/compat_ioctl.c              |    2 --
- fs/eventfd.c                   |    2 +-
- fs/eventpoll.c                 |    2 +-
- fs/file_table.c                |    4 +---
- fs/internal.h                  |    7 +++++++
- fs/jfs/super.c                 |    2 +-
- fs/namei.c                     |    8 ++++----
- fs/open.c                      |   13 ++++++-------
- fs/signalfd.c                  |    2 +-
- fs/timerfd.c                   |    2 +-
- include/linux/fs.h             |    5 +++--
- include/linux/namei.h          |    2 --
- kernel/auditsc.c               |    1 -
- kernel/perf_event.c            |    2 +-
- security/tomoyo/file.c         |    1 -
- virt/kvm/kvm_main.c            |    4 ++--
- 18 files changed, 31 insertions(+), 34 deletions(-)
