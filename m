@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZLVSVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbZLVSbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbZLVSVh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 13:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZLVSVg
+	id S1754594AbZLVSbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 13:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZLVSbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 13:21:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49582 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZLVSVg (ORCPT
+	Tue, 22 Dec 2009 13:31:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60964 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751565AbZLVSbL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 13:21:36 -0500
-Subject: Re: workqueue thing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, rusty@rustcorp.com.au,
+	Tue, 22 Dec 2009 13:31:11 -0500
+Date: Tue, 22 Dec 2009 10:28:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
        johannes@sipsolutions.net
-In-Reply-To: <20091222180703.GI10314@basil.fritz.box>
-References: <20091221091754.GG4489@kernel.dk>
-	 <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org>
-	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
-	 <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>
-	 <1261480220.4937.24.camel@laptop>
-	 <alpine.LFD.2.00.0912220917270.31313@localhost.localdomain>
-	 <1261504042.4937.59.camel@laptop>  <20091222180703.GI10314@basil.fritz.box>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 19:20:16 +0100
-Message-ID: <1261506016.4937.65.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: workqueue thing
+In-Reply-To: <1261504042.4937.59.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0912221004540.6879@localhost.localdomain>
+References: <1261141088-2014-1-git-send-email-tj@kernel.org>  <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box>   <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk>   <4B2F57E6.7020504@linux.intel.com>
+ <4B2F768C.1040704@kernel.org>   <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>   <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>  <1261480220.4937.24.camel@laptop>  <alpine.LFD.2.00.0912220917270.31313@localhost.localdomain>
+ <1261504042.4937.59.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-22 at 19:07 +0100, Andi Kleen wrote:
 
-> One reason I liked a more dynamic frame work for this is that it
-> has the potential to be exposed to user space and allow automatic
-> work partitioning there based on available cores.  User space
-> has a lot more CPU consumption than the kernel.
 
-What you want is something that does not block, but does not generate
-more load than a single runnable task either. Otherwise you'll end up
-with massive load issues.
+On Tue, 22 Dec 2009, Peter Zijlstra wrote:
+> 
+> Which in turn would imply we cannot carry fwd the current lockdep
+> annotations, right?
+> 
+> Which means we'll be stuck in a situation where A flushes B and B
+> flushes A will go undetected until we actually hit it.
 
-The thing currently proposed only does the first, but does not guarantee
-the latter. Meaning you can only use it if you know it will not do much
-work (after blocking), which is a fine restriction in the kernel (not
-something I think the current workqueue users all adhere to though).
+No, lockdep should still work. It just means that waiting for an 
+individual work should be seen as a matter of only waiting for the locks 
+that work itself has done - rather than waiting for all the locks that any 
+worker has taken.
 
-However, it is not something you'd want to expose to userspace, not that
-is, without the counterpart limiting wakeup parallelism.
+And the way the workqueue lockdep stuff is done, I'd assume this just 
+automatically fixes itself when rewritten.
 
-> I think Grand Central Dispatch does something in this direction. 
-> TBB would probably also benfit
+> Where exactly does the tty thing live in the code?
 
-What are those?
+I think I worked around it all, but I cursed the workqueues while I did 
+it. The locking problem is tty->ldisc_mutex vs flushing the ldisc buffers. 
+The flushing itself doesn't even care about the ldisc_mutex, but if it 
+happens to be behind a the hangup work - which does care about that mutex 
+- you still can't wait for it.
 
-> Short term an alternative for the kernel would be also
-> to generalize the simple framework that is in btrfs.
+Happily, it turns out that you can synchronously _cancel_ the damn thing 
+despite this problem, because the cancel can take it off the list if it is 
+waiting for something else (eg another workqueue entry in front of it), 
+and if it's actively running we know that it's not blocked waiting for 
+that hangup work that needs the lock, so for that particular case we can 
+even wait for it to finish running - even if we couldn't do that in 
+general.
 
-And here I though btrfs was one of those who did actually consume heaps
-of CPU in its worklets doing data checksums and the like.
-
+And I 
