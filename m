@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZLVVJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZLVUZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755054AbZLVVJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 16:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZLVVJn
+	id S1752243AbZLVUZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 15:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZLVUZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 16:09:43 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:58851 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZLVVJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 16:09:41 -0500
-Message-ID: <4B312767.4090700@oracle.com>
-Date: Tue, 22 Dec 2009 12:09:11 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 22 Dec 2009 15:25:14 -0500
+Received: from kroah.org ([198.145.64.141]:55305 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751858AbZLVUZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 15:25:12 -0500
+Subject: patch usb-fix-section-mismatch-in-early-ehci-dbgp.patch added to gregkh-2.6 tree
+To: JBeulich@novell.com, gregkh@suse.de, jason.wessel@windriver.com,
+       jbeulich@novell.com, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Tue, 22 Dec 2009 12:23:03 -0800
+In-Reply-To: <4B06ACCD02000078000211E0@vpn.id2.novell.com>
+Message-ID: <12615133833311@kroah.org>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: akpm <akpm@linux-foundation.org>, jeremy@goop.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: [PATCH] xen: add kconfig menu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B313562.0170:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Currently the xen support drivers are displayed in the main
-Device Drivers menu of the config tools instead of in their
-own sub-menu, so move them to their own sub-menu, like the
-rest of the driver world uses.
+This is a note to let you know that I've just added the patch titled
 
-This keeps the main Device Drivers menu from becoming messy.
+    Subject: USB: fix section mismatch in early ehci dbgp
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc:	Jeremy Fitzhardinge <jeremy@xensource.com>
+to my gregkh-2.6 tree.  Its filename is
+
+    usb-fix-section-mismatch-in-early-ehci-dbgp.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From JBeulich@novell.com  Tue Dec 22 11:20:33 2009
+From: "Jan Beulich" <JBeulich@novell.com>
+Date: Fri, 20 Nov 2009 13:50:53 +0000
+Subject: USB: fix section mismatch in early ehci dbgp
+To: <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <jason.wessel@windriver.com>
+Message-ID: <4B06ACCD02000078000211E0@vpn.id2.novell.com>
+Content-Disposition: inline
+
+
+Commit 917778267fbe67703ab7d5c6f0b7a05d4c3df485 removed __init from
+ehci_wait_for_port(), but left it in place on ehci_reset_port(), which
+is being called from the former function.
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+
 ---
- drivers/xen/Kconfig |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/usb/early/ehci-dbgp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- lnx-2633-rc1.orig/drivers/xen/Kconfig
-+++ lnx-2633-rc1/drivers/xen/Kconfig
-@@ -1,6 +1,8 @@
-+menu "Xen driver support"
-+	depends on XEN
-+
- config XEN_BALLOON
- 	bool "Xen memory balloon driver"
--	depends on XEN
- 	default y
- 	help
- 	  The balloon driver allows the Xen domain to request more memory from
-@@ -20,7 +22,6 @@ config XEN_SCRUB_PAGES
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -613,7 +613,7 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(dbgp_external_startup);
  
- config XEN_DEV_EVTCHN
- 	tristate "Xen /dev/xen/evtchn device"
--	depends on XEN
- 	default y
- 	help
- 	  The evtchn driver allows a userspace process to triger event
-@@ -30,7 +31,6 @@ config XEN_DEV_EVTCHN
- 
- config XENFS
- 	tristate "Xen filesystem"
--	depends on XEN
- 	default y
- 	help
- 	  The xen filesystem provides a way for domains to share
-@@ -53,11 +53,13 @@ config XEN_COMPAT_XENFS
- 
- config XEN_SYS_HYPERVISOR
-        bool "Create xen entries under /sys/hypervisor"
--       depends on XEN && SYSFS
-+       depends on SYSFS
-        select SYS_HYPERVISOR
-        default y
-        help
-          Create entries under /sys/hypervisor describing the Xen
- 	 hypervisor environment.  When running native or in another
- 	 virtual environment, /sys/hypervisor will still be present,
--	 but will have no xen contents.
-\ No newline at end of file
-+	 but will have no xen contents.
-+
-+endmenu
+-static int __init ehci_reset_port(int port)
++static int ehci_reset_port(int port)
+ {
+ 	u32 portsc;
+ 	u32 delay_time, delay;
+
