@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZLVLtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbZLVMWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753113AbZLVLtl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 06:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZLVLtj
+	id S1752872AbZLVMWp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 07:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZLVMWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 06:49:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56993 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbZLVLtg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 06:49:36 -0500
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-From: Andi Kleen <andi@firstfloor.org>
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu>
-	<4B2F9582.5000002@gmail.com> <4B2F978D.7010602@redhat.com>
-	<4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws>
-	<4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws>
-	<4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws>
-Date: Tue, 22 Dec 2009 12:49:31 +0100
-In-Reply-To: <4B300EF8.8010602@codemonkey.ws> (Anthony Liguori's message of "Mon, 21 Dec 2009 18:12:40 -0600")
-Message-ID: <87637zdy9g.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 22 Dec 2009 07:22:44 -0500
+Received: from mail.aixigo.de ([195.14.232.227]:15434 "EHLO gate1.ac.aixigo.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751075AbZLVMWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 07:22:44 -0500
+X-Greylist: delayed 1935 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Dec 2009 07:22:43 EST
+Message-ID: <4B30B280.50907@aixigo.de>
+Date: Tue, 22 Dec 2009 12:50:24 +0100
+From: Harald Dunkel <harald.dunkel@aixigo.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091210 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: 2.6.29.6: nfsd: non-standard errno: -9
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori <anthony@codemonkey.ws> writes:
->
-> On a modern Nehalem, I would be surprised if an MMIO exit handled in
-> the kernel was muck more than 2us.  The hardware is getting very, very
-> fast.  The trends here are very important to consider when we're
-> looking at architectures that we potentially are going to support for
-> a long time.
+Hi folks,
 
-When you talk about trends the trend for IO is also to get faster.
+I get billions of error messages in kern.log syaing
 
-An exit will be always more expensive than passing something from
-another CPU in shared memory. An exit is much more work,
-with lots of saved context and fundamentally synchronous, 
-even with all the tricks hardware can do.  And then there's the
-in kernel handler too.
+:
+:
+Dec 22 10:44:55 nasl002a kernel: [ 3676.852579] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.906972] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.917499] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.917742] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.917753] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.917764] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.959585] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.959621] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.980210] nfsd: non-standard errno: -9
+Dec 22 10:44:55 nasl002a kernel: [ 3676.980613] nfsd: non-standard errno: -9
+:
+:
 
-Shared memory passing from another CPU is a much cheaper 
-operation and more likely to scale with IO rate improvements.
+This is (supposed to be) NFSv4. The clients are running SunOS 5.10.
 
-The basic problem in this discussion seems to be the usual
-disconnect between working code (I understand Gregory has working
-code that demonstrates the performance advances he's claiming)
-versus unwritten optimizations.
+Google doesn't reveal anything, so I wonder whether you have an
+idea?
 
-Unwritten code tends to always sound nicer, but it remains to be seen
-if it can deliver what it promises.
 
->From a abstract stand point having efficient paravirtual IO interfaces
-seem attractive.
+Any helpful comments would be highly appreciated.
 
-I also personally don't see a big problem in having another set of
-virtual drivers -- Linux already has plenty (vmware, xen, virtio, power,
-s390-vm, ...) and it's not that they would be a particular maintenance
-burden impacting the kernel core.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Regards
+
+Harri
