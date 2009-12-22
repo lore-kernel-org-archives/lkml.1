@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbZLVMfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbZLVMiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944AbZLVMfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 07:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZLVMfl
+	id S1752880AbZLVMiI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 07:38:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbZLVMiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 07:35:41 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48117 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZLVMfk (ORCPT
+	Tue, 22 Dec 2009 07:38:06 -0500
+Received: from mga10.intel.com ([192.55.52.92]:45021 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750895AbZLVMiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 07:35:40 -0500
-Date: Tue, 22 Dec 2009 13:35:39 +0100
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Steve Rago <sar@nec-labs.com>, Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] improve the performance of large sequential write NFS workloads
-Message-ID: <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
-References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost>
+	Tue, 22 Dec 2009 07:38:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,434,1257148800"; 
+   d="scan'208";a="758383806"
+Message-ID: <4B30BDA8.1070904@linux.intel.com>
+Date: Tue, 22 Dec 2009 20:38:00 +0800
+From: Haicheng Li <haicheng.li@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091222015907.GA6223@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-mm@kvack.org, Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] slab: initialize unused alien cache entry as NULL at alloc_alien_cache().
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 2) NFS commit stops pipeline because it sleep&wait inside i_mutex,
->    which blocks all other NFSDs trying to write/writeback the inode.
-> 
->    nfsd_sync:
->      take i_mutex
->        filemap_fdatawrite
->        filemap_fdatawait
->      drop i_mutex
-  I believe this is unrelated to the problem Steve is trying to solve.
-When we get to doing sync writes the performance is busted so we better
-shouldn't get to that (unless user asked for that of course).
+Memory hotplug would online new node in runtime, then reap timer will add this new node as 
+a reap node. In such case, for each existing kmem_list, we need to ensure that the alien 
+cache entry corresponding to this new added node is NULL. Otherwise, it might cause BUG 
+when reap_alien() affecting the new added node.
 
->    If filemap_fdatawait() can be moved out of i_mutex (or just remove
->    the lock), we solve the root problem:
-> 
->    nfsd_sync:
->      [take i_mutex]
->        filemap_fdatawrite  => can also be blocked, but less a problem
->      [drop i_mutex]
->        filemap_fdatawait
->  
->    Maybe it's a dumb question, but what's the purpose of i_mutex here?
->    For correctness or to prevent livelock? I can imagine some livelock
->    problem here (current implementation can easily wait for extra
->    pages), however not too hard to fix.
-  Generally, most filesystems take i_mutex during fsync to
-a) avoid all sorts of livelocking problems
-b) serialize fsyncs for one inode (mostly for simplicity)
-  I don't see what advantage would it bring that we get rid of i_mutex
-for fdatawait - only that maybe writers could proceed while we are
-waiting but is that really the problem?
+Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
+---
+  mm/slab.c |    7 +++----
+  1 files changed, 3 insertions(+), 4 deletions(-)
 
-								Honza
+diff --git a/mm/slab.c b/mm/slab.c
+index 7dfa481..a9486a0 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -966,18 +966,17 @@ static void *alternate_node_alloc(struct kmem_cache *, gfp_t);
+  static struct array_cache **alloc_alien_cache(int node, int limit, gfp_t gfp)
+  {
+  	struct array_cache **ac_ptr;
+-	int memsize = sizeof(void *) * nr_node_ids;
++	int memsize = sizeof(void *) * MAX_NUMNODES;
+  	int i;
+
+  	if (limit > 1)
+  		limit = 12;
+  	ac_ptr = kmalloc_node(memsize, gfp, node);
+  	if (ac_ptr) {
++		memset(ac_ptr, 0, memsize);
+  		for_each_node(i) {
+-			if (i == node || !node_online(i)) {
+-				ac_ptr[i] = NULL;
++			if (i == node || !node_online(i))
+  				continue;
+-			}
+  			ac_ptr[i] = alloc_arraycache(node, limit, 0xbaadf00d, gfp);
+  			if (!ac_ptr[i]) {
+  				for (i--; i >= 0; i--)
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+1.6.0.rc1
