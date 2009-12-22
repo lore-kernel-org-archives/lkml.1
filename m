@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZLVCOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbZLVCRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbZLVCOo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 21:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZLVCOm
+	id S1752665AbZLVCRz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 21:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbZLVCRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 21:14:42 -0500
-Received: from vms173011pub.verizon.net ([206.46.173.11]:45008 "EHLO
-	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZLVCOl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 21:14:41 -0500
-Date: Mon, 21 Dec 2009 21:14:36 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Lin Ming <ming.m.lin@intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [REGRESSION] 9a884ab64a4d092b4c3bf24fd9a30f7fbd4591e7 causes boot
- hang
-In-reply-to: <20091216151058.GB15217@srcf.ucam.org>
-Message-id: <alpine.LFD.2.00.0912212113470.5520@localhost.localdomain>
-References: <20091215181538.GA28707@srcf.ucam.org>
- <1260925040.3834.69.camel@minggr.sh.intel.com>
- <20091216151058.GB15217@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 Dec 2009 21:17:54 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52970 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424AbZLVCRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 21:17:53 -0500
+Message-ID: <4B302C46.2010802@austin.ibm.com>
+Date: Mon, 21 Dec 2009 20:17:42 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6 v5] CPU probe/release files
+References: <4AE8ADCF.6090104@austin.ibm.com>	 <4AE8B072.1070603@austin.ibm.com>  <m2oclw9wt4.fsf@igel.home> <1261212415.2173.94.camel@pasglop>
+In-Reply-To: <1261212415.2173.94.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Could you try the attached ACPICA latest release (20091214) patch
-> > series? There are module level code and _REG method fixes included in
-> > it.
+Benjamin Herrenschmidt wrote:
+> On Fri, 2009-12-18 at 15:33 +0100, Andreas Schwab wrote:
+>> Nathan Fontenot <nfont@austin.ibm.com> writes:
+>>
+>>> Index: powerpc/arch/powerpc/Kconfig
+>>> ===================================================================
+>>> --- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
+>>> +++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
+>>> @@ -320,6 +320,10 @@
+>>>  
+>>>  	  Say N if you are unsure.
+>>>  
+>>> +config ARCH_CPU_PROBE_RELEASE
+>>> +	def_bool y
+>>> +	depends on HOTPLUG_CPU
+>>> +
+>> That does not work.
+>>
+>> drivers/built-in.o: In function `.store_online':
+>> cpu.c:(.ref.text+0xf5c): undefined reference to `.cpu_hotplug_driver_lock'
+>> cpu.c:(.ref.text+0xfc8): undefined reference to `.cpu_hotplug_driver_unlock'
+>> make: *** [.tmp_vmlinux1] Error 1
+>>
+>> cpu_hotplug_driver_lock is only defined on pseries, but HOTPLUG_CPU is
+>> also defined on pmac.
 > 
-> Yes, that appears to fix it. Len, could you push these ASAP?
+> Well, the stuff was merged ... so we need to fix it.
+> 
+> Nathan, the problem is that the above wlil define ARCH_CPU_PROBE_RELEASE
+> for any powerpc platform that has HOTPLUG_CPU. So a kernel that doesn't
+> have pSeries support but has hotplug CPU will have a problem, though for
+> some reason none of my test configs triggered it (I'll have to check why
+> next week).
+> 
+> The right approach here is to have cpu_hotplug_driver_lock go through
+> ppc_md. I suppose, along with some of the other CPU hotplug platform
+> specific bits.
+> 
 
-We pushed ACPICA 20091214 in -rc1, so you should be set
-with that and anything later.
+Sounds good to me,  I'll get a patch together.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-
+-Nathan Fontenot
