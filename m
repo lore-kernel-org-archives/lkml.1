@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZLVVMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZLVVO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755098AbZLVVMV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 16:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZLVVMS
+	id S1752720AbZLVVO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 16:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZLVVOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 16:12:18 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:47309 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbZLVVMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 16:12:17 -0500
-Subject: Please revert xtime_cache removal
-From: john stultz <johnstul@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Petr =?UTF-8?Q?Tit=C4=9Bra?= <P.Titera@century.cz>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 13:12:11 -0800
-Message-ID: <1261516331.3508.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 22 Dec 2009 16:14:25 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:41976 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbZLVVOY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 16:14:24 -0500
+Message-ID: <4B3136AA.50204@codemonkey.ws>
+Date: Tue, 22 Dec 2009 15:14:18 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B2F9C85.7070202@gmail.com> <4B2FA42F.3070408@codemonkey.ws> <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box> <4B30F375.6050103@codemonkey.ws> <20091222173326.GH10314@basil.fritz.box>
+In-Reply-To: <20091222173326.GH10314@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Linus,
+On 12/22/2009 11:33 AM, Andi Kleen wrote:
+>> We're not talking about vaporware.  vhost-net exists.
+>>      
+> Is it as fast as the alacrityvm setup then e.g. for network traffic?
+>
+> Last I heard the first could do wirespeed 10Gbit/s on standard hardware.
+>    
 
-	Please revert commit 7bc7d637452383d56ba4368d4336b0dde1bb476d - "Time:
-Remove xtime_cache".
+I'm very wary of any such claims.  As far as I know, no one has done an 
+exhaustive study of vbus and published the results.  This is why it's so 
+important to understand why the results are what they are when we see 
+numbers posted.
 
-Petr Titěra reported an issue where he saw odd atime regressions with
-2.6.33 where there were a full second worth of nanoseconds in the
-nanoseconds field. 
+For instance, check out 
+http://www.redhat.com/f/pdf/summit/cwright_11_open_source_virt.pdf slide 32.
 
-He also reviewed the time code and narrowed down the problem: unhandled
-overflow of the nanosecond field caused by rounding up the
-sub-nanosecond accumulated time.
+These benchmarks show KVM without vhost-net pretty closely pacing 
+native.  With large message sizes, it's awfully close to line rate.
 
+Comparatively speaking, consider 
+http://developer.novell.com/wiki/index.php/AlacrityVM/Results
 
-Details:
+vbus here is pretty far off of native and virtio-net is ridiculus.
 
-* At the end of update_wall_time(), we currently round up the
-sub-nanosecond portion of accumulated time when storing it into xtime.
-This was added to avoid time inconsistencies caused when the
-sub-nanosecond portion was truncated when storing into xtime.
-Unfortunately we don't handle the possible second overflow caused by
-that rounding.
+Why are the results so different?  Because benchmarking is fickle and 
+networking performance is complicated.  No one benchmarking scenario is 
+going to give you a very good picture overall.  It's also relatively 
+easy to stack the cards in favor of one approach verses another.  The 
+virtio-net setup probably made extensive use of pinning and other tricks 
+to make things faster than a normal user would see them.  It ends up 
+creating a perfect combination of batching which is pretty much just 
+cooking the mitigation schemes to do extremely well for one benchmark.
 
-* Previously the xtime_cache code hid this overflow by normalizing the
-xtime value when storing into the xtime_cache. 
+This is why it's so important to look at vbus from the perspective of 
+critically asking, what precisely makes it better than virtio.  A couple 
+benchmarks on a single piece of hardware does not constitute an 
+existence proof that it's better overall.
 
-* We could try to handle the second overflow after the rounding up, but
-since this affects the timekeeping's internal state, this would further
-complicate the next accumulation cycle, causing small errors in ntp
-steering. As much as I'd like to get rid of it, the xtime_cache code is
-known to work.
+There are a ton of differences between virtio and vbus because vbus was 
+written in a vacuum wrt virtio.  I'm not saying we are totally committed 
+to virtio no matter what, but it should take a whole lot more than a 
+couple netperf runs on a single piece of hardware for a single kind of 
+driver to justify replacing it.
 
-* The correct fix is really to include the sub-nanosecond portion in the
-timekeeping accessor function, so we don't need to round up at during
-accumulation. This would greatly simplify the accumulation code.
-Unfortunately, we can't do this safely until the last three
-non-GENERIC_TIME arches (sparc32, arm, cris) are converted  (those
-patches are in -mm) and we kill off the spots where arches set xtime
-directly. This is all 2.6.34 material, so I think reverting the
-xtime_cache change is the best approach for now.
+> Can vhost-net do the same thing?
 
+I think the fundamentally question is, what makes vbus better than 
+vhost-net?  vhost-net exists and is further along upstream than vbus is 
+at the moment.  If that question cannot be answered with technical facts 
+and numbers to back them up, then we're just arguing for the sake of 
+arguing.
 
-Many thanks to Petr for both reporting and finding the issue! 
+Regards,
 
-thanks again,
--john
+Anthony Liguori
+
+> -Andi
+>    
 
