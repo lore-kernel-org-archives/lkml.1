@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZLVNFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZLVNG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbZLVNFT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 08:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZLVNFS
+	id S1752836AbZLVNG3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 08:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZLVNG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 08:05:18 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50112 "EHLO song.cn.fujitsu.com"
+	Tue, 22 Dec 2009 08:06:28 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57490 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZLVNFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 08:05:17 -0500
-Message-ID: <4B30C3A0.909@cn.fujitsu.com>
-Date: Tue, 22 Dec 2009 21:03:28 +0800
+	id S1750931AbZLVNG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 08:06:27 -0500
+Message-ID: <4B30C3E7.5040401@cn.fujitsu.com>
+Date: Tue, 22 Dec 2009 21:04:39 +0800
 From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -20,7 +20,8 @@ CC: Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 2/5]: trace_event: export HZ in timer's tracepoint format
+Subject: [PATCH v2 3/5] trace_event: record task' real_timer in itimer_state
+ tracepoint
 References: <4B27702F.1080507@cn.fujitsu.com> <20091215142325.GC5833@nowhere> <4B30C2D1.4030006@cn.fujitsu.com>
 In-Reply-To: <4B30C2D1.4030006@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -29,38 +30,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export HZ in timer's tracepoint, we can use it to get
-TIMER/ITIMER_VIRTUAL/ITIMER_PROF exact latency and it's
-suggested by Ingo
+When itimer is ITIMER_REAL, we should cooperate with hrtimer's
+tracepoit to get it's latency, this patch can let us get itimer's
+hrtimer easy
 
 Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 ---
- include/trace/events/timer.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ include/trace/events/timer.h |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
-index 13ec15a..7749ae5 100644
+index 9496b96..13ec15a 100644
 --- a/include/trace/events/timer.h
 +++ b/include/trace/events/timer.h
-@@ -74,14 +74,17 @@ TRACE_EVENT(timer_expire_entry,
+@@ -285,6 +285,7 @@ TRACE_EVENT(itimer_state,
+ 
  	TP_STRUCT__entry(
- 		__field( void *,	timer	)
- 		__field( unsigned long,	now	)
-+		__field( int,		hz	)
- 	),
+ 		__field(	int,		which		)
++		__field(	void *,		timer		)
+ 		__field(	cputime_t,	expires		)
+ 		__field(	long,		value_sec	)
+ 		__field(	long,		value_usec	)
+@@ -294,6 +295,8 @@ TRACE_EVENT(itimer_state,
  
  	TP_fast_assign(
- 		__entry->timer		= timer;
- 		__entry->now		= jiffies;
-+		__entry->hz		= HZ;
+ 		__entry->which		= which;
++		__entry->timer          = which == ITIMER_REAL ?
++					  &current->signal->real_timer : NULL;
+ 		__entry->expires	= expires;
+ 		__entry->value_sec	= value->it_value.tv_sec;
+ 		__entry->value_usec	= value->it_value.tv_usec;
+@@ -301,8 +304,9 @@ TRACE_EVENT(itimer_state,
+ 		__entry->interval_usec	= value->it_interval.tv_usec;
  	),
  
--	TP_printk("timer=%p now=%lu", __entry->timer, __entry->now)
-+	TP_printk("timer=%p now=%lu HZ=%d", __entry->timer, __entry->now,
-+		  __entry->hz)
+-	TP_printk("which=%d expires=%llu it_value=%ld.%ld it_interval=%ld.%ld",
+-		  __entry->which, (unsigned long long)__entry->expires,
++	TP_printk("which=%d timer=%p expires=%llu it_value=%ld.%ld it_interval="
++		  "%ld.%ld", __entry->which, __entry->timer,
++		  (unsigned long long)__entry->expires,
+ 		  __entry->value_sec, __entry->value_usec,
+ 		  __entry->interval_sec, __entry->interval_usec)
  );
- 
- /**
 -- 
 1.6.1.2
 
