@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZLVXqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZLVXrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbZLVXqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 18:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZLVXql
+	id S1755350AbZLVXrh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 18:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZLVXr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 18:46:41 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63401 "EHLO
+	Tue, 22 Dec 2009 18:47:29 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63444 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbZLVXpr (ORCPT
+	with ESMTP id S1752594AbZLVXr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 18:45:47 -0500
+	Tue, 22 Dec 2009 18:47:26 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 22 Dec 2009 15:44:46 -0800
+Date: Tue, 22 Dec 2009 15:46:25 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 Subject: [PATCH -v2 0/25] x86: use early_res instead of bootmem before slab
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -22,14 +22,14 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       "\"Yinghai Lu" <yingai@kernel.org>
-Message-id: <1261525486-13838-1-git-send-email-yinghai@kernel.org>
+       "\"Yinghai Lu" <yinghai@kernel.org>
+Message-id: <1261525585-13939-1-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Yinghai Lu <yingai@kernel.org>"
+From: "Yinghai Lu <yinghai@kernel.org>"
 
 please check the patches regarding with early_res and bootmem
 
