@@ -1,40 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbZLVIpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZLVIt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752606AbZLVIpI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 03:45:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbZLVIpF
+	id S1752135AbZLVIt1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 03:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbZLVIt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 03:45:05 -0500
-Received: from mail.gmx.net ([213.165.64.20]:43141 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751591AbZLVIpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 03:45:02 -0500
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX19cYHZBW3NcZH5Rjta1mtqoSdC75H9T8CulWYY3Hf
-	7vn+0s4ukd5ohb
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: Jiri Kosina <trivial@kernel.org>
-Subject: add __init/__exit macros patches
-Date: Tue, 22 Dec 2009 09:45:02 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Tue, 22 Dec 2009 03:49:26 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53883 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbZLVItZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 03:49:25 -0500
+Subject: Re: 2.6.33-rc1 unusable due to scheduler issues, circular locking,
+ WARNs and BUGs
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de
+In-Reply-To: <1261441037.3273.254.camel@localhost>
+References: <1261441037.3273.254.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 09:48:40 +0100
+Message-ID: <1261471720.4937.9.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912220945.03034.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.84
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-sorry I somehow messed up the order /  subject numbers for the patches,
-however as it not really necessary to apply them in a special order, it should 
-not cause any problems.
+On Mon, 2009-12-21 at 19:17 -0500, Eric Paris wrote:
+> Trying to build a kernel on a 48 core x86_64 box using make -j 64 and
+> I'm exploding in the scheduler.  I'm running (and building) kernel
+> f7b84a6ba7eaeba4e1df8feddca1473a7db369a5  There are three distinct
+> signatures of problems.  Some boots I'll see all 3 of these failures
+> sometimes only 1 or 2 of them.  That's the reason they are kinda split
+> up in dmesg.
+> 
+> 1) gcc/3141 is trying to acquire lock:
+>  (&(&sem->wait_lock)->rlock){......}, at: [<ffffffff81223234>] __down_read_trylock+0x13/0x46
+> 
+> but task is already holding lock:
+>  (&rq->lock){-.-.-.}, at: [<ffffffff8103dd2d>] task_rq_lock+0x51/0x83
 
-Nevertheless, I'm sorry for this inconvenience.
+This is due to the pagefalut happening while holding the rq->lock, so
+its an artefact of 3).
+
+> 2) WARN() in kernel/sched_fair.c:1001 hrtick_start_fair()
+
+Worrying, but probably due to the same problem as 3)
+
+> 3) NULL pointer dereference at 0000000000000168 in check_preempt_wakeup
+>       kernel/sched_fair.c
+
+Right, hard to tell where exactly it goes bang, but could you please try
+reverting the below patch.
+
+What I suspect happens is that we his the task_cpu(p)==cpu case, we then
+don't do __set_task_cpu()->set_task_rq(), which sets the group
+scheduling pointers (you seem to have cgroup scheduling enabled).
+
+If those pointers are wild all kinds of interesting bits can happen,
+including 3) and possibly 2).
+
+If this revert doesn't help, could you please also provide the output of
+addr2line -e vmlinux <FAULT_IP> ?
+
+---
+commit 738d2be4301007f054541c5c4bf7fb6a361c9b3a
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Wed Dec 16 18:04:42 2009 +0100
+
+    sched: Simplify set_task_cpu()
+    
+    Rearrange code a bit now that its a simpler function.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Cc: Mike Galbraith <efault@gmx.de>
+    LKML-Reference: <20091216170518.269101883@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f92ce63..8a2bfd3 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2034,11 +2034,8 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
+ 	return delta < (s64)sysctl_sched_migration_cost;
+ }
+ 
+-
+ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+ {
+-	int old_cpu = task_cpu(p);
+-
+ #ifdef CONFIG_SCHED_DEBUG
+ 	/*
+ 	 * We should never call set_task_cpu() on a blocked task,
+@@ -2049,11 +2046,11 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+ 
+ 	trace_sched_migrate_task(p, new_cpu);
+ 
+-	if (old_cpu != new_cpu) {
+-		p->se.nr_migrations++;
+-		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS,
+-				     1, 1, NULL, 0);
+-	}
++	if (task_cpu(p) == new_cpu)
++		return;
++
++	p->se.nr_migrations++;
++	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
+ 
+ 	__set_task_cpu(p, new_cpu);
+ }
 
 
-Peter
