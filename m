@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbZLVAp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbZLVAsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbZLVAp2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 19:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZLVAp0
+	id S1751658AbZLVAsL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 19:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZLVAsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 19:45:26 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:64929 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752070AbZLVAp0 (ORCPT
+	Mon, 21 Dec 2009 19:48:09 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:60899 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZLVAsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 19:45:26 -0500
+	Mon, 21 Dec 2009 19:48:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:from:date:x-google-sender-auth:message-id
-         :subject:to:content-type;
-        b=EPyPSc63tOsD8P5B7uxfmVC/iBethQq9A9n/ku5d7wiXfR23ey1SweKpTPIU4HLo2H
-         QZIzeqhAAbz7v3O9TxcuWM7S1n9ZEAfcYJxMCRNbWcVGB/67Z9BVU+lsYyzk275DfQxi
-         Fr6+f0DRbAY8nGMdt6ZX4DZMJbt4GxLCMABOU=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=GLRJzL9vyC0qd1+VjahPLfvoHyzD0HbaCmYbwaTwNxkTXjLl0+UH/fU09YUT5P2/3Q
+         I7RMe44eGDFb8FqV7BXO8TyTmP29M1Ds0HDuJGUDix16J80zBeWjVX66Q0d9UeBdErcZ
+         vceszTQPWlnQljGmRoqt0VXdfgDB81zhT4w9s=
+Message-ID: <4B301744.2010404@gmail.com>
+Date: Mon, 21 Dec 2009 18:48:04 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-From: Andrew Lutomirski <luto@mit.edu>
-Date: Mon, 21 Dec 2009 19:45:03 -0500
-X-Google-Sender-Auth: 693e0278512ba172
-Message-ID: <cb0375e10912211645w1fecfafcj8f1c0ab9ce23b077@mail.gmail.com>
-Subject: [2.6.33-rc1 regression] suspend doesn't work on X200s
-To: linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Shawn Starr <shawn.starr@rogers.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.33-rc1] System timer flooding bus on Lenovo Thinkpad W500
+ laptop in x86_64
+References: <200912211312.52769.shawn.starr@rogers.com>
+In-Reply-To: <200912211312.52769.shawn.starr@rogers.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all-
+On 12/21/2009 12:12 PM, Shawn Starr wrote:
+> Hello kernel devs,
+>
+> I am noticing a serious problem with the system timer flooding the bus with
+> many interrupts for no reason. I have compiled the kernel with tickless
+> enabled.
+>
+> Can someone provide me some debugging to find out why this is happening?
+>
+> As a comparsion my quad core box has no such issue: (Running 2.6.32-rc7)
+> x86_64
+>    0:         42          4          1          1   IO-APIC-edge      timer
 
-On Linus's tree from yesterday (2.6.33-rc1 plus a bit, I think) with
-drm-next patched in, I can't suspend.  My sleep light starts blinking
-(userspace does that, I think) and the screen goes blank, then the
-caps lock and num lock lights blink once (this is supposed to happen
-when suspending), and then the system freezes hard with the fan and
-backlight still on and the suspend light still blinking.
+That's not really a fair comparison, that box is likely using the APIC 
+timer (which will be on a different line) instead of the PC timer. Those 
+48 interrupts likely all occurred just after boot.
 
-I'm pretty sure this has nothing to do with drm changes, since I can
-suspend fine on 2.6.32.1 with include/drm and drivers/drm copied from
-the broken 2.6.33-rc1 + drm-next tree.
+>
+> my Lenovo ThinkPad W500 (latest BIOS 3.11) laptop shows the system timer
+> flooding the bus (Running 2.6.33-rc1) x86_64
+>   0:      66775      70429   IO-APIC-edge      timer<-- keeps rising, rapidly
+>
+> and  afew minutes ...
+>
+>   0:     119849     124505   IO-APIC-edge      timer
+>
+> Same for Rescheduling interrupts rising just as fast with the timer.
+>
+> This does not look right, powertop shows:
+>
+> 40.0% ( 62.1)<kernel IPI>  : Rescheduling interrupts
+> 22.9% ( 35.6)<interrupt>  : extra timer interrupt
+> 17.0% ( 26.4)<interrupt>  : iwlagn
+>
+> and another sample...
+>
+>    54.6% (144.8)<kernel IPI>  : Rescheduling interrupts
+>    14.6% ( 38.8)<interrupt>  : extra timer interrupt
+>     8.5% ( 22.6)<interrupt>  : iwlagn
+>     6.5% ( 17.2)<interrupt>  : uhci_hcd:usb6, radeon@pci:0000:01:00.0
+>     6.5% ( 17.2)   USB device  6-1 : Microsoft Basic Optical Mouse v2.0
+> (Microsoft )
+>
+> There is no cause for the rescheduling interrupts and extra timer interrupt to
+> wakeup the CPUs so much? Are there any timer issues?
 
-Thanks,
-Andy
+Can you post full dmesg and /proc/interrupts output?
