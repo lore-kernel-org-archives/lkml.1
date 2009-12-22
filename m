@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751632AbZLVFSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZLVGAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751632AbZLVFSK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 00:18:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZLVFSI
+	id S1751930AbZLVGAj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 01:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZLVGAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 00:18:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59034 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbZLVFSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 00:18:07 -0500
-Message-ID: <4B305680.4090304@cn.fujitsu.com>
-Date: Tue, 22 Dec 2009 13:17:52 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 22 Dec 2009 01:00:39 -0500
+Received: from kroah.org ([198.145.64.141]:37203 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751285AbZLVGAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 01:00:38 -0500
+Date: Mon, 21 Dec 2009 21:31:55 -0800
+From: Greg KH <greg@kroah.com>
+To: Milan Broz <mbroz@redhat.com>
+Cc: Alasdair G Kergon <agk@redhat.com>, Zdenek Kabelac <zkabelac@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: dm: sysfs add empty release function to avoid
+	debug warning
+Message-ID: <20091222053155.GA16888@kroah.com>
+References: <200912151735.nBFHZ8XP018683@hera.kernel.org> <20091216004739.GB4898@kroah.com> <4B28AC09.2000302@redhat.com> <20091216134538.GA20857@kroah.com> <4B290B95.10306@redhat.com> <20091216174632.GA12473@kroah.com> <4B29299B.5080704@redhat.com> <20091217003021.GB3512@kroah.com> <4B2A518B.1030800@redhat.com>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: Fix lockdep warning in global_clock()
-References: <4B2F1543.8020300@cn.fujitsu.com>	 <20091221064356.GA2378@elte.hu>  <4B2F2588.8070501@cn.fujitsu.com>	 <1261406427.4314.155.camel@laptop> <1261410984.25193.8.camel@gandalf.stny.rr.com>
-In-Reply-To: <1261410984.25193.8.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B2A518B.1030800@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Mon, 2009-12-21 at 15:40 +0100, Peter Zijlstra wrote:
->> On Mon, 2009-12-21 at 15:36 +0800, Li Zefan wrote:
->>
->>> +++ b/kernel/sched_clock.c
->>> @@ -250,9 +250,9 @@ unsigned long long cpu_clock(int cpu)
->>>         unsigned long long clock;
->>>         unsigned long flags;
->>>
->>> -       raw_local_irq_save(flags);
->>> +       local_irq_save(flags);
->>>         clock = sched_clock_cpu(cpu);
->>> -       raw_local_irq_restore(flags);
->>> +       local_irq_restore(flags);
->>>
->>>         return clock;
->>>  }
->>> ===============================================
->>>
->>> I guess it's still true that lower level functions can take locks?
->> No, I removed the locks from cpu_clock a while back.
->>
+On Thu, Dec 17, 2009 at 04:43:07PM +0100, Milan Broz wrote:
+> On 12/17/2009 01:30 AM, Greg KH wrote:
+> > On Wed, Dec 16, 2009 at 07:40:27PM +0100, Milan Broz wrote:
+> >> On 12/16/2009 06:46 PM, Greg KH wrote:
+> >>> You will find that all of these are modules, right?  That's being worked
+> >>> on still.
+> >>
+> >> probably. I see that this implementation is in kernel since import to git...
+> > 
+> > And you will also note that I didn't paper over the issue by trying to
+> > provide an empty release function :)
 > 
-> The problem isn't with locks, it's with disabling interrupts. Lockdep
-> keeps track of every time interrupts are disabled. If something disables
-> interrupts with raw_* but then calls something that disables interrupts
-> the normal way, lockdep will detect that interrupts are being disabled
-> but they already are disabled. The internal irq disabled variable in
-> lockdep wont match reality, and this will blow up (well, disable
-> lockdep).
-> 
-> So if cpu_clock disables interrupts with local_irq_* then so must
-> trace_clock_global.
-> 
+> Alasdair, can we request revert of that last patch for now
+> (which introduced the empty release function)?
 
-Looking into sched_clock.c, seems the only place that can trigger lockdep
-is the local_irq_* in cpu_clock(), though I'm not sure for architecture-
-specific sched_clock().
+Ping?  Any word on the revert?
 
-If so, I think we can use raw_local_irq_* in cpu_clock(). Actually I
-tried it and the warning is gone.
+thanks,
 
+greg k-h
