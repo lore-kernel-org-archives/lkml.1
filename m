@@ -1,38 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZLVIod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbZLVIpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbZLVIod (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 03:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZLVIob
+	id S1752606AbZLVIpI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 03:45:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbZLVIpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 03:44:31 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:57480 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbZLVIo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 03:44:29 -0500
-Date: Tue, 22 Dec 2009 03:43:56 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Alex Chiang <achiang@hp.com>
-Cc: venkatesh.pallipadi@intel.com, linux-acpi@vger.kernel.org,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/11] ACPI: early _PDC eval and unify x86/ia64
-In-reply-to: <20091220190434.4274.67855.stgit@bob.kio>
-Message-id: <alpine.LFD.2.00.0912220343140.7435@localhost.localdomain>
-References: <20091220190434.4274.67855.stgit@bob.kio>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Dec 2009 03:45:05 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43141 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751591AbZLVIpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 03:45:02 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX19cYHZBW3NcZH5Rjta1mtqoSdC75H9T8CulWYY3Hf
+	7vn+0s4ukd5ohb
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: Jiri Kosina <trivial@kernel.org>
+Subject: add __init/__exit macros patches
+Date: Tue, 22 Dec 2009 09:45:02 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912220945.03034.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.84
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-entire series applied to acpi-test
+Hi,
+sorry I somehow messed up the order /  subject numbers for the patches,
+however as it not really necessary to apply them in a special order, it should 
+not cause any problems.
 
-nice cleanup, Alex.
-Unless Venki knows of something I don't about upcoming PDC-foo,
-I think it will stick.
+Nevertheless, I'm sorry for this inconvenience.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
 
+Peter
