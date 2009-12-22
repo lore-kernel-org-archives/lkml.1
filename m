@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbZLVPAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbZLVPH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbZLVPAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 10:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbZLVPAu
+	id S1753407AbZLVPH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 10:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZLVPHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 10:00:50 -0500
-Received: from k66.ru ([87.224.128.21]:55017 "EHLO k66.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043AbZLVPAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 10:00:49 -0500
-Date: Tue, 22 Dec 2009 20:00:45 +0500
-From: Andrey Rahmatullin <wrar@altlinux.org>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, Roger Luethi <rl@hellgate.ch>,
-       netdev@vger.kernel.org
-Subject: Re: via_rhine kernel crashes in 2.6.32
-Message-ID: <20091222150045.GA5355@wrars-comp.wrarsdomain>
-References: <alpine.DEB.2.01.0912211040100.3483@bogon.housecafe.de>
- <20091222123211.GA8546@ff.dom.local>
- <20091222132107.GA9060@ff.dom.local>
- <20091222133817.GA9208@ff.dom.local>
+	Tue, 22 Dec 2009 10:07:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:27908 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752899AbZLVPHY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 10:07:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=oolKkmGKqGjc7A8gHnQ1sov4MtVv48teK6NF1nxG8AIWhErE/6yO4IAkE6xkGzPZHL
+         h/kZnpy9Vg4MqdRAqmIvbYveoe+8PGraN/QVC6OTOiWypD2L0t+NOW+inePp1KaVM3R8
+         ayBLwqKH1JfZTjeRUXg9Nvbs2SA0IhaDgQHn8=
+Message-ID: <4B30E09E.7080200@gmail.com>
+Date: Tue, 22 Dec 2009 16:07:10 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-13.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
-Content-Disposition: inline
-In-Reply-To: <20091222133817.GA9208@ff.dom.local>
-X-Operating-System: ALT Linux Sisyphus
-X-Jabber-Id: wrar@altlinux.org
-User-Agent: Mutt/1.5.20 (2009-06-23)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: linux-next: manual merge of the limits tree with the  tree
+References: <20091219094616.744fc1c1.sfr@canb.auug.org.au>
+In-Reply-To: <20091219094616.744fc1c1.sfr@canb.auug.org.au>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/18/2009 11:46 PM, Stephen Rothwell wrote:
+> Today's linux-next merge of the limits tree got a conflict in fs/exec.c
+> between commit f6151dfea21496d43dbaba32cfcd9c9f404769bc ("mm: introduce
+> coredump parameter structure") from the  tree and commit
+> 1157605c47673fc63b052df4688697695a9873d5 ("FS: use helpers for rlimits")
+> from the limits tree.
+> 
+> I fixed it up (see below - thanks Andrew) and can carry the fix for a
+> while.
 
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks, I fixed that in my tree and pushed now.
 
-On Tue, Dec 22, 2009 at 01:38:17PM +0000, Jarek Poplawski wrote:
-> > > It looks like napi_disable() should be illegal in ndo_tx_timeout().
-> > > Here is a patch which moves most of the timeout work to a workqueue,
-> > > similarly to tg3 etc. It should prevent at least one of reported
-> > > bugs. Alas I can't even check-compile it at the moment, so let me
-> > > know on any problems.
-> > It seems I needlessly changed locking btw, so here it is again.
-> Hmm... On the other hand, it definitely needs at least _bh now...
-I've tried this patch. There are lots of "Transmit timed out", but no
-crashes.
-
---=20
-WBR, wRAR (ALT Linux Team)
-
---x+6KMIRAuhnl3hBn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBCAAGBQJLMN8dAAoJEOih81koZvPBXWsH/3GW7Zv6RDRLKyxr1DOgCXQP
-9Wpgs+7hd40xhTuSAYgoXPf/7MCIlhOcooCQP7EDLSEWrLGqhO2I+gKcXRVJLrlh
-ohY9vI3xDQMFXHlo16h9qiwYZ2JXG53jBftdQacjvhIJuMB1N4Y4uRIhrLG2Ri9M
-YqyNH59gqGEULrYnAzDJkqpi4wxx9N10cz/tPjYv1FssjIZZ4AaFgqC4ZitzQU1E
-EZRrWhI8ITOU2XEcyqe2g9URwNs0YOG+qw0l+z2FLqB1qqix1KparMruInikJiBS
-RYHTfWGd5MYsck672LWrDzX899Ln9kwU5YGtQAJ3UEL7LAtxBd7V90eBhwNJnQo=
-=zAut
------END PGP SIGNATURE-----
-
---x+6KMIRAuhnl3hBn--
+-- 
+js
