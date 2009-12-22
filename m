@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752426AbZLVAja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZLVAjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752426AbZLVAja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 19:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZLVAja
+	id S1752840AbZLVAjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 19:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZLVAjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 19:39:30 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:36375 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751381AbZLVAj3 (ORCPT
+	Mon, 21 Dec 2009 19:39:37 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:45621 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752438AbZLVAje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 19:39:29 -0500
-Subject: [PATCH] m68knommu: Fix invalid flags on coldfire pit clocksource
-From: john stultz <johnstul@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Ungerer <gerg@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven King <sfking@fdwdc.com>
-In-Reply-To: <200912181920.12905.sfking@fdwdc.com>
-References: <200912181813.44220.sfking@fdwdc.com>
-	 <1f1b08da0912181844u4f7e66a7ue30287208d075327@mail.gmail.com>
-	 <200912181920.12905.sfking@fdwdc.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 21 Dec 2009 16:39:18 -0800
-Message-ID: <1261442358.5293.50.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Dec 2009 19:39:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=jQHs2sw0c2hbKP/+563lb+cIkQ50C88+OEdbwtXpBu38CP4WOaWD250Pv/8D8x9hhR
+         6veTn0XZZASwcfHO7zYwK5YDzSIR9rvkQwYTZuwBh2cKhbLGjvI3HB59/JL7apfwAT7d
+         dbJLUL8Z4LjzUqKk+J6ucXuwmxjnAHOI3/n1Y=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.1.10.0912211926100.19919@dr-wily.mit.edu>
+References: <2b41c200912211621p72eceed5tb9f9711b2f96b72e@mail.gmail.com>
+	 <alpine.DEB.1.10.0912211926100.19919@dr-wily.mit.edu>
+Date: Tue, 22 Dec 2009 01:39:31 +0100
+Message-ID: <2b41c200912211639p30927d84k9253ac7c90ac0e68@mail.gmail.com>
+Subject: Re: [REGRESSION] um: CONFIG_STATIC_LINK=y broken
+From: richard -rw- weinberger <richard.weinberger@gmail.com>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just re-sending this in case it was missed. Steven tested this and it
-seems to be the right fix. Should be 2.6.33 material.
+This is the bad changeset:
 
-thanks
--john
+diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
+index 2ebd397..e7a6cca 100644
+--- a/arch/um/kernel/uml.lds.S
++++ b/arch/um/kernel/uml.lds.S
+@@ -22,11 +22,7 @@ SECTIONS
+   _text = .;
+   _stext = .;
+   __init_begin = .;
+-  .init.text : {
+- _sinittext = .;
+- INIT_TEXT
+- _einittext = .;
+-  }
++  INIT_TEXT_SECTION(PAGE_SIZE)
+   . = ALIGN(PAGE_SIZE);
 
+   .text      :
 
-
-The m68knommu coldfire pit clocksource looks like it was incorrectly
-marked as a continuous clocksource. Running with it marked as a
-continuous clocksource could cause hangs when the system switches to
-highres mode or enables nohz.
-
-This patch removes the CLOCK_SOURCE_IS_CONTINUOUS flag on the coldfire
-pit clocksource. This will disallow systems using this clocksource from
-entering oneshot mode (disabling highres timers and nohz).
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
----
-
-diff --git a/arch/m68knommu/platform/coldfire/pit.c b/arch/m68knommu/platform/coldfire/pit.c
-index d8720ee..aebea19 100644
---- a/arch/m68knommu/platform/coldfire/pit.c
-+++ b/arch/m68knommu/platform/coldfire/pit.c
-@@ -146,7 +146,6 @@ static struct clocksource pit_clk = {
- 	.read	= pit_read_clk,
- 	.shift	= 20,
- 	.mask	= CLOCKSOURCE_MASK(32),
--	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
- };
- 
- /***************************************************************************/
-
-
-
+//richard
+2009/12/22, Tim Abbott <tabbott@ksplice.com>:
+> The individual chunks of that patch are all independent; could you
+> determine which one of the changes causes the problem?
+>
+> 	-Tim Abbott
+>
+> On Tue, 22 Dec 2009, richard -rw- weinberger wrote:
+>
+>> Hi,
+>>
+>> CONFIG_STATIC_LINK=y is broken since 2.6.32.
+>> The linux binary segfaults immediately.
+>>
+>> This patch introduced the regression (bisected):
+>> 5d150a97f9391f5bcd7ba0d59d7a11c3de3cea80 is first bad commit
+>> commit 5d150a97f9391f5bcd7ba0d59d7a11c3de3cea80
+>> Author: Tim Abbott <tabbott@ksplice.com>
+>> Date:   Thu Sep 24 10:36:20 2009 -0400
+>>
+>>     um: Clean up linker script using standard macros.
+>>
+>>     Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+>>     Cc: Jeff Dike <jdike@addtoit.com>
+>>     Cc: user-mode-linux-devel@lists.sourceforge.net
+>>     Acked-by: Sam Ravnborg <sam@ravnborg.org>
+>>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+>>
+>> :040000 040000 43c1b7afe756beb0dc5073195916d54ac41e7546
+>> fe33dda7c1b15c61a6a65195cc6522beb25e7ba2 M      arch
+>>
+>> Cheers,
+>> //richard
+>>
+>
