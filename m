@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZLUX6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbZLUX6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940AbZLUX6F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Dec 2009 18:58:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZLUX6B
+	id S1751916AbZLUX6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Dec 2009 18:58:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZLUX6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Dec 2009 18:58:01 -0500
-Received: from wolff.to ([65.117.131.163]:55739 "HELO wolff.to"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751653AbZLUX6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Dec 2009 18:58:00 -0500
-Date: Mon, 21 Dec 2009 17:56:04 -0600
-From: Bruno Wolff III <bruno@wolff.to>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: Re: [PATCH 0/9] Squashfs: Add support for LZMA compressed filesystems
-Message-ID: <20091221235604.GA20459@wolff.to>
-References: <E1NHZ6K-00029J-Sw@dylan.lougher.demon.co.uk>
- <20091221231645.GA32141@wolff.to>
- <4B300912.5060905@lougher.demon.co.uk>
+	Mon, 21 Dec 2009 18:58:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48602 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751162AbZLUX6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Dec 2009 18:58:44 -0500
+Message-ID: <4B300C01.8080904@kernel.org>
+Date: Tue, 22 Dec 2009 09:00:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B300912.5060905@lougher.demon.co.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       Peter Zijlstra <peterz@infradead.org>, torvalds@linux-foundation.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net
+Subject: Re: workqueue thing
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box> <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk> <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org> <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org> <4B2F9212.3000407@linux.intel.com>
+In-Reply-To: <4B2F9212.3000407@linux.intel.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 23:47:30 +0000,
-  Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-> Bruno Wolff III wrote:
-> >On Mon, Dec 07, 2009 at 08:37:48 +0000,
-> >  Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-> >>Hi,
-> >>
-> >>The following patches add LZMA decompression support to Squashfs, using the
-> >>in-kernel LZMA decompression library.
-> >
-> >Do these still have a chance to make 2.6.33?
-> >
-> 
-> It's very unlikely.  Andrew wanted it to spend a cycle in linux-next.  I'll then
-> try for 2.6.34 merge.  I'm happy with that.
+Hello,
 
-I hadn't seen it show up there yet either. But maybe its a bit too early
-for that. If it gets there I might have a chance of convincing one of
-the Fedora kernel guys of back porting it, since F13 is likely to be released
-with the 2,6,34 kernel in any case. (Along with some actual numbers for
-our live iso images to show it's important to have. But I can get those
-using the devel version of squashfs without the kernel changes.)
-I'll keep an eye out for it showing up in linux-next. Thanks for the update.
+On 12/22/2009 12:19 AM, Arjan van de Ven wrote:
+> On 12/21/2009 15:19, Tejun Heo wrote:
+>>
+>> Ah... okay, there are two aspects cmwq invovles the scheduler.
+>>
+>> A. Concurrency management.  This is achieved by the scheduler
+>>     callbacks which watches how many workers are working.
+>>
+>> B. Deadlock avoidance.  This requires migrating rescuers to CPUs under
+>>     allocation distress.  The problem here is that
+>>     set_cpus_allowed_ptr() doesn't allow migrating tasks to CPUs which
+>>     are online but !active (CPU_DOWN_PREPARE).
+> 
+> why would you get involved in what-runs-where at all? Wouldn't the
+> scheduler load balancer be a useful thing ? ;-)
+
+That's the way workqueues have been designed and used because its
+primary purpose is to supply sleepable context and for that crossing
+cpu boundaries is unnecessary overhead, so many of its users wouldn't
+benefit from load balancing and some of them assume strong CPU
+affinity.  cmwq's goal is to improve workqueues.  If you want to
+implement something which would take advantage of processing
+parallelism, it would need to be a separate mechanism (which may share
+the API via out-of-range CPU affinty or something but still a separate
+mechanism).
+
+>> For A, it's far more efficient and robust with scheduler callbacks.
+>> It's conceptually pretty simple too.
+> 
+> Assuming you don't get tasks that do lots of cpu intense work and
+> that need to get preempted etc...like raid5/6 sync but also the
+> btrfs checksumming etc etc.  That to me is the weak spot of the
+> scheduler callback thing. We already have a whole thing that knows
+> how to load balance and preempt tasks... it's called "scheduler".
+> Let the scheduler do its job and just give it insight in the work
+> (by having a runnable thread)
+
+Yeah, sure, it's not suited for offloading CPU intensive workloads
+(checksumming and encryption basically).  Workqueue interface was
+never meant to be used by them - it has strong cpu affinity.  We need
+something which is more parallelism aware for those.
+
+Thanks.
+
+-- 
+tejun
