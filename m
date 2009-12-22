@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZLVOn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZLVOs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbZLVOn7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 09:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZLVOn6
+	id S1753425AbZLVOs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 09:48:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZLVOs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 09:43:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56448 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbZLVOn6 (ORCPT
+	Tue, 22 Dec 2009 09:48:56 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56320 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbZLVOs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 09:43:58 -0500
-Subject: [PATCH] sched: Revert 738d2be, Simplify set_task_cpu()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, efault@gmx.de
-In-Reply-To: <1261463382.2923.1.camel@localhost>
-References: <1261441037.3273.254.camel@localhost>
-	 <1261471720.4937.9.camel@laptop>  <1261463382.2923.1.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 22 Dec 2009 15:43:19 +0100
-Message-ID: <1261492999.4937.36.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 09:48:56 -0500
+Date: Tue, 22 Dec 2009 14:48:51 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: liu weni <qingshenlwy@gmail.com>
+Cc: chris.mason@oracle.com, joel.becker@oracle.com, cjb@laptop.org,
+       jmorris@namei.org, linux-btrfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, onlyflyer@gmail.com, strongzgy@gmail.com
+Subject: Re: [PATCHv2 02/12]posix_acl: Add the check items
+Message-ID: <20091222144851.GS18217@ZenIV.linux.org.uk>
+References: <4B2F619A.8000407@gmail.com> <20091222120803.GR18217@ZenIV.linux.org.uk> <b3657a100912220631n4d69ea66x23c1296e1abc468a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b3657a100912220631n4d69ea66x23c1296e1abc468a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ and now with Subject ]
+On Tue, Dec 22, 2009 at 10:31:38PM +0800, liu weni wrote:
+> Hi All:
+> 
+>     I'm sorry for my stupid. I am crazy for fixing this bug.
+> And make so much mistake.
 
-Effectively reverts 738d2be4301007f054541c5c4bf7fb6a361c9b3a.
+Welcome to the club.  It's OK, _everyone_ around here had done that.
+Many times.
 
-As demonstrated by Eric, we really need to call __set_task_cpu() early
-in the fork() path to properly initialize the various task state --
-specifically the cgroup state through set_task_rq().
-
-[ we could probably fix this by explicitly calling __set_task_cpu() from
-  sched_fork(), but lets try that for the next cycle and simply revert
-  to the old behaviour for now. ]
-
-Reported-by: Eric Paris <eparis@redhat.com>
-Tested-by: Eric Paris <eparis@redhat.com>, 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2067,11 +2067,10 @@ void set_task_cpu(struct task_struct *p,
+> Maybe I need cool down and think more.
  
- 	trace_sched_migrate_task(p, new_cpu);
- 
--	if (task_cpu(p) == new_cpu)
--		return;
--
--	p->se.nr_migrations++;
--	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
-+	if (task_cpu(p) != new_cpu) {
-+		p->se.nr_migrations++;
-+		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
-+	}
- 
- 	__set_task_cpu(p, new_cpu);
- }
-
-
-
+Always a good advice, but in this case it's a bit more specific - if you
+see that you are modifying behaviour for some arguments, figure out what
+would lead to such arguments and see if that behaviour is intentional ;-)
+And if after that you are still not sure whether it's a bug or not, ask the
+people involved what the hell had they intended to happen in such-and-such
+case (often enough that'll bring variants of "nice catch" - bugs *do* happen).
