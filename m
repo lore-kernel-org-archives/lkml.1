@@ -1,202 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZLWAPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbZLWAUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbZLWAPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 19:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZLWAPP
+	id S1751828AbZLWAUW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 19:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZLWAUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 19:15:15 -0500
-Received: from mga02.intel.com ([134.134.136.20]:2846 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZLWAPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 19:15:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,439,1257148800"; 
-   d="scan'208";a="478482351"
-Subject: Re: [patch 1/2] sched: Change the nohz ilb logic from pull to push
- model
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-In-Reply-To: <1261397595.4314.72.camel@laptop>
-References: <20091211012748.267627000@intel.com>
-	 <20091211013056.305998000@intel.com>  <1261397595.4314.72.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 22 Dec 2009 16:15:12 -0800
-Message-Id: <1261527312.16916.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Dec 2009 19:20:22 -0500
+Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:44780 "EHLO
+	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbZLWAUV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 19:20:21 -0500
+From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [Oops] 2.6.33-rc1: kernel NULL pointer dereference in check_preempt_wakeup
+Date: Wed, 23 Dec 2009 01:20:14 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.32.2; KDE/4.3.85; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200912230120.15519.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-21 at 04:13 -0800, Peter Zijlstra wrote:
-> On Thu, 2009-12-10 at 17:27 -0800, venkatesh.pallipadi@intel.com wrote:
-> 
-> > @@ -4507,12 +4507,45 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
-> >  }
-> >  
-> >  #ifdef CONFIG_NO_HZ
-> > +
-> > +/*
-> > + * idle load balancing details
-> > + * - One of the idle CPUs nominates itself as idle load_balancer, while
-> > + *   entering idle.
-> > + * - With previous logic, this idle load balancer CPU will not go into
-> > + *   tickless mode when it is idle and does the idle load balancing for
-> > + *   all the idle CPUs.
-> > + * - With new logic, this idle load balancer CPU will also go into
-> > + *   tickless mode when it is idle, just like all other idle CPUs
-> > + * - When one of the busy CPUs notice that there may be an idle rebalancing
-> > + *   needed, they will kick the idle load balancer, which then does idle
-> > + *   load balancing for all the idle CPUs.
-> > + * - As idle load balancing looks at the load of all the CPUs, not all busy
-> > + *   CPUs need to do this idle load balancer kick.
-> > + * - first_pick_cpu is the one of the busy CPUs which will kick
-> > + *   idle load balancer when it has more than one process active. This
-> > + *   eliminates the need for idle load balancing altogether when we have
-> > + *   only one running process in the system (common case).
-> > + * - If there are more than one busy CPU, idle load balancer may have
-> > + *   to run for active_load_balance to happen (i.e., two busy CPUs are
-> > + *   SMT or core siblings and can run better if they move to different
-> > + *   physical CPUs). So, second_pick_cpu is the second of the busy CPUs
-> > + *   which will kick idle load balancer as soon as it has any load.
-> > + * - With previous logic, idle load balancer used to run at every tick.
-> > + *   With new logic, idle load balancer tracks the rq->next_balance for all
-> > + *   the idle CPUs and does idle load balancing only when needed.
-> > + */
-> 
-> Right so like said before, this comments needs a rewrite.
+With 2.6.33-rc1 I have random hangs. Even SysRq-Key works, only hard reset. 
+I've had it mostly within X, where I didn't get any messages but one time on 
+console with the following trace:
 
-Agreed. Will change this with patch refresh.
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000090
+IP [<ffffffff810263f1>1 check_preempt_wakeup+0xae/0x14e
+PGD 10efa1067 PUD 11767a067 PMD 0
+Oops: 0000 [#1] SMP
+last sysfs file: /sys/devices/pci0000:00/0000:00:10.3/tempt1_input
+CPU 0
+Pid: 20108, comm: ebuild.sh Not tainted 2.6.33-rc1 #1 TYAN Tiger K8W Dual AMD 
+Opteron, S28755/To Be Filled By O.E.M.
+RIP: 0010:[<ffffffff810263f1>] [<ffffffff810263f1>] check_preempt_wakeup+0xae/0x14e
+RSP: 0018: ffff88006c0e3e50 EFALGS: 000010087
+RAX: ffff880028292420 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: 0000000000000002 RSI: 0000000000000000 RDI: 0000000001200011
+RBP: ffff880105a3eae0 R08: 0000000000000000 R09: 0000000000000001
+R10: 0000000001200011 R11: ffff88011cdd0000 R12: ffff8800282123c0
+R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000004ed0
+FS:  00007f767a6aa700(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000090 CR§: 00000001061a3000 CR4: 00000000000006f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process ebuild.sh (pid: 20108, threadinfo ffff88006c0e2000, task ffff880105a3eae0)
+Stack:
+ ffff8800202123c0 ffff88009734c740 0000000001200011 ffff88009734c740
+<0> 0000000000004ed0 ffffffff8102e329 0000000000000000 0000000000000286
+<0> 00007f767a6aa9d0 0000000000000000 0000000000000000 ffffffff8103042d
+Call Trace:
+ [<ffffffff8102e329>] ?  wake_up_new_task+0x66/0x8f
+ [<ffffffff8103042d>] ? do_fork+0x20f/0x273
+ [<ffffffff810a5a9s>] ? alloc_fd+0x69/10a
+ [<ffffffff8103a953>] ? sigprocmask+0x9f/0xc2
+ [<ffffffff810020d3>] ? stub_clone+0x13/0x20
+ [<ffffffff81001e6b>] ? system_call_fastpath+0x16/0x1b
+Code: 8b 89 88 00 00 00 ff c0 48 85 c9 75 f2 eb 09 40 0b 9b 88 00 00 00 ff ca 39 
+c2 7f f3 eb 09 4d 8b b6 88 00 00 00 ff c8 39 d0 7f f3 <49> 8b 86 90 00 00 00 48 
+39 83 90 00 00 00 75 74 4d 85 f6 75 04
+RIP  [<ffffffff810263f1>] check_preempt_wakeup+0xae/0x14e
+ RSP <ffff88006c0e3e50>
+CR2: 0000000000000090
+---[ end trace f6bafb05b72ae358 ]---
 
-> 
-> >  static struct {
-> >  	atomic_t load_balancer;
-> > -	cpumask_var_t cpu_mask;
-> > -	cpumask_var_t ilb_grp_nohz_mask;
-> > +	atomic_t first_pick_cpu;
-> > +	atomic_t second_pick_cpu;
-> > +	cpumask_var_t idle_cpus_mask;
-> > +	cpumask_var_t tmp_nohz_mask;
-> 
-> I don't mind the rename, but tmp_nohz_mask is a really bad name.
-> 
-> > +	unsigned long next_balance;	/* in jiffy units */
-> >  } nohz ____cacheline_aligned = {
-> >  	.load_balancer = ATOMIC_INIT(-1),
-> > +	.first_pick_cpu = ATOMIC_INIT(-1),
-> > +	.second_pick_cpu = ATOMIC_INIT(-1),
-> >  };
-> >  
-> >  int get_nohz_load_balancer(void)
-> 
-> >  /*
-> > + * Kick a CPU to do the nohz balancing, if it is time for it. We pick the
-> > + * nohz_load_balancer CPU (if there is one) otherwise fallback to any idle
-> > + * CPU (if there is one).
-> > +*/
-> > +static void nohz_balancer_kick(int cpu)
-> > +{
-> > +	int ilb_cpu;
-> > +
-> > +	nohz.next_balance++;
-> > +
-> > +	ilb_cpu = get_nohz_load_balancer();
-> > +	if (ilb_cpu < 0) {
-> > +		ilb_cpu = cpumask_first(nohz.idle_cpus_mask);
-> > +		if (ilb_cpu >= nr_cpu_ids)
-> > +			return;
-> > +	}
-> > +
-> > +	if (!cpu_rq(ilb_cpu)->nohz_balance_kick) {
-> > +		cpu_rq(ilb_cpu)->nohz_balance_kick = 1;
-> > +		resched_cpu(ilb_cpu);
-> > +	}
-> > +	return;
-> > +}
-> 
-> So here you simply send an resched-ipi, which requires the below hack in
-> schedule()?
-> 
-> 
-> > @@ -4673,28 +4722,20 @@ int select_nohz_load_balancer(int stop_tick)
-> >  			if (atomic_cmpxchg(&nohz.load_balancer, cpu, -1) != cpu)
-> >  				BUG();
-> >  
-> > +			return;
-> >  		}
-> >  
-> > +		cpumask_set_cpu(cpu, nohz.idle_cpus_mask);
-> > +		atomic_cmpxchg(&nohz.first_pick_cpu, cpu, -1);
-> > +		atomic_cmpxchg(&nohz.second_pick_cpu, cpu, -1);
-> 
-> If you were to use nr_cpu_ids here instead of -1, you get more
-> consistent code in nohz_balancer_kick().
+Since the system didn't respond anymore, I had captured this with camera and 
+copied by hand. I hope I haven't made any mistakes when copying. The picture 
+wasn't very good.
 
-Yes. Will change.
-
-> 
-> 
-> > +	ret = atomic_cmpxchg(&nohz.first_pick_cpu, -1, cpu);
-> > +	if (ret == -1 || ret == cpu) {
-> > +		atomic_cmpxchg(&nohz.second_pick_cpu, cpu, -1);
-> > +		if (rq->nr_running > 1)
-> > +			return 1;
-> > +	} else {
-> > +		ret = atomic_cmpxchg(&nohz.second_pick_cpu, -1, cpu);
-> > +		if (ret == -1 || ret == cpu) {
-> > +			if (rq->nr_running)
-> > +				return 1;
-> >  		}
-> >  	}
-> 
-> Looked very funny, and took a while to understand why you're doing that,
-> but yeah, I can't see a better way of doing it either.
-> 
-> The comments confused me more than helped me understand it.
-
-This is the least expensive way I could think of. Without dealing with
-cpu_masks. I knew this was not very clean. Thats the reason I had it in
-a separate function, so that we can change it locally if we can find any
-better way to deal with it.
-
-> 
-> > @@ -5446,8 +5490,19 @@ need_resched_nonpreemptible:
-> >  
-> >  	pre_schedule(rq, prev);
-> >  
-> > -	if (unlikely(!rq->nr_running))
-> > +	if (unlikely(!rq->nr_running)) {
-> > +#ifdef CONFIG_NO_HZ
-> > +		if (rq->nohz_balance_kick) {
-> > +			spin_unlock_irq(&rq->lock);
-> > +			nohz_idle_balance(cpu, rq);
-> > +			spin_lock_irq(&rq->lock);
-> > +		} else {
-> > +			idle_balance(cpu, rq);
-> > +		}
-> > +#else
-> >  		idle_balance(cpu, rq);
-> > +#endif
-> > +	}
-> 
-> And I think this is the wrong kind of trade-off, complicating the
-> schedule()/newidle path for nohz idle balancing.
-> 
-> nohz_balancer_kick() seems like the perfect place to use something like
-> send_remote_softirq().
-
-Hmmm. I didn't know send_remote_softirq existed in mainline. I agree
-that doing this outside the common path will be better. Let me try using
-send_remote_softirq and followup on this.
-
-Thanks,
-Venki
-
-
+regards,
+  Johannes
