@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbZLWUqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZLWUsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbZLWUqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 15:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZLWUqQ
+	id S1757005AbZLWUsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 15:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZLWUsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 15:46:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52351 "EHLO ogre.sisk.pl"
+	Wed, 23 Dec 2009 15:48:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52366 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751889AbZLWUqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 15:46:15 -0500
+	id S1752654AbZLWUsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 15:48:04 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [linux-pm] [RFC] Asynchronous suspend/resume - test results
-Date: Wed, 23 Dec 2009 21:46:29 +0100
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFT] Input: speed up suspend/shutdown for PS/2 mice and keyboards
+Date: Wed, 23 Dec 2009 21:48:47 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jslaby@suse.cz>
-References: <200912210140.19713.rjw@sisk.pl> <4B2F22EF.6040500@crca.org.au>
-In-Reply-To: <4B2F22EF.6040500@crca.org.au>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux Input <linux-input@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0912211528550.2643-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912211528550.2643-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912232146.29339.rjw@sisk.pl>
+Message-Id: <200912232148.47172.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 December 2009, Nigel Cunningham wrote:
-> Hi.
+On Monday 21 December 2009, Alan Stern wrote:
+> On Sun, 20 Dec 2009, Dmitry Torokhov wrote:
 > 
-> Rafael J. Wysocki wrote:
-> > I'm not sure what the next step should be at this point.  To me, the picture is
-> > quite clear now, but perhaps we ought to run more tests on some other machines
-> > or something.  Please let me know what you think.
+> > Hi,
+> > 
+> > I am asking everyone to give this patch a try. It is reported to speed
+> > up suspend process, however there is a risk that there are boxes out
+> > there that do require full reset and I would prefer to know that sooner
+> > than later.
 > 
-> Looks great. If you do decide you want other machines tested, I'll
-> happily try the machines around here:
-> 
-> - Dell M1530
-> - Omnibook XE3-GF.
-> - Via LN10000 based Mythtv Box
-> - Desktop machine - Some Intel-based mobo I've forgotten the name of.
+> It works okay on my machine (Intel ICH4).
 
-Yes, that would be useful.  If the results are in agreement with my data at
-http://www.sisk.pl/kernel/data/, we will have a strong support for starting the
-async threads upfront during resume. 
+Likewise on my Toshiba Portege R500 (ICH7).
 
-The patches I used for testing are in the async branch in my tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
-The first of them is
-http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commit;h=91bbe0161cab7efcda5de3dfdf6a93f07314ed58
-and the others are on top of this one (but it will apply on top of the current
-mainline, so I'd suggest to pull the latest Linus' tree and then rebase the
-commits from my async branch on top of it).
-
-The "upfront * async" results were obtained with the full patchset applied.
-The "sync" results where with /sys/power/pm_async = 0 and the "bare async"
-results were with the last two commits reverted.
- 
-> By the way, I haven't forgotten about sending some real patches for
-> swsusp (ie more than just cleanups). I'm just busy with other things and
-> also thinking carefully about what order to do things in.
-
-Great, I hope you're in contact with Jiri Slaby, as he's also been working on
-this.
+[Of course, it also works on my other test boxes, the Wind has ICH7 like the
+Toshiba, and the nx6325 has ATI SB400).
 
 Rafael
