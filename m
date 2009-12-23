@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZLWMOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZLWMU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZLWMOi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 07:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZLWMOg
+	id S1755517AbZLWMU7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 07:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZLWMU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 07:14:36 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56478 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754493AbZLWMOg (ORCPT
+	Wed, 23 Dec 2009 07:20:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43684 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbZLWMU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 07:14:36 -0500
-Date: Wed, 23 Dec 2009 13:14:32 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-Message-ID: <20091223121431.GF20539@basil.fritz.box>
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <20091223101340.GC20539@basil.fritz.box> <4B31EF65.6070000@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B31EF65.6070000@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 23 Dec 2009 07:20:58 -0500
+Subject: Re: SCHED: Is task migration necessary in sched_exec().
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
+References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
+	 <1261563687.4937.120.camel@laptop>
+	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
+	 <1261565584.4937.124.camel@laptop>
+	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
+	 <1261569112.4937.135.camel@laptop>
+	 <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Dec 2009 13:20:34 +0100
+Message-ID: <1261570834.4937.141.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> http://www.redhat.com/f/pdf/summit/cwright_11_open_source_virt.pdf
->
-> See slide 32.  This is without vhost-net.
+On Wed, 2009-12-23 at 18:04 +0600, Rakib Mullick wrote:
+> On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Wed, 2009-12-23 at 17:35 +0600, Rakib Mullick wrote:
+> 
+> >  Do you have a particular workload you worry about or are you merely
+> >  trying to satisfy your curiosity?
+> >
+> No, I don't have any particular workload.
 
-Thanks. Do you also have latency numbers?
+Anyway, look at it this way, suppose you have 4 tasks on 2 cpus, cpu0
+has 3 tasks and cpu1 has 1 task.
 
-It seems like there's definitely still potential for improvement
-with messages <4K. But for the large messages they indeed 
-look rather good.
+The currently running task on cpu0 does exec and gets moved to cpu1,
+even though it gives up time on cpu0, it gains time on cpu1. Because it
+was eligible to 1/3 of cpu0's time, whereas it is eligible to 1/2 of
+cpu1's time.
 
-It's unclear what message size the Alacrity numbers used, but I presume
-it was rather large.
+So its a win, right?
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
