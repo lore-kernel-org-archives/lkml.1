@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbZLWVXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbZLWV0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbZLWVXi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbZLWVVu
+	id S932070AbZLWV0j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZLWVUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:21:50 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45308 "EHLO
+	Wed, 23 Dec 2009 16:20:43 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45106 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756796AbZLWVVo (ORCPT
+	with ESMTP id S1756171AbZLWVUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:21:44 -0500
+	Wed, 23 Dec 2009 16:20:40 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 18/37] kgdb: remove post_primary_code references
-Date: Wed, 23 Dec 2009 15:19:31 -0600
-Message-Id: <1261603190-5036-19-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 19/37] x86,kgdb: Add low level debug hook
+Date: Wed, 23 Dec 2009 15:19:32 -0600
+Message-Id: <1261603190-5036-20-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1261603190-5036-18-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1261603190-5036-19-git-send-email-jason.wessel@windriver.com>
 References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-2-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-3-git-send-email-jason.wessel@windriver.com>
@@ -37,132 +37,153 @@ References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-16-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-17-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-18-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 23 Dec 2009 21:20:17.0911 (UTC) FILETIME=[B9C14070:01CA8415]
+ <1261603190-5036-19-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 23 Dec 2009 21:20:18.0880 (UTC) FILETIME=[BA551C00:01CA8415]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove all the references to the kgdb_post_primary_code.  This
-function serves no useful purpose because you can obtain the same
-information from the "struct kgdb_state *ks" from with in the
-debugger, if for some reason you want the data.
+The only way the debugger can handle a trap in inside rcu_lock,
+notify_die, or atomic_notifier_call_chain without a triple fault is
+to have a low level "first opportunity handler" in the int3 exception
+handler.
 
-Also remove the unintentional duplicate assignment for ks->ex_vector.
+Generally this will be something the vast majority of folks will not
+need, but for those who need it, it is added as a kernel .config
+option called KGDB_LOW_LEVEL_TRAP.
 
+CC: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/x86/kernel/kgdb.c    |   29 -----------------------------
- include/linux/kgdb.h      |   14 --------------
- kernel/debug/debug_core.c |    8 --------
- 3 files changed, 0 insertions(+), 51 deletions(-)
+ arch/x86/include/asm/kgdb.h |    3 +++
+ arch/x86/kernel/kgdb.c      |   22 +++++++++++++++++++++-
+ arch/x86/kernel/traps.c     |    6 ++++++
+ include/linux/kgdb.h        |    1 +
+ kernel/debug/debug_core.c   |    2 +-
+ lib/Kconfig.kgdb            |    9 +++++++++
+ 6 files changed, 41 insertions(+), 2 deletions(-)
 
+diff --git a/arch/x86/include/asm/kgdb.h b/arch/x86/include/asm/kgdb.h
+index e6c6c80..006da36 100644
+--- a/arch/x86/include/asm/kgdb.h
++++ b/arch/x86/include/asm/kgdb.h
+@@ -76,4 +76,7 @@ static inline void arch_kgdb_breakpoint(void)
+ #define BREAK_INSTR_SIZE	1
+ #define CACHE_FLUSH_IS_SAFE	1
+ 
++extern int kgdb_ll_trap(int cmd, const char *str,
++			struct pt_regs *regs, long err, int trap, int sig);
++
+ #endif /* _ASM_X86_KGDB_H */
 diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index 135c3ec..ce35f72 100644
+index ce35f72..f4bf7a5 100644
 --- a/arch/x86/kernel/kgdb.c
 +++ b/arch/x86/kernel/kgdb.c
-@@ -47,20 +47,8 @@
- #include <asm/debugreg.h>
- #include <asm/apicdef.h>
- #include <asm/system.h>
--
- #include <asm/apic.h>
- 
--/*
-- * Put the error code here just in case the user cares:
-- */
--static int gdb_x86errcode;
--
--/*
-- * Likewise, the vector number here (since GDB only gets the signal
-- * number through the usual means, and that's not very specific):
-- */
--static int gdb_x86vector = -1;
--
- /**
-  *	pt_regs_to_gdb_regs - Convert ptrace regs to GDB regs
-  *	@gdb_regs: A pointer to hold the registers in the order GDB wants.
-@@ -346,23 +334,6 @@ void kgdb_disable_hw_debug(struct pt_regs *regs)
+@@ -490,7 +490,7 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+ 			return NOTIFY_DONE;
  	}
+ 
+-	if (kgdb_handle_exception(args->trapnr, args->signr, args->err, regs))
++	if (kgdb_handle_exception(args->trapnr, args->signr, cmd, regs))
+ 		return NOTIFY_DONE;
+ 
+ 	/* Must touch watchdog before return to normal operation */
+@@ -498,6 +498,26 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+ 	return NOTIFY_STOP;
  }
  
--/**
-- *	kgdb_post_primary_code - Save error vector/code numbers.
-- *	@regs: Original pt_regs.
-- *	@e_vector: Original error vector.
-- *	@err_code: Original error code.
-- *
-- *	This is needed on architectures which support SMP and KGDB.
-- *	This function is called after all the slave cpus have been put
-- *	to a know spin state and the primary CPU has control over KGDB.
-- */
--void kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
--{
--	/* primary processor is completely in the debugger */
--	gdb_x86vector = e_vector;
--	gdb_x86errcode = err_code;
--}
--
- #ifdef CONFIG_SMP
- /**
-  *	kgdb_roundup_cpus - Get other CPUs into a holding pattern
++#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
++int kgdb_ll_trap(int cmd, const char *str,
++		 struct pt_regs *regs, long err, int trap, int sig)
++{
++	struct die_args args = {
++		.regs	= regs,
++		.str	= str,
++		.err	= err,
++		.trapnr	= trap,
++		.signr	= sig,
++
++	};
++
++	if (!kgdb_io_module_registered)
++		return NOTIFY_DONE;
++
++	return __kgdb_notify(&args, cmd);
++}
++#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
++
+ static int
+ kgdb_notify(struct notifier_block *self, unsigned long cmd, void *ptr)
+ {
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 3339917..6ae2122 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -15,6 +15,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/kgdb.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/ptrace.h>
+@@ -460,6 +461,11 @@ void restart_nmi(void)
+ /* May run on IST stack. */
+ dotraplinkage void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
++#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
++	if (kgdb_ll_trap(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
++			== NOTIFY_STOP)
++		return;
++#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
+ #ifdef CONFIG_KPROBES
+ 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
+ 			== NOTIFY_STOP)
 diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index b0f5649..97ff1c5 100644
+index 97ff1c5..f46d466 100644
 --- a/include/linux/kgdb.h
 +++ b/include/linux/kgdb.h
-@@ -34,20 +34,6 @@ struct pt_regs;
- extern int kgdb_skipexception(int exception, struct pt_regs *regs);
+@@ -58,6 +58,7 @@ struct uart_port;
+ void kgdb_breakpoint(void);
  
- /**
-- *	kgdb_post_primary_code - (optional) Save error vector/code numbers.
-- *	@regs: Original pt_regs.
-- *	@e_vector: Original error vector.
-- *	@err_code: Original error code.
-- *
-- *	This is usually needed on architectures which support SMP and
-- *	KGDB.  This function is called after all the secondary cpus have
-- *	been put to a know spin state and the primary CPU has control over
-- *	KGDB.
-- */
--extern void kgdb_post_primary_code(struct pt_regs *regs, int e_vector,
--				  int err_code);
--
--/**
-  *	kgdb_disable_hw_debug - (optional) Disable hardware debugging hook
-  *	@regs: Current &struct pt_regs.
-  *
+ extern int kgdb_connected;
++extern int kgdb_io_module_registered;
+ 
+ extern atomic_t			kgdb_setting_breakpoint;
+ extern atomic_t			kgdb_cpu_doing_single_step;
 diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 502e488..6a70e46 100644
+index 6a70e46..06e73e0 100644
 --- a/kernel/debug/debug_core.c
 +++ b/kernel/debug/debug_core.c
-@@ -201,12 +201,6 @@ int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
- 	return 0;
- }
+@@ -65,7 +65,7 @@ int				kgdb_connected;
+ EXPORT_SYMBOL_GPL(kgdb_connected);
  
--void __weak
--kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
--{
--	return;
--}
--
- /**
-  *	kgdb_disable_hw_debug - Disable hardware debugging while we in kgdb.
-  *	@regs: Current &struct pt_regs.
-@@ -584,7 +578,6 @@ return_normal:
- 	 * At this point the primary processor is completely
- 	 * in the debugger and all secondary CPUs are quiescent
- 	 */
--	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
- 	dbg_deactivate_sw_breakpoints();
- 	kgdb_single_step = 0;
- 	kgdb_contthread = current;
-@@ -666,7 +659,6 @@ kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
- 	ks->cpu			= raw_smp_processor_id();
- 	ks->ex_vector		= evector;
- 	ks->signo		= signo;
--	ks->ex_vector		= evector;
- 	ks->err_code		= ecode;
- 	ks->kgdb_usethreadid	= 0;
- 	ks->linux_regs		= regs;
+ /* All the KGDB handlers are installed */
+-static int			kgdb_io_module_registered;
++int			kgdb_io_module_registered;
+ 
+ /* Guard for recursive entry */
+ static int			exception_level;
+diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
+index 0fb633c..2172c69 100644
+--- a/lib/Kconfig.kgdb
++++ b/lib/Kconfig.kgdb
+@@ -57,6 +57,15 @@ config KGDB_TESTS_BOOT_STRING
+ 	  information about other strings you could use beyond the
+ 	  default of V1F100.
+ 
++config KGDB_LOW_LEVEL_TRAP
++       bool "KGDB: Allow debugging with traps in notifiers"
++       depends on X86
++       default n
++       help
++         This will add an extra call back to kgdb for the breakpoint
++         exception handler on which will will allow kgdb to step
++         through a notify handler.
++
+ config KGDB_KDB
+ 	bool "KGDB_KDB: include kdb frontend for kgdb"
+ 	default n
 -- 
 1.6.4.rc1
 
