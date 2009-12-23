@@ -1,91 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbZLWWKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZLWWLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757234AbZLWWKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 17:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZLWWKt
+	id S1757341AbZLWWLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 17:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZLWWLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 17:10:49 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:41449 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755729AbZLWWKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 17:10:48 -0500
-Date: Wed, 23 Dec 2009 17:10:47 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, leoli@freescale.com
-Subject: Re: ucc_geth broken in 2.6.32 by
-	864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
-Message-ID: <20091223221047.GH760@caffeine.csclub.uwaterloo.ca>
-References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca> <20091223180415.GA12987@oksana.dev.rtsoft.ru> <20091223200948.GF760@caffeine.csclub.uwaterloo.ca> <20091223202226.GA8185@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091223202226.GA8185@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 23 Dec 2009 17:11:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50260 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751470AbZLWWLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 17:11:52 -0500
+Date: Thu, 24 Dec 2009 09:11:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: linux-next: manual merge of the acpi tree with Linus' tree
+Message-Id: <20091224091141.fa1cea64.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 11:22:26PM +0300, Anton Vorontsov wrote:
-> On Wed, Dec 23, 2009 at 03:09:48PM -0500, Lennart Sorensen wrote:
-> [...]
-> > So there result is:
-> > 
-> > Unable to handle kernel paging request for data at address 0x00000058
-> > Faulting instruction address: 0xc024f2fc
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > RC8360 CM
-> > Modules linked in: rclibapi xeno_native max6369_wdt ucc_geth_driver spi_mpc8xxx ltc4215 lm75
-> > NIP: c024f2fc LR: e30aa0a4 CTR: c024f2e8
-> > REGS: df857ca0 TRAP: 0300   Not tainted  (2.6.32-trunk-8360e)
-> > MSR: 00009032 <EE,ME,IR,DR>  CR: 44042088  XER: 00000000
-> > DAR: 00000058, DSISR: 20000000
-> > TASK = df848c90[4] 'events/0' THREAD: df856000
-> > GPR00: e30aa0a4 df857d50 df848c90 00000000 00000640 00000001 c0428df4 dfa40b80
-> > GPR08: 000000c8 e30ad2b8 df084360 c024f2e8 44042082 1001af90 e30ad2b8 00000000
-> > GPR16: 00000048 00000001 00000000 00000000 df08436c df08440c 00000190 df08455c
-> > GPR24: df0844ec df0842c0 df084000 180005ea dfa40b80 00000000 df0842c0 00000000
-> > NIP [c024f2fc] skb_recycle_check+0x14/0x100
-> > LR [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> > Call Trace:
-> > [df857d50] [c000b03c] __ipipe_grab_irq+0x3c/0xa4 (unreliable)
-> > [df857d60] [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> 
-> This I can reproduce. It seems it's a long standing bug that
-> becomes easily reproducible with quiesce/activate sequence.
-> The driver doesn't handle empty queue correctly, i.e. it ignores
-> the empty queue check if netdev queue is stopped, which makes no
-> sense.
-> 
-> Can you try this patch in addition to previous (i.e. both should
-> be applied)?
-> 
-> Thanks!
-> 
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index 2f73e3f..b22de51 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -3275,7 +3275,7 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
->  		/* Handle the transmitted buffer and release */
->  		/* the BD to be used with the current frame  */
->  
-> -		if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
-> +		if (bd == ugeth->txBd[txQ]) /* queue empty? */
->  			break;
->  
->  		dev->stats.tx_packets++;
+Hi Len,
 
-That seems to be it.  It works now.  No more crashes.
+Today's linux-next merge of the acpi tree got a conflict in
+drivers/platform/x86/sony-laptop.c between commits
+45465487897a1c6d508b14b904dc5777f7ec7e04 ("kfifo: move struct kfifo in
+place"), c1e13f25674ed564948ecb7dfe5f83e578892896 ("kfifo: move out
+spinlock") and 7acd72eb85f1c7a15e8b5eb554994949241737f1 ("kfifo: rename
+kfifo_put... into kfifo_in... and kfifo_get... into kfifo_out...") from
+Linus' tree and commit a287e9f941cf4bb8c167802c0f1cf04a93bc4e4c
+("sony-laptop: remove private workqueue, use keventd instead") from the
+acpi tree.
 
-Those two patches together seem to do the trick.  I really hope they
-can go into 2.6.32-stable then, since this is a regression over 2.6.31
-and is hopefully an obvious fix.
-
-Now if only my mdio-gpio bitbang one line fix would be accepted.
-
+I fixed it up (see below) and can cay the fix for a while.  This fix
+needs checking.
 -- 
-Len Sorensen
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/platform/x86/sony-laptop.c
+index 2896ca4,51314b4..0000000
+--- a/drivers/platform/x86/sony-laptop.c
++++ b/drivers/platform/x86/sony-laptop.c
+@@@ -142,9 -143,8 +143,8 @@@ struct sony_laptop_input_s 
+  	atomic_t		users;
+  	struct input_dev	*jog_dev;
+  	struct input_dev	*key_dev;
+ -	struct kfifo		*fifo;
+ +	struct kfifo		fifo;
+  	spinlock_t		fifo_lock;
+- 	struct workqueue_struct	*wq;
+  };
+  
+  static struct sony_laptop_input_s sony_laptop_input = {
+@@@ -298,12 -300,12 +300,13 @@@ static int sony_laptop_input_keycode_ma
+  /* release buttons after a short delay if pressed */
+  static void do_sony_laptop_release_key(struct work_struct *work)
+  {
++ 	struct delayed_work *dwork =
++ 			container_of(work, struct delayed_work, work);
+  	struct sony_laptop_keypress kp;
+  
+- 	while (kfifo_out_locked(&sony_laptop_input.fifo, (unsigned char *)&kp,
+ -	if (kfifo_get(sony_laptop_input.fifo,
+ -		      (unsigned char *)&kp, sizeof(kp)) == sizeof(kp)) {
+++	if (kfifo_out_locked(&sony_laptop_input.fifo, (unsigned char *)&kp,
+ +			sizeof(kp), &sony_laptop_input.fifo_lock)
+ +			== sizeof(kp)) {
+- 		msleep(10);
+  		input_report_key(kp.dev, kp.key, 0);
+  		input_sync(kp.dev);
+  	}
+@@@ -363,13 -375,12 +376,14 @@@ static void sony_laptop_report_input_ev
+  		/* we emit the scancode so we can always remap the key */
+  		input_event(kp.dev, EV_MSC, MSC_SCAN, event);
+  		input_sync(kp.dev);
++ 
++ 		/* schedule key release */
+ -		kfifo_put(sony_laptop_input.fifo,
+ -			  (unsigned char *)&kp, sizeof(kp));
+ +		kfifo_in_locked(&sony_laptop_input.fifo,
+ +			  (unsigned char *)&kp, sizeof(kp),
+ +			  &sony_laptop_input.fifo_lock);
+ +
+- 		if (!work_pending(&sony_laptop_release_key_work))
+- 			queue_work(sony_laptop_input.wq,
+- 					&sony_laptop_release_key_work);
++ 		schedule_delayed_work(&sony_laptop_release_key_work,
++ 				      msecs_to_jiffies(10));
+  	} else
+  		dprintk("unknown input event %.2x\n", event);
+  }
+@@@ -470,11 -474,8 +475,8 @@@ err_unregister_keydev
+  err_free_keydev:
+  	input_free_device(key_dev);
+  
+- err_destroy_wq:
+- 	destroy_workqueue(sony_laptop_input.wq);
+- 
+  err_free_kfifo:
+ -	kfifo_free(sony_laptop_input.fifo);
+ +	kfifo_free(&sony_laptop_input.fifo);
+  
+  err_dec_users:
+  	atomic_dec(&sony_laptop_input.users);
+@@@ -499,8 -508,7 +509,7 @@@ static void sony_laptop_remove_input(vo
+  		sony_laptop_input.jog_dev = NULL;
+  	}
+  
+- 	destroy_workqueue(sony_laptop_input.wq);
+ -	kfifo_free(sony_laptop_input.fifo);
+ +	kfifo_free(&sony_laptop_input.fifo);
+  }
+  
+  /*********** Platform Device ***********/
