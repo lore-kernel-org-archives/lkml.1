@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZLWRQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZLWRSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbZLWRQs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZLWRQr
+	id S1755577AbZLWRSQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 12:18:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZLWRSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:16:47 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42906 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754458AbZLWRQq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:16:46 -0500
-Date: Wed, 23 Dec 2009 18:16:43 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mark Hounschell <markh@compro.net>,
-       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-Message-ID: <20091223171643.GJ20539@basil.fritz.box>
-References: <4B310879.9050701@compro.net> <1261525076.16916.4.camel@localhost.localdomain> <4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net> <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com> <4B32386B.2060509@compro.net> <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain> <87bphpd4rt.fsf@basil.nowhere.org> <alpine.LFD.2.00.0912230845550.6879@localhost.localdomain> <6598A4E21F1DB24D80BF72956484F59802EFD2F1@orsmsx001.amr.corp.intel.com>
+	Wed, 23 Dec 2009 12:18:10 -0500
+Received: from kroah.org ([198.145.64.141]:55867 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754731AbZLWRSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 12:18:07 -0500
+Date: Wed, 23 Dec 2009 09:17:31 -0800
+From: Greg KH <greg@kroah.com>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Regression, 2.6.33-rc1->current git] NULL pointer in
+ usb_serial_probe() introduced by the recent kfifo changes
+Message-ID: <20091223171731.GA7535@kroah.com>
+References: <200912230251.31568.rjw@sisk.pl>
+ <20091223053734.GC22808@kroah.com>
+ <1261555848.22729.41.camel@wall-e>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6598A4E21F1DB24D80BF72956484F59802EFD2F1@orsmsx001.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1261555848.22729.41.camel@wall-e>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is what I was thining yday and asked Mark to try idle=halt.
-> This /proc/interrupts is with idle=halt when there should not be any
-> C-states and broadcasts involved.
+On Wed, Dec 23, 2009 at 09:10:48AM +0100, Stefani Seibold wrote:
+> Am Dienstag, den 22.12.2009, 21:37 -0800 schrieb Greg KH:
+> > On Wed, Dec 23, 2009 at 02:51:31AM +0100, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > Something like the patch below is necessary to fix a new NULL pointer deref
+> > > in usb_serial_probe() that appeared after the recent kfifo changes (in short,
+> > > the kfifo changes modified the semantics of kfifo_alloc() that
+> > > usb_serial_probe() reiled on).
+> > 
+> > What semantic changed?  I thought that the kfifo patches came with
+> > patches that also fixed up any changed that were needed.  What went
+> > wrong here?
+> > 
+> 
+> This one is a new user of the kfifo API, so it forget to port it to the
+> new kfifo API.
+> 
+> Please make the write_fifo in place. Here is my patch to fix the
+> regression and full ported version.
 
-Ah ok, missed that sorry.
+Thanks, I'll queue this up and send it to Linus later today.
 
-Actually I'm glad that the floppy-idle hack is not needed again.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+greg k-h
