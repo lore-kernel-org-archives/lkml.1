@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbZLWPEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbZLWPIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbZLWPEJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 10:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZLWPEI
+	id S1756152AbZLWPIO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 10:08:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbZLWPIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 10:04:08 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:41543 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752807AbZLWPED (ORCPT
+	Wed, 23 Dec 2009 10:08:13 -0500
+Received: from mga09.intel.com ([134.134.136.24]:46734 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753858AbZLWPIM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 10:04:03 -0500
-Message-ID: <4B32315C.1000006@codemonkey.ws>
-Date: Wed, 23 Dec 2009 09:03:56 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
+	Wed, 23 Dec 2009 10:08:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,442,1257148800"; 
+   d="scan'208";a="581597924"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Julia Lawall <julia@diku.dk>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <20091223101340.GC20539@basil.fritz.box> <4B31EF65.6070000@redhat.com> <20091223121431.GF20539@basil.fritz.box>
-In-Reply-To: <20091223121431.GF20539@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
+Date: Wed, 23 Dec 2009 15:08:11 +0000
+Subject: RE: [PATCH 2/2] drivers/dma: drop unnecesary memset
+Thread-Topic: [PATCH 2/2] drivers/dma: drop unnecesary memset
+Thread-Index: AcqAfSi/7aiwNhWAQPWxh6yYt8YGbQDZHL0A
+Message-ID: <129600E5E5FB004392DDC3FB599660D7CB370DD6@irsmsx504.ger.corp.intel.com>
+References: <Pine.LNX.4.64.0912190830110.30546@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912190830110.30546@ask.diku.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/2009 06:14 AM, Andi Kleen wrote:
->> http://www.redhat.com/f/pdf/summit/cwright_11_open_source_virt.pdf
->>
->> See slide 32.  This is without vhost-net.
->
-> Thanks. Do you also have latency numbers?
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> memset of 0 is not needed after kzalloc
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression x;
+> statement S;
+> @@
+> 
+> x = kzalloc(...);
+> if (x == NULL) S
+> ... when != x
+> -memset(x,0,...);// </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  drivers/dma/dw_dmac.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff -u -p a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
+> --- a/drivers/dma/dw_dmac.c
+> +++ b/drivers/dma/dw_dmac.c
+> @@ -1270,8 +1270,6 @@ static int __init dw_probe(struct platfo
+>  		goto err_kfree;
+>  	}
+> 
+> -	memset(dw, 0, sizeof *dw);
+> -
+>  	dw->regs = ioremap(io->start, DW_REGLEN);
+>  	if (!dw->regs) {
+>  		err = -ENOMEM;
 
-They'll be along the lines of the vbus numbers.
-
-But I caution people from relying too much on just netperf TCP_RR and 
-TCP_STREAM numbers.  There's a lot of heuristics in play in getting this 
-sort of numbers.  They really aren't good ways to compare different drivers.
-
-A better thing to do is look more deeply at the architectures and 
-consider things like the amount of copying imposed, the cost of 
-processing an exit, and the mechanisms for batching packet transmissions.
-
-The real argument that vbus needs to make IMHO is not "look how much 
-better my netperf TCP_STREAM results are" but "we can eliminate N copies 
-from the transmit path and virtio-net cannot" or "we require N exits to 
-handle a submission and virtio-net requires N+M".
-
-It's too easy to tweak for benchmarks.
-
-Regards,
-
-Anthony Liguori
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
