@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbZLWMwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbZLWMxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbZLWMwg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 07:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZLWMwf
+	id S1755695AbZLWMxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 07:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbZLWMxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 07:52:35 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:64321 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754163AbZLWMwe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 07:52:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=dPRecc5bKHgTlUFsS8Bp7xRS5LkSoyvw8yAUgpONE9hWu3k65xrGEV/hF7AF7px0d6
-         AnoCL4mXb6SYgMhMk6nK/CG4s2LLooOrntNKkTwmR6OuKRRn6Cj3UggD7Ms9fKJyJzJY
-         a/fDVf9HqT5mAKh5FTeAlmmyyC1PZksP8sgPw=
+	Wed, 23 Dec 2009 07:53:37 -0500
+Received: from THUNK.ORG ([69.25.196.29]:47285 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754621AbZLWMxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 07:53:36 -0500
+Date: Wed, 23 Dec 2009 07:53:34 -0500
+From: tytso@mit.edu
+To: Julia Lawall <julia@diku.dk>
+Cc: Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/2] fs/ext4: Eliminate double free
+Message-ID: <20091223125334.GE21594@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Julia Lawall <julia@diku.dk>,
+	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0912201806530.26912@ask.diku.dk>
 MIME-Version: 1.0
-In-Reply-To: <1261570834.4937.141.camel@laptop>
-References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
-	 <1261563687.4937.120.camel@laptop>
-	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
-	 <1261565584.4937.124.camel@laptop>
-	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
-	 <1261569112.4937.135.camel@laptop>
-	 <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
-	 <1261570834.4937.141.camel@laptop>
-Date: Wed, 23 Dec 2009 18:52:34 +0600
-Message-ID: <b9df5fa10912230452q6edac4d3wb837a2e550cc5092@mail.gmail.com>
-Subject: Re: SCHED: Is task migration necessary in sched_exec().
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0912201806530.26912@ask.diku.dk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2009-12-23 at 18:04 +0600, Rakib Mullick wrote:
->  > On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
->  > > On Wed, 2009-12-23 at 17:35 +0600, Rakib Mullick wrote:
->
->  So its a win, right?
->
-Yes - a fair win. But if load balancer moves other tasks from the runqueue
-(2nd or 3rd task from your ex.) and thats how we also can achive 1/2 of cpu1's
-time , right? Those waiting tasks could have effective 0 cache footprint too.
-If they were not run before - right?
->
->
+On Sun, Dec 20, 2009 at 06:07:10PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> b_entry_name and buffer are initially NULL, are initialized within a loop
+> to the result of calling kmalloc, and are freed at the bottom of this loop.
+> The loop contains gotos to cleanup, which also frees b_entry_name and
+> buffer.  Some of these gotos are before the reinitializations of
+> b_entry_name and buffer.  To maintain the invariant that b_entry_name and
+> buffer are NULL at the top of the loop, and thus acceptable arguments to
+> kfree, these variables are now set to NULL after the kfrees.
+> 
+> This seems to be the simplest solution.  A more complicated solution
+> would be to introduce more labels in the error handling code at the end of
+> the function.
+
+Thanks, added to the ext4 patch queue.
+
+						- Ted
