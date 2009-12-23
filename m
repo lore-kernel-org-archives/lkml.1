@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZLWLwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZLWL7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZLWLwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 06:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZLWLwU
+	id S1754674AbZLWL7O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 06:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbZLWL7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 06:52:20 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43003 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbZLWLwU (ORCPT
+	Wed, 23 Dec 2009 06:59:13 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:39126 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750875AbZLWL7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 06:52:20 -0500
-Subject: Re: SCHED: Is task migration necessary in sched_exec().
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
-References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
-	 <1261563687.4937.120.camel@laptop>
-	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
-	 <1261565584.4937.124.camel@laptop>
-	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Dec 2009 12:51:52 +0100
-Message-ID: <1261569112.4937.135.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Dec 2009 06:59:13 -0500
+Date: Wed, 23 Dec 2009 19:59:10 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Youquan,Song" <youquan.song@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
+       chaohong.guo@intel.com, youquan.song@intel.com
+Subject: Re: [Resend PATCH]crypto: Fix complain about lack test for
+	internal used algorithm
+Message-ID: <20091223115909.GA29744@gondor.apana.org.au>
+References: <200912102013.59329.david-b@pacbell.net> <20091211043849.GA18007@suse.de> <1260509771.12346.138.camel@localhost> <20091211132321.GA17228@youquan-linux.bj.intel.com> <20091211060448.GA28704@gondor.apana.org.au> <20091219094043.GA23639@youquan-linux.bj.intel.com> <20091219022917.GA19431@gondor.apana.org.au> <20091219150736.GA5368@youquan-linux.bj.intel.com> <20091219094240.GA21546@gondor.apana.org.au> <20091221103829.GA22144@youquan-linux.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091221103829.GA22144@youquan-linux.bj.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 17:35 +0600, Rakib Mullick wrote:
-> Yes - current heuristics does this - to make sure that it doesn't have to
-> wait too long. It pushes process into another runqueue (probably less loaded)
-> just to make sure that - it will get the CPU a bit quickly. But when a task
-> got the CPU - we should keep it out of equation. The point of moving task
-> is - it have to wait less. At exec current task don't have to wait to get CPU.
+On Mon, Dec 21, 2009 at 05:38:29AM -0500, Youquan,Song wrote:
+> When load aesni-intel and ghash_clmulni-intel driver,kernel will complain no
+>  test for some internal used algorithm.
+> The strange information as following:
+> 
+> alg: No test for __aes-aesni (__driver-aes-aesni)
+> alg: No test for __ecb-aes-aesni (__driver-ecb-aes-aesni)
+> alg: No test for __cbc-aes-aesni (__driver-cbc-aes-aesni)
+> alg: No test for __ecb-aes-aesni (cryptd(__driver-ecb-aes-aesni)
+> alg: No test for __ghash (__ghash-pclmulqdqni)
+> alg: No test for __ghash (cryptd(__ghash-pclmulqdqni))
+> 
+> This patch add NULL test entries for these algorithm and driver.  
+> 
+> Signed-off-by: Youquan, Song <youquan.song@intel.com>
+> Signed-off-by: Ying, Huang <ying.huang@intel.com>
 
-No, moving tasks isn't (primarily) about latency, it is about ensuring a
-fair proportion of service time.
-
-Do you have a particular workload you worry about or are you merely
-trying to satisfy your curiosity?
-
-
+Patch applied.  Thanks a lot!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
