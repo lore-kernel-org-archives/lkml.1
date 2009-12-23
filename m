@@ -1,56 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbZLWSiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZLWSjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbZLWSiX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 13:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbZLWSiW
+	id S1756783AbZLWSjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 13:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbZLWSjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 13:38:22 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:35282 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbZLWSiV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 13:38:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=WPQq1VrumtZtRucBR/VzpaUWHdHAQzNjCyIVzQk8FsLBIQ1bbchsWtKk1ig/JBm/bE
-         TixMvnk8fSuSU1eqNZpsgDXzXfwTd7j+7e1SmDFHrdKIKQNGH15E8clGo7BuXFG5fQmK
-         aS6UrN/cOO4BqxMVeEZjM88oUv+LSeIdFKaG8=
+	Wed, 23 Dec 2009 13:39:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54699 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754893AbZLWSjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 13:39:19 -0500
+Date: Wed, 23 Dec 2009 19:39:12 +0100
+From: Jan Kara <jack@suse.cz>
+To: Steve Rago <sar@nec-labs.com>
+Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+ workloads
+Message-ID: <20091223183912.GE3159@quack.suse.cz>
+References: <1261015420.1947.54.camel@serenity>
+ <1261037877.27920.36.camel@laptop>
+ <20091219122033.GA11360@localhost>
+ <1261232747.1947.194.camel@serenity>
+ <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+ <1261498815.13028.63.camel@serenity>
 MIME-Version: 1.0
-In-Reply-To: <200908202242.31778.PeterHuewe@gmx.de>
-References: <200908202242.31778.PeterHuewe@gmx.de>
-Date: Wed, 23 Dec 2009 19:38:20 +0100
-X-Google-Sender-Auth: d0bf42ec47cdb1c1
-Message-ID: <10f740e80912231038r6d58cd34ke01051d82095f12c@mail.gmail.com>
-Subject: Re: [PATCH] char/vme_scc: adding __init macro to vme_scc.c
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Peter Huewe <PeterHuewe@gmx.de>
-Cc: Jiri Kosina <trivial@kernel.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261498815.13028.63.camel@serenity>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 21:42, Peter Huewe <PeterHuewe@gmx.de> wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
->
-> Trivial patch which adds the __init macro to the module_init
-> function and all of its helper functions of char/vme_scc.c
->
-> Alan or Geert, please have a look at the small patch and either pull it through
-> your tree, or please ack' it so Jiri can pull it through the trivial tree.
+On Tue 22-12-09 11:20:15, Steve Rago wrote:
+> 
+> On Tue, 2009-12-22 at 13:25 +0100, Jan Kara wrote:
+> > > I originally spent several months playing with the balance_dirty_pages
+> > > algorithm.  The main drawback is that it affects more than the inodes
+> > > that the caller is writing and that the control of what to do is too
+> >   Can you be more specific here please?
+> 
+> Sure;  balance_dirty_pages() will schedule writeback by the flusher
+> thread once the number of dirty pages exceeds dirty_background_ratio.
+> The flusher thread calls writeback_inodes_wb() to flush all dirty inodes
+> associated with the bdi.  Similarly, the process dirtying the pages will
+> call writeback_inodes_wbc() when it's bdi threshold has been exceeded.
+> The first problem is that these functions process all dirty inodes with
+> the same backing device, which can lead to excess (duplicate) flushing
+> of the same inode.  Second, there is no distinction between pages that
+> need to be committed and pages that have commits pending in
+> NR_UNSTABLE_NFS/BDI_RECLAIMABLE (a page that has a commit pending won't
+> be cleaned any faster by sending more commits).  This tends to overstate
+> the amount of memory that can be cleaned, leading to additional commit
+> requests.  Third, these functions generate a commit for each set of
+> writes they do, which might not be appropriate.  For background writing,
+> you'd like to delay the commit as long as possible.
+  Ok, I get it. Thanks for explanation. The problem with more writing
+threads bites us also for ordinary SATA drives (the IO pattern and thus
+throughput gets worse and worse the more threads do writes). The plan is to
+let only flusher thread do the IO and throttled thread in
+balance_dirty_pages just waits for flusher thread to do the work. There
+were even patches for this floating around but I'm not sure what's happened
+to them. So that part of the problem should be easy to solve.
+  Another part is about sending commits - if we have just one thread doing
+flushing, we have no problems with excessive commits for one inode. You're
+right that we may want to avoid sending commits for background writeback
+but until we send the commit, pages are just accumulating in the unstable
+state, aren't they? So we might want to periodically send the commit for
+the inode anyway to get rid of those pages. So from this point of view,
+sending commit after each writepages call does not seem like a so bad idea
+- although it might be more appropriate to send it some time after the
+writepages call when we are not close to dirty limit so that server has
+more time to do more natural "unforced" writeback...
 
-Thanks, applied.
+> > > Part of the patch does implement a heuristic write-behind.  See where
+> > > nfs_wb_eager() is called.
+> >   I believe that if we had per-bdi dirty_background_ratio and set it low
+> > for NFS's bdi, then the write-behind logic would not be needed
+> > (essentially the flusher thread should submit the writes to the server
+> > early).
+> > 
+> Maybe so, but you still need something to prevent the process that is
+> dirtying pages from continuing, because a process can always write to
+> memory faster than writing to disk/network, so the flusher won't be able
+> to keep up.
+  Yes, I agree that part is needed. But Fengguang already had patches in
+that direction if my memory serves me well.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+  So to recap: If we block tasks in balance_dirty_pages until unstable
+pages are committed and make just one thread do the writing, what else is
+missing to make you happy? :)
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
