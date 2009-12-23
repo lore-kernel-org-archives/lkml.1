@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbZLWA6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751591AbZLWA7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751977AbZLWA6P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 19:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZLWA6K
+	id S1751591AbZLWA7d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 19:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbZLWA7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 19:58:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47976 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbZLWA6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 19:58:09 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: [Regression, 2.6.32->33-rc1] Commit 9f15226e755 breaks resume on Toshiba Portege R500
-Date: Wed, 23 Dec 2009 01:58:42 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Tue, 22 Dec 2009 19:59:32 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53760 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750940AbZLWA7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 19:59:31 -0500
+Message-ID: <4B316B66.2020206@cn.fujitsu.com>
+Date: Wed, 23 Dec 2009 08:59:18 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: rostedt@goodmis.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: Fix lockdep warning in global_clock()
+References: <4B2F1543.8020300@cn.fujitsu.com>	 <20091221064356.GA2378@elte.hu>  <4B2F2588.8070501@cn.fujitsu.com>	 <1261406427.4314.155.camel@laptop>	 <1261410984.25193.8.camel@gandalf.stny.rr.com>	 <4B305680.4090304@cn.fujitsu.com> <1261470234.4937.1.camel@laptop>
+In-Reply-To: <1261470234.4937.1.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912230158.42161.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andreas,
+Peter Zijlstra wrote:
+> On Tue, 2009-12-22 at 13:17 +0800, Li Zefan wrote:
+> 
+>> Looking into sched_clock.c, seems the only place that can trigger lockdep
+>> is the local_irq_* in cpu_clock(), though I'm not sure for architecture-
+>> specific sched_clock().
+> 
+> But why would you want to do that? that reduces the lockdep coverage for
+> no good reason, just fix up the tracer.
+> 
 
-Unfortunately your commit 9f15226e75583547aaf542c6be4bdac1060dd425
-(x86, ucode-amd: Ensure ucode update on suspend/resume after CPU off/online
-cycle) breaks resume from suspend to RAM on my Toshiba Portege R500 (an attempt
-to resume causes a hard hang with 100% CPU load, reproducible 100% of the
-time).  This has been found by bisection and confirmed by reverting this commit
-on top of 2.6.33-rc1.
+Then the proper fix is to use local_irq_* in global_clock(), which
+is what this patch does.
 
-Strangely enough, the box doesn't even have an AMD CPU, there's an Intel Core2
-Duo in it, so I suspect some missing check somewhere.
-
-If I have the time, I'll look deeper into this tomorrow.
-
-[BTW, I can't recall seeing this patch before.  That very well may be my fault,
-but please make sure that CCs of suspend-related patches are sent to me in
-future.]
-
-Rafael
