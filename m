@@ -1,61 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZLWWCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZLWWFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbZLWWCb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 17:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbZLWWCb
+	id S932088AbZLWWFQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 17:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbZLWWFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 17:02:31 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:54303 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755762AbZLWWCa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 17:02:30 -0500
-Date: Thu, 24 Dec 2009 09:02:29 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Greg KH <gregkh@suse.de>
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/7] [patch] DT3155: Use pci_get_device
-Message-ID: <20091223220228.GE2719@verge.net.au>
-References: <20091223085448.619253793@vergenet.net>
- <20091223085551.921624544@vergenet.net>
- <20091223161932.GB26520@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091223161932.GB26520@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 23 Dec 2009 17:05:11 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:34424 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755859AbZLWWFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 17:05:09 -0500
+Subject: Re: [RFC][PATCH 0/14] Convert remaining arches to
+ read/update_persistent_clock
+From: john stultz <johnstul@us.ibm.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Richard Henderson <rth@twiddle.net>,
+       linux-alpha@vger.kernel.org, linux-sh@vger.kernel.org,
+       Russell King <linux@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Mike Frysinger <vapier@gentoo.org>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Tony Luck <tony.luck@intel.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+       Kyle McMartin <kyle@mcmartin.ca>,
+       "David S. Miller" <davem@davemloft.net>,
+       David Brownell <dbrownell@users.sourceforge.net>
+In-Reply-To: <20091223050810.GA25791@linux-sh.org>
+References: <1261540762.3508.61.camel@localhost.localdomain>
+	 <20091223050810.GA25791@linux-sh.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Dec 2009 14:04:59 -0800
+Message-ID: <1261605899.4163.107.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 08:19:32AM -0800, Greg KH wrote:
-> On Wed, Dec 23, 2009 at 07:54:49PM +1100, Simon Horman wrote:
-> > The use of pci_find_device() is deprecated.
+On Wed, 2009-12-23 at 14:08 +0900, Paul Mundt wrote:
+> On Tue, Dec 22, 2009 at 07:59:22PM -0800, john stultz wrote:
+> > In this case the generic read_persistent_clock() and
+> > update_persistent_clock() methods have been provided to allow the
+> > generic timekeeping code to initialize xtime and set the persistent
+> > clock when NTP is synced. However many arches haven't converted, so the
+> > generic code has to handle the case where the arch is doing this
+> > management itself.
 > > 
-> > Signed-off-by: Simon Horman <horms@verge.net.au>
+> > This patch series tries to convert the following 14 architectures over
+> > to use read_persistent_clock() and update_persistent_clock() as
+> > applicable, killing off about 200 lines of arch specific code.
 > > 
-> > --- 
-> > 
-> > Compile tested only.
-> > 
-> > Alternatively, if pci_find_device() really needs to be used
-> > then this code needs to depend on PCI_LEGACY.
-> > 
-> > Index: gregkh-2.6/drivers/staging/dt3155/dt3155_drv.c
-> > ===================================================================
-> > --- gregkh-2.6.orig/drivers/staging/dt3155/dt3155_drv.c	2009-12-23 18:41:46.000000000 +1100
-> > +++ gregkh-2.6/drivers/staging/dt3155/dt3155_drv.c	2009-12-23 18:42:29.000000000 +1100
-> > @@ -963,7 +963,7 @@ static int find_PCI (void)
-> >    unsigned long base;
-> >    unsigned char irq;
-> >  
-> > -  while ((pci_dev = pci_find_device
-> > +  while ((pci_dev = pci_get_device
+> While I think that this is a good goal, many of the underlying
+> architectures have veered pretty far away from having meaningful
+> persistent clock interfaces after having moved entirely to generic
+> timekeeping and the RTC subsystem.
 > 
-> You can't just replace these two functions, they operate differently
-> with regard to the reference counting logic.  Otherwise it wouldn't make
-> sense to have 2 different functions :)
+> In the case of SH at least that interface along with the generic CMOS
+> stuff is largely a stop-gap for antiquated platforms that don't have
+> proper RTC drivers and likely never will, while the default for all of
+> the rest of the platforms effectively returns a fixed dummy value. I
+> copied this approach from MIPS originally, so there are at least a few
+> architectures that this will apply to.
 > 
-> So I can't apply this.
+> In any event, I wonder if it might make more sense to take something like
+> the SPARC implementation that is simply a wrapper around the RTC, move
+> that out in to a more generic place, and permit architectures to select
+> an RTC class backed persistent clock instead (it seems to be only
+> platforms that haven't caught up yet in terms of generic time and RTC
+> migration that would want to define this interface on their own at all at
+> this point)?
 
-Sorry about that.
+Yea, there's some additional complications with the RTC interface via
+read_persistent_clock, as some RTC clocks require irqs enabled to be
+able to read. This keeps them from being used via
+read_persistent_clock() as it is used prior to irqs being enabled, and
+then again with irqs disabled in the suspend and resume path.
+
+This has a bit of a trade-off, as we can better handle timekeeping
+around a suspend/resume with read_persistent_clock(), but for some
+hardware we just can't use the RTC for that.
+
+Anyway, if we can improve the timekeeping/RTC interface used for
+initialization and suspend/resume, I'm all for it (maybe having the RTC
+code to tell the timekeeping code if it can be accessed with irqs off?).
+But for hardware that needs irqs, i'm not sure how we can handle resumes
+correctly there. So suggestions would be welcome.
+
+Anyway, the main point of this patch set is to remove the direct access
+to timekeeping internals (xtime, wall_to_monotonic). Those need to go
+soon, as they're limiting changes in the timekeeping code.
+read_persistent_clock() is the current way to avoid it, but if systems
+are fine doing a settimeofday() at init that's ok too (although some
+oddities may be seen wrt boot time with the direct settimeofday, I need
+to refresh my head on how the varying default boot times between arches
+may be effected).
+
+thanks
+-john
+
