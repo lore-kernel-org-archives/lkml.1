@@ -1,108 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZLWNbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZLWNcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZLWNbe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:31:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLWNbd
+	id S1756000AbZLWNcy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbZLWNcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:31:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45948 "EHLO mx1.redhat.com"
+	Wed, 23 Dec 2009 08:32:53 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50398 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755917AbZLWNbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:31:32 -0500
-Message-ID: <4B321B9F.6030707@redhat.com>
-Date: Wed, 23 Dec 2009 15:31:11 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
-       Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
+	id S1755928AbZLWNcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 08:32:51 -0500
+Date: Wed, 23 Dec 2009 14:32:44 +0100
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
+       Steve Rago <sar@nec-labs.com>, Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <200912231407.20130.bzolnier@gmail.com>
-In-Reply-To: <200912231407.20130.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+ workloads
+Message-ID: <20091223133244.GB3159@quack.suse.cz>
+References: <1261015420.1947.54.camel@serenity>
+ <1261037877.27920.36.camel@laptop>
+ <20091219122033.GA11360@localhost>
+ <1261232747.1947.194.camel@serenity>
+ <20091222015907.GA6223@localhost>
+ <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
+ <20091223084302.GA14912@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091223084302.GA14912@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/2009 03:07 PM, Bartlomiej Zolnierkiewicz wrote:
->
->> That is a very different situation from the AlacrityVM patches, which:
->>
->>   - Are a pure software concept and any compatibility mismatch is
->>     self-inflicted. The patches are in fact breaking the ABI to KVM
->>     intentionally (for better or worse).
->>      
-> Care to explain the 'breakage' and why KVM is more special in this regard
-> than other parts of the kernel (where we don't keep any such requirements)?
->    
+On Wed 23-12-09 03:43:02, Christoph Hellwig wrote:
+> On Tue, Dec 22, 2009 at 01:35:39PM +0100, Jan Kara wrote:
+> > >    nfsd_sync:
+> > >      [take i_mutex]
+> > >        filemap_fdatawrite  => can also be blocked, but less a problem
+> > >      [drop i_mutex]
+> > >        filemap_fdatawait
+> > >  
+> > >    Maybe it's a dumb question, but what's the purpose of i_mutex here?
+> > >    For correctness or to prevent livelock? I can imagine some livelock
+> > >    problem here (current implementation can easily wait for extra
+> > >    pages), however not too hard to fix.
+> >   Generally, most filesystems take i_mutex during fsync to
+> > a) avoid all sorts of livelocking problems
+> > b) serialize fsyncs for one inode (mostly for simplicity)
+> >   I don't see what advantage would it bring that we get rid of i_mutex
+> > for fdatawait - only that maybe writers could proceed while we are
+> > waiting but is that really the problem?
+> 
+> It would match what we do in vfs_fsync for the non-nfsd path, so it's
+> a no-brainer to do it.  In fact I did switch it over to vfs_fsync a
+> while ago but that go reverted because it caused deadlocks for
+> nfsd_sync_dir which for some reason can't take the i_mutex (I'd have to
+> check the archives why).
+> 
+> Here's a RFC patch to make some more sense of the fsync callers in nfsd,
+> including fixing up the data write/wait calling conventions to match the
+> regular fsync path (which might make this a -stable candidate):
+  The patch looks good to me from general soundness point of view :).
+Someone with more NFS knowledge should tell whether dropping i_mutex for
+fdatawrite_and_wait is fine for NFS.
 
-The device model is exposed to the guest.  If you change it, the guest 
-breaks.
-
-So we have two options:
-  - phase out virtio, users don't see new improvements, ask them to 
-change to vbus/venet
-  - maintain the two in parallel
-
-Neither appeals to me.
-
-> Truth to be told KVM is just another driver/subsystem and Gregory's changes
-> are only 4KLOC of clean and easily maintainable code..
->    
-
-This 4K is only the beginning.  There are five more virtio drivers, plus 
-features in virtio-net not ported to venet, plus the host support, plus 
-qemu support, plus Windows drivers, plus adapters for non-pci (lguest 
-and s390), plus live migration support.  vbus itself still has scaling 
-issues.
-
-Virtio was under development for years.  Sure you can focus on one 
-dimension only (performance) and get good results but real life is more 
-complicated.
-
-> I certainly missed the time when KVM became officially part of core ABI..
->    
-
-It's more akin to the hardware interface.  We don't change the hardware 
-underneath the guest.
-
->> Overlap and forking can still be done in special circumstances, when a project
->> splits and a hostile fork is inevitable due to prolongued and irreconcilable
->> differences between the parties and if there's no strong technical advantage
->> on either side. I havent seen evidence of this yet though: Gregory claims that
->> he wants to 'work with the community' and the KVM guys seem to agree violently
->> that performance can be improved - and are doing so (and are asking Gregory to
->> take part in that effort).
->>      
-> How it is different from any past forks?
->
-> The odium of proving that the existing framework is sufficient was always on
-> original authors or current maintainers.
->
-> KVM guys were offered assistance from Gregory and had few months to prove that
-> they can get the same kind of performance using existing architecture and they
-> DID NOT do it.
->    
-
-Look at the results from Chris Wright's presentation.  Hopefully in a 
-few days some results from vhost-net.
-
-> Then please try harder.  Gregory posted his initial patches in August,
-> it is December now and we only see artificial road-blocks instead of code
-> from KVM folks.
->    
-
-What artificial road blocks?
-
+								Honza
+ 
+> Index: linux-2.6/fs/nfsd/vfs.c
+> ===================================================================
+> --- linux-2.6.orig/fs/nfsd/vfs.c	2009-12-23 09:32:45.693170043 +0100
+> +++ linux-2.6/fs/nfsd/vfs.c	2009-12-23 09:39:47.627170082 +0100
+> @@ -769,45 +769,27 @@ nfsd_close(struct file *filp)
+>  }
+>  
+>  /*
+> - * Sync a file
+> - * As this calls fsync (not fdatasync) there is no need for a write_inode
+> - * after it.
+> + * Sync a directory to disk.
+> + *
+> + * This is odd compared to all other fsync callers because we
+> + *
+> + *  a) do not have a file struct available
+> + *  b) expect to have i_mutex already held by the caller
+>   */
+> -static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
+> -			      const struct file_operations *fop)
+> +int
+> +nfsd_sync_dir(struct dentry *dentry)
+>  {
+> -	struct inode *inode = dp->d_inode;
+> -	int (*fsync) (struct file *, struct dentry *, int);
+> +	struct inode *inode = dentry->d_inode;
+>  	int err;
+>  
+> -	err = filemap_fdatawrite(inode->i_mapping);
+> -	if (err == 0 && fop && (fsync = fop->fsync))
+> -		err = fsync(filp, dp, 0);
+> -	if (err == 0)
+> -		err = filemap_fdatawait(inode->i_mapping);
+> +	WARN_ON(!mutex_is_locked(&inode->i_mutex));
+>  
+> +	err = filemap_write_and_wait(inode->i_mapping);
+> +	if (err == 0 && inode->i_fop->fsync)
+> +		err = inode->i_fop->fsync(NULL, dentry, 0);
+>  	return err;
+>  }
+>  
+> -static int
+> -nfsd_sync(struct file *filp)
+> -{
+> -        int err;
+> -	struct inode *inode = filp->f_path.dentry->d_inode;
+> -	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
+> -	mutex_lock(&inode->i_mutex);
+> -	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
+> -	mutex_unlock(&inode->i_mutex);
+> -
+> -	return err;
+> -}
+> -
+> -int
+> -nfsd_sync_dir(struct dentry *dp)
+> -{
+> -	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
+> -}
+> -
+>  /*
+>   * Obtain the readahead parameters for the file
+>   * specified by (dev, ino).
+> @@ -1011,7 +993,7 @@ static int wait_for_concurrent_writes(st
+>  
+>  	if (inode->i_state & I_DIRTY) {
+>  		dprintk("nfsd: write sync %d\n", task_pid_nr(current));
+> -		err = nfsd_sync(file);
+> +		err = vfs_fsync(file, file->f_path.dentry, 0);
+>  	}
+>  	last_ino = inode->i_ino;
+>  	last_dev = inode->i_sb->s_dev;
+> @@ -1180,7 +1162,7 @@ nfsd_commit(struct svc_rqst *rqstp, stru
+>  		return err;
+>  	if (EX_ISSYNC(fhp->fh_export)) {
+>  		if (file->f_op && file->f_op->fsync) {
+> -			err = nfserrno(nfsd_sync(file));
+> +			err = nfserrno(vfs_fsync(file, file->f_path.dentry, 0));
+>  		} else {
+>  			err = nfserr_notsupp;
+>  		}
 -- 
-error compiling committee.c: too many arguments to function
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
