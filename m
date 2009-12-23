@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZLWRSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbZLWRR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbZLWRSQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZLWRSK
+	id S1753028AbZLWRR4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 12:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZLWRRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:18:10 -0500
-Received: from kroah.org ([198.145.64.141]:55867 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754731AbZLWRSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:18:07 -0500
-Date: Wed, 23 Dec 2009 09:17:31 -0800
-From: Greg KH <greg@kroah.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Regression, 2.6.33-rc1->current git] NULL pointer in
- usb_serial_probe() introduced by the recent kfifo changes
-Message-ID: <20091223171731.GA7535@kroah.com>
-References: <200912230251.31568.rjw@sisk.pl>
- <20091223053734.GC22808@kroah.com>
- <1261555848.22729.41.camel@wall-e>
+	Wed, 23 Dec 2009 12:17:55 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:35014 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbZLWRRx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 12:17:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=Xokf/yYkuO8iPXey0PZivZkMBlBnYvXcqfhuVKjg/CGKO2Iyu9mMTbm39YI3Tp2nfd
+         dBzsOhnrhkRUk+BcNKPJL1B+8oGV/m+7oD2Y8IIgIroYHCJ3e/Snb34EnvcAYZG45V1w
+         GX+Sa8Q8aXNzENWedPEQWwF4GDGztIQNUpoxM=
+Message-ID: <4B3250BC.50203@gmail.com>
+Date: Wed, 23 Dec 2009 12:17:48 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261555848.22729.41.camel@wall-e>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <20091223171052.GI20539@basil.fritz.box>
+In-Reply-To: <20091223171052.GI20539@basil.fritz.box>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigEC53A75968A6BAF3713BE6EE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 09:10:48AM +0100, Stefani Seibold wrote:
-> Am Dienstag, den 22.12.2009, 21:37 -0800 schrieb Greg KH:
-> > On Wed, Dec 23, 2009 at 02:51:31AM +0100, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > Something like the patch below is necessary to fix a new NULL pointer deref
-> > > in usb_serial_probe() that appeared after the recent kfifo changes (in short,
-> > > the kfifo changes modified the semantics of kfifo_alloc() that
-> > > usb_serial_probe() reiled on).
-> > 
-> > What semantic changed?  I thought that the kfifo patches came with
-> > patches that also fixed up any changed that were needed.  What went
-> > wrong here?
-> > 
-> 
-> This one is a new user of the kfifo API, so it forget to port it to the
-> new kfifo API.
-> 
-> Please make the write_fifo in place. Here is my patch to fix the
-> regression and full ported version.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigEC53A75968A6BAF3713BE6EE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Thanks, I'll queue this up and send it to Linus later today.
+On 12/23/09 12:10 PM, Andi Kleen wrote:
+>> And its moot, anyway, as I have already retracted my one outstanding
+>> pull request based on Linus' observation.  So at this time, I am not
+>> advocating _anything_ for upstream inclusion.  And I am contemplating
+>> _never_ doing so again.  It's not worth _this_.
+>=20
+> That certainly sounds like the wrong reaction. Out of tree drivers
+> are typically a pain to use.
 
-greg k-h
+Well, to Linus' point, it shouldn't go in until a critical mass of users
+have expressed desire to see it in tree, which seems reasonable to me.
+For the admittedly small group that are using it today, modern tools
+like the opensuse-build-service ease the deployment as a KMP, so that
+can suffice for now.  Its actually what most of the alacrityvm community
+uses today anyway (as opposed to using a merged tree in the guest)
+
+>=20
+> And upstream submission is not always like this!
+
+I would think the process would come to a grinding halt if it were ;)
+
+Thanks Andi,
+-Greg
+
+
+
+--------------enigEC53A75968A6BAF3713BE6EE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksyULwACgkQP5K2CMvXmqG9GwCeKJ4Twt2JQJRU4QlMzkYcr1o8
+sAoAnjId3mlczi5DhpL1XTANuc1bQ/5P
+=mYbg
+-----END PGP SIGNATURE-----
+
+--------------enigEC53A75968A6BAF3713BE6EE--
