@@ -1,110 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZLWX1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbZLWX1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbZLWX1K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 18:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZLWX1I
+	id S1756408AbZLWX1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZLWX1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 18:27:08 -0500
-Received: from mail.perches.com ([173.55.12.10]:1400 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938AbZLWX1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 18:27:08 -0500
-Subject: [PATCH] scripts/get_maintainer.pl: add support to read patch from
- STDIN
-From: Joe Perches <joe@perches.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
-References: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Dec 2009 15:27:04 -0800
-Message-ID: <1261610824.1923.58.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 23 Dec 2009 18:27:20 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:58320 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756172AbZLWX1R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 18:27:17 -0500
+Message-ID: <4B32A752.1020709@codemonkey.ws>
+Date: Wed, 23 Dec 2009 17:27:14 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Gregory Haskins <gregory.haskins@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <20091223171052.GI20539@basil.fritz.box> <4B3250BC.50203@gmail.com> <alpine.LFD.2.00.0912230922290.6879@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912230922290.6879@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 14:55 +0100, Borislav Petkov wrote:
-> Teach get_maintainer.pl to read a diff from STDIN
+On 12/23/2009 11:29 AM, Linus Torvalds wrote:
+>
+>
+> On Wed, 23 Dec 2009, Gregory Haskins wrote:
+>>>
+>>> And upstream submission is not always like this!
+>>
+>> I would think the process would come to a grinding halt if it were ;)
+>
+> Well, in all honesty, if it had been non-virtualized drivers I would just
+> have pulled. The pull request all looked sane, the diffstat looked clean
+> and non-intrusive, and I had no problems with any of that.
+>
+> But the virtualization people always argue about the fifty-eleven
+> different ways of doing things, and unlike real drivers - where the actual
+> hardware places constraints on what the heck is going on - virtualization
+> people seem to revel in making new interfaces weekly, and tend to be only
+> incidentally limited by hardware (ie hardware interfaces may limit some
+> _details_, but seldom any higher-level arguments).
+>
+> So when I see another virtualization interface, I want the virtualization
+> people to just argue it out amongst themselves.
 
-How about this instead?
+Actually, this sentiment is really the basis of this whole discussion. 
+KVM is the product of learnign the hard way that that inventing 
+interfaces just because we can is a total waste of time.
 
-Doesn't need or accept '-' as a trailing option to read stdin.
-Doesn't print usage() after bad options.
-Adds --usage as command line equivalent of --help
+Our current I/O infrastructure is based on PCI devices that we can 
+emulate efficiently.  They look, feel, and taste like real hardware 
+devices.  We try to be as boring as humanly possible and so far, it's 
+worked out extremely well for us.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+> Thanks to the virtue of me
+> personally not caring one whit about virtualization, I can stand back and
+> just watch the fireworks.
 
- scripts/get_maintainer.pl |  110 ++++++++++++++++++++++++++++-----------------
- 1 files changed, 69 insertions(+), 41 deletions(-)
+That's ashame, because I wish more people with a practical sentiment 
+cared about virtualization to discourage the general silliness that 
+seems to be all too common in this space.
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 445e884..9fe4628 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -122,7 +122,7 @@ if (!GetOptions(
- 		'k|keywords!' => \$keywords,
- 		'f|file' => \$from_filename,
- 		'v|version' => \$version,
--		'h|help' => \$help,
-+		'h|help|usage' => \$help,
- 		)) {
-     die "$P: invalid argument - use --help if necessary\n";
- }
-@@ -137,9 +137,9 @@ if ($version != 0) {
-     exit 0;
- }
- 
--if ($#ARGV < 0) {
--    usage();
--    die "$P: argument missing: patchfile or -f file please\n";
-+if (-t STDIN && !@ARGV) {
-+    # We're talking to a terminal, but have no command line arguments.
-+    die "$P: missing patchfile or -f file - use --help if necessary\n";
- }
- 
- if ($output_separator ne ", ") {
-@@ -152,14 +152,12 @@ if ($output_rolestats) {
- 
- my $selections = $email + $scm + $status + $subsystem + $web;
- if ($selections == 0) {
--    usage();
-     die "$P:  Missing required option: email, scm, status, subsystem or web\n";
- }
- 
- if ($email &&
-     ($email_maintainer + $email_list + $email_subscriber_list +
-      $email_git + $email_git_penguin_chiefs + $email_git_blame) == 0) {
--    usage();
-     die "$P: Please select at least 1 email option\n";
- }
- 
-@@ -233,12 +231,18 @@ my @files = ();
- my @range = ();
- my @keyword_tvi = ();
- 
-+if (!@ARGV) {
-+    push(@ARGV, "&STDIN");
-+}
-+
- foreach my $file (@ARGV) {
--    ##if $file is a directory and it lacks a trailing slash, add one
--    if ((-d $file)) {
--	$file =~ s@([^/])$@$1/@;
--    } elsif (!(-f $file)) {
--	die "$P: file '${file}' not found\n";
-+    if ($file ne "&STDIN") {
-+	##if $file is a directory and it lacks a trailing slash, add one
-+	if ((-d $file)) {
-+	    $file =~ s@([^/])$@$1/@;
-+	} elsif (!(-f $file)) {
-+	    die "$P: file '${file}' not found\n";
-+	}
-     }
-     if ($from_filename) {
- 	push(@files, $file);
+Regards,
 
-
+Anthony LIguori
