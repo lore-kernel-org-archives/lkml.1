@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbZLWW6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZLWXBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbZLWW6y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 17:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZLWW6v
+	id S1756023AbZLWXBO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:01:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZLWXBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 17:58:51 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42793 "EHLO smtps.tip.net.au"
+	Wed, 23 Dec 2009 18:01:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52833 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751470AbZLWW6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 17:58:51 -0500
-Date: Thu, 24 Dec 2009 09:58:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: linux-next: slab/percpu tree build failure
-Message-Id: <20091224095848.f1586d1e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754669AbZLWXBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 18:01:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Regression, 2.6.32->33-rc1] Commit 9f15226e755 breaks resume on Toshiba Portege R500
+Date: Thu, 24 Dec 2009 00:01:26 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200912230158.42161.rjw@sisk.pl>
+In-Reply-To: <200912230158.42161.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912240001.26764.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wednesday 23 December 2009, Rafael J. Wysocki wrote:
+> Hi Andreas,
+> 
+> Unfortunately your commit 9f15226e75583547aaf542c6be4bdac1060dd425
+> (x86, ucode-amd: Ensure ucode update on suspend/resume after CPU off/online
+> cycle) breaks resume from suspend to RAM on my Toshiba Portege R500 (an attempt
+> to resume causes a hard hang with 100% CPU load, reproducible 100% of the
+> time).  This has been found by bisection and confirmed by reverting this commit
+> on top of 2.6.33-rc1.
+> 
+> Strangely enough, the box doesn't even have an AMD CPU, there's an Intel Core2
+> Duo in it, so I suspect some missing check somewhere.
+> 
+> If I have the time, I'll look deeper into this tomorrow.
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+I think commit 9f15226e755 is wrong, since it causes microcode_init_cpu()
+to be called during resume even for CPUs for which there's no microcode to
+apply.  That, in turn, results in executing request_firmware() (on Intel CPUs
+at least) which doesn't work at this stage of resume (we have device interrupts
+disabled, I/O devices are still suspended and so on).
 
-mm/slub.c: In function 'alloc_kmem_cache_cpus':
-mm/slub.c:2074: error: implicit declaration of function 'per_cpu_var'
-mm/slub.c:2074: warning: assignment makes pointer from integer without a cast
+If I'm not mistaken, the "if (uci->valid)" logic means "if that CPU is known
+to us" , so before commit 9f15226e755 microcode_resume_cpu() was called for
+all CPUs already in the system during suspend, which was the right thing to do.
+The commit changed it so that the CPUs without microcode to apply are now
+treated as "unknown", which is not quite right.
 
-Caused by commit 9dfc6e68bfe6ee452efb1a4e9ca26a9007f2b864 ("SLUB: Use
-this_cpu operations in slub") from the slab interacting with commit
-dd17c8f72993f9461e9c19250e3f155d6d99df22 ("percpu: remove per_cpu__
-prefix") from the percpu tree.
+The problem this commit attempted to solve has to be handled differently.
 
-I have added the following patch for today and (can carry it as
-necessary).
+Linus, please revert commit 9f15226e755.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 24 Dec 2009 09:56:29 +1100
-Subject: [PATCH] slab: update for percpu API change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- mm/slub.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/slub.c b/mm/slub.c
-index 6e34309..9e86e6b 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2071,7 +2071,7 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
- 		 * Boot time creation of the kmalloc array. Use static per cpu data
- 		 * since the per cpu allocator is not available yet.
- 		 */
--		s->cpu_slab = per_cpu_var(kmalloc_percpu) + (s - kmalloc_caches);
-+		s->cpu_slab = kmalloc_percpu + (s - kmalloc_caches);
- 	else
- 		s->cpu_slab =  alloc_percpu(struct kmem_cache_cpu);
- 
--- 
-1.6.5.4
-
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Rafael
