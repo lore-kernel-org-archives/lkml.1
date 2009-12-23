@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZLWNpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbZLWNzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755838AbZLWNpH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZLWNpF
+	id S1755917AbZLWNzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZLWNzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:45:05 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:40702 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753582AbZLWNpD (ORCPT
+	Wed, 23 Dec 2009 08:55:37 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:45468 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbZLWNzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:45:03 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B321E72.4070103@s5r6.in-berlin.de>
-Date: Wed, 23 Dec 2009 14:43:14 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+	Wed, 23 Dec 2009 08:55:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=pPInel9cHVK0LMc5/2Tx+jxqBjtdAWXE9C8wk0qCP+5rGrZjzcsEkGfpa0uWhq7f6u
+         Djhn3kysgBKKndOHY3jFsUdUUveb/sCSbUC4OTiNVo9AZx3rKY7nZOAe9osMWg92ZN3o
+         YZ3jP9TmP2pCcKpHUuKtLydrbZh6QNiuBZ1mg=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: workqueue thing
-References: <4B2F7879.2080901@kernel.org> <1261405604.4314.154.camel@laptop> <4B3009DC.7020407@kernel.org> <1261480001.4937.21.camel@laptop> <4B319A20.9010305@kernel.org> <alpine.LFD.2.00.0912222032360.6879@localhost.localdomain> <20091223060229.GA14805@elte.hu> <4B31C210.4010100@kernel.org> <20091223080144.GG23839@elte.hu> <4B31D487.6060706@kernel.org> <20091223083705.GA25240@elte.hu> <4B321DD6.90408@s5r6.in-berlin.de>
-In-Reply-To: <4B321DD6.90408@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.96.0
+Date: Wed, 23 Dec 2009 14:55:35 +0100
+Message-ID: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
+Subject: [PATCH] scripts/get_maintainer.pl: add support for STDIN:
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Ingo Molnar wrote:
->> (Plus reduction in driver complexity can be measured as well, in the diffstat 
->> space.)
->>
->> So there's no leap of faith needed really, IMHO.
-> 
-> To measure this properly by means of diffstat, first convert typical
-> create_singlethread_workqueue users to <linux/slow-work.h>, then convert
-> them back to <linux/workqueue.h>.  Then look at the diffstat of the
-> _second_ step.
+Teach get_maintainer.pl to read a diff from STDIN so that you can do
+something like:
 
-PS:  Or easier, just do the first step and take its diffstat --- the
-reverse of that diffstat is more or less the benefit that cmwq would
-provide.
+git diff | ./scripts/get_maintainer.pl -
+
+and have the Cc: list before writing the commit message.
+
+Cc: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ scripts/get_maintainer.pl |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index 445e884..80d5a69 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -5,7 +5,7 @@
+ # Print selected MAINTAINERS information for
+ # the files modified in a patch or for a file
+ #
+-# usage: perl scripts/get_maintainer.pl [OPTIONS] <patch>
++# usage: perl scripts/get_maintainer.pl [OPTIONS] <patch>|STDIN
+ #        perl scripts/get_maintainer.pl [OPTIONS] -f <file>
+ #
+ # Licensed under the terms of the GNU GPL License version 2
+@@ -237,7 +237,7 @@ foreach my $file (@ARGV) {
+     ##if $file is a directory and it lacks a trailing slash, add one
+     if ((-d $file)) {
+ 	$file =~ s@([^/])$@$1/@;
+-    } elsif (!(-f $file)) {
++    } elsif (!(-f $file) && ($file ne '-')) {
+ 	die "$P: file '${file}' not found\n";
+     }
+     if ($from_filename) {
+@@ -255,7 +255,11 @@ foreach my $file (@ARGV) {
+     } else {
+ 	my $file_cnt = @files;
+ 	my $lastfile;
+-	open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
++	if ($file eq '-') {
++	    open(PATCH, "<&STDIN");
++	} else {
++	    open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
++	}
+ 	while (<PATCH>) {
+ 	    my $patch_line = $_;
+ 	    if (m/^\+\+\+\s+(\S+)/) {
+@@ -422,7 +426,7 @@ sub file_match_pattern {
+
+ sub usage {
+     print <<EOT;
+-usage: $P [options] patchfile
++usage: $P [options] patchfile|-
+        $P [options] -f file|directory
+ version: $V
+
 -- 
-Stefan Richter
--=====-==--= ==-- =-===
-http://arcgraph.de/sr/
+1.6.5.4
+
+
+-- 
+Regards/Gruss,
+Boris
