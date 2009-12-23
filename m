@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752391AbZLWBeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZLWBhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752391AbZLWBeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 20:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZLWBeX
+	id S1752590AbZLWBhM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 20:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZLWBhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 20:34:23 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:3176 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751870AbZLWBeV (ORCPT
+	Tue, 22 Dec 2009 20:37:10 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:18513 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbZLWBhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 20:34:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=YKSz3I/Z/J+l4AtnaEWIdBzGujPexzts6TR75OfPCR6j9IkkB6iuNZrJGT3MU3o7r3
-         4jbeBFdQlxMeBfo1GlkDwta1pVs1C7IJcetkyEs/DB7jRIgeZbxreJtyhMxUW0EmkI+N
-         NJ8yTNoh6rqdaktAQqp21DaqAQXgEf5BZkr3k=
-Message-ID: <4B31742B.9040809@gmail.com>
-Date: Wed, 23 Dec 2009 02:36:43 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 22 Dec 2009 20:37:08 -0500
+Message-ID: <4B31743F.8070804@caviumnetworks.com>
+Date: Tue, 22 Dec 2009 17:37:03 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ieee80211: add missing parentheses
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alexander Beregalov <a.beregalov@gmail.com>
+CC: arnd@arndb.de, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, sam@ravnborg.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH] BUG(): CONFIG_BUG=n version of BUG() should be unreachable()
+References: <1261531032-15225-1-git-send-email-a.beregalov@gmail.com> <4B3171DF.4070903@caviumnetworks.com>
+In-Reply-To: <4B3171DF.4070903@caviumnetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Dec 2009 01:37:03.0575 (UTC) FILETIME=[6DD54670:01CA8370]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-not(!) has a higher precedence than bit and(&).
+David Daney wrote:
+> Alexander Beregalov wrote:
+>> Previouss definition of BUG() as 'do {} while(0)' produced compilation
+>> warnings when BUG() was used in default branch of switch() statement
+>> (control reaches end of non-void function).
+>>
+>> Example:
+>> unsigned long function()
+>> {
+>>     switch() {
+>>     case 1:
+>>         return 1;
+>>     case 2:
+>>         return 2;
+>>     default:
+>>         BUG();
+>> }
+>>
+>> Using unreachable() fixes the problem.
+>>
+>> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+>>
+> 
+> NAK.
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Well that may be too strong an objection, but I would really recommend 
+deeper consideration.
 
-I think this one was not yet reported.
+If you use: #define BUG() __builtin_unreachable()
 
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-index d397f1d..0aaa30f 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-@@ -718,7 +718,7 @@ int ieee80211_wx_get_encode_ext(struct ieee80211_device *ieee,
- 	} else
- 		idx = ieee->tx_keyidx;
- 
--	if (!ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY &&
-+	if (!(ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY) &&
- 	    ext->alg != IW_ENCODE_ALG_WEP)
- 		if (idx != 0 || ieee->iw_mode != IW_MODE_INFRA)
- 			return -EINVAL;
+which is what your patch does for GCC >= 4.5, it is truly undefined what 
+happens if it is ever reached.  One typical thing that might happen is 
+that you start to try to execute data.  It is unclear to me if it is 
+preferable in the kernel to do that, rather than loop endlessly.  You 
+would likely achieve smaller code, but at what cost?
+
+David Daney
+
+> 
+>> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+>> index 18c435d..1106439 100644
+>> --- a/include/asm-generic/bug.h
+>> +++ b/include/asm-generic/bug.h
+>> @@ -89,7 +89,7 @@ extern void warn_slowpath_null(const char *file, 
+>> const int line);
+>>  
+>>  #else /* !CONFIG_BUG */
+>>  #ifndef HAVE_ARCH_BUG
+>> -#define BUG() do {} while(0)
+>> +#define BUG() unreachable()  #endif
+>>  
+>>  #ifndef HAVE_ARCH_BUG_ON
+> 
+> You can only use 'unreachable()' in situations where it is truly 
+> unreachable.  In the case above you will reach it in the default case.
+> 
+> I would suggest one of the following instead:
+> 
+> #define BUG() BUILD_BUG_ON(1)
+> 
+> #define BUG() do {} while(1)
+> 
+> 
+> David Daney
+> 
+
