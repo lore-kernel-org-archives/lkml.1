@@ -1,103 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZLWWFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbZLWWKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932088AbZLWWFQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 17:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbZLWWFL
+	id S1757234AbZLWWKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 17:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZLWWKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 17:05:11 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34424 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755859AbZLWWFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 17:05:09 -0500
-Subject: Re: [RFC][PATCH 0/14] Convert remaining arches to
- read/update_persistent_clock
-From: john stultz <johnstul@us.ibm.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Richard Henderson <rth@twiddle.net>,
-       linux-alpha@vger.kernel.org, linux-sh@vger.kernel.org,
-       Russell King <linux@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Mike Frysinger <vapier@gentoo.org>, Mikael Starvik <starvik@axis.com>,
-       David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Tony Luck <tony.luck@intel.com>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       "David S. Miller" <davem@davemloft.net>,
-       David Brownell <dbrownell@users.sourceforge.net>
-In-Reply-To: <20091223050810.GA25791@linux-sh.org>
-References: <1261540762.3508.61.camel@localhost.localdomain>
-	 <20091223050810.GA25791@linux-sh.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Dec 2009 14:04:59 -0800
-Message-ID: <1261605899.4163.107.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Dec 2009 17:10:49 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:41449 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755729AbZLWWKs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 17:10:48 -0500
+Date: Wed, 23 Dec 2009 17:10:47 -0500
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, leoli@freescale.com
+Subject: Re: ucc_geth broken in 2.6.32 by
+	864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
+Message-ID: <20091223221047.GH760@caffeine.csclub.uwaterloo.ca>
+References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca> <20091223180415.GA12987@oksana.dev.rtsoft.ru> <20091223200948.GF760@caffeine.csclub.uwaterloo.ca> <20091223202226.GA8185@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091223202226.GA8185@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 14:08 +0900, Paul Mundt wrote:
-> On Tue, Dec 22, 2009 at 07:59:22PM -0800, john stultz wrote:
-> > In this case the generic read_persistent_clock() and
-> > update_persistent_clock() methods have been provided to allow the
-> > generic timekeeping code to initialize xtime and set the persistent
-> > clock when NTP is synced. However many arches haven't converted, so the
-> > generic code has to handle the case where the arch is doing this
-> > management itself.
+On Wed, Dec 23, 2009 at 11:22:26PM +0300, Anton Vorontsov wrote:
+> On Wed, Dec 23, 2009 at 03:09:48PM -0500, Lennart Sorensen wrote:
+> [...]
+> > So there result is:
 > > 
-> > This patch series tries to convert the following 14 architectures over
-> > to use read_persistent_clock() and update_persistent_clock() as
-> > applicable, killing off about 200 lines of arch specific code.
-> > 
-> While I think that this is a good goal, many of the underlying
-> architectures have veered pretty far away from having meaningful
-> persistent clock interfaces after having moved entirely to generic
-> timekeeping and the RTC subsystem.
+> > Unable to handle kernel paging request for data at address 0x00000058
+> > Faulting instruction address: 0xc024f2fc
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > RC8360 CM
+> > Modules linked in: rclibapi xeno_native max6369_wdt ucc_geth_driver spi_mpc8xxx ltc4215 lm75
+> > NIP: c024f2fc LR: e30aa0a4 CTR: c024f2e8
+> > REGS: df857ca0 TRAP: 0300   Not tainted  (2.6.32-trunk-8360e)
+> > MSR: 00009032 <EE,ME,IR,DR>  CR: 44042088  XER: 00000000
+> > DAR: 00000058, DSISR: 20000000
+> > TASK = df848c90[4] 'events/0' THREAD: df856000
+> > GPR00: e30aa0a4 df857d50 df848c90 00000000 00000640 00000001 c0428df4 dfa40b80
+> > GPR08: 000000c8 e30ad2b8 df084360 c024f2e8 44042082 1001af90 e30ad2b8 00000000
+> > GPR16: 00000048 00000001 00000000 00000000 df08436c df08440c 00000190 df08455c
+> > GPR24: df0844ec df0842c0 df084000 180005ea dfa40b80 00000000 df0842c0 00000000
+> > NIP [c024f2fc] skb_recycle_check+0x14/0x100
+> > LR [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
+> > Call Trace:
+> > [df857d50] [c000b03c] __ipipe_grab_irq+0x3c/0xa4 (unreliable)
+> > [df857d60] [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
 > 
-> In the case of SH at least that interface along with the generic CMOS
-> stuff is largely a stop-gap for antiquated platforms that don't have
-> proper RTC drivers and likely never will, while the default for all of
-> the rest of the platforms effectively returns a fixed dummy value. I
-> copied this approach from MIPS originally, so there are at least a few
-> architectures that this will apply to.
+> This I can reproduce. It seems it's a long standing bug that
+> becomes easily reproducible with quiesce/activate sequence.
+> The driver doesn't handle empty queue correctly, i.e. it ignores
+> the empty queue check if netdev queue is stopped, which makes no
+> sense.
 > 
-> In any event, I wonder if it might make more sense to take something like
-> the SPARC implementation that is simply a wrapper around the RTC, move
-> that out in to a more generic place, and permit architectures to select
-> an RTC class backed persistent clock instead (it seems to be only
-> platforms that haven't caught up yet in terms of generic time and RTC
-> migration that would want to define this interface on their own at all at
-> this point)?
+> Can you try this patch in addition to previous (i.e. both should
+> be applied)?
+> 
+> Thanks!
+> 
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 2f73e3f..b22de51 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -3275,7 +3275,7 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+>  		/* Handle the transmitted buffer and release */
+>  		/* the BD to be used with the current frame  */
+>  
+> -		if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
+> +		if (bd == ugeth->txBd[txQ]) /* queue empty? */
+>  			break;
+>  
+>  		dev->stats.tx_packets++;
 
-Yea, there's some additional complications with the RTC interface via
-read_persistent_clock, as some RTC clocks require irqs enabled to be
-able to read. This keeps them from being used via
-read_persistent_clock() as it is used prior to irqs being enabled, and
-then again with irqs disabled in the suspend and resume path.
+That seems to be it.  It works now.  No more crashes.
 
-This has a bit of a trade-off, as we can better handle timekeeping
-around a suspend/resume with read_persistent_clock(), but for some
-hardware we just can't use the RTC for that.
+Those two patches together seem to do the trick.  I really hope they
+can go into 2.6.32-stable then, since this is a regression over 2.6.31
+and is hopefully an obvious fix.
 
-Anyway, if we can improve the timekeeping/RTC interface used for
-initialization and suspend/resume, I'm all for it (maybe having the RTC
-code to tell the timekeeping code if it can be accessed with irqs off?).
-But for hardware that needs irqs, i'm not sure how we can handle resumes
-correctly there. So suggestions would be welcome.
+Now if only my mdio-gpio bitbang one line fix would be accepted.
 
-Anyway, the main point of this patch set is to remove the direct access
-to timekeeping internals (xtime, wall_to_monotonic). Those need to go
-soon, as they're limiting changes in the timekeeping code.
-read_persistent_clock() is the current way to avoid it, but if systems
-are fine doing a settimeofday() at init that's ok too (although some
-oddities may be seen wrt boot time with the direct settimeofday, I need
-to refresh my head on how the varying default boot times between arches
-may be effected).
-
-thanks
--john
-
+-- 
+Len Sorensen
