@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZLWNKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZLWPRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbZLWNKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZLWNKS
+	id S1756254AbZLWPRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 10:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbZLWPRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:10:18 -0500
-Received: from mx2.zhaw.ch ([160.85.104.51]:61272 "EHLO mx2.zhaw.ch"
+	Wed, 23 Dec 2009 10:17:13 -0500
+Received: from smtp21.orange.fr ([80.12.242.46]:32757 "EHLO smtp21.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755146AbZLWNKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:10:16 -0500
-X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Dec 2009 08:10:16 EST
-From: Tobias Klauser <tklauser@distanz.ch>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>
-Subject: [PATCH] xtensa: Storage class should be before const qualifier
-Date: Wed, 23 Dec 2009 14:03:01 +0100
-Message-Id: <1261573381-8853-1-git-send-email-tklauser@distanz.ch>
-X-Mailer: git-send-email 1.6.3.3
-X-PMX-Version: 5.5.8.383112, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2009.12.23.125120
-X-PerlMx-Spam: Gauge=IIIIIIII, Probability=8%, Report='
- BODY_SIZE_1000_1099 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __URI_NS '
+	id S1753761AbZLWPRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 10:17:12 -0500
+X-ME-UUID: 20091223130443453.6E9F920058D9@mwinf2104.orange.fr
+Subject: Re: No PCI-X / PCI-E cards ...
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1261477857.22127.23.camel@skunk>
+References: <1260979057.23135.70.camel@skunk> <1261089592.8827.5.camel@bip>
+	 <adahbrp43x7.fsf@roland-alpha.cisco.com>  <1261477857.22127.23.camel@skunk>
+Content-Type: text/plain
+Date: Wed, 23 Dec 2009 14:04:41 +0100
+Message-Id: <1261573481.4822.14.camel@skunk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The C99 specification states in section 6.11.5:
+On Tue, 2009-12-22 at 11:30 +0100, Xavier Bestel wrote:
+> On Thu, 2009-12-17 at 14:43 -0800, Roland Dreier wrote:
+> > > [    0.184098] pci 0000:00:1c.0: BAR 13: can't allocate resource
+> > 
+> > When does this message appear?  Does it matter if the PCIe card is
+> > installed or not?  This 0000:00:1c.0 device is:
+> > 
+> > > 00:1c.0 PCI bridge: Intel Corporation 82801I (ICH9 Family) PCI Express Port 1 (rev 02)
+> > 
+> > so it might be relevant.
+> > 
+> > Did you try all the PCIe slots?
+> 
+> I tried another slot, and it gave the same error:
+> [    0.203279] PCI: Using ACPI for IRQ routing
+> [    0.203279] pci 0000:00:1c.0: BAR 13: can't allocate resource
+> 
+> And the card still isn't visible through lspci.
+> 
+> How comes the kernel can't see that card ?
 
-The placement of a storage-class specifier other than at the beginning
-of the declaration specifiers in a declaration is an obsolescent
-feature.
+It looks like if the board has been flashed with the wrong bios (the
+dmidecode info isn't consistent with what I see on the board).
+Is there a way to workaround that in the kernel ?
 
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
----
- arch/xtensa/variants/s6000/include/variant/dmac.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+	Xav
 
-diff --git a/arch/xtensa/variants/s6000/include/variant/dmac.h b/arch/xtensa/variants/s6000/include/variant/dmac.h
-index 89ab948..e81735b 100644
---- a/arch/xtensa/variants/s6000/include/variant/dmac.h
-+++ b/arch/xtensa/variants/s6000/include/variant/dmac.h
-@@ -357,7 +357,7 @@ static inline u32 s6dmac_channel_enabled(u32 dmac, int chan)
- static inline void s6dmac_dp_setup_group(u32 dmac, int port,
- 			int nrch, int frrep)
- {
--	const static u8 mask[4] = {0, 3, 1, 2};
-+	static const u8 mask[4] = {0, 3, 1, 2};
- 	BUG_ON(dmac != S6_REG_DPDMA);
- 	if ((port < 0) || (port > 3) || (nrch < 1) || (nrch > 4))
- 		return;
--- 
-1.6.3.3
+
 
