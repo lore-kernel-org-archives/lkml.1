@@ -1,114 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZLWNIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZLWNNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbZLWNIX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZLWNIW
+	id S1752882AbZLWNNV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZLWNNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:08:22 -0500
-Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:42024 "EHLO
-	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755831AbZLWNIW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:08:22 -0500
-Message-ID: <4B321663.2050603@byu.net>
-Date: Wed, 23 Dec 2009 06:08:51 -0700
-From: Eric Blake <ebb9@byu.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.23) Gecko/20090812 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 14832] New: futimens (AT_FDCWD, arg) should
- fail
-References: <bug-14832-10286@http.bugzilla.kernel.org/> <20091222143137.7f9b4e8b.akpm@linux-foundation.org>
-In-Reply-To: <20091222143137.7f9b4e8b.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Dec 2009 08:13:20 -0500
+Received: from mx2.zhaw.ch ([160.85.104.51]:61448 "EHLO mx2.zhaw.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751289AbZLWNNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 08:13:19 -0500
+From: Tobias Klauser <tklauser@distanz.ch>
+To: Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>
+Subject: [PATCH] regulator/lp3971: Storage class should be before const qualifier
+Date: Wed, 23 Dec 2009 14:13:17 +0100
+Message-Id: <1261573997-9126-1-git-send-email-tklauser@distanz.ch>
+X-Mailer: git-send-email 1.6.3.3
+X-PMX-Version: 5.5.8.383112, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2009.12.23.130024
+X-PerlMx-Spam: Gauge=IIIIIIII, Probability=8%, Report='
+ BODY_SIZE_2000_2999 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __URI_NS '
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to Andrew Morton on 12/22/2009 3:31 PM:
-> Confused.
-> 
-> : long do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
-> : {
-> : 	int error = -EINVAL;
-> : 
-> : 	if (times && (!nsec_valid(times[0].tv_nsec) ||
-> : 		      !nsec_valid(times[1].tv_nsec))) {
-> : 		goto out;
-> : 	}
-> : 
-> : 	if (flags & ~AT_SYMLINK_NOFOLLOW)
-> : 		goto out;
-> : 
-> : 	if (filename == NULL && dfd != AT_FDCWD) {
-> : 		struct file *file;
-> : 
-> : 		if (flags & AT_SYMLINK_NOFOLLOW)
-> : 			goto out;
-> : 
-> : 		file = fget(dfd);
-> : 		error = -EBADF;
-> : 		if (!file)
-> : 			goto out;
-> : 
-> 
-> afacit, if filename==NULL and dfd==-1 then fget() will return NULL and
-> the syscall returns -EBAFD.
+The C99 specification states in section 6.11.5:
 
-Yes, that's true if dfd==-1.  But My complaint was not about dfd==-1, but
-about dfd==AT_FDCWD, in which case, this block of code is skipped, and you
-end up operating on the current directory ".".  My point is that the line:
- if (filename == NULL && dfd != AT_FDCWD) {
-should probably be:
- if (filename == NULL) {
-assuming that fget(AT_FDCWD) likewise fails.
+The placement of a storage-class specifier other than at the beginning
+of the declaration specifiers in a declaration is an obsolescent
+feature.
 
-> 
-> Your report doesn't tell us what kernel version you're testing.  We did
-> fix a few things ni this area, but it was a long time ago.
+Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+---
+ drivers/regulator/lp3971.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Yesterday, Ulrich patched glibc to avoid the issue from the library side
-of things (I first raised the report against glibc 2 months ago, along
-with a proposed patch:
-http://sources.redhat.com/bugzilla/show_bug.cgi?id=10992).  But there is
-still the case of newer kernels and unpatched glibc, where it would also
-be nice to patch the kernel.  I reproduced the bug on
-2.6.31.6-166.fc12.i686, where this test (part of coreutils' configure
-script) failed with status 2:
-
-| #include <fcntl.h>
-| #include <sys/stat.h>
-| #include <unistd.h>
-|
-| int
-| main ()
-| {
-| struct timespec ts[2] = { { 1, UTIME_OMIT }, { 1, UTIME_NOW } };
-|       int fd = creat ("conftest.file", 0600);
-|       struct stat st;
-|       if (fd < 0) return 1;
-|       if (futimens (AT_FDCWD, NULL)) return 2;
-|       if (futimens (fd, ts)) return 3;
-|       sleep (1);
-|       ts[0].tv_nsec = UTIME_NOW;
-|       ts[1].tv_nsec = UTIME_OMIT;
-|       if (futimens (fd, ts)) return 4;
-|       if (fstat (fd, &st)) return 5;
-|       if (st.st_ctime < st.st_atime) return 6;
-|
-|   ;
-|   return 0;
-| }
-
-
+diff --git a/drivers/regulator/lp3971.c b/drivers/regulator/lp3971.c
+index 76d08c2..9416f0c 100644
+--- a/drivers/regulator/lp3971.c
++++ b/drivers/regulator/lp3971.c
+@@ -54,7 +54,7 @@ static int lp3971_set_bits(struct lp3971 *lp3971, u8 reg, u16 mask, u16 val);
+ #define LP3971_BUCK2_BASE 0x29
+ #define LP3971_BUCK3_BASE 0x32
+ 
+-const static int buck_base_addr[] = {
++static const int buck_base_addr[] = {
+ 	LP3971_BUCK1_BASE,
+ 	LP3971_BUCK2_BASE,
+ 	LP3971_BUCK3_BASE,
+@@ -63,7 +63,7 @@ const static int buck_base_addr[] = {
+ #define LP3971_BUCK_TARGET_VOL1_REG(x) (buck_base_addr[x])
+ #define LP3971_BUCK_TARGET_VOL2_REG(x) (buck_base_addr[x]+1)
+ 
+-const static int buck_voltage_map[] = {
++static const int buck_voltage_map[] = {
+ 	   0,  800,  850,  900,  950, 1000, 1050, 1100,
+ 	1150, 1200, 1250, 1300, 1350, 1400, 1450, 1500,
+ 	1550, 1600, 1650, 1700, 1800, 1900, 2500, 2800,
+@@ -96,17 +96,17 @@ const static int buck_voltage_map[] = {
+ #define LDO_VOL_CONTR_SHIFT(x) ((x & 1) << 2)
+ #define LDO_VOL_CONTR_MASK 0x0f
+ 
+-const static int ldo45_voltage_map[] = {
++static const int ldo45_voltage_map[] = {
+ 	1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350,
+ 	1400, 1500, 1800, 1900, 2500, 2800, 3000, 3300,
+ };
+ 
+-const static int ldo123_voltage_map[] = {
++static const int ldo123_voltage_map[] = {
+ 	1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500,
+ 	2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300,
+ };
+ 
+-const static int *ldo_voltage_map[] = {
++static const int *ldo_voltage_map[] = {
+ 	ldo123_voltage_map, /* LDO1 */
+ 	ldo123_voltage_map, /* LDO2 */
+ 	ldo123_voltage_map, /* LDO3 */
 -- 
-Don't work too hard, make some time for fun as well!
+1.6.3.3
 
-Eric Blake             ebb9@byu.net
