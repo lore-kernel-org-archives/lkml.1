@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZLWVzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbZLWV6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZLWVzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZLWVzQ
+	id S1756191AbZLWV6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZLWV6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:55:16 -0500
-Received: from mail.windriver.com ([147.11.1.11]:49481 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755566AbZLWVzP (ORCPT
+	Wed, 23 Dec 2009 16:58:31 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:35245 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757130AbZLWV6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:55:15 -0500
-Message-ID: <4B3291AD.6070104@windriver.com>
-Date: Wed, 23 Dec 2009 15:54:53 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 23 Dec 2009 16:58:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=P9jWP3vNmPBGy5ysYs9OBMNufc5tPqIXtcl1W0mFjPWuJ92il17sc1AJQWNAu1ReSm
+         aKrcJXcLMPx4KiXA+Hr9+NZPu7hNS35P0nfQZaDliZwet6+sjPJPl81HIbOUY8V65Quv
+         tTFRIaqbI868CMq74jAJcAs3uaRE9GI3t74DQ=
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       kdb@oss.sgi.com, mingo@elte.hu
-Subject: Re: [PATCH 15/37] sparc,sunzilog: Add console polling support for
- sunzilog serial driver
-References: <1261603190-5036-14-git-send-email-jason.wessel@windriver.com><1261603190-5036-15-git-send-email-jason.wessel@windriver.com><1261603190-5036-16-git-send-email-jason.wessel@windriver.com> <20091223.135028.112586698.davem@davemloft.net>
-In-Reply-To: <20091223.135028.112586698.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Dec 2009 21:54:53.0377 (UTC) FILETIME=[8ED43B10:01CA841A]
+Date: Wed, 23 Dec 2009 16:58:28 -0500
+Message-ID: <b2f3590f0912231358g798049ey2c8012ff02a956da@mail.gmail.com>
+Subject: libsas - sas_queue's policy of re-queuing all the tasks ...
+From: Chetan Loke <chetanloke@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jason Wessel <jason.wessel@windriver.com>
-> Date: Wed, 23 Dec 2009 15:19:28 -0600
->
->   
->> +static void sunzilog_put_poll_char(struct uart_port *port,
->> +			unsigned char ch)
->> +{
->> +	struct uart_sunzilog_port *up = (struct uart_sunzilog_port *)port;
->> +
->> +	sunzilog_putchar(&up->port, ch);
->> +	udelay(2);
->> +
->> +}
->> +#endif /* CONFIG_CONSOLE_POLL */
->>     
->
-> Just curious, what is the udelay() for?
->   
+Hello,
 
-This was copied from zm.c driver.  I don't think the HW needs it, I'll
-retest and purge it.
+I've a question regarding the libsas core.
 
->   
->>  static struct uart_ops sunzilog_pops = {
->>  	.tx_empty	=	sunzilog_tx_empty,
->>  	.set_mctrl	=	sunzilog_set_mctrl,
->> @@ -1013,6 +1061,10 @@ static struct uart_ops sunzilog_pops = {
->>  	.request_port	=	sunzilog_request_port,
->>  	.config_port	=	sunzilog_config_port,
->>  	.verify_port	=	sunzilog_verify_port,
->> +#ifdef CONFIG_CONSOLE_POLL
->> +	.poll_get_char	= sunzilog_get_poll_char,
->> +	.poll_put_char	= sunzilog_put_poll_char,
->> +#endif
->>  };
->>     
->
-> Please make the indentation consistent with the rest of those in
-> this structure.
->   
+So, sas_queue() will dispatch the coalesced tasks. It then invokes the
+SAS_LLDD's execute_task. Let's assume mv_sas driver.In this case
+mvs_task_exec(). Say, it received 'N' tasks the first time it was
+called.However, the LLDD was only able to service M tasks(where M<N).
+Now it will return rc(non-zero value). sas_queue will then requeue all
+the tasks. But only (N-M) tasks should have been queued, correct? So
+why are we re-trying all the tasks again?
 
-Consider it done.
+PS - If folks are on SCST mailing list too then do not confuse this
+post with my SCST post. There, the target maintainer can see if the
+target driver has to worry about this.
 
-Thanks,
-Jason.
+
+Chetan Loke
