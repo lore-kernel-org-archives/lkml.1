@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbZLWDqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZLWD7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751782AbZLWDqi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 22:46:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZLWDqf
+	id S1751930AbZLWD7p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 22:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZLWD7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 22:46:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49225 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbZLWDqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 22:46:35 -0500
-Message-ID: <4B319323.5030704@kernel.org>
-Date: Wed, 23 Dec 2009 12:48:51 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: torvalds@linux-foundation.org, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: workqueue thing
-References: <1261141088-2014-1-git-send-email-tj@kernel.org>	 <1261143924.20899.169.camel@laptop>  <4B2EE5A5.2030208@kernel.org>	 <1261387377.4314.37.camel@laptop>  <4B2F7879.2080901@kernel.org>	 <1261405604.4314.154.camel@laptop>  <4B3009DC.7020407@kernel.org> <1261479857.4937.18.camel@laptop>
-In-Reply-To: <1261479857.4937.18.camel@laptop>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 22 Dec 2009 22:59:43 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55410 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310AbZLWD7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 22:59:42 -0500
+Subject: [RFC][PATCH 0/14] Convert remaining arches to
+ read/update_persistent_clock
+From: john stultz <johnstul@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org,
+       Russell King <linux@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Mike Frysinger <vapier@gentoo.org>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Tony Luck <tony.luck@intel.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+       Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 19:59:22 -0800
+Message-ID: <1261540762.3508.61.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+So as the timekeeping system has become more and more generic, folks
+have been careful to allow a slow and steady evolution without breaking
+all the arches at once, allowing each arch maintainer to convert over to
+generic code when they're ready.
 
-On 12/22/2009 08:04 PM, Peter Zijlstra wrote:
-> On Tue, 2009-12-22 at 08:50 +0900, Tejun Heo wrote:
->>> Also, I think that whole move tasks back on online stuff is utter crazy,
->>> just move then to another cpu and leave them there.
->>
->> Can you be more specific?  Why is it crazy when moving to online but
->> !active cpu is necessary anyway? 
-> 
-> because its extra (and above all ugly code) that serves no purpose what
-> so ever.
+However, this slow conversion has forced us to keep multiple methods for
+various functionality around, cluttering up the code and making
+maintenance more difficult. Further, there's no central road-map or
+notification to maintainers on when these new generic functions appear,
+so its likely folks wouldn't notice until the old interfaces were
+removed.
 
-The forward progress guarantee requires rescuers to migrate to online
-but !active CPUs during CPU_DOWN_PREPARE, so the only extra code
-necessary for migrating back remaining workers when a CPU comes back
-online is the code to actually do that.  That's only a couple tens of
-lines of code in the trustee thread.
+In this case the generic read_persistent_clock() and
+update_persistent_clock() methods have been provided to allow the
+generic timekeeping code to initialize xtime and set the persistent
+clock when NTP is synced. However many arches haven't converted, so the
+generic code has to handle the case where the arch is doing this
+management itself.
 
-Now, the other option would to leave those unbound workers alone and
-make sure they don't take up new works once new CPUs come online which
-would require code in hotter path and results in less consistent
-behavior.  The tradeoff seems pretty obvious to me.  Doesn't it?
+This patch series tries to convert the following 14 architectures over
+to use read_persistent_clock() and update_persistent_clock() as
+applicable, killing off about 200 lines of arch specific code.
 
-Thanks.
+I'm posting this tonight in somewhat rough form (none of the code has
+been compiled or tested) so I can get feedback tomorrow before I'm off
+on vacation until the new year. I'd like to get these changes into
+2.6.34 so further generic cleanups can be made.
 
--- 
-tejun
+Let me know what you think.
+
+thanks
+-john
+
+
+
+
