@@ -1,96 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbZLWUfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbZLWUhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757135AbZLWUfR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 15:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbZLWUfM
+	id S1757155AbZLWUhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 15:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZLWUhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 15:35:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52284 "EHLO ogre.sisk.pl"
+	Wed, 23 Dec 2009 15:37:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62343 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757035AbZLWUfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 15:35:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Asynchronous suspend/resume - test results
-Date: Wed, 23 Dec 2009 21:35:24 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org> <200912212136.12665.rjw@sisk.pl>
-In-Reply-To: <200912212136.12665.rjw@sisk.pl>
+	id S1751165AbZLWUhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 15:37:15 -0500
+Message-ID: <4B327F3A.9020101@redhat.com>
+Date: Wed, 23 Dec 2009 22:36:10 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com>
+In-Reply-To: <4B3248F9.5030504@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912232135.25041.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 December 2009, Rafael J. Wysocki wrote:
-> On Monday 21 December 2009, Alan Stern wrote:
-> > On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
-...
-> > You should also make SCSI targets and hosts async.  Hosts are added in
-> > drivers/scsi/hosts.c:scsi_add_host_with_dma() (in 2.6.32 this was
-> > named scsi_add_host()).  Targets are added in
-> > drivers/scsi/scsi_sysfs.c:scsi_target_add().  And for thoroughness,
-> > SCSI devices are added in scsi_sysfs_add_sdev() in the same file.
-> 
-> Thanks a lot for the pointers.
+On 12/23/2009 06:44 PM, Gregory Haskins wrote:
+>
+>>   - Are a pure software concept
+>>      
+> By design.  In fact, I would describe it as "software to software
+> optimized" as opposed to trying to shoehorn into something that was
+> designed as a software-to-hardware interface (and therefore has
+> assumptions about the constraints in that environment that are not
+> applicable in software-only).
+>
+>    
 
-I put device_enable_async_suspend() in all of these places and that resulted in
-major reduction of suspend time without starting the async threads upfront.
-Now, however, starting them upfront helps only a little, within the standard
-deviation from the "non-upfront" case.
+And that's the biggest mistake you can make.  Look at Xen, for 
+instance.  The paravirtualized the fork out of everything that moved in 
+order to get x86 virt going.  And where are they now? x86_64 syscalls 
+are slow since they have to trap to the hypervisor and (partially) flush 
+the tlb.  With npt or ept capable hosts performance is better for many 
+workloads on fullvirt.  And paravirt doesn't support Windows.  Their 
+unsung hero Jeremy is still trying to upstream dom0 Xen support.  And 
+they get to support it forever.
 
-In turn, resume _without_ starting the async threads upfront makes a little
-sense on my test boxes.  In fact, it only helped on the nx6325 and made things
-worse on the other two (I added the results from Toshiba Portege R500, but it
-has the same chipset as the Wind U100, ie. ICH7).
+VMware stuck with the hardware defined interfaces.  Sure they had to 
+implement binary translation to get there, but as a result, they only 
+have to support one interface, all guests support it, and they can drop 
+it on newer hosts where it doesn't give them anything.
 
-The results are as follows:
+We had the advantage of course of starting with virt extensions, so it 
+was a no-brainer: paravirt only where absolutely required.  Where we 
+deviated from this, it backfired.
 
-			HP nx6325	MSI Wind U100	Toshiba Portege R500
+>>   - Gregory claims that the AlacricityVM patches are not a replacement for KVM.
+>>     I.e. there's no intention to phase out any 'old stuff'
+>>      
+> There's no reason to phase anything out, except perhaps the virtio-pci
+> transport.  This is one more transport, plugging into virtio underneath
+> (just like virtio-pci, virtio-lguest, and virtio-s390).  I am not even
+> suggesting that the old transport has to go away, per se.  It is the KVM
+> maintainers who insist on it being all or nothing.  For me, I do not see
+> the big deal in having one more "model" option in the qemu cmd-line, but
+> that is just my opinion.  If the maintainers were really so adamant that
+> choice is pure evil, I am not sure why we don't see patches for removing
+> everything but one model type in each IO category.  But I digress.
+>    
 
-sync suspend		1357 (+/- 35)	 656 (+/- 50)	 889 (+/- 29)
-sync resume		3027 (+/- 6)	3372 (+/- 30)	4552 (+/- 35)
+We have to support users (also known as customers in some areas), so we 
+have to keep the old stuff.  We have limited resources, so we want to 
+maintain as little as possible.  We'll do it if we have to, but I'm 
+totally unconvinced we have to.
 
-async suspend		1053 (+/- 50)	 490 (+/- 42)	 620 (+/- 52)
-async resume		2291 (+/- 7)	3406 (+/- 52)	4557 (+/- 26)
 
-async "upfront" suspend	1040 (+/- 35)	 476 (+/- 9)	 585 (+/- 29)
-async "upfront" resume	1787 (+/- 7)	1724 (+/- 48)	1990 (+/- 25)
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-The raw data are at
-http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
-http://www.sisk.pl/kernel/data/r500/
-http://www.sisk.pl/kernel/data/nx6325/
-http://www.sisk.pl/kernel/data/wind/
-
-and the previous results were moved into
-http://www.sisk.pl/kernel/data/091220/
-
-The patches used in the testing are in my async branch at
-http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-The patches in this branch are not for upstream, but it's on top of the 
-linux-next branch containing patches for the 2.6.34 merge window.
-
-...
-> > Although USB host controllers aren't the longest-running devices to
-> > resume, they do tend to be on the longest paths.  Speeding them up
-> > would help.  One change you could try is in the patch below.  
-> > Currently when a controller has to be reset, the root hub beneath it is
-> > also reset and then re-suspended.  However there's no reason to suspend
-> > it if the PM core is only going to resume it a little bit later.  The
-> > patch gets rid of the unnecessary suspend.  Note: I haven't tested it.
-> 
-> OK, I'll try it.
-
-Unfortunately it breaks the second suspend (suspend process returns error code
-and says that the controller was not suspended, more or less).
-
-Rafael
