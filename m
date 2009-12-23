@@ -1,223 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZLWJEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZLWJHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZLWJEV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 04:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbZLWJES
+	id S1754047AbZLWJHW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZLWJHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 04:04:18 -0500
-Received: from mga02.intel.com ([134.134.136.20]:18580 "EHLO mga02.intel.com"
+	Wed, 23 Dec 2009 04:07:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35086 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbZLWJEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 04:04:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,441,1257148800"; 
-   d="scan'208";a="581528058"
-Date: Wed, 23 Dec 2009 17:04:11 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
-Message-ID: <20091223090411.GA8526@sli10-desk.sh.intel.com>
-References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
- <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com>
- <20091218022112.GA30333@sli10-desk.sh.intel.com>
- <20091218051457.GB417@elte.hu>
- <4B309AB9.7030208@kernel.org>
- <20091223005637.GA16783@sli10-desk.sh.intel.com>
- <4B317491.5050303@kernel.org>
- <86802c440912221809w35dbb1eegcf6133ed1f190069@mail.gmail.com>
- <20091223024513.GA30764@sli10-desk.sh.intel.com>
- <4B31870F.7090106@kernel.org>
+	id S1751397AbZLWJHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 04:07:18 -0500
+Date: Wed, 23 Dec 2009 09:06:36 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, eparis@redhat.com, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       eparis@redhat.com, a.p.zijlstra@chello.nl, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1261492999.4937.36.camel@laptop>
+References: <1261492999.4937.36.camel@laptop>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Revert 738d2be, simplify set_task_cpu()
+Message-ID: <tip-0c69774e6ce94364cfaa8bdeb18061edc414bc5a@git.kernel.org>
+Git-Commit-ID: 0c69774e6ce94364cfaa8bdeb18061edc414bc5a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4B31870F.7090106@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 10:57:19AM +0800, Yinghai Lu wrote:
-> Shaohua Li wrote:
-> > On Wed, Dec 23, 2009 at 10:09:04AM +0800, Yinghai Lu wrote:
-> >> On Tue, Dec 22, 2009 at 5:38 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> >>> Shaohua Li wrote:
-> >>>> On Tue, Dec 22, 2009 at 06:08:57PM +0800, Yinghai Lu wrote:
-> >>>>> Ingo Molnar wrote:
-> >>>>>> * Shaohua Li <shaohua.li@intel.com> wrote:
-> >>>>>>
-> >>>>>>> On Fri, Dec 18, 2009 at 09:28:50AM +0800, Yinghai Lu wrote:
-> >>>>>>>> On Wed, Dec 16, 2009 at 12:06 PM, Len Brown <lenb@kernel.org> wrote:
-> >>>>>>>>> Hi Linus,
-> >>>>>>>>>
-> >>>>>>>>> please pull from:
-> >>>>>>>>>
-> >>>>>>>>> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
-> >>>>>>>>>
-> >>>>>>>> ;..
-> >>>>>>>>> Shaohua Li (3):
-> >>>>>>>>> ? ? ?ACPI: Add a generic API for _OSC -v2
-> >>>>>>>>> ? ? ?ACPI: cleanup pci_root _OSC code.
-> >>>>>>>>> ? ? ?ACPI: Add platform-wide _OSC support.
-> >>>>>>>> it seems these three patches broke the _OSC on my intel new systems.
-> >>>>>>>>
-> >>>>>>>> revert them fix the problem with AER and pciehp and etc
-> >>>>>>> can you give more details? I just cleaned up the _OSC code for AER and
-> >>>>>>> pciehp, no function changes.
-> >>>>>> Famous last words ;-)
-> >>>>>>
-> >>>>>> Yinghai, i suspect Shaohua needs the kind of info you'd need if you tried to
-> >>>>>> fix it: acpidump, before/after debug boot log, a description of what goes bad,
-> >>>>>> etc.
-> >>>>> the so called clean up, change the ret length checking.
-> >>>>>
-> >>>>> -       if (!output.length)
-> >>>>> -               return AE_NULL_OBJECT;
-> >>>>> -
-> >>>>>
-> >>>>> +       /* return buffer should have the same length as cap buffer */
-> >>>>> +       if (context->ret.length != context->cap.length)
-> >>>>> +               return AE_NULL_OBJECT;
-> >>>> Wield BIOS. ACPI spec does mention the return buffer have the same length.
-> >>>> Does changing the check back make the issue go away?
-> >>> change to
-> >>> if (context->ret.length < context->cap.length)
-> >>>
-> >>> make AER work, but pciehp still fail.
-> > Can you try below patch please? Looks the returned acpi buffer is a two-tiled buffer.
-> > Strange is it doesn't fail at my hand.
-> > 
-> > diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-> > index 65f7e33..0c1ad31 100644
-> > --- a/drivers/acpi/bus.c
-> > +++ b/drivers/acpi/bus.c
-> > @@ -397,6 +397,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context)
-> >  	union acpi_object *out_obj;
-> >  	u8 uuid[16];
-> >  	u32 errors;
-> > +	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
-> >  
-> >  	if (!context)
-> >  		return AE_ERROR;
-> > @@ -419,16 +420,16 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context)
-> >  	in_params[3].buffer.length 	= context->cap.length;
-> >  	in_params[3].buffer.pointer 	= context->cap.pointer;
-> >  
-> > -	status = acpi_evaluate_object(handle, "_OSC", &input, &context->ret);
-> > +	status = acpi_evaluate_object(handle, "_OSC", &input, &output);
-> >  	if (ACPI_FAILURE(status))
-> >  		return status;
-> >  
-> > -	/* return buffer should have the same length as cap buffer */
-> > -	if (context->ret.length != context->cap.length)
-> > +	if (!output.length)
-> >  		return AE_NULL_OBJECT;
-> >  
-> > -	out_obj = context->ret.pointer;
-> > -	if (out_obj->type != ACPI_TYPE_BUFFER) {
-> > +	out_obj = output.pointer;
-> > +	if (out_obj->type != ACPI_TYPE_BUFFER
-> > +		|| out_obj->buffer.length != context->cap.length) {
-> >  		acpi_print_osc_error(handle, context,
-> >  			"_OSC evaluation returned wrong type");
-> >  		status = AE_TYPE;
-> > @@ -457,11 +458,20 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context)
-> >  		goto out_kfree;
-> >  	}
-> >  out_success:
-> > -	return AE_OK;
-> > +	context->ret.length = out_obj->buffer.length;
-> > +	context->ret.pointer = kmalloc(context->ret.length, GFP_KERNEL);
-> > +	if (!context->ret.pointer) {
-> > +		status =  AE_NO_MEMORY;
-> > +		goto out_kfree;
-> > +	}
-> > +	memcpy(context->ret.pointer, out_obj->buffer.pointer,
-> > +		context->ret.length);
-> > +	status =  AE_OK;
-> >  
-> >  out_kfree:
-> > -	kfree(context->ret.pointer);
-> > -	context->ret.pointer = NULL;
-> > +	kfree(output.pointer);
-> > +	if (status != AE_OK)
-> > +		context->ret.pointer = NULL;
-> >  	return status;
-> >  }
-> >  EXPORT_SYMBOL(acpi_run_osc);
-> 
-> aer and pciehp work again with this patch.
-Len, this is the patch with describtion, please check and apply.
+Commit-ID:  0c69774e6ce94364cfaa8bdeb18061edc414bc5a
+Gitweb:     http://git.kernel.org/tip/0c69774e6ce94364cfaa8bdeb18061edc414bc5a
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Tue, 22 Dec 2009 15:43:19 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 23 Dec 2009 10:04:10 +0100
 
-Executing _OSC returns a buffer, which has an acpi object in it.
-Don't directly returns the buffer, instead, we return the acpi object's
-buffer. This fixes a regression since caller of acpi_run_osc expects
-an acpi object's buffer returned.
+sched: Revert 738d2be, simplify set_task_cpu()
 
-Tested-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Effectively reverts 738d2be4301007f054541c5c4bf7fb6a361c9b3a.
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 65f7e33..0c1ad31 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -397,6 +397,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context)
- 	union acpi_object *out_obj;
- 	u8 uuid[16];
- 	u32 errors;
-+	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
+As demonstrated by Eric, we really need to call __set_task_cpu()
+early in the fork() path to properly initialize the various task
+state -- specifically the cgroup state through set_task_rq().
+
+[ we could probably fix this by explicitly calling
+  __set_task_cpu() from   sched_fork(), but lets try that for the
+  next cycle and simply revert to the old behaviour for now. ]
+
+Reported-by: Eric Paris <eparis@redhat.com>
+Tested-by: Eric Paris <eparis@redhat.com>,
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: efault@gmx.de
+LKML-Reference: <1261492999.4937.36.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 87f1f47..c535cc4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2045,11 +2045,10 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
  
- 	if (!context)
- 		return AE_ERROR;
-@@ -419,16 +420,16 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context)
- 	in_params[3].buffer.length 	= context->cap.length;
- 	in_params[3].buffer.pointer 	= context->cap.pointer;
+ 	trace_sched_migrate_task(p, new_cpu);
  
--	status = acpi_evaluate_object(handle, "_OSC", &input, &context->ret);
-+	status = acpi_evaluate_object(handle, "_OSC", &input, &output);
- 	if (ACPI_FAILURE(status))
- 		return status;
- 
--	/* return buffer should have the same length as cap buffer */
--	if (context->ret.length != context->cap.length)
-+	if (!output.length)
- 		return AE_NULL_OBJECT;
- 
--	out_obj = context->ret.pointer;
--	if (out_obj->type != ACPI_TYPE_BUFFER) {
-+	out_obj = output.pointer;
-+	if (out_obj->type != ACPI_TYPE_BUFFER
-+		|| out_obj->buffer.length != context->cap.length) {
- 		acpi_print_osc_error(handle, context,
- 			"_OSC evaluation returned wrong type");
- 		status = AE_TYPE;
-@@ -457,11 +458,20 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context)
- 		goto out_kfree;
- 	}
- out_success:
--	return AE_OK;
-+	context->ret.length = out_obj->buffer.length;
-+	context->ret.pointer = kmalloc(context->ret.length, GFP_KERNEL);
-+	if (!context->ret.pointer) {
-+		status =  AE_NO_MEMORY;
-+		goto out_kfree;
+-	if (task_cpu(p) == new_cpu)
+-		return;
+-
+-	p->se.nr_migrations++;
+-	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
++	if (task_cpu(p) != new_cpu) {
++		p->se.nr_migrations++;
++		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
 +	}
-+	memcpy(context->ret.pointer, out_obj->buffer.pointer,
-+		context->ret.length);
-+	status =  AE_OK;
  
- out_kfree:
--	kfree(context->ret.pointer);
--	context->ret.pointer = NULL;
-+	kfree(output.pointer);
-+	if (status != AE_OK)
-+		context->ret.pointer = NULL;
- 	return status;
+ 	__set_task_cpu(p, new_cpu);
  }
- EXPORT_SYMBOL(acpi_run_osc);
