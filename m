@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZLWSBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZLWSET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbZLWSBg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 13:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZLWSBf
+	id S1756703AbZLWSET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 13:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZLWSES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 13:01:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36411 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752800AbZLWSBf (ORCPT
+	Wed, 23 Dec 2009 13:04:18 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:40353 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752800AbZLWSER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 13:01:35 -0500
-Date: Wed, 23 Dec 2009 10:01:00 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mark Hounschell <markh@compro.net>
-cc: Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-In-Reply-To: <4B32565E.6000501@compro.net>
-Message-ID: <alpine.LFD.2.00.0912230955590.6879@localhost.localdomain>
-References: <4AFB3962.2020106@ntlworld.com> <4B2B4485.6000305@cfl.rr.com> <4B2B5F86.1090403@cfl.rr.com> <alpine.LFD.2.00.0912180716400.3712@localhost.localdomain> <4B2B9F9F.7040802@compro.net> <alpine.LFD.2.00.0912180734220.3712@localhost.localdomain>
- <4B2BE05B.9050006@compro.net> <alpine.LFD.2.00.0912181213540.3712@localhost.localdomain> <4B30E1B4.7000702@compro.net> <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain> <4B310879.9050701@compro.net> <1261525076.16916.4.camel@localhost.localdo
- main> <4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net> <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com> <4B32386B.2060509@compro.net> <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain> <87bphpd4rt.fsf@basil.nowhere.org>
- <4B32565E.6000501@compro.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 23 Dec 2009 13:04:17 -0500
+Date: Wed, 23 Dec 2009 21:04:15 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, leoli@freescale.com
+Subject: Re: ucc_geth broken in 2.6.32 by
+ 864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
+Message-ID: <20091223180415.GA12987@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 23, 2009 at 12:40:19PM -0500, Lennart Sorensen wrote:
+> We use the ucc_geth for 6 ports (4 100Mbit and 2 Gbit ports) on an
+> mpc8360e.  Up to 2.6.31 this worked fine.  2.6.32 on the other hand
+> crashes very quickly after boot.
 
+Hm. Just curious, what CPU revision you use? So that I could try
+to reproduce the issue... I have MPC8360E-MDS boards, rev 2.0 and
+rev rev 2.1 CPUs, Marvell PHYs. I also have MPC8360E-RDK (rev 2.1).
+And I didn't see any issues with this patch.
 
-On Wed, 23 Dec 2009, Mark Hounschell wrote:
+> I managed to see the same crash when I was selectively trying to add newer
+> ucc_geth patches to the 2.6.31 kernel a couple of months ago, and the same
+> patch that caused a crash then seems suspect.  If I revert the patch the
+> system runs completely stable.  Amusingly, the excact error message the
+> patch claims to fix is in fact the error it causes to happen in my case.
 > 
-> I'll try the patch Linus provided now.
+> So preferably 864fdf884e82bacbe8ca5e93bd43393a61d2e2b4 could be reverted
 
-I doubt it matters - because if it did, it would matter for everybody, and 
-the HPET thing shouldn't make any difference at all.
+I don't see any point in reverting, because it will surely break my boards.
+So, we need to fix this, not just hide.
 
-[ Or rather, it should matter for everybody trying to format a specific 
-  format (without interleave it won't matter, and not all formats have any 
-  interleave - I think it was mainly used on 5.25" floppies and special 
-  formats). ]
+> unless someone can fix it.
 
-Besides, maybe I was just mis-reading the code.
+Well, I'm ready to help you with debugging.
 
-But getting some testing for the patch certainly won't hurt, so I'm not 
-going to argue against it any more ;)
+> Now I must add that I run with the xenomai/adeos-ipipe patches as well,
+> which do change interrupt handling a little,
 
-		Linus
+It could be that it takes too long to stop the UCC, and xenomai
+makes the timings worse, so the watchdog triggers.
+
+Can you try the following patch?
+
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index afaf088..2f73e3f 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -1563,6 +1563,8 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
+ 
+ static void ugeth_quiesce(struct ucc_geth_private *ugeth)
+ {
++	netif_device_detach(ugeth->ndev);
++
+ 	/* Wait for and prevent any further xmits. */
+ 	netif_tx_disable(ugeth->ndev);
+ 
+@@ -1577,7 +1579,7 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
+ {
+ 	napi_enable(&ugeth->napi);
+ 	enable_irq(ugeth->ug_info->uf_info.irq);
+-	netif_tx_wake_all_queues(ugeth->ndev);
++	netif_device_attach(ugeth->ndev);
+ }
+ 
+ /* Called every time the controller might need to be made
