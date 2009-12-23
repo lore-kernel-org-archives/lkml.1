@@ -1,167 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZLWCJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZLWCJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbZLWCJN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 21:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbZLWCJJ
+	id S1753916AbZLWCJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 21:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZLWCJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 21:09:09 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:53454 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZLWCJH convert rfc822-to-8bit (ORCPT
+	Tue, 22 Dec 2009 21:09:50 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:47361 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751804AbZLWCJt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 21:09:07 -0500
+	Tue, 22 Dec 2009 21:09:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=hC7nIRWm2r5ejt6ye24tESiolDr0YmN99Zt+8SCUWUoQYNTmAZDKaNd1eS/osy/nSb
-         WtXbaWzcmLa6TmrsIOCaB0c41/gV7W168TqLrNVlLAdmJGjNOo8ppR1jujbeZ+83JtEx
-         7k5wIUQOgn0UtP3HQzqSbQup3ihwbV+CLcPj0=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vunWmc+QZ1c/dTzbPzWoKn9YY5FP0vk8SGloYFewMLQpCKZfN8R2nufdSjl8xQrmGh
+         s2Q5K6Sko19FEOvguuTr7uhyhMNg/LEEnNhIvAz5lyCMigfTtJWv3U3gH3+vRhEvelaR
+         CgDTTRqSXB+CyVjOh0DJe0qOxZRD0Ol9Y/1Cc=
 MIME-Version: 1.0
-In-Reply-To: <4B317491.5050303@kernel.org>
-References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain>
-	 <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com>
-	 <20091218022112.GA30333@sli10-desk.sh.intel.com>
-	 <20091218051457.GB417@elte.hu> <4B309AB9.7030208@kernel.org>
-	 <20091223005637.GA16783@sli10-desk.sh.intel.com>
-	 <4B317491.5050303@kernel.org>
-Date: Tue, 22 Dec 2009 18:09:04 -0800
-X-Google-Sender-Auth: 461ad69cd1dfe4b8
-Message-ID: <86802c440912221809w35dbb1eegcf6133ed1f190069@mail.gmail.com>
-Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
-From: Yinghai Lu <yinghai@kernel.org>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <200912230120.15519.johannes.hirte@fem.tu-ilmenau.de>
+References: <200912230120.15519.johannes.hirte@fem.tu-ilmenau.de>
+Date: Wed, 23 Dec 2009 10:09:47 +0800
+Message-ID: <2375c9f90912221809h30c509c3kda5bfd45276fffe5@mail.gmail.com>
+Subject: Re: [Oops] 2.6.33-rc1: kernel NULL pointer dereference in 
+	check_preempt_wakeup
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 5:38 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> Shaohua Li wrote:
->> On Tue, Dec 22, 2009 at 06:08:57PM +0800, Yinghai Lu wrote:
->>> Ingo Molnar wrote:
->>>> * Shaohua Li <shaohua.li@intel.com> wrote:
->>>>
->>>>> On Fri, Dec 18, 2009 at 09:28:50AM +0800, Yinghai Lu wrote:
->>>>>> On Wed, Dec 16, 2009 at 12:06 PM, Len Brown <lenb@kernel.org> wrote:
->>>>>>> Hi Linus,
->>>>>>>
->>>>>>> please pull from:
->>>>>>>
->>>>>>> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
->>>>>>>
->>>>>> ;..
->>>>>>> Shaohua Li (3):
->>>>>>> ? ? ?ACPI: Add a generic API for _OSC -v2
->>>>>>> ? ? ?ACPI: cleanup pci_root _OSC code.
->>>>>>> ? ? ?ACPI: Add platform-wide _OSC support.
->>>>>> it seems these three patches broke the _OSC on my intel new systems.
->>>>>>
->>>>>> revert them fix the problem with AER and pciehp and etc
->>>>> can you give more details? I just cleaned up the _OSC code for AER and
->>>>> pciehp, no function changes.
->>>> Famous last words ;-)
->>>>
->>>> Yinghai, i suspect Shaohua needs the kind of info you'd need if you tried to
->>>> fix it: acpidump, before/after debug boot log, a description of what goes bad,
->>>> etc.
->>> the so called clean up, change the ret length checking.
->>>
->>> -       if (!output.length)
->>> -               return AE_NULL_OBJECT;
->>> -
->>>
->>> +       /* return buffer should have the same length as cap buffer */
->>> +       if (context->ret.length != context->cap.length)
->>> +               return AE_NULL_OBJECT;
->> Wield BIOS. ACPI spec does mention the return buffer have the same length.
->> Does changing the check back make the issue go away?
+On Wed, Dec 23, 2009 at 8:20 AM, Johannes Hirte
+<johannes.hirte@fem.tu-ilmenau.de> wrote:
+> With 2.6.33-rc1 I have random hangs. Even SysRq-Key works, only hard reset.
+> I've had it mostly within X, where I didn't get any messages but one time on
+> console with the following trace:
 >
-> change to
-> if (context->ret.length < context->cap.length)
->
-> make AER work, but pciehp still fail.
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000090
+> IP [<ffffffff810263f1>1 check_preempt_wakeup+0xae/0x14e
+> PGD 10efa1067 PUD 11767a067 PMD 0
+> Oops: 0000 [#1] SMP
+> last sysfs file: /sys/devices/pci0000:00/0000:00:10.3/tempt1_input
+> CPU 0
+> Pid: 20108, comm: ebuild.sh Not tainted 2.6.33-rc1 #1 TYAN Tiger K8W Dual AMD
+> Opteron, S28755/To Be Filled By O.E.M.
+> RIP: 0010:[<ffffffff810263f1>] [<ffffffff810263f1>] check_preempt_wakeup+0xae/0x14e
+> RSP: 0018: ffff88006c0e3e50 EFALGS: 000010087
+> RAX: ffff880028292420 RBX: 0000000000000000 RCX: 0000000000000000
+> RDX: 0000000000000002 RSI: 0000000000000000 RDI: 0000000001200011
+> RBP: ffff880105a3eae0 R08: 0000000000000000 R09: 0000000000000001
+> R10: 0000000001200011 R11: ffff88011cdd0000 R12: ffff8800282123c0
+> R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000004ed0
+> FS: Â 00007f767a6aa700(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
+> CS: Â 0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000090 CRÂ§: 00000001061a3000 CR4: 00000000000006f0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process ebuild.sh (pid: 20108, threadinfo ffff88006c0e2000, task ffff880105a3eae0)
+> Stack:
+> Â ffff8800202123c0 ffff88009734c740 0000000001200011 ffff88009734c740
+> <0> 0000000000004ed0 ffffffff8102e329 0000000000000000 0000000000000286
+> <0> 00007f767a6aa9d0 0000000000000000 0000000000000000 ffffffff8103042d
+> Call Trace:
+> Â [<ffffffff8102e329>] ? Â wake_up_new_task+0x66/0x8f
+> Â [<ffffffff8103042d>] ? do_fork+0x20f/0x273
+> Â [<ffffffff810a5a9s>] ? alloc_fd+0x69/10a
+> Â [<ffffffff8103a953>] ? sigprocmask+0x9f/0xc2
+> Â [<ffffffff810020d3>] ? stub_clone+0x13/0x20
+> Â [<ffffffff81001e6b>] ? system_call_fastpath+0x16/0x1b
+> Code: 8b 89 88 00 00 00 ff c0 48 85 c9 75 f2 eb 09 40 0b 9b 88 00 00 00 ff ca 39
+> c2 7f f3 eb 09 4d 8b b6 88 00 00 00 ff c8 39 d0 7f f3 <49> 8b 86 90 00 00 00 48
+> 39 83 90 00 00 00 75 74 4d 85 f6 75 04
+> RIP Â [<ffffffff810263f1>] check_preempt_wakeup+0xae/0x14e
+> Â RSP <ffff88006c0e3e50>
+> CR2: 0000000000000090
+> ---[ end trace f6bafb05b72ae358 ]---
 
-[   54.190606] calling  aer_service_init+0x0/0x2b @ 1
-[   55.200862] run_acpi_osc: ret length 40 cap length 12
-[   55.203924] aer 0000:00:01.0:pcie02: service driver aer loaded
-[   55.208520] aer 0000:00:03.0:pcie02: service driver aer loaded
-[   55.222730] aer 0000:00:05.0:pcie02: service driver aer loaded
-[   55.238340] aer 0000:00:07.0:pcie02: service driver aer loaded
-[   55.242030] aer 0000:00:09.0:pcie02: service driver aer loaded
-[   56.270866] run_acpi_osc: ret length 40 cap length 12
-[   56.275370] aer 0000:80:00.0:pcie02: service driver aer loaded
-[   56.279645] aer 0000:80:01.0:pcie02: service driver aer loaded
-[   56.289378] aer 0000:80:03.0:pcie02: service driver aer loaded
-[   56.306406] aer 0000:80:05.0:pcie02: service driver aer loaded
-[   56.309489] aer 0000:80:07.0:pcie02: service driver aer loaded
-[   56.326848] aer 0000:80:09.0:pcie02: service driver aer loaded
-[   56.330392] initcall aer_service_init+0x0/0x2b returned 0 after 2089791 usecs
-[   56.347263] calling  aer_inject_init+0x0/0x12 @ 1
-[   56.349822] initcall aer_inject_init+0x0/0x12 returned 0 after 290 usecs
-[   56.367496] calling  ioapic_init+0x0/0x1b @ 1
-[   56.370813] initcall ioapic_init+0x0/0x1b returned 0 after 718 usecs
-[   56.387751] calling  pci_hotplug_init+0x0/0x4e @ 1
-[   56.391225] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-[   56.407362] initcall pci_hotplug_init+0x0/0x4e returned 0 after 15785 usecs
-[   56.411486] calling  pcied_init+0x0/0x9c @ 1
-[   56.427349] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCI0
-[   56.446705] Firmware did not grant requested _OSC control
-[   56.450227] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:00:03.0
-[   56.469325] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCI0
-[   56.488221] Firmware did not grant requested _OSC control
-[   56.491440] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:00:05.0
-[   56.511164] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCI0
-[   56.530074] Firmware did not grant requested _OSC control
-[   56.546595] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:00:1c.0
-[   56.567448] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCIB
-[   56.586091] Firmware did not grant requested _OSC control
-[   56.589624] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:80:03.0
-[   56.611700] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCIB
-[   56.627768] Firmware did not grant requested _OSC control
-[   56.630734] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:80:05.0
-[   56.655403] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCI0
-[   56.671933] Firmware did not grant requested _OSC control
-[   56.687138] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:00:03.0
-[   56.708671] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCI0
-[   56.726175] Firmware did not grant requested _OSC control
-[   56.728791] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:00:05.0
-[   56.749652] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCI0
-[   56.768909] Firmware did not grant requested _OSC control
-[   56.785642] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:00:1c.0
-[   56.805022] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCIB
-[   56.810012] Firmware did not grant requested _OSC control
-[   56.827406] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:80:03.0
-[   56.848214] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Trying to get hotplug control for \_SB_.PCIB
-[   56.867509] Firmware did not grant requested _OSC control
-[   56.872287] acpi_pcihp: acpi_get_hp_hw_control_from_firmware:
-Cannot get control of hotplug hardware for pci 0000:80:05.0
-[   56.890273] pciehp: pcie_port_service_register = 0
+Hmm, seems like the one Eric reported:
+http://lkml.org/lkml/2009/12/21/272
+
+>
+> Since the system didn't respond anymore, I had captured this with camera and
+> copied by hand. I hope I haven't made any mistakes when copying. The picture
+> wasn't very good.
+>
+
+Wow, hard work. :)
+
+Can you try Peter's patch?
+
+http://lkml.org/lkml/2009/12/22/124
+
+Thanks!
