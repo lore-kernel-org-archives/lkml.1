@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZLWBPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZLWBQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbZLWBPF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 20:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZLWBPB
+	id S1754297AbZLWBQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 20:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZLWBQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 20:15:01 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51793 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZLWBPA (ORCPT
+	Tue, 22 Dec 2009 20:16:47 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:48849 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZLWBQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 20:15:00 -0500
-To: "Smith, GeoffX" <geoffx.smith@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Stone <michael@laptop.org>
-Subject: Re: [PATCH] prctl: return MCE process flags through pointer
-From: Andi Kleen <andi@firstfloor.org>
-References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1829@orsmsx510.amr.corp.intel.com>
-Date: Wed, 23 Dec 2009 02:14:51 +0100
-In-Reply-To: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1829@orsmsx510.amr.corp.intel.com> (GeoffX Smith's message of "Tue, 22 Dec 2009 16:33:19 -0800")
-Message-ID: <87hbricwz8.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 22 Dec 2009 20:16:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type;
+        b=WD6zT1Vp0JFra41pm5gcvmXrpsNdlUlkqXucvzR2/s8VQqrWr+K1u6TaNjY9O7EjBC
+         5W5zbuSaNPbql1NAaF68sMSrjDgeOpLxV6np+UW9g7/fxmyzLmRTjflor5WdYv6uaWOt
+         ZDW//9yzAkUJkWp+Y8mgg2ixQkfaPzRrdwLos=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091222175939.GF4385@tux>
+References: <20091222022355.GA32508@bombadil.infradead.org> 
+	<19248.19829.293087.367661@gargle.gargle.HOWL> <20091222155005.GA4385@tux> 
+	<20091222162055.GC4385@tux> <20091222165528.GE4385@tux> <20091222175939.GF4385@tux>
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Date: Tue, 22 Dec 2009 17:16:25 -0800
+X-Google-Sender-Auth: ebad867abea153d2
+Message-ID: <43e72e890912221716r64ea4542qd747302b536a3156@mail.gmail.com>
+Subject: Re: Asus eeepc 1008HA suspend issue and mac80211 suspend corner case
+To: Luis Rodriguez <Luis.Rodriguez@atheros.com>
+Cc: Sujith Manoharan <Sujith.Manoharan@atheros.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Jonathan May <jonathan.may@atheros.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Smith, GeoffX" <geoffx.smith@intel.com> writes:
+OK I have to go now but I managed to get this working without the
+issue coming up. At this point I am not sure if all of these are
+required but I cherry picked 2 patches from wireless-testing and then
+added 4, one based on sujith's suggestion.
 
-> This patch fixes the semantics of prctl() option PR_MCE_KILL_GET 
-> to pass the return value through *arg2.
->
-> With this change, the option now follows the same conventions as the
-> other "get" options added since 2.6.0, and also brings it into
-> conformance with the advice in chapter 16 of Documentation/CodingStyle.
->
-> This prctl() option was only added within the last month, so there are
-> not any production applications to break.  This patch applies cleanly
-> to mainline and to 2.6.32.2 for backporting.
+http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0001-mac80211-fix-resume.patch
+http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0002-mac80211-fix-WMM-AP-settings-application.patch
 
-It breaks the test suite, the man pages, qemu and one slide deck at least.
+http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0003-ath9k-set-and-restore-ps-prior-to-stop-and-interface.patch
+http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0004-ath9k-ensure-hardware-is-awake-during-ampdu-TX-actio.patch
 
--Andi
+http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0005-ath9k-synch-TX-DMA-buffer-upon-TX-cancelation.patch
+http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0006-ath9k-do-not-wake-up-device-if-it-hasn-t-been-starte.patch
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Its likely only patch 3, 4, and 6 are the only ones required. In fact
+maybe even 6 will fix it, but I just gotta go so cannot test that. I
+was able to resume about 10 times consecutively which I was unable to
+do before.
+
+  Luis
