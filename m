@@ -1,295 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZLWUPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZLWUQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbZLWUPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 15:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZLWUPs
+	id S1756900AbZLWUQd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 15:16:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbZLWUQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 15:15:48 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54537 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751160AbZLWUPr (ORCPT
+	Wed, 23 Dec 2009 15:16:31 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:39730 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753117AbZLWUQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 15:15:47 -0500
-Date: Wed, 23 Dec 2009 15:15:46 -0500
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com
-Subject: Re: ucc_geth broken in 2.6.32 by
-	864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
-Message-ID: <20091223201546.GG760@caffeine.csclub.uwaterloo.ca>
-References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca> <20091223180415.GA12987@oksana.dev.rtsoft.ru> <20091223200948.GF760@caffeine.csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091223200948.GF760@caffeine.csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 23 Dec 2009 15:16:30 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>
+In-Reply-To: <20091223183912.GE3159@quack.suse.cz>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity>
+	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
+Content-Type: text/plain
+Date: Wed, 23 Dec 2009 15:16:25 -0500
+Message-Id: <1261599385.13028.142.camel@serenity>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 03:09:48PM -0500, Lennart Sorensen wrote:
-> On Wed, Dec 23, 2009 at 09:04:15PM +0300, Anton Vorontsov wrote:
-> > On Wed, Dec 23, 2009 at 12:40:19PM -0500, Lennart Sorensen wrote:
-> > > We use the ucc_geth for 6 ports (4 100Mbit and 2 Gbit ports) on an
-> > > mpc8360e.  Up to 2.6.31 this worked fine.  2.6.32 on the other hand
-> > > crashes very quickly after boot.
-> > 
-> > Hm. Just curious, what CPU revision you use? So that I could try
-> > to reproduce the issue... I have MPC8360E-MDS boards, rev 2.0 and
-> > rev rev 2.1 CPUs, Marvell PHYs. I also have MPC8360E-RDK (rev 2.1).
-> > And I didn't see any issues with this patch.
-> 
-> Hmm, I have an MDS around, so I could probably try and see if it is
-> reproduceable there.
-> 
-> CPU:   e300c1, MPC8360EA, Rev: 2.1 at 533.333 MHz, CSB: 266.667 MHz
-> BOARD: 12-86-0016-001 [00000000]                                   
-> UPMA:  Configured for Compact Flash PIO Mode                        
-> I2C:   ready                                                       
-> SPI:   ready                                                       
-> DRAM:  512 MB                                                      
-> MTEST: Testing data bus                                            
-> MTEST: Testing address bus                                         
-> MTEST: PASS                                                        
-> BCSR:  Ver A000B                                                   
-> FLASH: 32 MB
-> 
-> The PHY we use is KSZ8001LS for the 100Mbit ports, and on the port
-> that usually fails first is a marvel 88E1111 running fixed gigabit link
-> (converts to serdes before connecting to a switch chip).
-> 
-> I am actually surprised this code should matter at all given out of the
-> 6 ethernet ports only two actually go to external ports, the rest are
-> fixed link.
-> 
-> If relevant here are some chunks from the dtb related to ethernet:
-> 
->         aliases {
->                 ethernet0 = &enet0;
->                 ethernet1 = &enet1;
->                 ethernet2 = &enet2;
->                 ethernet3 = &enet3;
->                 ethernet4 = &enet4;
->                 ethernet5 = &enet5;
->                 serial0 = &serial0;
->                 serial1 = &serial1;
->         };
-> 
->                 mdio {
->                         compatible = "virtual,mdio-gpio";
->                         #address-cells = <1>;
->                         #size-cells = <0>;
->                         /* MDC = PG6 MDIO = PG7 */
->                         gpios = <&qe_pio_g 6 0 &qe_pio_g 7 0>;
-> 
->                         phy0: ethernet-phy@00 {
->                                 reg = <0x18>;
->                                 device_type = "ethernet-phy";
->                         };
->                         phy1: ethernet-phy@01 {
->                                 reg = <0x06>;
->                                 device_type = "ethernet-phy";
->                         };
->                         phy2: ethernet-phy@02 {
->                                 reg = <0x0F>;
->                                 device_type = "ethernet-phy";
->                         };
->                         phy3: ethernet-phy@03 {
->                                 reg = <0x17>;
->                                 device_type = "ethernet-phy";
->                         };
->                 };
-> 
->                 /* UCC5 Linux fe-cm-1 */
->                 enet0: ethernet@2400 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x5>;
->                         reg = <0x2400 0x200>;
->                         interrupts = <0x28>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk16";
->                         tx-clock-name = "clk14";
->                         phy-handle = <&phy2>;
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc5>;
->                 };
->                 /* UCC 6 Linux fe-em-1 */
->                 enet1: ethernet@3400 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x6>;
->                         reg = <0x3400 0x200>;
->                         interrupts = <0x29>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk7";
->                         tx-clock-name = "clk8";
->                         phy-handle = <&phy3>;
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc6>;
->                 };
->                 /* UCC 1 & 3  1000BT Data Plane dp0 */
->                 enet2: ethernet@2000 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x1>;
->                         reg = <0x2000 0x200>;
->                         interrupts = <0x20>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "none";
->                         tx-clock-name = "clk9";
->                         fixed-link = <0x03 1 1000 0 0>; /* P3 on data plane switch on SM */
->                         phy-connection-type = "gmii";
->                         pio-handle = <&ucc1>;
->                 };
->                 /* UCC 7 100BT Data Plane dp1 */
->                 enet3: ethernet@2600 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x7>;
->                         reg = <0x2600 0x200>;
->                         interrupts = <0x2a>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk20";
->                         tx-clock-name = "clk19";
->                         fixed-link = <0x02 1 100 0 0>; /* P2 on data-plane switch on SM */
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc7>;
->                 };
->                 /* UCC 2 & 4 1000 BT Control Plane cp0 */
->                 enet4: ethernet@3000 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x2>;
->                         reg = <0x3000 0x200>;
->                         interrupts = <0x21>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "none";
->                         tx-clock-name = "clk4";
->                         tx-thread-num = <2>; /* Reduced to allow all enet to come up */
->                         fixed-link = <10 1 1000 0 0>; /* P10 on control-plane switch on CM */
->                         phy-connection-type = "gmii";
->                         pio-handle = <&ucc2>;
->                 };
->                 /* UCC 8 100 BT Control Plane cp1 */
->                 enet5: ethernet@3600 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x8>;
->                         reg = <0x3600 0x200>;
->                         interrupts = <0x2b>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk5";
->                         tx-clock-name = "clk21";
->                         fixed-link = <9 1 100 0 0>; /* P9 on control-plane switch on CM */
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc8>;
->                 };
-> 
-> > I don't see any point in reverting, because it will surely break my boards.
-> > So, we need to fix this, not just hide.
-> 
-> I agree with that.
-> 
-> > > unless someone can fix it.
-> > 
-> > Well, I'm ready to help you with debugging.
-> 
-> Excellent.
-> 
-> > > Now I must add that I run with the xenomai/adeos-ipipe patches as well,
-> > > which do change interrupt handling a little,
-> > 
-> > It could be that it takes too long to stop the UCC, and xenomai
-> > makes the timings worse, so the watchdog triggers.
-> > 
-> > Can you try the following patch?
-> 
-> Sure thing.
-> 
-> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> > index afaf088..2f73e3f 100644
-> > --- a/drivers/net/ucc_geth.c
-> > +++ b/drivers/net/ucc_geth.c
-> > @@ -1563,6 +1563,8 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
-> >  
-> >  static void ugeth_quiesce(struct ucc_geth_private *ugeth)
-> >  {
-> > +	netif_device_detach(ugeth->ndev);
-> > +
-> >  	/* Wait for and prevent any further xmits. */
-> >  	netif_tx_disable(ugeth->ndev);
-> >  
-> > @@ -1577,7 +1579,7 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
-> >  {
-> >  	napi_enable(&ugeth->napi);
-> >  	enable_irq(ugeth->ug_info->uf_info.irq);
-> > -	netif_tx_wake_all_queues(ugeth->ndev);
-> > +	netif_device_attach(ugeth->ndev);
-> >  }
-> >  
-> >  /* Called every time the controller might need to be made
-> 
-> So there result is:
-> 
-> Unable to handle kernel paging request for data at address 0x00000058
-> Faulting instruction address: 0xc024f2fc
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> RC8360 CM
-> Modules linked in: rclibapi xeno_native max6369_wdt ucc_geth_driver spi_mpc8xxx ltc4215 lm75
-> NIP: c024f2fc LR: e30aa0a4 CTR: c024f2e8
-> REGS: df857ca0 TRAP: 0300   Not tainted  (2.6.32-trunk-8360e)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 44042088  XER: 00000000
-> DAR: 00000058, DSISR: 20000000
-> TASK = df848c90[4] 'events/0' THREAD: df856000
-> GPR00: e30aa0a4 df857d50 df848c90 00000000 00000640 00000001 c0428df4 dfa40b80
-> GPR08: 000000c8 e30ad2b8 df084360 c024f2e8 44042082 1001af90 e30ad2b8 00000000
-> GPR16: 00000048 00000001 00000000 00000000 df08436c df08440c 00000190 df08455c
-> GPR24: df0844ec df0842c0 df084000 180005ea dfa40b80 00000000 df0842c0 00000000
-> NIP [c024f2fc] skb_recycle_check+0x14/0x100
-> LR [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> Call Trace:
-> [df857d50] [c000b03c] __ipipe_grab_irq+0x3c/0xa4 (unreliable)
-> [df857d60] [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> [df857dd0] [c0258cf8] net_rx_action+0xf8/0x1b8
-> [df857e10] [c0032a38] __do_softirq+0xb8/0x13c
-> [df857e60] [c00065cc] do_softirq+0xa0/0xac
-> [df857e70] [c003280c] irq_exit+0x7c/0x9c
-> [df857e80] [c000b1f4] __ipipe_do_IRQ+0x50/0x68
-> [df857ea0] [c0064098] __ipipe_sync_stage+0x21c/0x24c
-> [df857ee0] [c0064a4c] __ipipe_unstall_root+0x5c/0x60
-> [df857ef0] [c005fb4c] enable_irq+0x88/0xc4
-> [df857f10] [e30a73d0] adjust_link+0x1fc/0x2f0 [ucc_geth_driver]
-> [df857f40] [c0209c0c] phy_state_machine+0x3a4/0x610
-> [df857f60] [c003fec4] worker_thread+0x124/0x1a4
-> [df857fc0] [c0044310] kthread+0x78/0x7c
-> [df857ff0] [c0013c30] kernel_thread+0x4c/0x68
-> Instruction dump:
-> 4e800020 4800fcb5 4bffff50 4802782d 4bffffc8 48076dd9 4bffff6c 9421fff0
-> 7c0802a6 93e1000c 7c7f1b78 90010014 <80030058> 2f800000 409e00cc 81630068
-> Kernel panic - not syncing: Fatal exception in interrupt
-> Rebooting in 180 seconds..
-> 
-> So it seems as soon as it touched the phy settings, it blew up.
-> 
-> Now perhaps the ipipe interrupt handling code changes the behaviour
-> enough that it makes the spinlock_irqsave necesary and that is why it
-> worked before.  Maybe ipipe is doing something wrong, given ipipe only
-> supports 2.6.30 for powerpc and I personally ported it to 2.6.31 and
-> then 2.6.32.  Everything else works fine though as long as I revert this
-> particular patch.
 
-Oh and I will be off on vacation for about a week by tomorrow, so if I
-don't fix it today, I will be a bit slow at getting back to you
-on this.  Not that it is bothering any real users yet (they are using
-2.6.30 for now).
+On Wed, 2009-12-23 at 19:39 +0100, Jan Kara wrote:
+> On Tue 22-12-09 11:20:15, Steve Rago wrote:
+> > 
+> > On Tue, 2009-12-22 at 13:25 +0100, Jan Kara wrote:
+> > > > I originally spent several months playing with the balance_dirty_pages
+> > > > algorithm.  The main drawback is that it affects more than the inodes
+> > > > that the caller is writing and that the control of what to do is too
+> > >   Can you be more specific here please?
+> > 
+> > Sure;  balance_dirty_pages() will schedule writeback by the flusher
+> > thread once the number of dirty pages exceeds dirty_background_ratio.
+> > The flusher thread calls writeback_inodes_wb() to flush all dirty inodes
+> > associated with the bdi.  Similarly, the process dirtying the pages will
+> > call writeback_inodes_wbc() when it's bdi threshold has been exceeded.
+> > The first problem is that these functions process all dirty inodes with
+> > the same backing device, which can lead to excess (duplicate) flushing
+> > of the same inode.  Second, there is no distinction between pages that
+> > need to be committed and pages that have commits pending in
+> > NR_UNSTABLE_NFS/BDI_RECLAIMABLE (a page that has a commit pending won't
+> > be cleaned any faster by sending more commits).  This tends to overstate
+> > the amount of memory that can be cleaned, leading to additional commit
+> > requests.  Third, these functions generate a commit for each set of
+> > writes they do, which might not be appropriate.  For background writing,
+> > you'd like to delay the commit as long as possible.
+>   Ok, I get it. Thanks for explanation. The problem with more writing
+> threads bites us also for ordinary SATA drives (the IO pattern and thus
+> throughput gets worse and worse the more threads do writes). The plan is to
+> let only flusher thread do the IO and throttled thread in
+> balance_dirty_pages just waits for flusher thread to do the work. There
+> were even patches for this floating around but I'm not sure what's happened
+> to them. So that part of the problem should be easy to solve.
+>   Another part is about sending commits - if we have just one thread doing
+> flushing, we have no problems with excessive commits for one inode. You're
+> right that we may want to avoid sending commits for background writeback
+> but until we send the commit, pages are just accumulating in the unstable
+> state, aren't they? So we might want to periodically send the commit for
+> the inode anyway to get rid of those pages. So from this point of view,
+> sending commit after each writepages call does not seem like a so bad idea
+> - although it might be more appropriate to send it some time after the
+> writepages call when we are not close to dirty limit so that server has
+> more time to do more natural "unforced" writeback...
 
--- 
-Len Sorensen
+When to send the commit is a complex question to answer.  If you delay
+it long enough, the server's flusher threads will have already done most
+of the work for you, so commits can be cheap, but you don't have access
+to the necessary information to figure this out.  You can't delay it too
+long, though, because the unstable pages on the client will grow too
+large, creating memory pressure.  I have a second patch, which I haven't
+posted yet, that adds feedback piggy-backed on the NFS write response,
+which allows the NFS client to free pages proactively.  This greatly
+reduces the need to send commit messages, but it extends the protocol
+(in a backward-compatible manner), so it could be hard to convince
+people to accept.
+
+> 
+> > > > Part of the patch does implement a heuristic write-behind.  See where
+> > > > nfs_wb_eager() is called.
+> > >   I believe that if we had per-bdi dirty_background_ratio and set it low
+> > > for NFS's bdi, then the write-behind logic would not be needed
+> > > (essentially the flusher thread should submit the writes to the server
+> > > early).
+> > > 
+> > Maybe so, but you still need something to prevent the process that is
+> > dirtying pages from continuing, because a process can always write to
+> > memory faster than writing to disk/network, so the flusher won't be able
+> > to keep up.
+>   Yes, I agree that part is needed. But Fengguang already had patches in
+> that direction if my memory serves me well.
+> 
+>   So to recap: If we block tasks in balance_dirty_pages until unstable
+> pages are committed and make just one thread do the writing, what else is
+> missing to make you happy? :)
+> 								Honza
+
+As long as the performance improves substantially, I'll be happy.
+
+Part of the problem that isn't addressed by your summary is the
+synchronous writes.  With the eager writeback patch, these are removed
+[see the short-circuit in wb_priority()].  I would have expected that
+change to be controversial, but I've not heard any complaints (yet).  If
+the process or the bdi flusher is writing and committing regularly, then
+pages should be recycled quickly and the change shouldn't matter, but
+I'd need to run my systemtap scripts to make sure.  
+
+Steve
+
+
