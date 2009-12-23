@@ -1,109 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZLWXju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZLWXkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbZLWXju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 18:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbZLWXjs
+	id S1757453AbZLWXkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbZLWXjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 18:39:48 -0500
-Received: from cantor.suse.de ([195.135.220.2]:39911 "EHLO mx1.suse.de"
+	Wed, 23 Dec 2009 18:39:49 -0500
+Received: from kroah.org ([198.145.64.141]:40180 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755874AbZLWXjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 18:39:43 -0500
-Date: Wed, 23 Dec 2009 15:38:27 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [GIT PATCH] USB patches for 2.6.33-rc1
-Message-ID: <20091223233827.GB19703@suse.de>
-References: <20091223194951.GA18101@kroah.com>
- <alpine.LFD.2.00.0912231335380.6879@localhost.localdomain>
+	id S1755929AbZLWXjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 18:39:44 -0500
+Date: Wed, 23 Dec 2009 15:38:56 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stefani Seibold <stefani@seibold.net>
+Subject: Re: linux-next: manual merge of the usb tree with Linus' tree
+Message-ID: <20091223233856.GA19893@kroah.com>
+References: <20091224093036.2ba1ecf5.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912231335380.6879@localhost.localdomain>
+In-Reply-To: <20091224093036.2ba1ecf5.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 01:48:09PM -0800, Linus Torvalds wrote:
+On Thu, Dec 24, 2009 at 09:30:36AM +1100, Stephen Rothwell wrote:
+> Hi Greg,
 > 
+> Today's linux-next merge of the usb tree got a conflict in
+> drivers/usb/serial/generic.c between commit
+> 119eecc831a42bd090543568932e440c6831f1bb ("Fix usb_serial_probe() problem
+> introduced by the recent kfifo changes") from Linus' tree and commit
+> 40b2ba0dfb62bed0f7cc6f699053d18ca4553e91 ("USB: serial: mct_usb232: add
+> drain on close") from the usb tree.
 > 
-> On Wed, 23 Dec 2009, Greg KH wrote:
-> > 
-> > They do:
-> > 	- reorg the device ids in one usb-serial driver.  I took this
-> > 	  now as it's a merge pressure point, and this is just a code
-> > 	  move now, no functionality changed at all.  It's odd that git
-> > 	  didn't show this as a code move in the diffstat, I used:
-> > 	  	git diff -m --stat --summary
-> > 	  to generate the diffstat.  Should I be doing something else?
-> > 	  Or is it because the code is being removed from one file and
-> > 	  placed in another one?
-> 
-> Since the old file stays around, git doesn't consider it a rename.
-> 
-> Now, you can actually change that a bit. You can use -C instead of -M, 
-> which enables copy-detection rather than just renames, and then it changes 
-> from
-> 
->  drivers/usb/serial/ftdi_sio.c           |    1 +
->  drivers/usb/serial/ftdi_sio.h           |  959 +------------------------------
->  drivers/usb/serial/ftdi_sio_ids.h       |  986 +++++++++++++++++++++++++++++++
-> 
-> to
-> 
->  drivers/usb/serial/ftdi_sio.c                     |    1 +
->  drivers/usb/serial/ftdi_sio.h                     |  959 +-----------
->  drivers/usb/serial/{ftdi_sio.h => ftdi_sio_ids.h} | 1785 ++++++++-------------
->  copy drivers/usb/serial/{ftdi_sio.h => ftdi_sio_ids.h} (65%)
-> 
-> which isn't actually any better (since while it notices the copy of the 
-> data, it _removes_ all the code whily copying, so the total number of 
-> lines actually goes up!).
-> 
-> So -M doesn't really "help" in that the diff itself does end up larger, 
-> but at the same time it is somewhat informative in the sense that you do 
-> see where the data comes from.
-> 
-> To see another facet of it all, you could also use "-B" to say that you 
-> want to Break all old name associations if a file has changed a lot, and 
-> then enable rename (or copy) detection, and get
-> 
->  drivers/usb/serial/ftdi_sio.c                     |    1 +
->  drivers/usb/serial/ftdi_sio.h                     | 2063 ++++++---------------
->  drivers/usb/serial/{ftdi_sio.h => ftdi_sio_ids.h} | 1785 +++++++------------
->  rewrite drivers/usb/serial/ftdi_sio.h (68%)
->  rename drivers/usb/serial/{ftdi_sio.h => ftdi_sio_ids.h} (65%)
-> 
-> which is the largest of all diffs but it shows another side of the 
-> situation: that sio.h file has is now a "rewrite", and the end result is 
-> substantially different from the original. So git shows it as a "rename in 
-> place" where the diff shows up as a total delete followed by a total 
-> addition.
-> 
-> As you can see, git does see that you moved data around, but since a lot 
-> of the data also _stayed_ in the original file, the copy/break operations 
-> really don't help. You cannot show "copy this part of this file into that 
-> other file" as a diff.
-> 
-> Btw, we _do_ do the "copy this part of this file into that other file" 
-> when you do "git blame -C", so you can now do
-> 
-> 	git blame -C drivers/usb/serial/ftdi_sio_ids.h
-> 
-> and it will follow the history of the lines in that file back to the 
-> ftdi_sio.h file. So the fact that git doesn't show it in the diffs is 
-> really because diffs always work on a whole-file basis (ie you can show a 
-> "rename file" diff, but you can't show a "move one function or a set of 
-> ID's from one file to another" diff.
+> I fixed it up (see below) and can carry the fix for a while.  The result
+> needs checking.
 
-Thanks for the through explaination.  I guess I'll just stick with '-M'
-on the diffstat summaries for now, but it is good to know that git can
-track this type of change through the changeset, which is the most
-important thing.
-
-thanks,
+Thanks, I fixed this up already in my tree and will resync in a few
+hours.
 
 greg k-h
