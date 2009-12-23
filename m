@@ -1,58 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZLWPRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZLWNJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbZLWPRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 10:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbZLWPRN
+	id S1755893AbZLWNJu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZLWNJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 10:17:13 -0500
-Received: from smtp21.orange.fr ([80.12.242.46]:32757 "EHLO smtp21.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753761AbZLWPRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 10:17:12 -0500
-X-ME-UUID: 20091223130443453.6E9F920058D9@mwinf2104.orange.fr
-Subject: Re: No PCI-X / PCI-E cards ...
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1261477857.22127.23.camel@skunk>
-References: <1260979057.23135.70.camel@skunk> <1261089592.8827.5.camel@bip>
-	 <adahbrp43x7.fsf@roland-alpha.cisco.com>  <1261477857.22127.23.camel@skunk>
-Content-Type: text/plain
-Date: Wed, 23 Dec 2009 14:04:41 +0100
-Message-Id: <1261573481.4822.14.camel@skunk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Wed, 23 Dec 2009 08:09:49 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:35304 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753552AbZLWNJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 08:09:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=ovl60IQR57uIEVNje9lXNSISHH8Yr50nuJ/0xMH4iVd0likpkKG8rg2fySKpE7eE3Q
+         8pVE8Os4Xn+Lhv6EmGgTz+AbHFjb71EYmMxuT0bShYdSudorlFIk8oLzmwOls2+dLTWZ
+         M9jGS0sQO1apn2kskpx7i0+8blw/w7LDj53OA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+Date: Wed, 23 Dec 2009 14:07:20 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+References: <4B1D4F29.8020309@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu>
+In-Reply-To: <20091223065129.GA19600@elte.hu>
+MIME-Version: 1.0
+Message-Id: <200912231407.20130.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-22 at 11:30 +0100, Xavier Bestel wrote:
-> On Thu, 2009-12-17 at 14:43 -0800, Roland Dreier wrote:
-> > > [    0.184098] pci 0000:00:1c.0: BAR 13: can't allocate resource
-> > 
-> > When does this message appear?  Does it matter if the PCIe card is
-> > installed or not?  This 0000:00:1c.0 device is:
-> > 
-> > > 00:1c.0 PCI bridge: Intel Corporation 82801I (ICH9 Family) PCI Express Port 1 (rev 02)
-> > 
-> > so it might be relevant.
-> > 
-> > Did you try all the PCIe slots?
+On Wednesday 23 December 2009 07:51:29 am Ingo Molnar wrote:
 > 
-> I tried another slot, and it gave the same error:
-> [    0.203279] PCI: Using ACPI for IRQ routing
-> [    0.203279] pci 0000:00:1c.0: BAR 13: can't allocate resource
+> * Anthony Liguori <anthony@codemonkey.ws> wrote:
 > 
-> And the card still isn't visible through lspci.
+> > On 12/22/2009 10:01 AM, Bartlomiej Zolnierkiewicz wrote:
+> > >>new e1000 driver is more superior in architecture and do the required
+> > >>work to make the new e1000 driver a full replacement for the old one.
+> > >Right, like everyone actually does things this way..
+> > >
+> > >I wonder why do we have OSS, old Firewire and IDE stacks still around then?
+> > 
+> > And it's always a source of pain, isn't it.
 > 
-> How comes the kernel can't see that card ?
+> Even putting aside the fact that such overlap sucks and is a pain to users 
+> (and that 98% of driver and subsystem version transitions are done completely 
+> seemlessly to users - the examples that were cited were the odd ones out of 
+> 150K commits in the past 4 years, 149K+ of which are seemless), the comparison 
+> does not even apply really.
 
-It looks like if the board has been flashed with the wrong bios (the
-dmidecode info isn't consistent with what I see on the board).
-Is there a way to workaround that in the kernel ?
+Total commit number has nothing to do with the issue raised since the problem
+is in the total source code complexity and the need to maintain separate code
+bases.
 
-	Xav
+[ BTW I find your habit of bringing the completely unrelated numbers into
+  the discussion quite annoying.  Do you really think that throwing in some
+  random numbers automatically increases the credibility of your opinion? ]
 
+> e1000, OSS, old Firewire and IDE are hardware stacks, where hardware is a not 
+> fully understood externality, with its inevitable set of compatibility voes. 
+> There's often situations where one piece of hardware still works better with 
+> the old driver, for some odd (or not so odd) reason.
+> 
+> Also, note that the 'new' hw drivers are generally intended and are maintained 
+> as clear replacements for the old ones, and do so with minimal ABI changes - 
+> or preferably with no ABI changes at all. Most driver developers just switch 
+> from old to new and the old bits are left around and are phased out. We phased 
+> out old OSS recently.
 
+'We' as Fedora?
 
+old OSS stuff is still there (sound/oss/ which is almost 45KLOC and would
+be much more if not past efforts from Adrian Bunk to shrink it down)
+
+Besides 'phase out' that you are talking about comes down to just waiting
+for old hardware/user base to die and it takes years to accomplish..
+
+I can understand how this is not an issue from i.e. Red Hat's POV when you
+have one 'set in the stone' set of drivers in RHEL and the other 'constant
+development flux' one in Fedora (which because of this fact cannot be no
+longer consider as real distribution for real users BTW) but for everybody
+else this is simply untrue.
+
+> That is a very different situation from the AlacrityVM patches, which:
+> 
+>  - Are a pure software concept and any compatibility mismatch is
+>    self-inflicted. The patches are in fact breaking the ABI to KVM 
+>    intentionally (for better or worse).
+
+Care to explain the 'breakage' and why KVM is more special in this regard
+than other parts of the kernel (where we don't keep any such requirements)?
+
+Truth to be told KVM is just another driver/subsystem and Gregory's changes
+are only 4KLOC of clean and easily maintainable code..
+
+>  - Gregory claims that the AlacricityVM patches are not a replacement for KVM.
+>    I.e. there's no intention to phase out any 'old stuff' and it splits the 
+>    pool of driver developers.
+
+Talk double standards.  It was you & co. that officially legitimized this
+style of doing things and now you are complaining about it?
+
+> i.e. it has all the makings of a stupid, avoidable, permanent fork. The thing 
+> is, if AlacricityVM is better, and KVM developers are not willing to fix their 
+> stuff, replace KVM with it.
+> 
+> It's a bit as if someone found a performance problem with sys_open() and came 
+> up with sys_open_v2() and claimed that he wants to work with the VFS 
+> developers while not really doing so but advances sys_open_v2() all the time. 
+> 
+> Do we allow sys_open_v2() upstream, in the name of openness and diversity, 
+> letting some apps use that syscall while other apps still use sys_open()? Or 
+> do we say "enough is enough of this stupidity, come up with some strong 
+> reasons to replace sys_open, and if so, replace the thing and be done with the 
+> pain!".
+
+I certainly missed the time when KVM became officially part of core ABI..
+
+> Overlap and forking can still be done in special circumstances, when a project 
+> splits and a hostile fork is inevitable due to prolongued and irreconcilable 
+> differences between the parties and if there's no strong technical advantage 
+> on either side. I havent seen evidence of this yet though: Gregory claims that 
+> he wants to 'work with the community' and the KVM guys seem to agree violently 
+> that performance can be improved - and are doing so (and are asking Gregory to 
+> take part in that effort).
+
+How it is different from any past forks?
+
+The odium of proving that the existing framework is sufficient was always on
+original authors or current maintainers.
+
+KVM guys were offered assistance from Gregory and had few months to prove that
+they can get the same kind of performance using existing architecture and they
+DID NOT do it.
+
+> The main difference is that Gregory claims that improved performance is not 
+> possible within the existing KVM framework, while the KVM developers disagree. 
+> 
+> The good news is that this is a hard, testable fact.
+> 
+> I think we should try _much_ harder before giving up and forking the ABI of a 
+> healthy project and intentionally inflicting pain on our users.
+
+Then please try harder.  Gregory posted his initial patches in August,
+it is December now and we only see artificial road-blocks instead of code
+from KVM folks.
+
+> And, at minimum, such kinds of things _have to_ be pointed out in pull 
+> requests, because it's like utterly important. In fact i couldnt list any more 
+> important thing to point out in a pull request.
+
+I think that this part should be easily fixable..
+
+--
+Bartlomiej Zolnierkiewicz
