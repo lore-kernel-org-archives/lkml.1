@@ -1,99 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZLWIHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZLWIK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZLWIHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 03:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZLWIHi
+	id S1753230AbZLWIK4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 03:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZLWIKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 03:07:38 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:42734 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbZLWIHi (ORCPT
+	Wed, 23 Dec 2009 03:10:55 -0500
+Received: from www84.your-server.de ([213.133.104.84]:58235 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752564AbZLWIKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 03:07:38 -0500
-Subject: Re: workqueue thing
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com
-In-Reply-To: <alpine.LFD.2.00.0912221004540.6879@localhost.localdomain>
-References: <1261141088-2014-1-git-send-email-tj@kernel.org>
-	 <1261143924.20899.169.camel@laptop> <20091218135033.GB8678@basil.fritz.box>
-	 <4B2B9949.1000608@linux.intel.com> <20091221091754.GG4489@kernel.dk>
-	 <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org>
-	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
-	 <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>
-	 <1261480220.4937.24.camel@laptop>
-	 <alpine.LFD.2.00.0912220917270.31313@localhost.localdomain>
-	 <1261504042.4937.59.camel@laptop>
-	 <alpine.LFD.2.00.0912221004540.6879@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-4/hCs2waQb+2fu3bNvpG"
-Date: Wed, 23 Dec 2009 09:06:25 +0100
-Message-ID: <1261555586.15510.4.camel@johannes.local>
+	Wed, 23 Dec 2009 03:10:54 -0500
+Subject: Re: [Regression, 2.6.33-rc1->current git] NULL pointer in
+ usb_serial_probe() introduced by the recent kfifo changes
+From: Stefani Seibold <stefani@seibold.net>
+To: Greg KH <greg@kroah.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091223053734.GC22808@kroah.com>
+References: <200912230251.31568.rjw@sisk.pl>
+	 <20091223053734.GC22808@kroah.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 23 Dec 2009 09:10:48 +0100
+Message-ID: <1261555848.22729.41.camel@wall-e>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Dienstag, den 22.12.2009, 21:37 -0800 schrieb Greg KH:
+> On Wed, Dec 23, 2009 at 02:51:31AM +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > Something like the patch below is necessary to fix a new NULL pointer deref
+> > in usb_serial_probe() that appeared after the recent kfifo changes (in short,
+> > the kfifo changes modified the semantics of kfifo_alloc() that
+> > usb_serial_probe() reiled on).
+> 
+> What semantic changed?  I thought that the kfifo patches came with
+> patches that also fixed up any changed that were needed.  What went
+> wrong here?
+> 
 
---=-4/hCs2waQb+2fu3bNvpG
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This one is a new user of the kfifo API, so it forget to port it to the
+new kfifo API.
 
-On Tue, 2009-12-22 at 10:28 -0800, Linus Torvalds wrote:
->=20
-> On Tue, 22 Dec 2009, Peter Zijlstra wrote:
-> >=20
-> > Which in turn would imply we cannot carry fwd the current lockdep
-> > annotations, right?
-> >=20
-> > Which means we'll be stuck in a situation where A flushes B and B
-> > flushes A will go undetected until we actually hit it.
->=20
-> No, lockdep should still work. It just means that waiting for an=20
-> individual work should be seen as a matter of only waiting for the
-> locks that work itself has done - rather than waiting for all the locks
-> that any worker has taken.
->=20
-> And the way the workqueue lockdep stuff is done, I'd assume this just=20
-> automatically fixes itself when rewritten.
+Please make the write_fifo in place. Here is my patch to fix the
+regression and full ported version.
 
-Yeah, you'd just have to remove the per-workqueue lockmap since that's
-no longer applicable if there is, in effect, one workqueue per work item
-available. We do track each work struct already.
+Stefani
 
-However, I'm not sure what you (Peter) mean by "A flushes B" since flush
-is a workqueue operation which appears to no longer exist after this
-patchset. If struct work A tries to remove struct work B and vice versa,
-it'd still be detected though, assuming the annotations are taken
-forward properly of course.
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ drivers/usb/serial/generic.c    |   12 ++++++------
+ drivers/usb/serial/usb-serial.c |    5 ++---
+ include/linux/usb/serial.h      |    3 ++-
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-johannes
+diff -u -N -r -p old/drivers/usb/serial/generic.c new/drivers/usb/serial/generic.c
+--- old/drivers/usb/serial/generic.c	2009-12-23 08:54:06.966476248 +0100
++++ new/drivers/usb/serial/generic.c	2009-12-23 09:06:25.778474708 +0100
+@@ -276,7 +276,7 @@ static int usb_serial_generic_write_star
+ 	if (port->write_urb_busy)
+ 		start_io = false;
+ 	else {
+-		start_io = (kfifo_len(port->write_fifo) != 0);
++		start_io = (kfifo_len(&port->write_fifo) != 0);
+ 		port->write_urb_busy = start_io;
+ 	}
+ 	spin_unlock_irqrestore(&port->lock, flags);
+@@ -285,7 +285,7 @@ static int usb_serial_generic_write_star
+ 		return 0;
+ 
+ 	data = port->write_urb->transfer_buffer;
+-	count = kfifo_out_locked(port->write_fifo, data, port->bulk_out_size, &port->lock);
++	count = kfifo_out_locked(&port->write_fifo, data, port->bulk_out_size, &port->lock);
+ 	usb_serial_debug_data(debug, &port->dev, __func__, count, data);
+ 
+ 	/* set up our urb */
+@@ -345,7 +345,7 @@ int usb_serial_generic_write(struct tty_
+ 		return usb_serial_multi_urb_write(tty, port,
+ 						  buf, count);
+ 
+-	count = kfifo_in_locked(port->write_fifo, buf, count, &port->lock);
++	count = kfifo_in_locked(&port->write_fifo, buf, count, &port->lock);
+ 	result = usb_serial_generic_write_start(port);
+ 
+ 	if (result >= 0)
+@@ -370,7 +370,7 @@ int usb_serial_generic_write_room(struct
+ 				(serial->type->max_in_flight_urbs -
+ 				 port->urbs_in_flight);
+ 	} else if (serial->num_bulk_out)
+-		room = port->write_fifo->size - kfifo_len(port->write_fifo);
++		room = kfifo_avail(&port->write_fifo);
+ 	spin_unlock_irqrestore(&port->lock, flags);
+ 
+ 	dbg("%s - returns %d", __func__, room);
+@@ -391,7 +391,7 @@ int usb_serial_generic_chars_in_buffer(s
+ 		chars = port->tx_bytes_flight;
+ 		spin_unlock_irqrestore(&port->lock, flags);
+ 	} else if (serial->num_bulk_out)
+-		chars = kfifo_len(port->write_fifo);
++		chars = kfifo_len(&port->write_fifo);
+ 
+ 	dbg("%s - returns %d", __func__, chars);
+ 	return chars;
+@@ -507,7 +507,7 @@ void usb_serial_generic_write_bulk_callb
+ 		if (status) {
+ 			dbg("%s - nonzero multi-urb write bulk status "
+ 				"received: %d", __func__, status);
+-			kfifo_reset(port->write_fifo);
++			kfifo_reset_out(&port->write_fifo);
+ 		} else
+ 			usb_serial_generic_write_start(port);
+ 	}
+diff -u -N -r -p old/drivers/usb/serial/usb-serial.c new/drivers/usb/serial/usb-serial.c
+--- old/drivers/usb/serial/usb-serial.c	2009-12-23 08:54:23.204476351 +0100
++++ new/drivers/usb/serial/usb-serial.c	2009-12-23 09:06:39.664475312 +0100
+@@ -595,8 +595,7 @@ static void port_release(struct device *
+ 	usb_free_urb(port->write_urb);
+ 	usb_free_urb(port->interrupt_in_urb);
+ 	usb_free_urb(port->interrupt_out_urb);
+-	if (!IS_ERR(port->write_fifo) && port->write_fifo)
+-		kfifo_free(port->write_fifo);
++	kfifo_free(&port->write_fifo);
+ 	kfree(port->bulk_in_buffer);
+ 	kfree(port->bulk_out_buffer);
+ 	kfree(port->interrupt_in_buffer);
+@@ -939,7 +938,7 @@ int usb_serial_probe(struct usb_interfac
+ 			dev_err(&interface->dev, "No free urbs available\n");
+ 			goto probe_error;
+ 		}
+-		if (kfifo_alloc(port->write_fifo, PAGE_SIZE, GFP_KERNEL))
++		if (kfifo_alloc(&port->write_fifo, PAGE_SIZE, GFP_KERNEL))
+ 			goto probe_error;
+ 		buffer_size = le16_to_cpu(endpoint->wMaxPacketSize);
+ 		port->bulk_out_size = buffer_size;
+diff -u -N -r -p old/include/linux/usb/serial.h new/include/linux/usb/serial.h
+--- old/include/linux/usb/serial.h	2009-12-23 08:54:34.368476110 +0100
++++ new/include/linux/usb/serial.h	2009-12-23 09:06:32.870725683 +0100
+@@ -16,6 +16,7 @@
+ #include <linux/kref.h>
+ #include <linux/mutex.h>
+ #include <linux/sysrq.h>
++#include <linux/kfifo.h>
+ 
+ #define SERIAL_TTY_MAJOR	188	/* Nice legal number now */
+ #define SERIAL_TTY_MINORS	254	/* loads of devices :) */
+@@ -94,7 +95,7 @@ struct usb_serial_port {
+ 	unsigned char		*bulk_out_buffer;
+ 	int			bulk_out_size;
+ 	struct urb		*write_urb;
+-	struct kfifo		*write_fifo;
++	struct kfifo		write_fifo;
+ 	int			write_urb_busy;
+ 	__u8			bulk_out_endpointAddress;
+ 
 
---=-4/hCs2waQb+2fu3bNvpG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLMc98AAoJEODzc/N7+QmaT0IQAJL1FBGTEnG/qmmM5vYIQa4r
-9CxMbQMsBIkwKTKX+kBkxwVaYSVQPXzwy8lClKydZqzDMdl17Y7eIj76N7nJEedA
-wlQGFMhTsqoug5sI28ZgLNDjTrlF4I9SWSe1ZNP/focDOF0tFyrznMnhxIkZ8Eo8
-1Anw3h/jyFSn3nflS4+HR5dGFwt/FzXzJm2UFeBFMBO+n2COqWQ76aatJc40XN3e
-e/pPLE9b+TvdkUYwnwBYaY2wuah/S+OdEg/hH7zbxwHqQYj5Y2q4mXo72gEU5tXW
-Hlp81p+Vaeft1orySZYrS15VzZz3aIFP80eu/i61ett32LTFuwFFpUQyieDPaiIn
-TerCNNousCx+InTj6vNXvP/ODmx7M6hJi2v58sMu/Fd7AjAiJt/EdxzWwHgnl7/n
-2D0goZomMBv7+fa1hp+rvSiOIJzX8IC+dfbfKctG8gvRScxtTG79NL3UC7Znn2f8
-OpaxRKz1hy1fA0QfKDOp/EhtGdaYToCIQaoafh6yN0R5bleCM+gT2rdtnh4gyz1C
-yzaK6c0P0dmpMxHVB1YfOWh8trducQekLLpdglOpkLEbwevLi/KDZF5MmaMlCyzB
-8N84Uh0BSuL6Qj93LzvAGB8utzVXejBk58Q58wgwvnZrJtBjwIHZN1v8xD9AkbdL
-W7WEAIFt01awvyjst8gS
-=CLOz
------END PGP SIGNATURE-----
-
---=-4/hCs2waQb+2fu3bNvpG--
 
