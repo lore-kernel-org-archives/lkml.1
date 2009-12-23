@@ -1,291 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZLWVUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZLWVUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbZLWVUO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:20:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZLWVUN
+	id S1754552AbZLWVUd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZLWVU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:20:13 -0500
-Received: from mail.windriver.com ([147.11.1.11]:44980 "EHLO
+	Wed, 23 Dec 2009 16:20:28 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45032 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbZLWVUL (ORCPT
+	with ESMTP id S1754693AbZLWVU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:20:11 -0500
+	Wed, 23 Dec 2009 16:20:26 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu
-Subject: [PATCH 0/37] kgdb, kdb and atomic kernel modesetting series
-Date: Wed, 23 Dec 2009 15:19:13 -0600
-Message-Id: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Dongdong Deng <Dongdong.Deng@windriver.com>, peterz@infradead.org
+Subject: [PATCH 01/37] softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
+Date: Wed, 23 Dec 2009 15:19:14 -0600
+Message-Id: <1261603190-5036-2-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-X-OriginalArrivalTime: 23 Dec 2009 21:19:52.0145 (UTC) FILETIME=[AA65AC10:01CA8415]
+In-Reply-To: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 23 Dec 2009 21:19:53.0208 (UTC) FILETIME=[AB07DF80:01CA8415]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Back in May 2009 an initial kdb prototype was posted to lkml as an RFC
-to see if there was sufficient interest to merge kdb and kgdb together.
+When CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is set sched_clock() gets the
+time from hardware, such as from TSC.  In this configuration kgdb will
+report a softlock warning messages on resuming or detaching from a
+debug session.
 
-There was enough interest to continue on with the project, and it is
-now in a state where further work can occur to review, and hopefully
-merge the code into a future kernel.
+Sequence of events in the problem case:
 
-If this is the first time you have heard about kgdb or kdb, you might
-consider taking a look at the presentation slides from LPC 2009.
+1) "cpu sched clock" and "hardware time" are at 100 sec prior
+   to a call to kgdb_handle_exception()
 
-http://kgdb.wiki.kernel.org/index.php/Main_Page#Linux_Plumbers_Conference_presentation_2009
+2) Debugger waits in kgdb_handle_exception() for 80 sec and on exit
+   the following is called ...  touch_softlockup_watchdog() -->
+   __raw_get_cpu_var(touch_timestamp) = 0;
 
-The code included in this series does not include any of the USB code
-referenced in the presentation.
+3) "cpu sched clock" = 100s (it was not updated, because the interrupt
+   was disabled in kgdb) but the "hardware time" = 180 sec
 
-Several changes have occurred since the original prototype was posted.
-All of the architectures using the kgdb core today have had the
-functions implemented to make use of the kdb shell.  This list
-includes x86, arm, ppc, mips, sh, sparc, and blackfin.  The proposed
-atomic kernel modesetting project now has an initial implementation
-for the intel i915 driver, and it should be possible to add atomic
-mode setting hooks for any other video driver which makes use of
-builtin kernel mode setting.  All the dead code and functions that
-were not previously implemented in the RFC have been removed or
-implemented.
+4) The first timer interrupt after resuming from kgdb_handle_exception
+   updates the watchdog from the "cpu sched clock"
 
-The directory of the kernel debugger changed as well.  All the kernel
-debugger pieces, the debug core, gdbstub and kdb now live under
-kernel/debug.
+update_process_times() { ...  run_local_timers() --> softlockup_tick()
+--> check (touch_timestamp == 0) (it is "YES" here, we have set
+"touch_timestamp = 0" at kgdb) --> __touch_softlockup_watchdog()
+***(A)--> reset "touch_timestamp" to "get_timestamp()" (Here, the
+"touch_timestamp" will still be set to 100s.)  ...
 
-While the patch set may be slightly large, it is broken down into
-logical, incremental functionality.  Only the first 12 patches are
-needed to see kdb in action on a serial port which has a kgdboc driver
-for example.
+    scheduler_tick() ***(B)--> sched_clock_tick() (update "cpu sched
+    clock" to "hardware time" = 180s) ...  }
 
-It is important to understand that this work was directly derived from
-the original kdb, and the intent is to deprecate the out of tree kdb
-and move all its functionality to this code base.  This version of kdb
-is completely wired into the debug core and the kgdboc polled I/O
-model using the same API used by the gdbstub (which people call kgdb).
+5) The Second timer interrupt handler appears to have a large jump and
+   trips the softlockup warning.
 
-The kdb front end in this patch series works a little differently than
-if you were to take the original kdb patch set from:
+update_process_times() { ...  run_local_timers() --> softlockup_tick()
+--> "cpu sched clock" - "touch_timestamp" = 180s-100s > 60s --> printk
+"soft lockup error messages" ...  }
 
-ftp://oss.sgi.com/projects/kdb/download/v4.4/
+note: ***(A) reset "touch_timestamp" to "get_timestamp(this_cpu)"
 
-In the kernel .config you should enable the following options:
+Why "touch_timestamp" is 100 sec, instead of 180 sec?
 
-CONFIG_KGDB=y
-CONFIG_KGDB_SERIAL_CONSOLE=y
-CONFIG_KGDB_LOW_LEVEL_TRAP=y
-CONFIG_KGDB_KDB=y
-CONFIG_KDB_KEYBOARD=y
+With the CONFIG_HAVE_UNSTABLE_SCHED_CLOCK" set the call trace of
+get_timestamp() is:
 
-To use kdb with a serial port you would use the kgdb/kgdboc way of
-doing things.  You would used a kernel command line with:
+get_timestamp(this_cpu) -->cpu_clock(this_cpu)
+-->sched_clock_cpu(this_cpu) -->__update_sched_clock(sched_clock_data,
+now)
 
-   console=ttyS0,115200 kgdboc=ttyS0 kgdbwait
+The __update_sched_clock() function uses the GTOD tick value to create
+a window to normalize the "now" values.  So if "now" values is too big
+for sched_clock_data, it will be ignored.
 
-That will get you access to kdb just after the console has been
-registered.  If you want to use the keyboard, you could use the
-following (NOTE it is kbd and not kdb, kbd is short for keyboard):
+The fix is to invoke sched_clock_tick() to update "cpu sched clock" in
+order to recover from this state.  This is done by introducing the
+function touch_softlockup_watchdog_sync(), which allows kgdb to
+request that the sched clock is updated when the watchdog thread runs
+the first time after a resume from kgdb.
 
-   console=tty0 kgdboc=kbd kgdbwait
-
-You can also use the keyboard and or serial console:
-
-   console=ttyS0,115200 console=tty0 kgdboc=kbd,ttyS0
-
-
-In terms of breaking into the debugger after the system is up, you
-must use the sysrq-g sequence.  That means you could run:
-   echo g > /proc/sysrq-trigger
-
-Or you can use the SysRq key on your key board.  On a typical laptop
-you might have to do the following:
-
-press and hold ALT    -- You will be holding this the whole time
-press and hold FN
-press and release the key with the SysRq label
-release FN
-press and release g
-release ALT
-
-Once you are in kdb you can run help to see a limited list of
-commands.
-
-You can also still connect gdb or re-enter kdb without leaving the
-exception state, if you are using a serial port.  To get out of kgdb
-mode you can type "$3#33", or to get into kgdb mode from kdb, you can
-type "kgdb".
-
->From gdb you can issue commands to the kdb front end, via gdb's
-monitor command.  For instance you could issue "monitor lsmod".
-Allowing the gdb monitor extension was certainly another motivation
-behind the prototype.
-
-Included among the kdb patches are some kgdb specific fixes for the
-next kernel merge window, and if kdb were to not make the cut, these
-patches will be split out of the series.  Anything too ugly for a
-possible merge is also a candidate to get removed from the series.
-
-Thanks,
-Jason.
-
-You can find the development branch for this here:
-
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=kdb_prototype10
-
-or grab a static version of the patches here:
-
-http://kernel.org/pub/linux/kernel/people/jwessel/branches/kdb_prototype10.tar.bz2
-
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Dongdong Deng <Dongdong.Deng@windriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: peterz@infradead.org
 ---
-short log follow:
+ include/linux/sched.h |    4 ++++
+ kernel/kgdb.c         |    6 +++---
+ kernel/softlockup.c   |   16 ++++++++++++++++
+ 3 files changed, 23 insertions(+), 3 deletions(-)
 
-The following changes since commit f42ecb2808db5386f983d593a7c08d3ea3b94a27:
-  Linus Torvalds (1):
-        Merge branch 'drm-linus' of git://git.kernel.org/.../airlied/drm-2.6
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f2f842d..21adcaf 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -310,6 +310,7 @@ extern void sched_show_task(struct task_struct *p);
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ extern void softlockup_tick(void);
+ extern void touch_softlockup_watchdog(void);
++extern void touch_softlockup_watchdog_sync(void);
+ extern void touch_all_softlockup_watchdogs(void);
+ extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
+ 				    void __user *buffer,
+@@ -323,6 +324,9 @@ static inline void softlockup_tick(void)
+ static inline void touch_softlockup_watchdog(void)
+ {
+ }
++static inline void touch_softlockup_watchdog_sync(void)
++{
++}
+ static inline void touch_all_softlockup_watchdogs(void)
+ {
+ }
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 2eb517e..87f2cc5 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -596,7 +596,7 @@ static void kgdb_wait(struct pt_regs *regs)
+ 
+ 	/* Signal the primary CPU that we are done: */
+ 	atomic_set(&cpu_in_kgdb[cpu], 0);
+-	touch_softlockup_watchdog();
++	touch_softlockup_watchdog_sync();
+ 	clocksource_touch_watchdog();
+ 	local_irq_restore(flags);
+ }
+@@ -1450,7 +1450,7 @@ acquirelock:
+ 	    (kgdb_info[cpu].task &&
+ 	     kgdb_info[cpu].task->pid != kgdb_sstep_pid) && --sstep_tries) {
+ 		atomic_set(&kgdb_active, -1);
+-		touch_softlockup_watchdog();
++		touch_softlockup_watchdog_sync();
+ 		clocksource_touch_watchdog();
+ 		local_irq_restore(flags);
+ 
+@@ -1550,7 +1550,7 @@ kgdb_restore:
+ 	}
+ 	/* Free kgdb_active */
+ 	atomic_set(&kgdb_active, -1);
+-	touch_softlockup_watchdog();
++	touch_softlockup_watchdog_sync();
+ 	clocksource_touch_watchdog();
+ 	local_irq_restore(flags);
+ 
+diff --git a/kernel/softlockup.c b/kernel/softlockup.c
+index d225790..57f1295 100644
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -79,6 +79,14 @@ void touch_softlockup_watchdog(void)
+ }
+ EXPORT_SYMBOL(touch_softlockup_watchdog);
+ 
++static int softlock_touch_sync[NR_CPUS];
++
++void touch_softlockup_watchdog_sync(void)
++{
++	softlock_touch_sync[raw_smp_processor_id()] = 1;
++	__raw_get_cpu_var(softlockup_touch_ts) = 0;
++}
++
+ void touch_all_softlockup_watchdogs(void)
+ {
+ 	int cpu;
+@@ -118,6 +126,14 @@ void softlockup_tick(void)
+ 	}
+ 
+ 	if (touch_ts == 0) {
++		if (unlikely(softlock_touch_sync[this_cpu])) {
++			/*
++			 * If the time stamp was touched atomically
++			 * make sure the scheduler tick is up to date.
++			 */
++			softlock_touch_sync[this_cpu] = 0;
++			sched_clock_tick();
++		}
+ 		__touch_softlockup_watchdog();
+ 		return;
+ 	}
+-- 
+1.6.4.rc1
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git kdb_prototype10
-
-Jason Wessel (33):
-      softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
-      x86,hw_breakpoint,kgdb: kgdb to use hw_breakpoint API
-      Move kernel/kgdb.c to kernel/debug/debug_core.c
-      Separate the gdbstub from the debug core
-      kdb: core for kgdb back end
-      kgdb: eliminate kgdb_wait(), all cpus enter the same way
-      kgdb,sparc: Add in kgdb_arch_set_pc for sparc
-      kgdb,sh: update superh kgdb exception handling
-      kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
-      kgdb: core changes to support kdb
-      kgdb,8250,pl011: Return immediately from console poll
-      sh,sh-sci: Use NO_POLL_CHAR in the SCIF polled console code
-      sparc,sunzilog: Add console polling support for sunzilog serial driver
-      kgdb: gdb "monitor" -> kdb passthrough
-      kgdboc,keyboard: Keyboard driver for kdb with kgdb
-      kgdb: remove post_primary_code references
-      x86,kgdb: Add low level debug hook
-      arm,kgdb: Add hook to catch an oops with debugger
-      powerpc,kgdb: Introduce low level trap catching
-      mips,kgdb: kdb low level trap catch and stack trace
-      kgdb: Add the ability to schedule a breakpoint via a tasklet
-      kgdboc,kdb: Allow kdb to work on a non open console port
-      printk,kdb: capture printk() when in kdb shell
-      keyboard, input: Add hook to input to allow low level event clear
-      debug_core,kdb: Allow the debug core to process a recursive debug entry
-      kdb,panic,debug_core: Allow the debug core to receive a panic before smp_send_stop()
-      MAINTAINERS: update kgdb, kdb, and debug_core info
-      kgdboc,debug_core: Add call backs to allow kernel mode switching
-      kms,kdb: Force unblank a console device
-      i915: when kgdb is active display compression should be off
-      drm_fb_helper: Preserve capability to use atomic kms
-      drm,i915 - atomic mutex hacks
-      kgdbts,sh: Add in breakpoint pc offset for superh
-
-Jesse Barnes (2):
-      kgdb: add ops arg to kgdb console active & restore hooks
-      drm: add KGDB/KDB support Add support for KDB entry/exit.
-
-Randy Dunlap (1):
-      kgdb: Fix kernel-doc format error in kgdb.h
-
-Sonic Zhang (1):
-      kgdb: Make mem access function weak in kgdb.c and kgdb.h
-
- MAINTAINERS                           |    6 +-
- arch/arm/include/asm/kgdb.h           |    2 +
- arch/arm/include/asm/kmap_types.h     |    1 +
- arch/arm/kernel/kgdb.c                |   13 +
- arch/arm/kernel/traps.c               |    5 +
- arch/blackfin/kernel/kgdb.c           |    5 +
- arch/mips/include/asm/kgdb.h          |    2 +
- arch/mips/kernel/kgdb.c               |   27 +-
- arch/mips/kernel/traps.c              |   14 +
- arch/powerpc/include/asm/kmap_types.h |    1 +
- arch/powerpc/kernel/kgdb.c            |   12 +-
- arch/powerpc/kernel/traps.c           |    7 +
- arch/sh/kernel/kgdb.c                 |   14 +-
- arch/sparc/kernel/kgdb_32.c           |    6 +
- arch/sparc/kernel/kgdb_64.c           |    6 +
- arch/x86/include/asm/kgdb.h           |    3 +
- arch/x86/kernel/hw_breakpoint.c       |    5 +-
- arch/x86/kernel/kgdb.c                |  247 ++-
- arch/x86/kernel/traps.c               |    6 +
- drivers/char/Makefile                 |    1 +
- drivers/char/kdb_keyboard.c           |  207 +++
- drivers/char/kdb_keyboard.h           |  143 ++
- drivers/char/keyboard.c               |   30 +-
- drivers/gpu/drm/drm_fb_helper.c       |  105 ++
- drivers/gpu/drm/i915/intel_display.c  |  118 ++
- drivers/input/input.c                 |   15 +
- drivers/misc/kgdbts.c                 |    6 +
- drivers/serial/8250.c                 |    4 +-
- drivers/serial/amba-pl011.c           |    6 +-
- drivers/serial/kgdboc.c               |  150 ++-
- drivers/serial/sh-sci.c               |    6 +-
- drivers/serial/sunzilog.c             |   52 +
- drivers/video/console/fbcon.c         |    8 +
- fs/proc/meminfo.c                     |  143 ++
- fs/proc/mmu.c                         |   16 +-
- include/asm-generic/kmap_types.h      |    3 +-
- include/drm/drm_crtc_helper.h         |    2 +
- include/drm/drm_fb_helper.h           |    4 +
- include/linux/hugetlb.h               |    4 +
- include/linux/input.h                 |   10 +
- include/linux/kdb.h                   |  119 ++
- include/linux/keyboard.h              |    2 +
- include/linux/kgdb.h                  |   79 +-
- include/linux/sched.h                 |    4 +
- include/linux/serial_core.h           |    1 +
- include/linux/swap.h                  |    2 +
- init/main.c                           |    6 +
- kernel/Makefile                       |    2 +-
- kernel/debug/Makefile                 |    7 +
- kernel/debug/debug_core.c             |  977 +++++++++++
- kernel/debug/debug_core.h             |   82 +
- kernel/debug/gdbstub.c                | 1022 ++++++++++++
- kernel/debug/kdb/.gitignore           |    1 +
- kernel/debug/kdb/Makefile             |   24 +
- kernel/debug/kdb/kdb_bp.c             |  671 ++++++++
- kernel/debug/kdb/kdb_bt.c             |  217 +++
- kernel/debug/kdb/kdb_cmds             |   32 +
- kernel/debug/kdb/kdb_debugger.c       |  168 ++
- kernel/debug/kdb/kdb_io.c             |  820 ++++++++++
- kernel/debug/kdb/kdb_main.c           | 2852 +++++++++++++++++++++++++++++++++
- kernel/debug/kdb/kdb_private.h        |  420 +++++
- kernel/debug/kdb/kdb_support.c        |  942 +++++++++++
- kernel/kallsyms.c                     |   21 +
- kernel/kgdb.c                         | 1760 --------------------
- kernel/module.c                       |   19 +-
- kernel/panic.c                        |    7 +-
- kernel/printk.c                       |   26 +-
- kernel/sched.c                        |   93 ++-
- kernel/signal.c                       |   42 +
- kernel/softlockup.c                   |   16 +
- lib/Kconfig.kgdb                      |   22 +
- mm/hugetlb.c                          |   19 +
- mm/swapfile.c                         |   10 +-
- 73 files changed, 9992 insertions(+), 1908 deletions(-)
- create mode 100644 drivers/char/kdb_keyboard.c
- create mode 100644 drivers/char/kdb_keyboard.h
- create mode 100644 include/linux/kdb.h
- create mode 100644 kernel/debug/Makefile
- create mode 100644 kernel/debug/debug_core.c
- create mode 100644 kernel/debug/debug_core.h
- create mode 100644 kernel/debug/gdbstub.c
- create mode 100644 kernel/debug/kdb/.gitignore
- create mode 100644 kernel/debug/kdb/Makefile
- create mode 100644 kernel/debug/kdb/kdb_bp.c
- create mode 100644 kernel/debug/kdb/kdb_bt.c
- create mode 100644 kernel/debug/kdb/kdb_cmds
- create mode 100644 kernel/debug/kdb/kdb_debugger.c
- create mode 100644 kernel/debug/kdb/kdb_io.c
- create mode 100644 kernel/debug/kdb/kdb_main.c
- create mode 100644 kernel/debug/kdb/kdb_private.h
- create mode 100644 kernel/debug/kdb/kdb_support.c
- delete mode 100644 kernel/kgdb.c
-
-
-PS:
-
-* This is not meant to replace printk :-)
-* Happy Holidays!
