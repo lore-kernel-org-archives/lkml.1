@@ -1,160 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZLWNcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZLWNfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbZLWNcy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbZLWNcx
+	id S1755319AbZLWNfO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:35:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZLWNfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:32:53 -0500
-Received: from cantor.suse.de ([195.135.220.2]:50398 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755928AbZLWNcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:32:51 -0500
-Date: Wed, 23 Dec 2009 14:32:44 +0100
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
-       Steve Rago <sar@nec-labs.com>, Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-Message-ID: <20091223133244.GB3159@quack.suse.cz>
-References: <1261015420.1947.54.camel@serenity>
- <1261037877.27920.36.camel@laptop>
- <20091219122033.GA11360@localhost>
- <1261232747.1947.194.camel@serenity>
- <20091222015907.GA6223@localhost>
- <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
- <20091223084302.GA14912@infradead.org>
+	Wed, 23 Dec 2009 08:35:13 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40592 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbZLWNfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 08:35:11 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B321C2A.80805@s5r6.in-berlin.de>
+Date: Wed, 23 Dec 2009 14:33:30 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091223084302.GA14912@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jeff Garzik <jeff@garzik.org>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>, awalls@radix.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: workqueue thing
+References: <1261141088-2014-1-git-send-email-tj@kernel.org>	 <1261143924.20899.169.camel@laptop> <4B2EE5A5.2030208@kernel.org>	 <1261387377.4314.37.camel@laptop> <4B2F7879.2080901@kernel.org>	 <1261405604.4314.154.camel@laptop> <4B3009DC.7020407@kernel.org>	 <1261480001.4937.21.camel@laptop> <4B319A20.9010305@kernel.org>	 <alpine.LFD.2.00.0912222032360.6879@localhost.localdomain>	 <20091223060229.GA14805@elte.hu>  <4B31B508.5040903@garzik.org> <1261557674.4937.117.camel@laptop> <4B31F028.7060209@garzik.org>
+In-Reply-To: <4B31F028.7060209@garzik.org>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 23-12-09 03:43:02, Christoph Hellwig wrote:
-> On Tue, Dec 22, 2009 at 01:35:39PM +0100, Jan Kara wrote:
-> > >    nfsd_sync:
-> > >      [take i_mutex]
-> > >        filemap_fdatawrite  => can also be blocked, but less a problem
-> > >      [drop i_mutex]
-> > >        filemap_fdatawait
-> > >  
-> > >    Maybe it's a dumb question, but what's the purpose of i_mutex here?
-> > >    For correctness or to prevent livelock? I can imagine some livelock
-> > >    problem here (current implementation can easily wait for extra
-> > >    pages), however not too hard to fix.
-> >   Generally, most filesystems take i_mutex during fsync to
-> > a) avoid all sorts of livelocking problems
-> > b) serialize fsyncs for one inode (mostly for simplicity)
-> >   I don't see what advantage would it bring that we get rid of i_mutex
-> > for fdatawait - only that maybe writers could proceed while we are
-> > waiting but is that really the problem?
+Jeff Garzik wrote:
+> On 12/23/2009 03:41 AM, Peter Zijlstra wrote:
+>> On Wed, 2009-12-23 at 01:13 -0500, Jeff Garzik wrote:
+>>> We are dealing with situations where drivers are using workqueues to
+>>> provide a sleep-able context, and trying to solve problems related to
+>>> that.
+>>
+>> So why are threaded interrupts not considered? Isn't the typical atomic
+>> context of drivers the IRQ handler?
 > 
-> It would match what we do in vfs_fsync for the non-nfsd path, so it's
-> a no-brainer to do it.  In fact I did switch it over to vfs_fsync a
-> while ago but that go reverted because it caused deadlocks for
-> nfsd_sync_dir which for some reason can't take the i_mutex (I'd have to
-> check the archives why).
 > 
-> Here's a RFC patch to make some more sense of the fsync callers in nfsd,
-> including fixing up the data write/wait calling conventions to match the
-> regular fsync path (which might make this a -stable candidate):
-  The patch looks good to me from general soundness point of view :).
-Someone with more NFS knowledge should tell whether dropping i_mutex for
-fdatawrite_and_wait is fine for NFS.
+> I don't see a whole lot of driver authors rushing to support threaded
+> interrupts.  It is questionable whether the myriad crazy IDE interrupt
+> routing schemes are even compatible.  Thomas's Mar 23 2009 email says
+> "the primary handler must disable the interrupt at the device level"
+> That is not an easy request for all the hardware libata must support.
+> 
+> But the most obvious reason is also the most compelling:  Tejun's work
+> maps precisely to libata's needs.  And his work would seem to mesh well
+> with other drivers in similar situations.
 
-								Honza
- 
-> Index: linux-2.6/fs/nfsd/vfs.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfsd/vfs.c	2009-12-23 09:32:45.693170043 +0100
-> +++ linux-2.6/fs/nfsd/vfs.c	2009-12-23 09:39:47.627170082 +0100
-> @@ -769,45 +769,27 @@ nfsd_close(struct file *filp)
->  }
->  
->  /*
-> - * Sync a file
-> - * As this calls fsync (not fdatasync) there is no need for a write_inode
-> - * after it.
-> + * Sync a directory to disk.
-> + *
-> + * This is odd compared to all other fsync callers because we
-> + *
-> + *  a) do not have a file struct available
-> + *  b) expect to have i_mutex already held by the caller
->   */
-> -static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
-> -			      const struct file_operations *fop)
-> +int
-> +nfsd_sync_dir(struct dentry *dentry)
->  {
-> -	struct inode *inode = dp->d_inode;
-> -	int (*fsync) (struct file *, struct dentry *, int);
-> +	struct inode *inode = dentry->d_inode;
->  	int err;
->  
-> -	err = filemap_fdatawrite(inode->i_mapping);
-> -	if (err == 0 && fop && (fsync = fop->fsync))
-> -		err = fsync(filp, dp, 0);
-> -	if (err == 0)
-> -		err = filemap_fdatawait(inode->i_mapping);
-> +	WARN_ON(!mutex_is_locked(&inode->i_mutex));
->  
-> +	err = filemap_write_and_wait(inode->i_mapping);
-> +	if (err == 0 && inode->i_fop->fsync)
-> +		err = inode->i_fop->fsync(NULL, dentry, 0);
->  	return err;
->  }
->  
-> -static int
-> -nfsd_sync(struct file *filp)
-> -{
-> -        int err;
-> -	struct inode *inode = filp->f_path.dentry->d_inode;
-> -	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
-> -	mutex_lock(&inode->i_mutex);
-> -	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
-> -	mutex_unlock(&inode->i_mutex);
-> -
-> -	return err;
-> -}
-> -
-> -int
-> -nfsd_sync_dir(struct dentry *dp)
-> -{
-> -	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
-> -}
-> -
->  /*
->   * Obtain the readahead parameters for the file
->   * specified by (dev, ino).
-> @@ -1011,7 +993,7 @@ static int wait_for_concurrent_writes(st
->  
->  	if (inode->i_state & I_DIRTY) {
->  		dprintk("nfsd: write sync %d\n", task_pid_nr(current));
-> -		err = nfsd_sync(file);
-> +		err = vfs_fsync(file, file->f_path.dentry, 0);
->  	}
->  	last_ino = inode->i_ino;
->  	last_dev = inode->i_sb->s_dev;
-> @@ -1180,7 +1162,7 @@ nfsd_commit(struct svc_rqst *rqstp, stru
->  		return err;
->  	if (EX_ISSYNC(fhp->fh_export)) {
->  		if (file->f_op && file->f_op->fsync) {
-> -			err = nfserrno(nfsd_sync(file));
-> +			err = nfserrno(vfs_fsync(file, file->f_path.dentry, 0));
->  		} else {
->  			err = nfserr_notsupp;
->  		}
+Exactly; threaded interrupts are not a solution for much of what
+workqueues, slow-work, async... are used for and cmwq would be (more)
+useful for.
+
+In case of FireWire for example, each FireWire bus ( = FireWire link
+layer controller) is associated with a single interrupt handler, yet
+contains several DMA units for very different purposes (input vs.
+output, isochronous vs. asynchronous); but more importantly, one link
+layer controller is merely the gateway to 0...n FireWire peer nodes
+(cameras, storage devices etc.).  Everything of what happens at a
+somewhat higher level needs concurrency per FireWire peer, not per
+FireWire bus.
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Stefan Richter
+-=====-==--= ==-- =-===
+http://arcgraph.de/sr/
