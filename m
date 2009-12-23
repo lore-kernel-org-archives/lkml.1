@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZLWUYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZLWU1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZLWUYe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 15:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZLWUYc
+	id S1755813AbZLWU1I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 15:27:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZLWU1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 15:24:32 -0500
-Received: from mga09.intel.com ([134.134.136.24]:64521 "EHLO mga09.intel.com"
+	Wed, 23 Dec 2009 15:27:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21514 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbZLWUYc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 15:24:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,444,1257148800"; 
-   d="scan'208";a="478723061"
-From: "Smith, GeoffX" <geoffx.smith@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Michael Stone <michael@laptop.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Date: Wed, 23 Dec 2009 12:24:30 -0800
-Subject: RE: [PATCH] prctl: return MCE process flags through pointer
-Thread-Topic: [PATCH] prctl: return MCE process flags through pointer
-Thread-Index: AcqEAXPQqwLqUC6kS2uBv/ipkNn1wwAAqDrQ
-Message-ID: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE18ED@orsmsx510.amr.corp.intel.com>
-References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1829@orsmsx510.amr.corp.intel.com>
-	<87hbricwz8.fsf@basil.nowhere.org>
-	<20091222173424.980d5d33.akpm@linux-foundation.org>
-	<20091223095223.GB20539@basil.fritz.box>
-	<20091223021807.abbd993e.akpm@linux-foundation.org>
-	<354B2877CF17F44BB3FA44EB4DB0E5470C91CE18A8@orsmsx510.amr.corp.intel.com>
- <20091223105450.8f15db9f.akpm@linux-foundation.org>
-In-Reply-To: <20091223105450.8f15db9f.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751979AbZLWU1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 15:27:00 -0500
+Message-ID: <4B327CE5.7050705@redhat.com>
+Date: Wed, 23 Dec 2009 22:26:13 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org>	<4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com>	<4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu>	<20091223101340.GC20539@basil.fritz.box>	<20091223185150.GA9587@elte.hu> <877hsdcwza.fsf@basil.nowhere.org>
+In-Reply-To: <877hsdcwza.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Earlier today, Andrew Morton <akpm@linux-foundation.org> wrote:
->>
->> >Why are task_struct.timer_slack_ns and
->> >task_struct.default_timer_slack_ns unsigned long, btw?  AFACIT we could
->> >make them unsigned ints.
->>
->> Timer slack is not a Boolean or enum, and we want the greatest range
->possible.  (Actually, I'd like to talk Arjan into using the same time
->structure as select(), but that's another discussion.) Internally hrtimer
->uses unsigned long.  I know long and unsigned long are the same on some
->architectures, but let's not introduce an unnatural restriction -- recall
->that arg2 is unsigned long.
+On 12/23/2009 09:27 PM, Andi Kleen wrote:
+> Ingo Molnar<mingo@elte.hu>  writes:
 >
->Using unsigned ints will reduce the size of the task_struct.
->
->Is there any conceivable case for a timer_slack which exceeds four
->seconds?  If so, what is it, and if so, why this:
->
->#define MAX_SLACK       (100 * NSEC_PER_MSEC)
->
->
+>    
+>> Yes, there's (obviously) compatibility requirements and artifacts and past
+>> mistakes (as with any software interface), but you need to admit it to
+>>      
+> Yes that's exactly what I meant.
+>    
 
-WRT to times longer than 4.2 sec -- So far my works suggests there is a good case, but it's moot because that is all I get with unsigned long on my platform.  (Both int and long are 32-bit for me; x86)
+And we do make plenty of mistakes.  And when we fix them, we have to 
+maintain bug-compatibility to allow live migration from the broken 
+version to the good version.  If you're ever feeling overly happy, do 
+some compat work in qemu and it will suck a year's worth or two of your 
+life force a pop.
 
-WRT MAX_SLACK, select() always imposes a little slack (for non-real-time threads).  The name MAX_SLACK is not actually the absolute maximum, it is only the maximum that the kernel will impose by default. 
+>> yourself that your "virtualization is sloppy just like hardware" claim is just
+>>      
+> In my experience hardware is a lot less sloppy than software.
+> Imagine your latest CPU had as many regressions as 2.6.32 @)
+>
+> I wish software and even VMs were as good.
+>
+>    
+
+Me too.
+
+>> a cheap excuse to not do a proper job of interface engineering.
+>>      
+> Past mistakes cannot be easily fixed. And undoubtedly even the new
+> shiny interfaces will have bugs and problems. Also the behaviour is
+> often not completely understood. Maybe it can be easier debugged with
+> fully available source, but even then it's hard to fix the old
+> software (or rather even if you can fix it deploy the fixes). In
+> that regard it's a lot like hardware.
+>
+> I agree with you that this makes it important to design good
+> interfaces, but again realistically mistakes will be made
+> and they cannot be all fixed retroactively.
+>    
+
+Our principal tool for this is to avoid introducing new interfaces 
+whenever possible.  We try to stick to established hardware standards 
+(so we don't need to sloppily define them, and get guest compatibility 
+for free).
+
+Hardware (both virt and non-virt) faces the same problems as software 
+here.  So as hardware solutions are introduced, we adopt them, and 
+usually the virt extensions vendors follow with accelerations for these 
+paths as well.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
