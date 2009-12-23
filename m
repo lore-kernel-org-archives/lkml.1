@@ -1,302 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZLWVUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZLWVYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbZLWVUh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbZLWVU0
+	id S1757287AbZLWVYe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZLWVVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:20:26 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45024 "EHLO
+	Wed, 23 Dec 2009 16:21:48 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45304 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754388AbZLWVUV (ORCPT
+	with ESMTP id S1756559AbZLWVVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:20:21 -0500
+	Wed, 23 Dec 2009 16:21:43 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 06/37] kgdb: eliminate kgdb_wait(), all cpus enter the same way
-Date: Wed, 23 Dec 2009 15:19:19 -0600
-Message-Id: <1261603190-5036-7-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 07/37] kgdb,sparc: Add in kgdb_arch_set_pc for sparc
+Date: Wed, 23 Dec 2009 15:19:20 -0600
+Message-Id: <1261603190-5036-8-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1261603190-5036-6-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1261603190-5036-7-git-send-email-jason.wessel@windriver.com>
 References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-2-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-3-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-4-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-5-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-6-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 23 Dec 2009 21:20:05.0317 (UTC) FILETIME=[B23F8F50:01CA8415]
+ <1261603190-5036-7-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 23 Dec 2009 21:20:06.0473 (UTC) FILETIME=[B2EFF390:01CA8415]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a kgdb architectural change to have all the cpus (master or
-slave) enter the same function.
+The new debug core api requires all architectures that use to debug
+core to implement a function to set the program counter.
 
-A cpu that hits an exception (wants to be the master cpu) will call
-kgdb_handle_exception() from the trap handler and then invoke a
-kgdb_roundup_cpu() to synchronize the other cpus and bring them into
-the kgdb_handle_exception() as well.
-
-A slave cpu will enter kgdb_handle_exception() from the
-kgdb_nmicallback() and set the exception state to note that the
-processor is a slave.
-
-Previously the salve cpu would have called kgdb_wait().  This change
-allows the debug core to change cpus without resuming the system in
-order to inspect arch specific cpu information.
-
+CC: "David S. Miller" <davem@davemloft.net>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- kernel/debug/debug_core.c |  158 +++++++++++++++++++++-----------------------
- kernel/debug/debug_core.h |    7 ++
- 2 files changed, 82 insertions(+), 83 deletions(-)
+ arch/sparc/kernel/kgdb_32.c |    6 ++++++
+ arch/sparc/kernel/kgdb_64.c |    6 ++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index bc11df8..fe1fd41 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -215,49 +215,6 @@ void __weak kgdb_disable_hw_debug(struct pt_regs *regs)
- }
- 
- /*
-- * CPU debug state control:
-- */
--
--#ifdef CONFIG_SMP
--static void kgdb_wait(struct pt_regs *regs)
--{
--	unsigned long flags;
--	int cpu;
--
--	local_irq_save(flags);
--	cpu = raw_smp_processor_id();
--	kgdb_info[cpu].debuggerinfo = regs;
--	kgdb_info[cpu].task = current;
--	/*
--	 * Make sure the above info reaches the primary CPU before
--	 * our cpu_in_kgdb[] flag setting does:
--	 */
--	smp_wmb();
--	atomic_set(&cpu_in_kgdb[cpu], 1);
--
--	/* Disable any cpu specific hw breakpoints */
--	kgdb_disable_hw_debug(regs);
--
--	/* Wait till primary CPU is done with debugging */
--	while (atomic_read(&passive_cpu_wait[cpu]))
--		cpu_relax();
--
--	kgdb_info[cpu].debuggerinfo = NULL;
--	kgdb_info[cpu].task = NULL;
--
--	/* fix up hardware debug registers on local cpu */
--	if (arch_kgdb_ops.correct_hw_break)
--		arch_kgdb_ops.correct_hw_break();
--
--	/* Signal the primary CPU that we are done: */
--	atomic_set(&cpu_in_kgdb[cpu], 0);
--	touch_softlockup_watchdog_sync();
--	clocksource_touch_watchdog();
--	local_irq_restore(flags);
--}
--#endif
--
--/*
-  * Some architectures need cache flushes when we set/clear a
-  * breakpoint:
-  */
-@@ -486,34 +443,12 @@ static int kgdb_reenter_check(struct kgdb_state *ks)
- 	return 1;
- }
- 
--/*
-- * kgdb_handle_exception() - main entry point from a kernel exception
-- *
-- * Locking hierarchy:
-- *	interface locks, if any (begin_session)
-- *	kgdb lock (kgdb_active)
-- */
--int
--kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
-+static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs)
+diff --git a/arch/sparc/kernel/kgdb_32.c b/arch/sparc/kernel/kgdb_32.c
+index 04df4ed..79bcba6 100644
+--- a/arch/sparc/kernel/kgdb_32.c
++++ b/arch/sparc/kernel/kgdb_32.c
+@@ -158,6 +158,12 @@ void kgdb_arch_exit(void)
  {
--	struct kgdb_state kgdb_var;
--	struct kgdb_state *ks = &kgdb_var;
- 	unsigned long flags;
- 	int sstep_tries = 100;
- 	int error = 0;
- 	int i, cpu;
--
--	ks->cpu			= raw_smp_processor_id();
--	ks->ex_vector		= evector;
--	ks->signo		= signo;
--	ks->ex_vector		= evector;
--	ks->err_code		= ecode;
--	ks->kgdb_usethreadid	= 0;
--	ks->linux_regs		= regs;
--
--	if (kgdb_reenter_check(ks))
--		return 0; /* Ouch, double exception ! */
--
- acquirelock:
- 	/*
- 	 * Interrupts will be restored by the 'trap return' code, except when
-@@ -521,13 +456,42 @@ acquirelock:
- 	 */
- 	local_irq_save(flags);
- 
--	cpu = raw_smp_processor_id();
-+	cpu = ks->cpu;
-+	kgdb_info[cpu].debuggerinfo = regs;
-+	kgdb_info[cpu].task = current;
-+	/*
-+	 * Make sure the above info reaches the primary CPU before
-+	 * our cpu_in_kgdb[] flag setting does:
-+	 */
-+	smp_wmb();
-+	atomic_set(&cpu_in_kgdb[cpu], 1);
- 
- 	/*
--	 * Acquire the kgdb_active lock:
-+	 * CPU will loop if it is a slave or request to become a kgdb
-+	 * master cpu and acquire the kgdb_active lock:
- 	 */
--	while (atomic_cmpxchg(&kgdb_active, -1, cpu) != -1)
-+	while (1) {
-+		if (kgdb_info[cpu].exception_state & DCPU_WANT_MASTER) {
-+			if (atomic_cmpxchg(&kgdb_active, -1, cpu) == cpu)
-+				break;
-+		} else if (kgdb_info[cpu].exception_state & DCPU_IS_SLAVE) {
-+			if (!atomic_read(&passive_cpu_wait[cpu]))
-+				goto return_normal;
-+		} else {
-+return_normal:
-+			/* Return to normal operation by executing any
-+			 * hw breakpoint fixup.
-+			 */
-+			if (arch_kgdb_ops.correct_hw_break)
-+				arch_kgdb_ops.correct_hw_break();
-+			atomic_set(&cpu_in_kgdb[cpu], 0);
-+			touch_softlockup_watchdog_sync();
-+			clocksource_touch_watchdog();
-+			local_irq_restore(flags);
-+			return 0;
-+		}
- 		cpu_relax();
-+	}
- 
- 	/*
- 	 * For single stepping, try to only enter on the processor
-@@ -561,9 +525,6 @@ acquirelock:
- 	if (dbg_io_ops->pre_exception)
- 		dbg_io_ops->pre_exception();
- 
--	kgdb_info[ks->cpu].debuggerinfo = ks->linux_regs;
--	kgdb_info[ks->cpu].task = current;
--
- 	kgdb_disable_hw_debug(ks->linux_regs);
- 
- 	/*
-@@ -575,12 +536,6 @@ acquirelock:
- 			atomic_set(&passive_cpu_wait[i], 1);
- 	}
- 
--	/*
--	 * spin_lock code is good enough as a barrier so we don't
--	 * need one here:
--	 */
--	atomic_set(&cpu_in_kgdb[ks->cpu], 1);
--
- #ifdef CONFIG_SMP
- 	/* Signal the other CPUs to enter kgdb_wait() */
- 	if ((!kgdb_single_step) && kgdb_do_roundup)
-@@ -612,8 +567,6 @@ acquirelock:
- 	if (dbg_io_ops->post_exception)
- 		dbg_io_ops->post_exception();
- 
--	kgdb_info[ks->cpu].debuggerinfo = NULL;
--	kgdb_info[ks->cpu].task = NULL;
- 	atomic_set(&cpu_in_kgdb[ks->cpu], 0);
- 
- 	if (!kgdb_single_step) {
-@@ -646,13 +599,52 @@ kgdb_restore:
- 	return error;
  }
  
-+/*
-+ * kgdb_handle_exception() - main entry point from a kernel exception
-+ *
-+ * Locking hierarchy:
-+ *	interface locks, if any (begin_session)
-+ *	kgdb lock (kgdb_active)
-+ */
-+int
-+kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
++void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
 +{
-+	struct kgdb_state kgdb_var;
-+	struct kgdb_state *ks = &kgdb_var;
-+	int ret;
-+
-+	ks->cpu			= raw_smp_processor_id();
-+	ks->ex_vector		= evector;
-+	ks->signo		= signo;
-+	ks->ex_vector		= evector;
-+	ks->err_code		= ecode;
-+	ks->kgdb_usethreadid	= 0;
-+	ks->linux_regs		= regs;
-+
-+	if (kgdb_reenter_check(ks))
-+		return 0; /* Ouch, double exception ! */
-+	kgdb_info[ks->cpu].exception_state |= DCPU_WANT_MASTER;
-+	ret = kgdb_cpu_enter(ks, regs);
-+	kgdb_info[ks->cpu].exception_state &= ~DCPU_WANT_MASTER;
-+	return ret;
++       regs->pc = regs->npc;
++       regs->npc = ip;
 +}
 +
- int kgdb_nmicallback(int cpu, void *regs)
+ struct kgdb_arch arch_kgdb_ops = {
+ 	/* Breakpoint instruction: ta 0x7d */
+ 	.gdb_bpt_instr		= { 0x91, 0xd0, 0x20, 0x7d },
+diff --git a/arch/sparc/kernel/kgdb_64.c b/arch/sparc/kernel/kgdb_64.c
+index f5a0fd4..ebe9f0b 100644
+--- a/arch/sparc/kernel/kgdb_64.c
++++ b/arch/sparc/kernel/kgdb_64.c
+@@ -180,6 +180,12 @@ void kgdb_arch_exit(void)
  {
- #ifdef CONFIG_SMP
-+	struct kgdb_state kgdb_var;
-+	struct kgdb_state *ks = &kgdb_var;
-+
-+	memset(ks, 0, sizeof(struct kgdb_state));
-+	ks->cpu			= cpu;
-+	ks->linux_regs		= regs;
-+
- 	if (!atomic_read(&cpu_in_kgdb[cpu]) &&
--			atomic_read(&kgdb_active) != cpu &&
--			atomic_read(&cpu_in_kgdb[atomic_read(&kgdb_active)])) {
--		kgdb_wait((struct pt_regs *)regs);
-+	    atomic_read(&kgdb_active) != -1 &&
-+	    atomic_read(&kgdb_active) != cpu) {
-+		kgdb_info[cpu].exception_state |= DCPU_IS_SLAVE;
-+		kgdb_cpu_enter(ks, regs);
-+		kgdb_info[cpu].exception_state &= ~DCPU_IS_SLAVE;
- 		return 0;
- 	}
- #endif
-diff --git a/kernel/debug/debug_core.h b/kernel/debug/debug_core.h
-index ebfd5bb..a111cda 100644
---- a/kernel/debug/debug_core.h
-+++ b/kernel/debug/debug_core.h
-@@ -28,9 +28,16 @@ struct kgdb_state {
- 	struct pt_regs		*linux_regs;
- };
+ }
  
-+/* Exception state values */
-+#define DCPU_WANT_MASTER 0x1 /* Waiting to become a master kgdb cpu */
-+#define DCPU_NEXT_MASTER 0x2 /* Transition from one master cpu to another */
-+#define DCPU_IS_SLAVE    0x4 /* Slave cpu enter exception */
-+#define DCPU_SSTEP       0x8 /* CPU is single stepping */
++void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
++{
++	regs->tpc = regs->tnpc;
++	regs->tnpc = ip;
++}
 +
- struct debuggerinfo_struct {
- 	void			*debuggerinfo;
- 	struct task_struct	*task;
-+	int exception_state;
- };
- 
- extern struct debuggerinfo_struct kgdb_info[];
+ struct kgdb_arch arch_kgdb_ops = {
+ 	/* Breakpoint instruction: ta 0x72 */
+ 	.gdb_bpt_instr		= { 0x91, 0xd0, 0x20, 0x72 },
 -- 
 1.6.4.rc1
 
