@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZLWJwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZLWJwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbZLWJwa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 04:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZLWJw2
+	id S1754814AbZLWJwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZLWJws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 04:52:28 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55681 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbZLWJw2 (ORCPT
+	Wed, 23 Dec 2009 04:52:48 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33004 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbZLWJwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 04:52:28 -0500
-Date: Wed, 23 Dec 2009 10:52:23 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, "Smith, GeoffX" <geoffx.smith@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Michael Stone <michael@laptop.org>
-Subject: Re: [PATCH] prctl: return MCE process flags through pointer
-Message-ID: <20091223095223.GB20539@basil.fritz.box>
-References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1829@orsmsx510.amr.corp.intel.com> <87hbricwz8.fsf@basil.nowhere.org> <20091222173424.980d5d33.akpm@linux-foundation.org>
+	Wed, 23 Dec 2009 04:52:46 -0500
+Date: Wed, 23 Dec 2009 10:52:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Salman Qazi <sqazi@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: RFC: A proposal for power capping through forced idle in the
+ Linux Kernel
+Message-ID: <20091223095239.GD24181@elf.ucw.cz>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+ <20091221085713.GA1622@ucw.cz>
+ <4352991a0912221315y5ba409cbh26baa5937cdf2f76@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091222173424.980d5d33.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4352991a0912221315y5ba409cbh26baa5937cdf2f76@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 05:34:24PM -0800, Andrew Morton wrote:
-> On Wed, 23 Dec 2009 02:14:51 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+Hi!
+
+> > OTOH realtime people already have tools you could make good use of:
+> > your power capping approach looks like 'high priority idle task that
+> > needs to run for 2 seconds every 5 seconds' or something...
+> >
+> > Talk to rt people?
 > 
-> > "Smith, GeoffX" <geoffx.smith@intel.com> writes:
-> > 
-> > > This patch fixes the semantics of prctl() option PR_MCE_KILL_GET 
-> > > to pass the return value through *arg2.
-> > >
-> > > With this change, the option now follows the same conventions as the
-> > > other "get" options added since 2.6.0, and also brings it into
-> > > conformance with the advice in chapter 16 of Documentation/CodingStyle.
-> > >
-> > > This prctl() option was only added within the last month, so there are
-> > > not any production applications to break.  This patch applies cleanly
-> > > to mainline and to 2.6.32.2 for backporting.
-> > 
-> > It breaks the test suite, the man pages, qemu and one slide deck at least.
-> > 
-> 
-> Should've got it right the first time.
+> At the core of it, you are correct.  However, in our implementation it
+> also avoids running when the system is already idle and operates at
+> much finer granularities than seconds.
 
-To be honest it's not fully clear to me what is "wrong" with returning
-the return value with "return".
+Seconds were examples, I suspect rt kernels need lower granularities,
+to.
 
-If there was a security bug or something maybe such a radical step
-as changing a published API would be justified, but for this I'm sceptical.
+> Which specific tools are you referring to?  Real-time Linux as a whole
+> is a trade off:  one gets predictable latency in exchange for some
+> performance.  Any specific contacts that I should direct my inquiries
+> to?
 
-> 
-> What goes wrong with qemu?
+I guess Peter and Ingo (added to the Cc)....
 
-It's the main current user of this interface currently.
-
--Andi
-
+Anyway, I guess that what you really want is to be able to change
+priority of the idle threads, even making them realtime...
+									Pavel
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
