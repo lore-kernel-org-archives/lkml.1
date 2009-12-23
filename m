@@ -1,149 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbZLWInN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZLWIoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbZLWInN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 03:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZLWInM
+	id S1754160AbZLWIoW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 03:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZLWIoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 03:43:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58374 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbZLWInJ (ORCPT
+	Wed, 23 Dec 2009 03:44:21 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54602 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbZLWIoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 03:43:09 -0500
-Date: Wed, 23 Dec 2009 03:43:02 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Steve Rago <sar@nec-labs.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-Message-ID: <20091223084302.GA14912@infradead.org>
-References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 23 Dec 2009 03:44:21 -0500
+Subject: Re: workqueue thing
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stijn Devriendt <highguy@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mi@jasper.es
+In-Reply-To: <c76f371a0912230017n7d3f5c89h849aa23efa6f75e5@mail.gmail.com>
+References: <20091221091754.GG4489@kernel.dk>
+	 <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org>
+	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
+	 <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>
+	 <1261504042.4937.59.camel@laptop> <20091222180703.GI10314@basil.fritz.box>
+	 <c76f371a0912230017n7d3f5c89h849aa23efa6f75e5@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Dec 2009 09:43:32 +0100
+Message-ID: <1261557812.4937.118.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 01:35:39PM +0100, Jan Kara wrote:
-> >    nfsd_sync:
-> >      [take i_mutex]
-> >        filemap_fdatawrite  => can also be blocked, but less a problem
-> >      [drop i_mutex]
-> >        filemap_fdatawait
-> >  
-> >    Maybe it's a dumb question, but what's the purpose of i_mutex here?
-> >    For correctness or to prevent livelock? I can imagine some livelock
-> >    problem here (current implementation can easily wait for extra
-> >    pages), however not too hard to fix.
->   Generally, most filesystems take i_mutex during fsync to
-> a) avoid all sorts of livelocking problems
-> b) serialize fsyncs for one inode (mostly for simplicity)
->   I don't see what advantage would it bring that we get rid of i_mutex
-> for fdatawait - only that maybe writers could proceed while we are
-> waiting but is that really the problem?
+On Wed, 2009-12-23 at 09:17 +0100, Stijn Devriendt wrote:
+> On Tue, Dec 22, 2009 at 7:07 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> > One reason I liked a more dynamic frame work for this is that it
+> > has the potential to be exposed to user space and allow automatic
+> > work partitioning there based on available cores.  User space
+> > has a lot more CPU consumption than the kernel.
+> >
+> Basically, this is exactly what I was trying to solve with my
+> sched_wait_block patch. It was broken in all ways, but the ultimate
+> goal was to have concurrency managed workqueues (to nick the term)
+> in userspace and have a way out when I/O hits the workqueue.
 
-It would match what we do in vfs_fsync for the non-nfsd path, so it's
-a no-brainer to do it.  In fact I did switch it over to vfs_fsync a
-while ago but that go reverted because it caused deadlocks for
-nfsd_sync_dir which for some reason can't take the i_mutex (I'd have to
-check the archives why).
+Don't we have the problem of wakeup concurrency here?
 
-Here's a RFC patch to make some more sense of the fsync callers in nfsd,
-including fixing up the data write/wait calling conventions to match the
-regular fsync path (which might make this a -stable candidate):
+Forking on blocking is only half the problem (and imho the easy half).
 
-
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2009-12-23 09:32:45.693170043 +0100
-+++ linux-2.6/fs/nfsd/vfs.c	2009-12-23 09:39:47.627170082 +0100
-@@ -769,45 +769,27 @@ nfsd_close(struct file *filp)
- }
- 
- /*
-- * Sync a file
-- * As this calls fsync (not fdatasync) there is no need for a write_inode
-- * after it.
-+ * Sync a directory to disk.
-+ *
-+ * This is odd compared to all other fsync callers because we
-+ *
-+ *  a) do not have a file struct available
-+ *  b) expect to have i_mutex already held by the caller
-  */
--static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
--			      const struct file_operations *fop)
-+int
-+nfsd_sync_dir(struct dentry *dentry)
- {
--	struct inode *inode = dp->d_inode;
--	int (*fsync) (struct file *, struct dentry *, int);
-+	struct inode *inode = dentry->d_inode;
- 	int err;
- 
--	err = filemap_fdatawrite(inode->i_mapping);
--	if (err == 0 && fop && (fsync = fop->fsync))
--		err = fsync(filp, dp, 0);
--	if (err == 0)
--		err = filemap_fdatawait(inode->i_mapping);
-+	WARN_ON(!mutex_is_locked(&inode->i_mutex));
- 
-+	err = filemap_write_and_wait(inode->i_mapping);
-+	if (err == 0 && inode->i_fop->fsync)
-+		err = inode->i_fop->fsync(NULL, dentry, 0);
- 	return err;
- }
- 
--static int
--nfsd_sync(struct file *filp)
--{
--        int err;
--	struct inode *inode = filp->f_path.dentry->d_inode;
--	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
--	mutex_lock(&inode->i_mutex);
--	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
--	mutex_unlock(&inode->i_mutex);
--
--	return err;
--}
--
--int
--nfsd_sync_dir(struct dentry *dp)
--{
--	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
--}
--
- /*
-  * Obtain the readahead parameters for the file
-  * specified by (dev, ino).
-@@ -1011,7 +993,7 @@ static int wait_for_concurrent_writes(st
- 
- 	if (inode->i_state & I_DIRTY) {
- 		dprintk("nfsd: write sync %d\n", task_pid_nr(current));
--		err = nfsd_sync(file);
-+		err = vfs_fsync(file, file->f_path.dentry, 0);
- 	}
- 	last_ino = inode->i_ino;
- 	last_dev = inode->i_sb->s_dev;
-@@ -1180,7 +1162,7 @@ nfsd_commit(struct svc_rqst *rqstp, stru
- 		return err;
- 	if (EX_ISSYNC(fhp->fh_export)) {
- 		if (file->f_op && file->f_op->fsync) {
--			err = nfserrno(nfsd_sync(file));
-+			err = nfserrno(vfs_fsync(file, file->f_path.dentry, 0));
- 		} else {
- 			err = nfserr_notsupp;
- 		}
