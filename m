@@ -1,249 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZLWR1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZLWRQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbZLWR1e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZLWR1d
+	id S1754877AbZLWRQs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 12:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZLWRQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:27:33 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:54237 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZLWR1c convert rfc822-to-8bit (ORCPT
+	Wed, 23 Dec 2009 12:16:47 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42906 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754458AbZLWRQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:27:32 -0500
+	Wed, 23 Dec 2009 12:16:46 -0500
+Date: Wed, 23 Dec 2009 18:16:43 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mark Hounschell <markh@compro.net>,
+       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
+Message-ID: <20091223171643.GJ20539@basil.fritz.box>
+References: <4B310879.9050701@compro.net> <1261525076.16916.4.camel@localhost.localdomain> <4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net> <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com> <4B32386B.2060509@compro.net> <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain> <87bphpd4rt.fsf@basil.nowhere.org> <alpine.LFD.2.00.0912230845550.6879@localhost.localdomain> <6598A4E21F1DB24D80BF72956484F59802EFD2F1@orsmsx001.amr.corp.intel.com>
 MIME-Version: 1.0
-Message-ID: <ff435130-98a2-417c-8109-9dd029022a91@default>
-Date: Wed, 23 Dec 2009 09:15:27 -0800 (PST)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jeremy@goop.org, xen-devel@lists.xensource.com,
-       tmem-devel@oss.oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
-       Rik van Riel <riel@redhat.com>, dave.mccracken@oracle.com,
-       sunil.mushran@oracle.com, Avi Kivity <avi@redhat.com>,
-       Schwidefsky <schwidefsky@de.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, chris.mason@oracle.com,
-       Pavel Machek <pavel@ucw.cz>, linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: RE: Tmem [PATCH 0/5] (Take 3): Transcendent memory
-In-Reply-To: <d760cf2d0912222228y3284e455r16cdb2bfd2ecaa0e@mail.gmail.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=Windows-1252
-Content-Transfer-Encoding: 8BIT
-X-Auth-Type: Internal IP
-X-Source-IP: rcsinet13.oracle.com [148.87.113.125]
-X-CT-RefId: str=0001.0A0B0202.4B3252B4.0026:SCFMA4539811,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6598A4E21F1DB24D80BF72956484F59802EFD2F1@orsmsx001.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As I mentioned, I really like the idea behind tmem. All I am proposing
-> is that we should probably explore some alternatives to achive this using
-> some existing infrastructure in kernel.
+> This is what I was thining yday and asked Mark to try idle=halt.
+> This /proc/interrupts is with idle=halt when there should not be any
+> C-states and broadcasts involved.
 
-Hi Nitin --
+Ah ok, missed that sorry.
 
-Sorry if I sounded overly negative... too busy around the holidays.
+Actually I'm glad that the floppy-idle hack is not needed again.
 
-I'm definitely OK with exploring alternatives.  I just think that
-existing kernel mechanisms are very firmly rooted in the notion
-that either the kernel owns the memory/cache or an asynchronous
-device owns it.  Tmem falls somewhere in between and is very
-carefully designed to maximize memory flexibility *outside* of
-the kernel -- across all guests in a virtualized environment --
-with minimal impact to the kernel, while still providing the
-kernel with the ability to use -- but not own, directly address,
-or control -- additional memory when conditions allow.  And
-these conditions are not only completely invisible to the kernel,
-but change frequently and asynchronously from the kernel,
-unlike most external devices for which the kernel can "reserve"
-space and use it asynchronously later.
-
-Maybe ramzswap and FS-cache could be augmented to have similar
-advantages in a virtualized environment, but I suspect they'd
-end up with something very similar to tmem.  Since the objective
-of both is to optimize memory that IS owned (used, directly
-addressable, and controlled) by the kernel, they are entirely
-complementary with tmem.
-
-> Is synchronous working a *requirement* for tmem to work correctly?
-
-Yes.  Asynchronous behavior would introduce lots of race
-conditions between the hypervisor and kernel which would
-greatly increase complexity and reduce performance.  And
-tmem then essentially becomes an I/O device, which defeats
-its purpose, especially compared to a fast SSD.
-
-> Swapping to hypervisor is mainly useful to overcome
-> 'static partitioning' problem you mentioned in article:
-> http://oss.oracle.com/projects/tmem/
-> ...such 'para-swap' can shrink/expand outside of VM constraints.
-
-Frontswap is very different than "hypervisor swapping" as what's
-done by VMware as a side-effect of transparent page-sharing.  With
-frontswap, the kernel still decides which pages are swapped out.
-If frontswap says there is space, the swap goes "fast" to tmem;
-if not, the kernel writes it to its own swapdisk.  So there's
-no "double paging" or random page selection/swapping.  On
-the downside, kernels must have real swap configured and,
-to avoid DoS issues, frontswap is limited by the same constraint
-as ballooning (ie. can NOT expand outside of VM constraints).
-
-Thanks,
-Dan
-
-P.S.  If you want to look at implementing FS-cache or ramzswap
-on top of tmem, I'd be happy to help, but I'll bet your concern:
-
-> we might later encounter some hidder/dangerous problems :)
-
-will prove to be correct.
-
-> -----Original Message-----
-> From: Nitin Gupta [mailto:ngupta@vflare.org]
-> Sent: Tuesday, December 22, 2009 11:28 PM
-> To: Dan Magenheimer
-> Cc: Nick Piggin; Andrew Morton; jeremy@goop.org;
-> xen-devel@lists.xensource.com; tmem-devel@oss.oracle.com; 
-> Rusty Russell;
-> Rik van Riel; Dave Mccracken; Sunil Mushran; Avi Kivity; Schwidefsky;
-> Balbir Singh; Marcelo Tosatti; Alan Cox; Chris Mason; Pavel Machek;
-> linux-mm; linux-kernel
-> Subject: Re: Tmem [PATCH 0/5] (Take 3): Transcendent memory
-> 
-> 
-> Hi Dan,
-> 
-> (mail to Rusty [at] rcsinet15.oracle.com was failing, so I removed
-> this address from CC list).
-> 
-> On Tue, Dec 22, 2009 at 5:16 AM, Dan Magenheimer
-> <dan.magenheimer@oracle.com> wrote:
-> >> From: Nitin Gupta [mailto:ngupta@vflare.org]
-> 
-> >
-> >> I think 'frontswap' part seriously overlaps the functionality
-> >> provided by 'ramzswap'
-> >
-> > Could be, but I suspect there's a subtle difference.
-> > A key part of the tmem frontswap api is that any
-> > "put" at any time can be rejected.  There's no way
-> > for the kernel to know a priori whether the put
-> > will be rejected or not, and the kernel must be able
-> > to react by writing the page to a "true" swap device
-> > and must keep track of which pages were put
-> > to tmem frontswap and which were written to disk.
-> > As a result, tmem frontswap cannot be configured or
-> > used as a true swap "device".
-> >
-> > This is critical to acheive the flexibility you
-> > commented above that you like.  Only the hypervisor
-> > knows if a free page is available "now" because
-> > it is flexibly managing tmem requests from multiple
-> > guest kernels.
-> >
-> 
-> ramzswap devices can easily track which pages it sent
-> to hypervisor, which pages are in backing swap (physical) disk
-> and which are in (compressed) memory. Its simply a matter
-> of adding some more flags. Latter two are already done in this
-> driver.
-> 
-> So, to gain flexibility of frontswap, we can have hypervisor
-> send the driver a callback whenever it wants to discard swap
-> pages under its domain. If you want to avoid even this callback,
-> then kernel will have to keep a copy within guest, which I think
-> defeats the whole purpose of swapping to hypervisor. Such
-> "ephemeral" pools should be used only for clean fs cache and
-> not for swap.
-> 
-> Swapping to hypervisor is mainly useful to overcome
-> 'static partitioning' problem you mentioned in article:
-> http://oss.oracle.com/projects/tmem/
-> ...such 'para-swap' can shrink/expand outside of VM constraints.
-> 
-> 
-> >
-> >>> Cleancache is
-> >> > "ephemeral" so whether a page is kept in cleancache
-> >> (between the "put" and
-> >> > the "get") is dependent on a number of factors that are 
-> invisible to
-> >> > the kernel.
-> >>
-> >> Just an idea: as an alternate approach, we can create an
-> >> 'in-memory compressed
-> >> storage' backend for FS-Cache. This way, all filesystems
-> >> modified to use
-> >> fs-cache can benefit from this backend. To make it
-> >> virtualization friendly like
-> >> tmem, we can again provide (per-cache?) option to allocate
-> >> from hypervisor  i.e.
-> >> tmem_{put,get}_page() or use [compress]+alloc natively.
-> >
-> > I looked at FS-Cache and cachefiles and thought I understood
-> > that it is not restricted to clean pages only, thus
-> > not a good match for tmem cleancache.
-> >
-> > Again, if I'm wrong (or if it is easy to tell FS-Cache that
-> > pages may "disappear" underneath it), let me know.
-> >
-> 
-> fs-cache backend can keep 'dirty' pages within guest and forward
-> clean pages to hypervisor. These clean pages can be added to
-> ephemeral pools which can be reclaimed at any time by hypervisor.
-> BTW, I have not yet started work on any such fs-cache backend, so
-> we might later encounter some hidder/dangerous problems :)
-> 
-> 
-> > BTW, pages put to tmem (both frontswap and cleancache) can
-> > be optionally compressed.
-> >
-> 
-> If ramzswap is extended for this virtualization case, then enforcing
-> compression might not be good. We can then throw out pages to hvisor
-> even before compression stage.   All such changes to ramzswap are IMHO
-> pretty straight forward to do.
-> 
-> 
-> >> For guest<-->hypervisor interface, maybe we can use virtio 
-> so that all
-> >> hypervisors can benefit? Not quite sure about this one.
-> >
-> > I'm not very familiar with virtio, but the existence of "I/O"
-> > in the name concerns me because tmem is entirely synchronous.
-> >
-> 
-> Is synchronous working a *requirement* for tmem to work correctly?
-> 
-> 
-> > Also, tmem is well-layered so very little work needs to be
-> > done on the Linux side for other hypervisors to benefit.
-> > Of course these other hypervisors would need to implement
-> > the hypervisor-side of tmem as well, but there is a well-defined
-> > API to guide other hypervisor-side implementations... and the
-> > opensource tmem code in Xen has a clear split between the
-> > hypervisor-dependent and hypervisor-independent code, which
-> > should simplify implementation for other opensource hypervisors.
-> >
-> 
-> As I mentioned, I really like the idea behind tmem. All I am proposing
-> is that we should probably explore some alternatives to 
-> achive this using
-> some existing infrastructure in kernel. I also don't have 
-> experience working
-> on virtio[1] or virtual-bus[2] but I have the feeling that once guest
-> to hvisor channels are created, both ramzswap extension and 
-> fs-cache backend
-> can share the same code.
-> 
-> [1] virtio: http://portal.acm.org/citation.cfm?id=1400097.1400108
-> [2] virtual-bus: 
-http://developer.novell.com/wiki/index.php/Virtual-bus
-
-
-Thanks,
-Nitin
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
