@@ -1,111 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZLWVtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZLWVu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZLWVtX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755566AbZLWVtW
+	id S1756749AbZLWVu2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbZLWVu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:49:22 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:36492 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755493AbZLWVtU convert rfc822-to-8bit (ORCPT
+	Wed, 23 Dec 2009 16:50:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53209
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755249AbZLWVu0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:49:20 -0500
-X-IronPort-AV: E=Sophos;i="4.47,445,1257148800"; 
-   d="scan'208";a="292565420"
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Steve Rago <sar@nec-labs.com>
-Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>
-In-Reply-To: <1261599385.13028.142.camel@serenity>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
-	 <1261232747.1947.194.camel@serenity>
-	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
-	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
-	 <1261599385.13028.142.camel@serenity>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Organization: NetApp
-Date: Wed, 23 Dec 2009 22:49:12 +0100
-Message-ID: <1261604952.18047.7.camel@localhost>
+	Wed, 23 Dec 2009 16:50:26 -0500
+Date: Wed, 23 Dec 2009 13:50:28 -0800 (PST)
+Message-Id: <20091223.135028.112586698.davem@davemloft.net>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       kdb@oss.sgi.com, mingo@elte.hu
+Subject: Re: [PATCH 15/37] sparc,sunzilog: Add console polling support for
+ sunzilog serial driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1261603190-5036-16-git-send-email-jason.wessel@windriver.com>
+References: <1261603190-5036-14-git-send-email-jason.wessel@windriver.com>
+	<1261603190-5036-15-git-send-email-jason.wessel@windriver.com>
+	<1261603190-5036-16-git-send-email-jason.wessel@windriver.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-X-OriginalArrivalTime: 23 Dec 2009 21:49:18.0743 (UTC) FILETIME=[C75F2270:01CA8419]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 15:16 -0500, Steve Rago wrote: 
-> On Wed, 2009-12-23 at 19:39 +0100, Jan Kara wrote:
-> > On Tue 22-12-09 11:20:15, Steve Rago wrote:
-> > > 
-> > > On Tue, 2009-12-22 at 13:25 +0100, Jan Kara wrote:
-> > > > > I originally spent several months playing with the balance_dirty_pages
-> > > > > algorithm.  The main drawback is that it affects more than the inodes
-> > > > > that the caller is writing and that the control of what to do is too
-> > > >   Can you be more specific here please?
-> > > 
-> > > Sure;  balance_dirty_pages() will schedule writeback by the flusher
-> > > thread once the number of dirty pages exceeds dirty_background_ratio.
-> > > The flusher thread calls writeback_inodes_wb() to flush all dirty inodes
-> > > associated with the bdi.  Similarly, the process dirtying the pages will
-> > > call writeback_inodes_wbc() when it's bdi threshold has been exceeded.
-> > > The first problem is that these functions process all dirty inodes with
-> > > the same backing device, which can lead to excess (duplicate) flushing
-> > > of the same inode.  Second, there is no distinction between pages that
-> > > need to be committed and pages that have commits pending in
-> > > NR_UNSTABLE_NFS/BDI_RECLAIMABLE (a page that has a commit pending won't
-> > > be cleaned any faster by sending more commits).  This tends to overstate
-> > > the amount of memory that can be cleaned, leading to additional commit
-> > > requests.  Third, these functions generate a commit for each set of
-> > > writes they do, which might not be appropriate.  For background writing,
-> > > you'd like to delay the commit as long as possible.
-> >   Ok, I get it. Thanks for explanation. The problem with more writing
-> > threads bites us also for ordinary SATA drives (the IO pattern and thus
-> > throughput gets worse and worse the more threads do writes). The plan is to
-> > let only flusher thread do the IO and throttled thread in
-> > balance_dirty_pages just waits for flusher thread to do the work. There
-> > were even patches for this floating around but I'm not sure what's happened
-> > to them. So that part of the problem should be easy to solve.
-> >   Another part is about sending commits - if we have just one thread doing
-> > flushing, we have no problems with excessive commits for one inode. You're
-> > right that we may want to avoid sending commits for background writeback
-> > but until we send the commit, pages are just accumulating in the unstable
-> > state, aren't they? So we might want to periodically send the commit for
-> > the inode anyway to get rid of those pages. So from this point of view,
-> > sending commit after each writepages call does not seem like a so bad idea
-> > - although it might be more appropriate to send it some time after the
-> > writepages call when we are not close to dirty limit so that server has
-> > more time to do more natural "unforced" writeback...
-> 
-> When to send the commit is a complex question to answer.  If you delay
-> it long enough, the server's flusher threads will have already done most
-> of the work for you, so commits can be cheap, but you don't have access
-> to the necessary information to figure this out.  You can't delay it too
-> long, though, because the unstable pages on the client will grow too
-> large, creating memory pressure.  I have a second patch, which I haven't
-> posted yet, that adds feedback piggy-backed on the NFS write response,
-> which allows the NFS client to free pages proactively.  This greatly
-> reduces the need to send commit messages, but it extends the protocol
-> (in a backward-compatible manner), so it could be hard to convince
-> people to accept.
+From: Jason Wessel <jason.wessel@windriver.com>
+Date: Wed, 23 Dec 2009 15:19:28 -0600
 
-There are only 2 cases when the client should send a COMMIT: 
-     1. When it hits a synchronisation point (i.e. when the user calls
-        f/sync(), or close(), or when the user sets/clears a file
-        lock). 
-     2. When memory pressure causes the VM to wants to free up those
-        pages that are marked as clean but unstable.
+> +static void sunzilog_put_poll_char(struct uart_port *port,
+> +			unsigned char ch)
+> +{
+> +	struct uart_sunzilog_port *up = (struct uart_sunzilog_port *)port;
+> +
+> +	sunzilog_putchar(&up->port, ch);
+> +	udelay(2);
+> +
+> +}
+> +#endif /* CONFIG_CONSOLE_POLL */
 
-We should never be sending COMMIT in any other situation, since that
-would imply that the client somehow has better information on how to
-manage dirty pages on the server than the server's own VM.
+Just curious, what is the udelay() for?
 
-Cheers
-  Trond
+>  static struct uart_ops sunzilog_pops = {
+>  	.tx_empty	=	sunzilog_tx_empty,
+>  	.set_mctrl	=	sunzilog_set_mctrl,
+> @@ -1013,6 +1061,10 @@ static struct uart_ops sunzilog_pops = {
+>  	.request_port	=	sunzilog_request_port,
+>  	.config_port	=	sunzilog_config_port,
+>  	.verify_port	=	sunzilog_verify_port,
+> +#ifdef CONFIG_CONSOLE_POLL
+> +	.poll_get_char	= sunzilog_get_poll_char,
+> +	.poll_put_char	= sunzilog_put_poll_char,
+> +#endif
+>  };
+
+Please make the indentation consistent with the rest of those in
+this structure.
