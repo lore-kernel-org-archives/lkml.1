@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZLWVX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZLWV0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZLWVX7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:23:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbZLWVXg
+	id S1756189AbZLWV0R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZLWVUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:23:36 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45320 "EHLO
+	Wed, 23 Dec 2009 16:20:48 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45132 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756863AbZLWVVt (ORCPT
+	with ESMTP id S1756189AbZLWVUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:21:49 -0500
+	Wed, 23 Dec 2009 16:20:46 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 22/37] mips,kgdb: kdb low level trap catch and stack trace
-Date: Wed, 23 Dec 2009 15:19:35 -0600
-Message-Id: <1261603190-5036-23-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 23/37] kgdb: Add the ability to schedule a breakpoint via a tasklet
+Date: Wed, 23 Dec 2009 15:19:36 -0600
+Message-Id: <1261603190-5036-24-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1261603190-5036-22-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1261603190-5036-23-git-send-email-jason.wessel@windriver.com>
 References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-2-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-3-git-send-email-jason.wessel@windriver.com>
@@ -42,149 +41,82 @@ References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-20-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-21-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-22-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 23 Dec 2009 21:20:22.0317 (UTC) FILETIME=[BC618DD0:01CA8415]
+ <1261603190-5036-23-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 23 Dec 2009 21:20:23.0536 (UTC) FILETIME=[BD1B8F00:01CA8415]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only way the debugger can handle a trap in inside rcu_lock,
-notify_die, or atomic_notifier_call_chain without a recursive fault is
-to have a low level "first opportunity handler" do_trap_or_bp() handler.
+Some kgdb I/O modules require the ability to create a breakpoint
+tasklet, such as kgdboc and external modules such as kgdboe.  The
+breakpoint tasklet is used as an asynchronous entry point into the
+debugger which will have a different function scope than the current
+execution path where it might not be safe to have an inline
+breakpoint.  This is true of some of the kgdb I/O drivers which share
+code with kgdb and rest of the kernel users.
 
-Generally this will be something the vast majority of folks will not
-need, but for those who need it, it is added as a kernel .config
-option called KGDB_LOW_LEVEL_TRAP.
-
-Also added was a die notification for oops such that kdb can catch an
-oops for analysis.
-
-There appeared to be no obvious way to pass the struct pt_regs from
-the original exception back to the stack back tracer, so a special
-case was added to show_stack() for when kdb is active because you
-generally desire to generally look at the back trace of the original
-exception.
-
-CC: Ralf Baechle <ralf@linux-mips.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/mips/include/asm/kgdb.h |    2 ++
- arch/mips/kernel/kgdb.c      |   22 +++++++++++++++++++++-
- arch/mips/kernel/traps.c     |   14 ++++++++++++++
- lib/Kconfig.kgdb             |    2 +-
- 4 files changed, 38 insertions(+), 2 deletions(-)
+ include/linux/kgdb.h      |    1 +
+ kernel/debug/debug_core.c |   26 ++++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/arch/mips/include/asm/kgdb.h b/arch/mips/include/asm/kgdb.h
-index 48223b0..19002d6 100644
---- a/arch/mips/include/asm/kgdb.h
-+++ b/arch/mips/include/asm/kgdb.h
-@@ -38,6 +38,8 @@ extern int kgdb_early_setup;
- extern void *saved_vectors[32];
- extern void handle_exception(struct pt_regs *regs);
- extern void breakinst(void);
-+extern int kgdb_ll_trap(int cmd, const char *str,
-+			struct pt_regs *regs, long err, int trap, int sig);
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index f46d466..b5de457 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -303,6 +303,7 @@ extern int kgdb_nmicallback(int cpu, void *regs);
  
- #endif				/* __KERNEL__ */
+ extern int			kgdb_single_step;
+ extern atomic_t			kgdb_active;
++extern void kgdb_schedule_breakpoint(void);
  
-diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
-index 6ed4c83..9b78ff6 100644
---- a/arch/mips/kernel/kgdb.c
-+++ b/arch/mips/kernel/kgdb.c
-@@ -203,7 +203,7 @@ static int kgdb_mips_notify(struct notifier_block *self, unsigned long cmd,
- 	if (atomic_read(&kgdb_active) != -1)
- 		kgdb_nmicallback(smp_processor_id(), regs);
+ #ifdef CONFIG_KGDB_SERIAL_CONSOLE
+ extern void __init early_kgdboc_init(void);
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 06e73e0..e44e693 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -112,6 +112,7 @@ atomic_t			kgdb_active = ATOMIC_INIT(-1);
+  */
+ static atomic_t			passive_cpu_wait[NR_CPUS];
+ static atomic_t			cpu_in_kgdb[NR_CPUS];
++static atomic_t			kgdb_break_tasklet_var;
+ atomic_t			kgdb_setting_breakpoint;
  
--	if (kgdb_handle_exception(trap, compute_signal(trap), 0, regs))
-+	if (kgdb_handle_exception(trap, compute_signal(trap), cmd, regs))
- 		return NOTIFY_DONE;
- 
- 	if (atomic_read(&kgdb_setting_breakpoint))
-@@ -217,6 +217,26 @@ static int kgdb_mips_notify(struct notifier_block *self, unsigned long cmd,
- 	return NOTIFY_STOP;
+ struct task_struct		*kgdb_usethread;
+@@ -777,6 +778,31 @@ static void kgdb_unregister_callbacks(void)
+ 	}
  }
  
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+int kgdb_ll_trap(int cmd, const char *str,
-+		 struct pt_regs *regs, long err, int trap, int sig)
++/*
++ * There are times a tasklet needs to be used vs a compiled in
++ * break point so as to cause an exception outside a kgdb I/O module,
++ * such as is the case with kgdboe, where calling a breakpoint in the
++ * I/O driver itself would be fatal.
++ */
++static void kgdb_tasklet_bpt(unsigned long ing)
 +{
-+	struct die_args args = {
-+		.regs	= regs,
-+		.str	= str,
-+		.err	= err,
-+		.trapnr	= trap,
-+		.signr	= sig,
-+
-+	};
-+
-+	if (!kgdb_io_module_registered)
-+		return NOTIFY_DONE;
-+
-+	return kgdb_mips_notify(NULL, cmd, &args);
++	kgdb_breakpoint();
++	atomic_set(&kgdb_break_tasklet_var, 0);
 +}
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
 +
- static struct notifier_block kgdb_notifier = {
- 	.notifier_call = kgdb_mips_notify,
- };
-diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
-index 308e434..d42f6a3 100644
---- a/arch/mips/kernel/traps.c
-+++ b/arch/mips/kernel/traps.c
-@@ -26,6 +26,8 @@
- #include <linux/kgdb.h>
- #include <linux/kdebug.h>
- #include <linux/notifier.h>
-+#include <linux/kdb.h>
-+#include "../../../kernel/debug/kdb/kdb_private.h"
- 
- #include <asm/bootinfo.h>
- #include <asm/branch.h>
-@@ -184,6 +186,11 @@ void show_stack(struct task_struct *task, unsigned long *sp)
- 			regs.regs[29] = task->thread.reg29;
- 			regs.regs[31] = 0;
- 			regs.cp0_epc = task->thread.reg31;
-+#ifdef CONFIG_KGDB_KDB
-+		} else if (atomic_read(&kgdb_active) != -1 &&
-+			   kdb_current_regs) {
-+			memcpy(&regs, kdb_current_regs, sizeof(regs));
-+#endif /* CONFIG_KGDB_KDB */
- 		} else {
- 			prepare_frametrace(&regs);
- 		}
-@@ -358,6 +365,8 @@ void __noreturn die(const char * str, const struct pt_regs * regs)
- 	unsigned long dvpret = dvpe();
- #endif /* CONFIG_MIPS_MT_SMTC */
- 
-+	notify_die(DIE_OOPS, str, (struct pt_regs *)regs, SIGSEGV, 0, 0);
++static DECLARE_TASKLET(kgdb_tasklet_breakpoint, kgdb_tasklet_bpt, 0);
 +
- 	console_verbose();
- 	spin_lock_irq(&die_lock);
- 	bust_spinlocks(1);
-@@ -698,6 +707,11 @@ static void do_trap_or_bp(struct pt_regs *regs, unsigned int code,
- 	siginfo_t info;
- 	char b[40];
- 
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+	if (kgdb_ll_trap(DIE_TRAP, str, regs, code, 0, 0) == NOTIFY_STOP)
++void kgdb_schedule_breakpoint(void)
++{
++	if (atomic_read(&kgdb_break_tasklet_var) ||
++		atomic_read(&kgdb_active) != -1 ||
++		atomic_read(&kgdb_setting_breakpoint))
 +		return;
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
++	atomic_inc(&kgdb_break_tasklet_var);
++	tasklet_schedule(&kgdb_tasklet_breakpoint);
++}
++EXPORT_SYMBOL_GPL(kgdb_schedule_breakpoint);
 +
- 	if (notify_die(DIE_TRAP, str, regs, code, 0, 0) == NOTIFY_STOP)
- 		return;
- 
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 64cc65d..ce4fa6b 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -59,7 +59,7 @@ config KGDB_TESTS_BOOT_STRING
- 
- config KGDB_LOW_LEVEL_TRAP
-        bool "KGDB: Allow debugging with traps in notifiers"
--       depends on X86 || PPC
-+       depends on X86 || PPC || MIPS
-        default n
-        help
-          This will add an extra call back to kgdb for the breakpoint
+ static void kgdb_initial_breakpoint(void)
+ {
+ 	kgdb_break_asap = 0;
 -- 
 1.6.4.rc1
 
