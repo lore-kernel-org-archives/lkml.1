@@ -1,115 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZLWItz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbZLWInN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZLWItz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 03:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZLWIty
+	id S1754347AbZLWInN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 03:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZLWInM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 03:49:54 -0500
-Received: from filtteri6.pp.htv.fi ([213.243.153.189]:43699 "EHLO
-	filtteri6.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbZLWIty (ORCPT
+	Wed, 23 Dec 2009 03:43:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58374 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbZLWInJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 03:49:54 -0500
-X-Greylist: delayed 406 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Dec 2009 03:49:53 EST
-Date: Wed, 23 Dec 2009 10:43:01 +0200 (EET)
-From: Timo Jantunen <jeti@welho.com>
-To: Greg KH <gregkh@suse.de>, Alex Deucher <alexdeucher@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
-       stable@kernel.org
-Subject: KMS regression (Re: Linux 2.6.32.2)
-In-Reply-To: <20091218225656.GA19000@kroah.com>
-Message-ID: <alpine.LNX.2.00.0912231029130.6892@limbo>
-References: <20091218225656.GA19000@kroah.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 23 Dec 2009 03:43:09 -0500
+Date: Wed, 23 Dec 2009 03:43:02 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Steve Rago <sar@nec-labs.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+Message-ID: <20091223084302.GA14912@infradead.org>
+References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091222123538.GB604@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009, Greg KH wrote:
+On Tue, Dec 22, 2009 at 01:35:39PM +0100, Jan Kara wrote:
+> >    nfsd_sync:
+> >      [take i_mutex]
+> >        filemap_fdatawrite  => can also be blocked, but less a problem
+> >      [drop i_mutex]
+> >        filemap_fdatawait
+> >  
+> >    Maybe it's a dumb question, but what's the purpose of i_mutex here?
+> >    For correctness or to prevent livelock? I can imagine some livelock
+> >    problem here (current implementation can easily wait for extra
+> >    pages), however not too hard to fix.
+>   Generally, most filesystems take i_mutex during fsync to
+> a) avoid all sorts of livelocking problems
+> b) serialize fsyncs for one inode (mostly for simplicity)
+>   I don't see what advantage would it bring that we get rid of i_mutex
+> for fdatawait - only that maybe writers could proceed while we are
+> waiting but is that really the problem?
 
-> I'm announcing the release of the 2.6.32.2 kernel.  All users of the
-> 2.6.32 kernel series are very strongly encouraged to upgrade.
+It would match what we do in vfs_fsync for the non-nfsd path, so it's
+a no-brainer to do it.  In fact I did switch it over to vfs_fsync a
+while ago but that go reverted because it caused deadlocks for
+nfsd_sync_dir which for some reason can't take the i_mutex (I'd have to
+check the archives why).
 
-
-> Alex Deucher (5):
->      drm/radeon/kms: handle vblanks properly with dpms on
-
-This patch breaks KMS on my machine. If it is in, the screen goes blank, 
-and as far as I can tell the machine hangs (no disk activity, SysRq keys 
-don't work, nothing on the netconsole.) The machine boots (and works) 
-normally if KMS is disabled.
-
-I'm using the DVI connector.
-
-lspci
-===cut
-01:00.0 VGA compatible controller: ATI Technologies Inc RV770 [Radeon HD 4850] (prog-if 00 [VGA controller])
- 	Subsystem: Giga-byte Technology Device 21c7
- 	Flags: bus master, fast devsel, latency 0, IRQ 16
- 	Memory at e0000000 (64-bit, prefetchable) [size=256M]
- 	Memory at fbde0000 (64-bit, non-prefetchable) [size=64K]
- 	I/O ports at ce00 [size=256]
- 	[virtual] Expansion ROM at fbd00000 [disabled] [size=128K]
- 	Capabilities: [50] Power Management version 3
- 	Capabilities: [58] Express Legacy Endpoint, MSI 00
- 	Capabilities: [a0] MSI: Enable- Count=1/1 Maskable- 64bit+
- 	Capabilities: [100] Vendor Specific Information <?>
-===cut
-
-And partial dmesg from 2.6.32.2 with that one patch reverted:
-dmesg | egrep 'drm|radeon'
-===cut
-Kernel command line: ro root=/dev/sda2 
-netconsole=2001@10.0.0.1/eth0,2001@10.0.0.254/ vga=6 radeon.modeset=1
-[drm] Initialized drm 1.1.0 20060810
-[drm] radeon kernel modesetting enabled.
-radeon 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-radeon 0000:01:00.0: setting latency timer to 64
-[drm] radeon: Initializing kernel modesetting.
-[drm] register mmio base: 0xFBDE0000
-[drm] register mmio size: 65536
-[drm] Clocks initialized !
-[drm] Detected VRAM RAM=256M, BAR=256M
-[drm] RAM width 256bits DDR
-[drm] radeon: 256M of VRAM memory ready
-[drm] radeon: 512M of GTT memory ready.
-[drm] Loading RV770 CP Microcode
-platform radeon_cp.0: firmware: using built-in firmware 
-radeon/RV770_pfp.bin
-platform radeon_cp.0: firmware: using built-in firmware radeon/RV770_me.bin
-[drm] GART: num cpu pages 131072, num gpu pages 131072
-[drm] ring test succeeded in 1 usecs
-[drm] radeon: ib pool ready.
-[drm] ib test succeeded in 0 usecs
-[drm] Radeon Display Connectors
-[drm] Connector 0:
-[drm]   HDMI-A
-[drm]   DDC: 0x7e60 0x7e60 0x7e64 0x7e64 0x7e68 0x7e68 0x7e6c 0x7e6c
-[drm]   Encoders:
-[drm]     DFP1: INTERNAL_UNIPHY
-[drm] Connector 1:
-[drm]   VGA
-[drm]   DDC: 0x7e40 0x7e40 0x7e44 0x7e44 0x7e48 0x7e48 0x7e4c 0x7e4c
-[drm]   Encoders:
-[drm]     CRT2: INTERNAL_KLDSCP_DAC2
-[drm] Connector 2:
-[drm]   DVI-I
-[drm]   DDC: 0x7e20 0x7e20 0x7e24 0x7e24 0x7e28 0x7e28 0x7e2c 0x7e2c
-[drm]   Encoders:
-[drm]     CRT1: INTERNAL_KLDSCP_DAC1
-[drm]     DFP2: INTERNAL_KLDSCP_LVTMA
-[drm] fb mappable at 0xE0141000
-[drm] vram apper at 0xE0000000
-[drm] size 7680000
-[drm] fb depth is 24
-[drm]    pitch is 6400
-[drm] TMDS-15: set mode 1600x1200 21
-fb0: radeondrmfb frame buffer device
-[drm] Initialized radeon 2.0.0 20080528 for 0000:01:00.0 on minor 0
-===cut
+Here's a RFC patch to make some more sense of the fsync callers in nfsd,
+including fixing up the data write/wait calling conventions to match the
+regular fsync path (which might make this a -stable candidate):
 
 
-//T
-
+Index: linux-2.6/fs/nfsd/vfs.c
+===================================================================
+--- linux-2.6.orig/fs/nfsd/vfs.c	2009-12-23 09:32:45.693170043 +0100
++++ linux-2.6/fs/nfsd/vfs.c	2009-12-23 09:39:47.627170082 +0100
+@@ -769,45 +769,27 @@ nfsd_close(struct file *filp)
+ }
+ 
+ /*
+- * Sync a file
+- * As this calls fsync (not fdatasync) there is no need for a write_inode
+- * after it.
++ * Sync a directory to disk.
++ *
++ * This is odd compared to all other fsync callers because we
++ *
++ *  a) do not have a file struct available
++ *  b) expect to have i_mutex already held by the caller
+  */
+-static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
+-			      const struct file_operations *fop)
++int
++nfsd_sync_dir(struct dentry *dentry)
+ {
+-	struct inode *inode = dp->d_inode;
+-	int (*fsync) (struct file *, struct dentry *, int);
++	struct inode *inode = dentry->d_inode;
+ 	int err;
+ 
+-	err = filemap_fdatawrite(inode->i_mapping);
+-	if (err == 0 && fop && (fsync = fop->fsync))
+-		err = fsync(filp, dp, 0);
+-	if (err == 0)
+-		err = filemap_fdatawait(inode->i_mapping);
++	WARN_ON(!mutex_is_locked(&inode->i_mutex));
+ 
++	err = filemap_write_and_wait(inode->i_mapping);
++	if (err == 0 && inode->i_fop->fsync)
++		err = inode->i_fop->fsync(NULL, dentry, 0);
+ 	return err;
+ }
+ 
+-static int
+-nfsd_sync(struct file *filp)
+-{
+-        int err;
+-	struct inode *inode = filp->f_path.dentry->d_inode;
+-	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
+-	mutex_lock(&inode->i_mutex);
+-	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
+-	mutex_unlock(&inode->i_mutex);
+-
+-	return err;
+-}
+-
+-int
+-nfsd_sync_dir(struct dentry *dp)
+-{
+-	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
+-}
+-
+ /*
+  * Obtain the readahead parameters for the file
+  * specified by (dev, ino).
+@@ -1011,7 +993,7 @@ static int wait_for_concurrent_writes(st
+ 
+ 	if (inode->i_state & I_DIRTY) {
+ 		dprintk("nfsd: write sync %d\n", task_pid_nr(current));
+-		err = nfsd_sync(file);
++		err = vfs_fsync(file, file->f_path.dentry, 0);
+ 	}
+ 	last_ino = inode->i_ino;
+ 	last_dev = inode->i_sb->s_dev;
+@@ -1180,7 +1162,7 @@ nfsd_commit(struct svc_rqst *rqstp, stru
+ 		return err;
+ 	if (EX_ISSYNC(fhp->fh_export)) {
+ 		if (file->f_op && file->f_op->fsync) {
+-			err = nfserrno(nfsd_sync(file));
++			err = nfserrno(vfs_fsync(file, file->f_path.dentry, 0));
+ 		} else {
+ 			err = nfserr_notsupp;
+ 		}
