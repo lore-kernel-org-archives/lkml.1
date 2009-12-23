@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbZLWSXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbZLWSex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785AbZLWSXj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 13:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbZLWSXi
+	id S1756624AbZLWSex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 13:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZLWSew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 13:23:38 -0500
-Received: from sous-sol.org ([216.99.217.87]:42057 "EHLO sequoia.sous-sol.org"
+	Wed, 23 Dec 2009 13:34:52 -0500
+Received: from sous-sol.org ([216.99.217.87]:59581 "EHLO sequoia.sous-sol.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755587AbZLWSXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 13:23:37 -0500
-Date: Wed, 23 Dec 2009 10:22:21 -0800
+	id S1751880AbZLWSev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 13:34:51 -0500
+Date: Wed, 23 Dec 2009 10:31:29 -0800
 From: Chris Wright <chrisw@sous-sol.org>
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, netdev@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for
-	2.6.33
-Message-ID: <20091223182221.GA415@sequoia.sous-sol.org>
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <20091223101340.GC20539@basil.fritz.box> <4B31EF65.6070000@redhat.com> <20091223121431.GF20539@basil.fritz.box> <1261590740.19822.94.camel@hermosa>
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+Message-ID: <20091223183129.GB415@sequoia.sous-sol.org>
+References: <4B1D4F29.8020309@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <200912231407.20130.bzolnier@gmail.com> <4B322FE1.2070104@codemonkey.ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1261590740.19822.94.camel@hermosa>
+In-Reply-To: <4B322FE1.2070104@codemonkey.ws>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter W. Morreale (pmorreale@novell.com) wrote:
-> On Wed, 2009-12-23 at 13:14 +0100, Andi Kleen wrote:
-> > > http://www.redhat.com/f/pdf/summit/cwright_11_open_source_virt.pdf
-> > >
-> > > See slide 32.  This is without vhost-net.
-> > 
-> > Thanks. Do you also have latency numbers?
-> > 
-> > It seems like there's definitely still potential for improvement
-> > with messages <4K. But for the large messages they indeed 
-> > look rather good.
-> > 
-> > It's unclear what message size the Alacrity numbers used, but I presume
-> > it was rather large.
-> 
-> No.  It was 1500.  Please see: 
-> 
-> http://developer.novell.com/wiki/index.php/AlacrityVM/Results
+* Anthony Liguori (anthony@codemonkey.ws) wrote:
+> The "poor" packet latency of virtio-net is a result of the fact that we  
+> do software timer based TX mitigation.  We do this such that we can  
+> decrease the number of exits per-packet and increase throughput.  We set  
+> a timer for 250ms and per-packet latency will be at least that much.
 
-That's just MTU.  Not the message size.  We can infer the message size by
-the bare metal results (reasonably large), but is helpful to record that.
+Actually that's 150us ;-)  It's the AlacrityVM numbers that show 250us
+(note micro, not milli) for latency.  That makes sense, shave off 150us
+for the timer and you're left w/ 100us, which is not substantially
+slower than what we see (for that bare metal latency we see ~60us)
+when we switched tx mitigation schemes from timer based to thread
+scheduling.  Quite similar to the 56.8us that vbus/venet shows.
 
 thanks,
 -chris
