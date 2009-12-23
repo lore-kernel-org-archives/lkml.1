@@ -1,127 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZLWUQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZLWUS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZLWUQd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 15:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbZLWUQb
+	id S1756924AbZLWUS2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 15:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZLWUS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 15:16:31 -0500
-Received: from mail.nec-labs.com ([138.15.200.209]:39730 "EHLO
-	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbZLWUQa (ORCPT
+	Wed, 23 Dec 2009 15:18:27 -0500
+Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:15323 "EHLO
+	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756813AbZLWUS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 15:16:30 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-From: Steve Rago <sar@nec-labs.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>
-In-Reply-To: <20091223183912.GE3159@quack.suse.cz>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
-	 <1261232747.1947.194.camel@serenity>
-	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
-	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
-Content-Type: text/plain
-Date: Wed, 23 Dec 2009 15:16:25 -0500
-Message-Id: <1261599385.13028.142.camel@serenity>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Dec 2009 15:18:26 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAD4KMktbstnt/2dsb2JhbADYfQqEKQSBZQ
+Date: Wed, 23 Dec 2009 21:18:22 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Imre Kaloz <kaloz@openwrt.org>,
+       H Hartley Sweeten <hartleys@visionengravers.com>
+Subject: [WATCHDOG] v2.6.33-rc patches
+Message-ID: <20091223201822.GG5402@infomag.iguana.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-On Wed, 2009-12-23 at 19:39 +0100, Jan Kara wrote:
-> On Tue 22-12-09 11:20:15, Steve Rago wrote:
-> > 
-> > On Tue, 2009-12-22 at 13:25 +0100, Jan Kara wrote:
-> > > > I originally spent several months playing with the balance_dirty_pages
-> > > > algorithm.  The main drawback is that it affects more than the inodes
-> > > > that the caller is writing and that the control of what to do is too
-> > >   Can you be more specific here please?
-> > 
-> > Sure;  balance_dirty_pages() will schedule writeback by the flusher
-> > thread once the number of dirty pages exceeds dirty_background_ratio.
-> > The flusher thread calls writeback_inodes_wb() to flush all dirty inodes
-> > associated with the bdi.  Similarly, the process dirtying the pages will
-> > call writeback_inodes_wbc() when it's bdi threshold has been exceeded.
-> > The first problem is that these functions process all dirty inodes with
-> > the same backing device, which can lead to excess (duplicate) flushing
-> > of the same inode.  Second, there is no distinction between pages that
-> > need to be committed and pages that have commits pending in
-> > NR_UNSTABLE_NFS/BDI_RECLAIMABLE (a page that has a commit pending won't
-> > be cleaned any faster by sending more commits).  This tends to overstate
-> > the amount of memory that can be cleaned, leading to additional commit
-> > requests.  Third, these functions generate a commit for each set of
-> > writes they do, which might not be appropriate.  For background writing,
-> > you'd like to delay the commit as long as possible.
->   Ok, I get it. Thanks for explanation. The problem with more writing
-> threads bites us also for ordinary SATA drives (the IO pattern and thus
-> throughput gets worse and worse the more threads do writes). The plan is to
-> let only flusher thread do the IO and throttled thread in
-> balance_dirty_pages just waits for flusher thread to do the work. There
-> were even patches for this floating around but I'm not sure what's happened
-> to them. So that part of the problem should be easy to solve.
->   Another part is about sending commits - if we have just one thread doing
-> flushing, we have no problems with excessive commits for one inode. You're
-> right that we may want to avoid sending commits for background writeback
-> but until we send the commit, pages are just accumulating in the unstable
-> state, aren't they? So we might want to periodically send the commit for
-> the inode anyway to get rid of those pages. So from this point of view,
-> sending commit after each writepages call does not seem like a so bad idea
-> - although it might be more appropriate to send it some time after the
-> writepages call when we are not close to dirty limit so that server has
-> more time to do more natural "unforced" writeback...
+Please pull from 'master' branch of
+	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+or if master.kernel.org hasn't synced up yet:
+	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
 
-When to send the commit is a complex question to answer.  If you delay
-it long enough, the server's flusher threads will have already done most
-of the work for you, so commits can be cheap, but you don't have access
-to the necessary information to figure this out.  You can't delay it too
-long, though, because the unstable pages on the client will grow too
-large, creating memory pressure.  I have a second patch, which I haven't
-posted yet, that adds feedback piggy-backed on the NFS write response,
-which allows the NFS client to free pages proactively.  This greatly
-reduces the need to send commit messages, but it extends the protocol
-(in a backward-compatible manner), so it could be hard to convince
-people to accept.
+This will update the following files:
 
-> 
-> > > > Part of the patch does implement a heuristic write-behind.  See where
-> > > > nfs_wb_eager() is called.
-> > >   I believe that if we had per-bdi dirty_background_ratio and set it low
-> > > for NFS's bdi, then the write-behind logic would not be needed
-> > > (essentially the flusher thread should submit the writes to the server
-> > > early).
-> > > 
-> > Maybe so, but you still need something to prevent the process that is
-> > dirtying pages from continuing, because a process can always write to
-> > memory faster than writing to disk/network, so the flusher won't be able
-> > to keep up.
->   Yes, I agree that part is needed. But Fengguang already had patches in
-> that direction if my memory serves me well.
-> 
->   So to recap: If we block tasks in balance_dirty_pages until unstable
-> pages are committed and make just one thread do the writing, what else is
-> missing to make you happy? :)
-> 								Honza
+ drivers/watchdog/adx_wdt.c        |    4 ++--
+ drivers/watchdog/at32ap700x_wdt.c |    2 +-
+ drivers/watchdog/davinci_wdt.c    |    2 +-
+ drivers/watchdog/iTCO_wdt.c       |    4 ++++
+ drivers/watchdog/mpcore_wdt.c     |    2 +-
+ drivers/watchdog/mv64x60_wdt.c    |    2 +-
+ drivers/watchdog/omap_wdt.c       |    9 ++++-----
+ drivers/watchdog/pnx4008_wdt.c    |    2 +-
+ drivers/watchdog/s3c2410_wdt.c    |    2 +-
+ drivers/watchdog/txx9wdt.c        |    6 ++----
+ 10 files changed, 18 insertions(+), 17 deletions(-)
 
-As long as the performance improves substantially, I'll be happy.
+with these Changes:
 
-Part of the problem that isn't addressed by your summary is the
-synchronous writes.  With the eager writeback patch, these are removed
-[see the short-circuit in wb_priority()].  I would have expected that
-change to be controversial, but I've not heard any complaints (yet).  If
-the process or the bdi flusher is writing and committing regularly, then
-pages should be recycled quickly and the change shouldn't matter, but
-I'd need to run my systemtap scripts to make sure.  
+Author: H Hartley Sweeten <hartleys@visionengravers.com>
+Date:   Fri Dec 4 12:24:04 2009 -0500
 
-Steve
+    [WATCHDOG] use resource_size()
+    
+    Use resource_size().
+    
+    Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+    Cc: Kevin Hilman <khilman@deeprootsystems.com>
+    Cc: Kevin Hilman <khilman@ti.deeprootsystems.com>
+    Cc: Ulrik Bech Hald <ubh@ti.com>
+    Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+    Cc: Ming Lei <tom.leiming@gmail.com>
+    Cc: Vincent Sanders <support@simtec.co.uk>
+    Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
+Author: Imre Kaloz <kaloz@openwrt.org>
+Date:   Mon Dec 7 20:42:26 2009 +0100
 
+    [WATCHDOG] iTCO_wdt: add PCI ID for the Intel EP80579 (Tolapai) SoC
+    
+    add PCI ID for the Intel EP80579 (Tolapai) SoC
+    
+    Signed-off-by: Imre Kaloz <kaloz@openwrt.org>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+The Changes can also be looked at on:
+	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+
+For completeness, I added the overal diff below.
+
+Greetings,
+Wim.
+
+================================================================================
+diff --git a/drivers/watchdog/adx_wdt.c b/drivers/watchdog/adx_wdt.c
+index 9c65944..9d7d155 100644
+--- a/drivers/watchdog/adx_wdt.c
++++ b/drivers/watchdog/adx_wdt.c
+@@ -242,14 +242,14 @@ static int __devinit adx_wdt_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	res = devm_request_mem_region(&pdev->dev, res->start,
+-			res->end - res->start + 1, res->name);
++			resource_size(res), res->name);
+ 	if (!res) {
+ 		dev_err(&pdev->dev, "cannot request I/O memory region\n");
+ 		return -ENXIO;
+ 	}
+ 
+ 	wdt->base = devm_ioremap_nocache(&pdev->dev, res->start,
+-			res->end - res->start + 1);
++			resource_size(res));
+ 	if (!wdt->base) {
+ 		dev_err(&pdev->dev, "cannot remap I/O memory region\n");
+ 		return -ENXIO;
+diff --git a/drivers/watchdog/at32ap700x_wdt.c b/drivers/watchdog/at32ap700x_wdt.c
+index e8ae638..0378479 100644
+--- a/drivers/watchdog/at32ap700x_wdt.c
++++ b/drivers/watchdog/at32ap700x_wdt.c
+@@ -326,7 +326,7 @@ static int __init at32_wdt_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
+-	wdt->regs = ioremap(regs->start, regs->end - regs->start + 1);
++	wdt->regs = ioremap(regs->start, resource_size(regs));
+ 	if (!wdt->regs) {
+ 		ret = -ENOMEM;
+ 		dev_dbg(&pdev->dev, "could not map I/O memory\n");
+diff --git a/drivers/watchdog/davinci_wdt.c b/drivers/watchdog/davinci_wdt.c
+index 9d7520f..887136d 100644
+--- a/drivers/watchdog/davinci_wdt.c
++++ b/drivers/watchdog/davinci_wdt.c
+@@ -221,7 +221,7 @@ static int __devinit davinci_wdt_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	size = res->end - res->start + 1;
++	size = resource_size(res);
+ 	wdt_mem = request_mem_region(res->start, size, pdev->name);
+ 
+ 	if (wdt_mem == NULL) {
+diff --git a/drivers/watchdog/iTCO_wdt.c b/drivers/watchdog/iTCO_wdt.c
+index e44fbb3..c8a3bec 100644
+--- a/drivers/watchdog/iTCO_wdt.c
++++ b/drivers/watchdog/iTCO_wdt.c
+@@ -30,6 +30,7 @@
+  *	document number 316972-004, 316973-012: 82801I (ICH9)
+  *	document number 319973-002, 319974-002: 82801J (ICH10)
+  *	document number 322169-001, 322170-001: 5 Series, 3400 Series (PCH)
++ *	document number 320066-003, 320257-008: EP80597 (IICH)
+  */
+ 
+ /*
+@@ -100,6 +101,7 @@ enum iTCO_chipsets {
+ 	TCO_PCH,	/* PCH Desktop Full Featured */
+ 	TCO_PCHM,	/* PCH Mobile Full Featured */
+ 	TCO_PCHMSFF,	/* PCH Mobile SFF Full Featured */
++	TCO_EP80579,	/* EP80579 */
+ };
+ 
+ static struct {
+@@ -143,6 +145,7 @@ static struct {
+ 	{"PCH Desktop Full Featured", 2},
+ 	{"PCH Mobile Full Featured", 2},
+ 	{"PCH Mobile SFF Full Featured", 2},
++	{"EP80579", 2},
+ 	{NULL, 0}
+ };
+ 
+@@ -214,6 +217,7 @@ static struct pci_device_id iTCO_wdt_pci_tbl[] = {
+ 	{ ITCO_PCI_DEVICE(0x3b00,				TCO_PCH)},
+ 	{ ITCO_PCI_DEVICE(0x3b01,				TCO_PCHM)},
+ 	{ ITCO_PCI_DEVICE(0x3b0d,				TCO_PCHMSFF)},
++	{ ITCO_PCI_DEVICE(0x5031,				TCO_EP80579)},
+ 	{ 0, },			/* End of list */
+ };
+ MODULE_DEVICE_TABLE(pci, iTCO_wdt_pci_tbl);
+diff --git a/drivers/watchdog/mpcore_wdt.c b/drivers/watchdog/mpcore_wdt.c
+index 83fa34b..a2dc07c 100644
+--- a/drivers/watchdog/mpcore_wdt.c
++++ b/drivers/watchdog/mpcore_wdt.c
+@@ -350,7 +350,7 @@ static int __devinit mpcore_wdt_probe(struct platform_device *dev)
+ 		ret = -ENXIO;
+ 		goto err_free;
+ 	}
+-	wdt->base = ioremap(res->start, res->end - res->start + 1);
++	wdt->base = ioremap(res->start, resource_size(res));
+ 	if (!wdt->base) {
+ 		ret = -ENOMEM;
+ 		goto err_free;
+diff --git a/drivers/watchdog/mv64x60_wdt.c b/drivers/watchdog/mv64x60_wdt.c
+index acf589d..a51dbe4 100644
+--- a/drivers/watchdog/mv64x60_wdt.c
++++ b/drivers/watchdog/mv64x60_wdt.c
+@@ -275,7 +275,7 @@ static int __devinit mv64x60_wdt_probe(struct platform_device *dev)
+ 	if (!r)
+ 		return -ENODEV;
+ 
+-	mv64x60_wdt_regs = ioremap(r->start, r->end - r->start + 1);
++	mv64x60_wdt_regs = ioremap(r->start, resource_size(r));
+ 	if (mv64x60_wdt_regs == NULL)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+index 429ea99..c6aaf28 100644
+--- a/drivers/watchdog/omap_wdt.c
++++ b/drivers/watchdog/omap_wdt.c
+@@ -277,8 +277,7 @@ static int __devinit omap_wdt_probe(struct platform_device *pdev)
+ 		goto err_busy;
+ 	}
+ 
+-	mem = request_mem_region(res->start, res->end - res->start + 1,
+-				 pdev->name);
++	mem = request_mem_region(res->start, resource_size(res), pdev->name);
+ 	if (!mem) {
+ 		ret = -EBUSY;
+ 		goto err_busy;
+@@ -306,7 +305,7 @@ static int __devinit omap_wdt_probe(struct platform_device *pdev)
+ 		goto err_clk;
+ 	}
+ 
+-	wdev->base = ioremap(res->start, res->end - res->start + 1);
++	wdev->base = ioremap(res->start, resource_size(res));
+ 	if (!wdev->base) {
+ 		ret = -ENOMEM;
+ 		goto err_ioremap;
+@@ -358,7 +357,7 @@ err_clk:
+ 	kfree(wdev);
+ 
+ err_kzalloc:
+-	release_mem_region(res->start, res->end - res->start + 1);
++	release_mem_region(res->start, resource_size(res));
+ 
+ err_busy:
+ err_get_resource:
+@@ -383,7 +382,7 @@ static int __devexit omap_wdt_remove(struct platform_device *pdev)
+ 		return -ENOENT;
+ 
+ 	misc_deregister(&(wdev->omap_wdt_miscdev));
+-	release_mem_region(res->start, res->end - res->start + 1);
++	release_mem_region(res->start, resource_size(res));
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	clk_put(wdev->ick);
+diff --git a/drivers/watchdog/pnx4008_wdt.c b/drivers/watchdog/pnx4008_wdt.c
+index 4d227b1..430a584 100644
+--- a/drivers/watchdog/pnx4008_wdt.c
++++ b/drivers/watchdog/pnx4008_wdt.c
+@@ -264,7 +264,7 @@ static int __devinit pnx4008_wdt_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	size = res->end - res->start + 1;
++	size = resource_size(res);
+ 	wdt_mem = request_mem_region(res->start, size, pdev->name);
+ 
+ 	if (wdt_mem == NULL) {
+diff --git a/drivers/watchdog/s3c2410_wdt.c b/drivers/watchdog/s3c2410_wdt.c
+index 85b93e1..8760a26 100644
+--- a/drivers/watchdog/s3c2410_wdt.c
++++ b/drivers/watchdog/s3c2410_wdt.c
+@@ -421,7 +421,7 @@ static int __devinit s3c2410wdt_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	size = (res->end - res->start) + 1;
++	size = resource_size(res);
+ 	wdt_mem = request_mem_region(res->start, size, pdev->name);
+ 	if (wdt_mem == NULL) {
+ 		dev_err(dev, "failed to get memory region\n");
+diff --git a/drivers/watchdog/txx9wdt.c b/drivers/watchdog/txx9wdt.c
+index 6adab77..d635566 100644
+--- a/drivers/watchdog/txx9wdt.c
++++ b/drivers/watchdog/txx9wdt.c
+@@ -214,12 +214,10 @@ static int __init txx9wdt_probe(struct platform_device *dev)
+ 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	if (!res)
+ 		goto exit_busy;
+-	if (!devm_request_mem_region(&dev->dev,
+-				     res->start, res->end - res->start + 1,
++	if (!devm_request_mem_region(&dev->dev, res->start, resource_size(res),
+ 				     "txx9wdt"))
+ 		goto exit_busy;
+-	txx9wdt_reg = devm_ioremap(&dev->dev,
+-				   res->start, res->end - res->start + 1);
++	txx9wdt_reg = devm_ioremap(&dev->dev, res->start, resource_size(res));
+ 	if (!txx9wdt_reg)
+ 		goto exit_busy;
+ 
