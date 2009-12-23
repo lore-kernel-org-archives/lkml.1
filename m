@@ -1,94 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbZLWLhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZLWLwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbZLWLhI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 06:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZLWLhF
+	id S1754695AbZLWLwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 06:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZLWLwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 06:37:05 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:43938 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751224AbZLWLhC (ORCPT
+	Wed, 23 Dec 2009 06:52:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43003 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbZLWLwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 06:37:02 -0500
-Date: Wed, 23 Dec 2009 06:36:33 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: short list of bad Kconfig "select" directives
-Message-ID: <alpine.LFD.2.00.0912230634460.21971@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 23 Dec 2009 06:52:20 -0500
+Subject: Re: SCHED: Is task migration necessary in sched_exec().
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
+References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
+	 <1261563687.4937.120.camel@laptop>
+	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
+	 <1261565584.4937.124.camel@laptop>
+	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Dec 2009 12:51:52 +0100
+Message-ID: <1261569112.4937.135.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-12-23 at 17:35 +0600, Rakib Mullick wrote:
+> Yes - current heuristics does this - to make sure that it doesn't have to
+> wait too long. It pushes process into another runqueue (probably less loaded)
+> just to make sure that - it will get the CPU a bit quickly. But when a task
+> got the CPU - we should keep it out of equation. The point of moving task
+> is - it have to wait less. At exec current task don't have to wait to get CPU.
 
-  from the latest "git pull," a fairly short list of Kconfig "select"
-directives that refer to apparently non-existent Kconfig variables,
-each accompanied by a treewide scan to see anything that matches that
-string.
+No, moving tasks isn't (primarily) about latency, it is about ensuring a
+fair proportion of service time.
 
-  if you want to delete something, feel free.
-
-
-===== CRYPTO_SHASH
-crypto/Kconfig:308:	select CRYPTO_SHASH
-crypto/Kconfig:446:	select CRYPTO_SHASH
-===== GCD
-arch/arm/plat-pxa/include/plat/i2c.h:39:*  7.  GCD      1 (Disables i2c unit response to general call messages as a slave)
-arch/mips/Kconfig:45:	select GCD
-drivers/i2c/busses/i2c-pxa.c:184:	PXA_BIT(ICR_GCD,    "GCD",	NULL),
-fs/jffs2/background.c:99:		/* Problem - immediately after bootup, the GCD spends a lot
-fs/jffs2/background.c:103:		 * doesn't help, either (presumably because userspace and GCD
-fs/jffs2/background.c:106:		 * This forces the GCD to slow the hell down.   Pulling an
-===== GENERIC_HAS_IOMAP
-arch/score/Kconfig:16:	select GENERIC_HAS_IOMAP
-arch/score/Kconfig:22:	select GENERIC_HAS_IOMAP
-arch/score/Kconfig:28:	select GENERIC_HAS_IOMAP
-===== HAVE_READQ
-arch/x86/Kconfig:22:	select HAVE_READQ
-===== HAVE_WRITEQ
-arch/x86/Kconfig:23:	select HAVE_WRITEQ
-===== MACH_NEO1973
-arch/arm/mach-s3c2442/Kconfig:32:	select MACH_NEO1973
-===== MPC5121_ADS_CPLD
-arch/powerpc/platforms/512x/Kconfig:18:	select MPC5121_ADS_CPLD
-===== PPC_FSL_BOOK3E
-arch/powerpc/platforms/85xx/Kconfig:151:	select PPC_FSL_BOOK3E
-===== S3C2410_PWM
-arch/arm/mach-s3c2442/Kconfig:33:	select S3C2410_PWM
-===== S3C_DEVICE_NAND
-arch/arm/plat-s3c24xx/Kconfig:11:	select S3C_DEVICE_NAND
-===== SFFSDR_FPGA
-sound/soc/davinci/Kconfig:40:	select SFFSDR_FPGA
-===== SIBYTE_CFE
-arch/mips/sibyte/Kconfig:74:	select SIBYTE_CFE
-===== SPI_MASTER_OF
-drivers/spi/Kconfig:139:	select SPI_MASTER_OF
-===== USB_GADGET_S3C_HSOTG_PIO
-drivers/usb/gadget/Kconfig:297:	select USB_GADGET_S3C_HSOTG_PIO
-===== XEN_XENBUS_FRONTEND
-drivers/input/Kconfig:168:	select XEN_XENBUS_FRONTEND
-drivers/video/Kconfig:2084:	select XEN_XENBUS_FRONTEND
+Do you have a particular workload you worry about or are you merely
+trying to satisfy your curiosity?
 
 
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
