@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZLWJt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZLWJtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbZLWJt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 04:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZLWJtZ
+	id S1753164AbZLWJtl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZLWJtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 04:49:25 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33997 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335AbZLWJtY (ORCPT
+	Wed, 23 Dec 2009 04:49:39 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:47308 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754739AbZLWJti (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 04:49:24 -0500
-Date: Wed, 23 Dec 2009 10:49:05 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Salman Qazi <sqazi@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>
-Subject: Re: RFC: A proposal for power capping through forced idle in the
- Linux Kernel
-Message-ID: <20091223094905.GC24181@elf.ucw.cz>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
- <20091218170407.GA1396@ucw.cz>
- <4352991a0912221310k40f42498nba2081011398c7e@mail.gmail.com>
+	Wed, 23 Dec 2009 04:49:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=MKTJkOwp/oGOEYNbD1/9GGCjN/Ur2i58dxTBlvEk+awQbWjWrHtDvDwiS6KL8RIDDq
+         165Rx8I30mMXCPKdY+Kbpsp+9ovAcwkt+ScSsCa4mSg+TiMbSaRUaHf7ykA8owk1pSQR
+         +p3GDBn+a+m1bCSuLyX36PLspuf56cGLXcA3E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4352991a0912221310k40f42498nba2081011398c7e@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Wed, 23 Dec 2009 15:19:37 +0530
+Message-ID: <ba5648fa0912230149o3401332cxb986a1e4aa675a0b@mail.gmail.com>
+Subject: service search for headset
+From: bluezprofile kernel <bluezprofile@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-12-22 13:10:36, Salman Qazi wrote:
-> On Fri, Dec 18, 2009 at 9:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi
-> >
-> >
-> >> Why not use voltage and frequency scaling?
-> >>
-> >> Forced Idle Injection is more effective[1] and more widely available.
-> >> Even with voltage and frequency scaling, interpolation is needed
-> >> between the available settings.  So, if we did use voltage and
-> >
-> > It is only more efficient on new hardware.
-> >
-> > You should also explain 'why not throttling' because that is actually
-> > designed for power capping.
-> 
-> Do you mean t-states?
+Hi,
+I am trying to get the service of the remote device. I have used
+sdptool browse <remote mac>
+to get the list of services supported by the remote device.
 
-Yes.
+I have done between two laptops and I am able to see the services available.
+When I do the same for my hands free device, I am not able to get the
+service details of handsfree unit.
+I have debugged this using sdptool application source.
+sdptool application sends the attribute request to the hands free
+device, in the reply I am not getting anything.
 
-> >> Application to Laptops and Cellphones:
-> >>
-> >> Imagine being in a tent in Death Valley with a laptop.  You are bored,
-> >> and you want to watch a movie.  However, you also want to do your best
-> >> to make the battery last and watch as much of the movie as possible.
-> >> Forced idle power capping is a solution.  If your machine has a knob
-> >> that allows you to control the available power, you can turn that knob
-> >> until your video starts getting choppy.  And then, turn the knob back
-> >
-> > That's bad example. Video player should already sleep between frames.
-> 
-> Yes, the video player should sleep.  However, there will be other
-> things running.  And certainly, it is possible to cap the power and
-> discriminate so that those things are prevented from running while the
-> video player is allowed to run with minimal latency impact.
+sdptool record <remote mac> works fine.
+sdptool browse --l2cap <remote mac> also works fine
+Why --l2cap option required. Please any one explain me.
 
-I don't see how it would work without much of extra setup. Lets say
-your windowmanager wants to do some work, and you starve it
-indefinitely?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+In my blueman application it shows the list of services when I pair.
+Are they using record mechanism to display services?
+Any one please help me in this regard.
+
+I have used bluez 5.58
+Nic Shen
