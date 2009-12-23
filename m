@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZLWXNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZLWXXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbZLWXNo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 18:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZLWXNn
+	id S1756062AbZLWXXq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbZLWXXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 18:13:43 -0500
-Received: from mail.nec-labs.com ([138.15.200.209]:50167 "EHLO
-	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbZLWXNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 18:13:42 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-From: Steve Rago <sar@nec-labs.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>
-In-Reply-To: <1261604952.18047.7.camel@localhost>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
-	 <1261232747.1947.194.camel@serenity>
-	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
-	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
-	 <1261599385.13028.142.camel@serenity>  <1261604952.18047.7.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 23 Dec 2009 18:13:33 -0500
-Message-Id: <1261610013.13028.151.camel@serenity>
+	Wed, 23 Dec 2009 18:23:45 -0500
+Received: from smtp13.ono.com ([62.42.230.16]:47309 "EHLO resmaa13.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755762AbZLWXXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 18:23:45 -0500
+Date: Thu, 24 Dec 2009 00:23:42 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Problems with ath5k and WPA2 keys
+Message-ID: <20091224002342.59a9a021@werewolf.home>
+X-Mailer: Claws Mail 3.7.3cvs45 (GTK+ 2.19.2; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all...
 
-On Wed, 2009-12-23 at 22:49 +0100, Trond Myklebust wrote:
+With last 2.6.32.2 kernel, I can't connect to my home WiFi router.
+I use WPA2+PSK mode.
 
-> > When to send the commit is a complex question to answer.  If you delay
-> > it long enough, the server's flusher threads will have already done most
-> > of the work for you, so commits can be cheap, but you don't have access
-> > to the necessary information to figure this out.  You can't delay it too
-> > long, though, because the unstable pages on the client will grow too
-> > large, creating memory pressure.  I have a second patch, which I haven't
-> > posted yet, that adds feedback piggy-backed on the NFS write response,
-> > which allows the NFS client to free pages proactively.  This greatly
-> > reduces the need to send commit messages, but it extends the protocol
-> > (in a backward-compatible manner), so it could be hard to convince
-> > people to accept.
-> 
-> There are only 2 cases when the client should send a COMMIT: 
->      1. When it hits a synchronisation point (i.e. when the user calls
->         f/sync(), or close(), or when the user sets/clears a file
->         lock). 
->      2. When memory pressure causes the VM to wants to free up those
->         pages that are marked as clean but unstable.
-> 
-> We should never be sending COMMIT in any other situation, since that
-> would imply that the client somehow has better information on how to
-> manage dirty pages on the server than the server's own VM.
-> 
-> Cheers
->   Trond
+I have discovered it's related to key length:
 
-#2 is the difficult one.  If you wait for memory pressure, you could
-have waited too long, because depending on the latency of the commit,
-you could run into low-memory situations.  Then mayhem ensues, the
-oom-killer gets cranky (if you haven't disabled it), and stuff starts
-failing and/or hanging.  So you need to be careful about setting the
-threshold for generating a commit so that the client doesn't run out of
-memory before the server can respond.
+one:~# iwconfig wlan0 key s:password
+Error for wireless request "Set Encode" (8B2A) :
+    SET failed on device wlan0 ; Invalid argument.
+one:~# iwconfig wlan0 key s:passwor
+Error for wireless request "Set Encode" (8B2A) :
+    SET failed on device wlan0 ; Invalid argument.
+one:~# iwconfig wlan0 key s:passwo
+Error for wireless request "Set Encode" (8B2A) :
+    SET failed on device wlan0 ; Invalid argument.
+one:~# iwconfig wlan0 key s:passw
 
-Steve
+(this last works...)
 
+So network scripts can not set my key...
 
+I don't know if this is a problem in iwconfig or in the driver...
+
+Any idea ? Any way to debug this ?
+
+pd: hardware is Acer Aspire One 150:
+
+03:00.0 Ethernet controller: Atheros Communications Inc. AR5001 Wireless Network Adapter (rev 01)
+    Subsystem: Foxconn International, Inc. Device e008
+    Flags: bus master, fast devsel, latency 0, IRQ 18
+    Memory at 35200000 (64-bit, non-prefetchable) [size=64K]
+    Capabilities: [40] Power Management version 2
+    Capabilities: [50] MSI: Enable- Count=1/1 Maskable- 64bit-
+    Capabilities: [60] Express Legacy Endpoint, MSI 00
+    Capabilities: [90] MSI-X: Enable- Count=1 Masked-
+    Capabilities: [100] Advanced Error Reporting
+    Capabilities: [140] Virtual Channel <?>
+    Kernel driver in use: ath5k
+    Kernel modules: ath5k
+
+TIA
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2010.0 (Cooker) for x86_64
+Linux 2.6.29.3-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed May
