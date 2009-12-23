@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZLWRmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZLWRmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbZLWRmH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZLWRlw
+	id S1756604AbZLWRmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 12:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZLWRmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:41:52 -0500
-Received: from mx2.compro.net ([12.186.155.4]:37052 "EHLO mx2.compro.net"
+	Wed, 23 Dec 2009 12:42:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:18687 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976AbZLWRlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:41:51 -0500
-X-IronPort-AV: E=Sophos;i="4.47,443,1257138000"; 
-   d="scan'208";a="4811978"
-Message-ID: <4B32565E.6000501@compro.net>
-Date: Wed, 23 Dec 2009 12:41:50 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1754398AbZLWRmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 12:42:53 -0500
+Date: Wed, 23 Dec 2009 18:42:32 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: [PATCH 0/7] utrace/ptrace
+Message-ID: <20091223174232.GA14993@redhat.com>
+References: <20091218011116.GA29534@redhat.com> <20091222135809.1ab10869.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-References: <4AFB3962.2020106@ntlworld.com> <4B2B4485.6000305@cfl.rr.com>	<4B2B5F86.1090403@cfl.rr.com>	<alpine.LFD.2.00.0912180716400.3712@localhost.localdomain>	<4B2B9F9F.7040802@compro.net>	<alpine.LFD.2.00.0912180734220.3712@localhost.localdomain>	<4B2BE05B.9050006@compro.net>	<alpine.LFD.2.00.0912181213540.3712@localhost.localdomain>	<4B30E1B4.7000702@compro.net>	<alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>	<4B310879.9050701@compro.net>	<1261525076.16916.4.camel@localhost.localdo main>	<4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net>	<6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com>	<4B32386B.2060509@compro.net>	<alpine.LFD.2.00.0912230828230.6879@localhost.localdomain> <87bphpd4rt.fsf@basil.nowhere.org>
-In-Reply-To: <87bphpd4rt.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091222135809.1ab10869.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/2009 11:38 AM, Andi Kleen wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
->> It's not using the lapic for CPU0. 
->>
->> Using the HPET as a per-cpu timer is some crazy sh*t, since it's pretty 
->> expensive to reprogram (compared to the local apic). And having different 
->> timers for different CPU's is just odd.
->>
->> The fact that the timer subsystem can do this and it all (mostly) works at 
->> all is nice and impressive, but doesn't make it any less crazy ;)
-> 
-> I suspect it's a system where the APIC timer stops in deeper idle
-> states and it supports them. In this case CPU #0 does timer broadcasts
-> when needed to wake the other CPUs up from deep C, but for that it has
-> to run with HPET. At least the other ones can still enjoy the LAPIC
-> timer.
-> 
-> This might suggest that Mark's floppy controller doesn't like
-> deep C? Mark, did you try booting with processor.max_cstate=1
-> and HPET enabled?
+On 12/22, Andrew Morton wrote:
+>
+> On Fri, 18 Dec 2009 02:11:16 +0100
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > It allows for multiple separate tracing engines to work
+> > in parallel without interfering with each other.  Higher-level tracing
+> > facilities can be implemented as loadable kernel modules using this layer.
+>
+> That's a bit brief.  Do you have a nicer sales brochure?  What are
+> these "separate tracing engines" and what is their merge status and why
+> would we want any of them, for what purpose?  etc.
+>
+> IOW: give us a reason!
 
-I just did and /proc/interrupts looks the same and the floppy still does
-not format.
+First of all, utrace makes other things possible. gdbstub, nondestructive
+core dump, uprobes, kmview, hopefully more. I didn't look at these projects
+closely, perhaps other people can tell more. As for their merge status,
+until utrace itself is merged it is very hard to develop them out of tree.
 
-I'll try the patch Linus provided now.
+To me, even seccomp is the good example why utrace is useful. seccomp
+is simple, but it needs hooks in arch/ hot pathes. Contrary, utrace-based
+implementation is more flexible, simple, and it is completely "hidden"
+behind utrace.
 
-Mark
+In my opinion, ptrace-utrace is another example. Once CONFIG_UTRACE
+goes away, we can remove almost all ptrace-related code from core
+kernel (and kill task_struct->ptrace/etc members).
+
+ftrace/etc is excellent in many ways, but even if we need the simple
+"passive" tracing it is not enough sometimes. And we have nothing else
+except ptrace currently. But ptrace is so horrible and unfixeable, and
+it has so many limitations. In fact, even the simple things like stop/
+continue this thread/process are not trivial using ptrace, gdb/strace
+have to do a lot of hacks to overcome ptrace's limitations, and some
+of these hacks falls into "mostly works, but that is all" category.
+
+Of course, I can't promise we will have the new gdb which explores
+utrace facilities soon, but I think at leat utrace gives a chance.
+
+
+Well. I had a lot of technical discussions with Roland about utrace,
+but I never asked him why he created this thing ;) To me, utrace
+looks like vfs. Currently we have the single and very poor "filesystem",
+ptrace. Until we add the appropriate layer, we can't expect the
+further improvements is this area.
+
+Oleg.
 
