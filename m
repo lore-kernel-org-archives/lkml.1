@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbZLWNzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLWN6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbZLWNzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZLWNzh
+	id S1755939AbZLWN6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbZLWN6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:55:37 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:45468 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbZLWNzg (ORCPT
+	Wed, 23 Dec 2009 08:58:37 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48218 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753954AbZLWN6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:55:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=pPInel9cHVK0LMc5/2Tx+jxqBjtdAWXE9C8wk0qCP+5rGrZjzcsEkGfpa0uWhq7f6u
-         Djhn3kysgBKKndOHY3jFsUdUUveb/sCSbUC4OTiNVo9AZx3rKY7nZOAe9osMWg92ZN3o
-         YZ3jP9TmP2pCcKpHUuKtLydrbZh6QNiuBZ1mg=
-MIME-Version: 1.0
-Date: Wed, 23 Dec 2009 14:55:35 +0100
-Message-ID: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
-Subject: [PATCH] scripts/get_maintainer.pl: add support for STDIN:
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Dec 2009 08:58:36 -0500
+X-Authority-Analysis: v=1.0 c=1 a=NF6sa4JFLCQA:10 a=7U3hwN5JcxgA:10 a=7aRE5iHDxGlvz9Ws3JIA:9 a=7SGbiB9_mWccp9qvrGxC9u8CKokA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH] Fix tracing infrastructure to support multiple
+ includes when defining CREATE_TRACE_POINTS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@redhat.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20091223120224.GA6520@hmsreliant.think-freely.org>
+References: <20091207201829.GG8073@hmsreliant.think-freely.org>
+	 <1260218831.3518.3.camel@gandalf.stny.rr.com>
+	 <1260218966.3518.4.camel@gandalf.stny.rr.com>
+	 <20091207205341.GH8073@hmsreliant.think-freely.org>
+	 <20091214195058.GB31323@hmsreliant.think-freely.org>
+	 <20091215160852.GA18710@hmsreliant.think-freely.org>
+	 <1260936829.2146.447.camel@gandalf.stny.rr.com>
+	 <20091216114903.GA29609@hmsreliant.think-freely.org>
+	 <20091216160452.GC29609@hmsreliant.think-freely.org>
+	 <1261505039.25193.1342.camel@gandalf.stny.rr.com>
+	 <20091223120224.GA6520@hmsreliant.think-freely.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 23 Dec 2009 08:58:33 -0500
+Message-ID: <1261576713.25193.2542.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Teach get_maintainer.pl to read a diff from STDIN so that you can do
-something like:
+On Wed, 2009-12-23 at 07:02 -0500, Neil Horman wrote:
+> On Tue, Dec 22, 2009 at 01:03:59PM -0500, Steven Rostedt wrote:
+> > On Wed, 2009-12-16 at 11:04 -0500, Neil Horman wrote:
+> > 
+> > 
+> > > +#if !defined(_TRACE_NAPI_H_) || defined(TRACE_HEADER_MULTI_READ)
+> > >  #define _TRACE_NAPI_H_
+> > >  
+> > 
+> > Ug, I'm still getting panics because of this. I found out that it's
+> > because napi->dev can be NULL.
+> > 
+> > Here's what I did to solve it:
+> Gahhh, you're right, We had to do the same thing in net-next's commit
+> f2798eb4e01b095f273f4bf40f511c9d69c0e1da.  If you queue to the backlog, the
+> backlog napi instance has no net device and so its null.  This is exactly the
+> right fix.
 
-git diff | ./scripts/get_maintainer.pl -
+OK, I'll update the patch and apply it.
 
-and have the Cc: list before writing the commit message.
+But this doesn't need to go into 33 correct. We can let it brew for 34?
 
-Cc: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- scripts/get_maintainer.pl |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 445e884..80d5a69 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -5,7 +5,7 @@
- # Print selected MAINTAINERS information for
- # the files modified in a patch or for a file
- #
--# usage: perl scripts/get_maintainer.pl [OPTIONS] <patch>
-+# usage: perl scripts/get_maintainer.pl [OPTIONS] <patch>|STDIN
- #        perl scripts/get_maintainer.pl [OPTIONS] -f <file>
- #
- # Licensed under the terms of the GNU GPL License version 2
-@@ -237,7 +237,7 @@ foreach my $file (@ARGV) {
-     ##if $file is a directory and it lacks a trailing slash, add one
-     if ((-d $file)) {
- 	$file =~ s@([^/])$@$1/@;
--    } elsif (!(-f $file)) {
-+    } elsif (!(-f $file) && ($file ne '-')) {
- 	die "$P: file '${file}' not found\n";
-     }
-     if ($from_filename) {
-@@ -255,7 +255,11 @@ foreach my $file (@ARGV) {
-     } else {
- 	my $file_cnt = @files;
- 	my $lastfile;
--	open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
-+	if ($file eq '-') {
-+	    open(PATCH, "<&STDIN");
-+	} else {
-+	    open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
-+	}
- 	while (<PATCH>) {
- 	    my $patch_line = $_;
- 	    if (m/^\+\+\+\s+(\S+)/) {
-@@ -422,7 +426,7 @@ sub file_match_pattern {
-
- sub usage {
-     print <<EOT;
--usage: $P [options] patchfile
-+usage: $P [options] patchfile|-
-        $P [options] -f file|directory
- version: $V
-
--- 
-1.6.5.4
+-- Steve
 
 
--- 
-Regards/Gruss,
-Boris
