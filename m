@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZLWRkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbZLWRlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbZLWRkX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:40:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZLWRkW
+	id S1756578AbZLWRlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 12:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZLWRlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:40:22 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:33139 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751221AbZLWRkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:40:20 -0500
-Date: Wed, 23 Dec 2009 12:40:19 -0500
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com,
-       Len Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: ucc_geth broken in 2.6.32 by
-	864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
-Message-ID: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
+	Wed, 23 Dec 2009 12:41:52 -0500
+Received: from kroah.org ([198.145.64.141]:58874 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750986AbZLWRlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 12:41:51 -0500
+Date: Wed, 23 Dec 2009 09:41:24 -0800
+From: Greg KH <greg@kroah.com>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Regression, 2.6.33-rc1->current git] NULL pointer in
+ usb_serial_probe() introduced by the recent kfifo changes
+Message-ID: <20091223174124.GA12772@kroah.com>
+References: <200912230251.31568.rjw@sisk.pl>
+ <20091223053734.GC22808@kroah.com>
+ <1261555848.22729.41.camel@wall-e>
+ <20091223171731.GA7535@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20091223171731.GA7535@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We use the ucc_geth for 6 ports (4 100Mbit and 2 Gbit ports) on an
-mpc8360e.  Up to 2.6.31 this worked fine.  2.6.32 on the other hand
-crashes very quickly after boot.
+On Wed, Dec 23, 2009 at 09:17:31AM -0800, Greg KH wrote:
+> On Wed, Dec 23, 2009 at 09:10:48AM +0100, Stefani Seibold wrote:
+> > Am Dienstag, den 22.12.2009, 21:37 -0800 schrieb Greg KH:
+> > > On Wed, Dec 23, 2009 at 02:51:31AM +0100, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > > 
+> > > > Something like the patch below is necessary to fix a new NULL pointer deref
+> > > > in usb_serial_probe() that appeared after the recent kfifo changes (in short,
+> > > > the kfifo changes modified the semantics of kfifo_alloc() that
+> > > > usb_serial_probe() reiled on).
+> > > 
+> > > What semantic changed?  I thought that the kfifo patches came with
+> > > patches that also fixed up any changed that were needed.  What went
+> > > wrong here?
+> > > 
+> > 
+> > This one is a new user of the kfifo API, so it forget to port it to the
+> > new kfifo API.
+> > 
+> > Please make the write_fifo in place. Here is my patch to fix the
+> > regression and full ported version.
+> 
+> Thanks, I'll queue this up and send it to Linus later today.
 
-I managed to see the same crash when I was selectively trying to add newer
-ucc_geth patches to the 2.6.31 kernel a couple of months ago, and the same
-patch that caused a crash then seems suspect.  If I revert the patch the
-system runs completely stable.  Amusingly, the excact error message the
-patch claims to fix is in fact the error it causes to happen in my case.
+Heh, nevermind, Linus took it already :)
 
-So preferably 864fdf884e82bacbe8ca5e93bd43393a61d2e2b4 could be reverted
-unless someone can fix it.  I can't even make sense of why it is supposed
-to improve anything, it certainly seems like a very unsafe change
-to make.  Removing locking and disabling of interrupts before poking at
-phy settings and such doesn't seem like a minor change and doesn't seem
-that safe either.
+thanks,
 
-Now I must add that I run with the xenomai/adeos-ipipe patches as well,
-which do change interrupt handling a little, but so far this has worked
-fine with the previous code and only the current code is broken for us.
-I could try to build without the patch, although I would loose some major
-functionality on the box doing so, and I would not be surprised if it
-still fails since I believe I tried that already with 2.6.31+selected
-git patches before without xenomai patched in and it still failed,
-but I am only about 99% sure of that.
-
-With the patch I get:
-NETDEV WATCHDOG: eth2 (ucc_geth): transmit queue 0 timed out
-------------[ cut here ]------------
-Badness at c02729a8 [verbose debug info unavailable]
-NIP: c02729a8 LR: c02729a8 CTR: c01b6088
-REGS: c0451c40 TRAP: 0700   Not tainted  (2.6.32-trunk-8360e)
-MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42042024  XER: 20000000
-TASK = c041f3e8[0] 'swapper' THREAD: c0450000
-GPR00: c02729a8 c0451cf0 c041f3e8 00000045 00002ae9 ffffffff c01b6afc c0422c48
-GPR08: c042fde8 00000002 00000003 00010000 22042024 1001af90 1fffd000 00000000
-GPR16: 00000000 c038c6d8 00000001 00200200 00000000 c0465eec c0465cec c0465aec
-GPR24: c0450000 c04658ec c0423c2c df0e01c0 c0480000 df0e0000 c0423c2c 00000000
-NIP [c02729a8] dev_watchdog+0x280/0x290
-LR [c02729a8] dev_watchdog+0x280/0x290
-Call Trace:
-[c0451cf0] [c02729a8] dev_watchdog+0x280/0x290 (unreliable)
-[c0451d50] [c00377c4] run_timer_softirq+0x164/0x224
-[c0451da0] [c0032a38] __do_softirq+0xb8/0x13c
-[c0451df0] [c00065cc] do_softirq+0xa0/0xac
-[c0451e00] [c003280c] irq_exit+0x7c/0x9c
-[c0451e10] [c00640c4] __ipipe_sync_stage+0x248/0x24c
-[c0451e50] [c0064374] ipipe_suspend_domain+0xa0/0xf4
-[c0451e70] [c00644a4] __ipipe_walk_pipeline+0xdc/0x120
-[c0451e90] [c000af28] __ipipe_handle_irq+0x164/0x168
-[c0451ec0] [c000b03c] __ipipe_grab_irq+0x3c/0xa4
-[c0451ed0] [c0014814] __ipipe_ret_from_except+0x0/0xc
---- Exception: 501 at cpu_idle+0xe0/0xf0
-    LR = cpu_idle+0xe0/0xf0
-[c0451f90] [c000970c] cpu_idle+0x68/0xf0 (unreliable)
-[c0451fb0] [c0003f30] rest_init+0x5c/0x6c
-[c0451fc0] [c03f07ac] start_kernel+0x27c/0x2e0
-[c0451ff0] [00003438] 0x3438
-Instruction dump:
-7d2903a6 4bfffea8 38810008 7fa3eb78 38a00040 4bfe9c81 7fe6fb78 7fa4eb78
-7c651b78 3c60c03c 38631774 480b7d2d <0fe00000> 38000001 901c2fb0 4bffff94
-warning: `zebra' uses 32-bit capabilities (legacy support in use)
-PHY: 0:03 - Link is Up - 1000/Full
-PHY: 0:09 - Link is Up - 100/Full
-PHY: 0:02 - Link is Up - 100/Full
-PHY: 0:0f - Link is Up - 100/Full
-PHY: 0:17 - Link is Up - 100/Full
-
-When reverted I get a stable running system with no errors.
-
-Which port happens to fail first varies, but one always does and then
-the system almost always crashes soon after.
-
--- 
-Len Sorensen
+greg k-h
