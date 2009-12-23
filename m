@@ -1,183 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZLWRYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbZLWRaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbZLWRYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZLWRYn
+	id S1756145AbZLWRaW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 12:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZLWRaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:24:43 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:41774 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbZLWRYm (ORCPT
+	Wed, 23 Dec 2009 12:30:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754124AbZLWRaS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:24:42 -0500
-Date: Wed, 23 Dec 2009 09:23:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, torvalds <torvalds@linux-foundation.org>,
-       Stefani Seibold <stefani@seibold.net>
-Subject: [PATCH] kfifo: fix Error/broken kernel-doc notation
-Message-Id: <20091223092333.6d88b7a8.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Auth-Type: Internal IP
-X-Source-IP: rcsinet15.oracle.com [148.87.113.117]
-X-CT-RefId: str=0001.0A0B0203.4B325224.02C3:SCFMA4539811,ss=1,fgs=0
+	Wed, 23 Dec 2009 12:30:18 -0500
+Date: Wed, 23 Dec 2009 09:29:05 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Gregory Haskins <gregory.haskins@gmail.com>
+cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+In-Reply-To: <4B3250BC.50203@gmail.com>
+Message-ID: <alpine.LFD.2.00.0912230922290.6879@localhost.localdomain>
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com>
+ <20091223171052.GI20539@basil.fritz.box> <4B3250BC.50203@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix kernel-doc errors and warnings in new header file kfifo.h.
-Don't use kernel-doc "/**" for internal functions whose comments
-are not in kernel-doc format.
 
-kernel-doc section header names (like "Note:") must be unique
-per function.  Looks like I need to document that.
+On Wed, 23 Dec 2009, Gregory Haskins wrote:
+> > 
+> > And upstream submission is not always like this!
+> 
+> I would think the process would come to a grinding halt if it were ;)
 
-Error(include/linux/kfifo.h:76): duplicate section name 'Note'
-Warning(include/linux/kfifo.h:88): Excess function parameter 'size' description in 'INIT_KFIFO'
-Error(include/linux/kfifo.h:101): duplicate section name 'Note'
-Warning(include/linux/kfifo.h:257): No description found for parameter 'fifo'
-  (many of this last type, from internal functions)
+Well, in all honesty, if it had been non-virtualized drivers I would just 
+have pulled. The pull request all looked sane, the diffstat looked clean 
+and non-intrusive, and I had no problems with any of that.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stefani Seibold <stefani@seibold.net>
----
- include/linux/kfifo.h |   31 +++++++++++++++----------------
- 1 file changed, 15 insertions(+), 16 deletions(-)
+But the virtualization people always argue about the fifty-eleven 
+different ways of doing things, and unlike real drivers - where the actual 
+hardware places constraints on what the heck is going on - virtualization 
+people seem to revel in making new interfaces weekly, and tend to be only 
+incidentally limited by hardware (ie hardware interfaces may limit some 
+_details_, but seldom any higher-level arguments).
 
---- linux-2.6.33-rc1-git3.orig/include/linux/kfifo.h
-+++ linux-2.6.33-rc1-git3/include/linux/kfifo.h
-@@ -69,8 +69,8 @@ struct kfifo {
-  * @name: name of the declared kfifo datatype
-  * @size: size of the fifo buffer
-  *
-- * Note: the macro can be used inside struct or union declaration
-- * Note: the macro creates two objects:
-+ * Note1: the macro can be used inside struct or union declaration
-+ * Note2: the macro creates two objects:
-  *  A kfifo object with the given name and a buffer for the kfifo
-  *  object named name##kfifo_buffer
-  */
-@@ -83,7 +83,6 @@ union { \
- /**
-  * INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
-  * @name: name of the declared kfifo datatype
-- * @size: size of the fifo buffer
-  */
- #define INIT_KFIFO(name) \
- 	name = __kfifo_initializer(sizeof(name##kfifo_buffer) - \
-@@ -94,8 +93,8 @@ union { \
-  * @name: name of the declared kfifo datatype
-  * @size: size of the fifo buffer
-  *
-- * Note: the macro can be used for global and local kfifo data type variables
-- * Note: the macro creates two objects:
-+ * Note1: the macro can be used for global and local kfifo data type variables
-+ * Note2: the macro creates two objects:
-  *  A kfifo object with the given name and a buffer for the kfifo
-  *  object named name##kfifo_buffer
-  */
-@@ -249,7 +248,7 @@ extern __must_check unsigned int kfifo_f
- extern __must_check unsigned int kfifo_to_user(struct kfifo *fifo,
- 	void __user *to, unsigned int n);
- 
--/**
-+/*
-  * __kfifo_add_out internal helper function for updating the out offset
-  */
- static inline void __kfifo_add_out(struct kfifo *fifo,
-@@ -259,7 +258,7 @@ static inline void __kfifo_add_out(struc
- 	fifo->out += off;
- }
- 
--/**
-+/*
-  * __kfifo_add_in internal helper function for updating the in offset
-  */
- static inline void __kfifo_add_in(struct kfifo *fifo,
-@@ -269,7 +268,7 @@ static inline void __kfifo_add_in(struct
- 	fifo->in += off;
- }
- 
--/**
-+/*
-  * __kfifo_off internal helper function for calculating the index of a
-  * given offeset
-  */
-@@ -278,7 +277,7 @@ static inline unsigned int __kfifo_off(s
- 	return off & (fifo->size - 1);
- }
- 
--/**
-+/*
-  * __kfifo_peek_n internal helper function for determinate the length of
-  * the next record in the fifo
-  */
-@@ -299,7 +298,7 @@ static inline unsigned int __kfifo_peek_
- #undef	__KFIFO_GET
- }
- 
--/**
-+/*
-  * __kfifo_poke_n internal helper function for storing the length of
-  * the next record into the fifo
-  */
-@@ -319,7 +318,7 @@ static inline void __kfifo_poke_n(struct
- #undef	__KFIFO_PUT
- }
- 
--/**
-+/*
-  * __kfifo_in_... internal functions for put date into the fifo
-  * do not call it directly, use kfifo_in_rec() instead
-  */
-@@ -367,7 +366,7 @@ static inline __must_check unsigned int 
- 	return __kfifo_in_rec(fifo, from, n, recsize);
- }
- 
--/**
-+/*
-  * __kfifo_out_... internal functions for get date from the fifo
-  * do not call it directly, use kfifo_out_rec() instead
-  */
-@@ -425,7 +424,7 @@ static inline __must_check unsigned int 
- 	return __kfifo_out_rec(fifo, to, n, recsize, total);
- }
- 
--/**
-+/*
-  * __kfifo_from_user_... internal functions for transfer from user space into
-  * the fifo. do not call it directly, use kfifo_from_user_rec() instead
-  */
-@@ -474,7 +473,7 @@ static inline __must_check unsigned int 
- 	return __kfifo_from_user_rec(fifo, from, n, recsize);
- }
- 
--/**
-+/*
-  * __kfifo_to_user_... internal functions for transfer fifo data into user space
-  * do not call it directly, use kfifo_to_user_rec() instead
-  */
-@@ -533,7 +532,7 @@ static inline __must_check unsigned int 
- 	return __kfifo_to_user_rec(fifo, to, n, recsize, total);
- }
- 
--/**
-+/*
-  * __kfifo_peek_... internal functions for peek into the next fifo record
-  * do not call it directly, use kfifo_peek_rec() instead
-  */
-@@ -557,7 +556,7 @@ static inline __must_check unsigned int 
- 	return __kfifo_peek_n(fifo, recsize);
- }
- 
--/**
-+/*
-  * __kfifo_skip_... internal functions for skip the next fifo record
-  * do not call it directly, use kfifo_skip_rec() instead
-  */
+So when I see another virtualization interface, I want the virtualization 
+people to just argue it out amongst themselves. Thanks to the virtue of me 
+personally not caring one whit about virtualization, I can stand back and 
+just watch the fireworks.
+
+Which is not to say that I enjoy it (I like the occasional flame-fest, but 
+in order to like them I need to _care_ enough to get fired up about 
+them!).
+
+So I just don't want the in-fighting to take place in my tree, so I'd 
+rather see the fighting die out _before_ I actually pull.
+
+You people are all crazy.
+
+		Linus
