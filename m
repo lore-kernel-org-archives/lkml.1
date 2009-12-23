@@ -1,146 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbZLWXnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbZLWXpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbZLWXnG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 18:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZLWXnB
+	id S1757414AbZLWXpY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZLWXpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 18:43:01 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:53965 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZLWXm7 (ORCPT
+	Wed, 23 Dec 2009 18:45:23 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:2192 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751470AbZLWXpV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 18:42:59 -0500
-Date: Wed, 23 Dec 2009 15:42:56 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Kyle Moffett <kyle@moffetthome.net>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org,
+	Wed, 23 Dec 2009 18:45:21 -0500
+X-IronPort-AV: E=Sophos;i="4.47,445,1257148800"; 
+   d="scan'208";a="292603717"
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+ workloads
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Steve Rago <sar@nec-labs.com>
+Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for
- 2.6.33
-Message-ID: <20091223234256.GC30700@ovro.caltech.edu>
-References: <4B1D4F29.8020309@gmail.com>
- <20091218215107.GA14946@elte.hu>
- <4B2F9582.5000002@gmail.com>
- <20091222075742.GB26467@elte.hu>
- <4B3103B4.4070708@gmail.com>
- <f73f7ab80912222215i39ba865dv95764f95fd57bd96@mail.gmail.com>
- <4B3232A1.8050505@codemonkey.ws>
- <20091223195413.GB30700@ovro.caltech.edu>
- <4B32A09D.30400@codemonkey.ws>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B32A09D.30400@codemonkey.ws>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 23 Dec 2009 15:42:57 -0800 (PST)
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>
+In-Reply-To: <1261610013.13028.151.camel@serenity>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity>
+	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
+	 <1261599385.13028.142.camel@serenity>  <1261604952.18047.7.camel@localhost>
+	 <1261610013.13028.151.camel@serenity>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Thu, 24 Dec 2009 00:44:58 +0100
+Message-ID: <1261611898.18047.37.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 23 Dec 2009 23:45:01.0484 (UTC) FILETIME=[F19156C0:01CA8429]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 04:58:37PM -0600, Anthony Liguori wrote:
-> On 12/23/2009 01:54 PM, Ira W. Snyder wrote:
-> > On Wed, Dec 23, 2009 at 09:09:21AM -0600, Anthony Liguori wrote:
+On Wed, 2009-12-23 at 18:13 -0500, Steve Rago wrote: 
+> On Wed, 2009-12-23 at 22:49 +0100, Trond Myklebust wrote:
 > 
-> > I didn't know you were interested in this as well. See my later reply to
-> > Kyle for a lot of code that I've written with this in mind.
+> > > When to send the commit is a complex question to answer.  If you delay
+> > > it long enough, the server's flusher threads will have already done most
+> > > of the work for you, so commits can be cheap, but you don't have access
+> > > to the necessary information to figure this out.  You can't delay it too
+> > > long, though, because the unstable pages on the client will grow too
+> > > large, creating memory pressure.  I have a second patch, which I haven't
+> > > posted yet, that adds feedback piggy-backed on the NFS write response,
+> > > which allows the NFS client to free pages proactively.  This greatly
+> > > reduces the need to send commit messages, but it extends the protocol
+> > > (in a backward-compatible manner), so it could be hard to convince
+> > > people to accept.
+> > 
+> > There are only 2 cases when the client should send a COMMIT: 
+> >      1. When it hits a synchronisation point (i.e. when the user calls
+> >         f/sync(), or close(), or when the user sets/clears a file
+> >         lock). 
+> >      2. When memory pressure causes the VM to wants to free up those
+> >         pages that are marked as clean but unstable.
+> > 
+> > We should never be sending COMMIT in any other situation, since that
+> > would imply that the client somehow has better information on how to
+> > manage dirty pages on the server than the server's own VM.
+> > 
+> > Cheers
+> >   Trond
 > 
-> 
-> BTW, in the future, please CC me or CC 
-> virtualization@lists.linux-foundation.org.  Or certainly kvm@vger.  I 
-> never looked at the virtio-over-pci patchset although I've heard it 
-> referenced before.
-> 
+> #2 is the difficult one.  If you wait for memory pressure, you could
+> have waited too long, because depending on the latency of the commit,
+> you could run into low-memory situations.  Then mayhem ensues, the
+> oom-killer gets cranky (if you haven't disabled it), and stuff starts
+> failing and/or hanging.  So you need to be careful about setting the
+> threshold for generating a commit so that the client doesn't run out of
+> memory before the server can respond.
 
-Will do. I wouldn't think kvm@vger would be on-topic. I'm not interested
-in KVM (though I do use it constantly, it is great). I'm only interested
-in using virtio as a transport between physical systems. Is it a place
-where discussing virtio by itself is on-topic?
+Right, but this is why we have limits on the total number of dirty pages
+that can be kept in memory. The NFS unstable writes don't significantly
+change that model, they just add an extra step: once all the dirty data
+has been transmitted to the server, your COMMIT defines a
+synchronisation point after which you know that the data you just sent
+is all on disk. Given a reasonable NFS server implementation, it will
+already have started the write out of that data, and so hopefully the
+COMMIT operation itself will run reasonably quickly.
 
-> >> But both virtio-lguest and virtio-s390 use in-band enumeration and
-> >> discovery since they do not have support for PCI on either platform.
-> >>
-> >
-> > I'm interested in the same thing, just over PCI. The only PCI agent
-> > systems I've used are not capable of manipulating the PCI configuration
-> > space in such a way that virtio-pci is usable on them.
-> 
-> virtio-pci is the wrong place to start if you want to use a PCI *device* 
-> as the virtio bus. virtio-pci is meant to use the PCI bus as the virtio 
-> bus.  That's a very important requirement for us because it maintains 
-> the relationship of each device looking like a normal PCI device.
-> 
-> > This means
-> > creating your own enumeration mechanism. Which sucks.
-> 
-> I don't think it sucks.  The idea is that we don't want to unnecessarily 
-> reinvent things.
-> 
-> Of course, the key feature of virtio is that it makes it possible for 
-> you to create your own enumeration mechanism if you're so inclined.
-> 
-> > See my virtio-phys
-> > code (http://www.mmarray.org/~iws/virtio-phys/) for an example of how I
-> > did it. It was modeled on lguest. Help is appreciated.
-> 
-> If it were me, I'd take a much different approach.  I would use a very 
-> simple device with a single transmit and receive queue.  I'd create a 
-> standard header, and the implement a command protocol on top of it. 
-> You'll be able to support zero copy I/O (although you'll have a fixed 
-> number of outstanding requests).  You would need a single large ring.
-> 
-> But then again, I have no idea what your requirements are.  You could 
-> probably get far treating the thing as a network device and just doing 
-> ATAoE or something like that.
-> 
+Any userland application with basic data integrity requirements will
+have the same expectations. It will write out the data and then fsync()
+at regular intervals. I've never heard of any expectations from
+filesystem and VM designers that applications should be required to
+fine-tune the length of those intervals in order to achieve decent
+performance.
 
-I've got a single PCI Host (master) with ~20 PCI slots. Physically, it
-is a backplane in a cPCI chassis, but the form factor is irrelevant. It
-is regular PCI from a software perspective.
-
-Into this backplane, I plug up to 20 PCI Agents (slaves). They are
-powerpc computers, almost identical to the Freescale MPC8349EMDS board.
-They're full-featured powerpc computers, with CPU, RAM, etc. They can
-run standalone.
-
-I want to use the PCI backplane as a data transport. Specifically, I
-want to transport ethernet over the backplane, so I can have the powerpc
-boards mount their rootfs via NFS, etc. Everyone knows how to write
-network daemons. It is a good and very well known way to transport data
-between systems.
-
-On the PCI bus, the powerpc systems expose 3 PCI BAR's. The size is
-configureable, as is the memory location at which they point. What I
-cannot do is get notified when a read/write hits the BAR. There is a
-feature on the board which allows me to generate interrupts in either
-direction: agent->master (PCI INTX) and master->agent (via an MMIO
-register). The PCI vendor ID and device ID are not configureable.
-
-One thing I cannot assume is that the PCI master system is capable of
-performing DMA. In my system, it is a Pentium3 class x86 machine, which
-has no DMA engine. However, the PowerPC systems do have DMA engines. In
-virtio terms, it was suggested to make the powerpc systems the "virtio
-hosts" (running the backends) and make the x86 (PCI master) the "virtio
-guest" (running virtio-net, etc.).
-
-I'm not sure what you're suggesting in the paragraph above. I want to
-use virtio-net as the transport, I do not want to write my own
-virtual-network driver. Can you please clarify?
-
-Hopefully that explains what I'm trying to do. I'd love someone to help
-guide me in the right direction here. I want something to fill this need
-in mainline. I've been contacted seperately by 10+ people also looking
-for a similar solution. I hunch most of them end up doing what I did:
-write a quick-and-dirty network driver. I've been working on this for a
-year, just to give an idea.
-
-PS - should I create a new thread on the two mailing lists mentioned
-above? I don't want to go too far off-topic in an alacrityvm thread. :)
-
-Ira
+Cheers
+  Trond
