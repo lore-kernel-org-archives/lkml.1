@@ -1,34 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZLWNtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZLWN0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbZLWNtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZLWNtu
+	id S1755929AbZLWN0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbZLWN0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:49:50 -0500
-Received: from dlpdemo.checkpoint.com ([194.29.32.54]:47284 "EHLO
-	dlpdemo.checkpoint.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbZLWNtt convert rfc822-to-8bit (ORCPT
+	Wed, 23 Dec 2009 08:26:17 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:46043 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755324AbZLWN0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:49:49 -0500
-X-Greylist: delayed 1670 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Dec 2009 08:49:49 EST
-X-CheckPoint: {4B321ED4-10000-14201DC2-FFFF}
-X-CheckPoint: {4B32184F-10000-14201DC2-FFFF}
-From: Igor Smolyar <igor@checkpoint.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 23 Dec 2009 15:17:31 +0200
-Subject: 
-Thread-Index: AQHKg9Lbg0STHugJe0yV4sQbsu7BQw==
-Message-ID: <6C26598BB9824745B484C2400A54DFFD5D51046397@il-ex01.ad.checkpoint.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 23 Dec 2009 08:26:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=ABZl35++284PVgDlVq1h21ioUMJPeCD70/g79jNnMlnMQpWEjByimng83oOW6be/la
+         TC53s9yPiSTyAiXtz9B0vQICu7b7NvtVKdNtpJZYNRjwhVbwsrcG/ef4JkLRHX7AWog5
+         /eevsdFyokTtAwbSwjzyBjbH77agnTfyXaxEM=
+Date: Wed, 23 Dec 2009 15:25:50 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] hamradio: avoid null deref
+Message-ID: <20091223132550.GD17923@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsubscribe linux-kernel
+If dev == NULL we shouldn't dereference it.
+
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+
+--- orig/drivers/net/hamradio/bpqether.c	2009-12-22 23:58:56.000000000 +0200
++++ devel/drivers/net/hamradio/bpqether.c	2009-12-22 23:59:46.000000000 +0200
+@@ -283,7 +283,6 @@ static netdev_tx_t bpq_xmit(struct sk_bu
+ 	bpq = netdev_priv(dev);
+ 
+ 	if ((dev = bpq_get_ether_dev(dev)) == NULL) {
+-		dev->stats.tx_dropped++;
+ 		kfree_skb(skb);
+ 		return NETDEV_TX_OK;
+ 	}
