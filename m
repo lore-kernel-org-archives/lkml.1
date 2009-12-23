@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZLWJwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZLWJ6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbZLWJwv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 04:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZLWJws
+	id S1754932AbZLWJ6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZLWJ6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 04:52:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33004 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbZLWJwq (ORCPT
+	Wed, 23 Dec 2009 04:58:30 -0500
+Received: from mga10.intel.com ([192.55.52.92]:53733 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753157AbZLWJ63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 04:52:46 -0500
-Date: Wed, 23 Dec 2009 10:52:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Salman Qazi <sqazi@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>, Taliver Heath <taliver@google.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: RFC: A proposal for power capping through forced idle in the
- Linux Kernel
-Message-ID: <20091223095239.GD24181@elf.ucw.cz>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
- <20091221085713.GA1622@ucw.cz>
- <4352991a0912221315y5ba409cbh26baa5937cdf2f76@mail.gmail.com>
+	Wed, 23 Dec 2009 04:58:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,438,1257148800"; 
+   d="scan'208";a="758655487"
+Message-ID: <4B31E9C3.6010109@linux.intel.com>
+Date: Wed, 23 Dec 2009 17:58:27 +0800
+From: Haicheng Li <haicheng.li@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4352991a0912221315y5ba409cbh26baa5937cdf2f76@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: linux-mm@kvack.org
+CC: Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2] slab: initialize unused alien cache entry as NULL at alloc_alien_cache().
+References: <4B30BDA8.1070904@linux.intel.com> <1261521485.3000.1692.camel@calx>
+In-Reply-To: <1261521485.3000.1692.camel@calx>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Memory hotplug would online new node in runtime, then reap timer will add
+this new node as a reap node. In such case, for each existing kmem_list,
+we need to ensure that the alien cache entry corresponding to this new
+added node is NULL.
 
-> > OTOH realtime people already have tools you could make good use of:
-> > your power capping approach looks like 'high priority idle task that
-> > needs to run for 2 seconds every 5 seconds' or something...
-> >
-> > Talk to rt people?
-> 
-> At the core of it, you are correct.  However, in our implementation it
-> also avoids running when the system is already idle and operates at
-> much finer granularities than seconds.
+Otherwise, it might cause BUG when reap_alien() affecting the new added node.
 
-Seconds were examples, I suspect rt kernels need lower granularities,
-to.
+V2: use kzalloc_node() to ensure zeroed memory.
 
-> Which specific tools are you referring to?  Real-time Linux as a whole
-> is a trade off:  one gets predictable latency in exchange for some
-> performance.  Any specific contacts that I should direct my inquiries
-> to?
+CC: Pekka Enberg <penberg@cs.helsinki.fi>
+Acked-by: Andi Kleen <ak@linux.intel.com>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
+---
+  mm/slab.c |    8 +++-----
+  1 files changed, 3 insertions(+), 5 deletions(-)
 
-I guess Peter and Ingo (added to the Cc)....
+diff --git a/mm/slab.c b/mm/slab.c
+index 7dfa481..000e9ed 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -966,18 +966,16 @@ static void *alternate_node_alloc(struct kmem_cache *, gfp_t);
+  static struct array_cache **alloc_alien_cache(int node, int limit, gfp_t gfp)
+  {
+  	struct array_cache **ac_ptr;
+-	int memsize = sizeof(void *) * nr_node_ids;
++	int memsize = sizeof(void *) * MAX_NUMNODES;
+  	int i;
 
-Anyway, I guess that what you really want is to be able to change
-priority of the idle threads, even making them realtime...
-									Pavel
+  	if (limit > 1)
+  		limit = 12;
+-	ac_ptr = kmalloc_node(memsize, gfp, node);
++	ac_ptr = kzalloc_node(memsize, gfp, node);
+  	if (ac_ptr) {
+  		for_each_node(i) {
+-			if (i == node || !node_online(i)) {
+-				ac_ptr[i] = NULL;
++			if (i == node || !node_online(i))
+  				continue;
+-			}
+  			ac_ptr[i] = alloc_arraycache(node, limit, 0xbaadf00d, gfp);
+  			if (!ac_ptr[i]) {
+  				for (i--; i >= 0; i--)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.3.8
+
+
+
