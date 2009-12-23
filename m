@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZLWBQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZLWBRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbZLWBQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 20:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZLWBQr
+	id S1755241AbZLWBRW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 20:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZLWBRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 20:16:47 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:48849 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZLWBQq (ORCPT
+	Tue, 22 Dec 2009 20:17:21 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:37002 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbZLWBRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 20:16:46 -0500
+	Tue, 22 Dec 2009 20:17:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type;
-        b=WD6zT1Vp0JFra41pm5gcvmXrpsNdlUlkqXucvzR2/s8VQqrWr+K1u6TaNjY9O7EjBC
-         5W5zbuSaNPbql1NAaF68sMSrjDgeOpLxV6np+UW9g7/fxmyzLmRTjflor5WdYv6uaWOt
-         ZDW//9yzAkUJkWp+Y8mgg2ixQkfaPzRrdwLos=
-MIME-Version: 1.0
-In-Reply-To: <20091222175939.GF4385@tux>
-References: <20091222022355.GA32508@bombadil.infradead.org> 
-	<19248.19829.293087.367661@gargle.gargle.HOWL> <20091222155005.GA4385@tux> 
-	<20091222162055.GC4385@tux> <20091222165528.GE4385@tux> <20091222175939.GF4385@tux>
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Tue, 22 Dec 2009 17:16:25 -0800
-X-Google-Sender-Auth: ebad867abea153d2
-Message-ID: <43e72e890912221716r64ea4542qd747302b536a3156@mail.gmail.com>
-Subject: Re: Asus eeepc 1008HA suspend issue and mac80211 suspend corner case
-To: Luis Rodriguez <Luis.Rodriguez@atheros.com>
-Cc: Sujith Manoharan <Sujith.Manoharan@atheros.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Jonathan May <jonathan.may@atheros.com>
-Content-Type: text/plain; charset=UTF-8
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=PvFF9UJ8dhNUEGcZvRNOUMnQjPnbVpN0DivF5czuZZP4qsKuAaWyw9z+dXxC3V2M2l
+         vrlSx4XlRdJqUSYwvH++yQOZQMiPz2XPgEczezeHy21VOwfdxfnN9hMQ1lI1vO2obgGj
+         QjUCEIcOJTF+4PFzxc9Jd8vSjtlkIBv0xtZpw=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: arnd@arndb.de
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       sam@ravnborg.org, dhowells@redhat.com,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] BUG(): CONFIG_BUG=n version of BUG() should be unreachable()
+Date: Wed, 23 Dec 2009 04:17:12 +0300
+Message-Id: <1261531032-15225-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.6.rc4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK I have to go now but I managed to get this working without the
-issue coming up. At this point I am not sure if all of these are
-required but I cherry picked 2 patches from wireless-testing and then
-added 4, one based on sujith's suggestion.
+Previouss definition of BUG() as 'do {} while(0)' produced compilation
+warnings when BUG() was used in default branch of switch() statement
+(control reaches end of non-void function).
 
-http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0001-mac80211-fix-resume.patch
-http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0002-mac80211-fix-WMM-AP-settings-application.patch
+Example:
+unsigned long function()
+{
+	switch() {
+	case 1:
+		return 1;
+	case 2:
+		return 2;
+	default:
+		BUG();
+}
 
-http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0003-ath9k-set-and-restore-ps-prior-to-stop-and-interface.patch
-http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0004-ath9k-ensure-hardware-is-awake-during-ampdu-TX-actio.patch
+Using unreachable() fixes the problem.
 
-http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0005-ath9k-synch-TX-DMA-buffer-upon-TX-cancelation.patch
-http://bombadil.infradead.org/~mcgrof/patches/pm-stuff/0006-ath9k-do-not-wake-up-device-if-it-hasn-t-been-starte.patch
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-Its likely only patch 3, 4, and 6 are the only ones required. In fact
-maybe even 6 will fix it, but I just gotta go so cannot test that. I
-was able to resume about 10 times consecutively which I was unable to
-do before.
+diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+index 18c435d..1106439 100644
+--- a/include/asm-generic/bug.h
++++ b/include/asm-generic/bug.h
+@@ -89,7 +89,7 @@ extern void warn_slowpath_null(const char *file, const int line);
+ 
+ #else /* !CONFIG_BUG */
+ #ifndef HAVE_ARCH_BUG
+-#define BUG() do {} while(0)
++#define BUG() unreachable() 
+ #endif
+ 
+ #ifndef HAVE_ARCH_BUG_ON
+-- 
+1.6.6.rc4
 
-  Luis
