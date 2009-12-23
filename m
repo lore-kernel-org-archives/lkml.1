@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZLWQD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZLWQOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZLWQD0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 11:03:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbZLWQDY
+	id S1755186AbZLWQOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 11:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZLWQOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 11:03:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44862 "EHLO mx3.mail.elte.hu"
+	Wed, 23 Dec 2009 11:14:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51477 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754745AbZLWQDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 11:03:24 -0500
-Date: Wed, 23 Dec 2009 17:03:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	id S1750851AbZLWQOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 11:14:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [Regression, 2.6.33-rc1->current git] NULL pointer in usb_serial_probe() introduced by the recent kfifo changes
+Date: Wed, 23 Dec 2009 17:15:11 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stefani Seibold <stefani@seibold.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] scheduler fix
-Message-ID: <20091223160308.GA12413@elte.hu>
+References: <200912230251.31568.rjw@sisk.pl> <20091223053734.GC22808@kroah.com>
+In-Reply-To: <20091223053734.GC22808@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912231715.11372.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wednesday 23 December 2009, Greg KH wrote:
+> On Wed, Dec 23, 2009 at 02:51:31AM +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > Something like the patch below is necessary to fix a new NULL pointer deref
+> > in usb_serial_probe() that appeared after the recent kfifo changes (in short,
+> > the kfifo changes modified the semantics of kfifo_alloc() that
+> > usb_serial_probe() reiled on).
+> 
+> What semantic changed?  I thought that the kfifo patches came with
+> patches that also fixed up any changed that were needed.  What went
+> wrong here?
 
-Please pull the latest sched-fixes-for-linus git tree from:
+Previously write_fifo was allocated by kfifo_alloc() along with the structure
+members.  Now kfifo_alloc() expects to get a pointer to existing structure.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+> Does your patch solve the oops?
 
- Thanks,
+Sure, that's why I posted it. :-)
 
-	Ingo
-
------------------->
-Peter Zijlstra (1):
-      sched: Revert 738d2be, simplify set_task_cpu()
-
-
- kernel/sched.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 87f1f47..c535cc4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2045,11 +2045,10 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- 
- 	trace_sched_migrate_task(p, new_cpu);
- 
--	if (task_cpu(p) == new_cpu)
--		return;
--
--	p->se.nr_migrations++;
--	perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
-+	if (task_cpu(p) != new_cpu) {
-+		p->se.nr_migrations++;
-+		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS, 1, 1, NULL, 0);
-+	}
- 
- 	__set_task_cpu(p, new_cpu);
- }
+Rafael
