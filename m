@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZLWBhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZLWBkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbZLWBhM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 20:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZLWBhK
+	id S1753199AbZLWBkH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 20:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZLWBkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 20:37:10 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:18513 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbZLWBhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 20:37:08 -0500
-Message-ID: <4B31743F.8070804@caviumnetworks.com>
-Date: Tue, 22 Dec 2009 17:37:03 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 22 Dec 2009 20:40:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40293 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751922AbZLWBkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 20:40:01 -0500
+Message-ID: <4B317491.5050303@kernel.org>
+Date: Tue, 22 Dec 2009 17:38:25 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: arnd@arndb.de, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, sam@ravnborg.org,
-       dhowells@redhat.com
-Subject: Re: [PATCH] BUG(): CONFIG_BUG=n version of BUG() should be unreachable()
-References: <1261531032-15225-1-git-send-email-a.beregalov@gmail.com> <4B3171DF.4070903@caviumnetworks.com>
-In-Reply-To: <4B3171DF.4070903@caviumnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Shaohua Li <shaohua.li@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [git pull request] ACPI and driver patches for 2.6.33.merge
+References: <alpine.LFD.2.00.0912161453480.10371@localhost.localdomain> <86802c440912171728s27dd7108k85a0f1563660c95b@mail.gmail.com> <20091218022112.GA30333@sli10-desk.sh.intel.com> <20091218051457.GB417@elte.hu> <4B309AB9.7030208@kernel.org> <20091223005637.GA16783@sli10-desk.sh.intel.com>
+In-Reply-To: <20091223005637.GA16783@sli10-desk.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Dec 2009 01:37:03.0575 (UTC) FILETIME=[6DD54670:01CA8370]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Daney wrote:
-> Alexander Beregalov wrote:
->> Previouss definition of BUG() as 'do {} while(0)' produced compilation
->> warnings when BUG() was used in default branch of switch() statement
->> (control reaches end of non-void function).
+Shaohua Li wrote:
+> On Tue, Dec 22, 2009 at 06:08:57PM +0800, Yinghai Lu wrote:
+>> Ingo Molnar wrote:
+>>> * Shaohua Li <shaohua.li@intel.com> wrote:
+>>>
+>>>> On Fri, Dec 18, 2009 at 09:28:50AM +0800, Yinghai Lu wrote:
+>>>>> On Wed, Dec 16, 2009 at 12:06 PM, Len Brown <lenb@kernel.org> wrote:
+>>>>>> Hi Linus,
+>>>>>>
+>>>>>> please pull from:
+>>>>>>
+>>>>>> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+>>>>>>
+>>>>> ;..
+>>>>>> Shaohua Li (3):
+>>>>>> ? ? ?ACPI: Add a generic API for _OSC -v2
+>>>>>> ? ? ?ACPI: cleanup pci_root _OSC code.
+>>>>>> ? ? ?ACPI: Add platform-wide _OSC support.
+>>>>> it seems these three patches broke the _OSC on my intel new systems.
+>>>>>
+>>>>> revert them fix the problem with AER and pciehp and etc
+>>>> can you give more details? I just cleaned up the _OSC code for AER and 
+>>>> pciehp, no function changes.
+>>> Famous last words ;-)
+>>>
+>>> Yinghai, i suspect Shaohua needs the kind of info you'd need if you tried to 
+>>> fix it: acpidump, before/after debug boot log, a description of what goes bad, 
+>>> etc.
+>> the so called clean up, change the ret length checking.
 >>
->> Example:
->> unsigned long function()
->> {
->>     switch() {
->>     case 1:
->>         return 1;
->>     case 2:
->>         return 2;
->>     default:
->>         BUG();
->> }
+>> -       if (!output.length)
+>> -               return AE_NULL_OBJECT;
+>> -
 >>
->> Using unreachable() fixes the problem.
->>
->> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
->>
-> 
-> NAK.
-> 
+>> +       /* return buffer should have the same length as cap buffer */
+>> +       if (context->ret.length != context->cap.length)
+>> +               return AE_NULL_OBJECT;
+> Wield BIOS. ACPI spec does mention the return buffer have the same length.
+> Does changing the check back make the issue go away?
 
-Well that may be too strong an objection, but I would really recommend 
-deeper consideration.
+change to 
+if (context->ret.length < context->cap.length)
 
-If you use: #define BUG() __builtin_unreachable()
+make AER work, but pciehp still fail.
 
-which is what your patch does for GCC >= 4.5, it is truly undefined what 
-happens if it is ever reached.  One typical thing that might happen is 
-that you start to try to execute data.  It is unclear to me if it is 
-preferable in the kernel to do that, rather than loop endlessly.  You 
-would likely achieve smaller code, but at what cost?
-
-David Daney
-
-> 
->> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
->> index 18c435d..1106439 100644
->> --- a/include/asm-generic/bug.h
->> +++ b/include/asm-generic/bug.h
->> @@ -89,7 +89,7 @@ extern void warn_slowpath_null(const char *file, 
->> const int line);
->>  
->>  #else /* !CONFIG_BUG */
->>  #ifndef HAVE_ARCH_BUG
->> -#define BUG() do {} while(0)
->> +#define BUG() unreachable()  #endif
->>  
->>  #ifndef HAVE_ARCH_BUG_ON
-> 
-> You can only use 'unreachable()' in situations where it is truly 
-> unreachable.  In the case above you will reach it in the default case.
-> 
-> I would suggest one of the following instead:
-> 
-> #define BUG() BUILD_BUG_ON(1)
-> 
-> #define BUG() do {} while(1)
-> 
-> 
-> David Daney
-> 
-
+YH
