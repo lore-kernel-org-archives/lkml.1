@@ -1,78 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbZLWGPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbZLWG2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752807AbZLWGPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 01:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZLWGPv
+	id S1752948AbZLWG2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 01:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZLWG2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 01:15:51 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:56877 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbZLWGPu convert rfc822-to-8bit (ORCPT
+	Wed, 23 Dec 2009 01:28:23 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:44943 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZLWG2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 01:15:50 -0500
+	Wed, 23 Dec 2009 01:28:22 -0500
 MIME-Version: 1.0
-In-Reply-To: <4B3103B4.4070708@gmail.com>
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> 
-	<4B2F9582.5000002@gmail.com> <20091222075742.GB26467@elte.hu> 
-	<4B3103B4.4070708@gmail.com>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Wed, 23 Dec 2009 01:15:30 -0500
-Message-ID: <f73f7ab80912222215i39ba865dv95764f95fd57bd96@mail.gmail.com>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <022609e4-9f30-4e8b-b26b-023cf58adf21@default>
+References: <4B2F7C41.9020106@vflare.org>
+	 <022609e4-9f30-4e8b-b26b-023cf58adf21@default>
+Date: Wed, 23 Dec 2009 11:58:21 +0530
+Message-ID: <d760cf2d0912222228y3284e455r16cdb2bfd2ecaa0e@mail.gmail.com>
+Subject: Re: Tmem [PATCH 0/5] (Take 3): Transcendent memory
+From: Nitin Gupta <ngupta@vflare.org>
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       jeremy@goop.org, xen-devel@lists.xensource.com,
+       tmem-devel@oss.oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       Rik van Riel <riel@redhat.com>, dave.mccracken@oracle.com,
+       sunil.mushran@oracle.com, Avi Kivity <avi@redhat.com>,
+       Schwidefsky <schwidefsky@de.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, chris.mason@oracle.com,
+       Pavel Machek <pavel@ucw.cz>, linux-mm <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 12:36, Gregory Haskins
-<gregory.haskins@gmail.com> wrote:
-> On 12/22/09 2:57 AM, Ingo Molnar wrote:
->> * Gregory Haskins <gregory.haskins@gmail.com> wrote:
->>> Actually, these patches have nothing to do with the KVM folks. [...]
+Hi Dan,
+
+(mail to Rusty [at] rcsinet15.oracle.com was failing, so I removed
+this address from CC list).
+
+On Tue, Dec 22, 2009 at 5:16 AM, Dan Magenheimer
+<dan.magenheimer@oracle.com> wrote:
+>> From: Nitin Gupta [mailto:ngupta@vflare.org]
+
+>
+>> I think 'frontswap' part seriously overlaps the functionality
+>> provided by 'ramzswap'
+>
+> Could be, but I suspect there's a subtle difference.
+> A key part of the tmem frontswap api is that any
+> "put" at any time can be rejected.  There's no way
+> for the kernel to know a priori whether the put
+> will be rejected or not, and the kernel must be able
+> to react by writing the page to a "true" swap device
+> and must keep track of which pages were put
+> to tmem frontswap and which were written to disk.
+> As a result, tmem frontswap cannot be configured or
+> used as a true swap "device".
+>
+> This is critical to acheive the flexibility you
+> commented above that you like.  Only the hypervisor
+> knows if a free page is available "now" because
+> it is flexibly managing tmem requests from multiple
+> guest kernels.
+>
+
+ramzswap devices can easily track which pages it sent
+to hypervisor, which pages are in backing swap (physical) disk
+and which are in (compressed) memory. Its simply a matter
+of adding some more flags. Latter two are already done in this
+driver.
+
+So, to gain flexibility of frontswap, we can have hypervisor
+send the driver a callback whenever it wants to discard swap
+pages under its domain. If you want to avoid even this callback,
+then kernel will have to keep a copy within guest, which I think
+defeats the whole purpose of swapping to hypervisor. Such
+"ephemeral" pools should be used only for clean fs cache and
+not for swap.
+
+Swapping to hypervisor is mainly useful to overcome
+'static partitioning' problem you mentioned in article:
+http://oss.oracle.com/projects/tmem/
+...such 'para-swap' can shrink/expand outside of VM constraints.
+
+
+>
+>>> Cleancache is
+>> > "ephemeral" so whether a page is kept in cleancache
+>> (between the "put" and
+>> > the "get") is dependent on a number of factors that are invisible to
+>> > the kernel.
 >>
->> That claim is curious to me - the AlacrityVM host
+>> Just an idea: as an alternate approach, we can create an
+>> 'in-memory compressed
+>> storage' backend for FS-Cache. This way, all filesystems
+>> modified to use
+>> fs-cache can benefit from this backend. To make it
+>> virtualization friendly like
+>> tmem, we can again provide (per-cache?) option to allocate
+>> from hypervisor  i.e.
+>> tmem_{put,get}_page() or use [compress]+alloc natively.
 >
-> It's quite simple, really.  These drivers support accessing vbus, and
-> vbus is hypervisor agnostic.  In fact, vbus isn't necessarily even
-> hypervisor related.  It may be used anywhere where a Linux kernel is the
-> "io backend", which includes hypervisors like AlacrityVM, but also
-> userspace apps, and interconnected physical systems as well.
+> I looked at FS-Cache and cachefiles and thought I understood
+> that it is not restricted to clean pages only, thus
+> not a good match for tmem cleancache.
 >
-> The vbus-core on the backend, and the drivers on the frontend operate
-> completely independent of the underlying hypervisor.  A glue piece
-> called a "connector" ties them together, and any "hypervisor" specific
-> details are encapsulated in the connector module.  In this case, the
-> connector surfaces to the guest side as a pci-bridge, so even that is
-> not hypervisor specific per se.  It will work with any pci-bridge that
-> exposes a compatible ABI, which conceivably could be actual hardware.
+> Again, if I'm wrong (or if it is easy to tell FS-Cache that
+> pages may "disappear" underneath it), let me know.
+>
 
-This is actually something that is of particular interest to me.  I
-have a few prototype boards right now with programmable PCI-E
-host/device links on them; one of my long-term plans is to finagle
-vbus into providing multiple "virtual" devices across that single
-PCI-E interface.
+fs-cache backend can keep 'dirty' pages within guest and forward
+clean pages to hypervisor. These clean pages can be added to
+ephemeral pools which can be reclaimed at any time by hypervisor.
+BTW, I have not yet started work on any such fs-cache backend, so
+we might later encounter some hidder/dangerous problems :)
 
-Specifically, I want to be able to provide virtual NIC(s), serial
-ports and serial consoles, virtual block storage, and possibly other
-kinds of interfaces.  My big problem with existing virtio right now
-(although I would be happy to be proven wrong) is that it seems to
-need some sort of out-of-band communication channel for setting up
-devices, not to mention it seems to need one PCI device per virtual
-device.
 
-So I would love to be able to port something like vbus to my nify PCI
-hardware and write some backend drivers... then my PCI-E connected
-systems would dynamically provide a list of highly-efficient "virtual"
-devices to each other, with only one 4-lane PCI-E bus.
+> BTW, pages put to tmem (both frontswap and cleancache) can
+> be optionally compressed.
+>
 
-Cheers,
-Kyle Moffett
+If ramzswap is extended for this virtualization case, then enforcing
+compression might not be good. We can then throw out pages to hvisor
+even before compression stage.   All such changes to ramzswap are IMHO
+pretty straight forward to do.
+
+
+>> For guest<-->hypervisor interface, maybe we can use virtio so that all
+>> hypervisors can benefit? Not quite sure about this one.
+>
+> I'm not very familiar with virtio, but the existence of "I/O"
+> in the name concerns me because tmem is entirely synchronous.
+>
+
+Is synchronous working a *requirement* for tmem to work correctly?
+
+
+> Also, tmem is well-layered so very little work needs to be
+> done on the Linux side for other hypervisors to benefit.
+> Of course these other hypervisors would need to implement
+> the hypervisor-side of tmem as well, but there is a well-defined
+> API to guide other hypervisor-side implementations... and the
+> opensource tmem code in Xen has a clear split between the
+> hypervisor-dependent and hypervisor-independent code, which
+> should simplify implementation for other opensource hypervisors.
+>
+
+As I mentioned, I really like the idea behind tmem. All I am proposing
+is that we should probably explore some alternatives to achive this using
+some existing infrastructure in kernel. I also don't have experience working
+on virtio[1] or virtual-bus[2] but I have the feeling that once guest
+to hvisor channels are created, both ramzswap extension and fs-cache backend
+can share the same code.
+
+[1] virtio: http://portal.acm.org/citation.cfm?id=1400097.1400108
+[2] virtual-bus: http://developer.novell.com/wiki/index.php/Virtual-bus
+
+
+Thanks,
+Nitin
