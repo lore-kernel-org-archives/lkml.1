@@ -1,168 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZLWNJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZLWNIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbZLWNJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 08:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZLWNJt
+	id S1755877AbZLWNIX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZLWNIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 08:09:49 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:35304 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbZLWNJr (ORCPT
+	Wed, 23 Dec 2009 08:08:22 -0500
+Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:42024 "EHLO
+	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755831AbZLWNIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 08:09:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=ovl60IQR57uIEVNje9lXNSISHH8Yr50nuJ/0xMH4iVd0likpkKG8rg2fySKpE7eE3Q
-         8pVE8Os4Xn+Lhv6EmGgTz+AbHFjb71EYmMxuT0bShYdSudorlFIk8oLzmwOls2+dLTWZ
-         M9jGS0sQO1apn2kskpx7i0+8blw/w7LDj53OA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-Date: Wed, 23 Dec 2009 14:07:20 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Anthony Liguori <anthony@codemonkey.ws>, Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-References: <4B1D4F29.8020309@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu>
-In-Reply-To: <20091223065129.GA19600@elte.hu>
+	Wed, 23 Dec 2009 08:08:22 -0500
+Message-ID: <4B321663.2050603@byu.net>
+Date: Wed, 23 Dec 2009 06:08:51 -0700
+From: Eric Blake <ebb9@byu.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.23) Gecko/20090812 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
 MIME-Version: 1.0
-Message-Id: <200912231407.20130.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 14832] New: futimens (AT_FDCWD, arg) should
+ fail
+References: <bug-14832-10286@http.bugzilla.kernel.org/> <20091222143137.7f9b4e8b.akpm@linux-foundation.org>
+In-Reply-To: <20091222143137.7f9b4e8b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 December 2009 07:51:29 am Ingo Molnar wrote:
+According to Andrew Morton on 12/22/2009 3:31 PM:
+> Confused.
 > 
-> * Anthony Liguori <anthony@codemonkey.ws> wrote:
+> : long do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
+> : {
+> : 	int error = -EINVAL;
+> : 
+> : 	if (times && (!nsec_valid(times[0].tv_nsec) ||
+> : 		      !nsec_valid(times[1].tv_nsec))) {
+> : 		goto out;
+> : 	}
+> : 
+> : 	if (flags & ~AT_SYMLINK_NOFOLLOW)
+> : 		goto out;
+> : 
+> : 	if (filename == NULL && dfd != AT_FDCWD) {
+> : 		struct file *file;
+> : 
+> : 		if (flags & AT_SYMLINK_NOFOLLOW)
+> : 			goto out;
+> : 
+> : 		file = fget(dfd);
+> : 		error = -EBADF;
+> : 		if (!file)
+> : 			goto out;
+> : 
 > 
-> > On 12/22/2009 10:01 AM, Bartlomiej Zolnierkiewicz wrote:
-> > >>new e1000 driver is more superior in architecture and do the required
-> > >>work to make the new e1000 driver a full replacement for the old one.
-> > >Right, like everyone actually does things this way..
-> > >
-> > >I wonder why do we have OSS, old Firewire and IDE stacks still around then?
-> > 
-> > And it's always a source of pain, isn't it.
+> afacit, if filename==NULL and dfd==-1 then fget() will return NULL and
+> the syscall returns -EBAFD.
+
+Yes, that's true if dfd==-1.  But My complaint was not about dfd==-1, but
+about dfd==AT_FDCWD, in which case, this block of code is skipped, and you
+end up operating on the current directory ".".  My point is that the line:
+ if (filename == NULL && dfd != AT_FDCWD) {
+should probably be:
+ if (filename == NULL) {
+assuming that fget(AT_FDCWD) likewise fails.
+
 > 
-> Even putting aside the fact that such overlap sucks and is a pain to users 
-> (and that 98% of driver and subsystem version transitions are done completely 
-> seemlessly to users - the examples that were cited were the odd ones out of 
-> 150K commits in the past 4 years, 149K+ of which are seemless), the comparison 
-> does not even apply really.
+> Your report doesn't tell us what kernel version you're testing.  We did
+> fix a few things ni this area, but it was a long time ago.
 
-Total commit number has nothing to do with the issue raised since the problem
-is in the total source code complexity and the need to maintain separate code
-bases.
+Yesterday, Ulrich patched glibc to avoid the issue from the library side
+of things (I first raised the report against glibc 2 months ago, along
+with a proposed patch:
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=10992).  But there is
+still the case of newer kernels and unpatched glibc, where it would also
+be nice to patch the kernel.  I reproduced the bug on
+2.6.31.6-166.fc12.i686, where this test (part of coreutils' configure
+script) failed with status 2:
 
-[ BTW I find your habit of bringing the completely unrelated numbers into
-  the discussion quite annoying.  Do you really think that throwing in some
-  random numbers automatically increases the credibility of your opinion? ]
+| #include <fcntl.h>
+| #include <sys/stat.h>
+| #include <unistd.h>
+|
+| int
+| main ()
+| {
+| struct timespec ts[2] = { { 1, UTIME_OMIT }, { 1, UTIME_NOW } };
+|       int fd = creat ("conftest.file", 0600);
+|       struct stat st;
+|       if (fd < 0) return 1;
+|       if (futimens (AT_FDCWD, NULL)) return 2;
+|       if (futimens (fd, ts)) return 3;
+|       sleep (1);
+|       ts[0].tv_nsec = UTIME_NOW;
+|       ts[1].tv_nsec = UTIME_OMIT;
+|       if (futimens (fd, ts)) return 4;
+|       if (fstat (fd, &st)) return 5;
+|       if (st.st_ctime < st.st_atime) return 6;
+|
+|   ;
+|   return 0;
+| }
 
-> e1000, OSS, old Firewire and IDE are hardware stacks, where hardware is a not 
-> fully understood externality, with its inevitable set of compatibility voes. 
-> There's often situations where one piece of hardware still works better with 
-> the old driver, for some odd (or not so odd) reason.
-> 
-> Also, note that the 'new' hw drivers are generally intended and are maintained 
-> as clear replacements for the old ones, and do so with minimal ABI changes - 
-> or preferably with no ABI changes at all. Most driver developers just switch 
-> from old to new and the old bits are left around and are phased out. We phased 
-> out old OSS recently.
 
-'We' as Fedora?
+-- 
+Don't work too hard, make some time for fun as well!
 
-old OSS stuff is still there (sound/oss/ which is almost 45KLOC and would
-be much more if not past efforts from Adrian Bunk to shrink it down)
-
-Besides 'phase out' that you are talking about comes down to just waiting
-for old hardware/user base to die and it takes years to accomplish..
-
-I can understand how this is not an issue from i.e. Red Hat's POV when you
-have one 'set in the stone' set of drivers in RHEL and the other 'constant
-development flux' one in Fedora (which because of this fact cannot be no
-longer consider as real distribution for real users BTW) but for everybody
-else this is simply untrue.
-
-> That is a very different situation from the AlacrityVM patches, which:
-> 
->  - Are a pure software concept and any compatibility mismatch is
->    self-inflicted. The patches are in fact breaking the ABI to KVM 
->    intentionally (for better or worse).
-
-Care to explain the 'breakage' and why KVM is more special in this regard
-than other parts of the kernel (where we don't keep any such requirements)?
-
-Truth to be told KVM is just another driver/subsystem and Gregory's changes
-are only 4KLOC of clean and easily maintainable code..
-
->  - Gregory claims that the AlacricityVM patches are not a replacement for KVM.
->    I.e. there's no intention to phase out any 'old stuff' and it splits the 
->    pool of driver developers.
-
-Talk double standards.  It was you & co. that officially legitimized this
-style of doing things and now you are complaining about it?
-
-> i.e. it has all the makings of a stupid, avoidable, permanent fork. The thing 
-> is, if AlacricityVM is better, and KVM developers are not willing to fix their 
-> stuff, replace KVM with it.
-> 
-> It's a bit as if someone found a performance problem with sys_open() and came 
-> up with sys_open_v2() and claimed that he wants to work with the VFS 
-> developers while not really doing so but advances sys_open_v2() all the time. 
-> 
-> Do we allow sys_open_v2() upstream, in the name of openness and diversity, 
-> letting some apps use that syscall while other apps still use sys_open()? Or 
-> do we say "enough is enough of this stupidity, come up with some strong 
-> reasons to replace sys_open, and if so, replace the thing and be done with the 
-> pain!".
-
-I certainly missed the time when KVM became officially part of core ABI..
-
-> Overlap and forking can still be done in special circumstances, when a project 
-> splits and a hostile fork is inevitable due to prolongued and irreconcilable 
-> differences between the parties and if there's no strong technical advantage 
-> on either side. I havent seen evidence of this yet though: Gregory claims that 
-> he wants to 'work with the community' and the KVM guys seem to agree violently 
-> that performance can be improved - and are doing so (and are asking Gregory to 
-> take part in that effort).
-
-How it is different from any past forks?
-
-The odium of proving that the existing framework is sufficient was always on
-original authors or current maintainers.
-
-KVM guys were offered assistance from Gregory and had few months to prove that
-they can get the same kind of performance using existing architecture and they
-DID NOT do it.
-
-> The main difference is that Gregory claims that improved performance is not 
-> possible within the existing KVM framework, while the KVM developers disagree. 
-> 
-> The good news is that this is a hard, testable fact.
-> 
-> I think we should try _much_ harder before giving up and forking the ABI of a 
-> healthy project and intentionally inflicting pain on our users.
-
-Then please try harder.  Gregory posted his initial patches in August,
-it is December now and we only see artificial road-blocks instead of code
-from KVM folks.
-
-> And, at minimum, such kinds of things _have to_ be pointed out in pull 
-> requests, because it's like utterly important. In fact i couldnt list any more 
-> important thing to point out in a pull request.
-
-I think that this part should be easily fixable..
-
---
-Bartlomiej Zolnierkiewicz
+Eric Blake             ebb9@byu.net
