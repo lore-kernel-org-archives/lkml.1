@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZLWMvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbZLWMwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbZLWMvV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 07:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZLWMvU
+	id S1755479AbZLWMwg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 07:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZLWMwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 07:51:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:49305 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149AbZLWMvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 07:51:19 -0500
-Date: Wed, 23 Dec 2009 13:51:10 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, tytso@mit.edu,
-       linux-ext4@vger.kernel.org
-Subject: [PULL REQUEST] Ext3, ext4 and quota fixes for 2.6.33-rc2
-Message-ID: <20091223125110.GA3159@quack.suse.cz>
+	Wed, 23 Dec 2009 07:52:35 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:64321 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754163AbZLWMwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 07:52:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=dPRecc5bKHgTlUFsS8Bp7xRS5LkSoyvw8yAUgpONE9hWu3k65xrGEV/hF7AF7px0d6
+         AnoCL4mXb6SYgMhMk6nK/CG4s2LLooOrntNKkTwmR6OuKRRn6Cj3UggD7Ms9fKJyJzJY
+         a/fDVf9HqT5mAKh5FTeAlmmyyC1PZksP8sgPw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1261570834.4937.141.camel@laptop>
+References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
+	 <1261563687.4937.120.camel@laptop>
+	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
+	 <1261565584.4937.124.camel@laptop>
+	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
+	 <1261569112.4937.135.camel@laptop>
+	 <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
+	 <1261570834.4937.141.camel@laptop>
+Date: Wed, 23 Dec 2009 18:52:34 +0600
+Message-ID: <b9df5fa10912230452q6edac4d3wb837a2e550cc5092@mail.gmail.com>
+Subject: Re: SCHED: Is task migration necessary in sched_exec().
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello Linus,
-
-  could you please pull from
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs-2.6.git for_linus
-
-  to get:
-
-Dmitry Monakhov (7):
-      ext3: quota macros cleanup [V2]
-      Add unlocked version of inode_add_bytes() function
-      quota: decouple fs reserved space from quota reservation
-      ext4: Convert to generic reserved quota's space management.
-      quota: Move duplicated code to separate functions
-      ext4: Fix potential quota deadlock
-      ext4: fix sleep inside spinlock issue with quota and dealloc (#14739)
-
-Eric Sandeen (4):
-      ext3: Remove outdated comment about lock_super()
-      ext3: ext3_mark_recovery_complete() doesn't need to use lock_super
-      ext3: Replace lock/unlock_super() with an explicit lock for the orphan list
-      ext3: Replace lock/unlock_super() with an explicit lock for resizing
-
-Jan Kara (2):
-      quota: Fix 64-bit limits setting on 32-bit archs
-      quota: Improve checking of quota file header
-
-Yin Kangkai (1):
-      jbd: jbd-debug and jbd2-debug should be writable
-
-I push ext4 fixes instead of Ted because of quota dependencies. Ext3
-locking changes fix deadlock during filesystem resizing so I hope they're
-fine even for -rc2.
-
-The diffstat is
-
- fs/ext3/inode.c            |    8 +-
- fs/ext3/namei.c            |   28 +++--
- fs/ext3/resize.c           |   35 +++---
- fs/ext3/super.c            |   19 +---
- fs/ext4/ext4.h             |    6 +-
- fs/ext4/inode.c            |   36 +++---
- fs/ext4/mballoc.c          |    6 -
- fs/ext4/super.c            |    5 +
- fs/jbd/journal.c           |    2 +-
- fs/jbd2/journal.c          |    3 +-
- fs/quota/dquot.c           |  288 ++++++++++++++++++++++++--------------------
- fs/quota/quota_v2.c        |    9 +-
- fs/stat.c                  |   10 ++-
- include/linux/ext3_fs_sb.h |    2 +
- include/linux/ext3_jbd.h   |    7 +-
- include/linux/fs.h         |    1 +
- include/linux/quota.h      |    5 +-
- 17 files changed, 253 insertions(+), 217 deletions(-)
-
-							Thanks
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2009-12-23 at 18:04 +0600, Rakib Mullick wrote:
+>  > On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
+>  > > On Wed, 2009-12-23 at 17:35 +0600, Rakib Mullick wrote:
+>
+>  So its a win, right?
+>
+Yes - a fair win. But if load balancer moves other tasks from the runqueue
+(2nd or 3rd task from your ex.) and thats how we also can achive 1/2 of cpu1's
+time , right? Those waiting tasks could have effective 0 cache footprint too.
+If they were not run before - right?
+>
+>
