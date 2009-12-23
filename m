@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZLWXEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZLWXNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZLWXEf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 18:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZLWXEe
+	id S1756110AbZLWXNo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:13:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZLWXNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 18:04:34 -0500
-Received: from mail.windriver.com ([147.11.1.11]:57633 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754264AbZLWXEe (ORCPT
+	Wed, 23 Dec 2009 18:13:43 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:50167 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbZLWXNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 18:04:34 -0500
-Message-ID: <4B32A1EB.2020805@windriver.com>
-Date: Wed, 23 Dec 2009 17:04:11 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       kdb@oss.sgi.com, mingo@elte.hu
-Subject: Re: [PATCH 07/37] kgdb,sparc: Add in kgdb_arch_set_pc for sparc
-References: <1261603190-5036-6-git-send-email-jason.wessel@windriver.com><1261603190-5036-7-git-send-email-jason.wessel@windriver.com><1261603190-5036-8-git-send-email-jason.wessel@windriver.com> <20091223.134837.189694575.davem@davemloft.net>
-In-Reply-To: <20091223.134837.189694575.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Dec 2009 18:13:42 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>
+In-Reply-To: <1261604952.18047.7.camel@localhost>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity>
+	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
+	 <1261599385.13028.142.camel@serenity>  <1261604952.18047.7.camel@localhost>
+Content-Type: text/plain
+Date: Wed, 23 Dec 2009 18:13:33 -0500
+Message-Id: <1261610013.13028.151.camel@serenity>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Dec 2009 23:04:10.0763 (UTC) FILETIME=[3CD2FDB0:01CA8424]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-David Miller wrote:
-> From: Jason Wessel <jason.wessel@windriver.com>
-> Date: Wed, 23 Dec 2009 15:19:20 -0600
->
->   
->> +void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
->> +{
->> +       regs->pc = regs->npc;
->> +       regs->npc = ip;
->> +}
->> +
->>     
->
-> Is this right?
->
-> It should probably be something like:
->
->   
-Just because it didn't crash doesn't mean it is right :-)
+On Wed, 2009-12-23 at 22:49 +0100, Trond Myklebust wrote:
 
-I'll go with your implementation which according to the instruction
-manual is the right way.  This particular function doesn't really get
-exercised with out the arch specific hardware or software single
-stepping code, which is not a part of this series at the moment.
+> > When to send the commit is a complex question to answer.  If you delay
+> > it long enough, the server's flusher threads will have already done most
+> > of the work for you, so commits can be cheap, but you don't have access
+> > to the necessary information to figure this out.  You can't delay it too
+> > long, though, because the unstable pages on the client will grow too
+> > large, creating memory pressure.  I have a second patch, which I haven't
+> > posted yet, that adds feedback piggy-backed on the NFS write response,
+> > which allows the NFS client to free pages proactively.  This greatly
+> > reduces the need to send commit messages, but it extends the protocol
+> > (in a backward-compatible manner), so it could be hard to convince
+> > people to accept.
+> 
+> There are only 2 cases when the client should send a COMMIT: 
+>      1. When it hits a synchronisation point (i.e. when the user calls
+>         f/sync(), or close(), or when the user sets/clears a file
+>         lock). 
+>      2. When memory pressure causes the VM to wants to free up those
+>         pages that are marked as clean but unstable.
+> 
+> We should never be sending COMMIT in any other situation, since that
+> would imply that the client somehow has better information on how to
+> manage dirty pages on the server than the server's own VM.
+> 
+> Cheers
+>   Trond
 
-This fix and the other fix you asked about are both in kgdb-next which
-feeds into linux-next, if you are ultimately ok with the changes, I'll
-add an ack from you as well.
+#2 is the difficult one.  If you wait for memory pressure, you could
+have waited too long, because depending on the latency of the commit,
+you could run into low-memory situations.  Then mayhem ensues, the
+oom-killer gets cranky (if you haven't disabled it), and stuff starts
+failing and/or hanging.  So you need to be careful about setting the
+threshold for generating a commit so that the client doesn't run out of
+memory before the server can respond.
 
-Hopefully there is enough time to get the kdb shape for the next kernel
-merge window.
+Steve
 
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=commitdiff;h=ed088ec6e6e7e245c060d068d333648eff06dd4b
-and
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=commitdiff;h=c5dc61eb8d1c347ff3eadc1bccae07437d85779a
-
-Thanks,
-Jason.
 
