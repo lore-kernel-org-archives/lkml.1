@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZLWMU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZLWMtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZLWMU7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 07:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZLWMU6
+	id S1755338AbZLWMtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 07:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZLWMta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 07:20:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43684 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbZLWMU6 (ORCPT
+	Wed, 23 Dec 2009 07:49:30 -0500
+Received: from mx1.moondrake.net ([212.85.150.166]:35230 "EHLO
+	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752149AbZLWMt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 07:20:58 -0500
-Subject: Re: SCHED: Is task migration necessary in sched_exec().
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
-References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
-	 <1261563687.4937.120.camel@laptop>
-	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
-	 <1261565584.4937.124.camel@laptop>
-	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
-	 <1261569112.4937.135.camel@laptop>
-	 <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Dec 2009 13:20:34 +0100
-Message-ID: <1261570834.4937.141.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 23 Dec 2009 07:49:28 -0500
+X-Greylist: delayed 1288 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Dec 2009 07:49:28 EST
+X-Spam-Virus: No
+Message-ID: <4B320CAA.1030708@mandriva.com>
+Date: Wed, 23 Dec 2009 10:27:22 -0200
+From: Eugeni Dodonov <eugeni@mandriva.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091211 Mandriva/3.0-4mdv2010.1 (2010.1) Thunderbird/3.0
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: PATCH: asus_oled oops in 2.6.32.2
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 18:04 +0600, Rakib Mullick wrote:
-> On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Wed, 2009-12-23 at 17:35 +0600, Rakib Mullick wrote:
-> 
-> >  Do you have a particular workload you worry about or are you merely
-> >  trying to satisfy your curiosity?
-> >
-> No, I don't have any particular workload.
+Hi,
 
-Anyway, look at it this way, suppose you have 4 tasks on 2 cpus, cpu0
-has 3 tasks and cpu1 has 1 task.
+After updating to 2.6.32 kernel, I started experiencing Oopses caused by
+the asus_oled module. After quick investigation, I wrapped this simple
+patch which fixes an Oops in by asus_oled module on 2.6.32.2 kernel,
+caused by incorrect usage of strict_strtoul function call within
+set_enabled and set_disabled functions. This can be triggered by simple
+running the userspace client for asus_old (e.g., 'asusoled -e' or
+'asusoled -d').
 
-The currently running task on cpu0 does exec and gets moved to cpu1,
-even though it gives up time on cpu0, it gains time on cpu1. Because it
-was eligible to 1/3 of cpu0's time, whereas it is eligible to 1/2 of
-cpu1's time.
+--- drivers/staging/asus_oled/asus_oled.c.ori	2009-12-23
+08:56:09.454535290 -0200
++++ drivers/staging/asus_oled/asus_oled.c	2009-12-23 09:04:12.591283411
+-0200
+@@ -194,9 +194,11 @@
+ {
+ 	struct usb_interface *intf = to_usb_interface(dev);
+ 	struct asus_oled_dev *odev = usb_get_intfdata(intf);
+-	int temp = strict_strtoul(buf, 10, NULL);
++	unsigned long value;
++	if (strict_strtoul(buf, 10, &value))
++		return -EINVAL;
 
-So its a win, right?
+-	enable_oled(odev, temp);
++	enable_oled(odev, value);
 
+ 	return count;
+ }
+@@ -207,10 +209,12 @@
+ {
+ 	struct asus_oled_dev *odev =
+ 		(struct asus_oled_dev *) dev_get_drvdata(device);
++	unsigned long value;
 
+-	int temp = strict_strtoul(buf, 10, NULL);
++	if (strict_strtoul(buf, 10, &value))
++		return -EINVAL;
+
+-	enable_oled(odev, temp);
++	enable_oled(odev, value);
+
+ 	return count;
+ }
+
+Please let me know if you need more info.
+
+Thanks.
+
+-- 
+Eugeni Dodonov
