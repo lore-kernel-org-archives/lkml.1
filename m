@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZLWXXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZLWX1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbZLWXXq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 18:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbZLWXXp
+	id S1756108AbZLWX1K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 18:27:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZLWX1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 18:23:45 -0500
-Received: from smtp13.ono.com ([62.42.230.16]:47309 "EHLO resmaa13.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755762AbZLWXXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 18:23:45 -0500
-Date: Thu, 24 Dec 2009 00:23:42 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Problems with ath5k and WPA2 keys
-Message-ID: <20091224002342.59a9a021@werewolf.home>
-X-Mailer: Claws Mail 3.7.3cvs45 (GTK+ 2.19.2; x86_64-unknown-linux-gnu)
+	Wed, 23 Dec 2009 18:27:08 -0500
+Received: from mail.perches.com ([173.55.12.10]:1400 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938AbZLWX1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 18:27:08 -0500
+Subject: [PATCH] scripts/get_maintainer.pl: add support to read patch from
+ STDIN
+From: Joe Perches <joe@perches.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
+References: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Dec 2009 15:27:04 -0800
+Message-ID: <1261610824.1923.58.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
+On Wed, 2009-12-23 at 14:55 +0100, Borislav Petkov wrote:
+> Teach get_maintainer.pl to read a diff from STDIN
 
-With last 2.6.32.2 kernel, I can't connect to my home WiFi router.
-I use WPA2+PSK mode.
+How about this instead?
 
-I have discovered it's related to key length:
+Doesn't need or accept '-' as a trailing option to read stdin.
+Doesn't print usage() after bad options.
+Adds --usage as command line equivalent of --help
 
-one:~# iwconfig wlan0 key s:password
-Error for wireless request "Set Encode" (8B2A) :
-    SET failed on device wlan0 ; Invalid argument.
-one:~# iwconfig wlan0 key s:passwor
-Error for wireless request "Set Encode" (8B2A) :
-    SET failed on device wlan0 ; Invalid argument.
-one:~# iwconfig wlan0 key s:passwo
-Error for wireless request "Set Encode" (8B2A) :
-    SET failed on device wlan0 ; Invalid argument.
-one:~# iwconfig wlan0 key s:passw
+Signed-off-by: Joe Perches <joe@perches.com>
 
-(this last works...)
+ scripts/get_maintainer.pl |  110 ++++++++++++++++++++++++++++-----------------
+ 1 files changed, 69 insertions(+), 41 deletions(-)
 
-So network scripts can not set my key...
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index 445e884..9fe4628 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -122,7 +122,7 @@ if (!GetOptions(
+ 		'k|keywords!' => \$keywords,
+ 		'f|file' => \$from_filename,
+ 		'v|version' => \$version,
+-		'h|help' => \$help,
++		'h|help|usage' => \$help,
+ 		)) {
+     die "$P: invalid argument - use --help if necessary\n";
+ }
+@@ -137,9 +137,9 @@ if ($version != 0) {
+     exit 0;
+ }
+ 
+-if ($#ARGV < 0) {
+-    usage();
+-    die "$P: argument missing: patchfile or -f file please\n";
++if (-t STDIN && !@ARGV) {
++    # We're talking to a terminal, but have no command line arguments.
++    die "$P: missing patchfile or -f file - use --help if necessary\n";
+ }
+ 
+ if ($output_separator ne ", ") {
+@@ -152,14 +152,12 @@ if ($output_rolestats) {
+ 
+ my $selections = $email + $scm + $status + $subsystem + $web;
+ if ($selections == 0) {
+-    usage();
+     die "$P:  Missing required option: email, scm, status, subsystem or web\n";
+ }
+ 
+ if ($email &&
+     ($email_maintainer + $email_list + $email_subscriber_list +
+      $email_git + $email_git_penguin_chiefs + $email_git_blame) == 0) {
+-    usage();
+     die "$P: Please select at least 1 email option\n";
+ }
+ 
+@@ -233,12 +231,18 @@ my @files = ();
+ my @range = ();
+ my @keyword_tvi = ();
+ 
++if (!@ARGV) {
++    push(@ARGV, "&STDIN");
++}
++
+ foreach my $file (@ARGV) {
+-    ##if $file is a directory and it lacks a trailing slash, add one
+-    if ((-d $file)) {
+-	$file =~ s@([^/])$@$1/@;
+-    } elsif (!(-f $file)) {
+-	die "$P: file '${file}' not found\n";
++    if ($file ne "&STDIN") {
++	##if $file is a directory and it lacks a trailing slash, add one
++	if ((-d $file)) {
++	    $file =~ s@([^/])$@$1/@;
++	} elsif (!(-f $file)) {
++	    die "$P: file '${file}' not found\n";
++	}
+     }
+     if ($from_filename) {
+ 	push(@files, $file);
 
-I don't know if this is a problem in iwconfig or in the driver...
 
-Any idea ? Any way to debug this ?
-
-pd: hardware is Acer Aspire One 150:
-
-03:00.0 Ethernet controller: Atheros Communications Inc. AR5001 Wireless Network Adapter (rev 01)
-    Subsystem: Foxconn International, Inc. Device e008
-    Flags: bus master, fast devsel, latency 0, IRQ 18
-    Memory at 35200000 (64-bit, non-prefetchable) [size=64K]
-    Capabilities: [40] Power Management version 2
-    Capabilities: [50] MSI: Enable- Count=1/1 Maskable- 64bit-
-    Capabilities: [60] Express Legacy Endpoint, MSI 00
-    Capabilities: [90] MSI-X: Enable- Count=1 Masked-
-    Capabilities: [100] Advanced Error Reporting
-    Capabilities: [140] Virtual Channel <?>
-    Kernel driver in use: ath5k
-    Kernel modules: ath5k
-
-TIA
-
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2010.0 (Cooker) for x86_64
-Linux 2.6.29.3-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed May
