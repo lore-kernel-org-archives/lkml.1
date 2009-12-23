@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbZLWJwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZLWJwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbZLWJwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 04:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZLWJwP
+	id S1754877AbZLWJwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZLWJw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 04:52:15 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:60887 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752333AbZLWJwO (ORCPT
+	Wed, 23 Dec 2009 04:52:28 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55681 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754763AbZLWJw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 04:52:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=AIiyc07y4bhwLov4FJ4IsdPZ6NsHKyjojOTPT9cMJd0162GELwBI7X99pAJsQ78Wwd
-         NB7YiqS4Mvk8lEgjN0vvvpsggikPi7cn2ieTjtTafDHnhbIHrD0RXyouJpRtO2xKh0qY
-         LRcb/PbYcNu3hGJeCeeDfjpA68fWjpOztVHWk=
-Date: Wed, 23 Dec 2009 09:52:03 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Roger Luethi <rl@hellgate.ch>
-Cc: Andrey Rahmatullin <wrar@altlinux.org>,
-       Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: via_rhine kernel crashes in 2.6.32
-Message-ID: <20091223095203.GA7824@ff.dom.local>
+	Wed, 23 Dec 2009 04:52:28 -0500
+Date: Wed, 23 Dec 2009 10:52:23 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, "Smith, GeoffX" <geoffx.smith@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Michael Stone <michael@laptop.org>
+Subject: Re: [PATCH] prctl: return MCE process flags through pointer
+Message-ID: <20091223095223.GB20539@basil.fritz.box>
+References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1829@orsmsx510.amr.corp.intel.com> <87hbricwz8.fsf@basil.nowhere.org> <20091222173424.980d5d33.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091222152658.GA16043@core.hellgate.ch>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091222173424.980d5d33.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22-12-2009 16:26, Roger Luethi wrote:
-> On Tue, 22 Dec 2009 20:00:45 +0500, Andrey Rahmatullin wrote:
->> On Tue, Dec 22, 2009 at 01:38:17PM +0000, Jarek Poplawski wrote:
->>>>> It looks like napi_disable() should be illegal in ndo_tx_timeout().
->>>>> Here is a patch which moves most of the timeout work to a workqueue,
->>>>> similarly to tg3 etc. It should prevent at least one of reported
->>>>> bugs. Alas I can't even check-compile it at the moment, so let me
->>>>> know on any problems.
->>>> It seems I needlessly changed locking btw, so here it is again.
->>> Hmm... On the other hand, it definitely needs at least _bh now...
->> I've tried this patch. There are lots of "Transmit timed out", but no
->> crashes.
+On Tue, Dec 22, 2009 at 05:34:24PM -0800, Andrew Morton wrote:
+> On Wed, 23 Dec 2009 02:14:51 +0100 Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> ACK. Looks like you guys tracked down the crashing and fixed it (thanks!).
-> I suspect we shouldn't have to reset due to timeouts that often, but that's
-> another story.
+> > "Smith, GeoffX" <geoffx.smith@intel.com> writes:
+> > 
+> > > This patch fixes the semantics of prctl() option PR_MCE_KILL_GET 
+> > > to pass the return value through *arg2.
+> > >
+> > > With this change, the option now follows the same conventions as the
+> > > other "get" options added since 2.6.0, and also brings it into
+> > > conformance with the advice in chapter 16 of Documentation/CodingStyle.
+> > >
+> > > This prctl() option was only added within the last month, so there are
+> > > not any production applications to break.  This patch applies cleanly
+> > > to mainline and to 2.6.32.2 for backporting.
+> > 
+> > It breaks the test suite, the man pages, qemu and one slide deck at least.
+> > 
+> 
+> Should've got it right the first time.
 
-BTW, it seems a change in 2.6.31 might trigger these timeouts more
-often than before. Andrey, could you try if this matters here?
+To be honest it's not fully clear to me what is "wrong" with returning
+the return value with "return".
 
-Thanks,
-Jarek P.
+If there was a security bug or something maybe such a radical step
+as changing a published API would be justified, but for this I'm sceptical.
 
---- (on top of net-2.6 with the previous "Fix scheduling..." patch)
+> 
+> What goes wrong with qemu?
 
-diff -Nurp a/drivers/net/via-rhine.c b/drivers/net/via-rhine.c
---- a/drivers/net/via-rhine.c	2009-12-23 09:28:25.000000000 +0000
-+++ b/drivers/net/via-rhine.c	2009-12-23 09:33:57.000000000 +0000
-@@ -1226,6 +1226,7 @@ static void rhine_tx_timeout(struct net_
- 	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
- 
- 	schedule_work(&rp->reset_task);
-+	netdev_get_tx_queue(dev, 0)->trans_start = jiffies;
- }
- 
- static netdev_tx_t rhine_start_tx(struct sk_buff *skb,
+It's the main current user of this interface currently.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
