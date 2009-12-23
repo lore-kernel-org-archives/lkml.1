@@ -1,96 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZLWTUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbZLWTXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZLWTUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 14:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZLWTUk
+	id S1755234AbZLWTXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 14:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZLWTXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 14:20:40 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:44447 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496AbZLWTUj convert rfc822-to-8bit (ORCPT
+	Wed, 23 Dec 2009 14:23:38 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:53574 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753625AbZLWTXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 14:20:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=KwfX+t6Kt6MnJEYve8mPadV2eDr5nzg14TLQ3VqgFUkNOWFEZj7nj4uqrnAttZmkJO
-         XeeRncgLwmnVqNiaFaBZs3BU72IMjK41RaEwsNJbGXdDu9D1o8anMvCwz4RJtGFmBmpd
-         rDctS7Iqq9J5R5mEIHZ78FYOrTMbnwH5P7Uxw=
+	Wed, 23 Dec 2009 14:23:37 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Eric Blake <ebb9@byu.net>
+Cc: Jean-Pierre =?iso-8859-1?Q?Andr=E9?= 
+	<jean-pierre.andre@wanadoo.fr>,
+       fuse-devel@lists.sourceforge.net, Miklos Szeredi <miklos@szeredi.hu>,
+       Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, ctrn3e8 <ctrn3e8@gmail.com>,
+       bug-coreutils <bug-coreutils@gnu.org>
+Subject: Re: [fuse-devel] utimensat fails to update ctime
+References: <4B2B156D.9040604@byu.net> <87aaxclr4q.fsf@devron.myhome.or.jp>
+	<4B2F7421.10005@byu.net> <4B2F7A95.3010708@byu.net>
+	<87hbrkjrk8.fsf@devron.myhome.or.jp> <4B304D04.6040501@byu.net>
+	<87d427jscr.fsf@devron.myhome.or.jp> <4B3097C4.3060803@wanadoo.fr>
+	<874onjjnln.fsf@devron.myhome.or.jp> <4B30B67A.7080703@wanadoo.fr>
+	<87ljgvi1an.fsf@devron.myhome.or.jp> <4B30F0C9.2020702@wanadoo.fr>
+	<87my1aevro.fsf@devron.myhome.or.jp> <4B3212ED.4090208@byu.net>
+Date: Thu, 24 Dec 2009 04:23:28 +0900
+In-Reply-To: <4B3212ED.4090208@byu.net> (Eric Blake's message of "Wed, 23 Dec
+	2009 05:54:05 -0700")
+Message-ID: <87vdfxmr4f.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0908021047280.15557@ask.diku.dk>
-References: <Pine.LNX.4.64.0908021047280.15557@ask.diku.dk>
-Date: Wed, 23 Dec 2009 20:20:37 +0100
-X-Google-Sender-Auth: 37ada2ba8acdede7
-Message-ID: <10f740e80912231120r363c4e0cg9b10053788fc16d9@mail.gmail.com>
-Subject: Re: [PATCH 9/15] arch/m68k: Use DIV_ROUND_CLOSEST
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 2, 2009 at 09:47, Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
-> but is perhaps more readable.
+Eric Blake <ebb9@byu.net> writes:
 
-Thanks, applied.
+> By the way, is there any reliable way, other than uname() and checking for
+> a minimum kernel version, to tell if all file systems will properly
+> support UTIME_OMIT?
 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
->
-> // <smpl>
-> @haskernel@
-> @@
->
-> #include <linux/kernel.h>
->
-> @depends on haskernel@
-> expression x,__divisor;
-> @@
->
-> - (((x) + ((__divisor) / 2)) / (__divisor))
-> + DIV_ROUND_CLOSEST(x,__divisor)
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
->
-> ---
->  arch/m68k/amiga/config.c            |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/m68k/amiga/config.c b/arch/m68k/amiga/config.c
-> index 6e56275..002b9b0 100644
-> --- a/arch/m68k/amiga/config.c
-> +++ b/arch/m68k/amiga/config.c
-> @@ -480,7 +480,7 @@ static void __init amiga_sched_init(irq_handler_t timer_routine)
->        static struct resource sched_res = {
->                .name = "timer", .start = 0x00bfd400, .end = 0x00bfd5ff,
->        };
-> -       jiffy_ticks = (amiga_eclock+HZ/2)/HZ;
-> +       jiffy_ticks = DIV_ROUND_CLOSEST(amiga_eclock, HZ);
->
->        if (request_resource(&mb_resources._ciab, &sched_res))
->                printk("Cannot allocate ciab.ta{lo,hi}\n");
->
+Um... sorry, I don't know. And it might be hard to detect efficiently if
+the workaround is enough efficient like one fstat() syscall (Pass fd to
+kernel.  I.e. just read from cached inode).
 
+> For coreutils 8.3, we will be inserting a workaround where instead of
+> using UTIME_OMIT, we call fstatat() in advance of utimensat() and pass
+> the original timestamp down.  But it would be nice to avoid the
+> penalty of the extra stat if there were a reliable way to ensure that,
+> regardless of file system, the use of UTIME_OMIT will be honored.
+> After all, coreutils wants touch(1) to work regardless of how old the
+> user's kernel and file system drivers are.
 
+Or it would depend on coreutils policy though, personally I think it's
+ok that it ignores the bug as known fs bug, otherwise coreutils would
+need to collect workarounds on several filesystems of several OSes.
 
+Thanks.
 -- 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
