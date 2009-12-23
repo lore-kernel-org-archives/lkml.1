@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZLWO1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZLWO3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbZLWO1N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 09:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZLWO1M
+	id S1756082AbZLWO3L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 09:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbZLWO3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 09:27:12 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:14307 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752746AbZLWO1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 09:27:12 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4B3228BC.1080204@tremplin-utc.net>
-Date: Wed, 23 Dec 2009 15:27:08 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Mandriva/3.0-4mdv2010.1 (2010.1) Thunderbird/3.0
+	Wed, 23 Dec 2009 09:29:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28888 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756040AbZLWO3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 09:29:01 -0500
+Message-ID: <4B32290D.8090008@redhat.com>
+Date: Wed, 23 Dec 2009 16:28:29 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org, perex@perex.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [2.6.33-rc1] [SOUND] HDA: high cpu usage, noise
-References: <8db1092f0912200927y7cdab36ftd1f73d56cd89763f@mail.gmail.com>	<s5hmy1cpqo4.wl%tiwai@suse.de>	<8db1092f0912211012mcdd6639oaaf0bddc118e7d66@mail.gmail.com>	<4B2FC7B2.7000001@tremplin-utc.net>	<s5hk4wf1obu.wl%tiwai@suse.de>	<4B308E28.1090609@tremplin-utc.net> <s5hk4wfz7tm.wl%tiwai@suse.de>
-In-Reply-To: <s5hk4wfz7tm.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=UTF-8
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <200912231407.20130.bzolnier@gmail.com> <4B321B9F.6030707@redhat.com> <200912231508.25355.bzolnier@gmail.com>
+In-Reply-To: <200912231508.25355.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 22-12-09 10:17, Takashi Iwai schreef:
-:
->>> Another thing to try is to replace the whole HD-audio stack with the
->>> last working one (was it 2.6.32?), and check whether it works with
->>> 2.6.32 core.
->> Could you give more details on how to do this?
->> Does it consist in taking the sound/ directory of 2.6.32 and copying it
->> over 2.6.33-rc1 ? Or less files?
-> 
-> I'd try first only sound/pci/hda/* files.
-> 
-Brute-force reverting these files to the version of 2.6.32.2 does fix
-the problem.
+On 12/23/2009 04:08 PM, Bartlomiej Zolnierkiewicz wrote:
+>
+>> The device model is exposed to the guest.  If you change it, the guest
+>> breaks.
+>>      
+> Huh?  Shouldn't non-vbus aware guests continue to work just fine?
+>    
 
-When I find time, I'll try to git bisect on this particular directory...
-but anyone willing to try to beat me at this is welcome, as Christmas is
-going to keep me rather busy ;-)
+Sure.  But we aren't merging this code in order not to use it.  If we 
+switch development focus to vbus, we have to ask everyone who's riding 
+on virtio to switch.  Alternatively we maintain both models.
 
-Eric
+If vbus was the only way to get this kind of performance, I know what 
+I'd choose.  But if it isn't, why inflict the change on users?
+
+Consider a pxe-booting guest (or virtio-blk vs. a future veblk).  Is 
+switching drivers in initrd something you want your users to do? [1]
+
+One of the advantages of virtualization is stable hardware.  I don't 
+want to let it go without a very good reason.
+
+[1] I remember the move from /dev/hda to /dev/sda a few years ago, it 
+isn't a good memory.
+
+-- 
+error compiling committee.c: too many arguments to function
+
