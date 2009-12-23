@@ -1,33 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZLWRQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZLWADr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZLWRQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 12:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZLWRQT
+	id S1755555AbZLWADr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 19:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZLWADq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 12:16:19 -0500
-Received: from toroondcbmts02-srv.bellnexxia.net ([207.236.237.36]:38520 "EHLO
-	toroondcbmts02-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753070AbZLWRQS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 12:16:18 -0500
-X-Greylist: delayed 62644 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Dec 2009 12:16:18 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhcTAKTjMEvP7O0f/2dsb2JhbACDb4t4NgGKWIE+qlaQBYEvgi5WBA
-Message-ID: <20091222185150.Y6460.6704.root@toroondcbfep02>
-Date: Tue, 22 Dec 2009 18:51:49 -0500
-From: THE NATIONAL <rackemupbilliards@bellnet.ca>
-Reply-To: mrlappistone@admin.in.th
-Subject: Christmas Offer!!!
+	Tue, 22 Dec 2009 19:03:46 -0500
+Received: from sous-sol.org ([216.99.217.87]:37574 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751488AbZLWADp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 19:03:45 -0500
+Date: Tue, 22 Dec 2009 16:02:10 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+Message-ID: <20091223000210.GA6518@sequoia.sous-sol.org>
+References: <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box> <4B30F375.6050103@codemonkey.ws> <20091222173326.GH10314@basil.fritz.box> <4B3136AA.50204@codemonkey.ws>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: from 41.204.224.12 by webmail.en.bellnet.ca; Tue, 22 Dec 2009 18:51:49 -0500
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B3136AA.50204@codemonkey.ws>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You've been award 390,000.00GBP in The National Christmas Offer contact with Name:Address:Age:Sex:Telephone for claims.
+* Anthony Liguori (anthony@codemonkey.ws) wrote:
+> The
+> virtio-net setup probably made extensive use of pinning and other tricks  
+> to make things faster than a normal user would see them.  It ends up  
+> creating a perfect combination of batching which is pretty much just  
+> cooking the mitigation schemes to do extremely well for one benchmark.
 
+Just pinning, the rest is stock virtio features like mergeable rx buffers,
+GRO, GSO (tx mitigation is actually disabled).  Certainly doesn't show
+throughput in terms of cpu cycle cost (scaling) nor latency per-packet
+(exit and mitigation).
+
+thanks,
+-chris
