@@ -1,49 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZLWADr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZLWAPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbZLWADr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 19:03:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZLWADq
+	id S1752575AbZLWAPS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 19:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZLWAPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 19:03:46 -0500
-Received: from sous-sol.org ([216.99.217.87]:37574 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751488AbZLWADp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 19:03:45 -0500
-Date: Tue, 22 Dec 2009 16:02:10 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
+	Tue, 22 Dec 2009 19:15:15 -0500
+Received: from mga02.intel.com ([134.134.136.20]:2846 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751159AbZLWAPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 19:15:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,439,1257148800"; 
+   d="scan'208";a="478482351"
+Subject: Re: [patch 1/2] sched: Change the nohz ilb logic from pull to push
+ model
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-Message-ID: <20091223000210.GA6518@sequoia.sous-sol.org>
-References: <4B2FA655.6030205@gmail.com> <4B2FAE7B.9030005@codemonkey.ws> <4B2FB3F1.5080808@gmail.com> <4B300EF8.8010602@codemonkey.ws> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <20091222162110.GG10314@basil.fritz.box> <4B30F375.6050103@codemonkey.ws> <20091222173326.GH10314@basil.fritz.box> <4B3136AA.50204@codemonkey.ws>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B3136AA.50204@codemonkey.ws>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+In-Reply-To: <1261397595.4314.72.camel@laptop>
+References: <20091211012748.267627000@intel.com>
+	 <20091211013056.305998000@intel.com>  <1261397595.4314.72.camel@laptop>
+Content-Type: text/plain
+Date: Tue, 22 Dec 2009 16:15:12 -0800
+Message-Id: <1261527312.16916.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Anthony Liguori (anthony@codemonkey.ws) wrote:
-> The
-> virtio-net setup probably made extensive use of pinning and other tricks  
-> to make things faster than a normal user would see them.  It ends up  
-> creating a perfect combination of batching which is pretty much just  
-> cooking the mitigation schemes to do extremely well for one benchmark.
+On Mon, 2009-12-21 at 04:13 -0800, Peter Zijlstra wrote:
+> On Thu, 2009-12-10 at 17:27 -0800, venkatesh.pallipadi@intel.com wrote:
+> 
+> > @@ -4507,12 +4507,45 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
+> >  }
+> >  
+> >  #ifdef CONFIG_NO_HZ
+> > +
+> > +/*
+> > + * idle load balancing details
+> > + * - One of the idle CPUs nominates itself as idle load_balancer, while
+> > + *   entering idle.
+> > + * - With previous logic, this idle load balancer CPU will not go into
+> > + *   tickless mode when it is idle and does the idle load balancing for
+> > + *   all the idle CPUs.
+> > + * - With new logic, this idle load balancer CPU will also go into
+> > + *   tickless mode when it is idle, just like all other idle CPUs
+> > + * - When one of the busy CPUs notice that there may be an idle rebalancing
+> > + *   needed, they will kick the idle load balancer, which then does idle
+> > + *   load balancing for all the idle CPUs.
+> > + * - As idle load balancing looks at the load of all the CPUs, not all busy
+> > + *   CPUs need to do this idle load balancer kick.
+> > + * - first_pick_cpu is the one of the busy CPUs which will kick
+> > + *   idle load balancer when it has more than one process active. This
+> > + *   eliminates the need for idle load balancing altogether when we have
+> > + *   only one running process in the system (common case).
+> > + * - If there are more than one busy CPU, idle load balancer may have
+> > + *   to run for active_load_balance to happen (i.e., two busy CPUs are
+> > + *   SMT or core siblings and can run better if they move to different
+> > + *   physical CPUs). So, second_pick_cpu is the second of the busy CPUs
+> > + *   which will kick idle load balancer as soon as it has any load.
+> > + * - With previous logic, idle load balancer used to run at every tick.
+> > + *   With new logic, idle load balancer tracks the rq->next_balance for all
+> > + *   the idle CPUs and does idle load balancing only when needed.
+> > + */
+> 
+> Right so like said before, this comments needs a rewrite.
 
-Just pinning, the rest is stock virtio features like mergeable rx buffers,
-GRO, GSO (tx mitigation is actually disabled).  Certainly doesn't show
-throughput in terms of cpu cycle cost (scaling) nor latency per-packet
-(exit and mitigation).
+Agreed. Will change this with patch refresh.
 
-thanks,
--chris
+> 
+> >  static struct {
+> >  	atomic_t load_balancer;
+> > -	cpumask_var_t cpu_mask;
+> > -	cpumask_var_t ilb_grp_nohz_mask;
+> > +	atomic_t first_pick_cpu;
+> > +	atomic_t second_pick_cpu;
+> > +	cpumask_var_t idle_cpus_mask;
+> > +	cpumask_var_t tmp_nohz_mask;
+> 
+> I don't mind the rename, but tmp_nohz_mask is a really bad name.
+> 
+> > +	unsigned long next_balance;	/* in jiffy units */
+> >  } nohz ____cacheline_aligned = {
+> >  	.load_balancer = ATOMIC_INIT(-1),
+> > +	.first_pick_cpu = ATOMIC_INIT(-1),
+> > +	.second_pick_cpu = ATOMIC_INIT(-1),
+> >  };
+> >  
+> >  int get_nohz_load_balancer(void)
+> 
+> >  /*
+> > + * Kick a CPU to do the nohz balancing, if it is time for it. We pick the
+> > + * nohz_load_balancer CPU (if there is one) otherwise fallback to any idle
+> > + * CPU (if there is one).
+> > +*/
+> > +static void nohz_balancer_kick(int cpu)
+> > +{
+> > +	int ilb_cpu;
+> > +
+> > +	nohz.next_balance++;
+> > +
+> > +	ilb_cpu = get_nohz_load_balancer();
+> > +	if (ilb_cpu < 0) {
+> > +		ilb_cpu = cpumask_first(nohz.idle_cpus_mask);
+> > +		if (ilb_cpu >= nr_cpu_ids)
+> > +			return;
+> > +	}
+> > +
+> > +	if (!cpu_rq(ilb_cpu)->nohz_balance_kick) {
+> > +		cpu_rq(ilb_cpu)->nohz_balance_kick = 1;
+> > +		resched_cpu(ilb_cpu);
+> > +	}
+> > +	return;
+> > +}
+> 
+> So here you simply send an resched-ipi, which requires the below hack in
+> schedule()?
+> 
+> 
+> > @@ -4673,28 +4722,20 @@ int select_nohz_load_balancer(int stop_tick)
+> >  			if (atomic_cmpxchg(&nohz.load_balancer, cpu, -1) != cpu)
+> >  				BUG();
+> >  
+> > +			return;
+> >  		}
+> >  
+> > +		cpumask_set_cpu(cpu, nohz.idle_cpus_mask);
+> > +		atomic_cmpxchg(&nohz.first_pick_cpu, cpu, -1);
+> > +		atomic_cmpxchg(&nohz.second_pick_cpu, cpu, -1);
+> 
+> If you were to use nr_cpu_ids here instead of -1, you get more
+> consistent code in nohz_balancer_kick().
+
+Yes. Will change.
+
+> 
+> 
+> > +	ret = atomic_cmpxchg(&nohz.first_pick_cpu, -1, cpu);
+> > +	if (ret == -1 || ret == cpu) {
+> > +		atomic_cmpxchg(&nohz.second_pick_cpu, cpu, -1);
+> > +		if (rq->nr_running > 1)
+> > +			return 1;
+> > +	} else {
+> > +		ret = atomic_cmpxchg(&nohz.second_pick_cpu, -1, cpu);
+> > +		if (ret == -1 || ret == cpu) {
+> > +			if (rq->nr_running)
+> > +				return 1;
+> >  		}
+> >  	}
+> 
+> Looked very funny, and took a while to understand why you're doing that,
+> but yeah, I can't see a better way of doing it either.
+> 
+> The comments confused me more than helped me understand it.
+
+This is the least expensive way I could think of. Without dealing with
+cpu_masks. I knew this was not very clean. Thats the reason I had it in
+a separate function, so that we can change it locally if we can find any
+better way to deal with it.
+
+> 
+> > @@ -5446,8 +5490,19 @@ need_resched_nonpreemptible:
+> >  
+> >  	pre_schedule(rq, prev);
+> >  
+> > -	if (unlikely(!rq->nr_running))
+> > +	if (unlikely(!rq->nr_running)) {
+> > +#ifdef CONFIG_NO_HZ
+> > +		if (rq->nohz_balance_kick) {
+> > +			spin_unlock_irq(&rq->lock);
+> > +			nohz_idle_balance(cpu, rq);
+> > +			spin_lock_irq(&rq->lock);
+> > +		} else {
+> > +			idle_balance(cpu, rq);
+> > +		}
+> > +#else
+> >  		idle_balance(cpu, rq);
+> > +#endif
+> > +	}
+> 
+> And I think this is the wrong kind of trade-off, complicating the
+> schedule()/newidle path for nohz idle balancing.
+> 
+> nohz_balancer_kick() seems like the perfect place to use something like
+> send_remote_softirq().
+
+Hmmm. I didn't know send_remote_softirq existed in mainline. I agree
+that doing this outside the common path will be better. Let me try using
+send_remote_softirq and followup on this.
+
+Thanks,
+Venki
+
+
