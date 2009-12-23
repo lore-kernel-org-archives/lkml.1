@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbZLWBej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752391AbZLWBeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbZLWBej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 20:34:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZLWBeh
+	id S1752391AbZLWBeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 20:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZLWBeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 20:34:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38397 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751310AbZLWBeh (ORCPT
+	Tue, 22 Dec 2009 20:34:23 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:3176 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751870AbZLWBeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 20:34:37 -0500
-Date: Tue, 22 Dec 2009 17:34:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Smith, GeoffX" <geoffx.smith@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Michael Stone <michael@laptop.org>
-Subject: Re: [PATCH] prctl: return MCE process flags through pointer
-Message-Id: <20091222173424.980d5d33.akpm@linux-foundation.org>
-In-Reply-To: <87hbricwz8.fsf@basil.nowhere.org>
-References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1829@orsmsx510.amr.corp.intel.com>
-	<87hbricwz8.fsf@basil.nowhere.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 Dec 2009 20:34:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=YKSz3I/Z/J+l4AtnaEWIdBzGujPexzts6TR75OfPCR6j9IkkB6iuNZrJGT3MU3o7r3
+         4jbeBFdQlxMeBfo1GlkDwta1pVs1C7IJcetkyEs/DB7jRIgeZbxreJtyhMxUW0EmkI+N
+         NJ8yTNoh6rqdaktAQqp21DaqAQXgEf5BZkr3k=
+Message-ID: <4B31742B.9040809@gmail.com>
+Date: Wed, 23 Dec 2009 02:36:43 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ieee80211: add missing parentheses
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Dec 2009 02:14:51 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+not(!) has a higher precedence than bit and(&).
 
-> "Smith, GeoffX" <geoffx.smith@intel.com> writes:
-> 
-> > This patch fixes the semantics of prctl() option PR_MCE_KILL_GET 
-> > to pass the return value through *arg2.
-> >
-> > With this change, the option now follows the same conventions as the
-> > other "get" options added since 2.6.0, and also brings it into
-> > conformance with the advice in chapter 16 of Documentation/CodingStyle.
-> >
-> > This prctl() option was only added within the last month, so there are
-> > not any production applications to break.  This patch applies cleanly
-> > to mainline and to 2.6.32.2 for backporting.
-> 
-> It breaks the test suite, the man pages, qemu and one slide deck at least.
-> 
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Should've got it right the first time.
+I think this one was not yet reported.
 
-What goes wrong with qemu?
+diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+index d397f1d..0aaa30f 100644
+--- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+@@ -718,7 +718,7 @@ int ieee80211_wx_get_encode_ext(struct ieee80211_device *ieee,
+ 	} else
+ 		idx = ieee->tx_keyidx;
+ 
+-	if (!ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY &&
++	if (!(ext->ext_flags & IW_ENCODE_EXT_GROUP_KEY) &&
+ 	    ext->alg != IW_ENCODE_ALG_WEP)
+ 		if (idx != 0 || ieee->iw_mode != IW_MODE_INFRA)
+ 			return -EINVAL;
