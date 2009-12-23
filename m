@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbZLWV7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZLWWAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbZLWV7L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbZLWV7F
+	id S1757449AbZLWWAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 17:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbZLWWAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:59:05 -0500
-Received: from mail.perches.com ([173.55.12.10]:1390 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757177AbZLWV7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:59:04 -0500
-Subject: Re: get_maintainers.pl & acer-wmi
-From: Joe Perches <joe@perches.com>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org, len.brown@intel.com
-In-Reply-To: <200912232135.33356.carlos@strangeworlds.co.uk>
-References: <200912232135.33356.carlos@strangeworlds.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Dec 2009 13:59:02 -0800
-Message-ID: <1261605542.1923.37.camel@Joe-Laptop.home>
+	Wed, 23 Dec 2009 17:00:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39314
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755768AbZLWWAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 17:00:44 -0500
+Date: Wed, 23 Dec 2009 14:00:46 -0800 (PST)
+Message-Id: <20091223.140046.39189587.davem@davemloft.net>
+To: jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       kdb@oss.sgi.com, mingo@elte.hu
+Subject: Re: [PATCH 15/37] sparc,sunzilog: Add console polling support for
+ sunzilog serial driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B3291AD.6070104@windriver.com>
+References: <1261603190-5036-16-git-send-email-jason.wessel@windriver.com>
+	<20091223.135028.112586698.davem@davemloft.net>
+	<4B3291AD.6070104@windriver.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 21:35 +0000, Carlos Corbacho wrote:
-> Hi Joe,
+From: Jason Wessel <jason.wessel@windriver.com>
+Date: Wed, 23 Dec 2009 15:54:53 -0600
 
-Hi Carlos.
-
-> We're getting some odd results out of get_maintainers.pl for acer-wmi.
+> David Miller wrote:
+>> From: Jason Wessel <jason.wessel@windriver.com>
+>> Date: Wed, 23 Dec 2009 15:19:28 -0600
+>>
+>>   
+>>> +static void sunzilog_put_poll_char(struct uart_port *port,
+>>> +			unsigned char ch)
+>>> +{
+>>> +	struct uart_sunzilog_port *up = (struct uart_sunzilog_port *)port;
+>>> +
+>>> +	sunzilog_putchar(&up->port, ch);
+>>> +	udelay(2);
+>>> +
+>>> +}
+>>> +#endif /* CONFIG_CONSOLE_POLL */
+>>>     
+>>
+>> Just curious, what is the udelay() for?
+>>   
 > 
-> ccorbacho@pacifica:~/src/kernel/linux-2.6$ perl scripts/get_maintainer.pl -f 
-> drivers/platform/x86/acer-wmi.c
-> 
-> Carlos Corbacho <carlos@strangeworlds.co.uk>
-> John W. Linville <linville@tuxdriver.com>
-> Len Brown <len.brown@intel.com>
-> Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Johannes Berg <johannes@sipsolutions.net>
-> linux-kernel@vger.kernel.org
-> 
-> Which is odd, as I'm the only maintainer of acer-wmi, so why does it pull in 
-> all the other names above?
+> This was copied from zm.c driver.  I don't think the HW needs it, I'll
+> retest and purge it.
+ ...
+> Consider it done.
 
-You have git installed.
-
-get_maintainer.pl by default uses git commit history and searches
-for signatures.
-
-These are people that have added "acked-by", "signed-off-by",
-"reviewed-by" or any other "by" lines in the git commits.
-
-$ ./scripts/get_maintainer.pl -f drivers/platform/x86/acer-wmi.c
-Carlos Corbacho <carlos@strangeworlds.co.uk>
-John W. Linville <linville@tuxdriver.com>
-Len Brown <len.brown@intel.com>
-Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Johannes Berg <johannes@sipsolutions.net>
-linux-kernel@vger.kernel.org
-
-If you want to not use git history, add --nogit
-
-$ ./scripts/get_maintainer.pl -f --nogit drivers/platform/x86/acer-wmi.c
-Carlos Corbacho <carlos@strangeworlds.co.uk>
-linux-kernel@vger.kernel.org
-
-With the latest version of get_maintainer, you could add
---rolestats and see how many of the commits were signed
-by each person.
-
-$ ./scripts/get_maintainer.pl -f --rolestats drivers/platform/x86/acer-wmi.c
-Carlos Corbacho <carlos@strangeworlds.co.uk> (maintainer:ACER WMI LAPTOP E...,commit_signer:4/11=36%)
-John W. Linville <linville@tuxdriver.com> (commit_signer:5/11=45%)
-Len Brown <len.brown@intel.com> (commit_signer:4/11=36%)
-Alan Jenkins <alan-jenkins@tuffmail.co.uk> (commit_signer:3/11=27%)
-Johannes Berg <johannes@sipsolutions.net> (commit_signer:2/11=18%)
-linux-kernel@vger.kernel.org (open list)
-
-
-
+Thanks.
