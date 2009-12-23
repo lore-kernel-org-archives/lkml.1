@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbZLWQP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbZLWQXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbZLWQP4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 11:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZLWQPz
+	id S1756281AbZLWQXl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 11:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZLWQXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 11:15:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51490 "EHLO ogre.sisk.pl"
+	Wed, 23 Dec 2009 11:23:41 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51001 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752800AbZLWQPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 11:15:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Regression, 2.6.33-rc1->current git] NULL pointer in usb_serial_probe() introduced by the recent kfifo changes
-Date: Wed, 23 Dec 2009 17:16:40 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912222304090.14449-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912222304090.14449-100000@netrider.rowland.org>
+	id S1753058AbZLWQXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 11:23:40 -0500
+Date: Wed, 23 Dec 2009 08:19:32 -0800
+From: Greg KH <gregkh@suse.de>
+To: Simon Horman <horms@verge.net.au>
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/7] [patch] DT3155: Use pci_get_device
+Message-ID: <20091223161932.GB26520@suse.de>
+References: <20091223085448.619253793@vergenet.net> <20091223085551.921624544@vergenet.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912231716.41004.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091223085551.921624544@vergenet.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 December 2009, Alan Stern wrote:
-> On Wed, 23 Dec 2009, Rafael J. Wysocki wrote:
+On Wed, Dec 23, 2009 at 07:54:49PM +1100, Simon Horman wrote:
+> The use of pci_find_device() is deprecated.
 > 
-> > Hi,
-> > 
-> > Something like the patch below is necessary to fix a new NULL pointer deref
-> > in usb_serial_probe() that appeared after the recent kfifo changes (in short,
-> > the kfifo changes modified the semantics of kfifo_alloc() that
-> > usb_serial_probe() reiled on).
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> >  drivers/usb/serial/usb-serial.c |   10 +++++++++-
-> >  1 file changed, 9 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/drivers/usb/serial/usb-serial.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/usb/serial/usb-serial.c
-> > +++ linux-2.6/drivers/usb/serial/usb-serial.c
-> > @@ -595,8 +595,10 @@ static void port_release(struct device *
-> >  	usb_free_urb(port->write_urb);
-> >  	usb_free_urb(port->interrupt_in_urb);
-> >  	usb_free_urb(port->interrupt_out_urb);
-> > -	if (!IS_ERR(port->write_fifo) && port->write_fifo)
-> > +	if (port->write_fifo) {
-> >  		kfifo_free(port->write_fifo);
-> > +		kfree(port->write_fifo);
-> > +	}
-> >  	kfree(port->bulk_in_buffer);
-> >  	kfree(port->bulk_out_buffer);
-> >  	kfree(port->interrupt_in_buffer);
-> > @@ -939,6 +941,12 @@ int usb_serial_probe(struct usb_interfac
-> >  			dev_err(&interface->dev, "No free urbs available\n");
-> >  			goto probe_error;
-> >  		}
-> > +		port->write_fifo = kzalloc(sizeof(struct kfifo), GFP_KERNEL);
-> > +		if (!port->write_fifo) {
-> > +			dev_err(&interface->dev,
-> > +				"Couldn't allocate write_fifo\n");
-> > +			goto probe_error;
-> > +		}
-> >  		if (kfifo_alloc(port->write_fifo, PAGE_SIZE, GFP_KERNEL))
-> >  			goto probe_error;
-> >  		buffer_size = le16_to_cpu(endpoint->wMaxPacketSize);
+> Signed-off-by: Simon Horman <horms@verge.net.au>
 > 
-> Although this would mean further changes elsewhere, doesn't it make
-> more sense to embed the struct kfifo directly in the usb_serial_port
-> structure instead of allocating it dynamically?
+> --- 
+> 
+> Compile tested only.
+> 
+> Alternatively, if pci_find_device() really needs to be used
+> then this code needs to depend on PCI_LEGACY.
+> 
+> Index: gregkh-2.6/drivers/staging/dt3155/dt3155_drv.c
+> ===================================================================
+> --- gregkh-2.6.orig/drivers/staging/dt3155/dt3155_drv.c	2009-12-23 18:41:46.000000000 +1100
+> +++ gregkh-2.6/drivers/staging/dt3155/dt3155_drv.c	2009-12-23 18:42:29.000000000 +1100
+> @@ -963,7 +963,7 @@ static int find_PCI (void)
+>    unsigned long base;
+>    unsigned char irq;
+>  
+> -  while ((pci_dev = pci_find_device
+> +  while ((pci_dev = pci_get_device
 
-I guess it would, but I wanted to avoid making any further changes.
+You can't just replace these two functions, they operate differently
+with regard to the reference counting logic.  Otherwise it wouldn't make
+sense to have 2 different functions :)
 
-Rafael
+So I can't apply this.
+
+thanks,
+
+greg k-h
