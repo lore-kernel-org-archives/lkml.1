@@ -1,350 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZLWA12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZLWAaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbZLWA12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Dec 2009 19:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZLWA1U
+	id S1755548AbZLWAaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 19:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZLWAaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Dec 2009 19:27:20 -0500
-Received: from mga11.intel.com ([192.55.52.93]:2595 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755416AbZLWA1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Dec 2009 19:27:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,438,1257148800"; 
-   d="scan'208";a="758551594"
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 3/3] ioat2,3: put channel hardware in known state at init
-To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: maciej.sosnowski@intel.com, <stable@kernel.org>,
-       Simon Horman <horms@verge.net.au>,
-       Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 22 Dec 2009 17:26:06 -0700
-Message-ID: <20091223002606.32335.87363.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20091223002518.32335.27768.stgit@dwillia2-linux.ch.intel.com>
-References: <20091223002518.32335.27768.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGIT/0.14.3
+	Tue, 22 Dec 2009 19:30:12 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:42936 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbZLWAaK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Dec 2009 19:30:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=o1iIxkiKgSFe1Xyu+/j6mFGxcNuNf5A8GM6EtYVKt4oMrtlzlHdbqAmAy4ZUNsr0e0
+         SCdVNDxUxFUKrA4Xu6VBBmOR5LWk5Mz6XpAsmC1LesAp6F97DyTVb//0Y0EVK2j/yITs
+         JKDuWOP6Iqw+VFNjI/AyzBSiWscSGn7nJvAEk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091222135124.GR4489@kernel.dk>
+References: <20091222024755.GA5725@orion> <20091222135124.GR4489@kernel.dk>
+Date: Wed, 23 Dec 2009 03:30:08 +0300
+Message-ID: <a4423d670912221630u689ad0d4j2dd2f2dd4bb4140c@mail.gmail.com>
+Subject: Re: 2.6.33-rc1: NULL pointer dereference at wb_do_writeback()
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Put the ioat2 and ioat3 state machines in the halted state with all
-errors cleared.
+2009/12/22 Jens Axboe <jens.axboe@oracle.com>:
+> On Tue, Dec 22 2009, Alexander Beregalov wrote:
+>> Hi Jens
+>>
+>> The kernel is v2.6.33-rc1-154-gf7b84a6ba with few patches from
+>> Frederic's reiserbkl/reiserfs/kill-bkl tree, seems unrelated.
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at 00000001
+>> IP: [<c10aec3b>] wb_do_writeback+0x6b/0x1a0
+>> *pde = 00000000
+>> Oops: 0000 [#1]
+>> last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
+>> Modules linked in: hwmon_vid sata_sil i2c_nforce2
+>>
+>> Pid: 993, comm: <AB>lush-8: Not tainted 2.6.33-rc1-00160-gdaa84dd #1 NF7-S/NF7,NF7-V (nVidia-nForce2)/
+>> EIP: 0060:[<c10aec3b>] EFLAGS: 00010246 CPU: 0
+>> EIP is at wb_do_writeback+0x6b/0x1a0
+>> EAX: 00000000 EBX: 00000001 ECX: 00000000 EDX: 00000000
+>> ESI: ffff94e5 EDI: f6ad024c EBP: f608bf70 ESP: f608bf38
+>>  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+>> Process <AB>lush-8: (pid: 993, ti=f608a000 task=f65914f0 task.ti=f608a000)
+>> Stack:
+>>  00000002 00000001 00000000 c10aebf0 00000000 00000000 f6ad01a4 00000f1b
+>> <0> 00000292 000001f4 ffff94e5 000001f4 ffff94e5 f6ad01a4 f608bf84 c10aedbb
+>> <0> f6ad0120 f6ad01a4 c107a010 f608bf9c c107a067 00000000 f70a9eec f6ad01a4
+>> Call Trace:
+>>  [<c10aebf0>] ? wb_do_writeback+0x20/0x1a0
+>>  [<c10aedbb>] ? bdi_writeback_task+0x4b/0x80
+>>  [<c107a010>] ? bdi_start_fn+0x0/0xb0
+>>  [<c107a067>] ? bdi_start_fn+0x57/0xb0
+>>  [<c107a010>] ? bdi_start_fn+0x0/0xb0
+>>  [<c103decc>] ? kthread+0x6c/0x80
+>>  [<c103de60>] ? kthread+0x0/0x80
+>>  [<c100303a>] ? kernel_thread_helper+0x6/0x1c
+>> Code: 00 c7 04 24 02 00 00 00 e8 53 1f fa ff 8b 1f 8b 03 0f 18 00 90 39 fb 74
+>> 1c 8b 55 e0 8b 42 0c 0f a3 43 10 19 d2 85 d2 75 77 8b 1b <8b> 13 0f 18 02 90 39
+>> df 75 ea 31 db 90 b9 48 ec 0a c1 ba 01 00
+>> EIP: [<c10aec3b>] wb_do_writeback+0x6b/0x1a0 SS:ESP 0068:f608bf38
+>> CR2: 0000000000000001
+>> ---[ end trace 6a300b1deaf502c3 ]---
+>
+> Hmm, this looks really funky.
+>
+>> wb_do_writeback+0x6b is 0x115b
+>> it is in get_next_work_item():
+>> %ebx = list_entry_rcu(work->list.next, struct bdi_work, list) = 1
+>
+> Isn't it rather
+>
+>        list_entry_rcu(bdi->work_list.next, ...)
+>
+> and points at wb->bdi not being valid. Are you using any debugging
+> options in the kernel config?
+>
+> Also, this:
+>
+> Process <AB>lush-8: (pid: 993, ti=f608a000 task=f65914f0 task.ti=f608a000)
+>
+> looks veeeery fishy, that should be flush-8. Looks like some memory
+> corruption possibly.
 
-The ioat1 init path is not disturbed for stability, there are no
-reported ioat1 initiaization issues.
+Do you suspect a hardware problem ?
 
-Cc: <stable@kernel.org>
-Reported-by: Roland Dreier <rdreier@cisco.com>
-Tested-by: Roland Dreier <rdreier@cisco.com>
-Acked-by: Simon Horman <horms@verge.net.au>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+Debug options:
 
- drivers/dma/ioat/dma.c       |    2 +
- drivers/dma/ioat/dma.h       |   18 +++++++++++
- drivers/dma/ioat/dma_v2.c    |   69 ++++++++++++++++++++++++++++++++----------
- drivers/dma/ioat/dma_v2.h    |    2 +
- drivers/dma/ioat/dma_v3.c    |   54 ++++++++++++++++++++++++---------
- drivers/dma/ioat/registers.h |    1 +
- 6 files changed, 114 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index c524d36..dcc4ab7 100644
---- a/drivers/dma/ioat/dma.c
-+++ b/drivers/dma/ioat/dma.c
-@@ -1032,7 +1032,7 @@ int __devinit ioat_probe(struct ioatdma_device *device)
- 	dma->dev = &pdev->dev;
- 
- 	if (!dma->chancnt) {
--		dev_err(dev, "zero channels detected\n");
-+		dev_err(dev, "channel enumeration error\n");
- 		goto err_setup_interrupts;
- 	}
- 
-diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
-index 45edde9..bbc3e78 100644
---- a/drivers/dma/ioat/dma.h
-+++ b/drivers/dma/ioat/dma.h
-@@ -60,6 +60,7 @@
-  * @dca: direct cache access context
-  * @intr_quirk: interrupt setup quirk (for ioat_v1 devices)
-  * @enumerate_channels: hw version specific channel enumeration
-+ * @reset_hw: hw version specific channel (re)initialization
-  * @cleanup_tasklet: select between the v2 and v3 cleanup routines
-  * @timer_fn: select between the v2 and v3 timer watchdog routines
-  * @self_test: hardware version specific self test for each supported op type
-@@ -78,6 +79,7 @@ struct ioatdma_device {
- 	struct dca_provider *dca;
- 	void (*intr_quirk)(struct ioatdma_device *device);
- 	int (*enumerate_channels)(struct ioatdma_device *device);
-+	int (*reset_hw)(struct ioat_chan_common *chan);
- 	void (*cleanup_tasklet)(unsigned long data);
- 	void (*timer_fn)(unsigned long data);
- 	int (*self_test)(struct ioatdma_device *device);
-@@ -264,6 +266,22 @@ static inline void ioat_suspend(struct ioat_chan_common *chan)
- 	writeb(IOAT_CHANCMD_SUSPEND, chan->reg_base + IOAT_CHANCMD_OFFSET(ver));
- }
- 
-+static inline void ioat_reset(struct ioat_chan_common *chan)
-+{
-+	u8 ver = chan->device->version;
-+
-+	writeb(IOAT_CHANCMD_RESET, chan->reg_base + IOAT_CHANCMD_OFFSET(ver));
-+}
-+
-+static inline bool ioat_reset_pending(struct ioat_chan_common *chan)
-+{
-+	u8 ver = chan->device->version;
-+	u8 cmd;
-+
-+	cmd = readb(chan->reg_base + IOAT_CHANCMD_OFFSET(ver));
-+	return (cmd & IOAT_CHANCMD_RESET) == IOAT_CHANCMD_RESET;
-+}
-+
- static inline void ioat_set_chainaddr(struct ioat_dma_chan *ioat, u64 addr)
- {
- 	struct ioat_chan_common *chan = &ioat->base;
-diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
-index 8f1f7f0..5f7a500 100644
---- a/drivers/dma/ioat/dma_v2.c
-+++ b/drivers/dma/ioat/dma_v2.c
-@@ -239,20 +239,50 @@ void __ioat2_restart_chan(struct ioat2_dma_chan *ioat)
- 		__ioat2_start_null_desc(ioat);
- }
- 
--static void ioat2_restart_channel(struct ioat2_dma_chan *ioat)
-+int ioat2_quiesce(struct ioat_chan_common *chan, unsigned long tmo)
- {
--	struct ioat_chan_common *chan = &ioat->base;
--	unsigned long phys_complete;
-+	unsigned long end = jiffies + tmo;
-+	int err = 0;
- 	u32 status;
- 
- 	status = ioat_chansts(chan);
- 	if (is_ioat_active(status) || is_ioat_idle(status))
- 		ioat_suspend(chan);
- 	while (is_ioat_active(status) || is_ioat_idle(status)) {
-+		if (end && time_after(jiffies, end)) {
-+			err = -ETIMEDOUT;
-+			break;
-+		}
- 		status = ioat_chansts(chan);
- 		cpu_relax();
- 	}
- 
-+	return err;
-+}
-+
-+int ioat2_reset_sync(struct ioat_chan_common *chan, unsigned long tmo)
-+{
-+	unsigned long end = jiffies + tmo;
-+	int err = 0;
-+
-+	ioat_reset(chan);
-+	while (ioat_reset_pending(chan)) {
-+		if (end && time_after(jiffies, end)) {
-+			err = -ETIMEDOUT;
-+			break;
-+		}
-+		cpu_relax();
-+	}
-+
-+	return err;
-+}
-+
-+static void ioat2_restart_channel(struct ioat2_dma_chan *ioat)
-+{
-+	struct ioat_chan_common *chan = &ioat->base;
-+	unsigned long phys_complete;
-+
-+	ioat2_quiesce(chan, 0);
- 	if (ioat_cleanup_preamble(chan, &phys_complete))
- 		__cleanup(ioat, phys_complete);
- 
-@@ -318,6 +348,19 @@ void ioat2_timer_event(unsigned long data)
- 	spin_unlock_bh(&chan->cleanup_lock);
- }
- 
-+static int ioat2_reset_hw(struct ioat_chan_common *chan)
-+{
-+	/* throw away whatever the channel was doing and get it initialized */
-+	u32 chanerr;
-+
-+	ioat2_quiesce(chan, msecs_to_jiffies(100));
-+
-+	chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
-+	writel(chanerr, chan->reg_base + IOAT_CHANERR_OFFSET);
-+
-+	return ioat2_reset_sync(chan, msecs_to_jiffies(200));
-+}
-+
- /**
-  * ioat2_enumerate_channels - find and initialize the device's channels
-  * @device: the device to be enumerated
-@@ -360,6 +403,10 @@ int ioat2_enumerate_channels(struct ioatdma_device *device)
- 				  (unsigned long) ioat);
- 		ioat->xfercap_log = xfercap_log;
- 		spin_lock_init(&ioat->ring_lock);
-+		if (device->reset_hw(&ioat->base)) {
-+			i = 0;
-+			break;
-+		}
- 	}
- 	dma->chancnt = i;
- 	return i;
-@@ -467,7 +514,6 @@ int ioat2_alloc_chan_resources(struct dma_chan *c)
- 	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
- 	struct ioat_chan_common *chan = &ioat->base;
- 	struct ioat_ring_ent **ring;
--	u32 chanerr;
- 	int order;
- 
- 	/* have we already been set up? */
-@@ -477,12 +523,6 @@ int ioat2_alloc_chan_resources(struct dma_chan *c)
- 	/* Setup register to interrupt and write completion status on error */
- 	writew(IOAT_CHANCTRL_RUN, chan->reg_base + IOAT_CHANCTRL_OFFSET);
- 
--	chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
--	if (chanerr) {
--		dev_err(to_dev(chan), "CHANERR = %x, clearing\n", chanerr);
--		writel(chanerr, chan->reg_base + IOAT_CHANERR_OFFSET);
--	}
--
- 	/* allocate a completion writeback area */
- 	/* doing 2 32bit writes to mmio since 1 64b write doesn't work */
- 	chan->completion = pci_pool_alloc(chan->device->completion_pool,
-@@ -746,13 +786,7 @@ void ioat2_free_chan_resources(struct dma_chan *c)
- 	tasklet_disable(&chan->cleanup_task);
- 	del_timer_sync(&chan->timer);
- 	device->cleanup_tasklet((unsigned long) ioat);
--
--	/* Delay 100ms after reset to allow internal DMA logic to quiesce
--	 * before removing DMA descriptor resources.
--	 */
--	writeb(IOAT_CHANCMD_RESET,
--	       chan->reg_base + IOAT_CHANCMD_OFFSET(chan->device->version));
--	mdelay(100);
-+	device->reset_hw(chan);
- 
- 	spin_lock_bh(&ioat->ring_lock);
- 	descs = ioat2_ring_space(ioat);
-@@ -839,6 +873,7 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
- 	int err;
- 
- 	device->enumerate_channels = ioat2_enumerate_channels;
-+	device->reset_hw = ioat2_reset_hw;
- 	device->cleanup_tasklet = ioat2_cleanup_tasklet;
- 	device->timer_fn = ioat2_timer_event;
- 	device->self_test = ioat_dma_self_test;
-diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
-index 1d849ef..3afad8d 100644
---- a/drivers/dma/ioat/dma_v2.h
-+++ b/drivers/dma/ioat/dma_v2.h
-@@ -185,6 +185,8 @@ bool reshape_ring(struct ioat2_dma_chan *ioat, int order);
- void __ioat2_issue_pending(struct ioat2_dma_chan *ioat);
- void ioat2_cleanup_tasklet(unsigned long data);
- void ioat2_timer_event(unsigned long data);
-+int ioat2_quiesce(struct ioat_chan_common *chan, unsigned long tmo);
-+int ioat2_reset_sync(struct ioat_chan_common *chan, unsigned long tmo);
- extern struct kobj_type ioat2_ktype;
- extern struct kmem_cache *ioat2_cache;
- #endif /* IOATDMA_V2_H */
-diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-index e58ecb2..9908c9e 100644
---- a/drivers/dma/ioat/dma_v3.c
-+++ b/drivers/dma/ioat/dma_v3.c
-@@ -1130,6 +1130,45 @@ static int __devinit ioat3_dma_self_test(struct ioatdma_device *device)
- 	return 0;
- }
- 
-+static int ioat3_reset_hw(struct ioat_chan_common *chan)
-+{
-+	/* throw away whatever the channel was doing and get it
-+	 * initialized, with ioat3 specific workarounds
-+	 */
-+	struct ioatdma_device *device = chan->device;
-+	struct pci_dev *pdev = device->pdev;
-+	u32 chanerr;
-+	u16 dev_id;
-+	int err;
-+
-+	ioat2_quiesce(chan, msecs_to_jiffies(100));
-+
-+	chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
-+	writel(chanerr, chan->reg_base + IOAT_CHANERR_OFFSET);
-+
-+	/* -= IOAT ver.3 workarounds =- */
-+	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
-+	 * that can cause stability issues for IOAT ver.3, and clear any
-+	 * pending errors
-+	 */
-+	pci_write_config_dword(pdev, IOAT_PCI_CHANERRMASK_INT_OFFSET, 0x3e07);
-+	err = pci_read_config_dword(pdev, IOAT_PCI_CHANERR_INT_OFFSET, &chanerr);
-+	if (err) {
-+		dev_err(&pdev->dev, "channel error register unreachable\n");
-+		return err;
-+	}
-+	pci_write_config_dword(pdev, IOAT_PCI_CHANERR_INT_OFFSET, chanerr);
-+
-+	/* Clear DMAUNCERRSTS Cfg-Reg Parity Error status bit
-+	 * (workaround for spurious config parity error after restart)
-+	 */
-+	pci_read_config_word(pdev, IOAT_PCI_DEVICE_ID_OFFSET, &dev_id);
-+	if (dev_id == PCI_DEVICE_ID_INTEL_IOAT_TBG0)
-+		pci_write_config_dword(pdev, IOAT_PCI_DMAUNCERRSTS_OFFSET, 0x10);
-+
-+	return ioat2_reset_sync(chan, msecs_to_jiffies(200));
-+}
-+
- int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- {
- 	struct pci_dev *pdev = device->pdev;
-@@ -1139,10 +1178,10 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- 	struct ioat_chan_common *chan;
- 	bool is_raid_device = false;
- 	int err;
--	u16 dev_id;
- 	u32 cap;
- 
- 	device->enumerate_channels = ioat2_enumerate_channels;
-+	device->reset_hw = ioat3_reset_hw;
- 	device->self_test = ioat3_dma_self_test;
- 	dma = &device->common;
- 	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
-@@ -1218,19 +1257,6 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- 	dma->device_prep_dma_xor_val = NULL;
- 	#endif
- 
--	/* -= IOAT ver.3 workarounds =- */
--	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
--	 * that can cause stability issues for IOAT ver.3
--	 */
--	pci_write_config_dword(pdev, IOAT_PCI_CHANERRMASK_INT_OFFSET, 0x3e07);
--
--	/* Clear DMAUNCERRSTS Cfg-Reg Parity Error status bit
--	 * (workaround for spurious config parity error after restart)
--	 */
--	pci_read_config_word(pdev, IOAT_PCI_DEVICE_ID_OFFSET, &dev_id);
--	if (dev_id == PCI_DEVICE_ID_INTEL_IOAT_TBG0)
--		pci_write_config_dword(pdev, IOAT_PCI_DMAUNCERRSTS_OFFSET, 0x10);
--
- 	err = ioat_probe(device);
- 	if (err)
- 		return err;
-diff --git a/drivers/dma/ioat/registers.h b/drivers/dma/ioat/registers.h
-index f015ec1..e8ae63b 100644
---- a/drivers/dma/ioat/registers.h
-+++ b/drivers/dma/ioat/registers.h
-@@ -27,6 +27,7 @@
- 
- #define IOAT_PCI_DEVICE_ID_OFFSET		0x02
- #define IOAT_PCI_DMAUNCERRSTS_OFFSET		0x148
-+#define IOAT_PCI_CHANERR_INT_OFFSET		0x180
- #define IOAT_PCI_CHANERRMASK_INT_OFFSET		0x184
- 
- /* MMIO Device Registers */
-
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+# CONFIG_ENABLE_WARN_DEPRECATED is not set
+# CONFIG_ENABLE_MUST_CHECK is not set
+CONFIG_FRAME_WARN=0
+CONFIG_MAGIC_SYSRQ=y
+# CONFIG_STRIP_ASM_SYMS is not set
+# CONFIG_UNUSED_SYMBOLS is not set
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SHIRQ=y
+CONFIG_DETECT_SOFTLOCKUP=y
+# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
+CONFIG_DETECT_HUNG_TASK=y
+# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
+CONFIG_SCHED_DEBUG=y
+CONFIG_SCHEDSTATS=y
+CONFIG_TIMER_STATS=y
+# CONFIG_DEBUG_OBJECTS is not set
+CONFIG_SLUB_DEBUG_ON=y
+CONFIG_SLUB_STATS=y
+# CONFIG_DEBUG_KMEMLEAK is not set
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_RT_MUTEX_TESTER=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_LOCKDEP=y
+CONFIG_LOCK_STAT=y
+CONFIG_DEBUG_LOCKDEP=y
+CONFIG_TRACE_IRQFLAGS=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
+CONFIG_STACKTRACE=y
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_HIGHMEM=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+CONFIG_DEBUG_VM=y
+CONFIG_DEBUG_VIRTUAL=y
+CONFIG_DEBUG_WRITECOUNT=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_DEBUG_LIST=y
+CONFIG_DEBUG_SG=y
+# CONFIG_DEBUG_NOTIFIERS is not set
+# CONFIG_DEBUG_CREDENTIALS is not set
+CONFIG_ARCH_WANT_FRAME_POINTERS=y
+CONFIG_FRAME_POINTER=y
+# CONFIG_BOOT_PRINTK_DELAY is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_KPROBES_SANITY_TEST is not set
+# CONFIG_BACKTRACE_SELF_TEST is not set
+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
+# CONFIG_DEBUG_FORCE_WEAK_PER_CPU is not set
+# CONFIG_LKDTM is not set
+# CONFIG_FAULT_INJECTION is not set
+CONFIG_LATENCYTOP=y
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+# CONFIG_DEBUG_PAGEALLOC is not set
+CONFIG_USER_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
+CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
+CONFIG_TRACING_SUPPORT=y
+# CONFIG_FTRACE is not set
+# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
+CONFIG_DYNAMIC_DEBUG=y
+# CONFIG_DMA_API_DEBUG is not set
+# CONFIG_SAMPLES is not set
+CONFIG_HAVE_ARCH_KGDB=y
+# CONFIG_KGDB is not set
+CONFIG_HAVE_ARCH_KMEMCHECK=y
+# CONFIG_STRICT_DEVMEM is not set
+CONFIG_X86_VERBOSE_BOOTUP=y
+CONFIG_EARLY_PRINTK=y
+# CONFIG_EARLY_PRINTK_DBGP is not set
+CONFIG_DEBUG_STACKOVERFLOW=y
+CONFIG_DEBUG_STACK_USAGE=y
+CONFIG_X86_PTDUMP=y
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_DEBUG_NX_TEST is not set
+# CONFIG_4KSTACKS is not set
+CONFIG_DOUBLEFAULT=y
+# CONFIG_IOMMU_STRESS is not set
+CONFIG_HAVE_MMIOTRACE_SUPPORT=y
+CONFIG_X86_DECODER_SELFTEST=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+CONFIG_IO_DELAY_0X80=y
+# CONFIG_IO_DELAY_0XED is not set
+# CONFIG_IO_DELAY_UDELAY is not set
+# CONFIG_IO_DELAY_NONE is not set
+CONFIG_DEFAULT_IO_DELAY_TYPE=0
+CONFIG_DEBUG_BOOT_PARAMS=y
+# CONFIG_CPA_DEBUG is not set
+# CONFIG_OPTIMIZE_INLINING is not set
+# CONFIG_DEBUG_STRICT_USER_COPY_CHECKS is not set
