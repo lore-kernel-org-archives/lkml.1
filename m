@@ -1,151 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbZLWIwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZLWJBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754587AbZLWIwd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 03:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZLWIwb
+	id S1754664AbZLWJBb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZLWJB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 03:52:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39348 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbZLWIwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 03:52:30 -0500
-Message-ID: <4B31DB17.4050509@kernel.org>
-Date: Wed, 23 Dec 2009 17:55:51 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Wed, 23 Dec 2009 04:01:29 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:35755 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754512AbZLWJB2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 04:01:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fnGbfe6TR9Ar7qz/QzH0SSPaYr1i+kgGsLXvZ/IYZYFd1sdjQOQQywl/j+93mAy+qM
+         EniSNMcoNsvJu11iNBGpTjF0OxjwOyQ1rdfitSqyb7NX8JG4KMvWoGFUwC8CBSw/i3ln
+         jeCVejWi+dfTvvfXFG9/m3HoZhlq+eNaelOu4=
 MIME-Version: 1.0
-To: fengxiangjun <fengxiangjun@neusoft.com>
-CC: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
-References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net> <4B30134C.1050609@gmail.com> <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net> <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com> <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net>
-In-Reply-To: <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------000006080607070707050005"
+In-Reply-To: <1261557812.4937.118.camel@laptop>
+References: <20091221091754.GG4489@kernel.dk> <4B2F768C.1040704@kernel.org>
+	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
+	 <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>
+	 <1261504042.4937.59.camel@laptop>
+	 <20091222180703.GI10314@basil.fritz.box>
+	 <c76f371a0912230017n7d3f5c89h849aa23efa6f75e5@mail.gmail.com>
+	 <1261557812.4937.118.camel@laptop>
+Date: Wed, 23 Dec 2009 10:01:26 +0100
+Message-ID: <c76f371a0912230101s7930a437h9c9582be34fc934e@mail.gmail.com>
+Subject: Re: workqueue thing
+From: Stijn Devriendt <highguy@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mi@jasper.es
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000006080607070707050005
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, Dec 23, 2009 at 9:43 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2009-12-23 at 09:17 +0100, Stijn Devriendt wrote:
+>> On Tue, Dec 22, 2009 at 7:07 PM, Andi Kleen <andi@firstfloor.org> wrote:
+>> > One reason I liked a more dynamic frame work for this is that it
+>> > has the potential to be exposed to user space and allow automatic
+>> > work partitioning there based on available cores.  User space
+>> > has a lot more CPU consumption than the kernel.
+>> >
+>> Basically, this is exactly what I was trying to solve with my
+>> sched_wait_block patch. It was broken in all ways, but the ultimate
+>> goal was to have concurrency managed workqueues (to nick the term)
+>> in userspace and have a way out when I/O hits the workqueue.
+>
+> Don't we have the problem of wakeup concurrency here?
+>
+> Forking on blocking is only half the problem (and imho the easy half).
+>
+>
 
-Hello,
+The original design was to always have 1 spare thread handy that would
+wait until the worker-thread blocked. At that point it would wakeup and
+continue trying to keep the CPU busy.
+The current perf-event approach is to have threads poll based upon the
+concurrency as measured in the kernel by the perf-event. When too many
+threads are on the runqueue, the poll() blocks. When threads go to sleep/block
+another thread falls out of poll()to continue work.
 
-On 12/22/2009 11:02 AM, fengxiangjun wrote:
-> You are right, it's definitely timing related.
-> 
-> I just tried capturing the failed booting message through a null modem 
-> cable, but the problem goes away! It seems that I can't reproduce it 
-> with serial console attached.
-
-Hmmm... this is the second report of probing failure with SIDPR based
-hardreset.  Can you please apply the attached patch and see whether
-the problem is reproducible?  And if so, please attach full boot log.
-Can you please also attach hdparm -I output of the occassionally
-failing drive.
-
-Thanks.
-
--- 
-tejun
-
---------------000006080607070707050005
-Content-Type: text/x-patch;
- name="piix-longer-debounce.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="piix-longer-debounce.patch"
-
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index 9ac4e37..f50bba6 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -173,6 +173,8 @@ static int piix_sidpr_scr_read(struct ata_link *link,
- 			       unsigned int reg, u32 *val);
- static int piix_sidpr_scr_write(struct ata_link *link,
- 				unsigned int reg, u32 val);
-+static int piix_sidpr_hardreset(struct ata_link *link, unsigned int *class,
-+				unsigned long deadline);
- #ifdef CONFIG_PM
- static int piix_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg);
- static int piix_pci_device_resume(struct pci_dev *pdev);
-@@ -334,9 +336,9 @@ static struct ata_port_operations piix_sata_ops = {
- 
- static struct ata_port_operations piix_sidpr_sata_ops = {
- 	.inherits		= &piix_sata_ops,
--	.hardreset		= sata_std_hardreset,
- 	.scr_read		= piix_sidpr_scr_read,
- 	.scr_write		= piix_sidpr_scr_write,
-+	.hardreset		= piix_sidpr_hardreset,
- };
- 
- static const struct piix_map_db ich5_map_db = {
-@@ -962,6 +964,18 @@ static int piix_sidpr_scr_write(struct ata_link *link,
- 	return 0;
- }
- 
-+static int piix_sidpr_hardreset(struct ata_link *link, unsigned int *class,
-+				unsigned long deadline)
-+{
-+	const unsigned long *timing = sata_deb_timing_hotplug;
-+	bool online;
-+	int rc;
-+
-+	/* do hardreset */
-+	rc = sata_link_hardreset(link, timing, deadline, &online, NULL);
-+	return online ? -EAGAIN : rc;
-+}
-+
- #ifdef CONFIG_PM
- static int piix_broken_suspend(void)
- {
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index dc72690..c501e1e 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -3731,7 +3731,7 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
- 	unsigned long interval = params[0];
- 	unsigned long duration = params[1];
- 	unsigned long last_jiffies, t;
--	u32 last, cur;
-+	u32 last, cur, xxx;
- 	int rc;
- 
- 	t = ata_deadline(jiffies, params[2]);
-@@ -3740,7 +3740,9 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
- 
- 	if ((rc = sata_scr_read(link, SCR_STATUS, &cur)))
- 		return rc;
-+	xxx = cur;
- 	cur &= 0xf;
-+	ata_link_printk(link, KERN_INFO, "XXX debounce start, SStatus=%x\n", xxx);
- 
- 	last = cur;
- 	last_jiffies = jiffies;
-@@ -3749,6 +3751,7 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
- 		msleep(interval);
- 		if ((rc = sata_scr_read(link, SCR_STATUS, &cur)))
- 			return rc;
-+		xxx = cur;
- 		cur &= 0xf;
- 
- 		/* DET stable? */
-@@ -3756,8 +3759,12 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
- 			if (cur == 1 && time_before(jiffies, deadline))
- 				continue;
- 			if (time_after(jiffies,
--				       ata_deadline(last_jiffies, duration)))
-+				       ata_deadline(last_jiffies, duration))) {
-+				ata_link_printk(link, KERN_INFO,
-+						"XXX debounce done, SStatus=%x, DET stable for %u msecs\n",
-+						xxx, jiffies_to_msecs(jiffies - last_jiffies));
- 				return 0;
-+			}
- 			continue;
- 		}
- 
-
---------------000006080607070707050005--
+Stijn
