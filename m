@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZLWIRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZLWIZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbZLWIRP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 03:17:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZLWIRL
+	id S1754070AbZLWIZU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 03:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbZLWIZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 03:17:11 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:59031 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047AbZLWIRI convert rfc822-to-8bit (ORCPT
+	Wed, 23 Dec 2009 03:25:19 -0500
+Received: from mga12.intel.com ([143.182.124.36]:54675 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751397AbZLWIZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 03:17:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vWvMQbAZ6TAoKErnIqj0LZ8a5fz74HhFRxsWRwme9T7pqvryHkdYjxxB4utDIl9yoa
-         CRZ54qBbJl058BjYDWtXXgxXx67SrPVJYa2bQRxiprcQn4QwzlUPEO1DzBxeCR7lYQWC
-         nbjoXKh1cGZhtD2PVfmt8YHlpyWhw9znKz3ug=
+	Wed, 23 Dec 2009 03:25:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="225959556"
+Message-ID: <4B31D3E7.5000302@linux.intel.com>
+Date: Wed, 23 Dec 2009 09:25:11 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <20091222180703.GI10314@basil.fritz.box>
-References: <20091221091754.GG4489@kernel.dk>
-	 <4B2F57E6.7020504@linux.intel.com> <4B2F768C.1040704@kernel.org>
-	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
-	 <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>
-	 <1261504042.4937.59.camel@laptop>
-	 <20091222180703.GI10314@basil.fritz.box>
-Date: Wed, 23 Dec 2009 09:17:07 +0100
-Message-ID: <c76f371a0912230017n7d3f5c89h849aa23efa6f75e5@mail.gmail.com>
-Subject: Re: workqueue thing
-From: Stijn Devriendt <highguy@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
+To: Tejun Heo <tj@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mi@jasper.es
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       Peter Zijlstra <peterz@infradead.org>, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: workqueue thing
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <4B2EE5A5.2030208@kernel.org> <1261387377.4314.37.camel@laptop> <4B2F7879.2080901@kernel.org> <1261405604.4314.154.camel@laptop> <4B3009DC.7020407@kernel.org> <1261480001.4937.21.camel@laptop> <4B319A20.9010305@kernel.org> <alpine.LFD.2.00.0912222032360.6879@localhost.localdomain> <20091223060229.GA14805@elte.hu> <4B31C210.4010100@kernel.org>
+In-Reply-To: <4B31C210.4010100@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 7:07 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> One reason I liked a more dynamic frame work for this is that it
-> has the potential to be exposed to user space and allow automatic
-> work partitioning there based on available cores.  User space
-> has a lot more CPU consumption than the kernel.
->
-Basically, this is exactly what I was trying to solve with my
-sched_wait_block patch. It was broken in all ways, but the ultimate
-goal was to have concurrency managed workqueues (to nick the term)
-in userspace and have a way out when I/O hits the workqueue.
+On 12/23/2009 8:09, Tejun Heo wrote:
+> Doing several conversions shouldn't be difficult at all.  I'll try to
+> convert async and slow work.
 
-I'm currently in the progress of implementing this using perf_events
-and hope to send a patch in the near future (probably asking for some
-help to solve a couple of my issues).
-
-> I think Grand Central Dispatch does something in this direction.
-> TBB would probably also benfit
->
-Exactly my goal.
-I'd definately be happy if Tejun's work can be generalized to fit userspace
-as well. My sched_wait_block patch did exactly what his sched_notifiers
-do: notify the workqueue that a new thread should be scheduled to keep
-the CPU busy. Although as I understand, Tejun's reason for scheduling
-a new thread is rather to avoid deadlocks. Different thing, same way.
-
-Stijn
+btw for async, it is essential that all the scheduled async functions runs as soon as possible;
+so make sure that no async work is held back for lack of threads.. just make more immediately.
+(the async work is rather latency sensitive, in general it is <poke hardware> <wait a long time> <done>,
+the <poke hardware> step needs to be done as soon as possible to cut down the total time; latencies are often
+cumulative in async due to dependencies)
