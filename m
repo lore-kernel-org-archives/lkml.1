@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZLWJBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZLWJBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbZLWJBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 04:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZLWJB3
+	id S1754261AbZLWJBM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 04:01:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZLWJBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 04:01:29 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:35755 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754512AbZLWJB2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 04:01:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fnGbfe6TR9Ar7qz/QzH0SSPaYr1i+kgGsLXvZ/IYZYFd1sdjQOQQywl/j+93mAy+qM
-         EniSNMcoNsvJu11iNBGpTjF0OxjwOyQ1rdfitSqyb7NX8JG4KMvWoGFUwC8CBSw/i3ln
-         jeCVejWi+dfTvvfXFG9/m3HoZhlq+eNaelOu4=
+	Wed, 23 Dec 2009 04:01:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54425 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752333AbZLWJBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 04:01:09 -0500
+Message-ID: <4B31DCDB.3080406@kernel.org>
+Date: Wed, 23 Dec 2009 18:03:23 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <1261557812.4937.118.camel@laptop>
-References: <20091221091754.GG4489@kernel.dk> <4B2F768C.1040704@kernel.org>
-	 <4B2F7DD2.2080902@linux.intel.com> <4B2F83F6.2040705@kernel.org>
-	 <4B2F9212.3000407@linux.intel.com> <4B300C01.8080904@kernel.org>
-	 <1261504042.4937.59.camel@laptop>
-	 <20091222180703.GI10314@basil.fritz.box>
-	 <c76f371a0912230017n7d3f5c89h849aa23efa6f75e5@mail.gmail.com>
-	 <1261557812.4937.118.camel@laptop>
-Date: Wed, 23 Dec 2009 10:01:26 +0100
-Message-ID: <c76f371a0912230101s7930a437h9c9582be34fc934e@mail.gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
 Subject: Re: workqueue thing
-From: Stijn Devriendt <highguy@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       Jens Axboe <jens.axboe@oracle.com>, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mi@jasper.es
+References: <4B3009DC.7020407@kernel.org> <1261480001.4937.21.camel@laptop> <4B319A20.9010305@kernel.org> <alpine.LFD.2.00.0912222032360.6879@localhost.localdomain> <20091223060229.GA14805@elte.hu> <4B31C210.4010100@kernel.org> <20091223080144.GG23839@elte.hu> <4B31D487.6060706@kernel.org> <20091223083705.GA25240@elte.hu> <4B31D99D.4070705@kernel.org> <20091223084935.GC25240@elte.hu>
+In-Reply-To: <20091223084935.GC25240@elte.hu>
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 9:43 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2009-12-23 at 09:17 +0100, Stijn Devriendt wrote:
->> On Tue, Dec 22, 2009 at 7:07 PM, Andi Kleen <andi@firstfloor.org> wrote:
->> > One reason I liked a more dynamic frame work for this is that it
->> > has the potential to be exposed to user space and allow automatic
->> > work partitioning there based on available cores.  User space
->> > has a lot more CPU consumption than the kernel.
->> >
->> Basically, this is exactly what I was trying to solve with my
->> sched_wait_block patch. It was broken in all ways, but the ultimate
->> goal was to have concurrency managed workqueues (to nick the term)
->> in userspace and have a way out when I/O hits the workqueue.
->
-> Don't we have the problem of wakeup concurrency here?
->
-> Forking on blocking is only half the problem (and imho the easy half).
->
->
+Hello,
 
-The original design was to always have 1 spare thread handy that would
-wait until the worker-thread blocked. At that point it would wakeup and
-continue trying to keep the CPU busy.
-The current perf-event approach is to have threads poll based upon the
-concurrency as measured in the kernel by the perf-event. When too many
-threads are on the runqueue, the poll() blocks. When threads go to sleep/block
-another thread falls out of poll()to continue work.
+On 12/23/2009 05:49 PM, Ingo Molnar wrote:
+>> I wasn't talking about performance above.  Easiness or flexibility to 
+>> extract concurrency opens up possibilities for new things or easier ways of 
+>> doing things.  It affects the design process.  You don't have to jump 
+>> through hoops for concurrency management and removing that restriction 
+>> results in lower amount of convolution and simplifies design.
+> 
+> Which is why i said this in the next paragraph:
+> 
+>>> ( Plus reduction in driver complexity can be measured as well, in the 
+>>>   diffstat space.)
+> 
+> A new facility that is so mysterious that it cannot be shown to have
+> any performance/scalability/latency benefit _nor_ can it be shown to
+> reduce driver complexity simply does not exist IMO.
 
-Stijn
+Sure, I'm not arguing against that at all.  I completely agree with
+you and I'm gonna do that.  I was trying to point out that it'll gonna
+allow things to be designed in new ways which didn't make much sense
+before because implementing full blown concurrency management would be
+too costly just for that thing.  And by definition, those things are
+not in the current kernel because they didn't make sense before.  For
+me, the first thing which will make use of that would be in-kernel
+media presence polling, so it's not all that mysterious.
+
+Thanks.
+
+-- 
+tejun
