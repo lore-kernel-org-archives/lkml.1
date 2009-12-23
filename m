@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZLWT5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZLWT6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbZLWT5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 14:57:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbZLWT5C
+	id S1757057AbZLWT6k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 14:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbZLWT6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 14:57:02 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15158 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756135AbZLWT5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 14:57:00 -0500
+	Wed, 23 Dec 2009 14:58:39 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54987 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbZLWT6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 14:58:38 -0500
+Date: Wed, 23 Dec 2009 20:58:36 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] Please pull hwpoison fixes
+Message-ID: <20091223195836.GA4125@basil.fritz.box>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-X-Fcc: ~/Mail/utrace
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: [PATCH 0/7] utrace/ptrace
-In-Reply-To: Andi Kleen's message of  Wednesday, 23 December 2009 20:47:12 +0100 <20091223194712.GO20539@basil.fritz.box>
-References: <20091218011116.GA29534@redhat.com>
-	<20091222135809.1ab10869.akpm@linux-foundation.org>
-	<20091223174232.GA14993@redhat.com>
-	<20091223193313.1B89E16DB@magilla.sf.frob.com>
-	<20091223194712.GO20539@basil.fritz.box>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20091223195532.8E65316DB@magilla.sf.frob.com>
-Date: Wed, 23 Dec 2009 11:55:32 -0800 (PST)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Do you have an estimate or better numbers how the overhead of 
-> seccomp-over-utrace compares to the current in-tree seccomp?
+[Repost, please disregard if you have it already queued]
 
-I never measured it.  I would estimate that any difference one way or
-another is in the noise.  The point of seccomp is to run a process that
-almost never makes any system calls.  The only effects of utrace for that
-use are on the system call path itself, and the essential effects there
-(i.e. taking the tracing path vs the hot path) are the same as what the old
-seccomp implementation does.
+Hi Linus,
 
-If you have some example uses of seccomp or something that can serve as a
-benchmark for it, I would be glad to measure the difference.
+This fixes a obscure build problem in the hwpoison injector
+when PROC_FS is disabled.
 
+-Andi
 
-Thanks,
-Roland
+Please pull from
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/ak/linux-mce-2.6.git hwpoison
+
+Andi Kleen (1):
+      HWPOISON: Add PROC_FS dependency to hwpoison injector v2
+
+ mm/Kconfig          |    2 +-
+ mm/memory-failure.c |    9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletions(-)
+-- 
+ak@linux.intel.com -- Speaking for myself only.
