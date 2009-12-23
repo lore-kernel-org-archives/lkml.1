@@ -1,130 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZLWSGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZLWSHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbZLWSGH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 13:06:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZLWSGF
+	id S1756728AbZLWSHX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 13:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZLWSHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 13:06:05 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59615 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751889AbZLWSGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 13:06:01 -0500
-Date: Wed, 23 Dec 2009 19:05:51 +0100
-From: Jan Kara <jack@suse.cz>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Steve Rago <sar@nec-labs.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-Message-ID: <20091223180551.GD3159@quack.suse.cz>
-References: <1261015420.1947.54.camel@serenity>
- <1261037877.27920.36.camel@laptop>
- <20091219122033.GA11360@localhost>
- <1261232747.1947.194.camel@serenity>
- <20091222015907.GA6223@localhost>
- <1261578107.2606.11.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261578107.2606.11.camel@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 23 Dec 2009 13:07:22 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34402 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbZLWSHW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 13:07:22 -0500
+Subject: Re: SCHED: Is task migration necessary in sched_exec().
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <b9df5fa10912230452q6edac4d3wb837a2e550cc5092@mail.gmail.com>
+References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
+	 <1261563687.4937.120.camel@laptop>
+	 <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
+	 <1261565584.4937.124.camel@laptop>
+	 <b9df5fa10912230335r459f86d4te868fca82b891752@mail.gmail.com>
+	 <1261569112.4937.135.camel@laptop>
+	 <b9df5fa10912230404p37edca22h54ef7dceec651de4@mail.gmail.com>
+	 <1261570834.4937.141.camel@laptop>
+	 <b9df5fa10912230452q6edac4d3wb837a2e550cc5092@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 23 Dec 2009 19:06:43 +0100
+Message-ID: <1261591603.4937.153.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 23-12-09 15:21:47, Trond Myklebust wrote:
-> On Tue, 2009-12-22 at 09:59 +0800, Wu Fengguang wrote: 
-> > 1) normal fs sets I_DIRTY_DATASYNC when extending i_size, however NFS
-> >    will set the flag for any pages written -- why this trick? To
-> >    guarantee the call of nfs_commit_inode()? Which unfortunately turns
-> >    almost every server side NFS write into sync writes..
-> > 
-> >  writeback_single_inode:
-> >     do_writepages
-> >       nfs_writepages
-> >         nfs_writepage ----[short time later]---> nfs_writeback_release*
-> >                                                    nfs_mark_request_commit
-> >                                                      __mark_inode_dirty(I_DIRTY_DATASYNC);
-> >                                     
-> >     if (I_DIRTY_SYNC || I_DIRTY_DATASYNC)  <---- so this will be true for most time
-> >       write_inode
-> >         nfs_write_inode
-> >           nfs_commit_inode
-> 
-> 
-> I have been working on a fix for this. We basically do want to ensure
-> that NFS calls commit (otherwise we're not finished cleaning the dirty
-> pages), but we want to do it _after_ we've waited for all the writes to
-> complete. See below...
-> 
-> Trond
-> 
-> ------------------------------------------------------------------------------------------------------ 
-> VFS: Add a new inode state: I_UNSTABLE_PAGES
-> 
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> 
-> Add a new inode state to enable the vfs to commit the nfs unstable pages to
-> stable storage once the write back of dirty pages is done.
-  Hmm, does your patch really help?
+On Wed, 2009-12-23 at 18:52 +0600, Rakib Mullick wrote:
 
-> @@ -474,6 +482,18 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
->  	}
->  
->  	spin_lock(&inode_lock);
-> +	/*
-> +	 * Special state for cleaning NFS unstable pages
-> +	 */
-> +	if (inode->i_state & I_UNSTABLE_PAGES) {
-> +		int err;
-> +		inode->i_state &= ~I_UNSTABLE_PAGES;
-> +		spin_unlock(&inode_lock);
-> +		err = commit_unstable_pages(inode, wait);
-> +		if (ret == 0)
-> +			ret = err;
-> +		spin_lock(&inode_lock);
-> +	}
-  I don't quite understand this chunk: We've called writeback_single_inode
-because it had some dirty pages. Thus it has I_DIRTY_DATASYNC set and a few
-lines above your chunk, we've called nfs_write_inode which sent commit to
-the server. Now here you sometimes send the commit again? What's the
-purpose?
+> Yes - a fair win. But if load balancer moves other tasks from the runqueue
+> (2nd or 3rd task from your ex.) and thats how we also can achive 1/2 of cpu1's
+> time , right? Those waiting tasks could have effective 0 cache footprint too.
+> If they were not run before - right?
 
-> diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-> index faa0918..4f129b3 100644
-> --- a/fs/nfs/inode.c
-> +++ b/fs/nfs/inode.c
-> @@ -99,17 +99,14 @@ u64 nfs_compat_user_ino64(u64 fileid)
->  
->  int nfs_write_inode(struct inode *inode, int sync)
->  {
-> +	int flags = 0;
->  	int ret;
->  
-> -	if (sync) {
-> -		ret = filemap_fdatawait(inode->i_mapping);
-> -		if (ret == 0)
-> -			ret = nfs_commit_inode(inode, FLUSH_SYNC);
-> -	} else
-> -		ret = nfs_commit_inode(inode, 0);
-> -	if (ret >= 0)
-> +	if (sync)
-> +		flags = FLUSH_SYNC;
-> +	ret = nfs_commit_inode(inode, flags);
-> +	if (ret > 0)
->  		return 0;
-> -	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
->  	return ret;
->  }
->  
+Could have, but is very unlikely, and here we have one we know for sure.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
