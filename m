@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbZLWPYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZLWP1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbZLWPYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 10:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbZLWPYK
+	id S1756335AbZLWP1X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 10:27:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756281AbZLWP1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 10:24:10 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:39858 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752682AbZLWPYF (ORCPT
+	Wed, 23 Dec 2009 10:27:22 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:56005 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756258AbZLWP1W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 10:24:05 -0500
-Date: Wed, 23 Dec 2009 23:23:55 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Dan Carpenter <error27@gmail.com>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: double unlock in rng_dev_read()
-Message-ID: <20091223152355.GA31379@gondor.apana.org.au>
-References: <20091223131552.GA17923@bicker> <20091223143658.GA30992@gondor.apana.org.au> <20091223145336.GB23721@bicker>
+	Wed, 23 Dec 2009 10:27:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CjSZFxmv0+FdRwp35HoW/ClUCp824txsGWr/q90B3WJMvfzy8hqPREHwAu4xw9lRWq
+         R8q6ZJFl/XOLqPCZMcVly6hCdG908p5kE4GVk8yTPDbh2DdNJTEtU4m0oXDYgHdUu2Uu
+         le4CCIE5nMIEGWV/qbFxZqtmXJllP/DMV+D74=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091223145336.GB23721@bicker>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <43e72e890912181403k3a194326jbb8ca70a16cdcb74@mail.gmail.com>
+References: <43e72e890912180926oad3b09fl6b7951864a836700@mail.gmail.com>
+	 <20091219085640.c3414f51.sfr@canb.auug.org.au>
+	 <43e72e890912181403k3a194326jbb8ca70a16cdcb74@mail.gmail.com>
+Date: Wed, 23 Dec 2009 16:27:20 +0100
+Message-ID: <1158166a0912230727h5ebbba81w5cb5d10648f791d3@mail.gmail.com>
+Subject: Re: git pull on linux-next makes my system crawl to its knees and beg 
+	for mercy
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       Bob Copeland <me@bobcopeland.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 04:53:36PM +0200, Dan Carpenter wrote:
+On Fri, Dec 18, 2009 at 11:03 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Fri, Dec 18, 2009 at 1:56 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> Hi Luis,
+>>
+>> On Fri, 18 Dec 2009 09:26:29 -0800 "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+>>>
+>>> I tend to always be on a 2.6.32 kernel + John's queued up patches for
+>>> wireless for the next kernel release (I use wireless-testing). My
+>>> system is a Thinkpad T61, userspace is Ubuntu 9.10 based (ships with
+>>> git 1.6.3.3) and I kept an ext3 filesystem to be able to go back in
+>>> time to 2.6.27 at will without issues.  I git clone'd linux-next a few
+>>> weeks ago. After a few days I then tried to git pull and my system
+>>> became completely unusable, It took *ages* to open up a terminal and
+>>
+>> The start of the daily linux-next boilerplate says:
+>>
+>>> If you are tracking the linux-next tree using git, you should not use
+>>> "git pull" to do so as that will try to merge the new linux-next release
+>>> with the old one.  You should use "git fetch" as mentioned in the FAQ on
+>>> the wiki (see below).
+>>
+>> (Unfortunately, the wiki seems to be unavailable at the moment)
+>>
+>> I am guessing that the merge that git is attempting is killing your
+>> laptop (though besides the number of common commits I am not sure why).
+>> Please try using "get fetch" instead.
 >
-> No no.  I mean when size hits zero we are rng_mutex is unlocked.
+> Indeed, I learned my lesson now. Thanks for the details.
+>
+> Now granted, even if 'git merge' is killing my laptop due to the
+> conflicts of the insane merge I was trying to do it *still* should not
+> make my box completely unresponsive for so long. And given that I'm
+> using mostly distribution specific kernel config options and my have
+> ruled out my hard drive it seems a general serious kernel issue even
+> down to 2.6.27. Whatever git is doing I'm sure other userspace
+> software can also end up generating and would make any user go
+> completely bananas. I was about to rip my hair out.
 
-Good catch! I'll add this patch to the tree.  Please take a look
-at it.  Thanks!
+Git gurus would know it by heart, but I am not one. So if I were you,
+I would just do a generic diagnostic run. What is it git is doing
+so that machine slows down that much? Is it spawning a lot
+of running processes? Is it allocating/using so much memory
+that your box goes into a severe swap storm?
 
-commit f5908267b67917b8cbd98b27fd2be9b5f62ec76f
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Wed Dec 23 23:22:34 2009 +0800
+I guess it is the latter. If it is, then it's not a kernel problem -
+kernel can't magically make your system adequately handle a workload
+which needs 3 GB for working set when the box only has 2 GB of RAM.
+It _will_ be very slow.
 
-    hwrng: core - Fix double unlock in rng_dev_read
-    
-    When the loop terminates with size == 0 in rng_dev_read we will
-    unlock the rng mutex twice.
-    
-    Reported-by: Dan Carpenter <error27@gmail.com>
-    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/drivers/char/hw_random/core.c b/drivers/char/hw_random/core.c
-index e989f67..3d9c61e 100644
---- a/drivers/char/hw_random/core.c
-+++ b/drivers/char/hw_random/core.c
-@@ -158,10 +158,11 @@ static ssize_t rng_dev_read(struct file *filp, char __user *buf,
- 			goto out;
- 		}
- 	}
--out_unlock:
--	mutex_unlock(&rng_mutex);
- out:
- 	return ret ? : err;
-+out_unlock:
-+	mutex_unlock(&rng_mutex);
-+	goto out;
- }
- 
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+vda
