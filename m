@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZLWVVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbZLWVWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbZLWVVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 16:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbZLWVUt
+	id S1757176AbZLWVWH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 16:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757111AbZLWVV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 16:20:49 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45127 "EHLO
+	Wed, 23 Dec 2009 16:21:57 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45328 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756248AbZLWVUq (ORCPT
+	with ESMTP id S1756837AbZLWVVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 16:20:46 -0500
+	Wed, 23 Dec 2009 16:21:55 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 24/37] kgdboc,kdb: Allow kdb to work on a non open console port
-Date: Wed, 23 Dec 2009 15:19:37 -0600
-Message-Id: <1261603190-5036-25-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 25/37] printk,kdb: capture printk() when in kdb shell
+Date: Wed, 23 Dec 2009 15:19:38 -0600
+Message-Id: <1261603190-5036-26-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1261603190-5036-24-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1261603190-5036-25-git-send-email-jason.wessel@windriver.com>
 References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-2-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-3-git-send-email-jason.wessel@windriver.com>
@@ -43,121 +45,181 @@ References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-22-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-23-git-send-email-jason.wessel@windriver.com>
  <1261603190-5036-24-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 23 Dec 2009 21:20:24.0348 (UTC) FILETIME=[BD9775C0:01CA8415]
+ <1261603190-5036-25-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 23 Dec 2009 21:20:25.0380 (UTC) FILETIME=[BE34EE40:01CA8415]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If kdb is open on a serial port that is not actually a console make
-sure to call the poll routines to emit and receive characters.
+Certain calls from the kdb shell will call out to printk(), and any of
+these calls should get vectored back to the kdb_printf() so that the
+kdb pager and processing can be used, as well as to properly channel
+I/O to the polled I/O devices.
 
+CC: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- drivers/serial/kgdboc.c   |   14 ++++++++++++++
- include/linux/kgdb.h      |    3 +++
- kernel/debug/kdb/kdb_io.c |   16 ++++++++++++++++
- 3 files changed, 33 insertions(+), 0 deletions(-)
+ include/linux/kdb.h         |    4 ++++
+ kernel/debug/kdb/kdb_bt.c   |    2 ++
+ kernel/debug/kdb/kdb_io.c   |   21 +++++++++++++++++----
+ kernel/debug/kdb/kdb_main.c |    4 ++++
+ kernel/printk.c             |   10 +++++++++-
+ 5 files changed, 36 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index f4066b3..02fbd86 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -16,6 +16,7 @@
- #include <linux/kgdb.h>
- #include <linux/kdb.h>
- #include <linux/tty.h>
-+#include <linux/console.h>
+diff --git a/include/linux/kdb.h b/include/linux/kdb.h
+index 1d8c1ac..387a916 100644
+--- a/include/linux/kdb.h
++++ b/include/linux/kdb.h
+@@ -80,8 +80,12 @@ typedef enum {
+ 	KDB_REASON_SSTEP,	/* Single Step trap. - regs valid */
+ } kdb_reason_t;
  
- #define MAX_CONFIG_LEN		40
- 
-@@ -72,12 +73,14 @@ static int configure_kgdboc(void)
- 	int tty_line = 0;
- 	int err;
- 	char *cptr = config;
-+	struct console *cons;
- 
- 	err = kgdboc_option_setup(config);
- 	if (err || !strlen(config) || isspace(config[0]))
- 		goto noconfig;
- 
- 	err = -ENODEV;
-+	kgdboc_io_ops.is_console = 0;
- 
- #ifdef CONFIG_KDB_KEYBOARD
- 	kgdb_tty_driver = NULL;
-@@ -98,6 +101,17 @@ static int configure_kgdboc(void)
- 	if (!p)
- 		goto noconfig;
- 
-+	cons = console_drivers;
-+	while (cons) {
-+		int idx;
-+		if (cons->device && cons->device(cons, &idx) == p &&
-+		    idx == tty_line) {
-+			kgdboc_io_ops.is_console = 1;
-+			break;
-+		}
-+		cons = cons->next;
-+	}
++extern int kdb_trap_printk;
++extern void vkdb_printf(const char *fmt, va_list args)
++	    __attribute__ ((format (printf, 1, 0)));
+ extern void kdb_printf(const char *, ...)
+ 	    __attribute__ ((format (printf, 1, 2)));
 +
- 	kgdb_tty_driver = p;
- 	kgdb_tty_line = tty_line;
+ typedef void (*kdb_printf_t)(const char *, ...)
+ 	     __attribute__ ((format (printf, 1, 2)));
+ extern void kdb_init(void);
+diff --git a/kernel/debug/kdb/kdb_bt.c b/kernel/debug/kdb/kdb_bt.c
+index c73402c..176da1a 100644
+--- a/kernel/debug/kdb/kdb_bt.c
++++ b/kernel/debug/kdb/kdb_bt.c
+@@ -23,6 +23,7 @@ static void kdb_show_stack(struct task_struct *p, void *addr)
+ {
+ 	int old_lvl = console_loglevel;
+ 	console_loglevel = 15;
++	kdb_trap_printk++;
+ 	kdb_set_current_task(p);
+ 	if (addr) {
+ 		show_stack((struct task_struct *)p, addr);
+@@ -36,6 +37,7 @@ static void kdb_show_stack(struct task_struct *p, void *addr)
+ 		show_stack(p, NULL);
+ 	}
+ 	console_loglevel = old_lvl;
++	kdb_trap_printk--;
+ }
  
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index b5de457..619019a 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -234,6 +234,8 @@ struct kgdb_arch {
-  * the I/O driver.
-  * @post_exception: Pointer to a function that will do any cleanup work
-  * for the I/O driver.
-+ * @is_console: 1 if the end device is a console 0 if the I/O device is
-+ * not a console
-  */
- struct kgdb_io {
- 	const char		*name;
-@@ -243,6 +245,7 @@ struct kgdb_io {
- 	int			(*init) (void);
- 	void			(*pre_exception) (void);
- 	void			(*post_exception) (void);
-+	int			is_console;
- };
- 
- extern struct kgdb_arch		arch_kgdb_ops;
+ /*
 diff --git a/kernel/debug/kdb/kdb_io.c b/kernel/debug/kdb/kdb_io.c
-index b7b4c4a..17aa1f2 100644
+index 17aa1f2..75f4355 100644
 --- a/kernel/debug/kdb/kdb_io.c
 +++ b/kernel/debug/kdb/kdb_io.c
-@@ -671,6 +671,14 @@ kdb_printit:
- 	if (!dbg_kdb_mode && kgdb_connected) {
- 		gdbstub_msg_write(kdb_buffer, strlen(kdb_buffer));
- 	} else {
-+		if (!dbg_io_ops->is_console) {
-+			len = strlen(kdb_buffer);
-+			cp = kdb_buffer;
-+			while (len--) {
-+				dbg_io_ops->write_char(*cp);
-+				cp++;
-+			}
-+		}
- 		while (c) {
- 			c->write(c, kdb_buffer, strlen(kdb_buffer));
- 			touch_nmi_watchdog();
-@@ -717,6 +725,14 @@ kdb_printit:
- 		kdb_input_flush();
- 		c = console_drivers;
+@@ -29,6 +29,7 @@
+ #define CMD_BUFLEN 256
+ char kdb_prompt_str[CMD_BUFLEN];
  
-+		if (!dbg_io_ops->is_console) {
-+			len = strlen(moreprompt);
-+			cp = moreprompt;
-+			while (len--) {
-+				dbg_io_ops->write_char(*cp);
-+				cp++;
-+			}
-+		}
- 		while (c) {
- 			c->write(c, moreprompt, strlen(moreprompt));
- 			touch_nmi_watchdog();
++int kdb_trap_printk;
+ 
+ static void kgdb_transition_check(char *buffer)
+ {
+@@ -533,12 +534,12 @@ static int kdb_search_string(char *searched, char *searchfor)
+ 	return 0;
+ }
+ 
+-void kdb_printf(const char *fmt, ...)
++void vkdb_printf(const char *fmt, va_list ap)
+ {
+-	va_list ap;
+ 	int diag;
+ 	int linecount;
+ 	int logging, saved_loglevel = 0;
++	int saved_trap_printk;
+ 	int got_printf_lock = 0;
+ 	int fnd, len;
+ 	char *cp, *cp2, *cphold = NULL, replaced_byte = ' ';
+@@ -548,6 +549,9 @@ void kdb_printf(const char *fmt, ...)
+ 	unsigned long uninitialized_var(flags);
+ 
+ 	preempt_disable();
++	saved_trap_printk = kdb_trap_printk;
++	kdb_trap_printk = 0;
++
+ 	/* Serialize kdb_printf if multiple cpus try to write at once.
+ 	 * But if any cpu goes recursive in kdb, just print the output,
+ 	 * even if it is interleaved with any other text.
+@@ -574,9 +578,7 @@ void kdb_printf(const char *fmt, ...)
+ 		next_avail = kdb_buffer;
+ 		size_avail = sizeof(kdb_buffer);
+ 	}
+-	va_start(ap, fmt);
+ 	vsnprintf(next_avail, size_avail, fmt, ap);
+-	va_end(ap);
+ 
+ 	/*
+ 	 * If kdb_parse() found that the command was cmd xxx | grep yyy
+@@ -803,5 +805,16 @@ kdb_print_out:
+ 	} else {
+ 		__release(kdb_printf_lock);
+ 	}
++	kdb_trap_printk = saved_trap_printk;
+ 	preempt_enable();
+ }
++
++void kdb_printf(const char *fmt, ...)
++{
++	va_list ap;
++
++	va_start(ap, fmt);
++	vkdb_printf(fmt, ap);
++	va_end(ap);
++}
++
+diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
+index e0754c8..cb97359 100644
+--- a/kernel/debug/kdb/kdb_main.c
++++ b/kernel/debug/kdb/kdb_main.c
+@@ -1058,7 +1058,9 @@ void kdb_dumpregs(struct pt_regs *regs)
+ {
+ 	int old_lvl = console_loglevel;
+ 	console_loglevel = 15;
++	kdb_trap_printk++;
+ 	show_regs(regs);
++	kdb_trap_printk--;
+ 	kdb_printf("\n");
+ 	console_loglevel = old_lvl;
+ }
+@@ -1837,7 +1839,9 @@ static int kdb_sr(int argc, const char **argv)
+ 		__sysrq_enabled = 1;
+ 	}
+ 
++	kdb_trap_printk++;
+ 	handle_sysrq(*argv[1], NULL);
++	kdb_trap_printk--;
+ 
+ 	return 0;
+ }
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 9bee02e..3321a3a 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -33,6 +33,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
+ #include <linux/kexec.h>
++#include <linux/kdb.h>
+ #include <linux/ratelimit.h>
+ #include <linux/kmsg_dump.h>
+ 
+@@ -608,7 +609,14 @@ asmlinkage int printk(const char *fmt, ...)
+ {
+ 	va_list args;
+ 	int r;
+-
++#ifdef CONFIG_KGDB_KDB
++	if (unlikely(kdb_trap_printk)) {
++		va_start(args, fmt);
++		vkdb_printf(fmt, args);
++		va_end(args);
++		return 0;
++	}
++#endif
+ 	va_start(args, fmt);
+ 	r = vprintk(fmt, args);
+ 	va_end(args);
 -- 
 1.6.4.rc1
 
