@@ -1,86 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZLWSET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZLWSGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbZLWSET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 13:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZLWSES
+	id S1756719AbZLWSGH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 13:06:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZLWSGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 13:04:18 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:40353 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752800AbZLWSER (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 13:04:17 -0500
-Date: Wed, 23 Dec 2009 21:04:15 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, leoli@freescale.com
-Subject: Re: ucc_geth broken in 2.6.32 by
- 864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
-Message-ID: <20091223180415.GA12987@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
+	Wed, 23 Dec 2009 13:06:05 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59615 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751889AbZLWSGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 13:06:01 -0500
+Date: Wed, 23 Dec 2009 19:05:51 +0100
+From: Jan Kara <jack@suse.cz>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Steve Rago <sar@nec-labs.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+ workloads
+Message-ID: <20091223180551.GD3159@quack.suse.cz>
+References: <1261015420.1947.54.camel@serenity>
+ <1261037877.27920.36.camel@laptop>
+ <20091219122033.GA11360@localhost>
+ <1261232747.1947.194.camel@serenity>
+ <20091222015907.GA6223@localhost>
+ <1261578107.2606.11.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
+In-Reply-To: <1261578107.2606.11.camel@localhost>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 12:40:19PM -0500, Lennart Sorensen wrote:
-> We use the ucc_geth for 6 ports (4 100Mbit and 2 Gbit ports) on an
-> mpc8360e.  Up to 2.6.31 this worked fine.  2.6.32 on the other hand
-> crashes very quickly after boot.
-
-Hm. Just curious, what CPU revision you use? So that I could try
-to reproduce the issue... I have MPC8360E-MDS boards, rev 2.0 and
-rev rev 2.1 CPUs, Marvell PHYs. I also have MPC8360E-RDK (rev 2.1).
-And I didn't see any issues with this patch.
-
-> I managed to see the same crash when I was selectively trying to add newer
-> ucc_geth patches to the 2.6.31 kernel a couple of months ago, and the same
-> patch that caused a crash then seems suspect.  If I revert the patch the
-> system runs completely stable.  Amusingly, the excact error message the
-> patch claims to fix is in fact the error it causes to happen in my case.
+On Wed 23-12-09 15:21:47, Trond Myklebust wrote:
+> On Tue, 2009-12-22 at 09:59 +0800, Wu Fengguang wrote: 
+> > 1) normal fs sets I_DIRTY_DATASYNC when extending i_size, however NFS
+> >    will set the flag for any pages written -- why this trick? To
+> >    guarantee the call of nfs_commit_inode()? Which unfortunately turns
+> >    almost every server side NFS write into sync writes..
+> > 
+> >  writeback_single_inode:
+> >     do_writepages
+> >       nfs_writepages
+> >         nfs_writepage ----[short time later]---> nfs_writeback_release*
+> >                                                    nfs_mark_request_commit
+> >                                                      __mark_inode_dirty(I_DIRTY_DATASYNC);
+> >                                     
+> >     if (I_DIRTY_SYNC || I_DIRTY_DATASYNC)  <---- so this will be true for most time
+> >       write_inode
+> >         nfs_write_inode
+> >           nfs_commit_inode
 > 
-> So preferably 864fdf884e82bacbe8ca5e93bd43393a61d2e2b4 could be reverted
+> 
+> I have been working on a fix for this. We basically do want to ensure
+> that NFS calls commit (otherwise we're not finished cleaning the dirty
+> pages), but we want to do it _after_ we've waited for all the writes to
+> complete. See below...
+> 
+> Trond
+> 
+> ------------------------------------------------------------------------------------------------------ 
+> VFS: Add a new inode state: I_UNSTABLE_PAGES
+> 
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> 
+> Add a new inode state to enable the vfs to commit the nfs unstable pages to
+> stable storage once the write back of dirty pages is done.
+  Hmm, does your patch really help?
 
-I don't see any point in reverting, because it will surely break my boards.
-So, we need to fix this, not just hide.
+> @@ -474,6 +482,18 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+>  	}
+>  
+>  	spin_lock(&inode_lock);
+> +	/*
+> +	 * Special state for cleaning NFS unstable pages
+> +	 */
+> +	if (inode->i_state & I_UNSTABLE_PAGES) {
+> +		int err;
+> +		inode->i_state &= ~I_UNSTABLE_PAGES;
+> +		spin_unlock(&inode_lock);
+> +		err = commit_unstable_pages(inode, wait);
+> +		if (ret == 0)
+> +			ret = err;
+> +		spin_lock(&inode_lock);
+> +	}
+  I don't quite understand this chunk: We've called writeback_single_inode
+because it had some dirty pages. Thus it has I_DIRTY_DATASYNC set and a few
+lines above your chunk, we've called nfs_write_inode which sent commit to
+the server. Now here you sometimes send the commit again? What's the
+purpose?
 
-> unless someone can fix it.
+> diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+> index faa0918..4f129b3 100644
+> --- a/fs/nfs/inode.c
+> +++ b/fs/nfs/inode.c
+> @@ -99,17 +99,14 @@ u64 nfs_compat_user_ino64(u64 fileid)
+>  
+>  int nfs_write_inode(struct inode *inode, int sync)
+>  {
+> +	int flags = 0;
+>  	int ret;
+>  
+> -	if (sync) {
+> -		ret = filemap_fdatawait(inode->i_mapping);
+> -		if (ret == 0)
+> -			ret = nfs_commit_inode(inode, FLUSH_SYNC);
+> -	} else
+> -		ret = nfs_commit_inode(inode, 0);
+> -	if (ret >= 0)
+> +	if (sync)
+> +		flags = FLUSH_SYNC;
+> +	ret = nfs_commit_inode(inode, flags);
+> +	if (ret > 0)
+>  		return 0;
+> -	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
+>  	return ret;
+>  }
+>  
 
-Well, I'm ready to help you with debugging.
-
-> Now I must add that I run with the xenomai/adeos-ipipe patches as well,
-> which do change interrupt handling a little,
-
-It could be that it takes too long to stop the UCC, and xenomai
-makes the timings worse, so the watchdog triggers.
-
-Can you try the following patch?
-
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index afaf088..2f73e3f 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -1563,6 +1563,8 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
- 
- static void ugeth_quiesce(struct ucc_geth_private *ugeth)
- {
-+	netif_device_detach(ugeth->ndev);
-+
- 	/* Wait for and prevent any further xmits. */
- 	netif_tx_disable(ugeth->ndev);
- 
-@@ -1577,7 +1579,7 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
- {
- 	napi_enable(&ugeth->napi);
- 	enable_irq(ugeth->ug_info->uf_info.irq);
--	netif_tx_wake_all_queues(ugeth->ndev);
-+	netif_device_attach(ugeth->ndev);
- }
- 
- /* Called every time the controller might need to be made
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
