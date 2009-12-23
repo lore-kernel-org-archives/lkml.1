@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbZLWKqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbZLVWUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379AbZLWKqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 05:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZLWKqc
+	id S1754742AbZLVWUR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Dec 2009 17:20:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZLVWUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 05:46:32 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:58068 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbZLWKqb (ORCPT
+	Tue, 22 Dec 2009 17:20:14 -0500
+Received: from cnmailgate04.alcatel-sbell.com.cn ([211.144.215.47]:49655 "EHLO
+	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752127AbZLVWUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 05:46:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=kewQQAjgVKjgCDKmdzaw2SFLGIecUg5+pl9LhUE80cALUgyO+v7SE9qI/VJ3n9hORY
-         0Yv9m4ZdqDWpN/4krvgYUYD5zMAcuAmr6KD5oHUuL8uQMP7qv+GrutTQQKmdEHBGAK8s
-         rBtVXAwLBFzkR6WKG2eSNBiNtIvEWCDs5oK+g=
+	Tue, 22 Dec 2009 17:20:14 -0500
+X-Greylist: delayed 1751 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Dec 2009 17:20:13 EST
+X-AuditID: ac189297-aaf7abb000000980-df-4b313ece35ce
+Message-ID: <4B31F5D7.3010500@alcatel-lucent.com>
+Date: Wed, 23 Dec 2009 05:49:59 -0500
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-In-Reply-To: <1261563687.4937.120.camel@laptop>
-References: <b9df5fa10912230214s3815c023g2a7e7ca152eb00e4@mail.gmail.com>
-	 <1261563687.4937.120.camel@laptop>
-Date: Wed, 23 Dec 2009 16:46:31 +0600
-Message-ID: <b9df5fa10912230246w4adf160bibc12d7c6480ce058@mail.gmail.com>
-Subject: Re: SCHED: Is task migration necessary in sched_exec().
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: how to suspend/resume SCSI ATA driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Dec 2009 21:50:08.0002 (UTC) FILETIME=[BA51B620:01CA8350]
+X-Brightmail-Tracker: AAAAAA==
+X-CFilter-Loop: Reflected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/09, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2009-12-23 at 16:14 +0600, Rakib Mullick wrote:
->
->
-> Well, if there's an imbalance the 'slow' load-balancer will move it
->  around eventually anyway, and since it will then have build up a larger
->  cache footprint it will be even more expensive.
->
-If there is an imbalance - then the overloaded task will moved. Why the
-_current_ task? It is getting the CPU that it was waiting for. We need to
-move overloaded task, not a task which is about to get execute. At this
-perticular moment pushing it away doesn't make sense, isn't it?
+Hello,
 
->  So moving it when its cheapest is the best all-round trade-off, isn't
->  it?
+I've a SCSI based SATA driver installed on my system. XMON has been 
+enabled either.
+When I invoked xmon for kernel debugging and then exit from xmon a while 
+later. SCSI
+Host always reported operations timeout'ed. So I want to suspend SCSI 
+SATA device
+before entering xmon and resume it when I'm back from xmon. I'm not sure 
+there is
+a way to do this?
 
-I don't have any argue with cache footprint issue.
->
->
-thanks,
+Thanks in advance,
+Gavin
