@@ -1,101 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZLWSjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751576AbZLWSsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbZLWSjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 13:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbZLWSjU
+	id S1751576AbZLWSsw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 13:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbZLWSsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 13:39:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54699 "EHLO mx2.suse.de"
+	Wed, 23 Dec 2009 13:48:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15278 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754893AbZLWSjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 13:39:19 -0500
-Date: Wed, 23 Dec 2009 19:39:12 +0100
-From: Jan Kara <jack@suse.cz>
-To: Steve Rago <sar@nec-labs.com>
-Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-Message-ID: <20091223183912.GE3159@quack.suse.cz>
-References: <1261015420.1947.54.camel@serenity>
- <1261037877.27920.36.camel@laptop>
- <20091219122033.GA11360@localhost>
- <1261232747.1947.194.camel@serenity>
- <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
- <1261498815.13028.63.camel@serenity>
+	id S1750986AbZLWSsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 13:48:51 -0500
+Message-ID: <4B32660A.8070106@redhat.com>
+Date: Wed, 23 Dec 2009 13:48:42 -0500
+From: Dave Anderson <anderson@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261498815.13028.63.camel@serenity>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: menage@google.com
+CC: linux-kernel@vger.kernel.org, bblum@andrew.cmu.edu, lizf@cn.fujitsu.com
+Subject: [PATCH] cgroups: fix 2.6.32 regression causing BUG_ON() in cgroup_diput()
+Content-Type: multipart/mixed;
+ boundary="------------060609040107020901060603"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 22-12-09 11:20:15, Steve Rago wrote:
-> 
-> On Tue, 2009-12-22 at 13:25 +0100, Jan Kara wrote:
-> > > I originally spent several months playing with the balance_dirty_pages
-> > > algorithm.  The main drawback is that it affects more than the inodes
-> > > that the caller is writing and that the control of what to do is too
-> >   Can you be more specific here please?
-> 
-> Sure;  balance_dirty_pages() will schedule writeback by the flusher
-> thread once the number of dirty pages exceeds dirty_background_ratio.
-> The flusher thread calls writeback_inodes_wb() to flush all dirty inodes
-> associated with the bdi.  Similarly, the process dirtying the pages will
-> call writeback_inodes_wbc() when it's bdi threshold has been exceeded.
-> The first problem is that these functions process all dirty inodes with
-> the same backing device, which can lead to excess (duplicate) flushing
-> of the same inode.  Second, there is no distinction between pages that
-> need to be committed and pages that have commits pending in
-> NR_UNSTABLE_NFS/BDI_RECLAIMABLE (a page that has a commit pending won't
-> be cleaned any faster by sending more commits).  This tends to overstate
-> the amount of memory that can be cleaned, leading to additional commit
-> requests.  Third, these functions generate a commit for each set of
-> writes they do, which might not be appropriate.  For background writing,
-> you'd like to delay the commit as long as possible.
-  Ok, I get it. Thanks for explanation. The problem with more writing
-threads bites us also for ordinary SATA drives (the IO pattern and thus
-throughput gets worse and worse the more threads do writes). The plan is to
-let only flusher thread do the IO and throttled thread in
-balance_dirty_pages just waits for flusher thread to do the work. There
-were even patches for this floating around but I'm not sure what's happened
-to them. So that part of the problem should be easy to solve.
-  Another part is about sending commits - if we have just one thread doing
-flushing, we have no problems with excessive commits for one inode. You're
-right that we may want to avoid sending commits for background writeback
-but until we send the commit, pages are just accumulating in the unstable
-state, aren't they? So we might want to periodically send the commit for
-the inode anyway to get rid of those pages. So from this point of view,
-sending commit after each writepages call does not seem like a so bad idea
-- although it might be more appropriate to send it some time after the
-writepages call when we are not close to dirty limit so that server has
-more time to do more natural "unforced" writeback...
+This is a multi-part message in MIME format.
+--------------060609040107020901060603
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > > Part of the patch does implement a heuristic write-behind.  See where
-> > > nfs_wb_eager() is called.
-> >   I believe that if we had per-bdi dirty_background_ratio and set it low
-> > for NFS's bdi, then the write-behind logic would not be needed
-> > (essentially the flusher thread should submit the writes to the server
-> > early).
-> > 
-> Maybe so, but you still need something to prevent the process that is
-> dirtying pages from continuing, because a process can always write to
-> memory faster than writing to disk/network, so the flusher won't be able
-> to keep up.
-  Yes, I agree that part is needed. But Fengguang already had patches in
-that direction if my memory serves me well.
 
-  So to recap: If we block tasks in balance_dirty_pages until unstable
-pages are committed and make just one thread do the writing, what else is
-missing to make you happy? :)
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+The LTP cgroup test suite generates a "kernel BUG at kernel/cgroup.c:790!"
+here in cgroup_diput():
+
+                 /*
+                  * if we're getting rid of the cgroup, refcount should ensure
+                  * that there are no pidlists left.
+                  */
+                 BUG_ON(!list_empty(&cgrp->pidlists));
+
+The cgroup pidlist rework in 2.6.32 generates the BUG_ON, which is caused
+when pidlist_array_load() calls cgroup_pidlist_find():
+
+(1) if a matching cgroup_pidlist is found, it down_write's the mutex of the
+     pre-existing cgroup_pidlist, and increments its use_count.
+(2) if no matching cgroup_pidlist is found, then a new one is allocated, it
+     down_write's its mutex, and the use_count is set to 0.
+(3) the matching, or new, cgroup_pidlist gets returned back to pidlist_array_load(),
+     which increments its use_count -- regardless whether new or pre-existing --
+     and up_write's the mutex.
+
+So if a matching list is ever encountered by cgroup_pidlist_find() during
+the life of a cgroup directory, it results in an inflated use_count value,
+preventing it from ever getting released by cgroup_release_pid_array().
+Then if the directory is subsequently removed, cgroup_diput() hits the
+BUG_ON() when it finds that the directory's cgroup is still populated
+with a pidlist.
+
+The patch simply removes the use_count increment when a matching
+pidlist is found by cgroup_pidlist_find(), because it gets bumped by
+the calling pidlist_array_load() function while still protected by the
+list's mutex.
+
+Signed-off-by: Dave Anderson <anderson@redhat.com>
+
+---
+
+
+
+--------------060609040107020901060603
+Content-Type: text/x-patch;
+ name="cgroup.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cgroup.patch"
+
+--- linux-2.6-git/kernel/cgroup.c.orig
++++ linux-2.6-git/kernel/cgroup.c
+@@ -2468,7 +2468,6 @@ static struct cgroup_pidlist *cgroup_pid
+ 			/* make sure l doesn't vanish out from under us */
+ 			down_write(&l->mutex);
+ 			mutex_unlock(&cgrp->pidlist_mutex);
+-			l->use_count++;
+ 			return l;
+ 		}
+ 	}
+
+--------------060609040107020901060603--
