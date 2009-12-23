@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZLWW64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbZLWW6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbZLWW64 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 17:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZLWW6y
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1755896AbZLWW6y (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 23 Dec 2009 17:58:54 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:55724 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752534AbZLWW6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZLWW6v
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 23 Dec 2009 17:58:51 -0500
-Message-ID: <4B32A09D.30400@codemonkey.ws>
-Date: Wed, 23 Dec 2009 16:58:37 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-CC: Kyle Moffett <kyle@moffetthome.net>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu> <4B2F9582.5000002@gmail.com> <20091222075742.GB26467@elte.hu> <4B3103B4.4070708@gmail.com> <f73f7ab80912222215i39ba865dv95764f95fd57bd96@mail.gmail.com> <4B3232A1.8050505@codemonkey.ws> <20091223195413.GB30700@ovro.caltech.edu>
-In-Reply-To: <20091223195413.GB30700@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Received: from chilli.pcug.org.au ([203.10.76.44]:42793 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751470AbZLWW6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 17:58:51 -0500
+Date: Thu, 24 Dec 2009 09:58:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: linux-next: slab/percpu tree build failure
+Message-Id: <20091224095848.f1586d1e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/2009 01:54 PM, Ira W. Snyder wrote:
-> On Wed, Dec 23, 2009 at 09:09:21AM -0600, Anthony Liguori wrote:
+Hi all,
 
-> I didn't know you were interested in this as well. See my later reply to
-> Kyle for a lot of code that I've written with this in mind.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+
+mm/slub.c: In function 'alloc_kmem_cache_cpus':
+mm/slub.c:2074: error: implicit declaration of function 'per_cpu_var'
+mm/slub.c:2074: warning: assignment makes pointer from integer without a cast
+
+Caused by commit 9dfc6e68bfe6ee452efb1a4e9ca26a9007f2b864 ("SLUB: Use
+this_cpu operations in slub") from the slab interacting with commit
+dd17c8f72993f9461e9c19250e3f155d6d99df22 ("percpu: remove per_cpu__
+prefix") from the percpu tree.
+
+I have added the following patch for today and (can carry it as
+necessary).
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 24 Dec 2009 09:56:29 +1100
+Subject: [PATCH] slab: update for percpu API change
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ mm/slub.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 6e34309..9e86e6b 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2071,7 +2071,7 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+ 		 * Boot time creation of the kmalloc array. Use static per cpu data
+ 		 * since the per cpu allocator is not available yet.
+ 		 */
+-		s->cpu_slab = per_cpu_var(kmalloc_percpu) + (s - kmalloc_caches);
++		s->cpu_slab = kmalloc_percpu + (s - kmalloc_caches);
+ 	else
+ 		s->cpu_slab =  alloc_percpu(struct kmem_cache_cpu);
+ 
+-- 
+1.6.5.4
 
 
-BTW, in the future, please CC me or CC 
-virtualization@lists.linux-foundation.org.  Or certainly kvm@vger.  I 
-never looked at the virtio-over-pci patchset although I've heard it 
-referenced before.
-
->> But both virtio-lguest and virtio-s390 use in-band enumeration and
->> discovery since they do not have support for PCI on either platform.
->>
->
-> I'm interested in the same thing, just over PCI. The only PCI agent
-> systems I've used are not capable of manipulating the PCI configuration
-> space in such a way that virtio-pci is usable on them.
-
-virtio-pci is the wrong place to start if you want to use a PCI *device* 
-as the virtio bus. virtio-pci is meant to use the PCI bus as the virtio 
-bus.  That's a very important requirement for us because it maintains 
-the relationship of each device looking like a normal PCI device.
-
-> This means
-> creating your own enumeration mechanism. Which sucks.
-
-I don't think it sucks.  The idea is that we don't want to unnecessarily 
-reinvent things.
-
-Of course, the key feature of virtio is that it makes it possible for 
-you to create your own enumeration mechanism if you're so inclined.
-
-> See my virtio-phys
-> code (http://www.mmarray.org/~iws/virtio-phys/) for an example of how I
-> did it. It was modeled on lguest. Help is appreciated.
-
-If it were me, I'd take a much different approach.  I would use a very 
-simple device with a single transmit and receive queue.  I'd create a 
-standard header, and the implement a command protocol on top of it. 
-You'll be able to support zero copy I/O (although you'll have a fixed 
-number of outstanding requests).  You would need a single large ring.
-
-But then again, I have no idea what your requirements are.  You could 
-probably get far treating the thing as a network device and just doing 
-ATAoE or something like that.
-
-Regards,
-
-Anthony Liguori
-
-> Ira
-
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
