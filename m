@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZLWMxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZLWNC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbZLWMxs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 07:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZLWMxi
+	id S1755850AbZLWNC2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 08:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZLWNC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 07:53:38 -0500
-Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:47638 "EHLO
-	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755109AbZLWMxh (ORCPT
+	Wed, 23 Dec 2009 08:02:27 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40418 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbZLWNC0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 07:53:37 -0500
-Message-ID: <4B3212ED.4090208@byu.net>
-Date: Wed, 23 Dec 2009 05:54:05 -0700
-From: Eric Blake <ebb9@byu.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.23) Gecko/20090812 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
+	Wed, 23 Dec 2009 08:02:26 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B321458.5020804@s5r6.in-berlin.de>
+Date: Wed, 23 Dec 2009 14:00:08 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: =?ISO-8859-1?Q?Jean-Pierre_Andr=E9?= <jean-pierre.andre@wanadoo.fr>,
-       fuse-devel@lists.sourceforge.net, Miklos Szeredi <miklos@szeredi.hu>,
-       Christoph Hellwig <hch@lst.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, ctrn3e8 <ctrn3e8@gmail.com>,
-       bug-coreutils <bug-coreutils@gnu.org>
-Subject: Re: [fuse-devel] utimensat fails to update ctime
-References: <4B2B156D.9040604@byu.net> <87aaxclr4q.fsf@devron.myhome.or.jp>	<4B2F7421.10005@byu.net> <4B2F7A95.3010708@byu.net>	<87hbrkjrk8.fsf@devron.myhome.or.jp> <4B304D04.6040501@byu.net>	<87d427jscr.fsf@devron.myhome.or.jp> <4B3097C4.3060803@wanadoo.fr>	<874onjjnln.fsf@devron.myhome.or.jp> <4B30B67A.7080703@wanadoo.fr>	<87ljgvi1an.fsf@devron.myhome.or.jp> <4B30F0C9.2020702@wanadoo.fr> <87my1aevro.fsf@devron.myhome.or.jp>
-In-Reply-To: <87my1aevro.fsf@devron.myhome.or.jp>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: workqueue thing
+References: <1261141088-2014-1-git-send-email-tj@kernel.org> <1261143924.20899.169.camel@laptop> <4B2EE5A5.2030208@kernel.org> <1261387377.4314.37.camel@laptop> <4B2F7879.2080901@kernel.org> <1261405604.4314.154.camel@laptop> <4B3009DC.7020407@kernel.org> <1261480001.4937.21.camel@laptop> <4B319A20.9010305@kernel.org> <alpine.LFD.2.00.0912222032360.6879@localhost.localdomain> <20091223060229.GA14805@elte.hu>
+In-Reply-To: <20091223060229.GA14805@elte.hu>
 X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -32,43 +33,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Ingo Molnar wrote:
+> Likewise, if there's a reduction in complexity, that is a tangible metric as 
+> well: lets do a few conversions as part of the patch-set and see how much 
+> simpler things have become as a result of it.
 
-According to OGAWA Hirofumi on 12/22/2009 10:58 AM:
->> I suggest I port Miklos patch to fuse-lite soon,
->> and delay the low-level case (and microsecond
->> precision) until January. Does that suit your needs ?
-> 
-> Thanks. Sounds good. I'm not using ntfs-3g actually, I just bridged the
-> bug report on lkml to others. Eric?
+There are for example about 160 users of  create_singlethread_workqueue
+(about 140 of them in drivers/.).  As has mentioned by others, many if
+not most of them would be better served by either the existing slow-work
+API or by the proposed worker thread pool.  Conversion to the former
+takes a bit more effort than the latter (not much, but it matters).
 
-I'm also bridging the report from a coreutils user (now cc'd).  Since I
-also don't use ntfs-3g, I'm hoping that ctrn3e8 will be able to help test
-whether the latest patch to ntfs-3g makes a difference in properly setting
-times.  To me, delaying precision while fixing UTIME_OMIT semantics is a
-reasonable approach.
+The little driver subsystem which I maintain extensively uses the shared
+workqueue and also one single-thread workqueue.  The facts that the
+shared queue is used for several purposes and a single thread for some
+are both just compromises which I would rather like to get rid of.  I
+should have converted the create_singlethread_workqueue usage to David
+Howells' slow-work infrastructure immediately when that was merged, but
+I didn't do so yet because there is too much else on my to-do list for
+that particular to-do item...
 
-By the way, is there any reliable way, other than uname() and checking for
-a minimum kernel version, to tell if all file systems will properly
-support UTIME_OMIT?  For coreutils 8.3, we will be inserting a workaround
-where instead of using UTIME_OMIT, we call fstatat() in advance of
-utimensat() and pass the original timestamp down.  But it would be nice to
-avoid the penalty of the extra stat if there were a reliable way to ensure
-that, regardless of file system, the use of UTIME_OMIT will be honored.
-After all, coreutils wants touch(1) to work regardless of how old the
-user's kernel and file system drivers are.
+> We really are not forced to the space of Gedankenexperiments here.
 
-- --
-Don't work too hard, make some time for fun as well!
-
-Eric Blake             ebb9@byu.net
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (Cygwin)
-Comment: Public key at home.comcast.net/~ericblake/eblake.gpg
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksyEu0ACgkQ84KuGfSFAYCrzACgirIjqmS7vFOBcI8xau6jHEa0
-4L0AnAjJkje+tSMF/FZkTbkohg/fhQ+i
-=ngx0
------END PGP SIGNATURE-----
+...to actually leave Gedankenexperiment stage as quickly as I would
+like.  Tejun's worker pool would make things easier for me.
+-- 
+Stefan Richter
+-=====-==--= ==-- =-===
+http://arcgraph.de/sr/
