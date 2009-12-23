@@ -1,50 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZLWTvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbZLWTxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZLWTvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 14:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbZLWTu5
+	id S1756820AbZLWTxQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 14:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZLWTxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 14:50:57 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52251 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754151AbZLWTux (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 14:50:53 -0500
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       Kyle Moffett <kyle@moffetthome.net>, Ingo Molnar <mingo@elte.hu>,
-       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-From: Andi Kleen <andi@firstfloor.org>
-References: <4B1D4F29.8020309@gmail.com> <20091218215107.GA14946@elte.hu>
-	<4B2F9582.5000002@gmail.com> <20091222075742.GB26467@elte.hu>
-	<4B3103B4.4070708@gmail.com>
-	<f73f7ab80912222215i39ba865dv95764f95fd57bd96@mail.gmail.com>
-	<4B3254B4.2080602@gmail.com> <20091223192808.GA30700@ovro.caltech.edu>
-Date: Wed, 23 Dec 2009 20:50:52 +0100
-In-Reply-To: <20091223192808.GA30700@ovro.caltech.edu> (Ira W. Snyder's message of "Wed, 23 Dec 2009 11:28:08 -0800")
-Message-ID: <873a31cvvn.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Dec 2009 14:53:14 -0500
+Received: from kroah.org ([198.145.64.141]:52932 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752534AbZLWTxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 14:53:09 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       stable <stable@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/10] devtmpfs: Convert dirlock to a mutex
+Date: Wed, 23 Dec 2009 11:52:34 -0800
+Message-Id: <1261597963-18323-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.6.5.6
+In-Reply-To: <20091223194955.GB18101@kroah.com>
+References: <20091223194955.GB18101@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Ira W. Snyder" <iws@ovro.caltech.edu> writes:
+From: Thomas Gleixner <tglx@linutronix.de>
 
-> (You'll quickly find that you must use DMA to transfer data across PCI.
-> AFAIK, CPU's cannot do burst accesses to the PCI bus. I get a 10+ times
+devtmpfs has a rw_lock dirlock which serializes delete_path and
+create_path.
 
-AFAIK that's what write-combining on x86 does. DMA has other
-advantages of course.
+This code was obviously never tested with the usual set of debugging
+facilities enabled. In the dirlock held sections the code calls:
 
--Andi
+ - vfs functions which take mutexes
+ - kmalloc(, GFP_KERNEL)
+
+In both code pathes the might sleep warning triggers and spams dmesg.
+
+Convert the rw_lock to a mutex. There is no reason why this needs to
+be a rwlock.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/devtmpfs.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/base/devtmpfs.c b/drivers/base/devtmpfs.c
+index 50375bb..278371c 100644
+--- a/drivers/base/devtmpfs.c
++++ b/drivers/base/devtmpfs.c
+@@ -32,7 +32,7 @@ static int dev_mount = 1;
+ static int dev_mount;
+ #endif
+ 
+-static rwlock_t dirlock;
++static DEFINE_MUTEX(dirlock);
+ 
+ static int __init mount_param(char *str)
+ {
+@@ -93,7 +93,7 @@ static int create_path(const char *nodepath)
+ {
+ 	int err;
+ 
+-	read_lock(&dirlock);
++	mutex_lock(&dirlock);
+ 	err = dev_mkdir(nodepath, 0755);
+ 	if (err == -ENOENT) {
+ 		char *path;
+@@ -117,7 +117,7 @@ static int create_path(const char *nodepath)
+ 		}
+ 		kfree(path);
+ 	}
+-	read_unlock(&dirlock);
++	mutex_unlock(&dirlock);
+ 	return err;
+ }
+ 
+@@ -229,7 +229,7 @@ static int delete_path(const char *nodepath)
+ 	if (!path)
+ 		return -ENOMEM;
+ 
+-	write_lock(&dirlock);
++	mutex_lock(&dirlock);
+ 	for (;;) {
+ 		char *base;
+ 
+@@ -241,7 +241,7 @@ static int delete_path(const char *nodepath)
+ 		if (err)
+ 			break;
+ 	}
+-	write_unlock(&dirlock);
++	mutex_unlock(&dirlock);
+ 
+ 	kfree(path);
+ 	return err;
+@@ -352,8 +352,6 @@ int __init devtmpfs_init(void)
+ 	int err;
+ 	struct vfsmount *mnt;
+ 
+-	rwlock_init(&dirlock);
+-
+ 	err = register_filesystem(&dev_fs_type);
+ 	if (err) {
+ 		printk(KERN_ERR "devtmpfs: unable to register devtmpfs "
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.5.7
+
