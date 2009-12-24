@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZLXFr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZLXFwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbZLXFr2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 00:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZLXFr1
+	id S1753833AbZLXFwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 00:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZLXFwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 00:47:27 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59824 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752136AbZLXFr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 00:47:26 -0500
-Message-ID: <4B330063.2030202@cn.fujitsu.com>
-Date: Thu, 24 Dec 2009 13:47:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 24 Dec 2009 00:52:31 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:53740 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbZLXFwa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 00:52:30 -0500
+Message-Id: <200912240551.nBO5pKMx082156@www262.sakura.ne.jp>
+Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK) interface. (v3)
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: sam@synack.fr
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       andi@firstfloor.org, david@lang.hm, socketcan@hartkopp.net,
+       herbert@gondor.apana.org.au, Valdis.Kletnieks@vt.edu, bdonlan@gmail.com,
+       zbr@ioremap.net, cscott@cscott.net, jmorris@namei.org,
+       ebiederm@xmission.com, bernie@codewiz.org, mrs@mythic-beasts.com,
+       randy.dunlap@oracle.com, xiyou.wangcong@gmail.com, michael@laptop.org
 MIME-Version: 1.0
-To: Dave Anderson <anderson@redhat.com>
-CC: menage@google.com, linux-kernel@vger.kernel.org,
-       Ben Blum <bblum@andrew.cmu.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>
-Subject: Re: [PATCH] cgroups: fix 2.6.32 regression causing BUG_ON() in cgroup_diput()
-References: <4B32660A.8070106@redhat.com>
-In-Reply-To: <4B32660A.8070106@redhat.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Date: Thu, 24 Dec 2009 14:51:19 +0900
+References: <20091224014454.GA24161@heat> <m2pr653s1l.fsf@ssh.synack.fr>
+In-Reply-To: <m2pr653s1l.fsf@ssh.synack.fr>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 24122009 #3162487, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Andrew
-CC: Container list
+Samir Bellabes wrote:
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index f2f842d..0c65c55 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -1402,6 +1402,8 @@ struct task_struct {
+> >   	unsigned int sessionid;
+> >   #endif
+> >   	seccomp_t seccomp;
+> > +/* Flags for limiting networking via prctl(PR_SET_NETWORK). */
+> > +  unsigned long network;
+> >   
+> >   /* Thread group tracking */
+> >      	u32 parent_exec_id;
+> 
+> I think this is unnecessary, as LSM module, you should use the
+> void* security member of the structure cred. 
+> 
+> this member allows you to mark task_struct as you which, it's a kind of
+> abstraction provided to all security modules.
 
-Dave Anderson wrote:
-> 
-> The LTP cgroup test suite generates a "kernel BUG at kernel/cgroup.c:790!"
-> here in cgroup_diput():
-> 
->                 /*
->                  * if we're getting rid of the cgroup, refcount should
-> ensure
->                  * that there are no pidlists left.
->                  */
->                 BUG_ON(!list_empty(&cgrp->pidlists));
-> 
+I want to use per task_struct variable. Since cred is copy-on-write, we have to
+use kmalloc()/kfree() whenever we modify variable in cred. That introduces
+unnwanted error paths (i.e. memory allocation failure) and overhead.
 
-Good catch. Thanks!
-
-This BUG can be easily triggered if 2 threads are reading the same cgroup's
-tasks file at the same time, and then the cgroup gets removed.
-
-And this patch needs to be added to 2.6.32.x.
-
-> The cgroup pidlist rework in 2.6.32 generates the BUG_ON, which is caused
-> when pidlist_array_load() calls cgroup_pidlist_find():
-> 
-> (1) if a matching cgroup_pidlist is found, it down_write's the mutex of the
->     pre-existing cgroup_pidlist, and increments its use_count.
-> (2) if no matching cgroup_pidlist is found, then a new one is allocated, it
->     down_write's its mutex, and the use_count is set to 0.
-> (3) the matching, or new, cgroup_pidlist gets returned back to
-> pidlist_array_load(),
->     which increments its use_count -- regardless whether new or
-> pre-existing --
->     and up_write's the mutex.
-> 
-> So if a matching list is ever encountered by cgroup_pidlist_find() during
-> the life of a cgroup directory, it results in an inflated use_count value,
-> preventing it from ever getting released by cgroup_release_pid_array().
-> Then if the directory is subsequently removed, cgroup_diput() hits the
-> BUG_ON() when it finds that the directory's cgroup is still populated
-> with a pidlist.
-> 
-> The patch simply removes the use_count increment when a matching
-> pidlist is found by cgroup_pidlist_find(), because it gets bumped by
-> the calling pidlist_array_load() function while still protected by the
-> list's mutex.
-> 
-> Signed-off-by: Dave Anderson <anderson@redhat.com>
-> 
-
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-
+Old version of TOMOYO had similar mechanism that allows userland programs to
+disable specific operations (disable chroot(), disable execve(), disable
+mount() etc. ; which is different from POSIX capabilities).
+I added "unsigned int dropped_capability;" to task_struct for implementing it.
+Adding variables to task_struct makes it possible to error-path-free.
+I prefer adding "void *security;" to task_struct which is duplicated upon fork() and
+released upon exit().
