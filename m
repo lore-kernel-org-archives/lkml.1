@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbZLXNVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZLXNXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbZLXNVb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 08:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbZLXNVa
+	id S1757177AbZLXNXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 08:23:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZLXNXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 08:21:30 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:51715 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZLXNV3 (ORCPT
+	Thu, 24 Dec 2009 08:23:00 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:47907 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751322AbZLXNW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 08:21:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=lrxmoX5dglVHP+psdHR/VJuDXjkboXw/xf7dfcMsTxXUC/yhj+TItT/cxOY93Fc8yR
-         sHgPLc/Ug8IxAN7aNXj2qZkx5YKcxj1B0aeS/5jG9bO8PYvVYoT5IKPhV6GCAbywJsKE
-         +IB3HgX9jWfRx/98Cl1saE3OebntXd10B3oHE=
-Subject: drivers/gpu/drm/radeon/r100.c: check for invalid family
-From: Darren Jenkins <darrenrjenkins@gmail.com>
-To: David Airlie <airlied@linux.ie>,
-       dri-devel mailing list <dri-devel@lists.sourceforge.net>,
-       Kernel Janitors <kernel-janitors@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 25 Dec 2009 00:21:36 +1100
-Message-ID: <1261660896.3546.43.camel@ICE-BOX>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Dec 2009 08:22:59 -0500
+Date: Thu, 24 Dec 2009 14:22:57 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/9] arch/mips/alchemy: Correct code taking the size of a
+ pointer
+Message-ID: <20091224132257.GA29598@linux-mips.org>
+References: <Pine.LNX.4.64.0912131240100.24267@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0912131240100.24267@ask.diku.dk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If there is an invalid family the fw_name is NULL and causes an
-NULL pointer dereference.
-This just adds a check for something unexpected.
+On Sun, Dec 13, 2009 at 12:40:39PM +0100, Julia Lawall wrote:
 
-Coverity CID: 13251
+> From: Julia Lawall <julia@diku.dk>
+> 
+> sizeof(dp) is just the size of the pointer.  Change it to the size of the
+> referenced structure.
 
-Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
-diff --git a/drivers/gpu/drm/radeon/r100.c
-b/drivers/gpu/drm/radeon/r100.c
-index 84e5df7..7d5de31 100644
---- a/drivers/gpu/drm/radeon/r100.c
-+++ b/drivers/gpu/drm/radeon/r100.c
-@@ -584,6 +584,8 @@ static int r100_cp_init_microcode(struct
-radeon_device *rdev)
- 		   (rdev->family == CHIP_RV570)) {
- 		DRM_INFO("Loading R500 Microcode\n");
- 		fw_name = FIRMWARE_R520;
-+	} else {
-+		return -EINVAL;
- 	}
- 
- 	err = request_firmware(&rdev->me_fw, fw_name, &pdev->dev);
+Thanks Julia, applied.
 
-
+  Ralf
