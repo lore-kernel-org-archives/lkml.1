@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZLXW1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZLXW2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbZLXW1g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 17:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZLXW1f
+	id S1757329AbZLXW2i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 17:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZLXW2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 17:27:35 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:54452 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755046AbZLXW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 17:27:34 -0500
-Date: Thu, 24 Dec 2009 14:27:12 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-Message-ID: <20091224142712.1e5c46d2@nehalam>
-In-Reply-To: <4B33BE74.3030704@majjas.com>
-References: <4B300A2A.8040305@gmail.com>
-	<4B300E30.9090707@majjas.com>
-	<4B3114E3.1070602@majjas.com>
-	<4B329FA3.9090904@majjas.com>
-	<20091223230102.4bb0100e.akpm@linux-foundation.org>
-	<4B33BE74.3030704@majjas.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Dec 2009 17:28:37 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:26453 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755585AbZLXW2g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 17:28:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=qAyItwPc9vX1b1gTOtn7BSdUTuR8MVq6gnemhBp76PPoZZSvhvmW5bIOiG5JIgve31
+         WiEiHYG5mMaOY/bG/qLOZJv2mRza0u9M0pWb9Z3BMo7AsaoxN1YfecugouvrRmuAHBDh
+         IMoW0pk+m7HVUqn9rwjoROaCwxnlm9Z+Vq7fU=
+MIME-Version: 1.0
+Date: Fri, 25 Dec 2009 01:28:34 +0300
+Message-ID: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
+Subject: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Dec 2009 14:18:12 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
+Hi
 
-> I'll be the first to admit I don't know much about network drivers... 
-> but I am wondering why __free_page(frag->page); is called in 
-> skb_put_frags when the fragment length is zero. I don't see why that 
-> page pointer wouldn't potentially be reused afterwords.
+Kernel is 2.6.33-rc1-00366-g2f99f5c
+Ext4 mounts ext3 filesystem
 
-When using Jumbo frames, the sky2 driver allocates pages to hold
-the larger part of the frame. With 9K MTU it will allocate 2 * 4K pages
-and then 1K for start of frame. Then if frame is <= 1K it will drop
-the extra pages.  Not sure why this broke now, I am not a VM expert.
 
--- 
+
+kernel BUG at fs/ext4/inode.c:1063!
+              \|/ ____ \|/
+              "@'/ .. \`@"
+              /_| \__/ |_\
+                 \__U_/
+flush-8:0(1137): Kernel bad sw trap 5 [#1]
+TSTATE: 0000000080001603 TPC: 0000000000544fb4 TNPC: 0000000000544fb8
+Y: 00000000    Not tainted
+TPC: <ext4_get_blocks+0x3f4/0x400>
+g0: fffff800dc862fe0 g1: 0000000000000001 g2: 0000000000000001 g3:
+fffff800dc85f9c1
+g4: fffff800df305880 g5: 2e68006800002e68 g6: fffff800dc860000 g7:
+0000000000833e08
+o0: 00000000007b0cb8 o1: 0000000000000427 o2: 0000000000000040 o3:
+0000000000000040
+o4: fffff800dc8630a0 o5: 000000000000000d sp: fffff800dc8628d1 ret_pc:
+0000000000544fac
+RPC: <ext4_get_blocks+0x3ec/0x400>
+l0: 0000000000000002 l1: fffff800c2674000 l2: fffff800c26740d0 l3:
+0000000000000001
+l4: fffff800df39d2d0 l5: 00000000000003f9 l6: 0006000000000000 l7:
+0000000000001ffe
+i0: 0000000000000040 i1: fffff800c2674130 i2: 000000000000064c i3:
+fffff800c26745a8
+i4: fffff800dc863308 i5: 0000000000000003 i6: fffff800dc8629a1 i7:
+0000000000545380
+I7: <mpage_da_map_blocks+0x80/0x800>
+Disabling lock debugging due to kernel taint
+Caller[0000000000545380]: mpage_da_map_blocks+0x80/0x800
+Caller[00000000005461c0]: mpage_add_bh_to_extent+0x40/0x100
+Caller[000000000054642c]: __mpage_da_writepage+0x1ac/0x220
+Caller[00000000004a951c]: write_cache_pages+0x19c/0x380
+Caller[0000000000545d7c]: ext4_da_writepages+0x27c/0x680
+Caller[00000000004a978c]: do_writepages+0x2c/0x60
+Caller[00000000004f94cc]: writeback_single_inode+0xcc/0x3c0
+Caller[00000000004fa3d8]: writeback_inodes_wb+0x338/0x500
+Caller[00000000004fa6e8]: wb_writeback+0x148/0x220
+Caller[00000000004fab00]: wb_do_writeback+0x240/0x260
+Caller[00000000004fab8c]: bdi_writeback_task+0x6c/0xc0
+Caller[00000000004b6f50]: bdi_start_fn+0x70/0xe0
+Caller[000000000047030c]: kthread+0x6c/0x80
+Caller[000000000042bc9c]: kernel_thread+0x3c/0x60
+Caller[0000000000470408]: kthreadd+0xe8/0x160
+Instruction DUMP: 92102427  7ffb95a5  901220b8 <91d02005> 01000000
+01000000  9de3bf40  11002096  a4100018
+note: flush-8:0[1137] exited with preempt_count 1
