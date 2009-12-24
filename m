@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZLXHaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZLXHhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbZLXHaS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 02:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZLXHaQ
+	id S1756794AbZLXHhF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 02:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZLXHhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 02:30:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58378 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754545AbZLXHaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 02:30:14 -0500
-Message-ID: <4B331957.7030906@kernel.org>
-Date: Thu, 24 Dec 2009 16:33:43 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Thu, 24 Dec 2009 02:37:00 -0500
+Received: from netgear.net.ru ([195.178.208.66]:57002 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754219AbZLXHg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 02:36:59 -0500
+Date: Thu, 24 Dec 2009 10:36:54 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+Subject: Re: A basic question about the security_* hooks
+Message-ID: <20091224073654.GD16133@ioremap.net>
+References: <20091224022902.GA24234@heat>
 MIME-Version: 1.0
-To: fengxiangjun <fengxiangjun@neusoft.com>
-CC: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
-References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net> <4B30134C.1050609@gmail.com> <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net> <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com> <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net> <4B31DB17.4050509@kernel.org> <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net>
-In-Reply-To: <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091224022902.GA24234@heat>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/23/2009 06:29 PM, fengxiangjun wrote:
+On Wed, Dec 23, 2009 at 09:29:02PM -0500, Michael Stone (michael@laptop.org) wrote:
+> There are a variety of places where I'd like to be able to get the kernel to
+> return EPERM more often [1]. Many of these places already have security 
+> hooks.
 > 
-> Hi,
-> 
-> with this patch, the problem still exists.
-> 
-> ata1.01: XXX debounce start, SStatus=4
-> ata1.01: XXX debounce done, SStatus=4, DET stable for 520 msecs
-> ata1.00: SATA link down (SStatus 0 SControl 301)
-> ata1.01: SATA link down (SStatus 0 Scontrol 300)
-> ...
-> VFS; cannot open root device ...
-> 
-> The kernel just panic, and I can't see what's the messege printing before 
-> that.
-> 
-> So, I tried 'console=ttyS0 console=tty1'，full dmesg attached。
+> Unfortunately, I don't feel that I can make effective use of these hooks
+> because they seem to be "occupied" by the large mandatory access control
+> frameworks.
 
-Can you please capture full failing log?  In the attached log, ata1.00
-is detected successfully.
-
-Thanks.
+I believe you should convice selinux and friends to add support for your
+extension, otherwise no distribution will be able to turn it on, since
+no two security frameworks can be registered simultaneously.
 
 -- 
-tejun
+	Evgeniy Polyakov
