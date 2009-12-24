@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZLXAv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZLXAzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbZLXAv6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 19:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbZLXAv4
+	id S1755260AbZLXAzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 19:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZLXAy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 19:51:56 -0500
-Received: from kroah.org ([198.145.64.141]:34112 "EHLO coco.kroah.org"
+	Wed, 23 Dec 2009 19:54:59 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36893 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbZLXAvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 19:51:55 -0500
-Date: Wed, 23 Dec 2009 16:51:27 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+	id S1750973AbZLXAy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 19:54:59 -0500
+Date: Thu, 24 Dec 2009 11:54:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: linux-next: usb tree build warning
-Message-ID: <20091224005127.GA14997@kroah.com>
-References: <20091224110109.37ac11c9.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091224110109.37ac11c9.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       Stefani Seibold <stefani@seibold.net>
+Subject: linux-next: origin tree build failure
+Message-Id: <20091224115457.1db3541d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 24, 2009 at 11:01:09AM +1100, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> Today's linux-next build (x86_64 allmodconfig) produced this warning:
-> 
-> drivers/usb/core/sysfs.c: In function 'set_reset_quirk':
-> drivers/usb/core/sysfs.c:201: warning: unused variable 'value'
-> 
-> Introduced by commit 9bc2b949ea002c26fafa8c8aa82595ff56075d4f ("USB:
-> Export USB_QUIRK_RESET_MORPHS through sysfs").
+Hi all,
 
-Thanks, I have a follow-up patch in my queue that fixes this.  I'll
-merge it together.
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
-greg k-h
+In file included from drivers/scsi/ibmvscsi/ibmvstgt.c:30:
+include/scsi/libsrp.h:24: error: field 'queue' has incomplete type
+
+Caused by commit 45465487897a1c6d508b14b904dc5777f7ec7e04 ("kfifo: move
+struct kfifo in place").
+
+I added this patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 24 Dec 2009 11:44:28 +1100
+Subject: [PATCH] kfifo: include linux/fifo.h in libsrp.h for definition of stuct kfifo
+
+This fixes this compiler error:
+
+In file included from drivers/scsi/ibmvscsi/ibmvstgt.c:30:
+include/scsi/libsrp.h:24: error: field 'queue' has incomplete type
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/scsi/libsrp.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/include/scsi/libsrp.h b/include/scsi/libsrp.h
+index 07e3add..f4105c9 100644
+--- a/include/scsi/libsrp.h
++++ b/include/scsi/libsrp.h
+@@ -2,6 +2,7 @@
+ #define __LIBSRP_H__
+ 
+ #include <linux/list.h>
++#include <linux/kfifo.h>
+ #include <scsi/scsi_cmnd.h>
+ #include <scsi/scsi_host.h>
+ #include <scsi/srp.h>
+-- 
+1.6.5.4
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
