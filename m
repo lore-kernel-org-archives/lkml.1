@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZLXWtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbZLXXFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbZLXWtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 17:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZLXWtb
+	id S1756174AbZLXXFU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 18:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZLXXFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 17:49:31 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39173 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbZLXWtb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 17:49:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=T4P9PmAu+Zu5eapHiv0wkfuVAv13zMiWkx8obuYu6YKJ2gWHhrHzAg/1mKpSSiVbKQ
-         D6/66N4COVFZjMgDYA85pvPcnANRnec++L3HaKXLbbyPQl45C/CSU4nSXIqH9e7m5yEK
-         VrvVk/T+I+lRShIzubVp8cfXvqJLkFIv8tZQY=
-MIME-Version: 1.0
-In-Reply-To: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
-References: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
-Date: Fri, 25 Dec 2009 01:49:29 +0300
-Message-ID: <a4423d670912241449y2da43d5fi3e5a18c114b84178@mail.gmail.com>
+	Thu, 24 Dec 2009 18:05:20 -0500
+Received: from THUNK.ORG ([69.25.196.29]:50316 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752191AbZLXXFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 18:05:19 -0500
+Date: Thu, 24 Dec 2009 18:05:12 -0500
+From: tytso@mit.edu
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
 Subject: Re: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Message-ID: <20091224230512.GA32757@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Alexander Beregalov <a.beregalov@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+References: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/25 Alexander Beregalov <a.beregalov@gmail.com>:
-> Hi
->
+On Fri, Dec 25, 2009 at 01:28:34AM +0300, Alexander Beregalov wrote:
+> 
 > Kernel is 2.6.33-rc1-00366-g2f99f5c
 > Ext4 mounts ext3 filesystem
->
->
->
+> 
 > kernel BUG at fs/ext4/inode.c:1063!
->              \|/ ____ \|/
->              "@'/ .. \`@"
->              /_| \__/ |_\
->                 \__U_/
-> flush-8:0(1137): Kernel bad sw trap 5 [#1]
-> TSTATE: 0000000080001603 TPC: 0000000000544fb4 TNPC: 0000000000544fb8
-> Y: 00000000    Not tainted
-> TPC: <ext4_get_blocks+0x3f4/0x400>
-> g0: fffff800dc862fe0 g1: 0000000000000001 g2: 0000000000000001 g3:
-> fffff800dc85f9c1
-> g4: fffff800df305880 g5: 2e68006800002e68 g6: fffff800dc860000 g7:
-> 0000000000833e08
-> o0: 00000000007b0cb8 o1: 0000000000000427 o2: 0000000000000040 o3:
-> 0000000000000040
-> o4: fffff800dc8630a0 o5: 000000000000000d sp: fffff800dc8628d1 ret_pc:
-> 0000000000544fac
-> RPC: <ext4_get_blocks+0x3ec/0x400>
-> l0: 0000000000000002 l1: fffff800c2674000 l2: fffff800c26740d0 l3:
-> 0000000000000001
-> l4: fffff800df39d2d0 l5: 00000000000003f9 l6: 0006000000000000 l7:
-> 0000000000001ffe
-> i0: 0000000000000040 i1: fffff800c2674130 i2: 000000000000064c i3:
-> fffff800c26745a8
-> i4: fffff800dc863308 i5: 0000000000000003 i6: fffff800dc8629a1 i7:
-> 0000000000545380
-> I7: <mpage_da_map_blocks+0x80/0x800>
-> Disabling lock debugging due to kernel taint
-> Caller[0000000000545380]: mpage_da_map_blocks+0x80/0x800
-> Caller[00000000005461c0]: mpage_add_bh_to_extent+0x40/0x100
-> Caller[000000000054642c]: __mpage_da_writepage+0x1ac/0x220
-> Caller[00000000004a951c]: write_cache_pages+0x19c/0x380
-> Caller[0000000000545d7c]: ext4_da_writepages+0x27c/0x680
-> Caller[00000000004a978c]: do_writepages+0x2c/0x60
-> Caller[00000000004f94cc]: writeback_single_inode+0xcc/0x3c0
-> Caller[00000000004fa3d8]: writeback_inodes_wb+0x338/0x500
-> Caller[00000000004fa6e8]: wb_writeback+0x148/0x220
-> Caller[00000000004fab00]: wb_do_writeback+0x240/0x260
-> Caller[00000000004fab8c]: bdi_writeback_task+0x6c/0xc0
-> Caller[00000000004b6f50]: bdi_start_fn+0x70/0xe0
-> Caller[000000000047030c]: kthread+0x6c/0x80
-> Caller[000000000042bc9c]: kernel_thread+0x3c/0x60
-> Caller[0000000000470408]: kthreadd+0xe8/0x160
-> Instruction DUMP: 92102427  7ffb95a5  901220b8 <91d02005> 01000000
-> 01000000  9de3bf40  11002096  a4100018
-> note: flush-8:0[1137] exited with preempt_count 1
->
 
-It seems I can easily reproduce it.
-But I can't compile 2.6.33-rc2 :)
+OK, that's this BUG which is triggering:
 
-scripts/kconfig/conf -s arch/sparc/Kconfig
-  CHK     include/linux/version.h
-  CHK     include/generated/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/generated/compile.h
-  GZIP    kernel/config_data.gz
-  CC      fs/configfs/inode.o
-  IKCFG   kernel/config_data.h
-  LD [M]  fs/btrfs/btrfs.o
-  CC      kernel/configs.o
-fs/btrfs/sysfs.o: file not recognized: File truncated
-make[2]: *** [fs/btrfs/btrfs.o] Error 1
-make[1]: *** [fs/btrfs] Error 2
-make[1]: *** Waiting for unfinished jobs....
+	if (mdb_free) {
+		/* Account for allocated meta_blocks */
+		mdb_claim = EXT4_I(inode)->i_allocated_meta_blocks;
+		BUG_ON(mdb_free < mdb_claim);  <------- BUG triggered
+		mdb_free -= mdb_claim;
+
+Can you replicate this?  If so, I'd like to ask you to replicate with
+the following debugging patch applied:
+
+--- fs/ext4/inode.c	2009-12-24 17:55:03.736366001 -0500
++++ fs/ext4/inode.c.new	2009-12-24 18:02:58.556366024 -0500
+@@ -1060,6 +1060,10 @@
+ 	if (mdb_free) {
+ 		/* Account for allocated meta_blocks */
+ 		mdb_claim = EXT4_I(inode)->i_allocated_meta_blocks;
++		if (mdb_free < mdb_claim)
++			ext4_msg(inode->i_sb, KERN_ERR, "inode #%lu: "
++				 "mdb_free (%d) < mdb_claim (%d) BUG\n",
++				 inode->i_ino, mdb_free, mdb_claim);
+ 		BUG_ON(mdb_free < mdb_claim);
+ 		mdb_free -= mdb_claim;
+
+Then once you get the inode number (suppose it's 12345), please send
+the output of the following debugfs commands:
+
+debugfs: stat <12345>
+debugfs: ncheck 12345
+
+Thanks!!
+
+					- Ted
