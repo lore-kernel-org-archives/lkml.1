@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbZLXACJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZLXABS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbZLXACJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 19:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZLXACH
+	id S1756867AbZLXABS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 19:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZLXABQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 19:02:07 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:61746 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbZLXACG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 19:02:06 -0500
-Date: Wed, 23 Dec 2009 16:00:50 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, eduard.munteanu@linux360.ro,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: kmemtrace.txt question: kernel parameter(s)?
-Message-Id: <20091223160050.0c282ad2.randy.dunlap@oracle.com>
-In-Reply-To: <4B2AD38D.3070605@cn.fujitsu.com>
-References: <20091217141342.9ae2072b.randy.dunlap@oracle.com>
-	<4B2AD38D.3070605@cn.fujitsu.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 23 Dec 2009 19:01:16 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36998 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752063AbZLXABQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 19:01:16 -0500
+Date: Thu, 24 Dec 2009 11:01:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Neukum <oliver@neukum.org>
+Subject: linux-next: usb tree build warning
+Message-Id: <20091224110109.37ac11c9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B0207.4B32AF5C.0164:SCFMA4539814,ss=1,fgs=0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__24_Dec_2009_11_01_09_+1100_/KF=fWE8TwzZX6S6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009 08:57:49 +0800 Li Zefan wrote:
+--Signature=_Thu__24_Dec_2009_11_01_09_+1100_/KF=fWE8TwzZX6S6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Randy Dunlap wrote:
-> > Hi,
-> > 
-> > Documentation/trace/kmemtrace.txt says:
-> > 
-> > Q: 'cat /sys/kernel/debug/kmemtrace/total_overruns' is non-zero, how do I fix
-> > this? Should I worry?
-> > A: If it's non-zero, this affects kmemtrace's accuracy, depending on how
-> > large the number is. You can fix it by supplying a higher
-> > 'kmemtrace.subbufs=N' kernel parameter.
-> > 
-> > 
-> > Where is this kernel parameter implemented and where is it documented?
-> > or should this Answer just be fixed?
-> > 
-> 
-> The whole documentation is out-dated. The original kmemtrace was based on
-> relay, and then it moved to ftrace, without updating the documentation.
+Hi Greg,
 
-Thank you.  I guess that explains why kmemtraced (from kmemtrace-user.git)
-fails with:
-Could not open() file /sys/kernel/debug/kmemtrace/cpu0: No such file or directory
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-Eduard, can we get Documentation/trace/kmemtrace.txt updated, please?
+drivers/usb/core/sysfs.c: In function 'set_reset_quirk':
+drivers/usb/core/sysfs.c:201: warning: unused variable 'value'
 
----
-~Randy
+Introduced by commit 9bc2b949ea002c26fafa8c8aa82595ff56075d4f ("USB:
+Export USB_QUIRK_RESET_MORPHS through sysfs").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__24_Dec_2009_11_01_09_+1100_/KF=fWE8TwzZX6S6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksyr0UACgkQjjKRsyhoI8x1KwCff+CDPu0rix2D2j1avoTch/x4
++q0An1VT0oMFaRObYx4PZV6V0YB0TiH0
+=9M8u
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__24_Dec_2009_11_01_09_+1100_/KF=fWE8TwzZX6S6--
