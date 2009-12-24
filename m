@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbZLXJbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZLXJgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbZLXJbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 04:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZLXJbU
+	id S1756584AbZLXJgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 04:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZLXJgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 04:31:20 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:3459 "EHLO
+	Thu, 24 Dec 2009 04:36:35 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:14918 "EHLO
 	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZLXJbS (ORCPT
+	with ESMTP id S1753884AbZLXJge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 04:31:18 -0500
+	Thu, 24 Dec 2009 04:36:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:x-enigmail-version:content-type;
-        b=WfzBwjiWR1PRAW4K7CKycOaB/lKmT6T3DHF7jwEps9aLkLOfKujBxl2AoQxysiKKT8
-         MJcfv/pCRdrdcwHSWxz5evdmAwTeYlIbIVSEyfMuYHTaaWN04d3vQdZSUOh7i2MexKAA
-         91AU4/o4w+V1+y3urCosWXFvM68jO/SbtC/d4=
-Message-ID: <4B3334E1.9020401@gmail.com>
-Date: Thu, 24 Dec 2009 04:31:13 -0500
+        b=bCfD590P4YCLcP+h14zfiX5lS/zKBnHXa7Bz3IJlEf1cA/HzRkN5XUMdeb1Xh/zaHH
+         vB5befxHg348LDdrCrMcM7nIjdC0cyuAZ7IGyOmOVGWSQHpnxTWFeZpgx+62RilZQyLK
+         jDbIRcMPawELsNRAQX3fWTwe9Ob/bwHrYW8Po=
+Message-ID: <4B33361E.3000605@gmail.com>
+Date: Thu, 24 Dec 2009 04:36:30 -0500
 From: Gregory Haskins <gregory.haskins@gmail.com>
 User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
@@ -33,67 +33,77 @@ CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
        "alacrityvm-devel@lists.sourceforge.net" 
 	<alacrityvm-devel@lists.sourceforge.net>
 Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com>
-In-Reply-To: <4B327F3A.9020101@redhat.com>
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com> <4B328535.5040105@redhat.com>
+In-Reply-To: <4B328535.5040105@redhat.com>
 X-Enigmail-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="------------enig6F1D242F29ABF64475662726"
+ boundary="------------enig24B2B51B00B69B2008494E7A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6F1D242F29ABF64475662726
+--------------enig24B2B51B00B69B2008494E7A
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 12/23/09 3:36 PM, Avi Kivity wrote:
-> On 12/23/2009 06:44 PM, Gregory Haskins wrote:
+On 12/23/09 4:01 PM, Avi Kivity wrote:
+> On 12/23/2009 10:36 PM, Avi Kivity wrote:
+>> On 12/23/2009 06:44 PM, Gregory Haskins wrote:
+>>>
+>>>>   - Are a pure software concept
+>>> By design.  In fact, I would describe it as "software to software
+>>> optimized" as opposed to trying to shoehorn into something that was
+>>> designed as a software-to-hardware interface (and therefore has
+>>> assumptions about the constraints in that environment that are not
+>>> applicable in software-only).
+>>>
 >>
->>>   - Are a pure software concept
->>>     =20
->> By design.  In fact, I would describe it as "software to software
->> optimized" as opposed to trying to shoehorn into something that was
->> designed as a software-to-hardware interface (and therefore has
->> assumptions about the constraints in that environment that are not
->> applicable in software-only).
+>> And that's the biggest mistake you can make.  Look at Xen, for
+>> instance.  The paravirtualized the fork out of everything that moved
+>> in order to get x86 virt going.  And where are they now? x86_64
+>> syscalls are slow since they have to trap to the hypervisor and
+>> (partially) flush the tlb.  With npt or ept capable hosts performance
+>> is better for many workloads on fullvirt.  And paravirt doesn't
+>> support Windows.  Their unsung hero Jeremy is still trying to upstream=
+
+>> dom0 Xen support.  And they get to support it forever.
 >>
->>   =20
+>> VMware stuck with the hardware defined interfaces.  Sure they had to
+>> implement binary translation to get there, but as a result, they only
+>> have to support one interface, all guests support it, and they can
+>> drop it on newer hosts where it doesn't give them anything.
 >=20
-> And that's the biggest mistake you can make.
+> As a twist on this, the VMware paravirt driver interface is so
+> hardware-like that they're getting hardware vendors to supply cards tha=
+t
+> implement it.  Try that with a pure software approach.
 
-Sorry, that is just wrong or you wouldn't have virtio either.
+Any hardware engineer (myself included) will tell you that, generally
+speaking, what you can do in hardware you can do in software (think of
+what QEMU does today, for instance).  It's purely a cost/performance
+tradeoff.
 
->  Look at Xen, for
-> instance.  The paravirtualized the fork out of everything that moved in=
+I can at least tell you that is true of vbus.  Anything on the vbus side
+would be equally eligible for a hardware implementation, though there is
+not reason to do this today since we have equivalent functionality in
+baremetal already.  The only motiviation is if you wanted to preserve
+ABI etc, which is what vmware is presumably after.  However, I am not
+advocating this as necessary at this juncture.
 
-> order to get x86 virt going.  And where are they now? x86_64 syscalls
-> are slow since they have to trap to the hypervisor and (partially) flus=
-h
-> the tlb.  With npt or ept capable hosts performance is better for many
-> workloads on fullvirt.  And paravirt doesn't support Windows.  Their
-> unsung hero Jeremy is still trying to upstream dom0 Xen support.  And
-> they get to support it forever.
-
-We are only talking about PV-IO here, so not apples to apples to what
-Xen is going through.
-
->=20
-> VMware stuck with the hardware defined interfaces.  Sure they had to
-> implement binary translation to get there, but as a result, they only
-> have to support one interface, all guests support it, and they can drop=
-
-> it on newer hosts where it doesn't give them anything.
-
-Again, you are confusing PV-IO.  Not relevant here.   Afaict, vmware,
-kvm, xen, etc, all still do PV-IO and likely will for the foreseeable
-future.
+So sorry, your statement is not relevant.
 
 -Greg
 
 
---------------enig6F1D242F29ABF64475662726
+
+
+>=20
+
+
+
+--------------enig24B2B51B00B69B2008494E7A
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -102,9 +112,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
 Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iEYEARECAAYFAkszNOEACgkQP5K2CMvXmqH8eQCeKwrgu5YaVdyI6IAve/v8J437
-HdgAnitvdnltkpz2ErIxG0ygN4gk6j/4
-=GoeV
+iEYEARECAAYFAkszNh4ACgkQP5K2CMvXmqH1iQCePJc5KaloVUoUe1VbwPUwuIO7
+V/sAniQm/2DWWxyIv3xGAB7ntfZj4w1W
+=RFQj
 -----END PGP SIGNATURE-----
 
---------------enig6F1D242F29ABF64475662726--
+--------------enig24B2B51B00B69B2008494E7A--
