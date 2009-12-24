@@ -1,150 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbZLXLFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbZLXLJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757133AbZLXLFY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 06:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbZLXLFX
+	id S1757074AbZLXLJZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 06:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZLXLJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 06:05:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48191 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbZLXLFW (ORCPT
+	Thu, 24 Dec 2009 06:09:24 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:45532 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbZLXLJX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 06:05:22 -0500
-Subject: Re: [PATCH 05/37] kdb: core for kgdb back end
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       kdb@oss.sgi.com, mingo@elte.hu, mort@sgi.com,
-       linux-arch@vger.kernel.org
-In-Reply-To: <1261603190-5036-6-git-send-email-jason.wessel@windriver.com>
-References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
-	 <1261603190-5036-2-git-send-email-jason.wessel@windriver.com>
-	 <1261603190-5036-3-git-send-email-jason.wessel@windriver.com>
-	 <1261603190-5036-4-git-send-email-jason.wessel@windriver.com>
-	 <1261603190-5036-5-git-send-email-jason.wessel@windriver.com>
-	 <1261603190-5036-6-git-send-email-jason.wessel@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 24 Dec 2009 12:04:32 +0100
-Message-ID: <1261652672.4937.189.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Dec 2009 06:09:23 -0500
+Date: Thu, 24 Dec 2009 12:09:21 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: john stultz <johnstul@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC][PATCH 2/14] Convert arm to read/update_persistent_clock
+Message-ID: <20091224110921.GA14511@pengutronix.de>
+References: <1261540762.3508.61.camel@localhost.localdomain> <1261540826.3508.62.camel@localhost.localdomain> <1261540902.3508.63.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1261540902.3508.63.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-23 at 15:19 -0600, Jason Wessel wrote:
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 87f1f47..6e1cfcf 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -9785,7 +9785,7 @@ void normalize_rt_tasks(void)
->  
->  #endif /* CONFIG_MAGIC_SYSRQ */
->  
-> -#ifdef CONFIG_IA64
-> +#if    defined(CONFIG_IA64) || defined(CONFIG_KGDB_KDB)
->  /*
->   * These functions are only useful for the IA64 MCA handling.
->   *
-> @@ -10912,6 +10912,97 @@ struct cgroup_subsys cpuacct_subsys = {
->  };
->  #endif /* CONFIG_CGROUP_CPUACCT */
->  
-> +#ifdef CONFIG_KGDB_KDB
-> +#include <linux/kdb.h>
-> +
-> +static void
-> +kdb_prio(char *name, struct rt_prio_array *array, kdb_printf_t xxx_printf,
-> +       unsigned int cpu)
-> +{
-> +       int pri, printed_header = 0;
-> +       struct task_struct *p;
-> +
-> +       xxx_printf("  %s rt bitmap: 0x%lx 0x%lx 0x%lx\n",
-> +               name,
-> +               array->bitmap[0], array->bitmap[1], array->bitmap[2]);
-> +
-> +       pri = sched_find_first_bit(array->bitmap);
-> +       if (pri < MAX_RT_PRIO) {
-> +               xxx_printf("   rt bitmap priorities:");
-> +               while (pri < MAX_RT_PRIO) {
-> +                       xxx_printf(" %d", pri);
-> +                       pri++;
-> +                       pri = find_next_bit(array->bitmap, MAX_RT_PRIO, pri);
-> +               }
-> +               xxx_printf("\n");
-> +       }
-> +
-> +       for (pri = 0; pri < MAX_RT_PRIO; pri++) {
-> +               int printed_hdr = 0;
-> +               struct list_head *head, *curr;
-> +
-> +               head = array->queue + pri;
-> +               curr = head->next;
-> +               while (curr != head) {
-> +                       struct task_struct *task;
-> +                       if (!printed_hdr) {
-> +                               xxx_printf("   queue at priority=%d\n", pri);
-> +                               printed_hdr = 1;
-> +                       }
-> +                       task = list_entry(curr, struct task_struct,
-> +                                         rt.run_list);
-> +                       if (task)
-> +                               xxx_printf("    0x%p %d %s  time_slice:%d\n",
-> +                                  task, task->pid, task->comm,
-> +                                  task->rt.time_slice);
-> +                       curr = curr->next;
-> +               }
-> +       }
-> +       for_each_process(p) {
-> +               if (p->se.on_rq && (task_cpu(p) == cpu) &&
-> +                  (p->policy == SCHED_NORMAL)) {
-> +                       if (!printed_header) {
-> +                               xxx_printf("  sched_normal queue:\n");
-> +                               printed_header = 1;
-> +                       }
-> +                       xxx_printf("    0x%p %d %s pri:%d spri:%d npri:%d\n",
-> +                               p, p->pid, p->comm, p->prio,
-> +                               p->static_prio, p->normal_prio);
-> +               }
-> +       }
-> +}
-> +
-> +/* This code must be in sched.c because struct rq is only defined in this
-> + * source.  To allow most of kdb to be modular, this code cannot call any kdb
-> + * functions directly, any external functions that it needs must be passed in
-> + * as parameters.
-> + */
+Hello,
 
-Wrong comment style.
+On Tue, Dec 22, 2009 at 08:01:42PM -0800, john stultz wrote:
+> This patch converts the arm architecture to use the generic
+> read_persistent_clock and update_persistent_clock interfaces, reducing
+> the amount of arch specific code we have to maintain, and allowing for
+> further cleanups in the future.
+> 
+> Also removes a direct xtime access, replacing it with
+> current_kernel_time()
+> 
+> I have not built or tested this patch, so help from arch maintainers
+> would be appreciated.
+I havn't tested either, but built footbridge_defconfig successfully.
+bloat-o-meter reports:
 
-> +void
-> +kdb_runqueue(unsigned long cpu, kdb_printf_t xxx_printf)
-> +{
-> +       struct rq *rq;
-> +
-> +       rq = cpu_rq(cpu);
-> +
-> +       xxx_printf("CPU%ld lock:%s curr:0x%p(%d)(%s)",
-> +                  cpu, (raw_spin_is_locked(&rq->lock)) ? "LOCKED" : "free",
-> +                  rq->curr, rq->curr->pid, rq->curr->comm);
-> +       if (rq->curr == rq->idle)
-> +               xxx_printf(" is idle");
-> +       xxx_printf("\n ");
-> +#ifdef CONFIG_SMP
-> +       xxx_printf(" cpu_load:%lu %lu %lu",
-> +                       rq->cpu_load[0], rq->cpu_load[1], rq->cpu_load[2]);
-> +#endif
-> +       xxx_printf(" nr_running:%lu nr_switches:%llu\n",
-> +                  rq->nr_running, (long long)rq->nr_switches);
-> +       kdb_prio("active", &rq->rt.active, xxx_printf, (unsigned int)cpu);
-> +}
-> +EXPORT_SYMBOL(kdb_runqueue);
-> +
-> +#endif /* CONFIG_KGDB_KDB */
-> +
+add/remove: 4/1 grow/shrink: 2/2 up/down: 388/-196 (192)
+function                                     old     new   delta
+sync_cmos_clock                                -     240    +240
+update_persistent_clock                        -      52     +52
+sync_cmos_work                                 -      40     +40
+do_adjtimex                                 1924    1956     +32
+save_time_delta                               56      76     +20
+no_sync_cmos_clock                             -       4      +4
+next_rtc_update                                4       -      -4
+set_isa_cmos_time                            372     364      -8
+timer_tick                                   324     140    -184
 
-So what is this code supposed to do? It looks like it simply cannot be
-correct.
+Best regards
+Uwe
 
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
