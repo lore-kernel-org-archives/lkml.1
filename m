@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZLXP5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZLXQBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbZLXP5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 10:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZLXP5k
+	id S1754693AbZLXQBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 11:01:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZLXQBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 10:57:40 -0500
-Received: from mail.windriver.com ([147.11.1.11]:37525 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbZLXP5j (ORCPT
+	Thu, 24 Dec 2009 11:01:53 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:50180 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbZLXQBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 10:57:39 -0500
-Message-ID: <4B338F5B.9050904@windriver.com>
-Date: Thu, 24 Dec 2009 09:57:15 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 24 Dec 2009 11:01:53 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAEYfM0urR7Ht/2dsb2JhbAC+a5YwhDME
+X-IronPort-AV: E=Sophos;i="4.47,449,1257120000"; 
+   d="scan'208";a="456114180"
+From: Roland Dreier <rdreier@cisco.com>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: No PCI-X / PCI-E cards ...
+References: <1260979057.23135.70.camel@skunk> <1261089592.8827.5.camel@bip>
+	<adahbrp43x7.fsf@roland-alpha.cisco.com>
+	<1261477857.22127.23.camel@skunk> <1261573481.4822.14.camel@skunk>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 24 Dec 2009 08:01:49 -0800
+In-Reply-To: <1261573481.4822.14.camel@skunk> (Xavier Bestel's message of
+	"Wed, 23 Dec 2009 14:04:41 +0100")
+Message-ID: <ada4ong1hua.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: linux-kernel@vger.kernel.org, kdb@oss.sgi.com, mingo@elte.hu, mort@sgi.com,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH 05/37] kdb: core for kgdb back end
-References: <1261653403.4937.192.camel@laptop>
-In-Reply-To: <1261653403.4937.192.camel@laptop>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Dec 2009 15:57:16.0465 (UTC) FILETIME=[C3ED0A10:01CA84B1]
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 Dec 2009 16:01:52.0493 (UTC) FILETIME=[687391D0:01CA84B2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-12-24 at 12:01 +0100, Peter Zijlstra wrote:
->   
->> Please use --no-chain-reply-to when posting patches using git, these inf
->> deep nested series are impossible to read.
->>     
->
->   
 
-Sure.  In all the future series, I added that option to the script that
-manages the postings.
+ > It looks like if the board has been flashed with the wrong bios (the
+ > dmidecode info isn't consistent with what I see on the board).
+ > Is there a way to workaround that in the kernel ?
 
-> Please never post with kgdb-bugreport@lists.sourceforge.net
-> in the CC, it generates bounces for everything send to it.
->
->   
+Wrong BIOS is pretty fundamental -- the BIOS could have messed up many
+undocumented (and possibly write-once) register settings etc.  The
+kernel can work around slighly broken ACPI tables or things like that,
+but if, say, undocumented write-only north bridge registers are wrong,
+not much we can do about that.
 
-The kgdb-bugreports list has been fixed to cease the generation of
-non-subscriber notifications.  All you had to do was indicate there was
-a problem.  Non-subscribers are free to post there, and the messages go
-through a filter queue.
+Really you better just get the right BIOS on the board.
 
-Thanks,
-Jason.
+ - R.
