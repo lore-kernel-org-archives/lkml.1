@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbZLXDgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZLXDzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbZLXDgb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 22:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZLXDga
+	id S1752744AbZLXDzt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 22:55:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZLXDzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 22:36:30 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:32940 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbZLXDg3 (ORCPT
+	Wed, 23 Dec 2009 22:55:49 -0500
+Received: from mail.windriver.com ([147.11.1.11]:55268 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbZLXDzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 22:36:29 -0500
-Subject: Re: Problems with ath5k and WPA2 keys
-From: Marcel Holtmann <marcel@holtmann.org>
-To: "J.A." =?ISO-8859-1?Q?Magall=F3n?= <jamagallon@ono.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091224002342.59a9a021@werewolf.home>
-References: <20091224002342.59a9a021@werewolf.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 23 Dec 2009 19:35:57 -0800
-Message-Id: <1261625757.609.123.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+	Wed, 23 Dec 2009 22:55:48 -0500
+Message-ID: <4B32E618.4070906@windriver.com>
+Date: Wed, 23 Dec 2009 21:55:04 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu, kdb@oss.sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Kgdb-bugreport] [PATCH 0/37] kgdb,kdb and atomic kernel modesetting
+ series
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> <20091224005654.GA28950@kroah.com>
+In-Reply-To: <20091224005654.GA28950@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Dec 2009 03:55:05.0069 (UTC) FILETIME=[E066B9D0:01CA844C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi J.A.
+Greg KH wrote:
+> On Wed, Dec 23, 2009 at 03:19:13PM -0600, Jason Wessel wrote:
+>   
+>> Back in May 2009 an initial kdb prototype was posted to lkml as an RFC
+>> to see if there was sufficient interest to merge kdb and kgdb together.
+>>
+>> There was enough interest to continue on with the project, and it is
+>> now in a state where further work can occur to review, and hopefully
+>> merge the code into a future kernel.
+>>     
+>
+> Very cool work, nice job.
+>
+>   
+>> The code included in this series does not include any of the USB code
+>> referenced in the presentation.
+>>     
+>
+> I'm guessing that is going to happen sometime later after the main stuff
+> is merged in?
+>   
 
-> With last 2.6.32.2 kernel, I can't connect to my home WiFi router.
-> I use WPA2+PSK mode.
+That is correct.  The usb code will be worked on after the debug core is
+stable and ready to be merged.
 
-the appropriate mailing list would be linux-wireless@vger.kernel.org for
-WiFi related questions.
+There are over 30 patches outstanding in the USB queue.  There are some
+tricky problems that remain unsolved with the synchronously polled USB
+code.  The current code looks great for a demonstration in one
+particular configuration and is ok for debugging a problem if you have
+that specific configuration, but that is about as far as it goes.  In
+order of maturity and the likely order of contribution would be:
 
-Regards
+1) Stable USB console support
+2) Polled USB keyboard support
+3) Bi-directional kgdb over dbgp (EHCI debug interface)
+4) Polled kgdboc USB serial support
 
-Marcel
-
-
+Jason.
