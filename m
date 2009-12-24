@@ -1,108 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZLXMiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbZLXMhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbZLXMiK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 07:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZLXMiF
+	id S1752939AbZLXMhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 07:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZLXMhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 07:38:05 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:35232 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752532AbZLXMiA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 07:38:00 -0500
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK)
-References: <20091224061322.GB24396@heat>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 24 Dec 2009 04:37:41 -0800
-In-Reply-To: <20091224061322.GB24396@heat> (Michael Stone's message of "Thu\, 24 Dec 2009 01\:13\:23 -0500")
-Message-ID: <m1r5qkim3u.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 24 Dec 2009 07:37:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48798 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751498AbZLXMha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 07:37:30 -0500
+Message-ID: <4B336153.8090206@kernel.org>
+Date: Thu, 24 Dec 2009 21:40:51 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+To: fengxiangjun <fengxiangjun@neusoft.com>
+CC: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
+References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net> <4B30134C.1050609@gmail.com> <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net> <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com> <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net> <4B31DB17.4050509@kernel.org> <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net> <4B331957.7030906@kernel.org> <alpine.LNX.2.00.0912241535340.1682@darkstar.example.net> <4B331D93.2010000@kernel.org> <alpine.LNX.2.00.0912241557170.1682@darkstar.example.net> <alpine.LNX.2.00.0912242010350.1691@darkstar.example.net>
+In-Reply-To: <alpine.LNX.2.00.0912242010350.1691@darkstar.example.net>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------010701060309050902010107"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Stone <michael@laptop.org> writes:
+This is a multi-part message in MIME format.
+--------------010701060309050902010107
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
->> Eric Biederman writes:
->>> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
->>>> Michael Stone writes:
->>>>> the LSM-based version *does not* resolve the situation to my satisfaction as a
->>>>> userland hacker due to the well-known and long-standing adoption and
->>>>> compositionality problems facing small LSMs. ;)
->>>>
->>>> For things like Fedora it's probably an "interesting idea, perhaps we
->>>> should do it using SELinux" sort of problem, but a config option for a
->>>> magic network prctl is also going to be hard to adopt without producing a
->>>> good use case - and avoiding that by dumping crap into everyones kernel
->>>> fast paths isn't a good idea either.
->>
->>If I understand the problem the goal is to disable access to ipc
->>mechanism that don't have the usual unix permissions.  To get
->>something that is usable for non-root processes, and to get something
->>that is widely deployed so you don't have to jump through hoops in
->>end user applications to use it.
->
-> Eric,
->
-> You understand correctly. Thank you for this cogent restatement.
->
->>We have widely deployed mechanisms that are what you want or nearly
->>what you want already in the form of the various namespaces built for
->>containers.
->
-> It's true that your work is closer to what I want than anything else that I've
-> seen so far...
->
->> I propose you introduce a permanent disable of executing suid applications. 
->
-> I'm open to the idea but I don't understand the need that motivates it yet.
-> Could you please explain further? (or point me to an existing explanation?)
+Hello,
 
-With namespaces it is possible to masquarade as a trusted source,
-of information to a suid program such as /etc/passwd or a NIS server.
+On 12/24/2009 09:15 PM, fengxiangjun wrote:
+> Here is it, and I hope it help. And merry xmas, ;)
+> 
+> ata1.00: SATA link down (SStatus 0 SControl 301)
 
-A one-way removal of the ability to exec suid programs is generally
-simple and handy like chroot, and removes the need for CAP_SYS_ADMIN
-in most cases.
+Hmmm... SControl DET hasn't been cleared.  Does the attached patch
+make any difference?
 
-Plan 9 did not support suid executables and supported an unprivileged
-equivalent of unshare(NEWNS).
+-- 
+tejun
 
-I need the full unprivileged unshare of USERNS for my primary
-uses today as I need to perform normally root only activities
-like mounting loopback devices, and setting up networking. Your
-uses of limiting of ipc do not appear to require that.
+--------------010701060309050902010107
+Content-Type: text/x-patch;
+ name="retry-link-resume.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="retry-link-resume.patch"
 
->>After which point it is another trivial patch to allow unsharing of
->>the network namespace if executing suid applications are disabled.
->
-> How do you propose to address the problem with the Unix sockets?
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index 19136a7..5bc31d2 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -173,6 +173,8 @@ static int piix_sidpr_scr_read(struct ata_link *link,
+ 			       unsigned int reg, u32 *val);
+ static int piix_sidpr_scr_write(struct ata_link *link,
+ 				unsigned int reg, u32 val);
++static int piix_sidpr_hardreset(struct ata_link *link, unsigned int *class,
++				unsigned long deadline);
+ #ifdef CONFIG_PM
+ static int piix_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg);
+ static int piix_pci_device_resume(struct pci_dev *pdev);
+@@ -334,9 +336,9 @@ static struct ata_port_operations piix_sata_ops = {
+ 
+ static struct ata_port_operations piix_sidpr_sata_ops = {
+ 	.inherits		= &piix_sata_ops,
+-	.hardreset		= sata_std_hardreset,
+ 	.scr_read		= piix_sidpr_scr_read,
+ 	.scr_write		= piix_sidpr_scr_write,
++	.hardreset		= piix_sidpr_hardreset,
+ };
+ 
+ static const struct piix_map_db ich5_map_db = {
+@@ -962,6 +964,18 @@ static int piix_sidpr_scr_write(struct ata_link *link,
+ 	return 0;
+ }
+ 
++static int piix_sidpr_hardreset(struct ata_link *link, unsigned int *class,
++				unsigned long deadline)
++{
++	const unsigned long *timing = sata_deb_timing_hotplug;
++	bool online;
++	int rc;
++
++	/* do hardreset */
++	rc = sata_link_hardreset(link, timing, deadline, &online, NULL);
++	return online ? -EAGAIN : rc;
++}
++
+ #ifdef CONFIG_PM
+ static int piix_broken_suspend(void)
+ {
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 22ff51b..bb19319 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3731,7 +3731,7 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
+ 	unsigned long interval = params[0];
+ 	unsigned long duration = params[1];
+ 	unsigned long last_jiffies, t;
+-	u32 last, cur;
++	u32 last, cur, xxx;
+ 	int rc;
+ 
+ 	t = ata_deadline(jiffies, params[2]);
+@@ -3740,7 +3740,9 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
+ 
+ 	if ((rc = sata_scr_read(link, SCR_STATUS, &cur)))
+ 		return rc;
++	xxx = cur;
+ 	cur &= 0xf;
++	ata_link_printk(link, KERN_INFO, "XXX debounce start, SStatus=%x\n", xxx);
+ 
+ 	last = cur;
+ 	last_jiffies = jiffies;
+@@ -3749,6 +3751,7 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
+ 		msleep(interval);
+ 		if ((rc = sata_scr_read(link, SCR_STATUS, &cur)))
+ 			return rc;
++		xxx = cur;
+ 		cur &= 0xf;
+ 
+ 		/* DET stable? */
+@@ -3756,8 +3759,12 @@ int sata_link_debounce(struct ata_link *link, const unsigned long *params,
+ 			if (cur == 1 && time_before(jiffies, deadline))
+ 				continue;
+ 			if (time_after(jiffies,
+-				       ata_deadline(last_jiffies, duration)))
++				       ata_deadline(last_jiffies, duration))) {
++				ata_link_printk(link, KERN_INFO,
++						"XXX debounce done, SStatus=%x, DET stable for %u msecs\n",
++						xxx, jiffies_to_msecs(jiffies - last_jiffies));
+ 				return 0;
++			}
+ 			continue;
+ 		}
+ 
+@@ -3791,15 +3798,30 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
+ 		     unsigned long deadline)
+ {
+ 	u32 scontrol, serror;
+-	int rc;
++	int tries = 3, rc;
+ 
+ 	if ((rc = sata_scr_read(link, SCR_CONTROL, &scontrol)))
+ 		return rc;
+ 
+-	scontrol = (scontrol & 0x0f0) | 0x300;
++	do {
++		scontrol = (scontrol & 0x0f0) | 0x300;
+ 
+-	if ((rc = sata_scr_write(link, SCR_CONTROL, scontrol)))
+-		return rc;
++		if ((rc = sata_scr_write(link, SCR_CONTROL, scontrol)))
++			return rc;
++
++		if ((rc = sata_scr_read(link, SCR_CONTROL, &scontrol)))
++			return rc;
++
++		/* is SControl restored correctly? */
++		if ((scontrol & 0xf0f) != 0x300)
++			break;
++
++		msleep(100);
++
++		ata_link_printk(link, KERN_WARNING,
++				"failed to restore SControl=%x%s\n",
++				scontrol, tries > 1 ? ", retrying" : "");
++	} while (--tries);
+ 
+ 	/* Some PHYs react badly if SStatus is pounded immediately
+ 	 * after resuming.  Delay 200ms before debouncing.
 
-Careful code review of the patch to allow talking between network
-namespaces with unix domain sockets.  This is a feature that we
-simply have not merged yet.  Semantically it is fine today. It is
-simply no one has answered the question what other implications
-could there be.  Now that I know of 2 or 3 compelling use
-cases and most of the rest of the work done.  It seems time to
-relax the restriction.
-
-Eric
+--------------010701060309050902010107--
