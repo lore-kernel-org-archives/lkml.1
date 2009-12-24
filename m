@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbZLXWK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZLXWWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756477AbZLXWK3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 17:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbZLXWK2
+	id S1757114AbZLXWWQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 17:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbZLXWWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 17:10:28 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55280 "EHLO ogre.sisk.pl"
+	Thu, 24 Dec 2009 17:22:14 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:54276 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755449AbZLXWK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 17:10:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [linux-pm] [RFC] Asynchronous suspend/resume - test results
-Date: Thu, 24 Dec 2009 23:10:42 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc1-tst; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jslaby@suse.cz>
-References: <200912210140.19713.rjw@sisk.pl> <200912232146.29339.rjw@sisk.pl> <4B32D2D6.3030707@crca.org.au>
-In-Reply-To: <4B32D2D6.3030707@crca.org.au>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+	id S1752191AbZLXWWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 17:22:14 -0500
+Date: Thu, 24 Dec 2009 14:21:46 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Berck Nash <flyboy@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: sky2 panic in 2.6.32.1 under load
+Message-ID: <20091224142146.700e4ac8@nehalam>
+In-Reply-To: <200912241128.57599.dhazelton@enter.net>
+References: <4B300A2A.8040305@gmail.com>
+	<20091223225855.4a7d00af.akpm@linux-foundation.org>
+	<4B3390EC.5060408@gmail.com>
+	<200912241128.57599.dhazelton@enter.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912242310.42615.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 December 2009, Nigel Cunningham wrote:
-> Hi.
+On Thu, 24 Dec 2009 11:28:57 -0500
+Daniel Hazelton <dhazelton@enter.net> wrote:
 
-Hi, 
+> On Thursday 24 December 2009 11:03:56 am Berck Nash wrote:
+> > Andrew Morton wrote:
+> > > On Mon, 21 Dec 2009 16:52:10 -0700 "Berck E. Nash" <flyboy@gmail.com> 
+> wrote:
+> > >> Since 2.6.32, I've been getting kernel panics under heavy network load
+> > >> (bittorrent usage).
+> > >
+> > > Let's cc the right list and developer.
+> > >
+> > > This is a 2.6.31->2.6.32 regression?
+> > 
+> > I believe so.  Since it's intermittent and difficult to reproduce, it's
+> > possible (but unlikely) that I simply never triggered it under 2.6.31.
+> 
+> This is far from new. I have seen this under 2.6.27 when at least one botnet 
+> has been pointed at a server of mine and told to gain access. It has happened 
+> four times in the last six to eight months - and I have no easy way to capture 
+> the logs. But the oops that was posted looks very, very similar to what I've 
+> seen.
+> 
+> It's always an allocation error in the transmit path that leads to the panic. 
+> Because this is a production machine that I do not have a way to take down and 
+> do testing with I've not reported the problem before.
+> 
 
-> I built the async branch of your tree and tested it, also running
-> 2.6.33-rc1 + TuxOnIce for comparison. Dmesg for both are attached. Is
-> there anything I can/should be doing for you on top of this?
+Even though I wrote/maintain the sky driver, I don't work for SysKonnect, and
+only have access to a limited set of information:
+the technical manuals (under NDA), and the vendor sk98lin driver. The sky2 driver
+imitates the receiver timeout of the sk98lin driver; other people have told me
+that the FIFO hardware implementation is buggy and when it gets full, it gets
+stuck. Probably the equivalent of a software FIFO where the developer forgets to
+reserve a slot so that head == tail can mean both empty and full!
 
-No, thanks a lot.
+The workaround with a timer is prone to errors when traffic keeps going, also
+the vendor doesn't really provide clear instructions on how to unlock it. I do
+not have access to the hardware errata describing the problem. If I did a more
+minimal solution would be possible.
 
-> I'll try Dmitry's patch on top of this a little later - other things to do first.
+The easiest advice is avoid sky2 chips with FIFO for any heavy traffic, the next
+advice is make sure receive flow control is enabled so that receiver doesn't
+get overrun. If tx timeouts are an issue use a rate limiter like TBF. Do not use
+the chip with 10 or 100 mbit since the transmitter is more prone to get overrun.
 
-No need for that, the patchset contains an equivalent of the Dmitry's patch.
-
-> I noticed that you were doing standard deviations in your stats - how
-> many runs were you basing them on?
-
-I usually run 10 iterations of suspend-resume for each configuration.
-The raw data are at http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
-if you're interested.
-
-> Not sure that I can be bothered to do too many - too much else to do!
-
-Sure, thanks a lot anyway.  Your data confirn that there's a measurable gain
-from suspending and resuming devices asynchronously.
-
-Have a merry Christmas and happy new year,
-Rafael
