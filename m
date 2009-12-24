@@ -1,74 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZLXJaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbZLXJbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZLXJaS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 04:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbZLXJaR
+	id S1756020AbZLXJbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 04:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZLXJbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 04:30:17 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37507 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbZLXJaP (ORCPT
+	Thu, 24 Dec 2009 04:31:20 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:3459 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbZLXJbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 04:30:15 -0500
-Subject: Re: [PATCH 7/6][RFC] sched: unify load_balance{,_newidle}()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       SureshSiddha <suresh.b.siddha@intel.com>,
-       "Pallipadi,Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <1261629824.10947.13.camel@marge.simson.net>
-References: <20091217185021.684424629@chello.nl>
-	 <1261581216.4937.150.camel@laptop>
-	 <1261629824.10947.13.camel@marge.simson.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 24 Dec 2009 10:29:24 +0100
-Message-ID: <1261646964.4937.172.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Dec 2009 04:31:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=WfzBwjiWR1PRAW4K7CKycOaB/lKmT6T3DHF7jwEps9aLkLOfKujBxl2AoQxysiKKT8
+         MJcfv/pCRdrdcwHSWxz5evdmAwTeYlIbIVSEyfMuYHTaaWN04d3vQdZSUOh7i2MexKAA
+         91AU4/o4w+V1+y3urCosWXFvM68jO/SbtC/d4=
+Message-ID: <4B3334E1.9020401@gmail.com>
+Date: Thu, 24 Dec 2009 04:31:13 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com>
+In-Reply-To: <4B327F3A.9020101@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6F1D242F29ABF64475662726"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-24 at 05:43 +0100, Mike Galbraith wrote:
-> On Wed, 2009-12-23 at 16:13 +0100, Peter Zijlstra wrote:
-> > load_balance() and load_balance_newidle() look remarkably similar, one
-> > key point they differ in is the condition on when to active balance.
-> > 
-> > So split out that logic into a separate function.
-> > 
-> > One side effect is that previously load_balance_newidle() used to fail and
-> > return -1 under these conditions, whereas now it doesn't. I've not yet fully
-> > figured out the whole -1 return case for either load_balance{,_newidle}().
-> > 
-> > It also differs in that sd->cache_nice_tries is now added on the 
-> > CPU_NEWLY_IDLE case.
-> 
-> Unification Looks like a good idea, less being more and all that.  I
-> suspect that last bit is why newidle effectiveness has been heavily
-> impacted.  x264 ultrafast testcase is whimpering pathetically again ;-)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6F1D242F29ABF64475662726
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That could be easily verified by setting cache_nice_tries to 0.
+On 12/23/09 3:36 PM, Avi Kivity wrote:
+> On 12/23/2009 06:44 PM, Gregory Haskins wrote:
+>>
+>>>   - Are a pure software concept
+>>>     =20
+>> By design.  In fact, I would describe it as "software to software
+>> optimized" as opposed to trying to shoehorn into something that was
+>> designed as a software-to-hardware interface (and therefore has
+>> assumptions about the constraints in that environment that are not
+>> applicable in software-only).
+>>
+>>   =20
+>=20
+> And that's the biggest mistake you can make.
 
-However, I would suspect need_active_balance(.idle = CPU_NEWLY_IDLE) to
-always fail on your machine, since I don't think you've got all that
-power savings muck enabled.
+Sorry, that is just wrong or you wouldn't have virtio either.
 
-Is that with just this patch applied or also with the next one? I
-worried more about the next one.
+>  Look at Xen, for
+> instance.  The paravirtualized the fork out of everything that moved in=
 
-If just this one, that funny -1 return value thing might have played a
-role, since that seems to trigger the:
+> order to get x86 virt going.  And where are they now? x86_64 syscalls
+> are slow since they have to trap to the hypervisor and (partially) flus=
+h
+> the tlb.  With npt or ept capable hosts performance is better for many
+> workloads on fullvirt.  And paravirt doesn't support Windows.  Their
+> unsung hero Jeremy is still trying to upstream dom0 Xen support.  And
+> they get to support it forever.
 
- if (pulled_task) {
-   this_rq->idle_stamp = 0;
-   break;
- }
+We are only talking about PV-IO here, so not apples to apples to what
+Xen is going through.
 
-logic in idle_balance()
+>=20
+> VMware stuck with the hardware defined interfaces.  Sure they had to
+> implement binary translation to get there, but as a result, they only
+> have to support one interface, all guests support it, and they can drop=
 
-Which didn't make any sense to me, since it didn't move any task, so why
-pretend it did...
+> it on newer hosts where it doesn't give them anything.
 
+Again, you are confusing PV-IO.  Not relevant here.   Afaict, vmware,
+kvm, xen, etc, all still do PV-IO and likely will for the foreseeable
+future.
+
+-Greg
+
+
+--------------enig6F1D242F29ABF64475662726
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkszNOEACgkQP5K2CMvXmqH8eQCeKwrgu5YaVdyI6IAve/v8J437
+HdgAnitvdnltkpz2ErIxG0ygN4gk6j/4
+=GoeV
+-----END PGP SIGNATURE-----
+
+--------------enig6F1D242F29ABF64475662726--
