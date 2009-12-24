@@ -1,84 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZLXW2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZLXWmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757329AbZLXW2i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 17:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZLXW2h
+	id S1756308AbZLXWmX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 17:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZLXWmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 17:28:37 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:26453 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755585AbZLXW2g (ORCPT
+	Thu, 24 Dec 2009 17:42:21 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:49344 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbZLXWmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 17:28:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=qAyItwPc9vX1b1gTOtn7BSdUTuR8MVq6gnemhBp76PPoZZSvhvmW5bIOiG5JIgve31
-         WiEiHYG5mMaOY/bG/qLOZJv2mRza0u9M0pWb9Z3BMo7AsaoxN1YfecugouvrRmuAHBDh
-         IMoW0pk+m7HVUqn9rwjoROaCwxnlm9Z+Vq7fU=
-MIME-Version: 1.0
-Date: Fri, 25 Dec 2009 01:28:34 +0300
-Message-ID: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
-Subject: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 24 Dec 2009 17:42:21 -0500
+Date: Thu, 24 Dec 2009 17:42:08 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load
+In-reply-to: <20091224142146.700e4ac8@nehalam>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Berck Nash <flyboy@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B33EE40.1020402@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com>
+ <20091223225855.4a7d00af.akpm@linux-foundation.org>
+ <4B3390EC.5060408@gmail.com> <200912241128.57599.dhazelton@enter.net>
+ <20091224142146.700e4ac8@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On 12/24/2009 5:21 PM, Stephen Hemminger wrote:
+> On Thu, 24 Dec 2009 11:28:57 -0500
+> Daniel Hazelton<dhazelton@enter.net>  wrote:
+>
+>    
+>> On Thursday 24 December 2009 11:03:56 am Berck Nash wrote:
+>>      
+>>> Andrew Morton wrote:
+>>>        
+>>>> On Mon, 21 Dec 2009 16:52:10 -0700 "Berck E. Nash"<flyboy@gmail.com>
+>>>>          
+>> wrote:
+>>      
+>>>>> Since 2.6.32, I've been getting kernel panics under heavy network load
+>>>>> (bittorrent usage).
+>>>>>            
+>>>> Let's cc the right list and developer.
+>>>>
+>>>> This is a 2.6.31->2.6.32 regression?
+>>>>          
+>>> I believe so.  Since it's intermittent and difficult to reproduce, it's
+>>> possible (but unlikely) that I simply never triggered it under 2.6.31.
+>>>        
+>> This is far from new. I have seen this under 2.6.27 when at least one botnet
+>> has been pointed at a server of mine and told to gain access. It has happened
+>> four times in the last six to eight months - and I have no easy way to capture
+>> the logs. But the oops that was posted looks very, very similar to what I've
+>> seen.
+>>
+>> It's always an allocation error in the transmit path that leads to the panic.
+>> Because this is a production machine that I do not have a way to take down and
+>> do testing with I've not reported the problem before.
+>>
+>>      
+> Even though I wrote/maintain the sky driver, I don't work for SysKonnect, and
+> only have access to a limited set of information:
+> the technical manuals (under NDA), and the vendor sk98lin driver. The sky2 driver
+> imitates the receiver timeout of the sk98lin driver; other people have told me
+> that the FIFO hardware implementation is buggy and when it gets full, it gets
+> stuck. Probably the equivalent of a software FIFO where the developer forgets to
+> reserve a slot so that head == tail can mean both empty and full!
+>
+> The workaround with a timer is prone to errors when traffic keeps going, also
+> the vendor doesn't really provide clear instructions on how to unlock it. I do
+> not have access to the hardware errata describing the problem. If I did a more
+> minimal solution would be possible.
+>
+> The easiest advice is avoid sky2 chips with FIFO for any heavy traffic, the next
+> advice is make sure receive flow control is enabled so that receiver doesn't
+> get overrun. If tx timeouts are an issue use a rate limiter like TBF. Do not use
+> the chip with 10 or 100 mbit since the transmitter is more prone to get overrun.
+>    
+For this particular issue, I'm only seeing problems when running at 1000 
+mbit. 100 appears stable.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>    
 
-Kernel is 2.6.33-rc1-00366-g2f99f5c
-Ext4 mounts ext3 filesystem
-
-
-
-kernel BUG at fs/ext4/inode.c:1063!
-              \|/ ____ \|/
-              "@'/ .. \`@"
-              /_| \__/ |_\
-                 \__U_/
-flush-8:0(1137): Kernel bad sw trap 5 [#1]
-TSTATE: 0000000080001603 TPC: 0000000000544fb4 TNPC: 0000000000544fb8
-Y: 00000000    Not tainted
-TPC: <ext4_get_blocks+0x3f4/0x400>
-g0: fffff800dc862fe0 g1: 0000000000000001 g2: 0000000000000001 g3:
-fffff800dc85f9c1
-g4: fffff800df305880 g5: 2e68006800002e68 g6: fffff800dc860000 g7:
-0000000000833e08
-o0: 00000000007b0cb8 o1: 0000000000000427 o2: 0000000000000040 o3:
-0000000000000040
-o4: fffff800dc8630a0 o5: 000000000000000d sp: fffff800dc8628d1 ret_pc:
-0000000000544fac
-RPC: <ext4_get_blocks+0x3ec/0x400>
-l0: 0000000000000002 l1: fffff800c2674000 l2: fffff800c26740d0 l3:
-0000000000000001
-l4: fffff800df39d2d0 l5: 00000000000003f9 l6: 0006000000000000 l7:
-0000000000001ffe
-i0: 0000000000000040 i1: fffff800c2674130 i2: 000000000000064c i3:
-fffff800c26745a8
-i4: fffff800dc863308 i5: 0000000000000003 i6: fffff800dc8629a1 i7:
-0000000000545380
-I7: <mpage_da_map_blocks+0x80/0x800>
-Disabling lock debugging due to kernel taint
-Caller[0000000000545380]: mpage_da_map_blocks+0x80/0x800
-Caller[00000000005461c0]: mpage_add_bh_to_extent+0x40/0x100
-Caller[000000000054642c]: __mpage_da_writepage+0x1ac/0x220
-Caller[00000000004a951c]: write_cache_pages+0x19c/0x380
-Caller[0000000000545d7c]: ext4_da_writepages+0x27c/0x680
-Caller[00000000004a978c]: do_writepages+0x2c/0x60
-Caller[00000000004f94cc]: writeback_single_inode+0xcc/0x3c0
-Caller[00000000004fa3d8]: writeback_inodes_wb+0x338/0x500
-Caller[00000000004fa6e8]: wb_writeback+0x148/0x220
-Caller[00000000004fab00]: wb_do_writeback+0x240/0x260
-Caller[00000000004fab8c]: bdi_writeback_task+0x6c/0xc0
-Caller[00000000004b6f50]: bdi_start_fn+0x70/0xe0
-Caller[000000000047030c]: kthread+0x6c/0x80
-Caller[000000000042bc9c]: kernel_thread+0x3c/0x60
-Caller[0000000000470408]: kthreadd+0xe8/0x160
-Instruction DUMP: 92102427  7ffb95a5  901220b8 <91d02005> 01000000
-01000000  9de3bf40  11002096  a4100018
-note: flush-8:0[1137] exited with preempt_count 1
