@@ -1,308 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZLXDHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbZLXD3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbZLXDHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 22:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZLXDHN
+	id S1752489AbZLXD3M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 22:29:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZLXD3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 22:07:13 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43556 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbZLXDHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 22:07:12 -0500
-Date: Thu, 24 Dec 2009 14:06:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for December 24
-Message-Id: <20091224140659.b7bbe71b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__24_Dec_2009_14_06_59_+1100_OaboCRGO=2D.+7WM"
+	Wed, 23 Dec 2009 22:29:10 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:33868 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbZLXD3J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 22:29:09 -0500
+Message-ID: <4B32DF97.5060400@vflare.org>
+Date: Thu, 24 Dec 2009 08:57:19 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       jeremy@goop.org, xen-devel@lists.xensource.com,
+       tmem-devel@oss.oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       Rik van Riel <riel@redhat.com>, dave.mccracken@oracle.com,
+       sunil.mushran@oracle.com, Avi Kivity <avi@redhat.com>,
+       Schwidefsky <schwidefsky@de.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, chris.mason@oracle.com,
+       Pavel Machek <pavel@ucw.cz>, linux-mm <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Tmem [PATCH 0/5] (Take 3): Transcendent memory
+References: <ff435130-98a2-417c-8109-9dd029022a91@default>
+In-Reply-To: <ff435130-98a2-417c-8109-9dd029022a91@default>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__24_Dec_2009_14_06_59_+1100_OaboCRGO=2D.+7WM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Dan,
 
-Hi all,
+On 12/23/2009 10:45 PM, Dan Magenheimer wrote:
 
-This one has also not had the build testing *between* merges, but has had
-all the normal build testing at the end.There may be more unbisectable
-points in the tree then usual.
+ 
+> I'm definitely OK with exploring alternatives.  I just think that
+> existing kernel mechanisms are very firmly rooted in the notion
+> that either the kernel owns the memory/cache or an asynchronous
+> device owns it.  Tmem falls somewhere in between and is very
+> carefully designed to maximize memory flexibility *outside* of
+> the kernel -- across all guests in a virtualized environment --
+> with minimal impact to the kernel, while still providing the
+> kernel with the ability to use -- but not own, directly address,
+> or control -- additional memory when conditions allow.  And
+> these conditions are not only completely invisible to the kernel,
+> but change frequently and asynchronously from the kernel,
+> unlike most external devices for which the kernel can "reserve"
+> space and use it asynchronously later.
+> 
+> Maybe ramzswap and FS-cache could be augmented to have similar
+> advantages in a virtualized environment, but I suspect they'd
+> end up with something very similar to tmem.  Since the objective
+> of both is to optimize memory that IS owned (used, directly
+> addressable, and controlled) by the kernel, they are entirely
+> complementary with tmem.
+> 
 
-I created this tree twice, so some of the following may have already been
-taken care of.
+What we want is surely tmem but attempt is to better integrate with
+existing infrastructure. Please give me few days as I try to develop
+a prototype.
 
-The main problems today were:
+>> Swapping to hypervisor is mainly useful to overcome
+>> 'static partitioning' problem you mentioned in article:
+>> http://oss.oracle.com/projects/tmem/
+>> ...such 'para-swap' can shrink/expand outside of VM constraints.
+> 
+> Frontswap is very different than "hypervisor swapping" as what's
+> done by VMware as a side-effect of transparent page-sharing.  With
+> frontswap, the kernel still decides which pages are swapped out.
+> If frontswap says there is space, the swap goes "fast" to tmem;
+> if not, the kernel writes it to its own swapdisk.  So there's
+> no "double paging" or random page selection/swapping.  On
+> the downside, kernels must have real swap configured and,
+> to avoid DoS issues, frontswap is limited by the same constraint
+> as ballooning (ie. can NOT expand outside of VM constraints).
+> 
 
-	interactions with the kfifo patches which went into Linus' tree
-yesterday
-	the kgdb patches
+I think I did not explain my point regarding "para-swap" correctly.
+What I meant was a virtual swap device which appears as swap disk
+to kernel. Kernel swaps to this disk as usual (hence the kernel decides
+what pages to swap out). This device tries to send these pages to hvisor
+but if that fails, it will fall back to swapping inside guest only. There
+is no double swapping. I think this correctly explains purpose of Frontswap.
 
-Changes since 20091219:
+>> ...such 'para-swap' can shrink/expand outside of VM constraints.
+<snip>
+> frontswap is limited by the same constraint
+> as ballooning (ie. can NOT expand outside of VM constraints).
+> 
 
-My fixes tree contains this origin tree build fix:
+What I meant was: A VM can have 512M of memory while this "para swap" disk
+can have any size, say 1G. Now kernel can swapout 1G worth of data to this
+swap which can (potentially) send all these pages to hvisor. In future, if
+we want even more RAM for this VM, we can add another such swap device to guest.
+Thus, in a way, we are able to overcome rigid static partitioning of VMs w.r.t.
+memory resource.
 
-	kfifo: include linux/fifo.h in libsrp.h for definition of stuct kfifo
 
-The acpi tree gained a conflict against Linus' tree (which also required
-a couple of merge fixups).
+> 
+> P.S.  If you want to look at implementing FS-cache or ramzswap
+> on top of tmem, I'd be happy to help, but I'll bet your concern:
+> 
+>> we might later encounter some hidder/dangerous problems :)
+> 
+> will prove to be correct.
+> 
 
-The ieee1394 tee lost its conflicts.
+Please allow me few days to experiment with 'virtswap' which will
+be virtualization aware ramzswap driver. This will help us understand
+problems we might face with such an approach. I am new to this virtio thing,
+so it might take some time.
 
-The kgdb tree gained a couple of build failures so I used the version
-from next-20091219.
+If we find virtswap to be feasible with virtio, we can go for fs-cache
+backend we talked about.
 
-The watchdog tree gained a conflict against Linus' tree.
 
-The alacrity tree lost a conflict.
-
-The limits tree lost a conflict.
-
-The slab and percpu trees interacted to create a build failure for which
-I applied a patch.
-
-The usb tree gained a conflict against Linus' tree.
-
-The tty tree gained a build failure for which I reverted a commit.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 155 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-CONFLICT (content): Merge conflict in fs/ocfs2/file.c
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (add/add): Merge conflict in fs/xfs/linux-2.6/xfs_trace.h
-CONFLICT (content): Merge conflict in include/linux/fs.h
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/platform/x86/sony-laptop.c
-Applying: acpi: further update fo __kfifo_len API change
-Applying: acpi: another fix for kfifo API change
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-$ git reset --hard HEAD^
-Merging refs/next/20091219/kgdb
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-CONFLICT (delete/modify): drivers/watchdog/rm9k_wdt.c deleted in HEAD and m=
-odified in watchdog/master. Version watchdog/master of drivers/watchdog/rm9=
-k_wdt.c left in tree.
-$ git rm -f drivers/watchdog/rm9k_wdt.c
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-Merging tip/auto-latest
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Applying: slab: update for percpu API change
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Thu__24_Dec_2009_14_06_59_+1100_OaboCRGO=2D.+7WM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksy2tMACgkQjjKRsyhoI8ziFQCgkr0Dyo3AKZqpvQ2VDmjVWBF+
-s7YAn3ArLHErdbFz8WbtIjSuwbe/z38O
-=cmlD
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_Dec_2009_14_06_59_+1100_OaboCRGO=2D.+7WM--
+Thanks,
+Nitin
