@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbZLXGyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbZLXG7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756375AbZLXGyI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 01:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbZLXGyG
+	id S1756477AbZLXG7O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 01:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZLXG7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 01:54:06 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:41904 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755574AbZLXGyC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 01:54:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=XvzoKIGZ4cBxWSM0/OeTc8Uudtvit3SiG/JwXUfbHpENf6eRuhAPs2W2/0HjtQE+DT
-         EkUus7RQxGAKXYzzV+9kC0NCMhGbKVapgL9g18lp2DFQTgZjt5rVdKqFCV2VQtarlpYd
-         wkkgDfMWmRsnlx1fhJ3COMCi0bYgMo3B60vKI=
-Date: Thu, 24 Dec 2009 07:53:57 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] scripts/get_maintainer.pl: add support to read patch
- from STDIN
-Message-ID: <20091224065357.GB26621@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Joe Perches <joe@perches.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <9ea470500912230555k6b72407al730da6361d8aba0f@mail.gmail.com>
- <1261610824.1923.58.camel@Joe-Laptop.home>
- <20091224064556.GA26621@liondog.tnic>
+	Thu, 24 Dec 2009 01:59:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10705 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754219AbZLXG7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 01:59:12 -0500
+Date: Thu, 24 Dec 2009 08:58:20 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+Message-ID: <20091224065820.GE4490@redhat.com>
+References: <4B1D4F29.8020309@gmail.com>
+ <87637zdy9g.fsf@basil.nowhere.org>
+ <4B30E654.40702@codemonkey.ws>
+ <200912221701.56840.bzolnier@gmail.com>
+ <4B30F214.80206@codemonkey.ws>
+ <20091223065129.GA19600@elte.hu>
+ <20091223101340.GC20539@basil.fritz.box>
+ <20091223185150.GA9587@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091224064556.GA26621@liondog.tnic>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091223185150.GA9587@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 24, 2009 at 07:45:56AM +0100, Borislav Petkov wrote:
-> On Wed, Dec 23, 2009 at 03:27:04PM -0800, Joe Perches wrote:
-> > On Wed, 2009-12-23 at 14:55 +0100, Borislav Petkov wrote:
-> > > Teach get_maintainer.pl to read a diff from STDIN
-> > 
-> > How about this instead?
-> > 
-> > Doesn't need or accept '-' as a trailing option to read stdin.
-> > Doesn't print usage() after bad options.
-> > Adds --usage as command line equivalent of --help
+On Wed, Dec 23, 2009 at 07:51:50PM +0100, Ingo Molnar wrote:
 > 
-> This breaks current usage and possibly other scripts:
+> * Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> # git diff | ./scripts/get_maintainer.pl -
-> ./scripts/get_maintainer.pl: file '-' not found
+> > > - Are a pure software concept and any compatibility mismatch is                                      
+> > >   self-inflicted. The patches are in fact breaking the ABI to KVM                                                
+> > 
+> > In practice, especially considering older kernel releases, VMs behave like 
+> > hardware, with all its quirks, compatibility requirements, sometimes not 
+> > fully understood, etc.
+> 
+> I stopped reading your reply here. That's not actually fully true of KVM, at 
+> all.
+> 
+> Virtualization isnt voodoo magic with some hidden souce in some magic hardware 
+> component that no-one can understand fully. This isnt some mystic hardware 
+> vendor coming up with some code and going away in the next quarter, with 
+> barely anything documented and thousands of users left with hardware 
+> components which we need to support under Linux somehow.
+> 
+> This is Linux virtualization, where _both_ the host and the guest source code 
+> is fully known, and bugs (if any) can be found with a high degree of 
+It may sound strange but Windows is very popular guest and last I
+checked my HW there was no Windows sources there, but the answer to that
+is to emulate HW as close as possible to real one and then closed source
+guests will not have a reason to be upset.
 
-Sorry, too early here. What I meant was that it should be able to
-receive both '-' and simply piped input (i.e., without '-'):
+> determinism. This is Linux where the players dont just vanish overnight, and 
+> are expected to do a proper job.
+> 
+> Yes, there's (obviously) compatibility requirements and artifacts and past 
+> mistakes (as with any software interface), but you need to admit it to 
+> yourself that your "virtualization is sloppy just like hardware" claim is just 
+> a cheap excuse to not do a proper job of interface engineering.
+> 
+> Thanks,
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
- git diff | ./scripts/get_maintainer.pl -
-
-as well as
-
- git diff | ./scripts/get_maintainer.pl
-
-IMO.
-
--- 
-Regards/Gruss,
-    Boris.
+--
+			Gleb.
