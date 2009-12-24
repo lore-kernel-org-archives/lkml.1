@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbZLXQEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZLXQK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbZLXQEB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 11:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZLXQD7
+	id S1754460AbZLXQK4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 11:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZLXQKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 11:03:59 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:42090 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751430AbZLXQD6 (ORCPT
+	Thu, 24 Dec 2009 11:10:55 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:55492 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbZLXQKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 11:03:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZoL1FyVFu5RAU7NVfhXDNejBZwEyjGX5MXOtYnv8boYwDo7xNYrvV55MD/97Wi8QYh
-         BD+LP/NO/tMo00cD7rbc3bqpWhRbdzHfqFAdM76zdXrfH7qmmMKwULZqPfqgfniLppAz
-         D9g3oYrvotjbKH5B41YYi6Z9lb/8ZKq+PCaYw=
-Message-ID: <4B3390EC.5060408@gmail.com>
-Date: Thu, 24 Dec 2009 09:03:56 -0700
-From: Berck Nash <flyboy@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>
+	Thu, 24 Dec 2009 11:10:55 -0500
+Date: Thu, 24 Dec 2009 11:10:56 -0500
+From: Michael Breuer <mbreuer@majjas.com>
 Subject: Re: sky2 panic in 2.6.32.1 under load
-References: <4B300A2A.8040305@gmail.com> <20091223225855.4a7d00af.akpm@linux-foundation.org>
-In-Reply-To: <20091223225855.4a7d00af.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-reply-to: <20091223225855.4a7d00af.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>
+Message-id: <4B339290.60909@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com>
+ <20091223225855.4a7d00af.akpm@linux-foundation.org>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 21 Dec 2009 16:52:10 -0700 "Berck E. Nash" <flyboy@gmail.com> wrote:
-> 
+
+On 12/24/2009 1:58 AM, Andrew Morton wrote:
+> On Mon, 21 Dec 2009 16:52:10 -0700 "Berck E. Nash"<flyboy@gmail.com>  wrote:
+>
+>    
 >> Since 2.6.32, I've been getting kernel panics under heavy network load
 >> (bittorrent usage).
-> 
+>>      
 > Let's cc the right list and developer.
-> 
+>
 > This is a 2.6.31->2.6.32 regression?
+>    
+I don't think so. I saw this on 2.6.31 - first kernel I put on this 
+system. At the time, I was having issues with intel_iommu and thought 
+that the culprit.
+The initial reply to this thread from Daniel Hazelton stated that this 
+has been happening since 2.6.25.
 
-I believe so.  Since it's intermittent and difficult to reproduce, it's
-possible (but unlikely) that I simply never triggered it under 2.6.31.
-
+And apologies for the word wrap. I upgraded Thunderbird :(. Oddly, I 
+don't see the word wrap when reading my own message to the list. Must be 
+some new setting I missed.
+>    
 >> [ 8673.345873] sky2 eth0: receiver hang detected
 >> [ 8673.350368] sky2 eth0: disabling interface
 >> [ 8673.354749] BUG: unable to handle kernel NULL pointer dereference at
 >> 0000000000000010
-> 
+>>      
 > Please fix the wordwrapping for next time.
-
-Sorry!
-
+>
+>    
 >> [ 8673.359748] IP: [<ffffffffa00373d3>] sky2_xmit_frame+0x321/0x5d8 [sky2]
 >> [ 8673.364675] PGD a09a6067 PUD a09a5067 PMD 0
 >> [ 8673.373838] Oops: 0002 [#1] SMP
@@ -101,12 +103,12 @@ Sorry!
 >> [ 8673.539212] Stack:
 >> [ 8673.539212]  ffff8800992f5980 ffff8800955fa87e ffff8800bd201800
 >> 000000428122a659
->> [ 8673.548658] <0> ffff880001603e48 ffff88009bf3ab48 ffff8800992f5980
+>> [ 8673.548658]<0>  ffff880001603e48 ffff88009bf3ab48 ffff8800992f5980
 >> ffffffff813eaf30
->> [ 8673.556929] <0> ffff8800bd201800 ffff8800bef03940 ffff880001603e98
+>> [ 8673.556929]<0>  ffff8800bd201800 ffff8800bef03940 ffff880001603e98
 >> ffffffff81231de8
 >> [ 8673.565432] Call Trace:
->> [ 8673.565432]  <IRQ>
+>> [ 8673.565432]<IRQ>
 >> [ 8673.565432]  [<ffffffff81231de8>] dev_hard_start_xmit+0x21c/0x2b7
 >> [ 8673.574516]  [<ffffffff81041746>] ? run_timer_softirq+0x4f/0x1c9
 >> [ 8673.579515]  [<ffffffff81240252>] sch_direct_xmit+0x5e/0x154
@@ -114,7 +116,7 @@ Sorry!
 >> [ 8673.592673]  [<ffffffff8122fb19>] net_tx_action+0xbb/0x10e
 >> [ 8673.598719]  [<ffffffff8103dc16>] __do_softirq+0x91/0x11b
 >> [ 8673.601787]  [<ffffffff8100be9c>] call_softirq+0x1c/0x28
->> [ 8673.609833]  <EOI>
+>> [ 8673.609833]<EOI>
 >> [ 8673.610994]  [<ffffffff8100d907>] do_softirq+0x33/0x6b
 >> [ 8673.614419]  [<ffffffff8103d71e>] ksoftirqd+0x60/0xd7
 >> [ 8673.620082]  [<ffffffff8103d6be>] ? ksoftirqd+0x0/0xd7
@@ -124,9 +126,9 @@ Sorry!
 >> [ 8673.639492]  [<ffffffff8100bd90>] ? child_rip+0x0/0x20
 >> [ 8673.647639] Code: 06 00 00 00 00 89 08 66 c7 40 04 00 00 c6 40 06 01
 >> c6 40 07 9f 41 0f b7 c6 48 89 c7 48 c1 e0 03 48 c1 e7 05 48 89 f9 48 03
->> 4b 20 <4c> 89 79 10 48 c7 41 08 01 00 00 00 8b 75 cc 89 71 18 48 03 7b
+>> 4b 20<4c>  89 79 10 48 c7 41 08 01 00 00 00 8b 75 cc 89 71 18 48 03 7b
 >> [ 8673.667726] RIP  [<ffffffffa00373d3>] sky2_xmit_frame+0x321/0x5d8 [sky2]
->> [ 8673.674902]  RSP <ffff880001603df8>
+>> [ 8673.674902]  RSP<ffff880001603df8>
 >> [ 8673.674902] CR2: 0000000000000010
 >> [ 8673.682956] hda-intel: IRQ timing workaround is activated for card
 >> #0. Suggest a bigger bdl_pos_adj.
@@ -134,7 +136,7 @@ Sorry!
 >> [ 8673.683017] Kernel panic - not syncing: Fatal exception in interrupt
 >> [ 8673.683020] Pid: 4, comm: ksoftirqd/0 Tainted: P      D    2.6.32.1 #3
 >> [ 8673.683021] Call Trace:
->> [ 8673.683023]  <IRQ>  [<ffffffff8129839d>] panic+0x75/0x11c
+>> [ 8673.683023]<IRQ>   [<ffffffff8129839d>] panic+0x75/0x11c
 >> [ 8673.683030]  [<ffffffff8100e9a7>] oops_end+0x81/0x8e
 >> [ 8673.683033]  [<ffffffff81026e5f>] no_context+0x1ee/0x1fd
 >> [ 8673.683036]  [<ffffffff81032a6d>] ? find_busiest_group+0x387/0x8d8
@@ -151,7 +153,7 @@ Sorry!
 >> [ 8673.683072]  [<ffffffff8122fb19>] net_tx_action+0xbb/0x10e
 >> [ 8673.683075]  [<ffffffff8103dc16>] __do_softirq+0x91/0x11b
 >> [ 8673.683078]  [<ffffffff8100be9c>] call_softirq+0x1c/0x28
->> [ 8673.683079]  <EOI>  [<ffffffff8100d907>] do_softirq+0x33/0x6b
+>> [ 8673.683079]<EOI>   [<ffffffff8100d907>] do_softirq+0x33/0x6b
 >> [ 8673.683083]  [<ffffffff8103d71e>] ksoftirqd+0x60/0xd7
 >> [ 8673.683085]  [<ffffffff8103d6be>] ? ksoftirqd+0x0/0xd7
 >> [ 8673.683088]  [<ffffffff8104aee7>] kthread+0x7a/0x82
@@ -170,5 +172,5 @@ Sorry!
 >>
 >> Please CC as I'm not subscribed.
 >>
-> 
+>>      
 
