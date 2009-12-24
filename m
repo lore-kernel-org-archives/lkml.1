@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZLXHel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZLXHaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbZLXHel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 02:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZLXHek
+	id S1756697AbZLXHaS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 02:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZLXHaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 02:34:40 -0500
-Received: from mga10.intel.com ([192.55.52.92]:62410 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754219AbZLXHej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 02:34:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,445,1257148800"; 
-   d="scan'208";a="525980004"
-Date: Thu, 24 Dec 2009 15:31:02 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Rudolf Marek <r.marek@assembler.cz>, Huaxu Wan <huaxu.wan@intel.com>,
-       Jean Delvare <khali@linux-fr.org>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] hwmon: (coretemp) Fix TjMax for Atom N450/D410/D510 CPUs
-Message-ID: <20091224073102.GA23058@ywang-moblin2.bj.intel.com>
+	Thu, 24 Dec 2009 02:30:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58378 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754545AbZLXHaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 02:30:14 -0500
+Message-ID: <4B331957.7030906@kernel.org>
+Date: Thu, 24 Dec 2009 16:33:43 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: fengxiangjun <fengxiangjun@neusoft.com>
+CC: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
+References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net> <4B30134C.1050609@gmail.com> <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net> <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com> <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net> <4B31DB17.4050509@kernel.org> <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net>
+In-Reply-To: <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The max junction temperature of Atom N450/D410/D510 CPUs is 100 degrees Celsius.
-Since these CPUs are always coupled with Intel NM10 chipset in one package, the
-best way to verify whether an Atom CPU is N450/D410/D510 is to check the host
-bridge device.
+On 12/23/2009 06:29 PM, fengxiangjun wrote:
+> 
+> Hi,
+> 
+> with this patch, the problem still exists.
+> 
+> ata1.01: XXX debounce start, SStatus=4
+> ata1.01: XXX debounce done, SStatus=4, DET stable for 520 msecs
+> ata1.00: SATA link down (SStatus 0 SControl 301)
+> ata1.01: SATA link down (SStatus 0 Scontrol 300)
+> ...
+> VFS; cannot open root device ...
+> 
+> The kernel just panic, and I can't see what's the messege printing before 
+> that.
+> 
+> So, I tried 'console=ttyS0 console=tty1'，full dmesg attached。
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Acked-by: Huaxu Wan <huaxu.wan@intel.com>
----
- drivers/hwmon/coretemp.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+Can you please capture full failing log?  In the attached log, ata1.00
+is detected successfully.
 
-diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
-index caef39c..65a33ec 100644
---- a/drivers/hwmon/coretemp.c
-+++ b/drivers/hwmon/coretemp.c
-@@ -33,6 +33,7 @@
- #include <linux/list.h>
- #include <linux/platform_device.h>
- #include <linux/cpu.h>
-+#include <linux/pci.h>
- #include <asm/msr.h>
- #include <asm/processor.h>
- 
-@@ -161,6 +162,7 @@ static int __devinit adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *
- 	int usemsr_ee = 1;
- 	int err;
- 	u32 eax, edx;
-+	struct pci_dev *host_bridge;
- 
- 	/* Early chips have no MSR for TjMax */
- 
-@@ -168,11 +170,21 @@ static int __devinit adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *
- 		usemsr_ee = 0;
- 	}
- 
--	/* Atoms seems to have TjMax at 90C */
-+	/* Atoms CPUs */
- 
- 	if (c->x86_model == 0x1c) {
- 		usemsr_ee = 0;
--		tjmax = 90000;
-+
-+		host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
-+
-+		if (host_bridge && host_bridge->vendor == PCI_VENDOR_ID_INTEL
-+		    && (host_bridge->device == 0xa000	/* NM10 based nettop */
-+		    || host_bridge->device == 0xa010))	/* NM10 based netbook */
-+			tjmax = 100000;
-+		else
-+			tjmax = 90000;
-+
-+		pci_dev_put(host_bridge);
- 	}
- 
- 	if ((c->x86_model > 0xe) && (usemsr_ee)) {
+Thanks.
+
+-- 
+tejun
