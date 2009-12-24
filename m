@@ -1,154 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZLXEQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZLXEa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbZLXEQx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 23:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZLXEQv
+	id S1755381AbZLXEa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 23:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZLXEa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 23:16:51 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:41608 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbZLXEQu (ORCPT
+	Wed, 23 Dec 2009 23:30:27 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:37439 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbZLXEa0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 23:16:50 -0500
-Date: Thu, 24 Dec 2009 15:16:48 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Wensong Zhang <wensong@linux-vs.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Julian Anastasov <ja@ssi.bg>
-Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
-Message-ID: <20091224041646.GC2814@verge.net.au>
-References: <20090930131109.2b3f71b8@infradead.org>
- <20091214221704.24c2665f@infradead.org>
- <20091215063201.GA24634@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091215063201.GA24634@verge.net.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 23 Dec 2009 23:30:26 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>
+In-Reply-To: <1261611898.18047.37.camel@localhost>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity>
+	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
+	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
+	 <1261599385.13028.142.camel@serenity>  <1261604952.18047.7.camel@localhost>
+	 <1261610013.13028.151.camel@serenity> <1261611898.18047.37.camel@localhost>
+Content-Type: text/plain
+Date: Wed, 23 Dec 2009 23:30:14 -0500
+Message-Id: <1261629014.13028.160.camel@serenity>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 05:32:01PM +1100, Simon Horman wrote:
-> On Mon, Dec 14, 2009 at 10:17:04PM -0800, Arjan van de Ven wrote:
-> > On Wed, 30 Sep 2009 13:11:09 +0200
-> > Arjan van de Ven <arjan@infradead.org> wrote:
-> > 
-> > ping on the patch below.... the warning is now triggered in mainline
-> 
-> Hi Arjan,
-> 
-> could you address the comments Julian made about this?
-> http://lkml.indiana.edu/hypermail/linux/kernel/0910.0/00852.html
-> 
-> 	OK, you can add my signed-off line after changing
-> 	'cmd > ...MAX + 1' to 'cmd > ...MAX' at both
-> 	places, nf_sockopt_ops ranges are [optmin ... optmax)
-> 
-> 	May be comments should be changed because:
-> 
-> 	- i'm not the author but after ispection we do not see any holes,
-> 	we do not want users to upgrade just for this change
-> 	- the cmd checks are just to help code checking tools
-> 	- the len checks should help programmers (may be BUG_ON is
-> 	better, user does not deserve EINVAL for wrong set_arglen/get_arglen).
-> 	Checks for *len and len are not needed.
-> 
-> 	For example, for len checks this should be enough, before
-> 	copy_from_user():
-> 
-> 	in do_ip_vs_get_ctl check can be
-> 	BUG_ON(get_arglen[GET_CMDID(cmd)] > sizeof(arg));
-> 
-> 	in do_ip_vs_set_ctl check can be
-> 	BUG_ON(set_arglen[SET_CMDID(cmd)] > sizeof(arg));
-> 
-> 	Acked-by: Julian Anastasov <ja@ssi.bg>
 
-Ping.
+On Thu, 2009-12-24 at 00:44 +0100, Trond Myklebust wrote:
 
-While I agree with Julian that the patch you suggest below
-ought not to be necessary, I'm also happy with it if
-cmd > IP_VS_SO_SET_MAX + 1 is changed to cmd > IP_VS_SO_SET_MAX.
+> > #2 is the difficult one.  If you wait for memory pressure, you could
+> > have waited too long, because depending on the latency of the commit,
+> > you could run into low-memory situations.  Then mayhem ensues, the
+> > oom-killer gets cranky (if you haven't disabled it), and stuff starts
+> > failing and/or hanging.  So you need to be careful about setting the
+> > threshold for generating a commit so that the client doesn't run out of
+> > memory before the server can respond.
+> 
+> Right, but this is why we have limits on the total number of dirty pages
+> that can be kept in memory. The NFS unstable writes don't significantly
+> change that model, they just add an extra step: once all the dirty data
+> has been transmitted to the server, your COMMIT defines a
+> synchronisation point after which you know that the data you just sent
+> is all on disk. Given a reasonable NFS server implementation, it will
+> already have started the write out of that data, and so hopefully the
+> COMMIT operation itself will run reasonably quickly.
 
-> > > >From 761a182f96b3707e1fee44e1079ba227e48745d1 Mon Sep 17 00:00:00
-> > > >2001
-> > > From: Arjan van de Ven <arjan@linux.intel.com>
-> > > Date: Wed, 30 Sep 2009 13:05:51 +0200
-> > > Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
-> > > 
-> > > The ipvs code has a nifty system for doing the size of ioctl command
-> > > copies; it defines an array with values into which it indexes the cmd
-> > > to find the right length.
-> > > 
-> > > Unfortunately, the ipvs code forgot to check if the cmd was in the
-> > > range that the array provides, allowing for an index outside of the
-> > > array, which then gives a "garbage" result into the length, which
-> > > then gets used for copying into a stack buffer.
-> > > 
-> > > Fix this by adding sanity checks on these as well as the copy size.
-> > > 
-> > > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> > > ---
-> > >  net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
-> > >  1 files changed, 13 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/net/netfilter/ipvs/ip_vs_ctl.c
-> > > b/net/netfilter/ipvs/ip_vs_ctl.c index ac624e5..3c52796 100644
-> > > --- a/net/netfilter/ipvs/ip_vs_ctl.c
-> > > +++ b/net/netfilter/ipvs/ip_vs_ctl.c
-> > > @@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd,
-> > > void __user *user, unsigned int len) if (!capable(CAP_NET_ADMIN))
-> > >  		return -EPERM;
-> > >  
-> > > +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
-> > > +		return -EINVAL;
-> > > +	if (len < 0 || len >  MAX_ARG_LEN)
-> > > +		return -EINVAL;
-> > >  	if (len != set_arglen[SET_CMDID(cmd)]) {
-> > >  		pr_err("set_ctl: len %u != %u\n",
-> > >  		       len, set_arglen[SET_CMDID(cmd)]);
-> > > @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd,
-> > > void __user *user, int *len) {
-> > >  	unsigned char arg[128];
-> > >  	int ret = 0;
-> > > +	unsigned int copylen;
-> > >  
-> > >  	if (!capable(CAP_NET_ADMIN))
-> > >  		return -EPERM;
-> > >  
-> > > +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
-> > > +		return -EINVAL;
-> > > +
-> > >  	if (*len < get_arglen[GET_CMDID(cmd)]) {
-> > >  		pr_err("get_ctl: len %u < %u\n",
-> > >  		       *len, get_arglen[GET_CMDID(cmd)]);
-> > >  		return -EINVAL;
-> > >  	}
-> > >  
-> > > -	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) !=
-> > > 0)
-> > > +	copylen = get_arglen[GET_CMDID(cmd)];
-> > > +	if (copylen > 128)
-> > > +		return -EINVAL;
-> > > +
-> > > +	if (copy_from_user(arg, user, copylen) != 0)
-> > >  		return -EFAULT;
-> > >  
-> > >  	if (mutex_lock_interruptible(&__ip_vs_mutex))
-> > 
-> > 
-> > -- 
-> > Arjan van de Ven 	Intel Open Source Technology Centre
-> > For development, discussion and tips for power savings, 
-> > visit http://www.lesswatts.org
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+Right.  The trick is to do this with the best performance possible.
+
+> 
+> Any userland application with basic data integrity requirements will
+> have the same expectations. It will write out the data and then fsync()
+> at regular intervals. I've never heard of any expectations from
+> filesystem and VM designers that applications should be required to
+> fine-tune the length of those intervals in order to achieve decent
+> performance.
+
+Agreed, except that the more you call fsync(), the more you are stalling
+the writing, so application designers must use fsync() judiciously.
+Otherwise they'd just use synchronous writes.  (Apologies if I sound
+like Captain Obvious.)
+
+Thanks,
+
+Steve
+
+> 
+> Cheers
+>   Trond
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
