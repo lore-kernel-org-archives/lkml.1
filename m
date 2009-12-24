@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbZLXMop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZLXMsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbZLXMop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 07:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZLXMoo
+	id S1754861AbZLXMsx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 07:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZLXMsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 07:44:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42366 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754459AbZLXMon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 07:44:43 -0500
-Message-ID: <4B336303.2090403@kernel.org>
-Date: Thu, 24 Dec 2009 21:48:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Tim Blechmann <tim@klingt.org>
-CC: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, x86@kernel.org
-Subject: Re: 2.6.32 regression: unable to handle kernel paging request
-References: <4B269765.1070703@klingt.org> <4B2A2A7D.1050506@klingt.org> <4B2A93F2.3070407@klingt.org> <4B2AFBB1.3040609@kernel.org> <4B2B4838.6080509@klingt.org> <4B2F20E0.30804@kernel.org> <4B2F40C0.5020407@klingt.org> <4B33592B.6000107@kernel.org> <4B335964.6040202@klingt.org> <4B335DE6.9030102@kernel.org>
-In-Reply-To: <4B335DE6.9030102@kernel.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 24 Dec 2009 07:48:52 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:48425 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbZLXMsv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 07:48:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=t+VuiqKIvM+6ULq/Aa4NGoFTA/7ExtKTeizIQcmb8T7mssxK4gPMrEio0ohPgQRzfb
+         hxyJea2vsjDUhYr7Q6+Q6vIzuhy6GHSccPgZiZyOPRt96ZXxXdCeGUbymUbM8/g+kbn/
+         B0Pvwc3H1uUTEVkzX0UMEVpf9wVZTRSWKvk4g=
+Subject: drivers/gpu/drm/radeon/radeon_device.c: move a dereference below a
+ NULL test
+From: Darren Jenkins <darrenrjenkins@gmail.com>
+To: David Airlie <airlied@linux.ie>,
+       dri-devel mailing list <dri-devel@lists.sourceforge.net>,
+       Kernel Janitors <kernel-janitors@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 24 Dec 2009 23:48:58 +1100
+Message-ID: <1261658938.3546.12.camel@ICE-BOX>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, again.
+If a NULL value is possible, the dereference should only occur after the
+NULL test.
 
-On 12/24/2009 09:26 PM, Tejun Heo wrote:
->> GNU ld (GNU Binutils for Ubuntu) 2.20
-> 
-> Sections aren't supposed to have addresses assigned in relocatable
-> output and it of course breaks things.  I'll try newer version of
-> binutils but at this point it looks like a linker bug.  Can you please
-> report it to ubuntu too?
+Coverity CID: 13335
 
-I just tried 2.20 on openSUSE.
+Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
+diff --git a/drivers/gpu/drm/radeon/radeon_device.c
+b/drivers/gpu/drm/radeon/radeon_device.c
+index 02bcdb1..c0104b0 100644
+--- a/drivers/gpu/drm/radeon/radeon_device.c
++++ b/drivers/gpu/drm/radeon/radeon_device.c
+@@ -663,16 +663,18 @@ void radeon_device_fini(struct radeon_device
+*rdev)
+  */
+ int radeon_suspend_kms(struct drm_device *dev, pm_message_t state)
+ {
+-	struct radeon_device *rdev = dev->dev_private;
++	struct radeon_device *rdev;
+ 	struct drm_crtc *crtc;
+ 	int r;
+ 
+-	if (dev == NULL || rdev == NULL) {
++	if (dev == NULL || dev->dev_private == NULL) {
+ 		return -ENODEV;
+ 	}
+ 	if (state.event == PM_EVENT_PRETHAW) {
+ 		return 0;
+ 	}
++	rdev = dev->dev_private;
++
+ 	/* unpin the front buffers */
+ 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+ 		struct radeon_framebuffer *rfb = to_radeon_framebuffer(crtc->fb);
 
- $ ld --version
- GNU ld (GNU Binutils; devel:gcc / openSUSE_11.2) 2.20.0.20091104-13.2
- Copyright 2009 Free Software Foundation, Inc.
- This program is free software; you may redistribute it under the terms of
- the GNU General Public License version 3 or (at your option) a later version.
- This program has absolutely no warranty.
 
-and it doesn't show such behavior.  Can you please report this to
-ubuntu and let me know the bug#?
-
-Thanks.
-
--- 
-tejun
