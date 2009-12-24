@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752248AbZLXCwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZLXDFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752248AbZLXCwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 21:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZLXCwc
+	id S1754633AbZLXDFu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Dec 2009 22:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZLXDFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 21:52:32 -0500
-Received: from mga03.intel.com ([143.182.124.21]:9243 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751032AbZLXCwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 21:52:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="226253217"
-Date: Thu, 24 Dec 2009 10:52:28 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Jan Kara <jack@suse.cz>, Steve Rago <sar@nec-labs.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-Message-ID: <20091224025228.GA12477@localhost>
-References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz> <1261595574.6775.2.camel@localhost>
+	Wed, 23 Dec 2009 22:05:49 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:59331 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbZLXDFt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Dec 2009 22:05:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=bR1DFU1bvbcKtELyuc0oiLm8/ob64feEEWLjzIlcH+V416qA8YqJBKFiGYPUQSBQ8q
+         fZjPlX4lyqL4ZnXbSPQT7akFs/uLpmE01kDx0bhyahuBaDxyKoqFtFWnJT+U9VFI/pm8
+         pZCMA/B74H1bWdEtCKGyAG+DDgyX4gLLLeDcs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261595574.6775.2.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 24 Dec 2009 09:05:48 +0600
+Message-ID: <b9df5fa10912231905t69502923gee5aaf1c1b2efa6a@mail.gmail.com>
+Subject: [PATCH] hugetlb: Fix section mismatch warning in hugetlb.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond,
+    The patch titled hugetlb-add-per-node-hstate-attributes.patch introduces
+ the following section mismatch warning, due to a reference form non-init
+function hugetlb_register_node to a init function hugetlb_sysfs_add_hstate.
 
-On Thu, Dec 24, 2009 at 03:12:54AM +0800, Trond Myklebust wrote:
-> On Wed, 2009-12-23 at 19:05 +0100, Jan Kara wrote: 
-> > On Wed 23-12-09 15:21:47, Trond Myklebust wrote:
-> > > @@ -474,6 +482,18 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
-> > >  	}
-> > >  
-> > >  	spin_lock(&inode_lock);
-> > > +	/*
-> > > +	 * Special state for cleaning NFS unstable pages
-> > > +	 */
-> > > +	if (inode->i_state & I_UNSTABLE_PAGES) {
-> > > +		int err;
-> > > +		inode->i_state &= ~I_UNSTABLE_PAGES;
-> > > +		spin_unlock(&inode_lock);
-> > > +		err = commit_unstable_pages(inode, wait);
-> > > +		if (ret == 0)
-> > > +			ret = err;
-> > > +		spin_lock(&inode_lock);
-> > > +	}
-> >   I don't quite understand this chunk: We've called writeback_single_inode
-> > because it had some dirty pages. Thus it has I_DIRTY_DATASYNC set and a few
-> > lines above your chunk, we've called nfs_write_inode which sent commit to
-> > the server. Now here you sometimes send the commit again? What's the
-> > purpose?
-> 
-> We no longer set I_DIRTY_DATASYNC. We only set I_DIRTY_PAGES (and later
-> I_UNSTABLE_PAGES).
-> 
-> The point is that we now do the commit only _after_ we've sent all the
-> dirty pages, and waited for writeback to complete, whereas previously we
-> did it in the wrong order.
+LD      mm/built-in.o
+WARNING: mm/built-in.o(.text+0x5396d): Section mismatch in reference
+from the function hugetlb_register_node() to the function
+.init.text:hugetlb_sysfs_add_hstate()
+The function hugetlb_register_node() references
+the function __init hugetlb_sysfs_add_hstate().
+This is often because hugetlb_register_node lacks a __init
+annotation or the annotation of hugetlb_sysfs_add_hstate is wrong.
 
-Sorry I still don't get it. The timing used to be:
+---
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
-write 4MB   ==> WRITE block 0 (ie. first 512KB)
-                WRITE block 1
-                WRITE block 2
-                WRITE block 3         ack from server for WRITE block 0 => mark 0 as unstable (inode marked need-commit)
-                WRITE block 4         ack from server for WRITE block 1 => mark 1 as unstable
-                WRITE block 5         ack from server for WRITE block 2 => mark 2 as unstable
-                WRITE block 6         ack from server for WRITE block 3 => mark 3 as unstable
-                WRITE block 7         ack from server for WRITE block 4 => mark 4 as unstable
-                                      ack from server for WRITE block 5 => mark 5 as unstable
-write_inode ==> COMMIT blocks 0-5
-                                      ack from server for WRITE block 6 => mark 6 as unstable (inode marked need-commit)
-                                      ack from server for WRITE block 7 => mark 7 as unstable 
+--- linus/mm/hugetlb.c	2009-12-18 15:52:35.000000000 +0600
++++ rakib/mm/hugetlb.c	2009-12-23 20:37:16.000000000 +0600
+@@ -1515,7 +1515,7 @@ static struct attribute_group hstate_att
+ 	.attrs = hstate_attrs,
+ };
 
-                                      ack from server for COMMIT blocks 0-5 => mark 0-5 as clean
-
-write_inode ==> COMMIT blocks 6-7
-
-                                      ack from server for COMMIT blocks 6-7 => mark 6-7 as clean
-
-Note that the first COMMIT is submitted before receiving all ACKs for
-the previous writes, hence the second COMMIT is necessary. It seems
-that your patch does not improve the timing at all.
-
-Thanks,
-Fengguang
-
+-static int __init hugetlb_sysfs_add_hstate(struct hstate *h,
++static int hugetlb_sysfs_add_hstate(struct hstate *h,
+ 				struct kobject *parent,
+ 				struct kobject **hstate_kobjs,
+ 				struct attribute_group *hstate_attr_group)
