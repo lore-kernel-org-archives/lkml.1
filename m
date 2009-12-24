@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbZLXMzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZLXM4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbZLXMzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 07:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZLXMzv
+	id S1755953AbZLXM4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 07:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZLXM4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 07:55:51 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36046 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbZLXMzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 07:55:50 -0500
-Subject: Re: [PATCH 7/6][RFC] sched: unify load_balance{,_newidle}()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       SureshSiddha <suresh.b.siddha@intel.com>,
-       "Pallipadi,Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <1261649811.4937.178.camel@laptop>
-References: <20091217185021.684424629@chello.nl>
-	 <1261581216.4937.150.camel@laptop>
-	 <1261629824.10947.13.camel@marge.simson.net>
-	 <1261646964.4937.172.camel@laptop>
-	 <1261649351.12219.0.camel@marge.simson.net>
-	 <1261649811.4937.178.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 24 Dec 2009 13:55:08 +0100
-Message-ID: <1261659308.4937.203.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 24 Dec 2009 07:56:47 -0500
+Received: from mail.klingt.org ([86.59.21.178]:50171 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751726AbZLXM4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 07:56:47 -0500
+Message-ID: <4B3364DE.6080907@klingt.org>
+Date: Thu, 24 Dec 2009 13:55:58 +0100
+From: Tim Blechmann <tim@klingt.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7pre) Gecko/20091219 Shredder/3.0.1pre
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, x86@kernel.org
+Subject: Re: 2.6.32 regression: unable to handle kernel paging request
+References: <4B269765.1070703@klingt.org> <4B2A2A7D.1050506@klingt.org> <4B2A93F2.3070407@klingt.org> <4B2AFBB1.3040609@kernel.org> <4B2B4838.6080509@klingt.org> <4B2F20E0.30804@kernel.org> <4B2F40C0.5020407@klingt.org> <4B33592B.6000107@kernel.org> <4B335964.6040202@klingt.org> <4B335DE6.9030102@kernel.org> <4B336303.2090403@kernel.org>
+In-Reply-To: <4B336303.2090403@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [127.0.0.1]); Thu, 24 Dec 2009 13:56:00 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-24 at 11:16 +0100, Peter Zijlstra wrote:
-> On Thu, 2009-12-24 at 11:09 +0100, Mike Galbraith wrote:
-> > On Thu, 2009-12-24 at 10:29 +0100, Peter Zijlstra wrote:
-> > 
-> > > Is that with just this patch applied or also with the next one? I
-> > > worried more about the next one.
-> > 
-> > The next one is the troublemaker.
-> 
-> OK, let me re-read all that code with a fresh(er) mind.
+>> Sections aren't supposed to have addresses assigned in relocatable
+>> output and it of course breaks things.  I'll try newer version of
+>> binutils but at this point it looks like a linker bug.  Can you please
+>> report it to ubuntu too?
+>
+> I just tried 2.20 on openSUSE.
+>
+>   $ ld --version
+>   GNU ld (GNU Binutils; devel:gcc / openSUSE_11.2) 2.20.0.20091104-13.2
+>   Copyright 2009 Free Software Foundation, Inc.
+>   This program is free software; you may redistribute it under the terms of
+>   the GNU General Public License version 3 or (at your option) a later version.
+>   This program has absolutely no warranty.
+>
+> and it doesn't show such behavior.  Can you please report this to
+> ubuntu and let me know the bug#?
 
-Ok, so how does this work for you?
+https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/500113
 
-That balance bit comes from update_sg_lb_stats() where it determines
-whether or not this cpu is allowed to load balance, it already excepts
-CPU_NEWLY_IDLE, even though that up until recently would always have
-passed .balance=NULL.
+i will double-check on the other machine in a few days ... it may be, 
+that i am using a toolchain ppa, that installed some unstable/odd/buggy 
+binutils ...
+but i somehow doubt, that this is the case :/
 
-But looking at the code it assumes the called initializes balance to 1,
-not 0.
+cheers, tim
 
-After this we could probably clean this mess up to not check balance but
-assume its !NULL.
+-- 
+tim@klingt.org
+http://tim.klingt.org
 
----
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -3031,7 +3031,7 @@ static void idle_balance(int this_cpu, s
- 
- 	for_each_domain(this_cpu, sd) {
- 		unsigned long interval;
--		int balance = 0;
-+		int balance = 1;
- 
- 		if (!(sd->flags & SD_LOAD_BALANCE))
- 			continue;
-
-
+Just what the hell is the experimental tradition?
+   Morton Feldman
