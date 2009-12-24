@@ -1,44 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbZLXGIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755622AbZLXGLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962AbZLXGIb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 01:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZLXGI3
+	id S1755622AbZLXGLW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 01:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZLXGLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 01:08:29 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49929 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753906AbZLXGI2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 01:08:28 -0500
-Date: Thu, 24 Dec 2009 15:08:12 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       kdb@oss.sgi.com, mingo@elte.hu
-Subject: Re: [PATCH 14/37] sh,sh-sci: Use NO_POLL_CHAR in the SCIF polled console code
-Message-ID: <20091224060811.GF28878@linux-sh.org>
-References: <1261603190-5036-6-git-send-email-jason.wessel@windriver.com> <1261603190-5036-7-git-send-email-jason.wessel@windriver.com> <1261603190-5036-8-git-send-email-jason.wessel@windriver.com> <1261603190-5036-9-git-send-email-jason.wessel@windriver.com> <1261603190-5036-10-git-send-email-jason.wessel@windriver.com> <1261603190-5036-11-git-send-email-jason.wessel@windriver.com> <1261603190-5036-12-git-send-email-jason.wessel@windriver.com> <1261603190-5036-13-git-send-email-jason.wessel@windriver.com> <1261603190-5036-14-git-send-email-jason.wessel@windriver.com> <1261603190-5036-15-git-send-email-jason.wessel@windriver.com>
+	Thu, 24 Dec 2009 01:11:20 -0500
+Received: from lists.laptop.org ([18.85.2.145]:51343 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752174AbZLXGLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 01:11:19 -0500
+Date: Thu, 24 Dec 2009 01:13:23 -0500
+From: Michael Stone <michael@laptop.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Michael Stone <michael@laptop.org>
+Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK)
+Message-ID: <20091224061322.GB24396@heat>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-In-Reply-To: <1261603190-5036-15-git-send-email-jason.wessel@windriver.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <m13a38uqc4.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 03:19:27PM -0600, Jason Wessel wrote:
-> The sci_poll_get_char() needs to return immediately if there is no
-> input from the chip to process, and must return a value of
-> NO_POLL_CHAR.
-> 
-> This allows kgdboc to process multiple polled devices while kgdb is
-> active.
-> 
-> CC: Paul Mundt <lethal@linux-sh.org>
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
->  drivers/serial/sh-sci.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+> Eric Biederman writes:
+>> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+>>> Michael Stone writes:
+>>>> the LSM-based version *does not* resolve the situation to my satisfaction as a
+>>>> userland hacker due to the well-known and long-standing adoption and
+>>>> compositionality problems facing small LSMs. ;)
+>>>
+>>> For things like Fedora it's probably an "interesting idea, perhaps we
+>>> should do it using SELinux" sort of problem, but a config option for a
+>>> magic network prctl is also going to be hard to adopt without producing a
+>>> good use case - and avoiding that by dumping crap into everyones kernel
+>>> fast paths isn't a good idea either.
+>
+>If I understand the problem the goal is to disable access to ipc
+>mechanism that don't have the usual unix permissions.  To get
+>something that is usable for non-root processes, and to get something
+>that is widely deployed so you don't have to jump through hoops in
+>end user applications to use it.
+
+Eric,
+
+You understand correctly. Thank you for this cogent restatement.
+
+>We have widely deployed mechanisms that are what you want or nearly
+>what you want already in the form of the various namespaces built for
+>containers.
+
+It's true that your work is closer to what I want than anything else that I've
+seen so far...
+
+>I propose you introduce a permanent disable of executing suid 
+>applications. 
+
+I'm open to the idea but I don't understand the need that motivates it yet.
+
+Could you please explain further? (or point me to an existing explanation?)
+
+>After which point it is another trivial patch to allow unsharing of
+>the network namespace if executing suid applications are disabled.
+
+How do you propose to address the problem with the Unix sockets?
+
+Regards,
+
+Michael
