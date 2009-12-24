@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZLXIjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZLXI7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbZLXIjM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 03:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbZLXIjL
+	id S1756229AbZLXI7P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 03:59:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbZLXI7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 03:39:11 -0500
-Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:45977 "EHLO
-	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755048AbZLXIjK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 03:39:10 -0500
-Date: Thu, 24 Dec 2009 03:38:45 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
-To: Dave Anderson <anderson@redhat.com>
-Cc: menage@google.com, linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] cgroups: fix 2.6.32 regression causing BUG_ON() in cgroup_diput()
-Message-ID: <20091224083845.GA16162@andrew.cmu.edu>
-References: <4B32660A.8070106@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B32660A.8070106@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Thu, 24 Dec 2009 03:59:13 -0500
+Received: from mga03.intel.com ([143.182.124.21]:20269 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754693AbZLXI7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 03:59:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="226327412"
+Subject: Re: [PATCH 3/5 -v2] acpi, apei, HEST table parsing
+From: Huang Ying <ying.huang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>
+In-Reply-To: <20091218184443.GD1470@ucw.cz>
+References: <1260429419.15264.395.camel@yhuang-dev.sh.intel.com>
+	 <20091218184443.GD1470@ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 24 Dec 2009 16:59:10 +0800
+Message-ID: <1261645150.6908.28.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 01:48:42PM -0500, Dave Anderson wrote:
+On Sat, 2009-12-19 at 02:44 +0800, Pavel Machek wrote: 
+> On Thu 2009-12-10 15:16:59, Huang Ying wrote:
+> > HEST describes error sources in detail; communicating operational
+> > parameters (i.e. severity levels, masking bits, and threshold values)
+> > to OS as necessary. It also allows the platform to report error
+> > sources for which OS would typically not implement support (for
+> > example, chipset-specific error registers).
+> > 
+> > HEST information may be needed by other subsystems. For example, HEST
+> > PCIE AER error source information describes whether a PCIE root port
+> > works in "firmware first" mode, this is needed by general PCIE AER
+> > error subsystem. So a public HEST tabling parsing interface is
+> > provided.
 > 
-> The LTP cgroup test suite generates a "kernel BUG at kernel/cgroup.c:790!"
-> here in cgroup_diput():
-> 
->                 /*
->                  * if we're getting rid of the cgroup, refcount should 
->                  ensure
->                  * that there are no pidlists left.
->                  */
->                 BUG_ON(!list_empty(&cgrp->pidlists));
-> 
-> The cgroup pidlist rework in 2.6.32 generates the BUG_ON, which is caused
-> when pidlist_array_load() calls cgroup_pidlist_find():
-> 
-> (1) if a matching cgroup_pidlist is found, it down_write's the mutex of the
->     pre-existing cgroup_pidlist, and increments its use_count.
-> (2) if no matching cgroup_pidlist is found, then a new one is allocated, it
->     down_write's its mutex, and the use_count is set to 0.
-> (3) the matching, or new, cgroup_pidlist gets returned back to 
-> pidlist_array_load(),
->     which increments its use_count -- regardless whether new or 
->     pre-existing --
->     and up_write's the mutex.
-> 
-> So if a matching list is ever encountered by cgroup_pidlist_find() during
-> the life of a cgroup directory, it results in an inflated use_count value,
-> preventing it from ever getting released by cgroup_release_pid_array().
-> Then if the directory is subsequently removed, cgroup_diput() hits the
-> BUG_ON() when it finds that the directory's cgroup is still populated
-> with a pidlist.
-> 
-> The patch simply removes the use_count increment when a matching
-> pidlist is found by cgroup_pidlist_find(), because it gets bumped by
-> the calling pidlist_array_load() function while still protected by the
-> list's mutex.
-> 
-> Signed-off-by: Dave Anderson <anderson@redhat.com>
-> 
-> ---
-> 
-> 
+> Perhaps you can remove unused hest_exit()?
 
-Ack! That was probably my fault. Good catch.
+OK. I will remove it.
+
+Best Regards,
+Huang Ying
+
+
