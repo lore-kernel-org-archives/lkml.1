@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755622AbZLXGLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZLXGUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755622AbZLXGLW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 01:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZLXGLU
+	id S1754953AbZLXGUR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 01:20:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZLXGUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 01:11:20 -0500
-Received: from lists.laptop.org ([18.85.2.145]:51343 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752174AbZLXGLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 01:11:19 -0500
-Date: Thu, 24 Dec 2009 01:13:23 -0500
-From: Michael Stone <michael@laptop.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Michael Stone <michael@laptop.org>
-Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK)
-Message-ID: <20091224061322.GB24396@heat>
+	Thu, 24 Dec 2009 01:20:15 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56814 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbZLXGUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 01:20:14 -0500
+Date: Thu, 24 Dec 2009 15:19:57 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.33-rc2
+Message-ID: <20091224061957.GG28878@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m13a38uqc4.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Eric Biederman writes:
->> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
->>> Michael Stone writes:
->>>> the LSM-based version *does not* resolve the situation to my satisfaction as a
->>>> userland hacker due to the well-known and long-standing adoption and
->>>> compositionality problems facing small LSMs. ;)
->>>
->>> For things like Fedora it's probably an "interesting idea, perhaps we
->>> should do it using SELinux" sort of problem, but a config option for a
->>> magic network prctl is also going to be hard to adopt without producing a
->>> good use case - and avoiding that by dumping crap into everyones kernel
->>> fast paths isn't a good idea either.
->
->If I understand the problem the goal is to disable access to ipc
->mechanism that don't have the usual unix permissions.  To get
->something that is usable for non-root processes, and to get something
->that is widely deployed so you don't have to jump through hoops in
->end user applications to use it.
+Please pull from:
 
-Eric,
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
 
-You understand correctly. Thank you for this cogent restatement.
+Which contains:
 
->We have widely deployed mechanisms that are what you want or nearly
->what you want already in the form of the various namespaces built for
->containers.
+Guennadi Liakhovetski (1):
+      sh: dmaengine support for sh7724.
 
-It's true that your work is closer to what I want than anything else that I've
-seen so far...
+Kuninori Morimoto (1):
+      sh: mach-ecovec24: setup.c detailed correction
 
->I propose you introduce a permanent disable of executing suid 
->applications. 
+Magnus Damm (1):
+      serial: sh-sci: earlyprintk zero uartclk fix
 
-I'm open to the idea but I don't understand the need that motivates it yet.
+Markus Pietrek (1):
+      sh: Ensure all PG_dcache_dirty pages are written back.
 
-Could you please explain further? (or point me to an existing explanation?)
+Nobuhiro Iwamatsu (1):
+      sh: dmaengine support for SH7785
 
->After which point it is another trivial patch to allow unsharing of
->the network namespace if executing suid applications are disabled.
+Paul Mundt (4):
+      sh: Fix up MAX_DMA_CHANNELS definition when DMA is disabled.
+      sh: Restore bl bit toggling in idle loop.
+      sh: Only use bl bit toggling for sleeping idle.
+      serial: sh-sci: Convert tremaining ctrl_xxx I/O routines to __raw_xxx.
 
-How do you propose to address the problem with the Unix sockets?
-
-Regards,
-
-Michael
+ arch/sh/boards/mach-ecovec24/setup.c   |    4 +-
+ arch/sh/include/asm/dma.h              |    6 +-
+ arch/sh/include/cpu-sh4/cpu/dma-sh4a.h |    8 +-
+ arch/sh/kernel/cpu/sh4a/setup-sh7724.c |   15 ++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7785.c |   14 ++++
+ arch/sh/kernel/idle.c                  |    2 +
+ arch/sh/mm/cache.c                     |    8 +--
+ drivers/serial/sh-sci.c                |   20 ++++--
+ drivers/serial/sh-sci.h                |  118 ++++++++++++++++----------------
+ 9 files changed, 117 insertions(+), 78 deletions(-)
