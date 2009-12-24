@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZLXEa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbZLXFKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbZLXEa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Dec 2009 23:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZLXEa1
+	id S1752014AbZLXFKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 00:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZLXFKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Dec 2009 23:30:27 -0500
-Received: from mail.nec-labs.com ([138.15.200.209]:37439 "EHLO
-	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbZLXEa0 (ORCPT
+	Thu, 24 Dec 2009 00:10:34 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:38708 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbZLXFKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Dec 2009 23:30:26 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-From: Steve Rago <sar@nec-labs.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Jan Kara <jack@suse.cz>, Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>
-In-Reply-To: <1261611898.18047.37.camel@localhost>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
-	 <1261232747.1947.194.camel@serenity>
-	 <20091222122557.GA604@atrey.karlin.mff.cuni.cz>
-	 <1261498815.13028.63.camel@serenity>  <20091223183912.GE3159@quack.suse.cz>
-	 <1261599385.13028.142.camel@serenity>  <1261604952.18047.7.camel@localhost>
-	 <1261610013.13028.151.camel@serenity> <1261611898.18047.37.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 23 Dec 2009 23:30:14 -0500
-Message-Id: <1261629014.13028.160.camel@serenity>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Dec 2009 00:10:33 -0500
+X-Greylist: delayed 1920 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Dec 2009 00:10:33 EST
+From: Samir Bellabes <sam@synack.fr>
+To: Michael Stone <michael@laptop.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-15?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK) interface. (v3)
+References: <20091224014454.GA24161@heat>
+Date: Thu, 24 Dec 2009 05:38:30 +0100
+In-Reply-To: <20091224014454.GA24161@heat> (Michael Stone's message of "Wed,
+	23 Dec 2009 20:44:54 -0500")
+Message-ID: <m2pr653s1l.fsf@ssh.synack.fr>
+User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michael Stone <michael@laptop.org> writes:
 
-On Thu, 2009-12-24 at 00:44 +0100, Trond Myklebust wrote:
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index f2f842d..0c65c55 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1402,6 +1402,8 @@ struct task_struct {
+>   	unsigned int sessionid;
+>   #endif
+>   	seccomp_t seccomp;
+> +/* Flags for limiting networking via prctl(PR_SET_NETWORK). */
+> +  unsigned long network;
+>   
+>   /* Thread group tracking */
+>      	u32 parent_exec_id;
 
-> > #2 is the difficult one.  If you wait for memory pressure, you could
-> > have waited too long, because depending on the latency of the commit,
-> > you could run into low-memory situations.  Then mayhem ensues, the
-> > oom-killer gets cranky (if you haven't disabled it), and stuff starts
-> > failing and/or hanging.  So you need to be careful about setting the
-> > threshold for generating a commit so that the client doesn't run out of
-> > memory before the server can respond.
-> 
-> Right, but this is why we have limits on the total number of dirty pages
-> that can be kept in memory. The NFS unstable writes don't significantly
-> change that model, they just add an extra step: once all the dirty data
-> has been transmitted to the server, your COMMIT defines a
-> synchronisation point after which you know that the data you just sent
-> is all on disk. Given a reasonable NFS server implementation, it will
-> already have started the write out of that data, and so hopefully the
-> COMMIT operation itself will run reasonably quickly.
+I think this is unnecessary, as LSM module, you should use the
+void* security member of the structure cred. 
 
-Right.  The trick is to do this with the best performance possible.
-
-> 
-> Any userland application with basic data integrity requirements will
-> have the same expectations. It will write out the data and then fsync()
-> at regular intervals. I've never heard of any expectations from
-> filesystem and VM designers that applications should be required to
-> fine-tune the length of those intervals in order to achieve decent
-> performance.
-
-Agreed, except that the more you call fsync(), the more you are stalling
-the writing, so application designers must use fsync() judiciously.
-Otherwise they'd just use synchronous writes.  (Apologies if I sound
-like Captain Obvious.)
-
-Thanks,
-
-Steve
-
-> 
-> Cheers
->   Trond
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+this member allows you to mark task_struct as you which, it's a kind of
+abstraction provided to all security modules.
