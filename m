@@ -1,87 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZLXFV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbZLXFZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbZLXFV0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 00:21:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZLXFVZ
+	id S1753378AbZLXFZW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 00:25:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZLXFZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 00:21:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45924 "EHLO smtps.tip.net.au"
+	Thu, 24 Dec 2009 00:25:20 -0500
+Received: from mga14.intel.com ([143.182.124.37]:6064 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbZLXFVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 00:21:24 -0500
-Date: Thu, 24 Dec 2009 16:21:17 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: kgdb tree build warning
-Message-Id: <20091224162117.ac18e50f.sfr@canb.auug.org.au>
-In-Reply-To: <4B32E95C.3030201@windriver.com>
-References: <20091224104812.7f2495f3.sfr@canb.auug.org.au>
-	<4B32E95C.3030201@windriver.com>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__24_Dec_2009_16_21_17_+1100_hIOinr=4Arubhgg1"
+	id S1751426AbZLXFZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 00:25:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="226282656"
+Date: Thu, 24 Dec 2009 13:25:15 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, Steve Rago <sar@nec-labs.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+Message-ID: <20091224052515.GA9698@localhost>
+References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <20091222123538.GB604@atrey.karlin.mff.cuni.cz> <20091223084302.GA14912@infradead.org> <20091223133244.GB3159@quack.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091223133244.GB3159@quack.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__24_Dec_2009_16_21_17_+1100_hIOinr=4Arubhgg1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Dec 23, 2009 at 09:32:44PM +0800, Jan Kara wrote:
+> On Wed 23-12-09 03:43:02, Christoph Hellwig wrote:
+> > On Tue, Dec 22, 2009 at 01:35:39PM +0100, Jan Kara wrote:
+> > > >    nfsd_sync:
+> > > >      [take i_mutex]
+> > > >        filemap_fdatawrite  => can also be blocked, but less a problem
+> > > >      [drop i_mutex]
+> > > >        filemap_fdatawait
+> > > >  
+> > > >    Maybe it's a dumb question, but what's the purpose of i_mutex here?
+> > > >    For correctness or to prevent livelock? I can imagine some livelock
+> > > >    problem here (current implementation can easily wait for extra
+> > > >    pages), however not too hard to fix.
+> > >   Generally, most filesystems take i_mutex during fsync to
+> > > a) avoid all sorts of livelocking problems
+> > > b) serialize fsyncs for one inode (mostly for simplicity)
+> > >   I don't see what advantage would it bring that we get rid of i_mutex
+> > > for fdatawait - only that maybe writers could proceed while we are
+> > > waiting but is that really the problem?
+> > 
+> > It would match what we do in vfs_fsync for the non-nfsd path, so it's
+> > a no-brainer to do it.  In fact I did switch it over to vfs_fsync a
+> > while ago but that go reverted because it caused deadlocks for
+> > nfsd_sync_dir which for some reason can't take the i_mutex (I'd have to
+> > check the archives why).
+> > 
+> > Here's a RFC patch to make some more sense of the fsync callers in nfsd,
+> > including fixing up the data write/wait calling conventions to match the
+> > regular fsync path (which might make this a -stable candidate):
+>   The patch looks good to me from general soundness point of view :).
+> Someone with more NFS knowledge should tell whether dropping i_mutex for
+> fdatawrite_and_wait is fine for NFS.
 
-Hi Jason,
+I believe it's safe to drop i_mutex for fdatawrite_and_wait().
+Because NFS
+1) client: collect all unstable pages (which server ACKed that have
+   reach its page cache)
+2) client: send COMMIT
+3) server: fdatawrite_and_wait(), which makes sure pages in 1) get cleaned
+4) client: put all pages collected in 1) to clean state
 
-On Wed, 23 Dec 2009 22:09:00 -0600 Jason Wessel <jason.wessel@windriver.com=
-> wrote:
->
-> Stephen Rothwell wrote:
-> >
-> > Today's linux-next build (x86_64_allmodconfig) produced this warning:
-> >
-> > kernel/debug/kdb/kdb_bp.c: In function 'kdb_bp':
-> > kernel/debug/kdb/kdb_bp.c:434: warning: the frame size of 32880 bytes i=
-s larger than 2048 bytes
-> >
-> > Introduced by commit 16f40ed7bd0ad29dcde7a05b8a07f5ba10937277 ("kdb: co=
-re
-> > for kgdb back end").
->=20
-> Using gcc 4.3, I did not see this error.   What compiler or compiler
-> options did you use to get this?
+So there's no need to take i_mutex to prevent concurrent
+write/commits.
 
-I use a gcc 4.4.0 cross sompiler for all the x86_64 builds.  No special
-compiler options apart from those provided by the allmodconfig build.
-It looks like the compiler gets -Wframe-larger-than=3D${CONFIG_FRAME_WARN}
-passed to it (and presumably CONFIG_FRAME_WARN is 2048).
+If someone else concurrently truncate and then extend i_size, the NFS
+verf will be changed and thus client will resend the pages? (whether
+it should overwrite the pages is another problem..)
 
-> I assume it means the stack space was exhausted and a casual glance at
-> the code did not yield anything obvious like a large array on the stack
-> or anything.  It is conceivable that there is an inline function that is
-> the source of the problem, but I would like to be able to duplicate it.
+Thanks,
+Fengguang
 
-OK.
 
-That function has a kdb_bp_t on its stack which contains an NR_CPUS array
-of pointers.  NR_CPUS is 4096 (in this build) and pointers are 8 bytes,
-so there is 32K right there :-(
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__24_Dec_2009_16_21_17_+1100_hIOinr=4Arubhgg1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksy+k0ACgkQjjKRsyhoI8zKAwCeKiFfJ8yjf/8knM1YWHo9FjtR
-Lh8AoKL0qLIVet/yJH3CGKeKd1WrXmXo
-=7ZaQ
------END PGP SIGNATURE-----
-
---Signature=_Thu__24_Dec_2009_16_21_17_+1100_hIOinr=4Arubhgg1--
+>  
+> > Index: linux-2.6/fs/nfsd/vfs.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/nfsd/vfs.c	2009-12-23 09:32:45.693170043 +0100
+> > +++ linux-2.6/fs/nfsd/vfs.c	2009-12-23 09:39:47.627170082 +0100
+> > @@ -769,45 +769,27 @@ nfsd_close(struct file *filp)
+> >  }
+> >  
+> >  /*
+> > - * Sync a file
+> > - * As this calls fsync (not fdatasync) there is no need for a write_inode
+> > - * after it.
+> > + * Sync a directory to disk.
+> > + *
+> > + * This is odd compared to all other fsync callers because we
+> > + *
+> > + *  a) do not have a file struct available
+> > + *  b) expect to have i_mutex already held by the caller
+> >   */
+> > -static inline int nfsd_dosync(struct file *filp, struct dentry *dp,
+> > -			      const struct file_operations *fop)
+> > +int
+> > +nfsd_sync_dir(struct dentry *dentry)
+> >  {
+> > -	struct inode *inode = dp->d_inode;
+> > -	int (*fsync) (struct file *, struct dentry *, int);
+> > +	struct inode *inode = dentry->d_inode;
+> >  	int err;
+> >  
+> > -	err = filemap_fdatawrite(inode->i_mapping);
+> > -	if (err == 0 && fop && (fsync = fop->fsync))
+> > -		err = fsync(filp, dp, 0);
+> > -	if (err == 0)
+> > -		err = filemap_fdatawait(inode->i_mapping);
+> > +	WARN_ON(!mutex_is_locked(&inode->i_mutex));
+> >  
+> > +	err = filemap_write_and_wait(inode->i_mapping);
+> > +	if (err == 0 && inode->i_fop->fsync)
+> > +		err = inode->i_fop->fsync(NULL, dentry, 0);
+> >  	return err;
+> >  }
+> >  
+> > -static int
+> > -nfsd_sync(struct file *filp)
+> > -{
+> > -        int err;
+> > -	struct inode *inode = filp->f_path.dentry->d_inode;
+> > -	dprintk("nfsd: sync file %s\n", filp->f_path.dentry->d_name.name);
+> > -	mutex_lock(&inode->i_mutex);
+> > -	err=nfsd_dosync(filp, filp->f_path.dentry, filp->f_op);
+> > -	mutex_unlock(&inode->i_mutex);
+> > -
+> > -	return err;
+> > -}
+> > -
+> > -int
+> > -nfsd_sync_dir(struct dentry *dp)
+> > -{
+> > -	return nfsd_dosync(NULL, dp, dp->d_inode->i_fop);
+> > -}
+> > -
+> >  /*
+> >   * Obtain the readahead parameters for the file
+> >   * specified by (dev, ino).
+> > @@ -1011,7 +993,7 @@ static int wait_for_concurrent_writes(st
+> >  
+> >  	if (inode->i_state & I_DIRTY) {
+> >  		dprintk("nfsd: write sync %d\n", task_pid_nr(current));
+> > -		err = nfsd_sync(file);
+> > +		err = vfs_fsync(file, file->f_path.dentry, 0);
+> >  	}
+> >  	last_ino = inode->i_ino;
+> >  	last_dev = inode->i_sb->s_dev;
+> > @@ -1180,7 +1162,7 @@ nfsd_commit(struct svc_rqst *rqstp, stru
+> >  		return err;
+> >  	if (EX_ISSYNC(fhp->fh_export)) {
+> >  		if (file->f_op && file->f_op->fsync) {
+> > -			err = nfserrno(nfsd_sync(file));
+> > +			err = nfserrno(vfs_fsync(file, file->f_path.dentry, 0));
+> >  		} else {
+> >  			err = nfserr_notsupp;
+> >  		}
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
