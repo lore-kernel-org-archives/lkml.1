@@ -1,112 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZLXOtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZLXPFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbZLXOtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 09:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZLXOto
+	id S1754987AbZLXPFG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 10:05:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZLXPFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 09:49:44 -0500
-Received: from mail.nec-labs.com ([138.15.200.209]:41906 "EHLO
-	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbZLXOtn (ORCPT
+	Thu, 24 Dec 2009 10:05:05 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37690 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbZLXPFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 09:49:43 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-From: Steve Rago <sar@nec-labs.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20091224012101.GA8486@localhost>
-References: <1261015420.1947.54.camel@serenity>
-	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
-	 <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost>
-	 <1261500113.13028.78.camel@serenity>  <20091224012101.GA8486@localhost>
-Content-Type: text/plain
-Date: Thu, 24 Dec 2009 09:49:40 -0500
-Message-Id: <1261666180.13028.175.camel@serenity>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Dec 2009 10:05:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZzWjKAZQnB6usi7MAPen/9wWCf3M+kJu4h3I80NS41x5Xcsb0CDDcCMZmMtMGNt5nU
+         LrClTgUk97dN4rohQuUoS6eW69/GF5nx5AMlUIdMxWNHEMm1vpE24VE7WCpbmAtqCPKx
+         ypSHrTSsGzNSQO5qdXmxTzJj7RrwSC5HA2EOE=
+Date: Thu, 24 Dec 2009 18:04:58 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net,
+       mingo@elte.hu, tglx@linutronix.de
+Subject: Re: [PATCH] x86, perfctr: remove unused func
+	avail_to_resrv_perfctr_nmi()
+Message-ID: <20091224150458.GA5143@lenovo>
+References: <20091224015441.6005.4408.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091224015441.6005.4408.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2009-12-24 at 09:21 +0800, Wu Fengguang wrote:
-
-> > Commits and writes on the same inode need to be serialized for
-> > consistency (write can change the data and metadata; commit [fsync]
-> > needs to provide guarantees that the written data are stable). The
-> > performance problem arises because NFS writes are fast (they generally
-> > just deposit data into the server's page cache), but commits can take a
+On Thu, Dec 24, 2009 at 01:54:47AM +0000, Naga Chumbalkar wrote:
+> avail_to_resrv_perfctr_nmi() is neither EXPORT'd, nor used in the file.
+> So remove it.
 > 
-> Right. 
+> Signed-off-by: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+> ---
+>  arch/x86/include/asm/nmi.h             |    1 -
+>  arch/x86/kernel/cpu/perfctr-watchdog.c |   11 -----------
+>  2 files changed, 0 insertions(+), 12 deletions(-)
 > 
-> > long time, especially if there is a lot of cached data to flush to
-> > stable storage.
-> 
-> "a lot of cached data to flush" is not likely with pdflush, since it
-> roughly send one COMMIT per 4MB WRITEs. So in average each COMMIT
-> syncs 4MB at the server side.
 
-Maybe on paper, but empirically I see anywhere from one commit per 8MB
-to one commit per 64 MB.
+Hi Naga, this looks good to me! Thanks.
 
-> 
-> Your patch adds another pre-pdlush async write logic, which greatly
-> reduced the number of COMMITs by pdflush. Can this be the major factor
-> of the performance gain?
+Is there any plans to use this routine in future
+so we shouldn't touch this snippet?
 
-My patch removes pdflush from the picture almost entirely.  See my
-comments below.
-
-> 
-> Jan has been proposing to change the pdflush logic from
-> 
->         loop over dirty files {
->                 writeback 4MB
->                 write_inode
->         }
-> to
->         loop over dirty files {
->                 writeback all its dirty pages
->                 write_inode
->         }
-> 
-> This should also be able to reduce the COMMIT numbers. I wonder if
-> this (more general) approach can achieve the same performance gain.
-
-The pdflush mechanism is fine for random writes and small sequential
-writes, because it promotes concurrency -- instead of the application
-blocking while it tries to write and commit its data, the application
-can go on doing other more useful things, and the data gets flushed in
-the background.  There is also a benefit if the application makes
-another modification to a page that is already dirty, because then
-multiple modifications are coalesced into a single write.
-
-However, the pdflush mechanism is wrong for large sequential writes
-(like a backup stream, for example).  First, there is no concurrency to
-exploit -- the application is only going to dirty more pages, so
-removing the need for it to block writing the pages out only adds to the
-problem of memory pressure.  Second, the application is not going to go
-back and modify a page it has already written, so leaving it in the
-cache for someone else to write provides no additional benefit.
-
-Note that this assumes the application actually cares about the
-consistency of its data and will call fsync() when it is done.  If the
-application doesn't call fsync(), then it doesn't matter when the pages
-are written to backing store, because the interface makes no guarantees
-in this case.
-
-Thanks,
-
-Steve
-
-
-
+	-- Cyrill
