@@ -1,74 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZLXOo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZLXOtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbZLXOo4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 09:44:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZLXOoz
+	id S1755036AbZLXOtp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 09:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZLXOto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 09:44:55 -0500
-Received: from mail.windriver.com ([147.11.1.11]:62877 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbZLXOoy (ORCPT
+	Thu, 24 Dec 2009 09:49:44 -0500
+Received: from mail.nec-labs.com ([138.15.200.209]:41906 "EHLO
+	mail.nec-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbZLXOtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 09:44:54 -0500
-Message-ID: <4B337E60.4000200@windriver.com>
-Date: Thu, 24 Dec 2009 08:44:48 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Martin Hicks <mort@sgi.com>
-Subject: Re: linux-next: kgdb tree build warning
-References: <20091224104812.7f2495f3.sfr@canb.auug.org.au><4B32E95C.3030201@windriver.com> <20091224162117.ac18e50f.sfr@canb.auug.org.au>
-In-Reply-To: <20091224162117.ac18e50f.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Dec 2009 09:49:43 -0500
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+From: Steve Rago <sar@nec-labs.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20091224012101.GA8486@localhost>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost>
+	 <1261500113.13028.78.camel@serenity>  <20091224012101.GA8486@localhost>
+Content-Type: text/plain
+Date: Thu, 24 Dec 2009 09:49:40 -0500
+Message-Id: <1261666180.13028.175.camel@serenity>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Dec 2009 14:44:49.0031 (UTC) FILETIME=[A4A74170:01CA84A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Jason,
->
-> On Wed, 23 Dec 2009 22:09:00 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
->   
->> Stephen Rothwell wrote:
->>     
->>> Today's linux-next build (x86_64_allmodconfig) produced this warning:
->>>
->>> kernel/debug/kdb/kdb_bp.c: In function 'kdb_bp':
->>> kernel/debug/kdb/kdb_bp.c:434: warning: the frame size of 32880 bytes is larger than 2048 bytes
->>>
->>>       
-> That function has a kdb_bp_t on its stack which contains an NR_CPUS array
-> of pointers.  NR_CPUS is 4096 (in this build) and pointers are 8 bytes,
-> so there is 32K right there :-(
->
->   
 
-Thank you for the details.  I see that I can see the same problem if I
-set CONFIG_MAXSMP and use CONFIG_FRAME_WARN=2048.  It also allowed me to
-test that the problem is really fixed. :-)
+On Thu, 2009-12-24 at 09:21 +0800, Wu Fengguang wrote:
 
-I had talked with Martin a while back and he gave me some patches which
-cleaned up the breakpoint code (kdb_bp.c).   The hw breakpoint support
-was implemented a different way in the new kdb/kgdb.   You stumbled upon
-something that was intended to already be removed from the source.
+> > Commits and writes on the same inode need to be serialized for
+> > consistency (write can change the data and metadata; commit [fsync]
+> > needs to provide guarantees that the written data are stable). The
+> > performance problem arises because NFS writes are fast (they generally
+> > just deposit data into the server's page cache), but commits can take a
+> 
+> Right. 
+> 
+> > long time, especially if there is a lot of cached data to flush to
+> > stable storage.
+> 
+> "a lot of cached data to flush" is not likely with pdflush, since it
+> roughly send one COMMIT per 4MB WRITEs. So in average each COMMIT
+> syncs 4MB at the server side.
 
-As a side point you pointed me to an area where I could remove some
-other code that should not be there because the debug core is already
-handling the operations.  The net result is this problem is fixed, and 2
-more variables are gone out of that struct.
+Maybe on paper, but empirically I see anywhere from one commit per 8MB
+to one commit per 64 MB.
 
+> 
+> Your patch adds another pre-pdlush async write logic, which greatly
+> reduced the number of COMMITs by pdflush. Can this be the major factor
+> of the performance gain?
 
--       int             bp_cpu;         /* Cpu #  (if bp_global == 0) */
--       kdbhard_bp_t   *bp_hard[NR_CPUS]; /* Hardware breakpoint
-structure */
--       int             bp_adjust;      /* Adjustment to PC for real
--                                        * instruction */
+My patch removes pdflush from the picture almost entirely.  See my
+comments below.
+
+> 
+> Jan has been proposing to change the pdflush logic from
+> 
+>         loop over dirty files {
+>                 writeback 4MB
+>                 write_inode
+>         }
+> to
+>         loop over dirty files {
+>                 writeback all its dirty pages
+>                 write_inode
+>         }
+> 
+> This should also be able to reduce the COMMIT numbers. I wonder if
+> this (more general) approach can achieve the same performance gain.
+
+The pdflush mechanism is fine for random writes and small sequential
+writes, because it promotes concurrency -- instead of the application
+blocking while it tries to write and commit its data, the application
+can go on doing other more useful things, and the data gets flushed in
+the background.  There is also a benefit if the application makes
+another modification to a page that is already dirty, because then
+multiple modifications are coalesced into a single write.
+
+However, the pdflush mechanism is wrong for large sequential writes
+(like a backup stream, for example).  First, there is no concurrency to
+exploit -- the application is only going to dirty more pages, so
+removing the need for it to block writing the pages out only adds to the
+problem of memory pressure.  Second, the application is not going to go
+back and modify a page it has already written, so leaving it in the
+cache for someone else to write provides no additional benefit.
+
+Note that this assumes the application actually cares about the
+consistency of its data and will call fsync() when it is done.  If the
+application doesn't call fsync(), then it doesn't matter when the pages
+are written to backing store, because the interface makes no guarantees
+in this case.
 
 Thanks,
-Jason.
+
+Steve
+
 
 
