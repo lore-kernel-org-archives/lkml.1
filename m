@@ -1,133 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZLXJkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZLXKBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbZLXJkU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 04:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZLXJkT
+	id S1752771AbZLXKBc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 05:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZLXKBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 04:40:19 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44403 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbZLXJkS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 04:40:18 -0500
-Subject: Re: [PATCH] futex: Fix ZERO_PAGE cause infinite loop
-From: Peter Zijlstra <peterz@infradead.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <20091224182630.3DCB.A69D9226@jp.fujitsu.com>
-References: <20091224182630.3DCB.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 24 Dec 2009 10:39:25 +0100
-Message-ID: <1261647565.4937.177.camel@laptop>
+	Thu, 24 Dec 2009 05:01:31 -0500
+Received: from mail.gmx.net ([213.165.64.20]:58162 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750872AbZLXKBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 05:01:30 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19oYNk8Y7touAIbdVSVzkZz9T+7wopyi8G1t6HMoc
+	m3WBa+bfK1gfrG
+Subject: Re: [PATCH 7/6][RFC] sched: unify load_balance{,_newidle}()
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       SureshSiddha <suresh.b.siddha@intel.com>,
+       "Pallipadi,Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <1261646964.4937.172.camel@laptop>
+References: <20091217185021.684424629@chello.nl>
+	 <1261581216.4937.150.camel@laptop>
+	 <1261629824.10947.13.camel@marge.simson.net>
+	 <1261646964.4937.172.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 24 Dec 2009 11:01:22 +0100
+Message-Id: <1261648882.15438.12.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added tglx and dvhart to the CC.
+On Thu, 2009-12-24 at 10:29 +0100, Peter Zijlstra wrote:
+> On Thu, 2009-12-24 at 05:43 +0100, Mike Galbraith wrote:
+> > On Wed, 2009-12-23 at 16:13 +0100, Peter Zijlstra wrote:
+> > > load_balance() and load_balance_newidle() look remarkably similar, one
+> > > key point they differ in is the condition on when to active balance.
+> > > 
+> > > So split out that logic into a separate function.
+> > > 
+> > > One side effect is that previously load_balance_newidle() used to fail and
+> > > return -1 under these conditions, whereas now it doesn't. I've not yet fully
+> > > figured out the whole -1 return case for either load_balance{,_newidle}().
+> > > 
+> > > It also differs in that sd->cache_nice_tries is now added on the 
+> > > CPU_NEWLY_IDLE case.
+> > 
+> > Unification Looks like a good idea, less being more and all that.  I
+> > suspect that last bit is why newidle effectiveness has been heavily
+> > impacted.  x264 ultrafast testcase is whimpering pathetically again ;-)
+> 
+> That could be easily verified by setting cache_nice_tries to 0.
 
-On Thu, 2009-12-24 at 18:29 +0900, KOSAKI Motohiro wrote:
-> This patch need both futex and zero-page developer's ack.
-> ==========================================================
-> 
-> commit a13ea5b7 (mm: reinstate ZERO_PAGE) made the unfortunate regression.
-> following test program never finish and waste 100% cpu time.
-> 
-> At the making commit 38d47c1b7 (rely on get_user_pages() for shared
-> futexes). There isn't zero page in linux kernel. then, futex developers
-> thought gup retry is safe. but we reinstated zero page later...
-> 
-> This patch fixes it.
-> 
-> futex-zero.c
-> ---------------------------------------------------------------------
->  #include <stdio.h>
->  #include <stdlib.h>
->  #include <sys/mman.h>
->  #include <syscall.h>
->  #include <sys/time.h>
->  #include <sys/types.h>
->  #include <sys/stat.h>
->  #include <fcntl.h>
->  #include <unistd.h>
->  #include <errno.h>
->  #include <linux/futex.h>
->  #include <pthread.h>
-> 
-> int main(int argc, char **argv)
-> {
->         long page_size;
->         int ret;
->         void *buf;
-> 
->         page_size = sysconf(_SC_PAGESIZE);
-> 
->         buf = mmap(NULL, page_size, PROT_READ|PROT_WRITE,
-> 			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
->         if (buf == (void *)-1) {
->                 perror("mmap error.\n");
->                 exit(1);
->         }
-> 
->         fprintf(stderr, "futex wait\n");
->         ret = syscall( SYS_futex, buf, FUTEX_WAIT, 1, NULL, NULL, NULL);
->         if (ret != 0 && errno != EWOULDBLOCK) {
->                 perror("futex error.\n");
->                 exit(1);
->         }
->         fprintf(stderr, "futex_wait: ret = %d, errno = %d\n", ret, errno);
-> 
->         return 0;
-> }
-> ---------------------------------------------------------------------
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/linux/mm.h |   16 ++++++++++++++++
->  kernel/futex.c     |    3 +++
->  mm/memory.c        |   14 --------------
->  3 files changed, 19 insertions(+), 14 deletions(-)
+Was bad wild guess.
 
+> However, I would suspect need_active_balance(.idle = CPU_NEWLY_IDLE) to
+> always fail on your machine, since I don't think you've got all that
+> power savings muck enabled.
 
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index 8e3c3ff..79b89cc 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -254,6 +254,8 @@ again:
->  
->  	page = compound_head(page);
->  	lock_page(page);
-> +	if (is_zero_pfn(page_to_pfn(page)))
-> +		goto anon_key;
->  	if (!page->mapping) {
->  		unlock_page(page);
->  		put_page(page);
-> @@ -268,6 +270,7 @@ again:
->  	 * the object not the particular process.
->  	 */
->  	if (PageAnon(page)) {
-> + anon_key:
->  		key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
->  		key->private.mm = mm;
->  		key->private.address = address;
+Nope. Guess I need to poke need_active_balance() with a stick.
 
-Doesn't it make more sense to simply fail the futex op?
+> Is that with just this patch applied or also with the next one? I
+> worried more about the next one.
 
-What I mean is, all (?) futex ops assume userspace actually wrote
-something to the address in question to begin with, therefore it can
-never be the zero page.
+With both... all 8 actually, but popping last two cures idle woes.
 
-So it being the zero page means someone goofed up, and we should bail,
-no?
+> If just this one, that funny -1 return value thing might have played a
+> role, since that seems to trigger the:
+> 
+>  if (pulled_task) {
+>    this_rq->idle_stamp = 0;
+>    break;
+>  }
+> 
+> logic in idle_balance()
+> 
+> Which didn't make any sense to me, since it didn't move any task, so why
+> pretend it did...
+
+Heh, pretending is unlikely to help.
+
+	-Mike
 
