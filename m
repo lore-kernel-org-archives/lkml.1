@@ -1,120 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZLXJgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZLXJkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584AbZLXJgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 04:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZLXJgf
+	id S1756719AbZLXJkU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 04:40:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZLXJkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 04:36:35 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:14918 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753884AbZLXJge (ORCPT
+	Thu, 24 Dec 2009 04:40:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44403 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbZLXJkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 04:36:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=bCfD590P4YCLcP+h14zfiX5lS/zKBnHXa7Bz3IJlEf1cA/HzRkN5XUMdeb1Xh/zaHH
-         vB5befxHg348LDdrCrMcM7nIjdC0cyuAZ7IGyOmOVGWSQHpnxTWFeZpgx+62RilZQyLK
-         jDbIRcMPawELsNRAQX3fWTwe9Ob/bwHrYW8Po=
-Message-ID: <4B33361E.3000605@gmail.com>
-Date: Thu, 24 Dec 2009 04:36:30 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com> <4B328535.5040105@redhat.com>
-In-Reply-To: <4B328535.5040105@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig24B2B51B00B69B2008494E7A"
+	Thu, 24 Dec 2009 04:40:18 -0500
+Subject: Re: [PATCH] futex: Fix ZERO_PAGE cause infinite loop
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <20091224182630.3DCB.A69D9226@jp.fujitsu.com>
+References: <20091224182630.3DCB.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 24 Dec 2009 10:39:25 +0100
+Message-ID: <1261647565.4937.177.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig24B2B51B00B69B2008494E7A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Added tglx and dvhart to the CC.
 
-On 12/23/09 4:01 PM, Avi Kivity wrote:
-> On 12/23/2009 10:36 PM, Avi Kivity wrote:
->> On 12/23/2009 06:44 PM, Gregory Haskins wrote:
->>>
->>>>   - Are a pure software concept
->>> By design.  In fact, I would describe it as "software to software
->>> optimized" as opposed to trying to shoehorn into something that was
->>> designed as a software-to-hardware interface (and therefore has
->>> assumptions about the constraints in that environment that are not
->>> applicable in software-only).
->>>
->>
->> And that's the biggest mistake you can make.  Look at Xen, for
->> instance.  The paravirtualized the fork out of everything that moved
->> in order to get x86 virt going.  And where are they now? x86_64
->> syscalls are slow since they have to trap to the hypervisor and
->> (partially) flush the tlb.  With npt or ept capable hosts performance
->> is better for many workloads on fullvirt.  And paravirt doesn't
->> support Windows.  Their unsung hero Jeremy is still trying to upstream=
+On Thu, 2009-12-24 at 18:29 +0900, KOSAKI Motohiro wrote:
+> This patch need both futex and zero-page developer's ack.
+> ==========================================================
+> 
+> commit a13ea5b7 (mm: reinstate ZERO_PAGE) made the unfortunate regression.
+> following test program never finish and waste 100% cpu time.
+> 
+> At the making commit 38d47c1b7 (rely on get_user_pages() for shared
+> futexes). There isn't zero page in linux kernel. then, futex developers
+> thought gup retry is safe. but we reinstated zero page later...
+> 
+> This patch fixes it.
+> 
+> futex-zero.c
+> ---------------------------------------------------------------------
+>  #include <stdio.h>
+>  #include <stdlib.h>
+>  #include <sys/mman.h>
+>  #include <syscall.h>
+>  #include <sys/time.h>
+>  #include <sys/types.h>
+>  #include <sys/stat.h>
+>  #include <fcntl.h>
+>  #include <unistd.h>
+>  #include <errno.h>
+>  #include <linux/futex.h>
+>  #include <pthread.h>
+> 
+> int main(int argc, char **argv)
+> {
+>         long page_size;
+>         int ret;
+>         void *buf;
+> 
+>         page_size = sysconf(_SC_PAGESIZE);
+> 
+>         buf = mmap(NULL, page_size, PROT_READ|PROT_WRITE,
+> 			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+>         if (buf == (void *)-1) {
+>                 perror("mmap error.\n");
+>                 exit(1);
+>         }
+> 
+>         fprintf(stderr, "futex wait\n");
+>         ret = syscall( SYS_futex, buf, FUTEX_WAIT, 1, NULL, NULL, NULL);
+>         if (ret != 0 && errno != EWOULDBLOCK) {
+>                 perror("futex error.\n");
+>                 exit(1);
+>         }
+>         fprintf(stderr, "futex_wait: ret = %d, errno = %d\n", ret, errno);
+> 
+>         return 0;
+> }
+> ---------------------------------------------------------------------
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/mm.h |   16 ++++++++++++++++
+>  kernel/futex.c     |    3 +++
+>  mm/memory.c        |   14 --------------
+>  3 files changed, 19 insertions(+), 14 deletions(-)
 
->> dom0 Xen support.  And they get to support it forever.
->>
->> VMware stuck with the hardware defined interfaces.  Sure they had to
->> implement binary translation to get there, but as a result, they only
->> have to support one interface, all guests support it, and they can
->> drop it on newer hosts where it doesn't give them anything.
->=20
-> As a twist on this, the VMware paravirt driver interface is so
-> hardware-like that they're getting hardware vendors to supply cards tha=
-t
-> implement it.  Try that with a pure software approach.
 
-Any hardware engineer (myself included) will tell you that, generally
-speaking, what you can do in hardware you can do in software (think of
-what QEMU does today, for instance).  It's purely a cost/performance
-tradeoff.
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index 8e3c3ff..79b89cc 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -254,6 +254,8 @@ again:
+>  
+>  	page = compound_head(page);
+>  	lock_page(page);
+> +	if (is_zero_pfn(page_to_pfn(page)))
+> +		goto anon_key;
+>  	if (!page->mapping) {
+>  		unlock_page(page);
+>  		put_page(page);
+> @@ -268,6 +270,7 @@ again:
+>  	 * the object not the particular process.
+>  	 */
+>  	if (PageAnon(page)) {
+> + anon_key:
+>  		key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
+>  		key->private.mm = mm;
+>  		key->private.address = address;
 
-I can at least tell you that is true of vbus.  Anything on the vbus side
-would be equally eligible for a hardware implementation, though there is
-not reason to do this today since we have equivalent functionality in
-baremetal already.  The only motiviation is if you wanted to preserve
-ABI etc, which is what vmware is presumably after.  However, I am not
-advocating this as necessary at this juncture.
+Doesn't it make more sense to simply fail the futex op?
 
-So sorry, your statement is not relevant.
+What I mean is, all (?) futex ops assume userspace actually wrote
+something to the address in question to begin with, therefore it can
+never be the zero page.
 
--Greg
+So it being the zero page means someone goofed up, and we should bail,
+no?
 
-
-
-
->=20
-
-
-
---------------enig24B2B51B00B69B2008494E7A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkszNh4ACgkQP5K2CMvXmqH1iQCePJc5KaloVUoUe1VbwPUwuIO7
-V/sAniQm/2DWWxyIv3xGAB7ntfZj4w1W
-=RFQj
------END PGP SIGNATURE-----
-
---------------enig24B2B51B00B69B2008494E7A--
