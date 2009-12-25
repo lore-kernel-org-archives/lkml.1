@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbZLYDsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZLYDuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbZLYDsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 22:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZLYDsh
+	id S1755006AbZLYDuz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 22:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZLYDuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 22:48:37 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:41708 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbZLYDsh (ORCPT
-	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 22:48:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=VEVog/6VTxvjqfz4krdJhKr/E9V3YqcqRifaXt8JUWvdfRW9tTyXQWA3LRflbbrw/v
-         S75p0BT9QhZWW+GNYEgIqZIYGBLl228ho1HN2SQcnjPM1mp56p/0zDovlXhiXgQ5Fs/d
-         9o4yYKamHEXnunw8Yh5SyTRJCdnHUCFQhsoWM=
-Message-ID: <4B343611.6070206@gmail.com>
-Date: Thu, 24 Dec 2009 19:48:33 -0800
-From: JD <jd1008@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Linux Kernel List <Linux-Kernel@vger.kernel.org>
-Subject: RT2860 driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 24 Dec 2009 22:50:54 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:60157 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751192AbZLYDux (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 22:50:53 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Allan Stephens <allan.stephens@windriver.com>, netdev@vger.kernel.org,
+       Per Liden <per.liden@ericsson.com>,
+       tipc-discussion@lists.sourceforge.net, akpm@linux-foundation.org,
+       Jon Maloy <jon.maloy@ericsson.com>
+Subject: Re: [Patch] tipc: use kconfig to limit numeric ranges
+In-Reply-To: Your message of "Thu, 24 Dec 2009 22:26:48 EST."
+             <20091225032956.4556.69130.sendpatchset@localhost.localdomain>
+From: Valdis.Kletnieks@vt.edu
+References: <20091225032956.4556.69130.sendpatchset@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1261713006_3923P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 24 Dec 2009 22:50:06 -0500
+Message-ID: <31665.1261713006@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020207.4B34366F.00C4,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have built and booted several kernel.org releases of
-kernel 2.6, ever since rt2860 was added to the staging area.
-I have an rt2860 mini-pci wifi card.
-To make a long story short, the last kernel release I built
-with rt2860 config enabled (module), that actually worked
-(i.e. rt2860 driver worked) was (I think) kernel 2.6.28.
+--==_Exmh_1261713006_3923P
+Content-Type: text/plain; charset=us-ascii
 
-I have not been able to get it working in 2.6.[29,30,31,32]
+On Thu, 24 Dec 2009 22:26:48 EST, Amerigo Wang said:
+> We can rely on kconfig to limit these numbers,
+> no need to limit them at compile time/run time.
 
-So, what I have been doing is to copy full rt2860 directory
-(which I had extracted and saved from the last working version)
-into the latest kernel, and I make sure that
+> +          ***Only 1 (one cluster in a zone) is supported by current code.***
+>  
+>            (Max number of clusters inside TIPC zone. Max supported 
+>            value is 4095 clusters, minimum is 1.
 
-rt2860/config.mk has
+Given the limit of 1, maybe the reference to 4095 should be nuked?
 
-HAS_WPA_SUPPLICANT=y
 
-HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
+--==_Exmh_1261713006_3923P
+Content-Type: application/pgp-signature
 
-This is the only way I can get my wireless working.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-So, if anyone on this list has it working in latest kernel,
-without resorting to what I am doing, please share you "how-to".
+iD8DBQFLNDZucC3lWbTT17ARAlxzAKDRM8KKzDY0zYl/wAFUChvTd/vmbQCfT+j3
+mdckI3qPC5/4Wm2p1UrX1RE=
+=DpWr
+-----END PGP SIGNATURE-----
 
-If this is the wrong list to ask about this, then please tell,
-which list discusses driver problems?
-
-Cheers,
-
-JD
-
+--==_Exmh_1261713006_3923P--
 
