@@ -1,82 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZLYVfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZLYVut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbZLYVfz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 16:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbZLYVfy
+	id S1757279AbZLYVut (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 16:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbZLYVus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 16:35:54 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:57159 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756697AbZLYVfx (ORCPT
+	Fri, 25 Dec 2009 16:50:48 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:15068 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756786AbZLYVur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 16:35:53 -0500
+	Fri, 25 Dec 2009 16:50:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=jQkcUncNwsdodQ9O+AFdxR2OmtS9lNmweLQ5pWadEhNDE55N2iQzJugsuLF3O88Yl2
-         98ENJx0v1ePxM3X7JuCOdYaOeXS/sGUju6Pw7j0ZOcAZ9GZ8c4vLULwNJHCLUqW2Tauq
-         ri/uS5eaFcTtm6ynZy9ZW9M+tI5aKkMSRfgjs=
-Message-ID: <4B353035.4050208@lwfinger.net>
-Date: Fri, 25 Dec 2009 15:35:49 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+        d=googlemail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=VsfKGY/CjpyQwZAirp3SHCLdmToeSyicvC5C/ZnK01KrccCLScggqzWC3IRnS+wfOx
+         Fig/1ZUk/Xpe3xPg6ybjRXQaQ+3aK3DGDCsQmLzy5JsupMEZeg6MfWQu5ry7heDzvjpU
+         /Xt7RzqHYzMpWgp7UgeUU/EVWeZ7PGA2Jh2co=
+Date: Fri, 25 Dec 2009 22:50:32 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: Linux 2.6.33-rc2 - Merry Christmas ...
+Message-ID: <20091225215032.GA32581@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	David Miller <davem@davemloft.net>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+ <20091225200017.GA4095@liondog.tnic>
 MIME-Version: 1.0
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-CC: Matthew Garrett <mjg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: Regression in module wmi since 2.6.32 (bisected to commit 1caab3c)
-References: <4B352513.90302@lwfinger.net> <200912252056.08436.carlos@strangeworlds.co.uk>
-In-Reply-To: <200912252056.08436.carlos@strangeworlds.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091225200017.GA4095@liondog.tnic>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/25/2009 02:56 PM, Carlos Corbacho wrote:
-> On Friday 25 December 2009 20:48:19 Larry Finger wrote:
->> If I modprobe wmi after the system is booted, the specific messages are as
->>  follows:
->>
->> ------------[ cut here ]------------
->> WARNING: at fs/sysfs/dir.c:477 sysfs_add_one+0xd6/0xee()
->> Hardware name: System Product Name
->> sysfs: cannot create duplicate filename
->> '/devices/virtual/wmi/05901221-D566-11D1-B2F0-00A0C9062910'
+On Fri, Dec 25, 2009 at 09:00:17PM +0100, Borislav Petkov wrote:
+> Hi,
 > 
-> Interesting - what hardware is this? And can you post the DSDT?
+> the r8169 driver fails loading here with the following message:
+> 
+> [    0.353955] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> [    0.354258] r8169 0000:02:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> [    0.354391] r8169 0000:02:00.0: PCI INT A disabled
+> [    0.354527] r8169: probe of 0000:02:00.0 failed with error -22
+> 
+> Machine is Acer Aspire One, Atom N270 CPU.
+> 
+> Actually, the breakage seems to have appeared a bit earlier, sometime
+> between .32 and .33-rc1 as the bisection result shows:
+> 
+> ac1aa47b131416a6ff37eb1005a0a1d2541aad6c is the first bad commit
+> commit ac1aa47b131416a6ff37eb1005a0a1d2541aad6c
+> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Date:   Mon Oct 26 13:20:44 2009 -0700
+> 
+>     PCI: determine CLS more intelligently
+>     
+>     Till now, CLS has been determined either by arch code or as
+>     L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86 doesn't
+>     always get it right.  On most configurations, the chance is that
+>     firmware configures the correct value during boot.
+>     
+>     This patch makes pci_init() determine CLS by looking at what firmware
+>     has configured.  It scans all devices and if all non-zero values
+>     agree, the value is used.  If none is configured or there is a
+>     disagreement, pci_dfl_cache_line_size is used.  arch can set the dfl
+>     value (via PCI_CACHE_LINE_BYTES or pci_dfl_cache_line_size) or
+>     override the actual one.
+>     
+>     ia64, x86 and sparc64 updated to set the default cls instead of the
+>     actual one.
+>     
+>     While at it, declare pci_cache_line_size and pci_dfl_cache_line_size
+>     in pci.h and drop private declarations from arch code.
 
-The hardware is home-built with an ASUS M3N78-VM motherboard and an Athlon X2
-6000 3.1G CPU running an x86_64 OS.
+Ok here's what happens: 
 
-I ran the following commands per the instructions at
-http://www.lesswatts.org/projects/acpi/overridingDSDT.php with the following
-results:
+pci_apply_final_quirks() dumps on the console
 
-=====================
-desktop:~ # cp /proc/acpi/dsdt DSDT
-desktop:~ # acpidump > acpidump.out
-Wrong checksum for OEMB!
-desktop:~ # acpixtract DSDT acpidump > DSDT.dat
-desktop:~ # iasl -d DSDT.dat
+[    0.369252] PCI: CLS 0 bytes, default 64
 
-Intel ACPI Component Architecture
-AML Disassembler version 20081031 [Dec  3 2008]
-Copyright (C) 2000 - 2008 Intel Corporation
-Supports ACPI Specification Revision 3.0a
+which means that it hasn't fallen back to setting the default cache line
+size. Also, the call
 
-Loading Acpi table from file DSDT.dat
-TableHeader length [0x62617420] greater than the input file size [0x35]
-Could not get table from the file
-==================
+pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &tmp);
 
-Do the messages indicate a BIOS problem? I have not updated for some time, and
-would rather not do so unless necessary.
+sets tmp = 0 and the following condition hits everytime
 
-Should I attach the files DSDT.dat, acpidump.out, or DSDT?
+if (!cls)
+         cls = tmp;
+if (!tmp || cls == tmp)
+         continue;
 
-Larry
+Which means that we never get around the set the default CLS.
+
+The following dirty fix solves the issue on my machine:
+
+--
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 7cfa7c3..9854c26 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -2629,7 +2629,10 @@ static int __init pci_apply_final_quirks(void)
+ 	if (!pci_cache_line_size) {
+ 		printk(KERN_DEBUG "PCI: CLS %u bytes, default %u\n",
+ 		       cls << 2, pci_dfl_cache_line_size << 2);
+-		pci_cache_line_size = cls;
++		if (!cls)
++			pci_cache_line_size = pci_dfl_cache_line_size;
++		else
++			pci_cache_line_size = cls;
+ 	}
+ 
+ 	return 0;
 
 
+-- 
+Regards/Gruss,
+    Boris.
