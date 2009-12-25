@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbZLYTIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZLYTS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbZLYTIx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 14:08:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbZLYTIw
+	id S1756562AbZLYTS6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 14:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZLYTS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 14:08:52 -0500
-Received: from mail.gmx.net ([213.165.64.20]:52515 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756348AbZLYTIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 14:08:51 -0500
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX1/dGNRAVJ3dAPxDtiKU/pHCpchDbsk0dg7jvi8yc4
-	FsmzjV1WTrCXpf
-From: Peter Huewe <PeterHuewe@gmx.de>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] arch/avr32: Fix build failure for avr32 caused by typo
-Date: Fri, 25 Dec 2009 20:08:45 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
-Cc: "Hans-Christian Egtvedt" <hans-christian.egtvedt@atmel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Ma <pma@mediamatech.com>, linux-kernel@vger.kernel.org,
-       linux-mmc@vger.kernel.org, peterhuewe@gmx.de
+	Fri, 25 Dec 2009 14:18:57 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53298 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbZLYTS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 14:18:56 -0500
+Date: Fri, 25 Dec 2009 20:18:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+Cc: Nitin Gupta <ngupta@vflare.org>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, jeremy@goop.org,
+       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       Rusty Russell <rusty@rustcorp.com.au>, Rik van Riel <riel@redhat.com>,
+       dave.mccracken@oracle.com, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, chris.mason@oracle.com,
+       linux-mm <linux-mm@kvack.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Tmem [PATCH 0/5] (Take 3): Transcendent memory
+Message-ID: <20091225191848.GB8438@elf.ucw.cz>
+References: <d760cf2d0912222228y3284e455r16cdb2bfd2ecaa0e@mail.gmail.com>
+ <ff435130-98a2-417c-8109-9dd029022a91@default>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912252008.45602.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ff435130-98a2-417c-8109-9dd029022a91@default>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a build failure introduced by the patch
-  atmel-mci: change use of dma slave interface by Nicolas Ferre
-by changing mci_dma_slave to the correct name of mci_dma_data
+On Wed 2009-12-23 09:15:27, Dan Magenheimer wrote:
+> > As I mentioned, I really like the idea behind tmem. All I am proposing
+> > is that we should probably explore some alternatives to achive this using
+> > some existing infrastructure in kernel.
+> 
+> Hi Nitin --
+> 
+> Sorry if I sounded overly negative... too busy around the holidays.
+> 
+> I'm definitely OK with exploring alternatives.  I just think that
+> existing kernel mechanisms are very firmly rooted in the notion
+> that either the kernel owns the memory/cache or an asynchronous
+> device owns it.  Tmem falls somewhere in between and is very
 
-This should make the avr32 tree build again.
+Well... compcache seems to be very similar to preswap: in preswap case
+you don't know if hypervisor will have space, in ramzswap you don't
+know if data are compressible.
 
-References:
-http://kisskb.ellerman.id.au/kisskb/buildresult/1893610/
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=2635d1ba711560d521f6218c585a3e0401f566e1
+									Pavel
 
-Patch against Linus' tree.
-
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
- arch/avr32/mach-at32ap/at32ap700x.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index 1aa1ea5..7d4ed42 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -1325,7 +1325,7 @@ struct platform_device *__init
- at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
- {
- 	struct platform_device		*pdev;
--	struct mci_dma_slave		*slave;
-+	struct mci_dma_data	        *slave;
- 	u32				pioa_mask;
- 	u32				piob_mask;
- 
-@@ -1344,7 +1344,7 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
- 				ARRAY_SIZE(atmel_mci0_resource)))
- 		goto fail;
- 
--	slave = kzalloc(sizeof(struct mci_dma_slave), GFP_KERNEL);
-+	slave = kzalloc(sizeof(struct mci_dma_data), GFP_KERNEL);
- 
- 	slave->sdata.dma_dev = &dw_dmac0_device.dev;
- 	slave->sdata.reg_width = DW_DMA_SLAVE_WIDTH_32BIT;
 -- 
-1.6.4.4
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
