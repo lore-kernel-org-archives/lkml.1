@@ -1,63 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751751AbZLYFhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751787AbZLYFuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751751AbZLYFhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 00:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZLYFhp
+	id S1751787AbZLYFuo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 00:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbZLYFun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 00:37:45 -0500
-Received: from zfrontend2.aha.ru ([195.2.83.148]:48852 "EHLO aha.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751183AbZLYFhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 00:37:45 -0500
-From: "werner" <w.landgraf@ru.ru>
-Subject: kernel problem 2.6.33-rc2
-To: linux-kernel@vger.kernel.org
-X-Mailer: CommuniGate Pro WebUser Interface v.4.3.12
-Date: Fri, 25 Dec 2009 01:37:37 -0400
-Message-ID: <web-122504368@zbackend1.aha.ru>
+	Fri, 25 Dec 2009 00:50:43 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:35035 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbZLYFum (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 00:50:42 -0500
+Date: Thu, 24 Dec 2009 23:50:34 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: A basic question about the security_* hooks
+Message-ID: <20091225055034.GA374@us.ibm.com>
+References: <20091225001422.GB22311@us.ibm.com>
+ <20091225011128.GA5213@heat>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091225011128.GA5213@heat>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel 2.6.33-rc2 crashs during boot.
-With 2.6.33-rc1 this didn't happen
+Quoting Michael Stone (michael@laptop.org):
+> Serge Hallyn writes:
+> >Michael Stone writes:
+> >>In particular, what would be worse about a kernel in which each security hook
+> >>contained nothing but conditionally-compiled function calls to the appropriate
+> >>"real" implementation functions with early-exit jumps on non-zero return codes?
+> >
+> >The problem is that composing any two security policies can quickly have
+> >subtle, unforeseen, but dangerous effects.
+> 
+> First, thanks very much for your helpful explanations and pragmatic advice.
+> 
+> Second, two thoughts and a question:
+> 
+>   1. I think you're probably correct when we're discussing security policies
+>      chosen uniformly at random from the space of all possible such policies.
+>      However, I believe that the cost-benefit ratio favors composition quite
+>      strongly when we're discussing real security policies which where designed
+>      with composition in mind, as is the case with my work.
+> 
+>   2. The problem you cite is an inherent property of software assurance which
+>      is indepedent of software assurance of information-security-specific
+>      properties. Thus, while you are correct that composition sometimes makes
+>      it harder to assure a system due to the increased number of "moving
+>      parts" that have to fit together perfectly, it also frequently makes the
+>      assurance problem more tractable by reducing the cost to assure the
+>      individual pieces which are being composed.
+> 
+>   3. Have you any specific examples of problems that have been clearly averted
+>      by the current arrangement?
 
-Code: 04 4e 85 f6 75 b9 c6 01 00 31 c0 5b (or 56 I cannot 
-more read my own hand-writing) 5e 5f 5d c3 55 89
-e5 e8 33 5f 9f ff 89 c2 8d 40 ff 83 f8 fd 76 07 a1 50 f8 
-2f c2 eb 0a 89 d0 .LT.80.GT. 78 04 0f 74 02 31 c0 5d c3 55 
-89 e5 e8 0e 5f 9f ff 31 d2 85
+If you look back over the archives of when I was pushing the LSM stacker
+around 2005, there were several cases where just stacking capability and
+selinux were problematic.
 
-EIP c160db30 acpi_ns_validate_handle +0x1b/0x25
-CR2: 0c204  SS:ESP 0068: f282ff28
-end trace 234c0a11060036b6 (or bbb or 6bb)
-pid: 1 comm: swapper tained: G  D 2.6.33-rc2 #1
+http://lkml.indiana.edu/hypermail/linux/kernel/0507.1/0814.html may have
+been one instance.  (I don't have local archive before 2006 and don't
+really care to search atm)
 
-c1c6e747 printk +0x14/0x16
-   c6e689 panic +0x3e/0xe8
-   04000f do_exit 0x61/0x5e6
-c103dfeb kmsg_dump 0xfa/0x10e
-  103d236 cups exit 0x2f/0x34
-   006104 oops end 0x83/0x8a
-   c6e747 printk 0x14 0x16
-   0276ad (ou bad) no context 0x144/0x14e
-   now i'm tired to copy this all, the next beginning 
-numbers are:
-c1039fbe 02780e c6f31f 03329b c706c2 03329b 027828 027ab3 
-02798b c71313
-60db30 60d00d c219da02 c1b5428e b52b0a b5434c
-c219db2b dell_wmi_init 0x129/0x131 (see you the problems, 
-I dont like dell)
-c1001143 do_one_initcall 0x51 / 0x13f
-c213d301 kernel_init 0x10a / 0x15e
-c1003a46 kenel_thread helper 0x6 / 0x10
+> >So with your module, I'd recommend following the route of the capabilities
+> >LSM. You can provide an optional stand-alone LSM which only hooks your
+> >functions. Then smack, for instance, can call the functions in your LSM
+> >from within its own hooks, or it can simply explicitly assign its hooks to
+> >your functions in smack_ops.  Selinux can do the same thing, although I
+> >suspect they would more likely implement their own functions for your newly
+> >hooked sites.
+> 
+> Doesn't it seem a bit strange to you to be recommending that everyone else
+> using the five security hooks I want to use modify their code *in detail* to
+> support my functionality given that my functionality is explicitly intended not
+> to require any such work on their part?
 
-W.Landgraf
-use Linux  SYS !!!
-mirror: ftp://ftp5.gwdg.de/pub/linux/install/sys
----
-Professional hosting for everyone - http://www.host.ru
+Not at all.  It seems prudent.  And it's really not an intrusive change -
+i.e. look at security/selinux/hooks.c:selinux_ptrace_access_check() calling
+cap_ptrace_access_check().
+
+> This seems frankly silly to me, not to mention expensive and error-prone.
+> 
+> Instead, perhaps we'd be better off with something like a declarative
+> compile-time whitelist or blacklist for compositions?
+
+Well, taking a step back - what exactly is the motivation for making this
+an LSM?  Is it just to re-use the callsites?  Or to provide a way to turn
+off the functionality?  I ask bc the API is in the prctl code, so the LSM
+is conceptually always there, which is different from other LSMs.
+
+So if you (or your audience) really want this to be an LSM, then you should
+probably put your prctl code in a security_task_prctl() hook.  Otherwise,
+perhaps we should just explicitly call your hooks in wrappers - or whatever was
+finally decided should be done with the security/integrity/ima hooks.
+
+-serge
