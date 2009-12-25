@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZLYRJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZLYRJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbZLYRJU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 12:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZLYRJS
+	id S1755693AbZLYRJy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 12:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbZLYRJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 12:09:18 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42756 "EHLO
+	Fri, 25 Dec 2009 12:09:53 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42783 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755388AbZLYRJR (ORCPT
+	with ESMTP id S1756180AbZLYRJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 12:09:17 -0500
-Date: Fri, 25 Dec 2009 18:09:08 +0100
+	Fri, 25 Dec 2009 12:09:52 -0500
+Date: Fri, 25 Dec 2009 18:09:44 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Michael Stone <michael@laptop.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 1/3] Security: Add prctl(PR_{GET,SET}_NETWORK)
-Message-ID: <20091225170908.GA1581@ucw.cz>
-References: <20091218154634.79decdc4@lxorguk.ukuu.org.uk> <20091218163348.GA24269@heat>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+Message-ID: <20091225170943.GB1581@ucw.cz>
+References: <alpine.LFD.2.00.0912090728200.3560@localhost.localdomain> <Pine.LNX.4.44L0.0912091051450.4120-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091218163348.GA24269@heat>
+In-Reply-To: <Pine.LNX.4.44L0.0912091051450.4120-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-12-18 11:33:48, Michael Stone wrote:
-> Alan Cox wrote:
->
->> This is a security model, it belongs as a security model using LSM. 
->
-> I'll see what I can cook up for you.
->
-> However, please don't be surprised when the resulting cover letter states that
-> the LSM-based version *does not* resolve the situation to my satisfaction as a
-> userland hacker due to the well-known and long-standing adoption and
-> compositionality problems facing small LSMs. ;)
+Hi!
 
-Maybe it is time to fix the LSM? This excuse is much too common...
-									Pavel
+> > That's partly why I realy did suggest that we do the async stuff purely in 
+> > the USB layer, rather than try to put it deeper in the device layer. And 
+> > if we do support it "natively" in the device layer like Rafael's latest 
+> > patch, I still think we should be very very nervous about making devices 
+> > async unless there is a measured - and very noticeable - advantage.
+> 
+> Agreed.  Arjan's measurements indicated that USB was one of the biggest
+> offenders; everything else other than the PS/2 mouse was much faster.  
+> Given these results there isn't much incentive to do anything else
+> asynchronously.
+> 
+> (However other devices not present on Arjan's machine may be a
+> different story.  Spinning up multiple external disks is a good example 
+> -- although here it may be necessary for the driver to take charge, 
+> because spinning up a disk requires a lot of power and doing too many 
+> of them at the same time could be bad.)
+
+Well, system would better be able to supply enough current... because
+usb disks auto-sleep on their own, and then something like async ls -l
+/*/* would kill your machine...
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
