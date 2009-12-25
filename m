@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZLYMTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZLYMbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbZLYMTM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 07:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZLYMTL
+	id S1754898AbZLYMbd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 07:31:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZLYMbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 07:19:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55621 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbZLYMTK (ORCPT
+	Fri, 25 Dec 2009 07:31:32 -0500
+Received: from mail.2ka.mipt.ru ([194.85.80.4]:57396 "EHLO mail.2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753002AbZLYMbb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 07:19:10 -0500
-Date: Fri, 25 Dec 2009 13:21:16 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mark Hounschell <markh@compro.net>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-Message-ID: <20091225132116.6c9089f2@infradead.org>
-In-Reply-To: <20091223170832.GH20539@basil.fritz.box>
-References: <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>
-	<4B310879.9050701@compro.net>
-	<1261525076.16916.4.camel@localhost.localdomain>
-	<4B3162BC.9000508@cfl.rr.com>
-	<4B3214EC.6020308@compro.net>
-	<6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com>
-	<4B32386B.2060509@compro.net>
-	<alpine.LFD.2.00.0912230828230.6879@localhost.localdomain>
-	<87bphpd4rt.fsf@basil.nowhere.org>
-	<alpine.LFD.2.00.0912230845550.6879@localhost.localdomain>
-	<20091223170832.GH20539@basil.fritz.box>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 25 Dec 2009 07:31:31 -0500
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
+References: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
+ <a4423d670912241449y2da43d5fi3e5a18c114b84178@mail.gmail.com>
+Date: Fri, 25 Dec 2009 15:31:27 +0300
+In-reply-to: <a4423d670912241449y2da43d5fi3e5a18c114b84178@mail.gmail.com>
+Message-id: <87hbrfdylc.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Dec 2009 18:08:32 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+Alexander Beregalov <a.beregalov@gmail.com> writes:
 
-> I removed that code when moving to 64bit (floppy driver disabling C1),
-> but perhaps we need some variant of it again (but it's the first such
-> report in many years). Although it would be sad to have it again on
-> all systems.
-
-at least now we have the pmqos infrastructure, driver just needs to ask
-for 0 latency ;)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> 2009/12/25 Alexander Beregalov <a.beregalov@gmail.com>:
+>> Hi
+>>
+>> Kernel is 2.6.33-rc1-00366-g2f99f5c
+>> Ext4 mounts ext3 filesystem
+>>
+>>
+>>
+>> kernel BUG at fs/ext4/inode.c:1063!
+>>              \|/ ____ \|/
+>>              "@'/ .. \`@"
+>>              /_| \__/ |_\
+>>                 \__U_/
+>> flush-8:0(1137): Kernel bad sw trap 5 [#1]
+>> TSTATE: 0000000080001603 TPC: 0000000000544fb4 TNPC: 0000000000544fb8
+>> Y: 00000000    Not tainted
+>> TPC: <ext4_get_blocks+0x3f4/0x400>
+>> g0: fffff800dc862fe0 g1: 0000000000000001 g2: 0000000000000001 g3:
+>> fffff800dc85f9c1
+>> g4: fffff800df305880 g5: 2e68006800002e68 g6: fffff800dc860000 g7:
+>> 0000000000833e08
+>> o0: 00000000007b0cb8 o1: 0000000000000427 o2: 0000000000000040 o3:
+>> 0000000000000040
+>> o4: fffff800dc8630a0 o5: 000000000000000d sp: fffff800dc8628d1 ret_pc:
+>> 0000000000544fac
+>> RPC: <ext4_get_blocks+0x3ec/0x400>
+>> l0: 0000000000000002 l1: fffff800c2674000 l2: fffff800c26740d0 l3:
+>> 0000000000000001
+>> l4: fffff800df39d2d0 l5: 00000000000003f9 l6: 0006000000000000 l7:
+>> 0000000000001ffe
+>> i0: 0000000000000040 i1: fffff800c2674130 i2: 000000000000064c i3:
+>> fffff800c26745a8
+>> i4: fffff800dc863308 i5: 0000000000000003 i6: fffff800dc8629a1 i7:
+>> 0000000000545380
+>> I7: <mpage_da_map_blocks+0x80/0x800>
+>> Disabling lock debugging due to kernel taint
+>> Caller[0000000000545380]: mpage_da_map_blocks+0x80/0x800
+>> Caller[00000000005461c0]: mpage_add_bh_to_extent+0x40/0x100
+>> Caller[000000000054642c]: __mpage_da_writepage+0x1ac/0x220
+>> Caller[00000000004a951c]: write_cache_pages+0x19c/0x380
+>> Caller[0000000000545d7c]: ext4_da_writepages+0x27c/0x680
+>> Caller[00000000004a978c]: do_writepages+0x2c/0x60
+>> Caller[00000000004f94cc]: writeback_single_inode+0xcc/0x3c0
+>> Caller[00000000004fa3d8]: writeback_inodes_wb+0x338/0x500
+>> Caller[00000000004fa6e8]: wb_writeback+0x148/0x220
+>> Caller[00000000004fab00]: wb_do_writeback+0x240/0x260
+>> Caller[00000000004fab8c]: bdi_writeback_task+0x6c/0xc0
+>> Caller[00000000004b6f50]: bdi_start_fn+0x70/0xe0
+>> Caller[000000000047030c]: kthread+0x6c/0x80
+>> Caller[000000000042bc9c]: kernel_thread+0x3c/0x60
+>> Caller[0000000000470408]: kthreadd+0xe8/0x160
+>> Instruction DUMP: 92102427  7ffb95a5  901220b8 <91d02005> 01000000
+>> 01000000  9de3bf40  11002096  a4100018
+>> note: flush-8:0[1137] exited with preempt_count 1
+>>
+>
+> It seems I can easily reproduce it.
+> But I can't compile 2.6.33-rc2 :)
+>
+> scripts/kconfig/conf -s arch/sparc/Kconfig
+>   CHK     include/linux/version.h
+>   CHK     include/generated/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/generated/compile.h
+>   GZIP    kernel/config_data.gz
+>   CC      fs/configfs/inode.o
+>   IKCFG   kernel/config_data.h
+>   LD [M]  fs/btrfs/btrfs.o
+>   CC      kernel/configs.o
+> fs/btrfs/sysfs.o: file not recognized: File truncated
+This happens because of  delayed allocation. Each time BUG or
+unexpected power off happens during object files usually becomes
+broken. IMHO this is expected issue. Just recompile from beginning
+# make clean; make -j4
+As soon as your testcase is kernel compilation.
+Strange i'm living with quota patches on my notebook more than
+a month( two weeks with the version committed to quota git tree)
+with and without quota . But this never happens.
+Currently i'm trying to reproduce the bug on 2.6.33-rc2
+Please add keep me in cc because seems the bug was introduced
+(or just triggered) by my quota patches.
+> make[2]: *** [fs/btrfs/btrfs.o] Error 1
+> make[1]: *** [fs/btrfs] Error 2
+> make[1]: *** Waiting for unfinished jobs....
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
