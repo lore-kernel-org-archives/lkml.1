@@ -1,68 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbZLYAUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZLYAin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756035AbZLYAUH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 19:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZLYAUG
+	id S1756159AbZLYAin (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 19:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZLYAim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 19:20:06 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57888 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755096AbZLYAUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 19:20:04 -0500
-Date: Fri, 25 Dec 2009 11:19:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Mattia Dongili <malattia@linux.it>
-Subject: Re: linux-next: manual merge of the acpi tree with Linus' tree
-Message-Id: <20091225111955.ebd90b35.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0912241502190.4159@localhost.localdomain>
-References: <20091224091141.fa1cea64.sfr@canb.auug.org.au>
-	<20091224093913.4f29f37b.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0912240000530.6541@localhost.localdomain>
-	<20091224232656.dafb0b1d.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0912241502190.4159@localhost.localdomain>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0."
+	Thu, 24 Dec 2009 19:38:42 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:42268 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbZLYAil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 19:38:41 -0500
+Date: Thu, 24 Dec 2009 16:38:39 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Kyle Moffett <kyle@moffetthome.net>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>,
+       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for
+ 2.6.33
+Message-ID: <20091225003839.GA802@ovro.caltech.edu>
+References: <20091218215107.GA14946@elte.hu>
+ <4B2F9582.5000002@gmail.com>
+ <20091222075742.GB26467@elte.hu>
+ <4B3103B4.4070708@gmail.com>
+ <f73f7ab80912222215i39ba865dv95764f95fd57bd96@mail.gmail.com>
+ <4B3232A1.8050505@codemonkey.ws>
+ <20091223195413.GB30700@ovro.caltech.edu>
+ <4B32A09D.30400@codemonkey.ws>
+ <20091223234256.GC30700@ovro.caltech.edu>
+ <4B33A053.9090009@codemonkey.ws>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B33A053.9090009@codemonkey.ws>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 24 Dec 2009 16:38:40 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Dec 24, 2009 at 11:09:39AM -0600, Anthony Liguori wrote:
+> On 12/23/2009 05:42 PM, Ira W. Snyder wrote:
+> >
+> > I've got a single PCI Host (master) with ~20 PCI slots. Physically, it
+> > is a backplane in a cPCI chassis, but the form factor is irrelevant. It
+> > is regular PCI from a software perspective.
+> >
+> > Into this backplane, I plug up to 20 PCI Agents (slaves). They are
+> > powerpc computers, almost identical to the Freescale MPC8349EMDS board.
+> > They're full-featured powerpc computers, with CPU, RAM, etc. They can
+> > run standalone.
+> >
+> > I want to use the PCI backplane as a data transport. Specifically, I
+> > want to transport ethernet over the backplane, so I can have the powerpc
+> > boards mount their rootfs via NFS, etc. Everyone knows how to write
+> > network daemons. It is a good and very well known way to transport data
+> > between systems.
+> >
+> > On the PCI bus, the powerpc systems expose 3 PCI BAR's. The size is
+> > configureable, as is the memory location at which they point. What I
+> > cannot do is get notified when a read/write hits the BAR. There is a
+> > feature on the board which allows me to generate interrupts in either
+> > direction: agent->master (PCI INTX) and master->agent (via an MMIO
+> > register). The PCI vendor ID and device ID are not configureable.
+> >
+> > One thing I cannot assume is that the PCI master system is capable of
+> > performing DMA. In my system, it is a Pentium3 class x86 machine, which
+> > has no DMA engine. However, the PowerPC systems do have DMA engines. In
+> > virtio terms, it was suggested to make the powerpc systems the "virtio
+> > hosts" (running the backends) and make the x86 (PCI master) the "virtio
+> > guest" (running virtio-net, etc.).
+> 
+> IMHO, virtio and vbus are both the wrong model for what you're doing. 
+> The key reason why is that virtio and vbus are generally designed around 
+> the concept that there is shared cache coherent memory from which you 
+> can use lock-less ring queues to implement efficient I/O.
+> 
+> In your architecture, you do not have cache coherent shared memory. 
+> Instead, you have two systems connected via a PCI backplace with 
+> non-coherent shared memory.
+> 
+> You probably need to use the shared memory as a bounce buffer and 
+> implement a driver on top of that.
+> 
+> > I'm not sure what you're suggesting in the paragraph above. I want to
+> > use virtio-net as the transport, I do not want to write my own
+> > virtual-network driver. Can you please clarify?
+> 
+> virtio-net and vbus are going to be overly painful for you to use 
+> because no one end can access arbitrary memory in the other end.
+> 
 
-Hi Len,
+The PCI Agents (powerpc's) can access the lowest 4GB of the PCI Master's
+memory. Not all at the same time, but I have a 1GB movable window into
+PCI address space. I hunch Kyle's setup is similar.
 
-On Thu, 24 Dec 2009 15:05:06 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
->
-> FYI, I dropped that patch yesterday, and then just now included
-> a refreshed patch from Dmitry.  So linux-next should be conflict free now.
+I've proved that virtio can work via my "crossed-wires" driver, hooking
+two virtio-net's together. With a proper in-kernel backend, I think the
+issues would be gone, and things would work great.
 
-Thanks.
+> > Hopefully that explains what I'm trying to do. I'd love someone to help
+> > guide me in the right direction here. I want something to fill this need
+> > in mainline.
+> 
+> If I were you, I would write a custom network driver.  virtio-net is 
+> awfully small (just a few hundred lines).  I'd use that as a basis but I 
+> would not tie into virtio or vbus.  The paradigms don't match.
+> 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This is exactly what I did first. I proposed it for mainline, and David
+Miller shot it down, saying: you're creating your own virtualization
+scheme, use virtio instead. Arnd Bergmann is maintaining a driver
+out-of-tree for some IBM cell boards which is very similar, IIRC.
 
---Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0.
-Content-Type: application/pgp-signature
+In my driver, I used the PCI Agent's PCI BAR's to contain ring
+descriptors. The PCI Agent actually handles all data transfer (via the
+onboard DMA engine). It works great. I'll gladly post it if you'd like
+to see it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+In my driver, I had to use 64K MTU to get acceptable performance. I'm
+not entirely sure how to implement a driver that can handle
+scatter/gather (fragmented skb's). It clearly isn't that easy to tune a
+network driver for good performance. For reference, my "crossed-wires"
+virtio drivers achieved excellent performance (10x better than my custom
+driver) with 1500 byte MTU.
 
-iEYEARECAAYFAks0BSsACgkQjjKRsyhoI8y+JgCgngyDWMKO9nN/106C8pP+/T8P
-frEAoJ9QC69wpw0k2sLE9+aCZsUNukzK
-=bMb5
------END PGP SIGNATURE-----
+> > I've been contacted seperately by 10+ people also looking
+> > for a similar solution. I hunch most of them end up doing what I did:
+> > write a quick-and-dirty network driver. I've been working on this for a
+> > year, just to give an idea.
+> 
+> The whole architecture of having multiple heterogenous systems on a 
+> common high speed backplane is what IBM refers to as "hybrid computing". 
+>   It's a model that I think will be come a lot more common in the 
+> future.  I think there are typically two types of hybrid models 
+> depending on whether the memory sharing is cache coherent or not.  If 
+> you have coherent shared memory, the problem looks an awfully lot like 
+> virtualization.  If you don't have coherent shared memory, then the 
+> shared memory basically becomes a pool to bounce into and out-of.
+> 
 
---Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0.--
+Let's say I could get David Miller to accept a driver as described
+above. Would you really want 10+ seperate but extremely similar drivers
+for similar boards? Such as mine, Arnd's, Kyle's, etc. It is definitely
+a niche that Linux is lacking support for. And as you say, it is
+growing.
+
+It seems that no matter what I try, everyone says: no, go do this other
+thing instead. Before I go and write the 5th iteration of this, I'll be
+looking for a maintainer who says: this is the correct thing to be
+doing, I'll help you push this towards mainline. It's been frustrating.
+
+Ira
