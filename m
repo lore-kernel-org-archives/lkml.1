@@ -1,108 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752312AbZLYD1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbZLYDsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752312AbZLYD1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 22:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZLYD1W
+	id S1751943AbZLYDsi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 22:48:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZLYDsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 22:27:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41240 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750809AbZLYD1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 22:27:21 -0500
-Date: Thu, 24 Dec 2009 22:26:48 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Allan Stephens <allan.stephens@windriver.com>, netdev@vger.kernel.org,
-       Per Liden <per.liden@ericsson.com>,
-       tipc-discussion@lists.sourceforge.net, Amerigo Wang <amwang@redhat.com>,
-       akpm@linux-foundation.org, Jon Maloy <jon.maloy@ericsson.com>
-Message-Id: <20091225032956.4556.69130.sendpatchset@localhost.localdomain>
-Subject: [Patch] tipc: use kconfig to limit numeric ranges
+	Thu, 24 Dec 2009 22:48:37 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:41708 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZLYDsh (ORCPT
+	<rfc822;Linux-Kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 22:48:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=VEVog/6VTxvjqfz4krdJhKr/E9V3YqcqRifaXt8JUWvdfRW9tTyXQWA3LRflbbrw/v
+         S75p0BT9QhZWW+GNYEgIqZIYGBLl228ho1HN2SQcnjPM1mp56p/0zDovlXhiXgQ5Fs/d
+         9o4yYKamHEXnunw8Yh5SyTRJCdnHUCFQhsoWM=
+Message-ID: <4B343611.6070206@gmail.com>
+Date: Thu, 24 Dec 2009 19:48:33 -0800
+From: JD <jd1008@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linux Kernel List <Linux-Kernel@vger.kernel.org>
+Subject: RT2860 driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can rely on kconfig to limit these numbers,
-no need to limit them at compile time/run time.
+I have built and booted several kernel.org releases of
+kernel 2.6, ever since rt2860 was added to the staging area.
+I have an rt2860 mini-pci wifi card.
+To make a long story short, the last kernel release I built
+with rt2860 config enabled (module), that actually worked
+(i.e. rt2860 driver worked) was (I think) kernel 2.6.28.
 
-Users who modify these numbers manually should
-be responsible for themself. :)
+I have not been able to get it working in 2.6.[29,30,31,32]
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Per Liden <per.liden@ericsson.com>
-Cc: Jon Maloy <jon.maloy@ericsson.com>
-Cc: Allan Stephens <allan.stephens@windriver.com>
-Cc: David S. Miller <davem@davemloft.net>
+So, what I have been doing is to copy full rt2860 directory
+(which I had extracted and saved from the last working version)
+into the latest kernel, and I make sure that
 
----
-diff --git a/net/tipc/Kconfig b/net/tipc/Kconfig
-index 3b30d11..dafbd53 100644
---- a/net/tipc/Kconfig
-+++ b/net/tipc/Kconfig
-@@ -33,6 +33,7 @@ config TIPC_ADVANCED
- config TIPC_ZONES
- 	int "Maximum number of zones in network"
- 	depends on TIPC_ADVANCED
-+	range 1 255
- 	default "3"
- 	help
- 	 Max number of zones inside TIPC network. Max supported value 
-@@ -44,10 +45,10 @@ config TIPC_ZONES
- config TIPC_CLUSTERS
- 	int "Maximum number of clusters in a zone"
- 	depends on TIPC_ADVANCED
-+	range 1 1
- 	default "1"
- 	help
--          ***Only 1 (one cluster in a zone) is supported by current code.
--          Any value set here will be overridden.***
-+          ***Only 1 (one cluster in a zone) is supported by current code.***
- 
-           (Max number of clusters inside TIPC zone. Max supported 
-           value is 4095 clusters, minimum is 1.
-@@ -59,6 +60,7 @@ config TIPC_CLUSTERS
- config TIPC_NODES
- 	int "Maximum number of nodes in cluster"
- 	depends on TIPC_ADVANCED
-+	range 8 2047
- 	default "255"
- 	help
- 	  Maximum number of nodes inside a TIPC cluster. Maximum 
-@@ -70,6 +72,7 @@ config TIPC_NODES
- config TIPC_SLAVE_NODES
- 	int "Maximum number of slave nodes in cluster"
- 	depends on TIPC_ADVANCED
-+	range 0 2047
- 	default "0"
- 	help
-           ***This capability is not supported by current code.***
-@@ -83,6 +86,7 @@ config TIPC_SLAVE_NODES
- config TIPC_PORTS
- 	int "Maximum number of ports in a node"
- 	depends on TIPC_ADVANCED
-+	range 217 65536
- 	default "8191"
- 	help
- 	  Maximum number of ports within a node. Maximum 
-diff --git a/net/tipc/core.c b/net/tipc/core.c
-index 3256bd7..52c571f 100644
---- a/net/tipc/core.c
-+++ b/net/tipc/core.c
-@@ -189,11 +189,11 @@ static int __init tipc_init(void)
- 	tipc_remote_management = 1;
- 	tipc_max_publications = 10000;
- 	tipc_max_subscriptions = 2000;
--	tipc_max_ports = delimit(CONFIG_TIPC_PORTS, 127, 65536);
--	tipc_max_zones = delimit(CONFIG_TIPC_ZONES, 1, 255);
--	tipc_max_clusters = delimit(CONFIG_TIPC_CLUSTERS, 1, 1);
--	tipc_max_nodes = delimit(CONFIG_TIPC_NODES, 8, 2047);
--	tipc_max_slaves = delimit(CONFIG_TIPC_SLAVE_NODES, 0, 2047);
-+	tipc_max_ports = CONFIG_TIPC_PORTS;
-+	tipc_max_zones = CONFIG_TIPC_ZONES;
-+	tipc_max_clusters = CONFIG_TIPC_CLUSTERS;
-+	tipc_max_nodes = CONFIG_TIPC_NODES;
-+	tipc_max_slaves = CONFIG_TIPC_SLAVE_NODES;
- 	tipc_net_id = 4711;
- 
- 	if ((res = tipc_core_start()))
+rt2860/config.mk has
+
+HAS_WPA_SUPPLICANT=y
+
+HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
+
+This is the only way I can get my wireless working.
+
+So, if anyone on this list has it working in latest kernel,
+without resorting to what I am doing, please share you "how-to".
+
+If this is the wrong list to ask about this, then please tell,
+which list discusses driver problems?
+
+Cheers,
+
+JD
+
+
