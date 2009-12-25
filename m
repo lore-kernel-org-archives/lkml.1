@@ -1,117 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751787AbZLYFuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbZLYF4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751787AbZLYFuo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 00:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbZLYFun
+	id S1752418AbZLYF4X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 00:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbZLYF4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 00:50:43 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:35035 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbZLYFum (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 00:50:42 -0500
-Date: Thu, 24 Dec 2009 23:50:34 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: A basic question about the security_* hooks
-Message-ID: <20091225055034.GA374@us.ibm.com>
-References: <20091225001422.GB22311@us.ibm.com>
- <20091225011128.GA5213@heat>
+	Fri, 25 Dec 2009 00:56:22 -0500
+Received: from mga14.intel.com ([143.182.124.37]:26005 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750947AbZLYF4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 00:56:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="226545810"
+Date: Fri, 25 Dec 2009 13:56:17 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Jan Kara <jack@suse.cz>, Steve Rago <sar@nec-labs.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+Message-ID: <20091225055617.GA8595@localhost>
+References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz> <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost> <1261656281.3596.1.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091225011128.GA5213@heat>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1261656281.3596.1.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Stone (michael@laptop.org):
-> Serge Hallyn writes:
-> >Michael Stone writes:
-> >>In particular, what would be worse about a kernel in which each security hook
-> >>contained nothing but conditionally-compiled function calls to the appropriate
-> >>"real" implementation functions with early-exit jumps on non-zero return codes?
-> >
-> >The problem is that composing any two security policies can quickly have
-> >subtle, unforeseen, but dangerous effects.
+On Thu, Dec 24, 2009 at 08:04:41PM +0800, Trond Myklebust wrote:
+> On Thu, 2009-12-24 at 10:52 +0800, Wu Fengguang wrote: 
+> > Trond,
+> > 
+> > On Thu, Dec 24, 2009 at 03:12:54AM +0800, Trond Myklebust wrote:
+> > > On Wed, 2009-12-23 at 19:05 +0100, Jan Kara wrote: 
+> > > > On Wed 23-12-09 15:21:47, Trond Myklebust wrote:
+> > > > > @@ -474,6 +482,18 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+> > > > >  	}
+> > > > >  
+> > > > >  	spin_lock(&inode_lock);
+> > > > > +	/*
+> > > > > +	 * Special state for cleaning NFS unstable pages
+> > > > > +	 */
+> > > > > +	if (inode->i_state & I_UNSTABLE_PAGES) {
+> > > > > +		int err;
+> > > > > +		inode->i_state &= ~I_UNSTABLE_PAGES;
+> > > > > +		spin_unlock(&inode_lock);
+> > > > > +		err = commit_unstable_pages(inode, wait);
+> > > > > +		if (ret == 0)
+> > > > > +			ret = err;
+> > > > > +		spin_lock(&inode_lock);
+> > > > > +	}
+> > > >   I don't quite understand this chunk: We've called writeback_single_inode
+> > > > because it had some dirty pages. Thus it has I_DIRTY_DATASYNC set and a few
+> > > > lines above your chunk, we've called nfs_write_inode which sent commit to
+> > > > the server. Now here you sometimes send the commit again? What's the
+> > > > purpose?
+> > > 
+> > > We no longer set I_DIRTY_DATASYNC. We only set I_DIRTY_PAGES (and later
+> > > I_UNSTABLE_PAGES).
+> > > 
+> > > The point is that we now do the commit only _after_ we've sent all the
+> > > dirty pages, and waited for writeback to complete, whereas previously we
+> > > did it in the wrong order.
+> > 
+> > Sorry I still don't get it. The timing used to be:
+> > 
+> > write 4MB   ==> WRITE block 0 (ie. first 512KB)
+> >                 WRITE block 1
+> >                 WRITE block 2
+> >                 WRITE block 3         ack from server for WRITE block 0 => mark 0 as unstable (inode marked need-commit)
+> >                 WRITE block 4         ack from server for WRITE block 1 => mark 1 as unstable
+> >                 WRITE block 5         ack from server for WRITE block 2 => mark 2 as unstable
+> >                 WRITE block 6         ack from server for WRITE block 3 => mark 3 as unstable
+> >                 WRITE block 7         ack from server for WRITE block 4 => mark 4 as unstable
+> >                                       ack from server for WRITE block 5 => mark 5 as unstable
+> > write_inode ==> COMMIT blocks 0-5
+> >                                       ack from server for WRITE block 6 => mark 6 as unstable (inode marked need-commit)
+> >                                       ack from server for WRITE block 7 => mark 7 as unstable 
+> > 
+> >                                       ack from server for COMMIT blocks 0-5 => mark 0-5 as clean
+> > 
+> > write_inode ==> COMMIT blocks 6-7
+> > 
+> >                                       ack from server for COMMIT blocks 6-7 => mark 6-7 as clean
+> > 
+> > Note that the first COMMIT is submitted before receiving all ACKs for
+> > the previous writes, hence the second COMMIT is necessary. It seems
+> > that your patch does not improve the timing at all.
 > 
-> First, thanks very much for your helpful explanations and pragmatic advice.
-> 
-> Second, two thoughts and a question:
-> 
->   1. I think you're probably correct when we're discussing security policies
->      chosen uniformly at random from the space of all possible such policies.
->      However, I believe that the cost-benefit ratio favors composition quite
->      strongly when we're discussing real security policies which where designed
->      with composition in mind, as is the case with my work.
-> 
->   2. The problem you cite is an inherent property of software assurance which
->      is indepedent of software assurance of information-security-specific
->      properties. Thus, while you are correct that composition sometimes makes
->      it harder to assure a system due to the increased number of "moving
->      parts" that have to fit together perfectly, it also frequently makes the
->      assurance problem more tractable by reducing the cost to assure the
->      individual pieces which are being composed.
-> 
->   3. Have you any specific examples of problems that have been clearly averted
->      by the current arrangement?
+> That would indicate that we're cycling through writeback_single_inode()
+> more than once. Why?
 
-If you look back over the archives of when I was pushing the LSM stacker
-around 2005, there were several cases where just stacking capability and
-selinux were problematic.
+Yes. The above sequence can happen for a 4MB sized dirty file.
+The first COMMIT is done by L547, while the second COMMIT will be
+scheduled either by __mark_inode_dirty(), or scheduled by L583
+(depending on the time ACKs for L543 but missed L547 arrives:
+if an ACK missed L578, the inode will be queued into b_dirty list,
+but if any ACK arrives between L547 and L578, the inode will enter
+b_more_io_wait, which is a to-be-introduced new dirty list). 
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0507.1/0814.html may have
-been one instance.  (I don't have local archive before 2006 and don't
-really care to search atm)
+         537         dirty = inode->i_state & I_DIRTY;
+         538         inode->i_state |= I_SYNC;
+         539         inode->i_state &= ~I_DIRTY;
+         540 
+         541         spin_unlock(&inode_lock);
+         542 
+==>      543         ret = do_writepages(mapping, wbc);
+         544 
+         545         /* Don't write the inode if only I_DIRTY_PAGES was set */
+         546         if (dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {
+==>      547                 int err = write_inode(inode, wait);
+         548                 if (ret == 0)
+         549                         ret = err;
+         550         }
+         551 
+         552         if (wait) {
+         553                 int err = filemap_fdatawait(mapping);
+         554                 if (ret == 0)
+         555                         ret = err;
+         556         }
+         557 
+         558         spin_lock(&inode_lock);
+         559         inode->i_state &= ~I_SYNC;
+         560         if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+         561                 if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+         562                         /*
+         563                          * We didn't write back all the pages.  nfs_writepages()
+         564                          * sometimes bales out without doing anything.
+         565                          */
+         566                         inode->i_state |= I_DIRTY_PAGES;
+         567                         if (wbc->nr_to_write <= 0) {
+         568                                 /*
+         569                                  * slice used up: queue for next turn
+         570                                  */
+         571                                 requeue_io(inode);
+         572                         } else {
+         573                                 /*
+         574                                  * somehow blocked: retry later
+         575                                  */
+         576                                 requeue_io_wait(inode);
+         577                         }
+==>      578                 } else if (inode->i_state & I_DIRTY) {
+         579                         /*
+         580                          * At least XFS will redirty the inode during the
+         581                          * writeback (delalloc) and on io completion (isize).
+         582                          */
+==>      583                         requeue_io_wait(inode);
 
-> >So with your module, I'd recommend following the route of the capabilities
-> >LSM. You can provide an optional stand-alone LSM which only hooks your
-> >functions. Then smack, for instance, can call the functions in your LSM
-> >from within its own hooks, or it can simply explicitly assign its hooks to
-> >your functions in smack_ops.  Selinux can do the same thing, although I
-> >suspect they would more likely implement their own functions for your newly
-> >hooked sites.
-> 
-> Doesn't it seem a bit strange to you to be recommending that everyone else
-> using the five security hooks I want to use modify their code *in detail* to
-> support my functionality given that my functionality is explicitly intended not
-> to require any such work on their part?
-
-Not at all.  It seems prudent.  And it's really not an intrusive change -
-i.e. look at security/selinux/hooks.c:selinux_ptrace_access_check() calling
-cap_ptrace_access_check().
-
-> This seems frankly silly to me, not to mention expensive and error-prone.
-> 
-> Instead, perhaps we'd be better off with something like a declarative
-> compile-time whitelist or blacklist for compositions?
-
-Well, taking a step back - what exactly is the motivation for making this
-an LSM?  Is it just to re-use the callsites?  Or to provide a way to turn
-off the functionality?  I ask bc the API is in the prctl code, so the LSM
-is conceptually always there, which is different from other LSMs.
-
-So if you (or your audience) really want this to be an LSM, then you should
-probably put your prctl code in a security_task_prctl() hook.  Otherwise,
-perhaps we should just explicitly call your hooks in wrappers - or whatever was
-finally decided should be done with the security/integrity/ima hooks.
-
--serge
+Thanks,
+Fengguang
