@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZLYKKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZLYKWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZLYKKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 05:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZLYKKr
+	id S1754623AbZLYKWk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 05:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZLYKWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 05:10:47 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:57230 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbZLYKKq (ORCPT
+	Fri, 25 Dec 2009 05:22:40 -0500
+Received: from coloquinte.cristau.org ([91.121.16.100]:34884 "EHLO
+	coloquinte.cristau.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbZLYKWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 05:10:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=K4CfgZg2R8it4VVWxZGz9mq4nZieUU5UxURJqjly+3HIGu1dvVxvePfzOWIv34MEta
-         heABFp0ryrPI7ClyGgrspEcuAf6U+hLejSn733WPzNloCCo6rCkOimwovB3RTVAFTgII
-         v4aJ5wLfveFsQOlwdOf0j2fLAMzqQXL85StHU=
+	Fri, 25 Dec 2009 05:22:39 -0500
+X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Dec 2009 05:22:39 EST
+Date: Fri, 25 Dec 2009 11:13:18 +0100
+From: Julien Cristau <jcristau@debian.org>
+To: Darren Jenkins <darrenrjenkins@gmail.com>
+Cc: David Airlie <airlied@linux.ie>,
+       dri-devel mailing list <dri-devel@lists.sourceforge.net>,
+       Kernel Janitors <kernel-janitors@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: drivers/gpu/drm/radeon: move a dereference below a NULL test
+Message-ID: <20091225101318.GQ3003@radis.liafa.jussieu.fr>
+References: <1261658670.3546.7.camel@ICE-BOX>
 MIME-Version: 1.0
-Date: Fri, 25 Dec 2009 11:10:42 +0100
-Message-ID: <8db1092f0912250210w20261f75wbae6bf93696b6f04@mail.gmail.com>
-Subject: [2.6.33-rc2] [ACPI] [WMI?] boot hang
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261658670.3546.7.camel@ICE-BOX>
+X-Operating-System: Linux 2.6.32-trunk-amd64 x86_64
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Last known kernel: 2.6.33-rc1
-Affected kernel: 2.6.33-rc2
+On Thu, Dec 24, 2009 at 23:44:30 +1100, Darren Jenkins wrote:
 
-Kernel stops booting on this message:
-http://unixy.pl/maciek/download/kernel/2.6.33-rc2/gumis/zdjecie033.jpg
+> If a NULL value is possible, the dereference should only occur after the
+> NULL test.
+> 
+> Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
+> diff --git a/drivers/gpu/drm/radeon/radeon_irq.c
+> b/drivers/gpu/drm/radeon/radeon_irq.c
+> index b79ecc4..2f349a3 100644
+> --- a/drivers/gpu/drm/radeon/radeon_irq.c
+> +++ b/drivers/gpu/drm/radeon/radeon_irq.c
+> @@ -289,16 +289,16 @@ int radeon_irq_emit(struct drm_device *dev, void
+> *data, struct drm_file *file_pr
 
-(sorry for bad picture, already I'm away from home and better camera).
+Looks like your patches are whitespace-damaged.  You'll need to fix your
+MUA...
 
-Config, lspci:
-http://unixy.pl/maciek/download/kernel/2.6.33-rc2/gumis/
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Cheers,
+Julien
