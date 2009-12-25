@@ -1,110 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbZLYIse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZLYJKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbZLYIse (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 03:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZLYIsd
+	id S1753136AbZLYJKf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 04:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZLYJKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 03:48:33 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:35392 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZLYIsc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 03:48:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FwjNKZHpWSRTYgooYNvjR4D/nfrWsYb60rrVSNPLwtEGhNo3SIKCpFSXzePypvqQIp
-         Qf6AOaTuxXqutTPerrtInzLr5e1+SE6+GuoycZ5YkHjoDT9cnF97U8jNOSg1fDyY1HGc
-         59wAIDr8dD93W1s27yVMmL3K5D2kophrxj8v8=
+	Fri, 25 Dec 2009 04:10:34 -0500
+Received: from mga09.intel.com ([134.134.136.24]:2362 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751945AbZLYJKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 04:10:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,453,1257148800"; 
+   d="scan'208";a="582034676"
+Date: Fri, 25 Dec 2009 17:10:30 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: jens.axboe@oracle.com, czoccolo@gmail.com, yanmin.zhang@intel.com
+Subject: [RFC]cfq-iosched: quantum check tweak
+Message-ID: <20091225091030.GA28365@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <4B3413C4.6070602@gmail.com>
-References: <2d0a357f0912241711o97011od6c1750d7acf8b9e@mail.gmail.com>
-	 <4B3413C4.6070602@gmail.com>
-Date: Fri, 25 Dec 2009 09:48:31 +0100
-Message-ID: <2d0a357f0912250048h2bc987ccs4d4d253a4155becf@mail.gmail.com>
-Subject: Re: [2.6.33-rc2] ACPI problems on HP nc6400 notebook
-From: Sedat Dilek <sedat.dilek@googlemail.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Currently a queue can only dispatch up to 4 requests if there are other queues.
+This isn't optimal, device can handle more requests, for example, AHCI can
+handle 31 requests. I can understand the limit is for fairness, but we could
+do some tweaks:
+1. if the queue still has a lot of slice left, sounds we could ignore the limit
+2. we could keep the check only when cfq_latency is on. For uses who don't care
+about latency should be happy to have device fully piped on.
 
-as I suspected it is an ACPI issue while I tried to boot with "acpi=off".
+I have a test of random direct io of two threads, each has 32 requests one time
+without patch: 78m/s
+with tweak 1: 138m/s
+with two tweaks and disable latency: 156m/s
 
-I have taken new screenshots and added dmesg (acpi=off) and all
-messages in /var/log/* [1].
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+---
+ block/cfq-iosched.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-It is possible to load acpi kernel-module afterwards?
-Or it is not possible whenn loading with acpi=off?
-
-@Len Brown:
-There are two photos showing thermal problems.
-Notebook did shut down in the night.
-But this was before 2.6.33-rc2.
-
-I will not try a bisect (visting currently my brother and working with
-touchpad really sucks), but I will revert the wmi-related (wmi/hp-wmi)
-commits.
-There seems problems with wmi on other systems w/ 2.6.33-rc2 [2].
-
-Kind Regards,
-- Sedat -
-
-[1] http://files.iniza.org/linux-kernel/BUG_2.6.33-rc2/
-[2] http://marc.info/?l=linux-kernel&m=126171951030608&w=2
-
-On Fri, Dec 25, 2009 at 2:22 AM, Justin P. Mattock
-<justinmattock@gmail.com> wrote:
-> On 12/24/09 17:11, Sedat Dilek wrote:
->>
->> Hi,
->>
->> I build linux-2.6.33-rc2 on a Debian/sid 32-bit host.
->> Unfortunately, this kernel falls in an unusable state (sort of loop)
->> and does not a normal startup.
->>
->> With this setting (see below), I hoped to catch the early
->> boot-messages (but, no success):
->>
->> # cat /etc/default/bootlogd
->> # Run bootlogd at startup ?
->> BOOTLOGD_ENABLE=Yes
->>
->> Finally, I could take a picture [1].
->> It seems to be that latest ACPI patches are breaking my system
->> (speculating).
->>
->> Q: How can I log such early boot (error) messages to give a detailled log?
->>
->> Hope this helps fixing the problem.
->>
->> Kind Regards,
->> - Sedat -
->>
->>
->> [1] http://files.iniza.org/linux-kernel/DSCN2134.JPG
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
-> you can try(if you have the port)
-> ohci1394_dma=early or the usb
-> early logging located in kernel hacking.
->
-> but if this thing is hitting way early it
-> might be a bit more tricky.
->
-> if you can try  a bisect from the bad
-> kernel to the good.
->
-> Justin P. Mattock
->
+Index: linux-2.6/block/cfq-iosched.c
+===================================================================
+--- linux-2.6.orig/block/cfq-iosched.c
++++ linux-2.6/block/cfq-iosched.c
+@@ -2242,6 +2242,18 @@ static int cfq_forced_dispatch(struct cf
+ 	return dispatched;
+ }
+ 
++static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
++	struct cfq_queue *cfqq)
++{
++	/* the queue hasn't finished any request, can't estimate */
++	if (cfq_cfqq_slice_new(cfqq))
++		return 1;
++	if (time_after(jiffies + cfqd->cfq_slice_idle, cfqq->slice_end))
++		return 1;
++
++	return 0;
++}
++
+ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
+ 	unsigned int max_dispatch;
+@@ -2275,7 +2287,8 @@ static bool cfq_may_dispatch(struct cfq_
+ 		/*
+ 		 * We have other queues, don't allow more IO from this one
+ 		 */
+-		if (cfqd->busy_queues > 1)
++		if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq)
++			&& cfqd->cfq_latency)
+ 			return false;
+ 
+ 		/*
