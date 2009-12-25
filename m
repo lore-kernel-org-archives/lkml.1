@@ -1,81 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbZLYXXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZLYXhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbZLYXXK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 18:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbZLYXXI
+	id S1757345AbZLYXhH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 18:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756530AbZLYXhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 18:23:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32906 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753071AbZLYXXH (ORCPT
+	Fri, 25 Dec 2009 18:37:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57424 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756484AbZLYXhB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 18:23:07 -0500
-Date: Fri, 25 Dec 2009 15:22:00 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-Message-ID: <20091225152200.1cf11dfe@nehalam>
-In-Reply-To: <4B34E847.8010809@majjas.com>
-References: <4B300A2A.8040305@gmail.com>
-	<4B300E30.9090707@majjas.com>
-	<4B3114E3.1070602@majjas.com>
-	<4B329FA3.9090904@majjas.com>
-	<20091223230102.4bb0100e.akpm@linux-foundation.org>
-	<4B34E847.8010809@majjas.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Dec 2009 18:37:01 -0500
+Message-ID: <4B354C70.1060109@zytor.com>
+Date: Fri, 25 Dec 2009 15:36:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Sergei Trofimovich <slyich@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
+       Sergei Trofimovich <slyfox@inbox.ru>
+Subject: Re: [PATCH] Kbuild: set LC_MESSAGES=C (as LC_CTYPE=C is)
+References: <1261761235-9431-1-git-send-email-slyfox@inbox.ru>
+In-Reply-To: <1261761235-9431-1-git-send-email-slyfox@inbox.ru>
+Content-Type: multipart/mixed;
+ boundary="------------090309000308030403020208"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Dec 2009 11:28:55 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
+This is a multi-part message in MIME format.
+--------------090309000308030403020208
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
->   More data points - I'm able to reliably recreate this now.
-> While I thought it was coincidence, each and every time I hit this issue 
-> there is a DHCP renew event immediately before the first error.
-> The crash occurs while under load - in my case seems that the traffic is 
-> actually IPV6 (hadn't noticed that before).
-> I ran nethogs on a remote display - the reported rx rate on the IPV6 smb 
-> connection at the time of the lockup was 33889.688 KB/sec on a 1gbit 
-> nic. I've got two events like this - don't recall if the earlier one was 
-> the exact same # - but it was in the ballpark.
-> 
-> On 12/24/2009 2:01 AM, Andrew Morton wrote:
-> > cc's added again.
-> >
-> > On Wed, 23 Dec 2009 17:54:27 -0500 Michael Breuer<mbreuer@majjas.com>  wrote:
-> >
-> >    
-> >> Ok - not the firmware.  Ran another Windows backup and sky2 went down.
-> >>
-> >> Nothing in dmesg.old - have oops in syslog. System became unresponsive
-> >> and watchdog kicked in after a minute.
-> >>
-> >> Also note that I have a similar oops with VT-D disabled (posted here on
-> >> 12/5). I'm attaching the oops from that below this oops for comparison.
-> >> That also happened under similar load.
-> >>
-> >> On the assumption that I can recreate this (although it takes a while)
-> >> please let me know how I can help.
-> >>
-> >> What's in my log (starting with an smbd error about 2 min before the
-> >> oops (note: the dchpd is not the system doing the backup).
-> >>      
-> > This (nastily wordwrapped) oops appers to be quite different from
-> > Berck's one.
-> >
-> >
+On 12/25/2009 09:13 AM, Sergei Trofimovich wrote:
+> We restricted LC_CTYPE to ASCII recently but not messages from, say,
+> gcc. So instead of nice warnings I get '???? ??????? ???????'
+> (ru_RU.UTF-8 locale) as a gcc warning, which is not nice. So, set
+> LC_MESSAGES=C too.
 
-What is the MTU?
-> 
+The whole reason with only setting some LC_* to C was to be able to
+leave LC_MESSAGES intact, but it seems it breaks on too many real-life
+systems.
 
+As such, I suggest we should set LC_ALL=C and get rid of the rest of it:
+
+	-hpa
 
 -- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
+
+--------------090309000308030403020208
+Content-Type: text/x-patch;
+ name="0001-Makefile-Set-LC_ALL-C.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0001-Makefile-Set-LC_ALL-C.patch"
+
+>From 633dcb9167582064ec5d2d832450e93768cfe376 Mon Sep 17 00:00:00 2001
+From: H. Peter Anvin <hpa@zytor.com>
+Date: Fri, 25 Dec 2009 15:34:33 -0800
+Subject: [PATCH] Makefile: Set LC_ALL=C
+
+We were setting LC_CTYPE, LC_COLLATE and LC_NUMERIC to the C locale,
+with the intent that LC_MESSAGES would still be localized.
+Unfortunately, that doesn't seem to actually work in real life, so
+just be done with it and set LC_ALL=C.
+
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ Makefile |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index c628a5c..a801d1d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -17,11 +17,8 @@ NAME = Man-Eating Seals of Antiquity
+ MAKEFLAGS += -rR --no-print-directory
+ 
+ # Avoid funny character set dependencies
+-unexport LC_ALL
+-LC_CTYPE=C
+-LC_COLLATE=C
+-LC_NUMERIC=C
+-export LC_CTYPE LC_COLLATE LC_NUMERIC
++LC_ALL=C
++export LC_ALL
+ 
+ # We are using a recursive build, so we need to do a little thinking
+ # to get the ordering right.
+-- 
+1.6.2.5
+
+
+--------------090309000308030403020208--
