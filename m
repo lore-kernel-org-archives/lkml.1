@@ -1,133 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbZLYHhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZLYHiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752584AbZLYHhp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 02:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZLYHho
+	id S1752894AbZLYHiy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 02:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZLYHix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 02:37:44 -0500
-Received: from mga03.intel.com ([143.182.124.21]:57653 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbZLYHhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 02:37:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="226561188"
-Date: Fri, 25 Dec 2009 15:37:33 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Steve Rago <sar@nec-labs.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Trond.Myklebust@netapp.com" <Trond.Myklebust@netapp.com>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>, Jan Kara <jack@suse.cz>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
-	workloads
-Message-ID: <20091225073733.GB8595@localhost>
-References: <1261015420.1947.54.camel@serenity> <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <1261500113.13028.78.camel@serenity> <20091224012101.GA8486@localhost> <1261666180.13028.175.camel@serenity>
+	Fri, 25 Dec 2009 02:38:53 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:51332 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbZLYHiw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 02:38:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=dq9GCq9kpfrANz3bw9WFp2zetlBwEmPUpksy6n9MidmYa4gAAQBbcf9Bv7MLJW2n8A
+         jdgxUbar/1WQONxq4a/U0AG6WPduQqMO0CEF86wN1BYlbX3WvtOAfackdNc5QilgCXSB
+         v1L0yt4Cgj+MwbZlvlsgE7v67rhDmVseYhlYI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261666180.13028.175.camel@serenity>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B324B76.9020901@blueyonder.co.uk>
+References: <4B324B76.9020901@blueyonder.co.uk>
+Date: Thu, 24 Dec 2009 23:38:51 -0800
+X-Google-Sender-Auth: b7f3969b16381b8c
+Message-ID: <86802c440912242338q4a9adb03k8739d90042394d05@mail.gmail.com>
+Subject: Re: All kernels after 2.6.32-git10 show only 1 CPU
+From: Yinghai Lu <yinghai@kernel.org>
+To: sboyce@blueyonder.co.uk
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 24, 2009 at 10:49:40PM +0800, Steve Rago wrote:
-> 
-> On Thu, 2009-12-24 at 09:21 +0800, Wu Fengguang wrote:
-> 
-> > > Commits and writes on the same inode need to be serialized for
-> > > consistency (write can change the data and metadata; commit [fsync]
-> > > needs to provide guarantees that the written data are stable). The
-> > > performance problem arises because NFS writes are fast (they generally
-> > > just deposit data into the server's page cache), but commits can take a
-> > 
-> > Right. 
-> > 
-> > > long time, especially if there is a lot of cached data to flush to
-> > > stable storage.
-> > 
-> > "a lot of cached data to flush" is not likely with pdflush, since it
-> > roughly send one COMMIT per 4MB WRITEs. So in average each COMMIT
-> > syncs 4MB at the server side.
-> 
-> Maybe on paper, but empirically I see anywhere from one commit per 8MB
-> to one commit per 64 MB.
+On Wed, Dec 23, 2009 at 8:55 AM, Sid Boyce <sboyce@blueyonder.co.uk> wrote:
+> On the 4P box, 2.6.32-git10 boots and shows 4 CPU's, 2.6.32-git12 boots
+> and shows 1 CPU, 2.6.32-git15 to 2.6.33-rc1-git3 1 CPU and lots of oops,
+> continues with something like "Sending NMI interrupts to CPU's",
+> [udev] unexpectedly returned with status 0x0100
+> [udev] failed while handling /devices/pci000:00 -----etc--- same for
+> other devices.
+> Unable to capture via serial console as USB doesn't come ready.
+>
+> On 2P laptop, up to 2.6.33-rc1 boots, 1 CPU and boot option "acpi=noirq"
+> needed, without it boot hangs, I think from 2.6.32-git15.
+>  Building kernels, I have used the .config from previous kernel and
+> "make oldconfig".
+>
+> # uname -r
+> 2.6.32-git12-smp
+> slipstream:~ # cat /proc/cpuinfo
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 16
+> model           : 4
+> model name      : AMD Phenom(tm) II X4 940 Processor
+> stepping        : 2
+> cpu MHz         : 3013.597
+> cache size      : 512 KB
+> physical id     : 0
+> siblings        : 1
+> core id         : 0
+> cpu cores       : 1
+> apicid          : 0
+> initial apicid  : 0
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 5
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+> cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
+> pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc up rep_good nonstop_tsc
+> pni monitor cx16 popcnt lahf_lm cmp_legacy svm extapic cr8_legacy abm
+> sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt
+> bogomips        : 6027.18
+> TLB size        : 1024 4K pages
+> clflush size    : 64
+> cache_alignment : 64
+> address sizes   : 48 bits physical, 48 bits virtual
+> power management: ts ttp tm stc 100mhzsteps hwpstate
+>
+> # uname -r
+> 2.6.32-git10-smp
+>
+> # cat /proc/cpuinfo
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 16
+> model           : 4
+> model name      : AMD Phenom(tm) II X4 940 Processor
+> stepping        : 2
+> cpu MHz         : 3013.774
+> cache size      : 512 KB
+> physical id     : 0
+> siblings        : 4
+> core id         : 0
+> cpu cores       : 4
+> apicid          : 0
+> initial apicid  : 0
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 5
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext
+> fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good
+> nonstop_tsc extd_apicid pni monitor cx16 popcnt lahf_lm cmp_legacy svm
+> extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt
+> bogomips        : 6027.53
+> TLB size        : 1024 4K pages
+> clflush size    : 64
+> cache_alignment : 64
+> address sizes   : 48 bits physical, 48 bits virtual
+> power management: ts ttp tm stc 100mhzsteps hwpstate
+>
+> processor       : 1
+> vendor_id       : AuthenticAMD
+> cpu family      : 16
+> model           : 4
+> model name      : AMD Phenom(tm) II X4 940 Processor
+> stepping        : 2
+> cpu MHz         : 3013.774
+> cache size      : 512 KB
+> physical id     : 0
+> siblings        : 4
+> core id         : 1
+> cpu cores       : 4
+> apicid          : 1
+> initial apicid  : 1
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 5
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext
+> fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good
+> nonstop_tsc extd_apicid pni monitor cx16 popcnt lahf_lm cmp_legacy svm
+> extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt
+> bogomips        : 6027.27
+> TLB size        : 1024 4K pages
+> clflush size    : 64
+> cache_alignment : 64
+> address sizes   : 48 bits physical, 48 bits virtual
+> power management: ts ttp tm stc 100mhzsteps hwpstate
+>
+> etc., up to processor 4.
+>
+> On a 2P laptop
+> ===============
+> tindog:~ # uname -r
+> 2.6.33-rc1-smp
+>
+> tindog:~ # cat /proc/cpuinfo
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 15
+> model           : 67
+> model name      : AMD Athlon(tm) 64 X2 Dual Core Processor 6000+
+> stepping        : 3
+> cpu MHz         : 1000.000
+> cache size      : 1024 KB
+> physical id     : 0
+> siblings        : 1
+> core id         : 0
+> cpu cores       : 1
+> apicid          : 0
+> initial apicid  : 0
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 1
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca
+> cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
+> rdtscp lm 3dnowext 3dnow up rep_good pni cx16 lahf_lm cmp_legacy svm
+> extapic cr8_legacy
+> bogomips        : 2009.33
+> TLB size        : 1024 4K pages
+> clflush size    : 64
+> cache_alignment : 64
+> address sizes   : 40 bits physical, 48 bits virtual
+> power management: ts fid vid ttp tm stc
+>
+> The .config for the 4P and 2.6.33-rc1-git3 attached.
 
-Thanks for the data. It seems that your CPU works faster than network,
-so that non of the NFS writes (submitted by L543) return by the time we
-try to COMMIT at L547.
+Can you disable MAXSMP?
 
- 543         ret = do_writepages(mapping, wbc);
- 544 
- 545         /* Don't write the inode if only I_DIRTY_PAGES was set */
- 546         if (dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {
- 547                 int err = write_inode(inode, wait);
-
-Thus pdflush is able to do several rounds of do_writepages() before
-write_inode() can actually collect some pages to be COMMITed.
-
-> > 
-> > Your patch adds another pre-pdlush async write logic, which greatly
-> > reduced the number of COMMITs by pdflush. Can this be the major factor
-> > of the performance gain?
-> 
-> My patch removes pdflush from the picture almost entirely.  See my
-> comments below.
-
-Yes for sequential async writes, so I said "pre-pdflush" :)
- 
-> > 
-> > Jan has been proposing to change the pdflush logic from
-> > 
-> >         loop over dirty files {
-> >                 writeback 4MB
-> >                 write_inode
-> >         }
-> > to
-> >         loop over dirty files {
-> >                 writeback all its dirty pages
-> >                 write_inode
-> >         }
-> > 
-> > This should also be able to reduce the COMMIT numbers. I wonder if
-> > this (more general) approach can achieve the same performance gain.
-> 
-> The pdflush mechanism is fine for random writes and small sequential
-> writes, because it promotes concurrency -- instead of the application
-> blocking while it tries to write and commit its data, the application
-> can go on doing other more useful things, and the data gets flushed in
-> the background.  There is also a benefit if the application makes
-> another modification to a page that is already dirty, because then
-> multiple modifications are coalesced into a single write.
-
-Right.
-
-> However, the pdflush mechanism is wrong for large sequential writes
-> (like a backup stream, for example).  First, there is no concurrency to
-> exploit -- the application is only going to dirty more pages, so
-> removing the need for it to block writing the pages out only adds to the
-> problem of memory pressure.  Second, the application is not going to go
-> back and modify a page it has already written, so leaving it in the
-> cache for someone else to write provides no additional benefit.
-
-Well, in general pdflush does more good than bad, that's why we need it. 
-The above two reasons are about "pdflush is not as helpful", but not
-that it is wrong.
-
-That said, I do agree to limit the per-file dirty pages for NFS -- because
-it tends to flush before simple stat/read operations, which could be costly.
- 
-> Note that this assumes the application actually cares about the
-> consistency of its data and will call fsync() when it is done.  If the
-> application doesn't call fsync(), then it doesn't matter when the pages
-> are written to backing store, because the interface makes no guarantees
-> in this case.
-
-
-Thanks,
-Fengguang
+YH
