@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZLYLbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZLYMTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbZLYLbY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 06:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZLYLbY
+	id S1753265AbZLYMTM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 07:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZLYMTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 06:31:24 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:45212 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbZLYLbW convert rfc822-to-8bit (ORCPT
+	Fri, 25 Dec 2009 07:19:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55621 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbZLYMTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 06:31:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=IuI0zPwpSqdX1Wvz4iTLPkhmq3nu4DaC6mn+8HuBzUtdmSzT19Bs5b1Ti8da3OCn+E
-         my/elvHov3VY/9RMKqHrypcAXrXOdeYYLrTOMiT54TBaAScdQc76YYFM/SIc/0t8UlQj
-         Gu1FMNeYlnWgyzdln9YfIG3/xFVYzHiT3lDwE=
-MIME-Version: 1.0
-In-Reply-To: <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com>
-References: <cover.1260663000.git.re.emese@gmail.com>
-	 <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com>
-Date: Fri, 25 Dec 2009 13:31:20 +0200
-X-Google-Sender-Auth: df7aa2c6c30332f0
-Message-ID: <84144f020912250331h23b8b724v73cf70c384d385ec@mail.gmail.com>
-Subject: Re: [PATCH 3/4] Constify struct kset_uevent_ops for 
-	2.6.32-git-053fe57ac v2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: re.emese@gmail.com
-Cc: linux-kernel@vger.kernel.org, rientjes@google.com, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 25 Dec 2009 07:19:10 -0500
+Date: Fri, 25 Dec 2009 13:21:16 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mark Hounschell <markh@compro.net>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
+Message-ID: <20091225132116.6c9089f2@infradead.org>
+In-Reply-To: <20091223170832.GH20539@basil.fritz.box>
+References: <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>
+	<4B310879.9050701@compro.net>
+	<1261525076.16916.4.camel@localhost.localdomain>
+	<4B3162BC.9000508@cfl.rr.com>
+	<4B3214EC.6020308@compro.net>
+	<6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com>
+	<4B32386B.2060509@compro.net>
+	<alpine.LFD.2.00.0912230828230.6879@localhost.localdomain>
+	<87bphpd4rt.fsf@basil.nowhere.org>
+	<alpine.LFD.2.00.0912230845550.6879@localhost.localdomain>
+	<20091223170832.GH20539@basil.fritz.box>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 2:00 AM,  <re.emese@gmail.com> wrote:
-> From: Emese Revfy <re.emese@gmail.com>
->
->
-> Signed-off-by: Emese Revfy <re.emese@gmail.com>
-> ---
->  mm/slub.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 4996fc7..fb63aca 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -4522,7 +4522,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
->        return 0;
->  }
->
-> -static struct kset_uevent_ops slab_uevent_ops = {
-> +static const struct kset_uevent_ops slab_uevent_ops = {
->        .filter = uevent_filter,
->  };
+On Wed, 23 Dec 2009 18:08:32 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-  CC      mm/slub.o
-mm/slub.c: In function 'slab_sysfs_init':
-mm/slub.c:4679: warning: passing argument 2 of 'kset_create_and_add'
-discards qualifiers from pointer target type
-include/linux/kobject.h:164: note: expected 'struct kset_uevent_ops *'
-but argument is of type 'const struct kset_uevent_ops *'
+> I removed that code when moving to 64bit (floppy driver disabling C1),
+> but perhaps we need some variant of it again (but it's the first such
+> report in many years). Although it would be sad to have it again on
+> all systems.
 
-Hmm?
+at least now we have the pmqos infrastructure, driver just needs to ask
+for 0 latency ;)
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
