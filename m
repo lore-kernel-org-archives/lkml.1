@@ -1,319 +1,567 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZLYBva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZLYBzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbZLYBva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 20:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbZLYBv3
+	id S1756237AbZLYBzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 20:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbZLYBzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 20:51:29 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58071 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755120AbZLYBv3 convert rfc822-to-8bit (ORCPT
+	Thu, 24 Dec 2009 20:55:07 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39587 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbZLYBzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 20:51:29 -0500
+	Thu, 24 Dec 2009 20:55:05 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] futex: Fix ZERO_PAGE cause infinite loop
-Cc: kosaki.motohiro@jp.fujitsu.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>,
-       Ulrich Drepper <drepper@gmail.com>
-In-Reply-To: <1261647565.4937.177.camel@laptop>
-References: <20091224182630.3DCB.A69D9226@jp.fujitsu.com> <1261647565.4937.177.camel@laptop>
-Message-Id: <20091225083305.AA78.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 25 Dec 2009 10:51:25 +0900 (JST)
+Date: Fri, 25 Dec 2009 10:51:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org
+Subject: [RFC PATCH] asynchronous page fault.
+Message-Id: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Fri__25_Dec_2009_10_51_40_+0900_DOy+WjGypE=bUghU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > diff --git a/kernel/futex.c b/kernel/futex.c
-> > index 8e3c3ff..79b89cc 100644
-> > --- a/kernel/futex.c
-> > +++ b/kernel/futex.c
-> > @@ -254,6 +254,8 @@ again:
-> >  
-> >  	page = compound_head(page);
-> >  	lock_page(page);
-> > +	if (is_zero_pfn(page_to_pfn(page)))
-> > +		goto anon_key;
-> >  	if (!page->mapping) {
-> >  		unlock_page(page);
-> >  		put_page(page);
-> > @@ -268,6 +270,7 @@ again:
-> >  	 * the object not the particular process.
-> >  	 */
-> >  	if (PageAnon(page)) {
-> > + anon_key:
-> >  		key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
-> >  		key->private.mm = mm;
-> >  		key->private.address = address;
-> 
-> Doesn't it make more sense to simply fail the futex op?
-> 
-> What I mean is, all (?) futex ops assume userspace actually wrote
-> something to the address in question to begin with, therefore it can
-> never be the zero page.
-> 
-> So it being the zero page means someone goofed up, and we should bail,
-> no?
+This is a multi-part message in MIME format.
 
-Hm. probably we need to discuss more.
+--Multipart=_Fri__25_Dec_2009_10_51_40_+0900_DOy+WjGypE=bUghU
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Firstly, if we assume current glibc implimentation, you are right,
-we can assume userland always initialize the page explicitly before using
-futex. then we never seen zero page in futex.
+Speculative page fault v3.
 
-but, I don't think futex itself assume it now. at least man page
-doesn't describe such limilation. so, if you prefer bail and man fix,
-I'm acceptable maybe.
+This version is much simpler than old versions and doesn't use mm_accessor
+but use RCU. This is based on linux-2.6.33-rc2.
 
-I don't know any library except glibc use futex directly, or not. 
-but we don't have any reason to assume futex is used only glibc.
-(plus, glibc might change its implementation in future release, perhaps)
+This patch is just my toy but shows...
+ - Once RB-tree is RCU-aware and no-lock in readside, we can avoid mmap_sem
+   in page fault. 
+So, what we need is not mm_accessor, but RCU-aware RB-tree, I think.
 
-following testcase is more practice than last mail's one.
-if we add zero page bail logic, this testcase mihgt be fail.
+But yes, I may miss something critical ;)
 
-----------------------------------------------------------------
+After patch, statistics perf show is following. Test progam is attached.
+  
+# Samples: 1331231315119
+#
+# Overhead          Command             Shared Object  Symbol
+# ........  ...............  ........................  ......
+#
+    28.41%  multi-fault-all  [kernel]                  [k] clear_page_c
+            |
+            --- clear_page_c
+                __alloc_pages_nodemask
+                handle_mm_fault
+                do_page_fault
+                page_fault
+                0x400950
+               |
+                --100.00%-- (nil)
+
+    21.69%  multi-fault-all  [kernel]                  [k] _raw_spin_lock
+            |
+            --- _raw_spin_lock
+               |
+               |--81.85%-- free_pcppages_bulk
+               |          free_hot_cold_page
+               |          __pagevec_free
+               |          release_pages
+               |          free_pages_and_swap_cache
+
+
+I'll be almost offline in the next week. 
+
+Minchan, in this version, I didn't add CONFIG and some others which was
+recommended just for my laziness. Sorry.
+
+=
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Asynchronous page fault.
+
+This patch is for avoidng mmap_sem in usual page fault. At running highly
+multi-threaded programs, mm->mmap_sem can use much CPU because of false
+sharing when it causes page fault in parallel. (Run after fork() is a typical
+case, I think.)
+This patch uses a speculative vma lookup to reduce that cost.
+
+Considering vma lookup, rb-tree lookup, the only operation we do is checking
+node->rb_left,rb_right. And there are no complicated operation.
+At page fault, there are no demands for accessing sorted-vma-list or access
+prev or next in many case. Except for stack-expansion, we always need a vma
+which contains page-fault address. Then, we can access vma's RB-tree in
+speculative way.
+Even if RB-tree rotation occurs while we walk tree for look-up, we just
+miss vma without oops. In other words, we can _try_ to find vma in lockless
+manner. If failed, retry is ok.... we take lock and access vma.
+
+For lockess walking, this uses RCU and adds find_vma_speculative(). And
+per-vma wait-queue and reference count. This refcnt+wait_queue guarantees that
+there are no thread which access the vma when we call subsystem's unmap
+functions.
+
+Test result on my tiny test program on 8core/2socket machine is here.
+This measures how many page fault can occur in 60sec in parallel.
+
+[root@bluextal memory]# /root/bin/perf stat -e page-faults,cache-misses --repeat 5 ./multi-fault-all-split 8
+
+ Performance counter stats for './multi-fault-all-split 8' (5 runs):
+
+       17481387  page-faults                ( +-   0.409% )
+      509914595  cache-misses               ( +-   0.239% )
+
+   60.002277793  seconds time elapsed   ( +-   0.000% )
+
+
+[root@bluextal memory]# /root/bin/perf stat -e page-faults,cache-misses --repeat 5 ./multi-fault-all-split 8
+
+
+ Performance counter stats for './multi-fault-all-split 8' (5 runs):
+
+       35949073  page-faults                ( +-   0.364% )
+      473091100  cache-misses               ( +-   0.304% )
+
+   60.005444117  seconds time elapsed   ( +-   0.004% )
+
+
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ arch/x86/mm/fault.c      |   14 +++++++-
+ include/linux/mm.h       |   14 ++++++++
+ include/linux/mm_types.h |    5 +++
+ lib/rbtree.c             |   34 ++++++++++----------
+ mm/mmap.c                |   77 +++++++++++++++++++++++++++++++++++++++++++++--
+ 5 files changed, 123 insertions(+), 21 deletions(-)
+
+Index: linux-2.6.33-rc2/lib/rbtree.c
+===================================================================
+--- linux-2.6.33-rc2.orig/lib/rbtree.c
++++ linux-2.6.33-rc2/lib/rbtree.c
+@@ -30,19 +30,19 @@ static void __rb_rotate_left(struct rb_n
+ 
+ 	if ((node->rb_right = right->rb_left))
+ 		rb_set_parent(right->rb_left, node);
+-	right->rb_left = node;
++	rcu_assign_pointer(right->rb_left, node);
+ 
+ 	rb_set_parent(right, parent);
+ 
+ 	if (parent)
+ 	{
+ 		if (node == parent->rb_left)
+-			parent->rb_left = right;
++			rcu_assign_pointer(parent->rb_left, right);
+ 		else
+-			parent->rb_right = right;
++			rcu_assign_pointer(parent->rb_right, right);
+ 	}
+ 	else
+-		root->rb_node = right;
++		rcu_assign_pointer(root->rb_node, right);
+ 	rb_set_parent(node, right);
+ }
+ 
+@@ -53,19 +53,19 @@ static void __rb_rotate_right(struct rb_
+ 
+ 	if ((node->rb_left = left->rb_right))
+ 		rb_set_parent(left->rb_right, node);
+-	left->rb_right = node;
++	rcu_assign_pointer(left->rb_right, node);
+ 
+ 	rb_set_parent(left, parent);
+ 
+ 	if (parent)
+ 	{
+ 		if (node == parent->rb_right)
+-			parent->rb_right = left;
++			rcu_assign_pointer(parent->rb_right, left);
+ 		else
+-			parent->rb_left = left;
++			rcu_assign_pointer(parent->rb_left, left);
+ 	}
+ 	else
+-		root->rb_node = left;
++		rcu_assign_pointer(root->rb_node, left);
+ 	rb_set_parent(node, left);
+ }
+ 
+@@ -234,11 +234,11 @@ void rb_erase(struct rb_node *node, stru
+ 
+ 		if (rb_parent(old)) {
+ 			if (rb_parent(old)->rb_left == old)
+-				rb_parent(old)->rb_left = node;
++				rcu_assign_pointer(rb_parent(old)->rb_left, node);
+ 			else
+-				rb_parent(old)->rb_right = node;
++				rcu_assign_pointer(rb_parent(old)->rb_right, node);
+ 		} else
+-			root->rb_node = node;
++			rcu_assign_pointer(root->rb_node, node);
+ 
+ 		child = node->rb_right;
+ 		parent = rb_parent(node);
+@@ -249,14 +249,14 @@ void rb_erase(struct rb_node *node, stru
+ 		} else {
+ 			if (child)
+ 				rb_set_parent(child, parent);
+-			parent->rb_left = child;
++			rcu_assign_pointer(parent->rb_left, child);
+ 
+-			node->rb_right = old->rb_right;
++			rcu_assign_pointer(node->rb_right, old->rb_right);
+ 			rb_set_parent(old->rb_right, node);
+ 		}
+ 
+ 		node->rb_parent_color = old->rb_parent_color;
+-		node->rb_left = old->rb_left;
++		rcu_assign_pointer(node->rb_left, old->rb_left);
+ 		rb_set_parent(old->rb_left, node);
+ 
+ 		goto color;
+@@ -270,12 +270,12 @@ void rb_erase(struct rb_node *node, stru
+ 	if (parent)
+ 	{
+ 		if (parent->rb_left == node)
+-			parent->rb_left = child;
++			rcu_assign_pointer(parent->rb_left, child);
+ 		else
+-			parent->rb_right = child;
++			rcu_assign_pointer(parent->rb_right, child);
+ 	}
+ 	else
+-		root->rb_node = child;
++		rcu_assign_pointer(root->rb_node, child);
+ 
+  color:
+ 	if (color == RB_BLACK)
+Index: linux-2.6.33-rc2/include/linux/mm_types.h
+===================================================================
+--- linux-2.6.33-rc2.orig/include/linux/mm_types.h
++++ linux-2.6.33-rc2/include/linux/mm_types.h
+@@ -11,6 +11,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/completion.h>
+ #include <linux/cpumask.h>
++#include <linux/rcupdate.h>
+ #include <linux/page-debug-flags.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -180,6 +181,10 @@ struct vm_area_struct {
+ 	void * vm_private_data;		/* was vm_pte (shared mem) */
+ 	unsigned long vm_truncate_count;/* truncate_count or restart_addr */
+ 
++	atomic_t refcnt;
++	wait_queue_head_t wait_queue;
++	struct rcu_head	rcuhead;
++
+ #ifndef CONFIG_MMU
+ 	struct vm_region *vm_region;	/* NOMMU mapping region */
+ #endif
+Index: linux-2.6.33-rc2/mm/mmap.c
+===================================================================
+--- linux-2.6.33-rc2.orig/mm/mmap.c
++++ linux-2.6.33-rc2/mm/mmap.c
+@@ -187,6 +187,24 @@ error:
+ 	return -ENOMEM;
+ }
+ 
++static void __free_vma_rcu_cb(struct rcu_head *head)
++{
++	struct vm_area_struct *vma;
++	vma = container_of(head, struct vm_area_struct, rcuhead);
++	kmem_cache_free(vm_area_cachep, vma);
++}
++/* Call this if vma was linked to rb-tree */
++static void free_vma_rcu(struct vm_area_struct *vma)
++{
++	call_rcu(&vma->rcuhead, __free_vma_rcu_cb);
++}
++/* called when vma is unlinked and wait for all racy access.*/
++static void invalidate_vma_before_free(struct vm_area_struct *vma)
++{
++	atomic_dec(&vma->refcnt);
++	wait_event(vma->wait_queue, !atomic_read(&vma->refcnt));
++}
++
+ /*
+  * Requires inode->i_mapping->i_mmap_lock
+  */
+@@ -238,7 +256,7 @@ static struct vm_area_struct *remove_vma
+ 			removed_exe_file_vma(vma->vm_mm);
+ 	}
+ 	mpol_put(vma_policy(vma));
+-	kmem_cache_free(vm_area_cachep, vma);
++	free_vma_rcu(vma);
+ 	return next;
+ }
+ 
+@@ -404,6 +422,8 @@ __vma_link_list(struct mm_struct *mm, st
+ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		struct rb_node **rb_link, struct rb_node *rb_parent)
+ {
++	atomic_set(&vma->refcnt, 1);
++	init_waitqueue_head(&vma->wait_queue);
+ 	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
+ 	rb_insert_color(&vma->vm_rb, &mm->mm_rb);
+ }
+@@ -614,6 +634,7 @@ again:			remove_next = 1 + (end > next->
+ 		 * us to remove next before dropping the locks.
+ 		 */
+ 		__vma_unlink(mm, next, vma);
++		invalidate_vma_before_free(next);
+ 		if (file)
+ 			__remove_shared_vm_struct(next, file, mapping);
+ 		if (next->anon_vma)
+@@ -640,7 +661,7 @@ again:			remove_next = 1 + (end > next->
+ 		}
+ 		mm->map_count--;
+ 		mpol_put(vma_policy(next));
+-		kmem_cache_free(vm_area_cachep, next);
++		free_vma_rcu(next);
+ 		/*
+ 		 * In mprotect's case 6 (see comments on vma_merge),
+ 		 * we must remove another next too. It would clutter
+@@ -1544,6 +1565,55 @@ out:
+ }
+ 
+ /*
++ * Returns vma which contains given address. This scans rb-tree in speculative
++ * way and increment a reference count if found. Even if vma exists in rb-tree,
++ * this function may return NULL in racy case. So, this function cannot be used
++ * for checking whether given address is valid or not.
++ */
++struct vm_area_struct *
++find_vma_speculative(struct mm_struct *mm, unsigned long addr)
++{
++	struct vm_area_struct *vma = NULL;
++	struct vm_area_struct *vma_tmp;
++	struct rb_node *rb_node;
++
++	if (unlikely(!mm))
++		return NULL;;
++
++	rcu_read_lock();
++	rb_node = rcu_dereference(mm->mm_rb.rb_node);
++	vma = NULL;
++	while (rb_node) {
++		vma_tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
++
++		if (vma_tmp->vm_end > addr) {
++			vma = vma_tmp;
++			if (vma_tmp->vm_start <= addr)
++				break;
++			rb_node = rcu_dereference(rb_node->rb_left);
++		} else
++			rb_node = rcu_dereference(rb_node->rb_right);
++	}
++	if (vma) {
++		if ((vma->vm_start <= addr) && (addr < vma->vm_end)) {
++			if (!atomic_inc_not_zero(&vma->refcnt))
++				vma = NULL;
++		} else
++			vma = NULL;
++	}
++	rcu_read_unlock();
++	return vma;
++}
++
++void vma_put(struct vm_area_struct *vma)
++{
++	if ((atomic_dec_return(&vma->refcnt) == 1) &&
++	    waitqueue_active(&vma->wait_queue))
++		wake_up(&vma->wait_queue);
++	return;
++}
++
++/*
+  * Verify that the stack growth is acceptable and
+  * update accounting. This is shared with both the
+  * grow-up and grow-down cases.
+@@ -1808,6 +1878,7 @@ detach_vmas_to_be_unmapped(struct mm_str
+ 	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
+ 	do {
+ 		rb_erase(&vma->vm_rb, &mm->mm_rb);
++		invalidate_vma_before_free(vma);
+ 		mm->map_count--;
+ 		tail_vma = vma;
+ 		vma = vma->vm_next;
+@@ -1819,7 +1890,7 @@ detach_vmas_to_be_unmapped(struct mm_str
+ 	else
+ 		addr = vma ?  vma->vm_start : mm->mmap_base;
+ 	mm->unmap_area(mm, addr);
+-	mm->mmap_cache = NULL;		/* Kill the cache. */
++	mm->mmap_cache = NULL;	/* Kill the cache. */
+ }
+ 
+ /*
+Index: linux-2.6.33-rc2/include/linux/mm.h
+===================================================================
+--- linux-2.6.33-rc2.orig/include/linux/mm.h
++++ linux-2.6.33-rc2/include/linux/mm.h
+@@ -1235,6 +1235,20 @@ static inline struct vm_area_struct * fi
+ 	return vma;
+ }
+ 
++/*
++ * Look up vma for given address in speculative way. This allows lockless lookup
++ * of vmas but in racy case, vma may no be found. You have to call find_vma()
++ * under read lock of mm->mmap_sem even if this function returns NULL.
++ * And, returned vma's reference count is incremented to show vma is accessed
++ * asynchronously, the caller has to call vma_put().
++ *
++ * Unlike find_vma(), this returns a vma which contains specified address.
++ * This doesn't return the nearest vma.
++ */
++extern struct vm_area_struct *find_vma_speculative(struct mm_struct *mm,
++	unsigned long addr);
++void vma_put(struct vm_area_struct *vma);
++
+ static inline unsigned long vma_pages(struct vm_area_struct *vma)
+ {
+ 	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+Index: linux-2.6.33-rc2/arch/x86/mm/fault.c
+===================================================================
+--- linux-2.6.33-rc2.orig/arch/x86/mm/fault.c
++++ linux-2.6.33-rc2/arch/x86/mm/fault.c
+@@ -952,6 +952,7 @@ do_page_fault(struct pt_regs *regs, unsi
+ 	struct mm_struct *mm;
+ 	int write;
+ 	int fault;
++	int speculative = 0;
+ 
+ 	tsk = current;
+ 	mm = tsk->mm;
+@@ -1040,6 +1041,14 @@ do_page_fault(struct pt_regs *regs, unsi
+ 		return;
+ 	}
+ 
++	if ((error_code & PF_USER)) {
++		vma = find_vma_speculative(mm, address);
++		if (vma) {
++			speculative = 1;
++			goto good_area;
++		}
++	}
++
+ 	/*
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in
+@@ -1136,5 +1145,8 @@ good_area:
+ 
+ 	check_v8086_mode(regs, address, tsk);
+ 
+-	up_read(&mm->mmap_sem);
++	if (speculative)
++		vma_put(vma);
++	else
++		up_read(&mm->mmap_sem);
+ }
+
+--Multipart=_Fri__25_Dec_2009_10_51_40_+0900_DOy+WjGypE=bUghU
+Content-Type: text/x-csrc;
+ name="multi-fault-all-split.c"
+Content-Disposition: attachment;
+ filename="multi-fault-all-split.c"
+Content-Transfer-Encoding: 7bit
+
+/*
+ * multi-fault.c :: causes 60secs of parallel page fault in multi-thread.
+ * % gcc -O2 -o multi-fault multi-fault.c -lpthread
+ * % multi-fault # of cpus.
+ */
+
+#define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
+#include <pthread.h>
+#include <sched.h>
 #include <sys/mman.h>
-#include <syscall.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <linux/futex.h>
-#include <pthread.h>
+#include <signal.h>
 
-void * futex_wait(void *arg)
+#define NR_THREADS	8
+pthread_t threads[NR_THREADS];
+/*
+ * For avoiding contention in page table lock, FAULT area is
+ * sparse. If FAULT_LENGTH is too large for your cpus, decrease it.
+ */
+#define MMAP_LENGTH	(8 * 1024 * 1024)
+#define FAULT_LENGTH	(2 * 1024 * 1024)
+void *mmap_area[NR_THREADS];
+#define PAGE_SIZE	4096
+
+pthread_barrier_t barrier;
+int name[NR_THREADS];
+
+void segv_handler(int sig)
 {
-	void *addr = arg;
-	int ret;
+	sleep(100);
+}
+void *worker(void *data)
+{
+	cpu_set_t set;
+	int cpu;
 
-	fprintf(stderr, "futex wait\n");
-	ret = syscall( SYS_futex, addr, FUTEX_WAIT, 0, NULL, NULL, NULL);
-	if (ret != 0 && errno != EWOULDBLOCK) {
-		perror("futex error.\n");
-		exit(1);
+	cpu = *(int *)data;
+
+	CPU_ZERO(&set);
+	CPU_SET(cpu, &set);
+	sched_setaffinity(0, sizeof(set), &set);
+
+	while (1) {
+		char *c;
+		char *start = mmap_area[cpu];
+		char *end = mmap_area[cpu] + FAULT_LENGTH;
+		pthread_barrier_wait(&barrier);
+		//printf("fault into %p-%p\n",start, end);
+
+		for (c = start; c < end; c += PAGE_SIZE)
+			*c = 0;
+		pthread_barrier_wait(&barrier);
+
+		madvise(start, FAULT_LENGTH, MADV_DONTNEED);
 	}
-	fprintf(stderr, "futex_wait: ret = %d, errno = %d\n", ret, errno);
-
 	return NULL;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-	long page_size;
-	pthread_t thr;
-	int ret;
-	void *buf;
+	int i, ret;
+	unsigned int num;
 
-	page_size = sysconf(_SC_PAGESIZE);
+	if (argc < 2)
+		return 0;
 
-	buf = mmap(NULL, page_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-	if (buf == (void *)-1) {
-		perror("mmap error.\n");
-		exit(1);
+	num = atoi(argv[1]);	
+	pthread_barrier_init(&barrier, NULL, num);
+
+	for (i = 0; i < num; i++) {
+		mmap_area[i] = mmap(NULL, MMAP_LENGTH * num,
+				PROT_WRITE|PROT_READ,
+				MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+		/* memory hole */
+		mmap(NULL, PAGE_SIZE, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
 	}
 
-	ret = pthread_create(&thr, NULL, futex_wait, buf);
-	if (ret < 0) {
-		fprintf(stderr, "pthread_create error\n");
-		exit(1);
+	for (i = 0; i < num; ++i) {
+		name[i] = i;
+		ret = pthread_create(&threads[i], NULL, worker, &name[i]);
+		if (ret < 0) {
+			perror("pthread create");
+			return 0;
+		}
 	}
-
-	sleep(10);
-
-	fprintf(stderr, "futex wake\n");
-	*((int*)buf) = 1;
-	ret = syscall( SYS_futex, buf, FUTEX_WAKE, 1, NULL, NULL, NULL);
-	fprintf(stderr, "futex_wake: ret = %d, errno = %d\n", ret, errno);	
-
-	fprintf(stderr, "join\n");
-	pthread_join(thr, NULL);
-
+	sleep(60);
 	return 0;
 }
---------------------------------------------------------------------------
 
-man page fix has another difficulty. in past days, zero pages was perfectly
-transparent from userland. then any man page don't describe "what's zero page".
-then some administrator don't know about zero page at all.
-
-So, if your main disliked point is goto statement, following patch is ok
-to me.
-
-Finally, I agree this is really corner case issue. I can agree man page fix
-too. but I hope to know which point you dislike in my patch.
-
-Thanks.
-
-
-
-
->From 09b0a7426c707e2fab5ac8e1ef8feec14415ee62 Mon Sep 17 00:00:00 2001
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Thu, 24 Dec 2009 18:07:42 +0900
-Subject: [PATCH] futex: Fix ZERO_PAGE cause infinite loop
-
-commit a13ea5b7 (mm: reinstate ZERO_PAGE) made the unfortunate regression.
-following test program never finish and waste 100% cpu time.
-
-At the making commit 38d47c1b7 (rely on get_user_pages() for shared
-futexes). There isn't zero page in linux kernel. then, futex developers
-thought gup retry is safe. but we reinstated zero page later...
-
-This patch fixes it.
-
-futex-zero.c
----------------------------------------------------------------------
- #include <stdio.h>
- #include <stdlib.h>
- #include <sys/mman.h>
- #include <syscall.h>
- #include <sys/time.h>
- #include <sys/types.h>
- #include <sys/stat.h>
- #include <fcntl.h>
- #include <unistd.h>
- #include <errno.h>
- #include <linux/futex.h>
- #include <pthread.h>
-
-int main(int argc, char **argv)
-{
-        long page_size;
-        int ret;
-        void *buf;
-
-        page_size = sysconf(_SC_PAGESIZE);
-
-        buf = mmap(NULL, page_size, PROT_READ|PROT_WRITE,
-			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-        if (buf == (void *)-1) {
-                perror("mmap error.\n");
-                exit(1);
-        }
-
-        fprintf(stderr, "futex wait\n");
-        ret = syscall( SYS_futex, buf, FUTEX_WAIT, 1, NULL, NULL, NULL);
-        if (ret != 0 && errno != EWOULDBLOCK) {
-                perror("futex error.\n");
-                exit(1);
-        }
-        fprintf(stderr, "futex_wait: ret = %d, errno = %d\n", ret, errno);
-
-        return 0;
-}
----------------------------------------------------------------------
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- include/linux/mm.h |   16 ++++++++++++++++
- kernel/futex.c     |    6 ++++--
- mm/memory.c        |   14 --------------
- 3 files changed, 20 insertions(+), 16 deletions(-)
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 2265f28..dd755ea 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -751,6 +751,22 @@ struct zap_details {
- 	unsigned long truncate_count;		/* Compare vm_truncate_count */
- };
- 
-+#ifndef is_zero_pfn
-+extern unsigned long zero_pfn;
-+static inline int is_zero_pfn(unsigned long pfn)
-+{
-+	return pfn == zero_pfn;
-+}
-+#endif
-+
-+#ifndef my_zero_pfn
-+extern unsigned long zero_pfn;
-+static inline unsigned long my_zero_pfn(unsigned long addr)
-+{
-+	return zero_pfn;
-+}
-+#endif
-+
- struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
- 		pte_t pte);
- 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 8e3c3ff..ad72989 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -222,6 +222,7 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
- 	struct mm_struct *mm = current->mm;
- 	struct page *page;
- 	int err;
-+	int is_zero_page;
- 
- 	/*
- 	 * The futex address must be "naturally" aligned.
-@@ -253,8 +254,9 @@ again:
- 		return err;
- 
- 	page = compound_head(page);
-+	is_zero_page = is_zero_pfn(page_to_pfn(page));
- 	lock_page(page);
--	if (!page->mapping) {
-+	if (!is_zero_page && !page->mapping) {
- 		unlock_page(page);
- 		put_page(page);
- 		goto again;
-@@ -267,7 +269,7 @@ again:
- 	 * it's a read-only handle, it's expected that futexes attach to
- 	 * the object not the particular process.
- 	 */
--	if (PageAnon(page)) {
-+	if (is_zero_page || PageAnon(page)) {
- 		key->both.offset |= FUT_OFF_MMSHARED; /* ref taken on mm */
- 		key->private.mm = mm;
- 		key->private.address = address;
-diff --git a/mm/memory.c b/mm/memory.c
-index 09e4b1b..3743fb5 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -457,20 +457,6 @@ static inline int is_cow_mapping(unsigned int flags)
- 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
- }
- 
--#ifndef is_zero_pfn
--static inline int is_zero_pfn(unsigned long pfn)
--{
--	return pfn == zero_pfn;
--}
--#endif
--
--#ifndef my_zero_pfn
--static inline unsigned long my_zero_pfn(unsigned long addr)
--{
--	return zero_pfn;
--}
--#endif
--
- /*
-  * vm_normal_page -- This function gets the "struct page" associated with a pte.
-  *
--- 
-1.6.5.2
-
-
+--Multipart=_Fri__25_Dec_2009_10_51_40_+0900_DOy+WjGypE=bUghU--
 
