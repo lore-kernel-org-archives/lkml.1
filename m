@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZLYAO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbZLYAUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZLYAO3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Dec 2009 19:14:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZLYAO2
+	id S1756035AbZLYAUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Dec 2009 19:20:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZLYAUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Dec 2009 19:14:28 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52080 "EHLO e3.ny.us.ibm.com"
+	Thu, 24 Dec 2009 19:20:06 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57888 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbZLYAO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Dec 2009 19:14:27 -0500
-Date: Thu, 24 Dec 2009 18:14:22 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Subject: Re: A basic question about the security_* hooks
-Message-ID: <20091225001422.GB22311@us.ibm.com>
-References: <20091224022902.GA24234@heat>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091224022902.GA24234@heat>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755096AbZLYAUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Dec 2009 19:20:04 -0500
+Date: Fri, 25 Dec 2009 11:19:55 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-next@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefani Seibold <stefani@seibold.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Mattia Dongili <malattia@linux.it>
+Subject: Re: linux-next: manual merge of the acpi tree with Linus' tree
+Message-Id: <20091225111955.ebd90b35.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0912241502190.4159@localhost.localdomain>
+References: <20091224091141.fa1cea64.sfr@canb.auug.org.au>
+	<20091224093913.4f29f37b.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0912240000530.6541@localhost.localdomain>
+	<20091224232656.dafb0b1d.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0912241502190.4159@localhost.localdomain>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Stone (michael@laptop.org):
-> Dear kernel folks,
-> 
-> There are a variety of places where I'd like to be able to get the kernel to
-> return EPERM more often [1]. Many of these places already have security hooks.
-> 
-> Unfortunately, I don't feel that I can make effective use of these hooks
-> because they seem to be "occupied" by the large mandatory access control
-> frameworks.
-> 
-> I'm hoping that you can tell me why this state of affairs persists.
-> 
-> More specifically, now that LSMs are statically linked, why is it good for the
-> security hooks to call into a single monolithic "security_ops" struct instead
-> of cheaper and simpler alternatives?
-> 
-> In particular, what would be worse about a kernel in which each security hook
-> contained nothing but conditionally-compiled function calls to the appropriate
-> "real" implementation functions with early-exit jumps on non-zero return codes?
+--Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The problem is that composing any two security policies can quickly have
-subtle, unforeseen, but dangerous effects.  That's why so far we have
-stuck with the status quo where only one LSM is 'active', but that LSM
-can manually call hooks from other LSMs.
+Hi Len,
 
-So with your module, I'd recommend following the route of the capabilities
-LSM.  You can provide an optional stand-alone LSM which only hooks your
-functions.  Then smack, for instance, can call the functions in your LSM
-from within its own hooks, or it can simply explicitly assign its hooks to
-your functions in smack_ops.  Selinux can do the same thing, although I
-suspect they would more likely implement their own functions for your newly
-hooked sites.
+On Thu, 24 Dec 2009 15:05:06 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
+>
+> FYI, I dropped that patch yesterday, and then just now included
+> a refreshed patch from Dmitry.  So linux-next should be conflict free now.
 
-A distro can then compile a kernel with all LSMs compiled in, and switch
-behavior by using "security=selinux" vs. "security=prctl_network_lsm"
+Thanks.
 
--serge
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAks0BSsACgkQjjKRsyhoI8y+JgCgngyDWMKO9nN/106C8pP+/T8P
+frEAoJ9QC69wpw0k2sLE9+aCZsUNukzK
+=bMb5
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__25_Dec_2009_11_19_55_+1100_gpbNK1rAIWTAAE0.--
