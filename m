@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZLYKIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZLYKKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713AbZLYKIO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 05:08:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZLYKIN
+	id S1753838AbZLYKKs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 05:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZLYKKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 05:08:13 -0500
-Received: from ironport1.lbl.gov ([128.3.41.47]:46207 "EHLO ironport1.lbl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbZLYKIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 05:08:13 -0500
-X-Ironport-SBRS: 4.5
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmAAAJIdNEuAAykYkWdsb2JhbACbWwEBAQEJCwoHEwW5eYQzBA
-X-IronPort-AV: E=Sophos;i="4.47,453,1257148800"; 
-   d="scan'208";a="126162675"
-Date: Fri, 25 Dec 2009 02:08:11 -0800 (PST)
-From: Andrei Gaponenko <andrei.gaponenko@cern.ch>
-To: Dave Airlie <airlied@gmail.com>
-cc: linux-kernel@vger.kernel.org, Alex Deucher <alexdeucher@gmail.com>,
-       Dave Airlie <airlied@redhat.com>
-Subject: Re: drm/radeon/kms regression: 2.6.33-rc2 does not boot
-In-Reply-To: <21d7e9970912250146s3e36cb9vcfc12a42445b37a2@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0912250204220.11466@x200s>
-References: <alpine.LFD.2.00.0912250124410.11466@x200s> <21d7e9970912250146s3e36cb9vcfc12a42445b37a2@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 25 Dec 2009 05:10:47 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:57230 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbZLYKKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 05:10:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=K4CfgZg2R8it4VVWxZGz9mq4nZieUU5UxURJqjly+3HIGu1dvVxvePfzOWIv34MEta
+         heABFp0ryrPI7ClyGgrspEcuAf6U+hLejSn733WPzNloCCo6rCkOimwovB3RTVAFTgII
+         v4aJ5wLfveFsQOlwdOf0j2fLAMzqQXL85StHU=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-1627421297-1261735692=:11466"
+Date: Fri, 25 Dec 2009 11:10:42 +0100
+Message-ID: <8db1092f0912250210w20261f75wbae6bf93696b6f04@mail.gmail.com>
+Subject: [2.6.33-rc2] [ACPI] [WMI?] boot hang
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Linux ACPI <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Last known kernel: 2.6.33-rc1
+Affected kernel: 2.6.33-rc2
 
---0-1627421297-1261735692=:11466
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Kernel stops booting on this message:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc2/gumis/zdjecie033.jpg
 
-On Fri, 25 Dec 2009, Dave Airlie wrote:
+(sorry for bad picture, already I'm away from home and better camera).
 
-> On Fri, Dec 25, 2009 at 7:31 PM, Andrei Gaponenko
-> <andrei.gaponenko@cern.ch> wrote:
-> > Hello,
-> >
-> > One of my systems works fine with 2.6.32, but hangs when trying to
-> > boot 2.6.33-rc2.  Git bisect says
-> > 7923c615b811945a9d9f456c92a7a32c34167458 is the first bad commit:
-> > [...]
-> 
-> Can you wait for a minute or so and see if it continues? though this sounds like
-> something different than others have seen.
+Config, lspci:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc2/gumis/
 
-I did let it to sit for many minutes during some of iterations of the
-bisection; did not notice any progress.
-
-Andrei
-
-Please Cc me directly on replies.
---0-1627421297-1261735692=:11466--
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
