@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZLYFOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751751AbZLYFhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZLYFOk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 00:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbZLYFOj
+	id S1751751AbZLYFhq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 00:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZLYFhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 00:14:39 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47367 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZLYFOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 00:14:38 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Americo Wang <xiyou.wangcong@gmail.com>
-Subject: Re: 2.6.28.10 - kernel BUG at mm/rmap.c:725
-Cc: kosaki.motohiro@jp.fujitsu.com, CoolCold <coolthecold@gmail.com>,
-       Linux kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       hugh.dickins@tiscali.co.uk
-In-Reply-To: <2375c9f90912242056h29f20dc5rb3f891c732e0d362@mail.gmail.com>
-References: <f19d625d0912240309g5c066de7pc4dc9d95c084d4df@mail.gmail.com> <2375c9f90912242056h29f20dc5rb3f891c732e0d362@mail.gmail.com>
-Message-Id: <20091225135840.AA81.A69D9226@jp.fujitsu.com>
+	Fri, 25 Dec 2009 00:37:45 -0500
+Received: from zfrontend2.aha.ru ([195.2.83.148]:48852 "EHLO aha.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751183AbZLYFhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 00:37:45 -0500
+From: "werner" <w.landgraf@ru.ru>
+Subject: kernel problem 2.6.33-rc2
+To: linux-kernel@vger.kernel.org
+X-Mailer: CommuniGate Pro WebUser Interface v.4.3.12
+Date: Fri, 25 Dec 2009 01:37:37 -0400
+Message-ID: <web-122504368@zbackend1.aha.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 25 Dec 2009 14:14:34 +0900 (JST)
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Dec 24, 2009 at 7:09 PM, CoolCold <coolthecold@gmail.com> wrote:
-> > 3 days ago LA on server become very high and it was working very
-> > strange, so was rebooted. There are such entryies in log about kernel
-> > bug - kernel BUG at mm/rmap.c:725! . Googling didn't provide me with
-> > exact answer is it bug or hardware problems, something similar was
-> > here https://bugs.launchpad.net/ubuntu/+source/linux/+bug/252977/comments/56
-> > In general this server had number of unexpected stalls during several
-> > months, but there is no ipkvm, so i can't say where something on
-> > console or not. Hope you will help.
-> >
-> > Kernel version is 2.6.28.10 , self-builded. System - Debian stable/testing.
-> >
-> > Please reply to me directly, cuz i'm not subsribed to list.
-> >
-> > Dec 21 22:05:01 gamma kernel: Eeek! page_mapcount(page) went negative! (-1)
-> > Dec 21 22:05:01 gamma kernel:   page pfn = 1f2c81
-> > Dec 21 22:05:01 gamma kernel:   page->flags = 20000000008007c
+kernel 2.6.33-rc2 crashs during boot.
+With 2.6.33-rc1 this didn't happen
 
-PG_referenced | PG_uptodate | PG_dirty | PG_lru | PG_active | PG_swapbacked
+Code: 04 4e 85 f6 75 b9 c6 01 00 31 c0 5b (or 56 I cannot 
+more read my own hand-writing) 5e 5f 5d c3 55 89
+e5 e8 33 5f 9f ff 89 c2 8d 40 ff 83 f8 fd 76 07 a1 50 f8 
+2f c2 eb 0a 89 d0 .LT.80.GT. 78 04 0f 74 02 31 c0 5d c3 55 
+89 e5 e8 0e 5f 9f ff 31 d2 85
 
-> > Dec 21 22:05:01 gamma kernel:   page->count = 2
-> > Dec 21 22:05:01 gamma kernel:   page->mapping = ffff8801fd870b58
-> > Dec 21 22:05:01 gamma kernel:   vma->vm_ops = 0xffffffff80535020
-> > Dec 21 22:05:01 gamma kernel:   vma->vm_ops->fault = shmem_fault+0x0/0x69
-> > Dec 21 22:05:01 gamma kernel:   vma->vm_file->f_op->mmap = shmem_mmap+0x0/0x2e
-> > Dec 21 22:05:01 gamma kernel: ------------[ cut here ]------------
-> > Dec 21 22:05:01 gamma kernel: kernel BUG at mm/rmap.c:725!
-> 
-> Hey,
-> 
-> commit 3dc147414cc already removed this BUG(), not sure
-> how serious this is...
+EIP c160db30 acpi_ns_validate_handle +0x1b/0x25
+CR2: 0c204  SS:ESP 0068: f282ff28
+end trace 234c0a11060036b6 (or bbb or 6bb)
+pid: 1 comm: swapper tained: G  D 2.6.33-rc2 #1
 
-Very serious. but We don't seen this bug for very long time. thus I bet
-it's hardware corruption.
+c1c6e747 printk +0x14/0x16
+   c6e689 panic +0x3e/0xe8
+   04000f do_exit 0x61/0x5e6
+c103dfeb kmsg_dump 0xfa/0x10e
+  103d236 cups exit 0x2f/0x34
+   006104 oops end 0x83/0x8a
+   c6e747 printk 0x14 0x16
+   0276ad (ou bad) no context 0x144/0x14e
+   now i'm tired to copy this all, the next beginning 
+numbers are:
+c1039fbe 02780e c6f31f 03329b c706c2 03329b 027828 027ab3 
+02798b c71313
+60db30 60d00d c219da02 c1b5428e b52b0a b5434c
+c219db2b dell_wmi_init 0x129/0x131 (see you the problems, 
+I dont like dell)
+c1001143 do_one_initcall 0x51 / 0x13f
+c213d301 kernel_init 0x10a / 0x15e
+c1003a46 kenel_thread helper 0x6 / 0x10
 
-> 
-> Adding mm people into Cc.
-> 
-> Thanks.
-
-
-
+W.Landgraf
+use Linux  SYS !!!
+mirror: ftp://ftp5.gwdg.de/pub/linux/install/sys
+---
+Professional hosting for everyone - http://www.host.ru
