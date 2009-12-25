@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZLYJqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZLYJwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbZLYJqP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 04:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZLYJqO
+	id S1754317AbZLYJwd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 04:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZLYJwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 04:46:14 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:50226 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbZLYJqN convert rfc822-to-8bit (ORCPT
+	Fri, 25 Dec 2009 04:52:32 -0500
+Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:38978 "EHLO
+	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753259AbZLYJwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 04:46:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SEPvc+t8aoYy4eDu9pRRmG9i/Y6um8Am268Zu8M9FFpa1VLyKAiAD9Kj+GFQ4l49cm
-         lBQObCDVflDFdPYUPZKOQZtmpK96egSnXX7jLfdPn6TTmZPXksIMcwqhS9TJj0ZAV6Rj
-         pWmptl52dk2o2+zc/uDB2aD00hD6N6NJIbnLY=
+	Fri, 25 Dec 2009 04:52:31 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAJYZNEtR9cfx/2dsb2JhbADWGgqEKQQ
+Date: Fri, 25 Dec 2009 10:52:28 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>,
+       H Hartley Sweeten <hartleys@visionengravers.com>
+Subject: Re: linux-next: manual merge of the watchdog tree with the  tree
+Message-ID: <20091225095228.GH5402@infomag.iguana.be>
+References: <20091224091904.72ef2708.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0912250124410.11466@x200s>
-References: <alpine.LFD.2.00.0912250124410.11466@x200s>
-Date: Fri, 25 Dec 2009 19:46:12 +1000
-Message-ID: <21d7e9970912250146s3e36cb9vcfc12a42445b37a2@mail.gmail.com>
-Subject: Re: drm/radeon/kms regression: 2.6.33-rc2 does not boot
-From: Dave Airlie <airlied@gmail.com>
-To: Andrei Gaponenko <andrei.gaponenko@cern.ch>
-Cc: linux-kernel@vger.kernel.org, Alex Deucher <alexdeucher@gmail.com>,
-       Dave Airlie <airlied@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091224091904.72ef2708.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 25, 2009 at 7:31 PM, Andrei Gaponenko
-<andrei.gaponenko@cern.ch> wrote:
-> Hello,
->
-> One of my systems works fine with 2.6.32, but hangs when trying to
-> boot 2.6.33-rc2.  Git bisect says
-> 7923c615b811945a9d9f456c92a7a32c34167458 is the first bad commit:
->
->    drm/radeon/kms: make sure mc is initialized before mapping blit bo
->
->    We need to make sure the the MC is intialized before we map the
->    blit shader object on r6xx+.
->
-> (So the problem was already present in -rc1.)
->
-> The last message I see during a 2.6.33-rc2 boot is about attaching a
-> disk.  Then everything stops until I press Ctrl-Alt-Del.  With a
-> working kernel, the next thing would be switching the console to a
-> higher resolution mode.  The graphics card is
->
-> 01:00.0 VGA compatible controller: ATI Technologies Inc RV710 [Radeon HD 4350]
->
-> Please Cc me directly on replies.
+Thanks Stephen,
 
-Can you wait for a minute or so and see if it continues? though this sounds like
-something different than others have seen.
+That was indeed correct. I fixed the patch.
 
-Dave.
+Kind regards,
+Wim.
+
+> Hi Wim,
+> 
+> Today's linux-next merge of the watchdog tree got a conflict in
+> drivers/watchdog/rm9k_wdt.c between commit
+> de4148f3ef54b644a181ad75a6fb4b373f2b01f0 ("MIPS: eXcite: Remove
+> platform") from Linus' tree and commit
+> f277223000a651df741e2e3367b498049139298d ("[WATCHDOG] use resource_size
+> ()") from the watchdog tree.
+> 
+> The former commit removes the file changed by the latter.  I just removed
+> the file.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+
+
