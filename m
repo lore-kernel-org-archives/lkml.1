@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbZLYU4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZLYU5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757022AbZLYU4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 15:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZLYU4U
+	id S1757177AbZLYU5H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 15:57:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZLYU5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 15:56:20 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60132 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756289AbZLYU4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 15:56:19 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: Regression in module wmi since 2.6.32 (bisected to commit 1caab3c)
-Date: Fri, 25 Dec 2009 20:56:08 +0000
-User-Agent: KMail/1.12.4 (Linux/2.6.31.5; KDE/4.3.4; x86_64; ; )
-Cc: Matthew Garrett <mjg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-References: <4B352513.90302@lwfinger.net>
-In-Reply-To: <4B352513.90302@lwfinger.net>
+	Fri, 25 Dec 2009 15:57:05 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:43204 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756630AbZLYU5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 15:57:05 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4B35272D.7040207@crca.org.au>
+Date: Sat, 26 Dec 2009 07:57:17 +1100
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jiri Slaby <jslaby@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [linux-pm] [RFC] Asynchronous suspend/resume - test results
+References: <200912210140.19713.rjw@sisk.pl> <200912232146.29339.rjw@sisk.pl>	<4B32D2D6.3030707@crca.org.au> <200912242310.42615.rjw@sisk.pl>
+In-Reply-To: <200912242310.42615.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912252056.08436.carlos@strangeworlds.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 December 2009 20:48:19 Larry Finger wrote:
-> If I modprobe wmi after the system is booted, the specific messages are as
->  follows:
+Rafael J. Wysocki wrote:
+> On Thursday 24 December 2009, Nigel Cunningham wrote:
+>> Hi.
 > 
-> ------------[ cut here ]------------
-> WARNING: at fs/sysfs/dir.c:477 sysfs_add_one+0xd6/0xee()
-> Hardware name: System Product Name
-> sysfs: cannot create duplicate filename
-> '/devices/virtual/wmi/05901221-D566-11D1-B2F0-00A0C9062910'
+> Hi, 
+> 
+>> I built the async branch of your tree and tested it, also running
+>> 2.6.33-rc1 + TuxOnIce for comparison. Dmesg for both are attached. Is
+>> there anything I can/should be doing for you on top of this?
+> 
+> No, thanks a lot.
+> 
+>> I'll try Dmitry's patch on top of this a little later - other things to do first.
+> 
+> No need for that, the patchset contains an equivalent of the Dmitry's patch.
+> 
+>> I noticed that you were doing standard deviations in your stats - how
+>> many runs were you basing them on?
+> 
+> I usually run 10 iterations of suspend-resume for each configuration.
+> The raw data are at http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
+> if you're interested.
+> 
+>> Not sure that I can be bothered to do too many - too much else to do!
+> 
+> Sure, thanks a lot anyway.  Your data confirn that there's a measurable gain
+> from suspending and resuming devices asynchronously.
 
-Interesting - what hardware is this? And can you post the DSDT?
+It did? I thought it showed no difference at all!
 
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+I'll see if I can find the time to do the other computers, then. We're
+going away for a couple of weeks on Monday, though, so I'm not sure that
+I'll get the time beforehand.
+
+Nigel
