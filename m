@@ -1,155 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZLYTBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbZLYTIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756668AbZLYTBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 14:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbZLYTBs
+	id S1756674AbZLYTIx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 14:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbZLYTIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 14:01:48 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:15040 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756522AbZLYTBr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 14:01:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eQLaFCcQty81Puhf52rkupqcE9CuEsuosFX679fK+QVlcaejEHowMzR3MZHSp64j5G
-         0RCTMjODw3CeGOoq/sU8KOoloCngiFBQwzSJMORZAeek9nYrv5vkId58+SpIWJRB+JtZ
-         eyNV+0kzIuvCIyNzLphEOYOti+Fbo6sDouLho=
+	Fri, 25 Dec 2009 14:08:52 -0500
+Received: from mail.gmx.net ([213.165.64.20]:52515 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756348AbZLYTIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 14:08:51 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1/dGNRAVJ3dAPxDtiKU/pHCpchDbsk0dg7jvi8yc4
+	FsmzjV1WTrCXpf
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH] arch/avr32: Fix build failure for avr32 caused by typo
+Date: Fri, 25 Dec 2009 20:08:45 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: "Hans-Christian Egtvedt" <hans-christian.egtvedt@atmel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Ma <pma@mediamatech.com>, linux-kernel@vger.kernel.org,
+       linux-mmc@vger.kernel.org, peterhuewe@gmx.de
 MIME-Version: 1.0
-In-Reply-To: <s5hvdfvyoef.wl%tiwai@suse.de>
-References: <alpine.LFD.2.00.0912250124410.11466@x200s>
-	 <20091225122107.357d7102@mosly> <s5h637vmhcu.wl%tiwai@suse.de>
-	 <20091225162528.5dbbbea0@mosly>
-	 <8db1092f0912250731u46637a55lccb77e6cdb376a57@mail.gmail.com>
-	 <s5hy6kr6nur.wl%tiwai@suse.de> <20091225183205.744be270@mosly>
-	 <s5hvdfvyoef.wl%tiwai@suse.de>
-Date: Fri, 25 Dec 2009 20:01:46 +0100
-Message-ID: <8db1092f0912251101q7ae69d1ai59c68d03a9155566@mail.gmail.com>
-Subject: Re: intel hda regression: 2.6.33-rc{1,2}: hd-audio0 eats 25% CPU 
-	(according to top)
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Sergei Trofimovich <slyich@gmail.com>, linux-kernel@vger.kernel.org,
-       =?UTF-8?Q?=C3=89ric_Piel?= <eric.piel@tremplin-utc.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912252008.45602.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/25 Takashi Iwai <tiwai@suse.de>:
+This patch fixes a build failure introduced by the patch
+  atmel-mci: change use of dma slave interface by Nicolas Ferre
+by changing mci_dma_slave to the correct name of mci_dma_data
 
-> diff --git a/sound/pci/hda/hda_codec.c b/sound/pci/hda/hda_codec.c
-> index 950ee5c..f98b47c 100644
-> --- a/sound/pci/hda/hda_codec.c
-> +++ b/sound/pci/hda/hda_codec.c
-> @@ -1327,11 +1327,13 @@ EXPORT_SYMBOL_HDA(snd_hda_query_pin_caps);
->  */
->  u32 snd_hda_pin_sense(struct hda_codec *codec, hda_nid_t nid)
->  {
-> -       u32 pincap = snd_hda_query_pin_caps(codec, nid);
-> -
-> -       if (pincap & AC_PINCAP_TRIG_REQ) /* need trigger? */
-> -               snd_hda_codec_read(codec, nid, 0, AC_VERB_SET_PIN_SENSE, 0);
-> +       u32 pincap;
->
-> +       if (!codec->no_trigger_sense) {
-> +               pincap = snd_hda_query_pin_caps(codec, nid);
-> +               if (pincap & AC_PINCAP_TRIG_REQ) /* need trigger? */
-> +                       snd_hda_codec_read(codec, nid, 0, AC_VERB_SET_PIN_SENSE, 0);
-> +       }
->        return snd_hda_codec_read(codec, nid, 0,
->                                  AC_VERB_GET_PIN_SENSE, 0);
->  }
-> diff --git a/sound/pci/hda/hda_codec.h b/sound/pci/hda/hda_codec.h
-> index 1d541b7..0a770a2 100644
-> --- a/sound/pci/hda/hda_codec.h
-> +++ b/sound/pci/hda/hda_codec.h
-> @@ -817,6 +817,7 @@ struct hda_codec {
->        unsigned int pin_amp_workaround:1; /* pin out-amp takes index
->                                            * (e.g. Conexant codecs)
->                                            */
-> +       unsigned int no_trigger_sense:1; /* don't trigger at pin-sensing */
->  #ifdef CONFIG_SND_HDA_POWER_SAVE
->        unsigned int power_on :1;       /* current (global) power-state */
->        unsigned int power_transition :1; /* power-state in transition */
-> diff --git a/sound/pci/hda/patch_analog.c b/sound/pci/hda/patch_analog.c
-> index 1a36137..69a941c 100644
-> --- a/sound/pci/hda/patch_analog.c
-> +++ b/sound/pci/hda/patch_analog.c
-> @@ -1186,6 +1186,8 @@ static int patch_ad1986a(struct hda_codec *codec)
->         */
->        spec->multiout.no_share_stream = 1;
->
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
-> @@ -1371,6 +1373,8 @@ static int patch_ad1983(struct hda_codec *codec)
->
->        codec->patch_ops = ad198x_patch_ops;
->
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
-> @@ -1813,6 +1817,9 @@ static int patch_ad1981(struct hda_codec *codec)
->                codec->patch_ops.unsol_event = ad1981_hp_unsol_event;
->                break;
->        }
-> +
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
-> @@ -3118,6 +3125,8 @@ static int patch_ad1988(struct hda_codec *codec)
->  #endif
->        spec->vmaster_nid = 0x04;
->
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
-> @@ -3330,6 +3339,8 @@ static int patch_ad1884(struct hda_codec *codec)
->
->        codec->patch_ops = ad198x_patch_ops;
->
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
-> @@ -4287,6 +4298,8 @@ static int patch_ad1884a(struct hda_codec *codec)
->                break;
->        }
->
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
-> @@ -4623,6 +4636,9 @@ static int patch_ad1882(struct hda_codec *codec)
->                spec->mixers[2] = ad1882_6stack_mixers;
->                break;
->        }
-> +
-> +       codec->no_trigger_sense = 1;
-> +
->        return 0;
->  }
->
->
-Patch solves the problem.
+This should make the avr32 tree build again.
 
-Tested-by Maciej Rutecki <maciej.rutecki@gmail.com>
+References:
+http://kisskb.ellerman.id.au/kisskb/buildresult/1893610/
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=2635d1ba711560d521f6218c585a3e0401f566e1
 
-Thanks!
+Patch against Linus' tree.
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ arch/avr32/mach-at32ap/at32ap700x.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index 1aa1ea5..7d4ed42 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -1325,7 +1325,7 @@ struct platform_device *__init
+ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+ {
+ 	struct platform_device		*pdev;
+-	struct mci_dma_slave		*slave;
++	struct mci_dma_data	        *slave;
+ 	u32				pioa_mask;
+ 	u32				piob_mask;
+ 
+@@ -1344,7 +1344,7 @@ at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+ 				ARRAY_SIZE(atmel_mci0_resource)))
+ 		goto fail;
+ 
+-	slave = kzalloc(sizeof(struct mci_dma_slave), GFP_KERNEL);
++	slave = kzalloc(sizeof(struct mci_dma_data), GFP_KERNEL);
+ 
+ 	slave->sdata.dma_dev = &dw_dmac0_device.dev;
+ 	slave->sdata.reg_width = DW_DMA_SLAVE_WIDTH_32BIT;
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+1.6.4.4
+
