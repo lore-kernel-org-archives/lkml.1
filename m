@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbZLZLNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbZLZLUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752350AbZLZLNN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 06:13:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZLZLNL
+	id S1752286AbZLZLUN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 06:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbZLZLUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 06:13:11 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:63808 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbZLZLNK (ORCPT
+	Sat, 26 Dec 2009 06:20:11 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:58045 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbZLZLUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 06:13:10 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: sys_recvmmsg: wire up or not?
-Date: Sat, 26 Dec 2009 12:12:13 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Linux/m68k" <linux-m68k@vger.kernel.org>
-References: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com>
-In-Reply-To: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>+
-	~ohchhkRGW?|6_qTmkd_t?LZC#Q-`.`Y.a^3zb)+U-JVN]WT%cw#[Yo0&7C&bL12wWGlZi
-	~J;\wg;3zRnz,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sat, 26 Dec 2009 06:20:10 -0500
+Date: Sat, 26 Dec 2009 22:20:07 +1100
+From: Simon Horman <horms@verge.net.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Michal Marek <mmarek@sues.cz>,
+       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch] Makefile: Unexport LANG
+Message-ID: <20091226112007.GB2818@verge.net.au>
+References: <20091224111300.GA31932@verge.net.au>
+ <4B359166.3050106@redhat.com>
+ <4B359BC0.3080808@zytor.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912261212.14264.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/OSPyBPs1nRp8S57khst2p7FruAYGB/69Aeoa
- R8x5PaEA6BOPOPFPDEwDRBGXaeiCoJIb8Mfq6pJNY/kQbQsh02
- KGxIBtjN8SzXohLlssB1Q==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B359BC0.3080808@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 December 2009, Geert Uytterhoeven wrote:
-> <stdin>:1523:2: warning: #warning syscall recvmmsg not implemented
+On Fri, Dec 25, 2009 at 09:14:40PM -0800, H. Peter Anvin wrote:
+> On 12/25/2009 08:30 PM, Masami Hiramatsu wrote:
+> >>  
+> >>  # Avoid funny character set dependencies
+> >> +unexport LANG
+> >>  unexport LC_ALL
+> >>  LC_CTYPE=C
+> >>  LC_COLLATE=C
+> > 
 > 
-> so I started to wire up sys_recvmmsg.
-> Then I noticed it's already accessible, through sys_socketcall, as m68k defines
-> __ARCH_WANT_SYS_SOCKETCALL. So I guess this is a false positive?
+> At this point, it seems to me that we should just LC_ALL=C and be done
+> with it (see other thread.)
 
-Yes.
+Sure, that would also work for the case that I'm seeing.
 
-> Surprisingly, several architectures have both defined __ARCH_WANT_SYS_SOCKETCALL
-> and wired up sys_recvmmsg. Is this intentional?
+I tested the following:
 
-It's also rather inconsistent with the last socket call that was added, sys_accept4.
-Some architectures that normally define socket calls (parisc, sh) are missing both
-accept4 and recvmmsg, while others that don't have recvmsg now get recvmmsg.
+# Avoid funny character set dependencies
+LC_ALL=C
+export LC_ALL
 
-In particular, i386 has recvmmsg now, which caused the warning that you saw.
-I guess that one should be removed, and maybe we need a better logic for
-determining which syscalls you actually want. Deriving it from asm-generic/unistd.h
-instead of arch/x86/include/asm/unistd_32.h is probably better, but would still
-give the wrong answer for multiplexed system calls like socketcall or ipc on 
-existing architectures.
+Though personally I would advocate tweaking the locale as needed closer
+to awk scripts and the like, rather than the high-level general change that
+was made. Fall-out from a high-level change seems inevitable to me.
 
-	Arnd
