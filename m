@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZLZGYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbZLZG6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751490AbZLZGYp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 01:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZLZGYo
+	id S1751547AbZLZG6b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 01:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZLZG6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 01:24:44 -0500
-Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:54757 "EHLO
-	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbZLZGYn (ORCPT
+	Sat, 26 Dec 2009 01:58:30 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:28654 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbZLZG63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 01:24:43 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: [patch 4/4] nfs: clean up sillyrenaming in nfs_rename() 
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Trond.Myklebust@netapp.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20091202150516.256915252@szeredi.hu>
-References: <20091202150454.616582634@szeredi.hu> <20091202150516.256915252@szeredi.hu>
-Date: Sat, 26 Dec 2009 15:24:11 +0900
-Message-ID: <8054.1261808651@jrobl>
+	Sat, 26 Dec 2009 01:58:29 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAIpCNUurR7Ht/2dsb2JhbAC/BJUEhDMEgWU
+X-IronPort-AV: E=Sophos;i="4.47,455,1257120000"; 
+   d="scan'208";a="456731540"
+From: Roland Dreier <rdreier@cisco.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Sergei Trofimovich <slyich@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
+       Sergei Trofimovich <slyfox@inbox.ru>
+Subject: Re: [PATCH] Kbuild: set LC_MESSAGES=C (as LC_CTYPE=C is)
+References: <1261761235-9431-1-git-send-email-slyfox@inbox.ru>
+	<4B354C70.1060109@zytor.com> <adar5qizg6w.fsf@roland-alpha.cisco.com>
+	<4B356730.2080401@zytor.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 25 Dec 2009 22:58:28 -0800
+In-Reply-To: <4B356730.2080401@zytor.com> (H. Peter Anvin's message of "Fri,
+	25 Dec 2009 17:30:24 -0800")
+Message-ID: <adaljgqz0ff.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 26 Dec 2009 06:58:28.0743 (UTC) FILETIME=[D3EDA170:01CA85F8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Miklos,
+ > > Seems unfortunate to lose localized error messages.  (Although in my
+ > > en_US.UTF-8 case, all I get is non-ASCII quote characters)
 
-Don't we need to make the 'dentry' hashed, in sillyrename case?
-The d_alloc()ed dentry is unhashed, and it was d_rehash()ed later
-(before the patch).
+ > The whole problem is that for some people we lose *all* messages.  This
+ > seems all very strange to me at all, but I guess it tweaks some internal
+ > detail inside the glibc message library, sigh.
 
-	new_dentry = rehash = dentry;
-	:::
-out:
-	if (rehash)
-		d_rehash(rehash);
+I just meant that people used to be able to get localized error messages
+by setting LANG or whatever.  And now they're stuck with ASCII english.
 
-Applying your patch, the 'rehash' is not re-assigned and the 'dentry'
-left unhashed. Such dentry which is visible by readdir but its d_hash is
-empty, will be a problem in nfs readdir (which calls d_lookup()), I am
-afraid.
+ > > This all started because of the awk invocation in arch/x86/lib.  Maybe
+ > > the best idea would be to confine the locale monkeying to that one
+ > > place?
 
+ > Except that sed, etc. and even the shell itself have the same class of
+ > problems.  Perl doesn't, since it has saner rules for how regular
+ > expressions handle ranges.
 
-J. R. Okajima
+But pretty much everyone on a modern distro has had a UTF8 locale for
+quite a while.  And as far as I know there have been no problems caused
+by collation order or anything else.  So this change to always build in
+the C locale is just worrying about theoretical problems.
 
+Anyway, not a big deal I guess.
 
-Miklos Szeredi:
-> The d_instantiate(new_dentry, NULL) is superfluous, the dentry is
-> already negative.  Rehashing this dummy dentry isn't needed either,
-> d_move() works fine on an unhashed target.
-> 
-> The re-checking for busy after a failed nfs_sillyrename() is bogus
-> too: new_dentry->d_count < 2 would be a bug here.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
->  fs/nfs/dir.c |   11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6/fs/nfs/dir.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfs/dir.c 2009-12-02 15:11:19.000000000 +0100
-> +++ linux-2.6/fs/nfs/dir.c      2009-12-02 15:11:30.000000000 +0100
-> @@ -1611,14 +1611,11 @@  static int nfs_rename(struct inode *old_
-> 
->                         /* silly-rename the existing target ... */
->                         err = nfs_sillyrename(new_dir, new_dentry);
-> -                       if (!err) {
-> -                               new_dentry = rehash = dentry;
-> -                               new_inode = NULL;
-> -                               /* instantiate the replacement target */
-> -                               d_instantiate(new_dentry, NULL);
-> -                       } else if (atomic_read(&new_dentry->d_count) > 1)
-> -                               /* dentry still busy? */
-> +                       if (err)
->                                 goto out;
-> +
-> +                       new_dentry = dentry;
-> +                       new_inode = NULL;
->                 }
->         }
+ - R.
