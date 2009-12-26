@@ -1,73 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752359AbZLZUTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZLZUhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752359AbZLZUTO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 15:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbZLZUTN
+	id S1752932AbZLZUhV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 15:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZLZUhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 15:19:13 -0500
-Received: from vms173017pub.verizon.net ([206.46.173.17]:41002 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZLZUTM (ORCPT
+	Sat, 26 Dec 2009 15:37:18 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:53083 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbZLZUhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 15:19:12 -0500
-Date: Sat, 26 Dec 2009 15:19:10 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -tip: origin tree boot crash
-In-reply-to: <20091225194935.GA23802@core.coreip.homeip.net>
-Message-id: <alpine.LFD.2.00.0912261518400.4089@localhost.localdomain>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
- <20091225102731.GA25513@elte.hu>
- <20091225194935.GA23802@core.coreip.homeip.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 26 Dec 2009 15:37:17 -0500
+Date: Sat, 26 Dec 2009 15:37:29 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
+In-reply-to: <20091226095723.7ac82b18@nehalam>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B367409.5060202@majjas.com>
 MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
+ <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> dell-wmi - fix condition to abort driver loading
+On 12/26/2009 12:57 PM, Stephen Hemminger wrote:
+> On Fri, 25 Dec 2009 22:23:51 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> On 12/25/2009 6:22 PM, Stephen Hemminger wrote:
+>>      
+>>> On Fri, 25 Dec 2009 11:28:55 -0500
+>>> Michael Breuer<mbreuer@majjas.com>   wrote:
+>>>
+>>>
+>>>        
+>>>>     More data points - I'm able to reliably recreate this now.
+>>>> While I thought it was coincidence, each and every time I hit this issue
+>>>> there is a DHCP renew event immediately before the first error.
+>>>> The crash occurs while under load - in my case seems that the traffic is
+>>>> actually IPV6 (hadn't noticed that before).
+>>>> I ran nethogs on a remote display - the reported rx rate on the IPV6 smb
+>>>> connection at the time of the lockup was 33889.688 KB/sec on a 1gbit
+>>>> nic. I've got two events like this - don't recall if the earlier one was
+>>>> the exact same # - but it was in the ballpark.
+>>>>
+>>>> On 12/24/2009 2:01 AM, Andrew Morton wrote:
+>>>>
+>>>>          
+>>>>> cc's added again.
+>>>>>
+>>>>> On Wed, 23 Dec 2009 17:54:27 -0500 Michael Breuer<mbreuer@majjas.com>    wrote:
+>>>>>
+>>>>>
+>>>>>
+>>>>>            
+>>>>>> Ok - not the firmware.  Ran another Windows backup and sky2 went down.
+>>>>>>
+>>>>>> Nothing in dmesg.old - have oops in syslog. System became unresponsive
+>>>>>> and watchdog kicked in after a minute.
+>>>>>>
+>>>>>> Also note that I have a similar oops with VT-D disabled (posted here on
+>>>>>> 12/5). I'm attaching the oops from that below this oops for comparison.
+>>>>>> That also happened under similar load.
+>>>>>>
+>>>>>> On the assumption that I can recreate this (although it takes a while)
+>>>>>> please let me know how I can help.
+>>>>>>
+>>>>>> What's in my log (starting with an smbd error about 2 min before the
+>>>>>> oops (note: the dchpd is not the system doing the backup).
+>>>>>>
+>>>>>>
+>>>>>>              
+>>>>> This (nastily wordwrapped) oops appers to be quite different from
+>>>>> Berck's one.
+>>>>>
+>>>>>
+>>>>>
+>>>>>            
+>>> What is the MTU?
+>>>
+>>>        
+>> 1500
+>>      
+>>>>
+>>>>          
+> It looks like the problem only shows up for packets generated by DHCP,
+> and these come through AF_PACKET. The problem maybe related to how this
+> packets are fragmented into header and page, in a different way than other
+> packets confusing the driver or DMA engine.
+>
+> Does this help?
+> -----
+>
+> --- a/drivers/net/sky2.c	2009-12-26 09:50:20.869565022 -0800
+> +++ b/drivers/net/sky2.c	2009-12-26 09:55:54.620645355 -0800
+> @@ -1616,6 +1616,13 @@ static netdev_tx_t sky2_xmit_frame(struc
+>    	if (unlikely(tx_avail(sky2)<  tx_le_req(skb)))
+>     		return NETDEV_TX_BUSY;
+>
+> +	if (!pskb_may_pull(skb, ETH_HLEN)) {
+> +		if (net_ratelimit())
+> +			pr_info(PFX "%s: packet missing ether header (%d)?",
+> +				dev->name, skb->len);
+> +		goto drop;
+> +	}
+> +
+>   	len = skb_headlen(skb);
+>   	mapping = pci_map_single(hw->pdev, skb->data, len, PCI_DMA_TODEVICE);
+>
+> @@ -1761,6 +1768,7 @@ mapping_unwind:
+>   mapping_error:
+>   	if (net_ratelimit())
+>   		dev_warn(&hw->pdev->dev, "%s: tx mapping error\n", dev->name);
+> +drop:
+>   	dev_kfree_skb(skb);
+>   	return NETDEV_TX_OK;
+>   }
+>
+>
+>
+>
+>    
+That seems to have done the trick!
+
+Still one odd message sequence, but no hangs or crashes.
+
+The first time I forced a DHCP renew while running at high throughput, I 
+got the same SMB errors I saw in my original error log (pre-crash). This 
+only happened once:
+Dec 26 15:24:18 mail dhcpd: DHCPACK on 10.0.0.56 to 00:1c:cc:f3:9f:f6 
+(BLACKBERRY-9542) via eth0
+Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
+lib/util_sock.c:1564(matchname)
+Dec 26 15:24:25 mail smbd[8937]:   matchname: host name/address 
+mismatch: ::ffff:10.0.0.11 != potter.majjas.com
+Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
+lib/util_sock.c:1685(get_peer_name)
+Dec 26 15:24:25 mail smbd[8937]:   Matchname failed on potter.majjas.com 
+::ffff:10.0.0.11
+Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
+smbd/nttrans.c:2076(call_nt_transact_ioctl)
+Dec 26 15:24:25 mail smbd[8937]:   call_nt_transact_ioctl(0x900eb): 
+Currently not implemented.
+
+I would discount this, but the same sequence was present in the logs 
+pre-crash as well. I do not see this at all absent the preceding DHCP 
+renew sequence. I also don't see this unless the adapter is under load.
 
 
-applied to acpi-test
 
-thanks,
--Len Brown, Intel Open Source Technology Center
-
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> The commit 1fdd407f4e3f2ecb453954cbebb6c22491c61853 incorrectly made driver
-> abort loading when known GUID is present when it should have done exactly
-> the opposite.
-> 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
-> 
->  drivers/platform/x86/dell-wmi.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
-> index 916ccb2..c980782 100644
-> --- a/drivers/platform/x86/dell-wmi.c
-> +++ b/drivers/platform/x86/dell-wmi.c
-> @@ -324,7 +324,7 @@ static int __init dell_wmi_init(void)
->  {
->  	int err;
->  
-> -	if (wmi_has_guid(DELL_EVENT_GUID)) {
-> +	if (!wmi_has_guid(DELL_EVENT_GUID)) {
->  		printk(KERN_WARNING "dell-wmi: No known WMI GUID found\n");
->  		return -ENODEV;
->  	}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
