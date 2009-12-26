@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751411AbZLZFrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZLZGAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751411AbZLZFrh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 00:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZLZFrg
+	id S1751464AbZLZGAi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 01:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbZLZGAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 00:47:36 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:59577 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbZLZFrg (ORCPT
+	Sat, 26 Dec 2009 01:00:37 -0500
+Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:43289 "HELO
+	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750717AbZLZGAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 00:47:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=CPdp8hJIoiuvCIO7JIznKa2s2U3zdq+sjPedzQ6xXwxxLQ4XEhgsCzbNzkIZO9VwtR
-         zA7+TxUgoO3mjoGzDIV7GA/uxsxL+tZzpgXnZS2AJmxhzD62oykf8Q+6ayzlE2sQHAp4
-         QTTXVk2UmLmBG4kQ7wOm5m5JGGHcHSJXGxwzw=
-MIME-Version: 1.0
-In-Reply-To: <200912251744.43987.tvrtko@ursulin.net>
-References: <200912251744.43987.tvrtko@ursulin.net>
-Date: Fri, 25 Dec 2009 21:47:34 -0800
-X-Google-Sender-Auth: f08f5a7678a1bb16
-Message-ID: <86802c440912252147t5891e00bka386ab44da5afbf@mail.gmail.com>
-Subject: Re: 2.6.33-rc1: 6 Processors exceeds NR_CPUS limit of 4
-From: Yinghai Lu <yinghai@kernel.org>
-To: Tvrtko Ursulin <tvrtko@ursulin.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 26 Dec 2009 01:00:36 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=k1SO773KXC1x+CqdSsciaiFm9rgcPQ8iifexImPZE1i972iIAFHPNxja+YIHi7XGupBOVrzrMctkYaeicns5bUphBVLuRzQnRTgVtEyR+y2ao9T6qFF6I18eyhIZ4+1c;
+Date: Fri, 25 Dec 2009 22:00:31 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: Linux 2.6.33-rc2 - Merry Christmas ...
+Message-ID: <20091225220031.5b06fc49@jbarnes-x200>
+In-Reply-To: <20091225215032.GA32581@liondog.tnic>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+	<20091225200017.GA4095@liondog.tnic>
+	<20091225215032.GA32581@liondog.tnic>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i586-moblin-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.217.190.127 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 25, 2009 at 9:44 AM, Tvrtko Ursulin <tvrtko@ursulin.net> wrote:
->
-> Hi,
->
-> Just noticed this message in dmesg. What is this about? Machine is supposed to
-> have a dual core CPU "unlocked" to four cores and it works like that without
-> any visible problems so far:
+On Fri, 25 Dec 2009 22:50:32 +0100
+Borislav Petkov <petkovbb@googlemail.com> wrote:
 
-[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-[    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
-[    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
-[    0.000000] ACPI: LAPIC (acpi_id[0x05] lapic_id[0x84] disabled)
-[    0.000000] ACPI: LAPIC (acpi_id[0x06] lapic_id[0x85] disabled)
-[    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
-[    0.000000] IOAPIC[0]: apic_id 4, version 33, address 0xfec00000, GSI 0-23
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-[    0.000000] ACPI: IRQ0 used by override.
-[    0.000000] ACPI: IRQ2 used by override.
-[    0.000000] ACPI: IRQ9 used by override.
-[    0.000000] Using ACPI (MADT) for SMP configuration information
-[    0.000000] ACPI: HPET id: 0x8300 base: 0xfed00000
-[    0.000000] 6 Processors exceeds NR_CPUS limit of 4
+> On Fri, Dec 25, 2009 at 09:00:17PM +0100, Borislav Petkov wrote:
+> > Hi,
+> > 
+> > the r8169 driver fails loading here with the following message:
+> > 
+> > [    0.353955] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> > [    0.354258] r8169 0000:02:00.0: PCI INT A -> GSI 17 (level, low)
+> > -> IRQ 17 [    0.354391] r8169 0000:02:00.0: PCI INT A disabled
+> > [    0.354527] r8169: probe of 0000:02:00.0 failed with error -22
+> > 
+> > Machine is Acer Aspire One, Atom N270 CPU.
+> > 
+> > Actually, the breakage seems to have appeared a bit earlier,
+> > sometime between .32 and .33-rc1 as the bisection result shows:
+> > 
+> > ac1aa47b131416a6ff37eb1005a0a1d2541aad6c is the first bad commit
+> > commit ac1aa47b131416a6ff37eb1005a0a1d2541aad6c
+> > Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+> > Date:   Mon Oct 26 13:20:44 2009 -0700
+> > 
+> >     PCI: determine CLS more intelligently
+> >     
+> >     Till now, CLS has been determined either by arch code or as
+> >     L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86
+> > doesn't always get it right.  On most configurations, the chance is
+> > that firmware configures the correct value during boot.
+> >     
+> >     This patch makes pci_init() determine CLS by looking at what
+> > firmware has configured.  It scans all devices and if all non-zero
+> > values agree, the value is used.  If none is configured or there is
+> > a disagreement, pci_dfl_cache_line_size is used.  arch can set the
+> > dfl value (via PCI_CACHE_LINE_BYTES or pci_dfl_cache_line_size) or
+> >     override the actual one.
+> >     
+> >     ia64, x86 and sparc64 updated to set the default cls instead of
+> > the actual one.
+> >     
+> >     While at it, declare pci_cache_line_size and
+> > pci_dfl_cache_line_size in pci.h and drop private declarations from
+> > arch code.
+> 
+> Ok here's what happens: 
+> 
+> pci_apply_final_quirks() dumps on the console
+> 
+> [    0.369252] PCI: CLS 0 bytes, default 64
+> 
+> which means that it hasn't fallen back to setting the default cache
+> line size. Also, the call
+> 
+> pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &tmp);
+> 
+> sets tmp = 0 and the following condition hits everytime
+> 
+> if (!cls)
+>          cls = tmp;
+> if (!tmp || cls == tmp)
+>          continue;
+> 
+> Which means that we never get around the set the default CLS.
+> 
+> The following dirty fix solves the issue on my machine:
+> 
+> --
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 7cfa7c3..9854c26 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -2629,7 +2629,10 @@ static int __init pci_apply_final_quirks(void)
+>  	if (!pci_cache_line_size) {
+>  		printk(KERN_DEBUG "PCI: CLS %u bytes, default %u\n",
+>  		       cls << 2, pci_dfl_cache_line_size << 2);
+> -		pci_cache_line_size = cls;
+> +		if (!cls)
+> +			pci_cache_line_size =
+> pci_dfl_cache_line_size;
+> +		else
+> +			pci_cache_line_size = cls;
+>  	}
 
-MADT has two disable entries...
+There should be a fix queued in my for-linus branch (I've been out this
+week so haven't sent the pull req yet), can you give it a try and make
+sure?
 
-YH
+Jesse
