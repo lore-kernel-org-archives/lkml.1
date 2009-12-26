@@ -1,62 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbZLZPkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZLZP5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753458AbZLZPkn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 10:40:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZLZPkm
+	id S1753518AbZLZP5p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 10:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZLZP5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 10:40:42 -0500
-Received: from mail-pz0-f198.google.com ([209.85.222.198]:36996 "EHLO
-	mail-pz0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbZLZPkl (ORCPT
+	Sat, 26 Dec 2009 10:57:44 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:50713 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbZLZP5n convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 10:40:41 -0500
-X-Greylist: delayed 479 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Dec 2009 10:40:41 EST
+	Sat, 26 Dec 2009 10:57:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HLXoy9pa8ftQ8WlXUG/ILa3BKAwr/5ZODE1oiU8nNs5WSVBGjRCKAOMgST3oeqs6S1
-         RJ/dwgZHam5nX5yt4R64yjkgghg2hD2W81vRybOuU2+67ZadNUeQxPUAOA2CagalWkLK
-         35G5uAvEv2HRJXNIlb0h7PBthUvfF7KY9tjyM=
-Message-ID: <4B362C95.4040700@lwfinger.net>
-Date: Sat, 26 Dec 2009 09:32:37 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=gJQxmbykSXI6Q4Q226hoWrJVnzwFwOtdIK1lw/bZCah98XcDL92CmPP2E11ND77r/B
+         Sn7M0iIK9bEVcv4hPaDWCpBmtBZNE8S/xfzlkl/aqkUsSOAA8yyAy3ynKQUHODuJk6w8
+         /9Lq1qxswcHvlh9H81Cmp576favF4Jm/16Veg=
 MIME-Version: 1.0
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-CC: Matthew Garrett <mjg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: Regression in module wmi since 2.6.32 (bisected to commit 1caab3c)
-References: <4B352513.90302@lwfinger.net> <200912252158.31127.carlos@strangeworlds.co.uk> <4B353818.1020308@lwfinger.net> <200912260118.26391.carlos@strangeworlds.co.uk>
-In-Reply-To: <200912260118.26391.carlos@strangeworlds.co.uk>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <tkrat.92e0244677f2fc0a@s5r6.in-berlin.de>
+References: <tkrat.edaaa9d0f51812e8@s5r6.in-berlin.de>
+	 <tkrat.92e0244677f2fc0a@s5r6.in-berlin.de>
+Date: Sat, 26 Dec 2009 07:57:42 -0800
+X-Google-Sender-Auth: 8c7b70fa4104426e
+Message-ID: <27dd34e60912260757yf0b1f76w5c914c104a2dfdf6@mail.gmail.com>
+Subject: Re: [PATCH 4/5] firewire, ieee1394: update MAINTAINERS entries
+From: Dan Dennedy <dan@dennedy.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       Ben Collins <ben.collins@ubuntu.com>,
+       Kristian Hoegsberg <krh@bitplanet.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/25/2009 07:18 PM, Carlos Corbacho wrote:
-> On Friday 25 December 2009 22:09:28 Larry Finger wrote:
->> On 12/25/2009 03:58 PM, Carlos Corbacho wrote:
->>> On Friday 25 December 2009 21:35:49 Larry Finger wrote:
->>>> Should I attach the files DSDT.dat, acpidump.out, or DSDT?
->>>
->>> DSDT from /proc/acpi/dsdt will do fine for my purposes.
->>
->> Attached.
-> 
-> This is the same as bugzilla #14846 - in both cases, the GUID 05901221-D566-11D1-B2F0-00A0C9062910 (a data block query) is duplicated in two different devices, although both look like they are nVidia related hooks.
-> 
-> Since we don't currently have any in kernel drivers that use that stuff, and the query in question just returns a binary MOF, the simplest solution (for now) seems to be to just ignore these duplicates - if and when someone wants to support these hooks, they can clean the mess up properly when they figure out how WMI is supposed to cope with conflicting GUID's. 
-> 
-> Matthew, you looked at NVIF for your sins, can you see a better solution? We could just blacklist the offending GUID, rather than trying to catch all duplicates? Although just ignoring all duplicates strikes me as a better solution to catch the next time that J Random BIOS Developer decides to duplicate GUIDs in WMI.
-> 
-> Initial patch below which takes the "ignore all duplicate GUIDs" approach.
+Hi
 
-The patch fixes my machine.
+On Fri, Dec 25, 2009 at 4:36 PM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Ben and Kristian have not been involved in maintenance of the IEEE 1394
+> drivers for quite some time; submitters are not required to Cc them on
+> patches.
+>
+> The linux1394.org domain has been dead for a while and is no longer
+> under control of a Linux developer.  The current web site of the
+> Linux 1394 project is http://ieee1394.wiki.kernel.org/.
+>
+> The classic drivers/ieee1394/ stack is now obsolete from the development
+> point of view, though still a useful alternative in productive use.  But
+> nobody should attempt to submit style cleanup patches for it or to
+> develop new drivers on top of this stack, hence mark its MAINTAINERS
+> entry as Obsolete.
+>
+> drivers/ieee1394/raw1394*, like the rest of the old stack, does not
+> receive bigger code changes anymore, hence shrink the MAINTAINERS
+> database a bit by dropping raw1394's special entry.  If something
+> important and urgent is going to come up for raw1394, I will make sure
+> that Dan will be notified of it besides via linux1394-devel.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Cc: Ben Collins <ben.collins@ubuntu.com>
+> Cc: Dan Dennedy <dan@dennedy.org>
+> Cc: Kristian Hoegsberg <krh@bitplanet.net>
 
-Thanks,
+Signed-off-by: Dan Dennedy <dan@dennedy.org>
 
-Larry
-
+> ---
+>  MAINTAINERS |   15 +++------------
+>  1 file changed, 3 insertions(+), 12 deletions(-)
+>
+> Index: linux-2.6.33-rc2/MAINTAINERS
+> ===================================================================
+> --- linux-2.6.33-rc2.orig/MAINTAINERS
+> +++ linux-2.6.33-rc2/MAINTAINERS
+> @@ -2169,10 +2169,9 @@ F:       drivers/hwmon/f75375s.c
+>  F:     include/linux/f75375s.h
+>
+>  FIREWIRE SUBSYSTEM
+> -M:     Kristian Hoegsberg <krh@redhat.com>
+>  M:     Stefan Richter <stefanr@s5r6.in-berlin.de>
+>  L:     linux1394-devel@lists.sourceforge.net
+> -W:     http://www.linux1394.org/
+> +W:     http://ieee1394.wiki.kernel.org/
+>  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+>  S:     Maintained
+>  F:     drivers/firewire/
+> @@ -2705,22 +2704,14 @@ S:      Supported
+>  F:     drivers/idle/i7300_idle.c
+>
+>  IEEE 1394 SUBSYSTEM
+> -M:     Ben Collins <ben.collins@ubuntu.com>
+>  M:     Stefan Richter <stefanr@s5r6.in-berlin.de>
+>  L:     linux1394-devel@lists.sourceforge.net
+> -W:     http://www.linux1394.org/
+> +W:     http://ieee1394.wiki.kernel.org/
+>  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+> -S:     Maintained
+> +S:     Obsolete
+>  F:     Documentation/debugging-via-ohci1394.txt
+>  F:     drivers/ieee1394/
+>
+> -IEEE 1394 RAW I/O DRIVER
+> -M:     Dan Dennedy <dan@dennedy.org>
+> -M:     Stefan Richter <stefanr@s5r6.in-berlin.de>
+> -L:     linux1394-devel@lists.sourceforge.net
+> -S:     Maintained
+> -F:     drivers/ieee1394/raw1394*
+> -
+>  IEEE 802.15.4 SUBSYSTEM
+>  M:     Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>  M:     Sergey Lapin <slapin@ossfans.org>
+>
