@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbZLZSZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbZLZS1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752925AbZLZSZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 13:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZLZSZ2
+	id S1753035AbZLZS1f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 13:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZLZS1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 13:25:28 -0500
-Received: from e28smtp07.in.ibm.com ([122.248.162.7]:51974 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbZLZSZ1 (ORCPT
+	Sat, 26 Dec 2009 13:27:35 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:45197 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbZLZS1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 13:25:27 -0500
-Date: Sat, 26 Dec 2009 23:55:19 +0530
+	Sat, 26 Dec 2009 13:27:34 -0500
+Date: Sat, 26 Dec 2009 23:57:25 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
@@ -19,36 +19,53 @@ Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Vegard Nossum <vegardno@ifi.uio.no>, Oleg Nesterov <oleg@redhat.com>
-Subject: [RFC Patch 0/2][Bugfix][x86][hw-breakpoint] Bugfixes for
-	hw_breakpoint_handler
-Message-ID: <20091226182519.GA9494@in.ibm.com>
+Subject: [RFC Patch 1/2][Bugfix][x86][hw-breakpoint] Clear reserved bits of
+	DR6 in do_debug()
+Message-ID: <20091226182725.GB9494@in.ibm.com>
+References: <20091226175533.149765731@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename=fix_dr6_reserved_01
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-	Please find a patchset of two patches that
+Clear the reserved bits from the stored copy of debug status register (DR6).
+This will help easy bitwise operations.
 
-Patch 1/2: Clears the arch-reserved bits from debug status register. This
-helps easy bitwise operations - such as the check for non-trap bits in
-hw_breakpoint_handler. A check for the same using
-"if (dr6 & (~DR_TRAP_BITS))" throws incorrect results due to the 
-presence of preset reserved bits.
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ arch/x86/include/asm/debugreg.h |    3 +++
+ arch/x86/kernel/traps.c         |    3 +++
+ 2 files changed, 6 insertions(+)
 
-This patch is copied to maintainers of code (such as kmemcheck, kprobe,
-ptrace, etc) who make use of local dr6 value in do_debug() that verify
-and handle exceptions.
-
-Patch 2/2: Return NOTIFY_DONE from hw_breakpoint_handler() for user-space
-breakpoints only (and not for kernel-space) since this could lead to
-further processing in do_debug() with undesirable consequences.
-
-Let me know if there are any concerns about the patch.
-
-Thanks,
-K.Prasad
+Index: linux-2.6-tip/arch/x86/include/asm/debugreg.h
+===================================================================
+--- linux-2.6-tip.orig/arch/x86/include/asm/debugreg.h
++++ linux-2.6-tip/arch/x86/include/asm/debugreg.h
+@@ -14,6 +14,9 @@
+    which debugging register was responsible for the trap.  The other bits
+    are either reserved or not of interest to us. */
+ 
++/* Define reserved bits in DR6 which are always set to 1 */
++#define DR6_RESERVED	(0xFFFF0FF0)
++
+ #define DR_TRAP0	(0x1)		/* db0 */
+ #define DR_TRAP1	(0x2)		/* db1 */
+ #define DR_TRAP2	(0x4)		/* db2 */
+Index: linux-2.6-tip/arch/x86/kernel/traps.c
+===================================================================
+--- linux-2.6-tip.orig/arch/x86/kernel/traps.c
++++ linux-2.6-tip/arch/x86/kernel/traps.c
+@@ -534,6 +534,9 @@ dotraplinkage void __kprobes do_debug(st
+ 
+ 	get_debugreg(dr6, 6);
+ 
++	/* Filter out all the reserved bits which are preset to 1 */
++	dr6 &= ~DR6_RESERVED;
++
+ 	/* Catch kmemcheck conditions first of all! */
+ 	if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
+ 		return;
 
