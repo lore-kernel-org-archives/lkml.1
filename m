@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbZLZAf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbZLZAgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbZLZAf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 19:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbZLZAf0
+	id S1757522AbZLZAgY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 19:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbZLZAgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 19:35:26 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53606 "EHLO
+	Fri, 25 Dec 2009 19:36:23 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53612 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756442AbZLZAfW (ORCPT
+	with ESMTP id S1756425AbZLZAgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 19:35:22 -0500
+	Fri, 25 Dec 2009 19:36:22 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 26 Dec 2009 01:35:14 +0100 (CET)
+Date: Sat, 26 Dec 2009 01:36:12 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 3/5] firewire: ohci: always use packet-per-buffer mode for
- isochronous reception
+Subject: [PATCH 4/5] firewire, ieee1394: update MAINTAINERS entries
 To: linux-kernel@vger.kernel.org
 cc: linux1394-devel@lists.sourceforge.net,
-       Clemens Ladisch <cladisch@fastmail.net>
+       Ben Collins <ben.collins@ubuntu.com>, Dan Dennedy <dan@dennedy.org>,
+       Kristian Hoegsberg <krh@bitplanet.net>
 In-Reply-To: <tkrat.edaaa9d0f51812e8@s5r6.in-berlin.de>
-Message-ID: <tkrat.057bc7eccde4ce2f@s5r6.in-berlin.de>
+Message-ID: <tkrat.92e0244677f2fc0a@s5r6.in-berlin.de>
 References: <tkrat.edaaa9d0f51812e8@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
@@ -28,63 +28,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a minimal change meant for the short term:  Never set the
-ohci->use_dualbuffer flag to true.
+Ben and Kristian have not been involved in maintenance of the IEEE 1394
+drivers for quite some time; submitters are not required to Cc them on
+patches.
 
-There are two reasons to do so:
+The linux1394.org domain has been dead for a while and is no longer
+under control of a Linux developer.  The current web site of the
+Linux 1394 project is http://ieee1394.wiki.kernel.org/.
 
-  - Packet-per-buffer mode and dual-buffer mode do not behave the same
-    under certain circumstances, notably if several packets are covered
-    by a single fw_cdev_iso_packet descriptor.
-    http://marc.info/?l=linux1394-devel&m=124965653718313
-    Therefore the driver stack should not silently choose one or the
-    other mode but should leave the choice to the high-level driver
-    (regardless if kernel driver or userspace driver).  Or simply always
-    only offer packet-per-buffer mode, since a considerable number of
-    controllers, even current ones, does not offer dual-buffer support.
+The classic drivers/ieee1394/ stack is now obsolete from the development
+point of view, though still a useful alternative in productive use.  But
+nobody should attempt to submit style cleanup patches for it or to
+develop new drivers on top of this stack, hence mark its MAINTAINERS
+entry as Obsolete.
 
-  - Even under circumstances where packet-per-buffer mode and
-    dual-buffer mode behave exactly the same --- notably when used
-    through libraw1394, libdc1394, as well as the current two kernel
-    drivers which use isochronous reception (firewire-net and firedtv)
-    --- we are still faced with the problem that several OHCI 1.1
-    controllers have bugs in dual-buffer mode.  Although it looks like
-    we have identified most of those buggy controllers by now, we
-    cannot be quite sure about that.
-
-So, use packet-per-buffer by default from now on.  This change should
-be followed up by a more complete solution:  Either extend the
-in-kernel API and the userspace ABI by a choice between the two IR modes
-or remove all dual-buffer related code from firewire-ohci.
+drivers/ieee1394/raw1394*, like the rest of the old stack, does not
+receive bigger code changes anymore, hence shrink the MAINTAINERS
+database a bit by dropping raw1394's special entry.  If something
+important and urgent is going to come up for raw1394, I will make sure
+that Dan will be notified of it besides via linux1394-devel.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Ben Collins <ben.collins@ubuntu.com>
+Cc: Dan Dennedy <dan@dennedy.org>
+Cc: Kristian Hoegsberg <krh@bitplanet.net>
 ---
- drivers/firewire/ohci.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ MAINTAINERS |   15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-Index: linux-2.6.33-rc2/drivers/firewire/ohci.c
+Index: linux-2.6.33-rc2/MAINTAINERS
 ===================================================================
---- linux-2.6.33-rc2.orig/drivers/firewire/ohci.c
-+++ linux-2.6.33-rc2/drivers/firewire/ohci.c
-@@ -2226,7 +2226,6 @@ static int ohci_queue_iso_receive_dualbu
- 	if (rest == 0)
- 		return -EINVAL;
+--- linux-2.6.33-rc2.orig/MAINTAINERS
++++ linux-2.6.33-rc2/MAINTAINERS
+@@ -2169,10 +2169,9 @@ F:	drivers/hwmon/f75375s.c
+ F:	include/linux/f75375s.h
  
--	/* FIXME: make packet-per-buffer/dual-buffer a context option */
- 	while (rest > 0) {
- 		d = context_get_descriptors(&ctx->context,
- 					    z + header_z, &d_bus);
-@@ -2470,7 +2469,10 @@ static int __devinit pci_probe(struct pc
- 	}
+ FIREWIRE SUBSYSTEM
+-M:	Kristian Hoegsberg <krh@redhat.com>
+ M:	Stefan Richter <stefanr@s5r6.in-berlin.de>
+ L:	linux1394-devel@lists.sourceforge.net
+-W:	http://www.linux1394.org/
++W:	http://ieee1394.wiki.kernel.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
+ F:	drivers/firewire/
+@@ -2705,22 +2704,14 @@ S:	Supported
+ F:	drivers/idle/i7300_idle.c
  
- 	version = reg_read(ohci, OHCI1394_Version) & 0x00ff00ff;
-+#if 0
-+	/* FIXME: make it a context option or remove dual-buffer mode */
- 	ohci->use_dualbuffer = version >= OHCI_VERSION_1_1;
-+#endif
+ IEEE 1394 SUBSYSTEM
+-M:	Ben Collins <ben.collins@ubuntu.com>
+ M:	Stefan Richter <stefanr@s5r6.in-berlin.de>
+ L:	linux1394-devel@lists.sourceforge.net
+-W:	http://www.linux1394.org/
++W:	http://ieee1394.wiki.kernel.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+-S:	Maintained
++S:	Obsolete
+ F:	Documentation/debugging-via-ohci1394.txt
+ F:	drivers/ieee1394/
  
- 	/* dual-buffer mode is broken if more than one IR context is active */
- 	if (dev->vendor == PCI_VENDOR_ID_AGERE &&
+-IEEE 1394 RAW I/O DRIVER
+-M:	Dan Dennedy <dan@dennedy.org>
+-M:	Stefan Richter <stefanr@s5r6.in-berlin.de>
+-L:	linux1394-devel@lists.sourceforge.net
+-S:	Maintained
+-F:	drivers/ieee1394/raw1394*
+-
+ IEEE 802.15.4 SUBSYSTEM
+ M:	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+ M:	Sergey Lapin <slapin@ossfans.org>
 
 -- 
 Stefan Richter
