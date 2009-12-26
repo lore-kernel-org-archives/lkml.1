@@ -1,116 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbZLZVH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZLZVMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752226AbZLZVH4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 16:07:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZLZVHz
+	id S1752010AbZLZVMh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 16:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZLZVMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 16:07:55 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:50652 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbZLZVHy (ORCPT
+	Sat, 26 Dec 2009 16:12:36 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:34623 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbZLZVMf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 16:07:54 -0500
-Date: Sat, 26 Dec 2009 13:07:49 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: xfs@oss.sgi.com
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: lockdep: inconsistent lock state
-Message-ID: <alpine.DEB.2.01.0912261255380.3483@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Sat, 26 Dec 2009 16:12:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=ItGv9B5CiPSb31LVIW5ewI7v2bMf88Fm/hkQNkXxF2/gpiA79u/KR8qDGEzAP0x/ky
+         TMEnII3Nuhr+7x3PXZkwkqlV4PUv/K+SqCr0p82NBadTcOqvInegFLhvqQ0wRD56AXnt
+         AxHe4FrLs3vqaakDiu1522AToCbOGW9QqUPXE=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX18V/13chg5ldfp21hc2uqAaqojV834F/XZSpuX
- 2aPaDMniK4Qnlv2FVOeXnxUZ65mAoSJrt+V38Fl2HkSMTqd3M/
- xVtNYBSvN9B/WgXt5jtCg==
+In-Reply-To: <1261603190-5036-10-git-send-email-jason.wessel@windriver.com>
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-2-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-3-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-4-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-5-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-6-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-7-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-8-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-9-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-10-git-send-email-jason.wessel@windriver.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sat, 26 Dec 2009 16:12:13 -0500
+Message-ID: <8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com>
+Subject: Re: [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       kdb@oss.sgi.com, mingo@elte.hu, Sonic Zhang <Sonic.Zhang@analog.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Dec 23, 2009 at 16:19, Jason Wessel wrote:
+> The new debug core api requires all architectures that use to debug
+> core to implement a function to set the program counter.
+>
+> CC: Mike Frysinger <vapier@gentoo.org>
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> ---
+>  arch/blackfin/kernel/kgdb.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
+> index f1036b6..5965188 100644
+> --- a/arch/blackfin/kernel/kgdb.c
+> +++ b/arch/blackfin/kernel/kgdb.c
+> @@ -644,6 +644,11 @@ int kgdb_arch_remove_breakpoint(unsigned long addr, char *bundle)
+>        return bfin_probe_kernel_write((char *)addr, bundle, BREAK_INSTR_SIZE);
+>  }
+>
+> +void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+> +{
+> +       regs->retx = ip;
+> +}
+> +
+>  int kgdb_arch_init(void)
+>  {
+>        kgdb_single_step = 0;
 
-during tests with bonnie++ on an XFS filesystem, the warning below is 
-issued. From the message's timestamps, the warning occurs during the 
-"Create files in sequential order" phase. I've put a few more details and 
-the config here: http://nerdbynature.de/bits/2.6.33-rc2/xfs_ilock
+Sonic should be able to check this.  our pc handling seems a little wonky atm:
 
-Something similar has been reported in http://lkml.org/lkml/2009/2/20/269 
-(for 2.6.29-rc5) and a fix for this false positive made its way into 
-mainline as ed93ec3907f063268ced18728d0653f6199d100c - so I take it this 
-is a different issue then?
-
-Thanks,
-Christian.
-
- =================================
- [ INFO: inconsistent lock state ]
- 2.6.33-rc2 #1
- ---------------------------------
- inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
- kswapd1/245 [HC0[0]:SC0[0]:HE1:SE1] takes:
-  (&(&ip->i_iolock)->mr_lock#2){++++?+}, at: [<ffffffff81252f25>] xfs_ilock+0x65/0xa0
- {RECLAIM_FS-ON-W} state was registered at:
-   [<ffffffff810625d2>] mark_held_locks+0x72/0xa0
-   [<ffffffff810626b0>] lockdep_trace_alloc+0xb0/0xe0
-   [<ffffffff8108c69a>] __alloc_pages_nodemask+0x7a/0x6a0
-   [<ffffffff810b3096>] alloc_pages_current+0x76/0xe0
-   [<ffffffff81086b3b>] __page_cache_alloc+0xb/0x10
-   [<ffffffff810883ca>] grab_cache_page_write_begin+0x7a/0xc0
-   [<ffffffff810eda9c>] block_write_begin+0x8c/0x100
-   [<ffffffff81272655>] xfs_vm_write_begin+0x25/0x30
-   [<ffffffff8108634e>] generic_file_buffered_write+0xfe/0x260
-   [<ffffffff8127a963>] xfs_write+0x903/0x9a0
-   [<ffffffff812766c6>] xfs_file_aio_write+0x56/0x60
-   [<ffffffff810c4c8a>] do_sync_write+0xca/0x110
-   [<ffffffff810c4f20>] vfs_write+0xb0/0x170
-   [<ffffffff810c570c>] sys_write+0x4c/0x80
-   [<ffffffff81002dab>] system_call_fastpath+0x16/0x1b
- irq event stamp: 58749209
- hardirqs last  enabled at (58749209): [<ffffffff810629f3>] debug_check_no_locks_freed+0xa3/0x150
- hardirqs last disabled at (58749208): [<ffffffff81062990>] debug_check_no_locks_freed+0x40/0x150
- softirqs last  enabled at (58729526): [<ffffffff8103e05e>] __do_softirq+0xfe/0x150
- softirqs last disabled at (58729495): [<ffffffff81003c4c>] call_softirq+0x1c/0x30
- 
- other info that might help us debug this:
- 2 locks held by kswapd1/245:
-  #0:  (shrinker_rwsem){++++..}, at: [<ffffffff81092798>] shrink_slab+0x38/0x1a0
-  #1:  (iprune_sem){.+.+.-}, at: [<ffffffff810da41a>] shrink_icache_memory+0x7a/0x2d0
- 
- stack backtrace:
- Pid: 245, comm: kswapd1 Not tainted 2.6.33-rc2 #1
- Call Trace:
-  [<ffffffff81061490>] print_usage_bug+0x170/0x180
-  [<ffffffff810624b7>] mark_lock+0x367/0x410
-  [<ffffffff81062df9>] __lock_acquire+0x259/0x1560
-  [<ffffffff81063099>] ? __lock_acquire+0x4f9/0x1560
-  [<ffffffff812532d3>] ? xfs_ireclaim+0x83/0xe0
-  [<ffffffff8127d2aa>] ? xfs_fs_destroy_inode+0x6a/0x120
-  [<ffffffff81055f2d>] ? sched_clock_local+0x1d/0x90
-  [<ffffffff8106418f>] lock_acquire+0x8f/0xb0
-  [<ffffffff81252f25>] ? xfs_ilock+0x65/0xa0
-  [<ffffffff810560e3>] ? cpu_clock+0x43/0x50
-  [<ffffffff810544c1>] down_write_nested+0x51/0x90
-  [<ffffffff81252f25>] ? xfs_ilock+0x65/0xa0
-  [<ffffffff81252f25>] xfs_ilock+0x65/0xa0
-  [<ffffffff812532f7>] xfs_ireclaim+0xa7/0xe0
-  [<ffffffff8127d335>] xfs_fs_destroy_inode+0xf5/0x120
-  [<ffffffff810d9d3a>] destroy_inode+0x2a/0x50
-  [<ffffffff810da31d>] dispose_list+0x9d/0x120
-  [<ffffffff810da57b>] shrink_icache_memory+0x1db/0x2d0
-  [<ffffffff81092798>] ? shrink_slab+0x38/0x1a0
-  [<ffffffff81092895>] shrink_slab+0x135/0x1a0
-  [<ffffffff8109526c>] balance_pgdat+0x4fc/0x6e0
-  [<ffffffff810923b0>] ? isolate_pages_global+0x0/0x220
-  [<ffffffff81095516>] kswapd+0xc6/0x290
-  [<ffffffff8104fd10>] ? autoremove_wake_function+0x0/0x40
-  [<ffffffff81095450>] ? kswapd+0x0/0x290
-  [<ffffffff8104f86e>] kthread+0xae/0xc0
-  [<ffffffff810628ed>] ? trace_hardirqs_on_caller+0x14d/0x1a0
-  [<ffffffff81003b54>] kernel_thread_helper+0x4/0x10
-  [<ffffffff814adc3c>] ? restore_args+0x0/0x30
-  [<ffffffff8104f7c0>] ? kthread+0x0/0xc0
-  [<ffffffff81003b50>] ? kernel_thread_helper+0x0/0x10
-
--- 
-BOFH excuse #323:
-
-Your processor has processed too many instructions.  Turn it off immediately, do not type any commands!!
+arch/blackfin/kernel/kgdb.c:
+void pt_regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+{
+...
+    gdb_regs[BFIN_RETI] = regs->pc;
+    gdb_regs[BFIN_RETX] = regs->retx;
+    gdb_regs[BFIN_PC] = regs->pc;
+...
+}
+...
+void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+{
+...
+    regs->pc = gdb_regs[BFIN_PC];
+    regs->retx = gdb_regs[BFIN_PC];
+    /* nothing for BFIN_RETI */
+...
+}
+-mike
