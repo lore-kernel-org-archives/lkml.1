@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZLZNaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752115AbZLZOIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752932AbZLZNaW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 08:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZLZNaV
+	id S1752115AbZLZOIi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 09:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZLZOIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 08:30:21 -0500
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:53391 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbZLZNaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 08:30:20 -0500
-Date: Sat, 26 Dec 2009 19:00:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 0/4] cgroup notifications API and memory thresholds
-Message-ID: <20091226133011.GA10944@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <cover.1261786326.git.kirill@shutemov.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <cover.1261786326.git.kirill@shutemov.name>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Sat, 26 Dec 2009 09:08:37 -0500
+Received: from lo.gmane.org ([80.91.229.12]:57879 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750864AbZLZOIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 09:08:36 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: [RFT] Input: speed up suspend/shutdown for PS/2 mice and keyboards
+Date: Sat, 26 Dec 2009 13:40:06 +0000
+Message-ID: <magh07-258.ln1@chipmunk.wormnet.eu>
+References: <20091221070951.GA4170@core.coreip.homeip.net>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: chipmunk.wormnet.eu
+User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.26-2-sparc64-smp (sparc64))
+Cc: linux-input@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kirill A. Shutemov <kirill@shutemov.name> [2009-12-26 02:30:56]:
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> 
+> I am asking everyone to give this patch a try. It is reported to speed
+> up suspend process, however there is a risk that there are boxes out
+> there that do require full reset and I would prefer to know that sooner
+> than later.
+> 
+Seems to work on my ICH8 lapdog (a Fujitsu T2010), can't say it actually 
+speeds the suspend/resume cycle up though.
 
-> This patchset introduces eventfd-based API for notifications in cgroups and
-> implements memory notifications on top of it.
-> 
-> It uses statistics in memory controler to track memory usage.
-> 
-> Output of time(1) on building kernel on tmpfs:
-> 
-> Root cgroup before changes:
-> 	make -j2  506.37 user 60.93s system 193% cpu 4:52.77 total
-> Non-root cgroup before changes:
-> 	make -j2  507.14 user 62.66s system 193% cpu 4:54.74 total
-> Root cgroup after changes (0 thresholds):
-> 	make -j2  507.13 user 62.20s system 193% cpu 4:53.55 total
-> Non-root cgroup after changes (0 thresholds):
-> 	make -j2  507.70 user 64.20s system 193% cpu 4:55.70 total
-> Root cgroup after changes (1 thresholds, never crossed):
-> 	make -j2  506.97 user 62.20s system 193% cpu 4:53.90 total
-> Non-root cgroup after changes (1 thresholds, never crossed):
-> 	make -j2  507.55 user 64.08s system 193% cpu 4:55.63 total
-> 
-> Any comments?
-
-Could you please add some documentation for end users. I've just
-compiled a kernel with your changes for test. Also, is there a reason
-not to use cgroupstats?
+Cheers
 
 -- 
-	Balbir
+Alexander Clouter
+.sigmonster says: Bus error -- driver executed.
+
