@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZLZAqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbZLZAr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbZLZAqP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 19:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbZLZAqO
+	id S1757620AbZLZAr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 19:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbZLZAr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 19:46:14 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53639 "EHLO
+	Fri, 25 Dec 2009 19:47:27 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53641 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757476AbZLZAqN (ORCPT
+	with ESMTP id S1757488AbZLZAr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 19:46:13 -0500
+	Fri, 25 Dec 2009 19:47:26 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 26 Dec 2009 01:45:55 +0100 (CET)
+Date: Sat, 26 Dec 2009 01:47:12 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH v4l/dvb] firedtv: add forgotten __exit annotation
+Subject: [PATCH v4l/dvb] firedtv: add missing NULL pointer check
 To: linux-media@vger.kernel.org
 cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Message-ID: <tkrat.c98a9e80d83e315a@s5r6.in-berlin.de>
+Message-ID: <tkrat.4fbf5b89c63dc096@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Content-Disposition: INLINE
@@ -24,26 +24,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fdtv_fw_exit() is part of the firedtv driver's .exit.text section.
+If there is ever going to be a FireDTV or FloppyDTV firmware which does
+not provide a minimal ASCII textual descriptor for Model_Id --- or if
+the descriptor is provided indirectly in a descriptor directory ---
+the ieee1394 variant of the device probe of firedtv would dereference a
+NULL pointer.  The firewire variant of firedtv's device probe is not
+affected.
+
+The fix makes sure that such an unexpected firmware is safely recognized
+by fdtv_alloc as an unknown firmware.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/media/dvb/firewire/firedtv-fw.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/media/dvb/firewire/firedtv-1394.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-fw.c
+Index: linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-1394.c
 ===================================================================
---- linux-2.6.33-rc2.orig/drivers/media/dvb/firewire/firedtv-fw.c
-+++ linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-fw.c
-@@ -332,7 +332,7 @@ int __init fdtv_fw_init(void)
- 	return driver_register(&fdtv_driver.driver);
- }
+--- linux-2.6.33-rc2.orig/drivers/media/dvb/firewire/firedtv-1394.c
++++ linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-1394.c
+@@ -193,9 +193,13 @@ static int node_probe(struct device *dev
+ 	int kv_len, err;
+ 	void *kv_str;
  
--void fdtv_fw_exit(void)
-+void __exit fdtv_fw_exit(void)
- {
- 	driver_unregister(&fdtv_driver.driver);
- 	fw_core_remove_address_handler(&fcp_handler);
+-	kv_len = (ud->model_name_kv->value.leaf.len - 2) * sizeof(quadlet_t);
+-	kv_str = CSR1212_TEXTUAL_DESCRIPTOR_LEAF_DATA(ud->model_name_kv);
+-
++	if (ud->model_name_kv) {
++		kv_len = (ud->model_name_kv->value.leaf.len - 2) * 4;
++		kv_str = CSR1212_TEXTUAL_DESCRIPTOR_LEAF_DATA(ud->model_name_kv);
++	} else {
++		kv_len = 0;
++		kv_str = NULL;
++	}
+ 	fdtv = fdtv_alloc(dev, &fdtv_1394_backend, kv_str, kv_len);
+ 	if (!fdtv)
+ 		return -ENOMEM;
 
 -- 
 Stefan Richter
