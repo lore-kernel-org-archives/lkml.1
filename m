@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbZLZUhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbZLZVHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751547AbZLZUhq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 15:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZLZUhm
+	id S1751797AbZLZVHc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 16:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZLZVHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 15:37:42 -0500
-Received: from THUNK.ORG ([69.25.196.29]:33208 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750988AbZLZUhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 15:37:41 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 updates for v2.6.33
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1NOdOL-0001s1-4J@closure.thunk.org>
-Date: Sat, 26 Dec 2009 15:37:37 -0500
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 26 Dec 2009 16:07:31 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:46198 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbZLZVHb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 16:07:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=XxdA/etZnPLdrFzclMGW89F6SuRVr2mUmmeVIFYx4kKCg5kNlFEALoyx4VXTjbJKpV
+         k0PvS/+NmHAiO1FgDKrOZ3lNQiKCdilBNafYLj8Htv57IV54n7+sgQgJOrX3zoi9n/fd
+         I5aKHDELBtzHWmtqQNM8iDgMBX/QredSP2mAU=
+MIME-Version: 1.0
+In-Reply-To: <1261603190-5036-11-git-send-email-jason.wessel@windriver.com>
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-3-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-4-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-5-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-6-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-7-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-8-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-9-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-10-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-11-git-send-email-jason.wessel@windriver.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sat, 26 Dec 2009 16:07:10 -0500
+Message-ID: <8bd0f97a0912261307t44d27b4eyf238b3a794e6862@mail.gmail.com>
+Subject: Re: [PATCH 10/37] kgdb: Make mem access function weak in kgdb.c and 
+	kgdb.h
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       kdb@oss.sgi.com, mingo@elte.hu, Sonic Zhang <sonic.adi@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, Dec 23, 2009 at 16:19, Jason Wessel wrote:
+> L1 instruction memory and MMR memory on blackfin can not be accessed by
+> common functions probe_kernel_read() and probe_kernel_write().
+> Blackfin asks for 2/4 byte align access to MMR memory and DMA access to
+> L1 instruction memory. These functions need to be reimplemented in
+> architecture specific kgdb.c. Update documentation and prototypes as
+> well.
 
-Please pull from:
+considering these functions were made weak only because of
+probe_kernel_(read|write), then perhaps it makes more sense to move
+the work there.  it would mean that all consumers of these functions
+work properly instead of just kgdb.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
-
-to grab the following bug fixes for v2.6.33.
-
-Thanks!!
-
-							- Ted
-
- Documentation/filesystems/ext4.txt |    2 +-
- fs/ext4/Kconfig                    |    1 +
- fs/ext4/block_validity.c           |    1 -
- fs/ext4/extents.c                  |   31 ++++++++++++++++++++++++++++---
- fs/ext4/fsync.c                    |   16 ++++++++++++++--
- fs/ext4/inode.c                    |   14 ++++++++++----
- fs/ext4/mballoc.h                  |    1 -
- fs/ext4/super.c                    |    6 ++++--
- fs/ext4/xattr.c                    |    2 ++
- fs/fs-writeback.c                  |   17 +++++++++++++++++
- fs/jbd2/checkpoint.c               |   15 +++++++++++++++
- fs/jbd2/commit.c                   |   19 +++++++++++--------
- fs/jbd2/journal.c                  |    5 +++--
- include/linux/jbd2.h               |    1 +
- include/linux/writeback.h          |    1 +
- 15 files changed, 108 insertions(+), 24 deletions(-)
-
-Andrew Morton (2):
-      ext4: fix unsigned long long printk warning in super.c
-      jbd2: don't use __GFP_NOFAIL in journal_init_common()
-
-Curt Wohlgemuth (1):
-      ext4: Ensure zeroout blocks have no dirty metadata
-
-David Howells (1):
-      ext4: Don't ask about supporting ext2/3 in ext4 if ext4 is not configured
-
-Eric Sandeen (2):
-      fs-writeback: Add helper function to start writeback if idle
-      ext4: flush delalloc blocks when space is low
-
-Fang Wenqi (1):
-      ext4: Update documentation to correct the inode_readahead_blks option name
-
-Huang Weiyi (1):
-      ext4: remove unused #include <linux/version.h>
-
-Julia Lawall (1):
-      ext4: Eliminate potential double free on error path
-
-Richard Kennedy (1):
-      ext4: return correct wbc.nr_to_write in ext4_da_writepages
-
-Surbhi Palande (1):
-      ext4: replace BUG() with return -EIO in ext4_ext_get_blocks
-
-Theodore Ts'o (2):
-      ext4: add module aliases for ext2 and ext3
-      ext4, jbd2: Add barriers for file systems with exernal journals
-
-Yin, Kangkai (1):
-      jbd2: /sys/kernel/debug/jbd2/jbd2-debug should be writable.
-
+probe_kernel_write is already weak ... we just need to add weak to
+probe_kernel_read i think, and make the functions available via a
+"default" symbol so that arch overrides can tail back into the common
+code when it makes sense.
+-mike
