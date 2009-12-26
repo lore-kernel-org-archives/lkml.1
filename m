@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751519AbZLZETh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751650AbZLZEUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751519AbZLZETh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 23:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZLZETg
+	id S1751650AbZLZEUY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 23:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZLZEUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 23:19:36 -0500
-Received: from vms173017pub.verizon.net ([206.46.173.17]:35425 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750856AbZLZETf (ORCPT
+	Fri, 25 Dec 2009 23:20:23 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41409 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750995AbZLZEUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 23:19:35 -0500
-Date: Fri, 25 Dec 2009 23:18:57 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: werner <w.landgraf@ru.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: kernel problem 2.6.33-rc2
-In-reply-to: <web-122887026@zbackend1.aha.ru>
-Message-id: <alpine.LFD.2.00.0912252318090.4046@localhost.localdomain>
-References: <web-122887026@zbackend1.aha.ru>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 25 Dec 2009 23:20:22 -0500
+X-Sasl-enc: nEE19jE1caMsyaA+Z+NXQyM4/mnT92ILMzDekbuxk4hH 1261801220
+Date: Sat, 26 Dec 2009 02:20:17 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Joe Perches <joe@perches.com>
+Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       Len Brown <len.brown@intel.com>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] thinkpad_acpi.c: Remove #define TPACPI_<level>s for
+ printks
+Message-ID: <20091226042017.GA14921@khazad-dum.debian.net>
+References: <1261797801.2568.69.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261797801.2568.69.camel@Joe-Laptop.home>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> dell_wmi_init
+On Fri, 25 Dec 2009, Joe Perches wrote:
+> The use of printk(TPACPI_<level> is unusual.
+> Make it a bit more kernel normal style.
 
-Please try this patch.
+NAK.
 
->From d11e073ee3e3091d9190dace97ce480e960cca1b Mon Sep 17 00:00:00 2001
-From: Len Brown <len.brown@intel.com>
-Date: Fri, 25 Dec 2009 23:14:26 -0500
-Subject: [PATCH] Revert "wmi: Free the allocated acpi objects through wmi_get_event_data"
-X-Patchwork-Hint: ignore
+This is likely purely a taste thing, but I completely fail to see how this:
 
-This reverts commit 3e9b988e4edf065d39c1343937f717319b1c1065.
+> -	printk(TPACPI_DEBUG "%s: access by process with PID %d\n",
+> -		what, task_tgid_vnr(current));
+> +	printk(KERN_DEBUG pr_fmt("%s: access by process with PID %d\n"),
+> +	       what, task_tgid_vnr(current));
 
-Reported-by: Sedat Dilek <sedat.dilek@googlemail.com>
-Tested-by Maciej Rutecki <maciej.rutecki@gmail.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/platform/x86/dell-wmi.c |    1 -
- drivers/platform/x86/hp-wmi.c   |    2 --
- drivers/platform/x86/wmi.c      |    4 ++--
- 3 files changed, 2 insertions(+), 5 deletions(-)
+is a good thing at all.  Maybe you could convince me to change my mind about
+it but I dislike the resuling uglyness, so I will need a good technical
+reason to even consider it.
 
-diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
-index 916ccb2..46244c6 100644
---- a/drivers/platform/x86/dell-wmi.c
-+++ b/drivers/platform/x86/dell-wmi.c
-@@ -238,7 +238,6 @@ static void dell_wmi_notify(u32 value, void *context)
- 			input_sync(dell_wmi_input_dev);
- 		}
- 	}
--	kfree(obj);
- }
- 
- 
-diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
-index 8781d8f..222ab57 100644
---- a/drivers/platform/x86/hp-wmi.c
-+++ b/drivers/platform/x86/hp-wmi.c
-@@ -388,8 +388,6 @@ static void hp_wmi_notify(u32 value, void *context)
- 	} else
- 		printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",
- 			eventcode);
--
--	kfree(obj);
- }
- 
- static int __init hp_wmi_input_setup(void)
-diff --git a/drivers/platform/x86/wmi.c b/drivers/platform/x86/wmi.c
-index 9f93d6c..e425a86 100644
---- a/drivers/platform/x86/wmi.c
-+++ b/drivers/platform/x86/wmi.c
-@@ -540,8 +540,8 @@ EXPORT_SYMBOL_GPL(wmi_remove_notify_handler);
- /**
-  * wmi_get_event_data - Get WMI data associated with an event
-  *
-- * @event: Event to find
-- * @out: Buffer to hold event data. out->pointer should be freed with kfree()
-+ * @event - Event to find
-+ * &out - Buffer to hold event data
-  *
-  * Returns extra data associated with an event in WMI.
-  */
+Why would I want a parameter macro instead of a straightforward bunch of
+#defines ?  It is not like the #defines are harder to understand than this
+pr_fmt thing.
+
+>  	if (!*fmt) {
+> -		printk(TPACPI_ERR "acpi_evalf() called with empty format\n");
+> +		pr_err("acpi_evalf() called with empty format\n");
+>  		return 0;
+
+I am with Peter Zijlstra on this one.  I don't want the pr_foo() siliness in
+code I maintain.  You could perhaps convince me to change what is inside the
+printk(), but the fact that my printk helpers end with "_printk" is not a
+coincidence.
+
 -- 
-1.6.6.rc4.11.g129a5
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
