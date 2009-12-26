@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbZLZRF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbZLZRMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbZLZRF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 12:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZLZRF0
+	id S1752763AbZLZRMI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 12:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZLZRMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 12:05:26 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:51610 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZLZRFZ convert rfc822-to-8bit (ORCPT
+	Sat, 26 Dec 2009 12:12:06 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:50532 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbZLZRMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 12:05:25 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] [KFIFO] Fix typo in comment
-Date: Sat, 26 Dec 2009 18:05:24 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.85; i686; ; )
+	Sat, 26 Dec 2009 12:12:05 -0500
+Date: Sat, 26 Dec 2009 18:12:02 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       DSA <debian-admin@lists.debian.org>, linux-input@vger.kernel.org
+Subject: Re: 2.6.32.1: BUG and panic: unable to handle kernel NULL pointer
+	dereference at 000000000000001f
+Message-ID: <20091226171202.GB10256@basil.fritz.box>
+References: <20091215162736.GS13850@anguilla.noreply.org> <871vindxkv.fsf@basil.nowhere.org> <20091222183354.GM13850@anguilla.noreply.org> <20091222185758.GN13850@anguilla.noreply.org> <20091224130425.GW13850@anguilla.noreply.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912261805.25080.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091224130425.GW13850@anguilla.noreply.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 0daa838f60cb4ebf41885155f3144711f14a05c8 Mon Sep 17 00:00:00 2001
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Date: Sat, 26 Dec 2009 17:58:11 +0100
-Subject: [PATCH] [KFIFO] Fix typo in comment
+On Thu, Dec 24, 2009 at 02:04:25PM +0100, Peter Palfrader wrote:
+> On Tue, 22 Dec 2009, Peter Palfrader wrote:
+> 
+> > On Tue, 22 Dec 2009, Peter Palfrader wrote:
+> > 
+> > > > If that doesn't help perhaps disable CONFIG_HID_GYRATION,
+> > > > but from your other oops something more seems to be broken anyways.
+> > > 
+> > > This is a static kernel - no module support.  Anyway, I also tried
+> > > without CONFIG_USB_HID (which pulls in all the other HID_* things) but
+> > > no luck.
+> > 
+> > However, disabling all of HID (CONFIG_HID_SUPPORT=n) makes the system
+> > boot (Previously HID, HIDRAW and HID_SUPPORT were still enabled).
 
-It's DECLARE_KFIFO, not DECLARED_KFIFO.
+It's suspicious if you don't have such devices, that would
+point to something being confused in the driver probing 
+layer.
 
-Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
----
- include/linux/kfifo.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> However, I still see panics on boot occassionally, tho not so often or
+> reproducible.  So far only on dl385 (opteron) systems.
 
-diff --git a/include/linux/kfifo.h b/include/linux/kfifo.h
-index 3d44e9c..7c6b32a 100644
---- a/include/linux/kfifo.h
-+++ b/include/linux/kfifo.h
-@@ -81,7 +81,7 @@ union { \
- }
- 
- /**
-- * INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
-+ * INIT_KFIFO - Initialize a kfifo declared by DECLARE_KFIFO
-  * @name: name of the declared kfifo datatype
-  */
- #define INIT_KFIFO(name) \
+Multiple systems and the same oopses?
+
+> 
+> And all of the backtraces go through sysfs_new_dirent() near the top.
+
+Please post full oopses.
+
+-Andi
+
 -- 
-1.6.4.2
-
+ak@linux.intel.com -- Speaking for myself only.
