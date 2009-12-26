@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751089AbZLZFPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751411AbZLZFrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751089AbZLZFPS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 00:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbZLZFPP
+	id S1751411AbZLZFrh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 00:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZLZFrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 00:15:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36131 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbZLZFPO (ORCPT
+	Sat, 26 Dec 2009 00:47:36 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:59577 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbZLZFrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 00:15:14 -0500
-Message-ID: <4B359BC0.3080808@zytor.com>
-Date: Fri, 25 Dec 2009 21:14:40 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Sat, 26 Dec 2009 00:47:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=CPdp8hJIoiuvCIO7JIznKa2s2U3zdq+sjPedzQ6xXwxxLQ4XEhgsCzbNzkIZO9VwtR
+         zA7+TxUgoO3mjoGzDIV7GA/uxsxL+tZzpgXnZS2AJmxhzD62oykf8Q+6ayzlE2sQHAp4
+         QTTXVk2UmLmBG4kQ7wOm5m5JGGHcHSJXGxwzw=
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Simon Horman <horms@verge.net.au>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Michal Marek <mmarek@sues.cz>,
-       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch] Makefile: Unexport LANG
-References: <20091224111300.GA31932@verge.net.au> <4B359166.3050106@redhat.com>
-In-Reply-To: <4B359166.3050106@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200912251744.43987.tvrtko@ursulin.net>
+References: <200912251744.43987.tvrtko@ursulin.net>
+Date: Fri, 25 Dec 2009 21:47:34 -0800
+X-Google-Sender-Auth: f08f5a7678a1bb16
+Message-ID: <86802c440912252147t5891e00bka386ab44da5afbf@mail.gmail.com>
+Subject: Re: 2.6.33-rc1: 6 Processors exceeds NR_CPUS limit of 4
+From: Yinghai Lu <yinghai@kernel.org>
+To: Tvrtko Ursulin <tvrtko@ursulin.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/25/2009 08:30 PM, Masami Hiramatsu wrote:
->>  
->>  # Avoid funny character set dependencies
->> +unexport LANG
->>  unexport LC_ALL
->>  LC_CTYPE=C
->>  LC_COLLATE=C
-> 
+On Fri, Dec 25, 2009 at 9:44 AM, Tvrtko Ursulin <tvrtko@ursulin.net> wrote:
+>
+> Hi,
+>
+> Just noticed this message in dmesg. What is this about? Machine is supposed to
+> have a dual core CPU "unlocked" to four cores and it works like that without
+> any visible problems so far:
 
-At this point, it seems to me that we should just LC_ALL=C and be done
-with it (see other thread.)
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x02] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x04] lapic_id[0x03] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x05] lapic_id[0x84] disabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x06] lapic_id[0x85] disabled)
+[    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 4, version 33, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+[    0.000000] ACPI: IRQ0 used by override.
+[    0.000000] ACPI: IRQ2 used by override.
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] Using ACPI (MADT) for SMP configuration information
+[    0.000000] ACPI: HPET id: 0x8300 base: 0xfed00000
+[    0.000000] 6 Processors exceeds NR_CPUS limit of 4
 
-	-hpa
+MADT has two disable entries...
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+YH
