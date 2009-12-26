@@ -1,92 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZLZVMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbZLZVdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbZLZVMh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 16:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZLZVMg
+	id S1751907AbZLZVdd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 16:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZLZVdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 16:12:36 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:34623 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbZLZVMf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 16:12:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ItGv9B5CiPSb31LVIW5ewI7v2bMf88Fm/hkQNkXxF2/gpiA79u/KR8qDGEzAP0x/ky
-         TMEnII3Nuhr+7x3PXZkwkqlV4PUv/K+SqCr0p82NBadTcOqvInegFLhvqQ0wRD56AXnt
-         AxHe4FrLs3vqaakDiu1522AToCbOGW9QqUPXE=
+	Sat, 26 Dec 2009 16:33:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58678 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751395AbZLZVdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 16:33:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] [RFC] Asynchronous suspend/resume - test results
+Date: Sat, 26 Dec 2009 22:33:45 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Jiri Slaby <jslaby@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200912210140.19713.rjw@sisk.pl> <200912242310.42615.rjw@sisk.pl> <4B35272D.7040207@crca.org.au>
+In-Reply-To: <4B35272D.7040207@crca.org.au>
 MIME-Version: 1.0
-In-Reply-To: <1261603190-5036-10-git-send-email-jason.wessel@windriver.com>
-References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-2-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-3-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-4-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-5-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-6-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-7-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-8-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-9-git-send-email-jason.wessel@windriver.com> 
-	<1261603190-5036-10-git-send-email-jason.wessel@windriver.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sat, 26 Dec 2009 16:12:13 -0500
-Message-ID: <8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com>
-Subject: Re: [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       kdb@oss.sgi.com, mingo@elte.hu, Sonic Zhang <Sonic.Zhang@analog.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912262233.45626.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 23, 2009 at 16:19, Jason Wessel wrote:
-> The new debug core api requires all architectures that use to debug
-> core to implement a function to set the program counter.
->
-> CC: Mike Frysinger <vapier@gentoo.org>
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
->  arch/blackfin/kernel/kgdb.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
-> index f1036b6..5965188 100644
-> --- a/arch/blackfin/kernel/kgdb.c
-> +++ b/arch/blackfin/kernel/kgdb.c
-> @@ -644,6 +644,11 @@ int kgdb_arch_remove_breakpoint(unsigned long addr, char *bundle)
->        return bfin_probe_kernel_write((char *)addr, bundle, BREAK_INSTR_SIZE);
->  }
->
-> +void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
-> +{
-> +       regs->retx = ip;
-> +}
-> +
->  int kgdb_arch_init(void)
->  {
->        kgdb_single_step = 0;
+On Friday 25 December 2009, Nigel Cunningham wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday 24 December 2009, Nigel Cunningham wrote:
+> >> Hi.
+> > 
+> > Hi, 
+> > 
+> >> I built the async branch of your tree and tested it, also running
+> >> 2.6.33-rc1 + TuxOnIce for comparison. Dmesg for both are attached. Is
+> >> there anything I can/should be doing for you on top of this?
+> > 
+> > No, thanks a lot.
+> > 
+> >> I'll try Dmitry's patch on top of this a little later - other things to do first.
+> > 
+> > No need for that, the patchset contains an equivalent of the Dmitry's patch.
+> > 
+> >> I noticed that you were doing standard deviations in your stats - how
+> >> many runs were you basing them on?
+> > 
+> > I usually run 10 iterations of suspend-resume for each configuration.
+> > The raw data are at http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
+> > if you're interested.
+> > 
+> >> Not sure that I can be bothered to do too many - too much else to do!
+> > 
+> > Sure, thanks a lot anyway.  Your data confirn that there's a measurable gain
+> > from suspending and resuming devices asynchronously.
+> 
+> It did? I thought it showed no difference at all!
 
-Sonic should be able to check this.  our pc handling seems a little wonky atm:
+Yes, it did.  Please compare these lines:
 
-arch/blackfin/kernel/kgdb.c:
-void pt_regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
-{
-...
-    gdb_regs[BFIN_RETI] = regs->pc;
-    gdb_regs[BFIN_RETX] = regs->retx;
-    gdb_regs[BFIN_PC] = regs->pc;
-...
-}
-...
-void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs)
-{
-...
-    regs->pc = gdb_regs[BFIN_PC];
-    regs->retx = gdb_regs[BFIN_PC];
-    /* nothing for BFIN_RETI */
-...
-}
--mike
+(from the "sync" dmesg):
+[   31.640676] PM: freeze of devices complete after 709.277 msecs
+[   37.087548] PM: restore of devices complete after 4973.508 msecs
+
+(from the "async" dmesg):
+[   25.600067] PM: freeze of devices complete after 620.429 msecs
+[   29.195366] PM: restore of devices complete after 3057.982 msecs
+
+So clearly, there's a difference. :-)
+
+Of course, in terms of total hibernate/restore time this is only a little
+improvement, but if that was suspend to RAM and resume, the reduction of
+the device resume time by almost 2 s would be a big deal.
+
+> I'll see if I can find the time to do the other computers, then.
+
+I'd appreciate that very much.
+
+> We're going away for a couple of weeks on Monday, though, so I'm not sure
+> that I'll get the time beforehand.
+
+OK
+
+Rafael
