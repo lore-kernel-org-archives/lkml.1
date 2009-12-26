@@ -1,97 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZLZVlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbZLZVmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZLZVlu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 16:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZLZVlt
+	id S1753581AbZLZVmz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 16:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZLZVmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 16:41:49 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:33557 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbZLZVlr (ORCPT
+	Sat, 26 Dec 2009 16:42:54 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:35313 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752010AbZLZVmx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 16:41:47 -0500
-Date: Sat, 26 Dec 2009 13:41:46 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Li Yang-R58472 <r58472@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>, herbert@gondor.apana.org.au,
-       Tabi Timur-B04825 <B04825@freescale.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Suresh Vishnu-B05022 <B05022@freescale.com>,
-       linux-crypto@vger.kernel.org,
-       Dudhat Dipen-B09055 <B09055@freescale.com>,
-       Gupta Maneesh-B18878 <B18878@freescale.com>
-Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR
- offload
-Message-ID: <20091226214146.GA4904@ovro.caltech.edu>
-References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
- <20091216164144.daff5468.kim.phillips@freescale.com>
- <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
- <4B296394.9010709@intel.com>
- <20091217170958.GE18271@ovro.caltech.edu>
- <4B2A6DFA.6000504@intel.com>
- <3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
- <e9c3a7c20912181417v2b8155e5w23fb3cee02b9a4c9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e9c3a7c20912181417v2b8155e5w23fb3cee02b9a4c9@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Sat, 26 Dec 2009 13:41:47 -0800 (PST)
+	Sat, 26 Dec 2009 16:42:53 -0500
+Date: Sat, 26 Dec 2009 13:42:31 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: netdev@vger.kernel.org, linux-net@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] iproute 2.6.32 released
+Message-ID: <20091226134231.06bf822e@nehalam>
+In-Reply-To: <8bd0f97a0912261338w62b810bdh3e660ae61b8ae975@mail.gmail.com>
+References: <20091226105821.52d36ba8@nehalam>
+	<8bd0f97a0912261143h48aaaaefw5a83e65120629e75@mail.gmail.com>
+	<20091226133604.7f85a4e7@nehalam>
+	<8bd0f97a0912261338w62b810bdh3e660ae61b8ae975@mail.gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 03:17:42PM -0700, Dan Williams wrote:
-> On Fri, Dec 18, 2009 at 8:02 AM, Li Yang-R58472 <r58472@freescale.com> wrote:
+On Sat, 26 Dec 2009 16:38:21 -0500
+Mike Frysinger <vapier.adi@gmail.com> wrote:
+
+> On Sat, Dec 26, 2009 at 16:36, Stephen Hemminger wrote:
+> > On Sat, 26 Dec 2009 14:43:10 -0500
+> > Mike Frysinger <vapier.adi@gmail.com> wrote:
 > >
-> >>Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for
-> >>Async_tx XOR offload
+> >> On Sat, Dec 26, 2009 at 13:58, Stephen Hemminger wrote:
+> >> > This version of iproute2 utilities includes the changes necessary to support all the features in
+> >> > 2.6.32, but should be backward compatible with older releases. Lots of bug fixes and little
+> >> > things, the main area of change is around the always problematic 'ip route flush' interface.
+> >> >
+> >> > The tar ball is available at:
+> >> > Â http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.31.tar.bz2
 > >>
-> >>Ira W. Snyder wrote:
-> >>> Yes, I have used the device_prep_dma_interrupt()
-> >>functionality quite a
-> >>> while back. However, I found it to be pretty much useless.
-> >>
-> >>The specific case it is needed for Talitos/raid is a channel
-> >>switch interrupt.  The interrupt causes the cleanup operation
-> >>to be run which will kick off any pending dependent operations
-> >>on the xor channel.  In the raid case we only have callbacks
-> >>at the end of a chain, so we need the interrupt to kick the
-> >>engine in an operation chain like
-> >>xor->copy->xor->callback.
+> >> URL and git says 2.6.31, but subject says 2.6.32, so i'm guessing
+> >> subject is the typoe
 > >
-> > I am wondering if can use more callbacks to kick off pending dependent operations?
-> > Like xor->callback->copy->callback->xor->callback?
-> >
+> > Actually, the url is typo
 > 
-> No, the callback field is reserved for clients of the api.  What you want is:
-> 
-> xor->cleanupT->copy->cleanupF->xor->cleanupT->callback
-> 
-> Where cleanupT is the Talitos descriptor cleanup routine and cleanupF
-> is from fsldma.  The assumption is that the interrupt kicks the
-> cleanup routine and that calls dma_run_dependencies().
-> 
+> there is no 2.6.32 tarball in the dir indicated by the URL.  there is
+> however a 2.6.31 tarball dated today.
+> -mike
 
-Hello Dan,
+The name is wrong but the code is up to date with 2.6.32.
 
-I guess it is not clear to driver authors that they should call
-dma_run_dependencies() for each dma_async_tx_descriptor that is
-processed. Without a careful re-reading of this email, I would not have
-known. I guess anyone reviewing the driver missed it too. Judging by the
-code in other drivers, it should be called immediately after calling the
-callback function. The fsldma driver doesn't even call the function at
-the moment.
 
-To the people testing fsldma with talitos: you should probably try
-adding a call to dma_run_dependencies() in the fsl_chan_ld_cleanup()
-function. Then run your tests again, and see if the interoperability
-problems are fixed.
-
-I'm still working through a cleanup patch series. There are some places
-where the locking doesn't seem right to me, and I'll be attempting to
-fix those as I go through the driver.
-
-Ira
+-- 
