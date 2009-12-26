@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbZLZTmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZLZTne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753581AbZLZTmU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 14:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZLZTmR
+	id S1753977AbZLZTne (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 14:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZLZTnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 14:42:17 -0500
-Received: from vms173005pub.verizon.net ([206.46.173.5]:49667 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbZLZTmQ (ORCPT
+	Sat, 26 Dec 2009 14:43:33 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:35437 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbZLZTnc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 14:42:16 -0500
-Date: Sat, 26 Dec 2009 14:42:02 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>, Matthew Garrett <mjg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH] ACPI: WMI: Handle duplicate GUIDs
-In-reply-to: <200912261914.59515.carlos@strangeworlds.co.uk>
-Message-id: <alpine.LFD.2.00.0912261440290.4089@localhost.localdomain>
-References: <4B352513.90302@lwfinger.net>
- <200912261836.41882.carlos@strangeworlds.co.uk>
- <4B365E56.9030302@lwfinger.net> <200912261914.59515.carlos@strangeworlds.co.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 26 Dec 2009 14:43:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=V/sfO4FqnDw1aPDWSADreymYjqBc/PMmr21N2TOFKP5JA5Q1NCXer1jyXLzNGXJ1qb
+         qyro74k1lyIgZLRrGajGOBOwZAs6163P8CkXSMdnlT+8QkUy0LppwqQ+gK8VmEBW17SV
+         4dUMzz2DDYr4rGDexO5cLKljTJIl/mGny7NEk=
+MIME-Version: 1.0
+In-Reply-To: <20091226105821.52d36ba8@nehalam>
+References: <20091226105821.52d36ba8@nehalam>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sat, 26 Dec 2009 14:43:10 -0500
+Message-ID: <8bd0f97a0912261143h48aaaaefw5a83e65120629e75@mail.gmail.com>
+Subject: Re: [ANNOUNCE] iproute 2.6.32 released
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: netdev@vger.kernel.org, linux-net@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied to acpi-test, after satisfying checkpatch's brace-foo below.
+On Sat, Dec 26, 2009 at 13:58, Stephen Hemminger wrote:
+> This version of iproute2 utilities includes the changes necessary to support all the features in
+> 2.6.32, but should be backward compatible with older releases. Lots of bug fixes and little
+> things, the main area of change is around the always problematic 'ip route flush' interface.
+>
+> The tar ball is available at:
+>  http://devresources.linuxfoundation.org/dev/iproute2/download/iproute2-2.6.31.tar.bz2
 
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-ERROR: open brace '{' following function declarations go on the next line
-#34: FILE: drivers/platform/x86/wmi.c:719:
-+static bool guid_already_parsed(const char *guid_string) {
-
-WARNING: braces {} are not necessary for single statement blocks
-#43: FILE: drivers/platform/x86/wmi.c:728:
-+		if (strncmp(gblock->guid, guid_string, 16) == 0) {
-+			return true;
-+		}
-
-total: 1 errors, 1 warnings, 48 lines checked
-
+URL and git says 2.6.31, but subject says 2.6.32, so i'm guessing
+subject is the typoe
+-mike
