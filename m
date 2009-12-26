@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZLZWOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZLZVlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZLZWOK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 17:14:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZLZWOI
+	id S1753351AbZLZVlu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 16:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZLZVlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 17:14:08 -0500
-Received: from toro.web-alm.net ([62.245.132.31]:35238 "EHLO toro.web-alm.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752873AbZLZWOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 17:14:07 -0500
-Message-Id: <20091226214229.782692524@osadl.org>
-User-Agent: quilt/0.47-1
-Date: Sat, 26 Dec 2009 22:41:16 +0100
-From: Carsten Emde <C.Emde@osadl.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT-users <linux-rt-users@vger.kernel.org>,
-       Carsten Emde <C.Emde@osadl.org>
-Subject: [PATCH 2/2] add-trace_clock-to-ftrace-docs.patch
-References: <20091226214114.843059850@osadl.org>
-Content-Disposition: inline; filename=add-trace_clock-to-ftrace-docs.patch
+	Sat, 26 Dec 2009 16:41:49 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:33557 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbZLZVlr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 16:41:47 -0500
+Date: Sat, 26 Dec 2009 13:41:46 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+       Kumar Gala <galak@kernel.crashing.org>, herbert@gondor.apana.org.au,
+       Tabi Timur-B04825 <B04825@freescale.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Suresh Vishnu-B05022 <B05022@freescale.com>,
+       linux-crypto@vger.kernel.org,
+       Dudhat Dipen-B09055 <B09055@freescale.com>,
+       Gupta Maneesh-B18878 <B18878@freescale.com>
+Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for Async_tx XOR
+ offload
+Message-ID: <20091226214146.GA4904@ovro.caltech.edu>
+References: <1260977698-4076-1-git-send-email-Vishnu@freescale.com>
+ <20091216164144.daff5468.kim.phillips@freescale.com>
+ <2868C8CF-584B-4FA7-9C3B-2FACEF77527E@kernel.crashing.org>
+ <4B296394.9010709@intel.com>
+ <20091217170958.GE18271@ovro.caltech.edu>
+ <4B2A6DFA.6000504@intel.com>
+ <3A45394FD742FA419B760BB8D398F9ED01059526@zch01exm26.fsl.freescale.net>
+ <e9c3a7c20912181417v2b8155e5w23fb3cee02b9a4c9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e9c3a7c20912181417v2b8155e5w23fb3cee02b9a4c9@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Sat, 26 Dec 2009 13:41:47 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an explanation of the trace variable
-trace_clock to the ftrace documentation.
+On Fri, Dec 18, 2009 at 03:17:42PM -0700, Dan Williams wrote:
+> On Fri, Dec 18, 2009 at 8:02 AM, Li Yang-R58472 <r58472@freescale.com> wrote:
+> >
+> >>Subject: Re: [PATCH v2 2/2] Crypto: Talitos: Support for
+> >>Async_tx XOR offload
+> >>
+> >>Ira W. Snyder wrote:
+> >>> Yes, I have used the device_prep_dma_interrupt()
+> >>functionality quite a
+> >>> while back. However, I found it to be pretty much useless.
+> >>
+> >>The specific case it is needed for Talitos/raid is a channel
+> >>switch interrupt.  The interrupt causes the cleanup operation
+> >>to be run which will kick off any pending dependent operations
+> >>on the xor channel.  In the raid case we only have callbacks
+> >>at the end of a chain, so we need the interrupt to kick the
+> >>engine in an operation chain like
+> >>xor->copy->xor->callback.
+> >
+> > I am wondering if can use more callbacks to kick off pending dependent operations?
+> > Like xor->callback->copy->callback->xor->callback?
+> >
+> 
+> No, the callback field is reserved for clients of the api.  What you want is:
+> 
+> xor->cleanupT->copy->cleanupF->xor->cleanupT->callback
+> 
+> Where cleanupT is the Talitos descriptor cleanup routine and cleanupF
+> is from fsldma.  The assumption is that the interrupt kicks the
+> cleanup routine and that calls dma_run_dependencies().
+> 
 
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+Hello Dan,
 
-Index: linux-2.6.33-rc2/Documentation/trace/ftrace.txt
-===================================================================
---- linux-2.6.33-rc2.orig/Documentation/trace/ftrace.txt
-+++ linux-2.6.33-rc2/Documentation/trace/ftrace.txt
-@@ -91,6 +91,33 @@ of ftrace. Here is a list of some of the
- 	This file holds the output of the trace in a human
- 	readable format (described below).
- 
-+  trace_clock:
-+
-+	Three different clocks are available for the tracer
-+	timestamps, "local", "medium" and "global". For the
-+	time being, however, the "medium" clock is disabled
-+	in the source code and requires the line
-+		{ trace_clock,		"medium" },
-+	to be inserted in kernel/trace/trace.c between
-+		{ trace_clock_local,	"local" },
-+	and
-+		{ trace_clock_global,	"global" },
-+	- The "local" clock is the simplest and least coherent
-+	tracing clock. It is useful for tracing that does not
-+	cross to other CPUs nor does it go through idle events.
-+	- The "medium" clock is a scalable global clock with
-+	some jitter. It is not completely serialized, but not
-+	completely incorrect when crossing CPUs either.
-+	- The "global" clock is a globally monotonic, serialized
-+	clock. It has a higher overhead than the "local" and the
-+	"medium" trace clock but is still an order of magnitude
-+	faster than a hardware clock based on the gettimeofday()
-+	function would be.
-+
-+	The content of trace_clock displays the available tracer
-+	clocks, the name of the currently selected clock is
-+	surrounded by square brackets.
-+
-   trace_pipe:
- 
- 	The output is the same as the "trace" file but this
+I guess it is not clear to driver authors that they should call
+dma_run_dependencies() for each dma_async_tx_descriptor that is
+processed. Without a careful re-reading of this email, I would not have
+known. I guess anyone reviewing the driver missed it too. Judging by the
+code in other drivers, it should be called immediately after calling the
+callback function. The fsldma driver doesn't even call the function at
+the moment.
 
+To the people testing fsldma with talitos: you should probably try
+adding a call to dma_run_dependencies() in the fsl_chan_ld_cleanup()
+function. Then run your tests again, and see if the interoperability
+problems are fixed.
+
+I'm still working through a cleanup patch series. There are some places
+where the locking doesn't seem right to me, and I'll be attempting to
+fix those as I go through the driver.
+
+Ira
