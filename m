@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZLZT3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbZLZTmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZLZT3Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 14:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZLZT3P
+	id S1753581AbZLZTmU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 14:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZLZTmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 14:29:15 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:34976 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753222AbZLZT3O (ORCPT
+	Sat, 26 Dec 2009 14:42:17 -0500
+Received: from vms173005pub.verizon.net ([206.46.173.5]:49667 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbZLZTmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 14:29:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=DVks+BzfAwNuVP+bX8XYgnCuim2IINo6IPTmldGMTZtc/9Gte7GQeos++CjKXXkIED
-         6xgV39HdbicwXE8dajyWwQoMNS31v24NOgqPEzACdLFEJVK5XQQUX1kAYo6W7Od2RxtQ
-         Gb3iISKMM1zOuGOLmV8J1jSQnDNTTj5BVtqtc=
-Message-ID: <4B3664AF.6090302@gmail.com>
-Date: Sat, 26 Dec 2009 20:31:59 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] wl1251: timeout one too soon in wl1251_boot_run_firmware()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Dec 2009 14:42:16 -0500
+Date: Sat, 26 Dec 2009 14:42:02 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, Matthew Garrett <mjg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: WMI: Handle duplicate GUIDs
+In-reply-to: <200912261914.59515.carlos@strangeworlds.co.uk>
+Message-id: <alpine.LFD.2.00.0912261440290.4089@localhost.localdomain>
+References: <4B352513.90302@lwfinger.net>
+ <200912261836.41882.carlos@strangeworlds.co.uk>
+ <4B365E56.9030302@lwfinger.net> <200912261914.59515.carlos@strangeworlds.co.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-`loop' reaches INIT_LOOP + 1 after the loop. so if ACX_INTR_INIT_COMPLETE
-occurs in the last iteration the write occurs but also the error out as if a
-timeout occurred. This is probably very unlikely to ever occur.
+applied to acpi-test, after satisfying checkpatch's brace-foo below.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/net/wireless/wl12xx/wl1251_boot.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-diff --git a/drivers/net/wireless/wl12xx/wl1251_boot.c b/drivers/net/wireless/wl12xx/wl1251_boot.c
-index 2e733e7..28a8086 100644
---- a/drivers/net/wireless/wl12xx/wl1251_boot.c
-+++ b/drivers/net/wireless/wl12xx/wl1251_boot.c
-@@ -256,7 +256,7 @@ int wl1251_boot_run_firmware(struct wl1251 *wl)
- 		}
- 	}
- 
--	if (loop >= INIT_LOOP) {
-+	if (loop > INIT_LOOP) {
- 		wl1251_error("timeout waiting for the hardware to "
- 			     "complete initialization");
- 		return -EIO;
+ERROR: open brace '{' following function declarations go on the next line
+#34: FILE: drivers/platform/x86/wmi.c:719:
++static bool guid_already_parsed(const char *guid_string) {
+
+WARNING: braces {} are not necessary for single statement blocks
+#43: FILE: drivers/platform/x86/wmi.c:728:
++		if (strncmp(gblock->guid, guid_string, 16) == 0) {
++			return true;
++		}
+
+total: 1 errors, 1 warnings, 48 lines checked
+
