@@ -1,163 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZLZUhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbZLZUhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752932AbZLZUhV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 15:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZLZUhS
+	id S1751547AbZLZUhq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 15:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZLZUhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 15:37:18 -0500
-Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:53083 "EHLO
-	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbZLZUhR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 15:37:17 -0500
-Date: Sat, 26 Dec 2009 15:37:29 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-In-reply-to: <20091226095723.7ac82b18@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B367409.5060202@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Sat, 26 Dec 2009 15:37:42 -0500
+Received: from THUNK.ORG ([69.25.196.29]:33208 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750988AbZLZUhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 15:37:41 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 updates for v2.6.33
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1NOdOL-0001s1-4J@closure.thunk.org>
+Date: Sat, 26 Dec 2009 15:37:37 -0500
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/26/2009 12:57 PM, Stephen Hemminger wrote:
-> On Fri, 25 Dec 2009 22:23:51 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> On 12/25/2009 6:22 PM, Stephen Hemminger wrote:
->>      
->>> On Fri, 25 Dec 2009 11:28:55 -0500
->>> Michael Breuer<mbreuer@majjas.com>   wrote:
->>>
->>>
->>>        
->>>>     More data points - I'm able to reliably recreate this now.
->>>> While I thought it was coincidence, each and every time I hit this issue
->>>> there is a DHCP renew event immediately before the first error.
->>>> The crash occurs while under load - in my case seems that the traffic is
->>>> actually IPV6 (hadn't noticed that before).
->>>> I ran nethogs on a remote display - the reported rx rate on the IPV6 smb
->>>> connection at the time of the lockup was 33889.688 KB/sec on a 1gbit
->>>> nic. I've got two events like this - don't recall if the earlier one was
->>>> the exact same # - but it was in the ballpark.
->>>>
->>>> On 12/24/2009 2:01 AM, Andrew Morton wrote:
->>>>
->>>>          
->>>>> cc's added again.
->>>>>
->>>>> On Wed, 23 Dec 2009 17:54:27 -0500 Michael Breuer<mbreuer@majjas.com>    wrote:
->>>>>
->>>>>
->>>>>
->>>>>            
->>>>>> Ok - not the firmware.  Ran another Windows backup and sky2 went down.
->>>>>>
->>>>>> Nothing in dmesg.old - have oops in syslog. System became unresponsive
->>>>>> and watchdog kicked in after a minute.
->>>>>>
->>>>>> Also note that I have a similar oops with VT-D disabled (posted here on
->>>>>> 12/5). I'm attaching the oops from that below this oops for comparison.
->>>>>> That also happened under similar load.
->>>>>>
->>>>>> On the assumption that I can recreate this (although it takes a while)
->>>>>> please let me know how I can help.
->>>>>>
->>>>>> What's in my log (starting with an smbd error about 2 min before the
->>>>>> oops (note: the dchpd is not the system doing the backup).
->>>>>>
->>>>>>
->>>>>>              
->>>>> This (nastily wordwrapped) oops appers to be quite different from
->>>>> Berck's one.
->>>>>
->>>>>
->>>>>
->>>>>            
->>> What is the MTU?
->>>
->>>        
->> 1500
->>      
->>>>
->>>>          
-> It looks like the problem only shows up for packets generated by DHCP,
-> and these come through AF_PACKET. The problem maybe related to how this
-> packets are fragmented into header and page, in a different way than other
-> packets confusing the driver or DMA engine.
->
-> Does this help?
-> -----
->
-> --- a/drivers/net/sky2.c	2009-12-26 09:50:20.869565022 -0800
-> +++ b/drivers/net/sky2.c	2009-12-26 09:55:54.620645355 -0800
-> @@ -1616,6 +1616,13 @@ static netdev_tx_t sky2_xmit_frame(struc
->    	if (unlikely(tx_avail(sky2)<  tx_le_req(skb)))
->     		return NETDEV_TX_BUSY;
->
-> +	if (!pskb_may_pull(skb, ETH_HLEN)) {
-> +		if (net_ratelimit())
-> +			pr_info(PFX "%s: packet missing ether header (%d)?",
-> +				dev->name, skb->len);
-> +		goto drop;
-> +	}
-> +
->   	len = skb_headlen(skb);
->   	mapping = pci_map_single(hw->pdev, skb->data, len, PCI_DMA_TODEVICE);
->
-> @@ -1761,6 +1768,7 @@ mapping_unwind:
->   mapping_error:
->   	if (net_ratelimit())
->   		dev_warn(&hw->pdev->dev, "%s: tx mapping error\n", dev->name);
-> +drop:
->   	dev_kfree_skb(skb);
->   	return NETDEV_TX_OK;
->   }
->
->
->
->
->    
-That seems to have done the trick!
+Hi Linus,
 
-Still one odd message sequence, but no hangs or crashes.
+Please pull from:
 
-The first time I forced a DHCP renew while running at high throughput, I 
-got the same SMB errors I saw in my original error log (pre-crash). This 
-only happened once:
-Dec 26 15:24:18 mail dhcpd: DHCPACK on 10.0.0.56 to 00:1c:cc:f3:9f:f6 
-(BLACKBERRY-9542) via eth0
-Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
-lib/util_sock.c:1564(matchname)
-Dec 26 15:24:25 mail smbd[8937]:   matchname: host name/address 
-mismatch: ::ffff:10.0.0.11 != potter.majjas.com
-Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
-lib/util_sock.c:1685(get_peer_name)
-Dec 26 15:24:25 mail smbd[8937]:   Matchname failed on potter.majjas.com 
-::ffff:10.0.0.11
-Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
-smbd/nttrans.c:2076(call_nt_transact_ioctl)
-Dec 26 15:24:25 mail smbd[8937]:   call_nt_transact_ioctl(0x900eb): 
-Currently not implemented.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-I would discount this, but the same sequence was present in the logs 
-pre-crash as well. I do not see this at all absent the preceding DHCP 
-renew sequence. I also don't see this unless the adapter is under load.
+to grab the following bug fixes for v2.6.33.
 
+Thanks!!
 
+							- Ted
+
+ Documentation/filesystems/ext4.txt |    2 +-
+ fs/ext4/Kconfig                    |    1 +
+ fs/ext4/block_validity.c           |    1 -
+ fs/ext4/extents.c                  |   31 ++++++++++++++++++++++++++++---
+ fs/ext4/fsync.c                    |   16 ++++++++++++++--
+ fs/ext4/inode.c                    |   14 ++++++++++----
+ fs/ext4/mballoc.h                  |    1 -
+ fs/ext4/super.c                    |    6 ++++--
+ fs/ext4/xattr.c                    |    2 ++
+ fs/fs-writeback.c                  |   17 +++++++++++++++++
+ fs/jbd2/checkpoint.c               |   15 +++++++++++++++
+ fs/jbd2/commit.c                   |   19 +++++++++++--------
+ fs/jbd2/journal.c                  |    5 +++--
+ include/linux/jbd2.h               |    1 +
+ include/linux/writeback.h          |    1 +
+ 15 files changed, 108 insertions(+), 24 deletions(-)
+
+Andrew Morton (2):
+      ext4: fix unsigned long long printk warning in super.c
+      jbd2: don't use __GFP_NOFAIL in journal_init_common()
+
+Curt Wohlgemuth (1):
+      ext4: Ensure zeroout blocks have no dirty metadata
+
+David Howells (1):
+      ext4: Don't ask about supporting ext2/3 in ext4 if ext4 is not configured
+
+Eric Sandeen (2):
+      fs-writeback: Add helper function to start writeback if idle
+      ext4: flush delalloc blocks when space is low
+
+Fang Wenqi (1):
+      ext4: Update documentation to correct the inode_readahead_blks option name
+
+Huang Weiyi (1):
+      ext4: remove unused #include <linux/version.h>
+
+Julia Lawall (1):
+      ext4: Eliminate potential double free on error path
+
+Richard Kennedy (1):
+      ext4: return correct wbc.nr_to_write in ext4_da_writepages
+
+Surbhi Palande (1):
+      ext4: replace BUG() with return -EIO in ext4_ext_get_blocks
+
+Theodore Ts'o (2):
+      ext4: add module aliases for ext2 and ext3
+      ext4, jbd2: Add barriers for file systems with exernal journals
+
+Yin, Kangkai (1):
+      jbd2: /sys/kernel/debug/jbd2/jbd2-debug should be writable.
 
