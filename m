@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZLZUBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751620AbZLZUFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751490AbZLZUBh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 15:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbZLZUBg
+	id S1751620AbZLZUFR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 15:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZLZUFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 15:01:36 -0500
-Received: from vms173017pub.verizon.net ([206.46.173.17]:63494 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbZLZUBf (ORCPT
+	Sat, 26 Dec 2009 15:05:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48036 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbZLZUFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 15:01:35 -0500
-Date: Sat, 26 Dec 2009 15:01:31 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Sid Boyce <sboyce@blueyonder.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: All kernels after 2.6.32-git10  show only 1 CPU ** Fixed in
- 2.6.33-rc2 **
-In-reply-to: <4B363EEE.8020108@blueyonder.co.uk>
-Message-id: <alpine.LFD.2.00.0912261457550.4089@localhost.localdomain>
-References: <4B324B76.9020901@blueyonder.co.uk>
- <4B33670C.7050503@blueyonder.co.uk> <4B341149.9010106@blueyonder.co.uk>
- <4B363EEE.8020108@blueyonder.co.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 26 Dec 2009 15:05:14 -0500
+Message-ID: <4B366C69.9010700@zytor.com>
+Date: Sat, 26 Dec 2009 12:04:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Sergei Trofimovich <slyich@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
+       Sergei Trofimovich <slyfox@inbox.ru>
+Subject: Re: [PATCH] Kbuild: set LC_MESSAGES=C (as LC_CTYPE=C is)
+References: <1261761235-9431-1-git-send-email-slyfox@inbox.ru>	<4B354C70.1060109@zytor.com> <adar5qizg6w.fsf@roland-alpha.cisco.com>
+In-Reply-To: <adar5qizg6w.fsf@roland-alpha.cisco.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sid,
-If the kernel boots properly as of -rc2, then I would not worry
-so much that it was broken at some point during the merge window.
+On 12/25/2009 05:17 PM, Roland Dreier wrote:
+> 
+>  > The whole reason with only setting some LC_* to C was to be able to
+>  > leave LC_MESSAGES intact, but it seems it breaks on too many real-life
+>  > systems.
+> 
+>  > As such, I suggest we should set LC_ALL=C and get rid of the rest of it:
+> 
+> Seems unfortunate to lose localized error messages.  (Although in my
+> en_US.UTF-8 case, all I get is non-ASCII quote characters)
+> 
+> This all started because of the awk invocation in arch/x86/lib.  Maybe
+> the best idea would be to confine the locale monkeying to that one
+> place?
+> 
 
-However, if it is still broken and you need to bisect back
-into -merge to find out what caused it...  note that
-booting with "acpi=ht" may be a useful tool.  For this
-option will boot just enough of ACPI to enumerate processors,
-but no more.  (Of course if this option doesn't boot with
-the previous working kernels, then alas, it will not be useful here)
+It is also possible that setting only LC_COLLATE will solve the most
+fundamental problem, which is the one of character ranges.  LC_COLLATE
+probably will interfere less with LC_MESSAGES than the setting of LC_CTYPE.
 
-cheers,
-Len Brown, Intel Open Source Technology Center
+It's still bloody broken that glibc malfunctions like that for an
+LC_MESSAGES/LC_CTYPE intentional mismatch, but, sigh, that's glibc for you.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
