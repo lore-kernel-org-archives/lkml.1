@@ -1,128 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZLZR61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbZLZSZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbZLZR61 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 12:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZLZR61
+	id S1752925AbZLZSZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 13:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZLZSZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 12:58:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58912 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752593AbZLZR60 (ORCPT
+	Sat, 26 Dec 2009 13:25:28 -0500
+Received: from e28smtp07.in.ibm.com ([122.248.162.7]:51974 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbZLZSZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 12:58:26 -0500
-Date: Sat, 26 Dec 2009 09:57:23 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-Message-ID: <20091226095723.7ac82b18@nehalam>
-In-Reply-To: <4B3581C7.8000702@majjas.com>
-References: <4B300A2A.8040305@gmail.com>
-	<4B300E30.9090707@majjas.com>
-	<4B3114E3.1070602@majjas.com>
-	<4B329FA3.9090904@majjas.com>
-	<20091223230102.4bb0100e.akpm@linux-foundation.org>
-	<4B34E847.8010809@majjas.com>
-	<20091225152200.1cf11dfe@nehalam>
-	<4B3581C7.8000702@majjas.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Dec 2009 13:25:27 -0500
+Date: Sat, 26 Dec 2009 23:55:19 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Roland McGrath <roland@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegardno@ifi.uio.no>, Oleg Nesterov <oleg@redhat.com>
+Subject: [RFC Patch 0/2][Bugfix][x86][hw-breakpoint] Bugfixes for
+	hw_breakpoint_handler
+Message-ID: <20091226182519.GA9494@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Dec 2009 22:23:51 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
+Hi All,
+	Please find a patchset of two patches that
 
-> On 12/25/2009 6:22 PM, Stephen Hemminger wrote:
-> > On Fri, 25 Dec 2009 11:28:55 -0500
-> > Michael Breuer<mbreuer@majjas.com>  wrote:
-> >
-> >    
-> >>    More data points - I'm able to reliably recreate this now.
-> >> While I thought it was coincidence, each and every time I hit this issue
-> >> there is a DHCP renew event immediately before the first error.
-> >> The crash occurs while under load - in my case seems that the traffic is
-> >> actually IPV6 (hadn't noticed that before).
-> >> I ran nethogs on a remote display - the reported rx rate on the IPV6 smb
-> >> connection at the time of the lockup was 33889.688 KB/sec on a 1gbit
-> >> nic. I've got two events like this - don't recall if the earlier one was
-> >> the exact same # - but it was in the ballpark.
-> >>
-> >> On 12/24/2009 2:01 AM, Andrew Morton wrote:
-> >>      
-> >>> cc's added again.
-> >>>
-> >>> On Wed, 23 Dec 2009 17:54:27 -0500 Michael Breuer<mbreuer@majjas.com>   wrote:
-> >>>
-> >>>
-> >>>        
-> >>>> Ok - not the firmware.  Ran another Windows backup and sky2 went down.
-> >>>>
-> >>>> Nothing in dmesg.old - have oops in syslog. System became unresponsive
-> >>>> and watchdog kicked in after a minute.
-> >>>>
-> >>>> Also note that I have a similar oops with VT-D disabled (posted here on
-> >>>> 12/5). I'm attaching the oops from that below this oops for comparison.
-> >>>> That also happened under similar load.
-> >>>>
-> >>>> On the assumption that I can recreate this (although it takes a while)
-> >>>> please let me know how I can help.
-> >>>>
-> >>>> What's in my log (starting with an smbd error about 2 min before the
-> >>>> oops (note: the dchpd is not the system doing the backup).
-> >>>>
-> >>>>          
-> >>> This (nastily wordwrapped) oops appers to be quite different from
-> >>> Berck's one.
-> >>>
-> >>>
-> >>>        
-> > What is the MTU?
-> >    
-> 1500
-> >>      
+Patch 1/2: Clears the arch-reserved bits from debug status register. This
+helps easy bitwise operations - such as the check for non-trap bits in
+hw_breakpoint_handler. A check for the same using
+"if (dr6 & (~DR_TRAP_BITS))" throws incorrect results due to the 
+presence of preset reserved bits.
 
-It looks like the problem only shows up for packets generated by DHCP,
-and these come through AF_PACKET. The problem maybe related to how this
-packets are fragmented into header and page, in a different way than other
-packets confusing the driver or DMA engine.
+This patch is copied to maintainers of code (such as kmemcheck, kprobe,
+ptrace, etc) who make use of local dr6 value in do_debug() that verify
+and handle exceptions.
 
-Does this help?
------
+Patch 2/2: Return NOTIFY_DONE from hw_breakpoint_handler() for user-space
+breakpoints only (and not for kernel-space) since this could lead to
+further processing in do_debug() with undesirable consequences.
 
---- a/drivers/net/sky2.c	2009-12-26 09:50:20.869565022 -0800
-+++ b/drivers/net/sky2.c	2009-12-26 09:55:54.620645355 -0800
-@@ -1616,6 +1616,13 @@ static netdev_tx_t sky2_xmit_frame(struc
-  	if (unlikely(tx_avail(sky2) < tx_le_req(skb)))
-   		return NETDEV_TX_BUSY;
- 
-+	if (!pskb_may_pull(skb, ETH_HLEN)) {
-+		if (net_ratelimit())
-+			pr_info(PFX "%s: packet missing ether header (%d)?",
-+				dev->name, skb->len);
-+		goto drop;
-+	}
-+
- 	len = skb_headlen(skb);
- 	mapping = pci_map_single(hw->pdev, skb->data, len, PCI_DMA_TODEVICE);
- 
-@@ -1761,6 +1768,7 @@ mapping_unwind:
- mapping_error:
- 	if (net_ratelimit())
- 		dev_warn(&hw->pdev->dev, "%s: tx mapping error\n", dev->name);
-+drop:
- 	dev_kfree_skb(skb);
- 	return NETDEV_TX_OK;
- }
+Let me know if there are any concerns about the patch.
 
+Thanks,
+K.Prasad
 
-
-
--- 
