@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbZLZAr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbZLZAtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbZLZAr2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 19:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbZLZAr1
+	id S1757625AbZLZAtM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 19:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZLZAtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 19:47:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53641 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757488AbZLZAr0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 19:47:26 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 26 Dec 2009 01:47:12 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH v4l/dvb] firedtv: add missing NULL pointer check
-To: linux-media@vger.kernel.org
-cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Message-ID: <tkrat.4fbf5b89c63dc096@s5r6.in-berlin.de>
+	Fri, 25 Dec 2009 19:49:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35988 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757389AbZLZAtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 19:49:10 -0500
+Date: Sat, 26 Dec 2009 00:48:41 GMT
+From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rankincj@yahoo.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rankincj@yahoo.com
+In-Reply-To: <219280.97558.qm@web52907.mail.re2.yahoo.com>
+References: <219280.97558.qm@web52907.mail.re2.yahoo.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, compress: Force i386 instructions for the decompressor
+Message-ID: <tip-17a2a9b57a9a7d2fd8f97df951b5e63e0bd56ef5@git.kernel.org>
+Git-Commit-ID: 17a2a9b57a9a7d2fd8f97df951b5e63e0bd56ef5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If there is ever going to be a FireDTV or FloppyDTV firmware which does
-not provide a minimal ASCII textual descriptor for Model_Id --- or if
-the descriptor is provided indirectly in a descriptor directory ---
-the ieee1394 variant of the device probe of firedtv would dereference a
-NULL pointer.  The firewire variant of firedtv's device probe is not
-affected.
+Commit-ID:  17a2a9b57a9a7d2fd8f97df951b5e63e0bd56ef5
+Gitweb:     http://git.kernel.org/tip/17a2a9b57a9a7d2fd8f97df951b5e63e0bd56ef5
+Author:     H. Peter Anvin <hpa@zytor.com>
+AuthorDate: Fri, 25 Dec 2009 15:40:38 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 25 Dec 2009 15:40:38 -0800
 
-The fix makes sure that such an unexpected firmware is safely recognized
-by fdtv_alloc as an unknown firmware.
+x86, compress: Force i386 instructions for the decompressor
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Recently, some distros have started shipping versions of gcc which
+default to -march=i686.  This breaks building kernels for pre-i686
+machines, even if they have been selected in Kconfig, due to the
+generation of CMOV instructions.
+
+There isn't enough benefit to try to preserve the generation of these
+instructions even when selected, so simply force -march=i386 for the
+decompressor when building a 32-bit kernel.
+
+Reported-and-tested-by: Chris Rankin <rankincj@yahoo.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <219280.97558.qm@web52907.mail.re2.yahoo.com>
 ---
- drivers/media/dvb/firewire/firedtv-1394.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/x86/boot/compressed/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Index: linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-1394.c
-===================================================================
---- linux-2.6.33-rc2.orig/drivers/media/dvb/firewire/firedtv-1394.c
-+++ linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-1394.c
-@@ -193,9 +193,13 @@ static int node_probe(struct device *dev
- 	int kv_len, err;
- 	void *kv_str;
- 
--	kv_len = (ud->model_name_kv->value.leaf.len - 2) * sizeof(quadlet_t);
--	kv_str = CSR1212_TEXTUAL_DESCRIPTOR_LEAF_DATA(ud->model_name_kv);
--
-+	if (ud->model_name_kv) {
-+		kv_len = (ud->model_name_kv->value.leaf.len - 2) * 4;
-+		kv_str = CSR1212_TEXTUAL_DESCRIPTOR_LEAF_DATA(ud->model_name_kv);
-+	} else {
-+		kv_len = 0;
-+		kv_str = NULL;
-+	}
- 	fdtv = fdtv_alloc(dev, &fdtv_1394_backend, kv_str, kv_len);
- 	if (!fdtv)
- 		return -ENOMEM;
-
--- 
-Stefan Richter
--=====-==--= ==-- ==-=-
-http://arcgraph.de/sr/
-
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index f8ed065..f25bbd3 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -9,6 +9,7 @@ targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinu
+ KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+ KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
+ KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
++cflags-$(CONFIG_X86_32) := -march=i386
+ cflags-$(CONFIG_X86_64) := -mcmodel=small
+ KBUILD_CFLAGS += $(cflags-y)
+ KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
