@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZLZBge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZLZC1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbZLZBge (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Dec 2009 20:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757441AbZLZBgd
+	id S1757548AbZLZC1w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Dec 2009 21:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbZLZC1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Dec 2009 20:36:33 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:62281 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757057AbZLZBgc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Dec 2009 20:36:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jDg9+wr/SoYu+FY7G5Rd57MRcGfkI3vebo7+pT5QJ6eWH9/Ncd8Jow6gzJ8UcXbFTR
-         Np+kUtYllc7xugzcAN0CdvSJ0vr5Sjh5WbiooQogVZy50MH2yNYUoEZfqthmVbP4LY4c
-         J2oFEBdWbGvUynujX6XW1Fqt6Bccc/syUqy3U=
-Date: Fri, 25 Dec 2009 17:36:18 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>, Matthew Garrett <mjg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: Regression in module wmi since 2.6.32 (bisected to commit
-	1caab3c)
-Message-ID: <20091226013618.GB23802@core.coreip.homeip.net>
-References: <4B352513.90302@lwfinger.net> <200912252158.31127.carlos@strangeworlds.co.uk> <4B353818.1020308@lwfinger.net> <200912260118.26391.carlos@strangeworlds.co.uk>
+	Fri, 25 Dec 2009 21:27:51 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53226 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756451AbZLZC1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Dec 2009 21:27:51 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+M7UIi0w+MCYPHV/9yNHI8c140QQN41lDZLeqS7X
+	2TRo8z5KOocci+
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Russell King <linux@arm.linux.org.uk>
+Subject: [PATCH] sound/arm: Fix build failure caused by missing struct aaci definition
+Date: Sat, 26 Dec 2009 03:27:45 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       peterhuewe@gmx.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912260118.26391.carlos@strangeworlds.co.uk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912260327.46099.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Carlos,
+From: Peter Huewe <peterhuewe@gmx.de>
 
-On Sat, Dec 26, 2009 at 01:18:26AM +0000, Carlos Corbacho wrote:
-> @@ -747,6 +763,16 @@ static __init acpi_status parse_wdg(acpi_handle handle)
->  	memcpy(gblock, obj->buffer.pointer, obj->buffer.length);
->  
->  	for (i = 0; i < total; i++) {
-> +		/*
-> +		  Some WMI devices, like those for nVidia hooks, have a
-> +		  duplicate GUID. It's not clear what we should do in this
-> +		  case yet, so for now, we'll just ignore the duplicate.
-> +		  Anyone who wants to add support for that device can come
-> +		  up with a better workaround for the mess then.
-> +		*/
-> +		if (guid_already_parsed(gblock[i].guid) == true) {
+This patch fixes a build failure introduced by the patch
+  ALSA: AACI: factor common hw_params logic into aaci_pcm_hw_params [1]
+by adding/moving the aaci struct to the right position.
 
-A warning message is probably warranted here.
+The patch mentioned above merged common source parts into one function,
+but unfortunately left out the aaci struct and consequently caused a
+build failure e.g. for arm versatile_config [2]
 
-> +			continue;
-> +		}
->  		wblock = kzalloc(sizeof(struct wmi_block), GFP_KERNEL);
->  		if (!wblock)
->  			return AE_NO_MEMORY;
+References:
+[1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=d3aee7996c30f928bbbbfd0994148e35d2e83084
+[2] http://kisskb.ellerman.id.au/kisskb/buildresult/1893605/
 
+Patch against Linus' tree.
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ sound/arm/aaci.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/sound/arm/aaci.c b/sound/arm/aaci.c
+index c569986..656e474 100644
+--- a/sound/arm/aaci.c
++++ b/sound/arm/aaci.c
+@@ -441,6 +441,7 @@ static int aaci_pcm_hw_params(struct snd_pcm_substream *substream,
+ 			      struct snd_pcm_hw_params *params)
+ {
+ 	int err;
++	struct aaci *aaci = substream->private_data;
+ 
+ 	aaci_pcm_hw_free(substream);
+ 	if (aacirun->pcm_open) {
+@@ -560,7 +561,6 @@ static int aaci_pcm_open(struct snd_pcm_substream *substream)
+ static int aaci_pcm_playback_hw_params(struct snd_pcm_substream *substream,
+ 				       struct snd_pcm_hw_params *params)
+ {
+-	struct aaci *aaci = substream->private_data;
+ 	struct aaci_runtime *aacirun = substream->runtime->private_data;
+ 	unsigned int channels = params_channels(params);
+ 	int ret;
+@@ -659,7 +659,6 @@ static struct snd_pcm_ops aaci_playback_ops = {
+ static int aaci_pcm_capture_hw_params(struct snd_pcm_substream *substream,
+ 				      struct snd_pcm_hw_params *params)
+ {
+-	struct aaci *aaci = substream->private_data;
+ 	struct aaci_runtime *aacirun = substream->runtime->private_data;
+ 	int ret;
+ 
 -- 
-Dmitry
+1.6.4.4
+
