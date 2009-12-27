@@ -1,107 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZL0MRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbZL0MTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbZL0MRK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 07:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZL0MRI
+	id S1751839AbZL0MTA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 07:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZL0MS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 07:17:08 -0500
-Received: from www84.your-server.de ([213.133.104.84]:38359 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbZL0MRH (ORCPT
+	Sun, 27 Dec 2009 07:18:59 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42445 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbZL0MS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 07:17:07 -0500
-Subject: [patch] ported drivers/video/omap2/dss/rfbi.c to new kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sun, 27 Dec 2009 13:16:58 +0100
-Message-ID: <1261916218.21787.4.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sun, 27 Dec 2009 07:18:58 -0500
+Date: Sun, 27 Dec 2009 12:18:49 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: pavel@ucw.cz, michael@laptop.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       andi@firstfloor.org, david@lang.hm, socketcan@hartkopp.net,
+       alan@lxorguk.ukuu.org.uk, herbert@gondor.apana.org.au,
+       Valdis.Kletnieks@vt.edu, bdonlan@gmail.com, zbr@ioremap.net,
+       cscott@cscott.net, jmorris@namei.org, ebiederm@xmission.com,
+       bernie@codewiz.org, mrs@mythic-beasts.com, randy.dunlap@oracle.com,
+       xiyou.wangcong@gmail.com, sam@synack.fr, casey@schaufler-ca.com,
+       serue@us.ibm.com
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091227121849.GY18217@ZenIV.linux.org.uk>
+References: <20091227010441.GA12077@heat> <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp> <20091227083857.GC11737@elf.ucw.cz> <200912272049.FIB35755.OMFFOOJQtVLFSH@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912272049.FIB35755.OMFFOOJQtVLFSH@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch ported the drivers/video/omap2/dss/rfbi.c to the new kfifo API.
-This should be the last one ;-)
+On Sun, Dec 27, 2009 at 08:49:17PM +0900, Tetsuo Handa wrote:
 
-The patch-set is against mm tree from 11-Dec-2009
+> We can determine what syscalls we need from application's code and libc's code,
+> can't we?
 
-Greetings,
-Stefani
+_Which_ libc?  And no, I'm not talking about other implementations; even
+glibc is more than enough.  It changes and it *does* change the set of
+syscalls used to implement given function.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- rfbi.c |   21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
-
---- mmotm.orig/drivers/video/omap2/dss/rfbi.c	2009-12-27 13:04:16.495740629 +0100
-+++ mmotm.new/drivers/video/omap2/dss/rfbi.c	2009-12-27 13:08:50.188701965 +0100
-@@ -120,7 +120,7 @@ static struct {
- 
- 	struct omap_dss_device *dssdev[2];
- 
--	struct kfifo      *cmd_fifo;
-+	struct kfifo      cmd_fifo;
- 	spinlock_t        cmd_lock;
- 	struct completion cmd_done;
- 	atomic_t          cmd_fifo_full;
-@@ -1013,8 +1013,9 @@ static void process_cmd_fifo(void)
- 	while (true) {
- 		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
- 
--		len = __kfifo_get(rfbi.cmd_fifo, (unsigned char *)&p,
--				  sizeof(struct update_param));
-+		len = kfifo_out_locked(&rfbi.cmd_fifo, (unsigned char *)&p,
-+				  sizeof(struct update_param),
-+				  &rfbi.cmd_lock);
- 		if (len == 0) {
- 			DSSDBG("nothing more in fifo\n");
- 			atomic_set(&rfbi.cmd_pending, 0);
-@@ -1053,8 +1054,7 @@ static void rfbi_push_cmd(struct update_
- 		int available;
- 
- 		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
--		available = RFBI_CMD_FIFO_LEN_BYTES -
--			__kfifo_len(rfbi.cmd_fifo);
-+		available = kfifo_avail(&rfbi.cmd_fifo);
- 
- /*		DSSDBG("%d bytes left in fifo\n", available); */
- 		if (available < sizeof(struct update_param)) {
-@@ -1066,8 +1066,9 @@ static void rfbi_push_cmd(struct update_
- 			continue;
- 		}
- 
--		ret = __kfifo_put(rfbi.cmd_fifo, (unsigned char *)p,
--				  sizeof(struct update_param));
-+		ret = kfifo_in_locked(&rfbi.cmd_fifo, (unsigned char *)p,
-+				  sizeof(struct update_param),
-+				  &rfbi.cmd_lock);
- /*		DSSDBG("pushed %d bytes\n", ret);*/
- 
- 		spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
-@@ -1157,9 +1158,7 @@ int rfbi_init(void)
- 	u32 l;
- 
- 	spin_lock_init(&rfbi.cmd_lock);
--	rfbi.cmd_fifo = kfifo_alloc(RFBI_CMD_FIFO_LEN_BYTES, GFP_KERNEL,
--				    &rfbi.cmd_lock);
--	if (IS_ERR(rfbi.cmd_fifo))
-+	if (kfifo_alloc(&rfbi.cmd_fifo, RFBI_CMD_FIFO_LEN_BYTES, GFP_KERNEL))
- 		return -ENOMEM;
- 
- 	init_completion(&rfbi.cmd_done);
-@@ -1196,7 +1195,7 @@ void rfbi_exit(void)
- {
- 	DSSDBG("rfbi_exit\n");
- 
--	kfifo_free(rfbi.cmd_fifo);
-+	kfifo_free(&rfbi.cmd_fifo);
- 
- 	iounmap(rfbi.base);
- }
-
-
+I'm not disagreeing about what's seccomp worth, BTW.
