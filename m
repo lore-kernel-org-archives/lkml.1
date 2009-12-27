@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbZL0WBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751304AbZL0WHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751639AbZL0WBO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 17:01:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZL0WBN
+	id S1751304AbZL0WHx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 17:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZL0WHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 17:01:13 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:52881 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751271AbZL0WBM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 17:01:12 -0500
-Date: Sun, 27 Dec 2009 14:01:07 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Dave Chinner <david@fromorbit.com>
-cc: xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: lockdep: inconsistent lock state
-In-Reply-To: <20091227212700.GA7613@discord.disaster>
-Message-ID: <alpine.DEB.2.01.0912271355550.3483@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0912261255380.3483@bogon.housecafe.de> <20091227212700.GA7613@discord.disaster>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Sun, 27 Dec 2009 17:07:52 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:33267 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbZL0WHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 17:07:52 -0500
+Date: Sun, 27 Dec 2009 23:07:48 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/5] arch/arm: Correct NULL test
+In-Reply-To: <20091227215106.GA18317@pengutronix.de>
+Message-ID: <Pine.LNX.4.64.0912272307310.20548@ask.diku.dk>
+References: <Pine.LNX.4.64.0912272226360.20548@ask.diku.dk>
+ <20091227215106.GA18317@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/PW+CB3uyg4rmazs5BUA0gUzkS/yVXDhMZlU0
- GL9ljWzv3dGUT6mlGE4sDfdb3ERb3dVDC7ruXvqvfzpVC7d8dr
- B91NOvynQVz8CgicQLjMA==
+Content-Type: MULTIPART/MIXED; BOUNDARY="-511516320-821148813-1261951668=:20548"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Dec 2009 at 08:27, Dave Chinner wrote:
-> from kswapd inverts lock ordering and so we get this report. This
-> case has never been a deadlock case because an inode in reclaim
-> cannot be referenced by any other path, so once again it is a
-> false positive....
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-OK, thanks for confirming this. I've only seen this during
-bonnie++ tests so far, and it's always reproducible there, but
-I've not seen it during "normal use". It's still scary though. Just 
-checked, opensuse and fedora have CONFIG_LOCKDEP_SUPPORT=y but no 
-related DEBUG options set, so it probably won't ever show up for
-the general public.
+---511516320-821148813-1261951668=:20548
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Christian.
--- 
-BOFH excuse #278:
+On Sun, 27 Dec 2009, Uwe Kleine-König wrote:
 
-The Dilithium Crystals need to be rotated.
+> On Sun, Dec 27, 2009 at 10:26:54PM +0100, Julia Lawall wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > Test the just-allocated value for NULL rather than some other value.
+> > 
+> > The semantic patch that makes this change is as follows:
+> > (http://coccinelle.lip6.fr/)
+> > 
+> > // <smpl>
+> > ....
+> > // </smpl>
+> > 
+> > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > 
+> > ---
+> >  arch/arm/plat-pxa/dma.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff -u -p a/arch/arm/plat-pxa/dma.c b/arch/arm/plat-pxa/dma.c
+> > --- a/arch/arm/plat-pxa/dma.c
+> > +++ b/arch/arm/plat-pxa/dma.c
+> > @@ -244,7 +244,7 @@ static void pxa_dma_init_debugfs(void)
+> >  
+> >  	dbgfs_chan = kmalloc(sizeof(*dbgfs_state) * num_dma_channels,
+> >  			     GFP_KERNEL);
+> > -	if (!dbgfs_state)
+> > +	if (!dbgfs_chan)
+> >  		goto err_alloc;
+> Shouldn't the malloc line read:
+> 
+> 	... = kmalloc(sizeof(*dbgfs_chan) * ...)
+> 	                      ^^^^^^^^^^
+> 
+> ?
+
+Good point, thanks.  I will send a revised patch.
+
+julia
+---511516320-821148813-1261951668=:20548--
