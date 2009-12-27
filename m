@@ -1,108 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbZL0MG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZL0MRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751796AbZL0MG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 07:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZL0MG1
+	id S1751822AbZL0MRK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 07:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZL0MRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 07:06:27 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:46919 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624AbZL0MG0 (ORCPT
+	Sun, 27 Dec 2009 07:17:08 -0500
+Received: from www84.your-server.de ([213.133.104.84]:38359 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751647AbZL0MRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 07:06:26 -0500
-Date: Sun, 27 Dec 2009 13:06:22 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       penberg@cs.helsinki.fi
-Subject: lockdep possible recursive lock in slab parent->list->rlock in rc2
-Message-ID: <20091227120622.GA480@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 27 Dec 2009 07:17:07 -0500
+Subject: [patch] ported drivers/video/omap2/dss/rfbi.c to new kfifo API
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 27 Dec 2009 13:16:58 +0100
+Message-ID: <1261916218.21787.4.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch ported the drivers/video/omap2/dss/rfbi.c to the new kfifo API.
+This should be the last one ;-)
 
-Get this on a NFS root system while booting
-This must be a recent change in the last week, 
-I didn't see it in a post rc1 git* from last week
-(I haven't done a exact bisect)
+The patch-set is against mm tree from 11-Dec-2009
 
-It's triggered by the r8169 driver close function, 
-but looks more like a slab problem?
+Greetings,
+Stefani
 
-I haven't checked it in detail if the locks are 
-really different or just lockdep not knowing 
-enough classes.
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ rfbi.c |   21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
--Andi
+--- mmotm.orig/drivers/video/omap2/dss/rfbi.c	2009-12-27 13:04:16.495740629 +0100
++++ mmotm.new/drivers/video/omap2/dss/rfbi.c	2009-12-27 13:08:50.188701965 +0100
+@@ -120,7 +120,7 @@ static struct {
+ 
+ 	struct omap_dss_device *dssdev[2];
+ 
+-	struct kfifo      *cmd_fifo;
++	struct kfifo      cmd_fifo;
+ 	spinlock_t        cmd_lock;
+ 	struct completion cmd_done;
+ 	atomic_t          cmd_fifo_full;
+@@ -1013,8 +1013,9 @@ static void process_cmd_fifo(void)
+ 	while (true) {
+ 		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
+ 
+-		len = __kfifo_get(rfbi.cmd_fifo, (unsigned char *)&p,
+-				  sizeof(struct update_param));
++		len = kfifo_out_locked(&rfbi.cmd_fifo, (unsigned char *)&p,
++				  sizeof(struct update_param),
++				  &rfbi.cmd_lock);
+ 		if (len == 0) {
+ 			DSSDBG("nothing more in fifo\n");
+ 			atomic_set(&rfbi.cmd_pending, 0);
+@@ -1053,8 +1054,7 @@ static void rfbi_push_cmd(struct update_
+ 		int available;
+ 
+ 		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
+-		available = RFBI_CMD_FIFO_LEN_BYTES -
+-			__kfifo_len(rfbi.cmd_fifo);
++		available = kfifo_avail(&rfbi.cmd_fifo);
+ 
+ /*		DSSDBG("%d bytes left in fifo\n", available); */
+ 		if (available < sizeof(struct update_param)) {
+@@ -1066,8 +1066,9 @@ static void rfbi_push_cmd(struct update_
+ 			continue;
+ 		}
+ 
+-		ret = __kfifo_put(rfbi.cmd_fifo, (unsigned char *)p,
+-				  sizeof(struct update_param));
++		ret = kfifo_in_locked(&rfbi.cmd_fifo, (unsigned char *)p,
++				  sizeof(struct update_param),
++				  &rfbi.cmd_lock);
+ /*		DSSDBG("pushed %d bytes\n", ret);*/
+ 
+ 		spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
+@@ -1157,9 +1158,7 @@ int rfbi_init(void)
+ 	u32 l;
+ 
+ 	spin_lock_init(&rfbi.cmd_lock);
+-	rfbi.cmd_fifo = kfifo_alloc(RFBI_CMD_FIFO_LEN_BYTES, GFP_KERNEL,
+-				    &rfbi.cmd_lock);
+-	if (IS_ERR(rfbi.cmd_fifo))
++	if (kfifo_alloc(&rfbi.cmd_fifo, RFBI_CMD_FIFO_LEN_BYTES, GFP_KERNEL))
+ 		return -ENOMEM;
+ 
+ 	init_completion(&rfbi.cmd_done);
+@@ -1196,7 +1195,7 @@ void rfbi_exit(void)
+ {
+ 	DSSDBG("rfbi_exit\n");
+ 
+-	kfifo_free(rfbi.cmd_fifo);
++	kfifo_free(&rfbi.cmd_fifo);
+ 
+ 	iounmap(rfbi.base);
+ }
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.33-rc2 #19
----------------------------------------------
-swapper/1 is trying to acquire lock:
- (&(&parent->list_lock)->rlock){-.-...}, at: [<ffffffff810cc93a>] cache_flusharray+0x55/0x10a
 
-but task is already holding lock:
- (&(&parent->list_lock)->rlock){-.-...}, at: [<ffffffff810cc93a>] cache_flusharray+0x55/0x10a
-
-other info that might help us debug this:
-2 locks held by swapper/1:
- #0:  (rtnl_mutex){+.+.+.}, at: [<ffffffff813e24d6>] rtnl_lock+0x12/0x14
- #1:  (&(&parent->list_lock)->rlock){-.-...}, at: [<ffffffff810cc93a>] cache_flusharray+0x55/0x10a
-
-stack backtrace:
-Pid: 1, comm: swapper Not tainted 2.6.33-rc2-MCE6 #19
-Call Trace:
- [<ffffffff810687da>] __lock_acquire+0xf94/0x1771
- [<ffffffff81066402>] ? mark_held_locks+0x4d/0x6b
- [<ffffffff81066663>] ? trace_hardirqs_on_caller+0x10b/0x12f
- [<ffffffff8105b061>] ? sched_clock_local+0x1c/0x80
- [<ffffffff8105b061>] ? sched_clock_local+0x1c/0x80
- [<ffffffff81069073>] lock_acquire+0xbc/0xd9
- [<ffffffff810cc93a>] ? cache_flusharray+0x55/0x10a
- [<ffffffff8149639d>] _raw_spin_lock+0x31/0x66
- [<ffffffff810cc93a>] ? cache_flusharray+0x55/0x10a
- [<ffffffff810cbbf8>] ? kfree_debugcheck+0x11/0x2d
- [<ffffffff810cc93a>] cache_flusharray+0x55/0x10a
- [<ffffffff81066d67>] ? debug_check_no_locks_freed+0x119/0x12f
- [<ffffffff810cc387>] kmem_cache_free+0x18f/0x1f2
- [<ffffffff810cc515>] slab_destroy+0x12b/0x138
- [<ffffffff810cc683>] free_block+0x161/0x1a2
- [<ffffffff810cc982>] cache_flusharray+0x9d/0x10a
- [<ffffffff81066d67>] ? debug_check_no_locks_freed+0x119/0x12f
- [<ffffffff810ccbf3>] kfree+0x204/0x23b
- [<ffffffff81066694>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff813d002a>] skb_release_data+0xc6/0xcb
- [<ffffffff813cfd19>] __kfree_skb+0x19/0x86
- [<ffffffff813cfdb1>] consume_skb+0x2b/0x2d
- [<ffffffff8133929a>] rtl8169_rx_clear+0x7f/0xbb
- [<ffffffff8133ada2>] rtl8169_down+0x12c/0x13b
- [<ffffffff8133b58a>] rtl8169_close+0x30/0x131
- [<ffffffff813e8d98>] ? dev_deactivate+0x168/0x198
- [<ffffffff813d94d6>] dev_close+0x8c/0xae
- [<ffffffff813d8e62>] dev_change_flags+0xba/0x180
- [<ffffffff81a87e63>] ic_close_devs+0x2e/0x48
- [<ffffffff81a88a5b>] ip_auto_config+0x914/0xe1e
- [<ffffffff8105b061>] ? sched_clock_local+0x1c/0x80
- [<ffffffff810649a1>] ? trace_hardirqs_off+0xd/0xf
- [<ffffffff8105b1c0>] ? cpu_clock+0x2d/0x3f
- [<ffffffff810649c7>] ? lock_release_holdtime+0x24/0x181
- [<ffffffff81a86967>] ? tcp_congestion_default+0x0/0x12
- [<ffffffff81496c60>] ? _raw_spin_unlock+0x26/0x2b
- [<ffffffff81a86967>] ? tcp_congestion_default+0x0/0x12
- [<ffffffff81a88147>] ? ip_auto_config+0x0/0xe1e
- [<ffffffff810001f0>] do_one_initcall+0x5a/0x14f
- [<ffffffff81a5364c>] kernel_init+0x141/0x197
- [<ffffffff81003794>] kernel_thread_helper+0x4/0x10
- [<ffffffff81496efc>] ? restore_args+0x0/0x30
- [<ffffffff81a5350b>] ? kernel_init+0x0/0x197
- [<ffffffff81003790>] ? kernel_thread_helper+0x0/0x10
-IP-Config: Retrying forever (NFS root)...
-r8169: eth0: link up
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
