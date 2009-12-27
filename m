@@ -1,225 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbZL0O3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZL0Oli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752303AbZL0O3z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 09:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZL0O3y
+	id S1752428AbZL0Oli (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 09:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZL0Oli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 09:29:54 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:56742 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbZL0O3w (ORCPT
+	Sun, 27 Dec 2009 09:41:38 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37437 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbZL0Olh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 09:29:52 -0500
+	Sun, 27 Dec 2009 09:41:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=x7U2bDmqPWU3X1zV4+PlLt+jBzcHvgpm6qztCSjOWAodjc9EowpU7ntqPcKFEKfEK7
-         IwHZLudH7k028aJfsYMh+5LwrUQLM//q+uHHVS3iVVlLRE/jNrmhUchWJH1pZam8FMMO
-         ZEjbnFLHMIV2nEBhVNmaWa46xcgns0itJQO+k=
-Message-ID: <4B376F5B.9050402@gmail.com>
-Date: Sun, 27 Dec 2009 09:29:47 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=VbMCC9Z9aLOzRX/OJLZycFhiBXGD5mLx6Amx9R6MlMsbKLx6f0I4Ig2DZSuLisAIOU
+         kiujSb+sZbOn0lFp8IX9lqHrsjR9tsiyqF6AKdORUWD955yuc7xFWc5jHHp913Rh/88x
+         C1HdMA6Lm56P4rJGbA8JyMRutzmqmwQ9aks8Y=
+Message-ID: <4B3772CA.80505@gmail.com>
+Date: Sun, 27 Dec 2009 15:44:26 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+To: Tim Waugh <tim@cyberelk.net>, linux-parport@lists.infradead.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com> <4B328535.5040105@redhat.com> <4B33361E.3000605@gmail.com> <4B3729ED.50006@redhat.com> <4B376276.3020105@gmail.com> <4B3765D2.5020805@redhat.com>
-In-Reply-To: <4B3765D2.5020805@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6B874E28D1DB7129EFA76184"
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] paride: test off by one
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6B874E28D1DB7129EFA76184
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+With `while (j++ < PX_SPIN)' j reaches PX_SPIN + 1 after the loop. This is
+probably unlikely to produce a problem.
 
-On 12/27/09 8:49 AM, Avi Kivity wrote:
-> On 12/27/2009 03:34 PM, Gregory Haskins wrote:
->> On 12/27/09 4:33 AM, Avi Kivity wrote:
->>  =20
->>> On 12/24/2009 11:36 AM, Gregory Haskins wrote:
->>>    =20
->>>>> As a twist on this, the VMware paravirt driver interface is so
->>>>> hardware-like that they're getting hardware vendors to supply cards=
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/block/paride/pcd.c |    2 +-
+ drivers/block/paride/pf.c  |    2 +-
+ drivers/block/paride/pt.c  |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
->>>>> that
->>>>> implement it.  Try that with a pure software approach.
->>>>>
->>>>>         =20
->>>> Any hardware engineer (myself included) will tell you that, generall=
-y
->>>> speaking, what you can do in hardware you can do in software (think =
-of
->>>> what QEMU does today, for instance).  It's purely a cost/performance=
-
->>>> tradeoff.
->>>>
->>>> I can at least tell you that is true of vbus.  Anything on the vbus
->>>> side
->>>> would be equally eligible for a hardware implementation, though
->>>> there is
->>>> not reason to do this today since we have equivalent functionality i=
-n
->>>> baremetal already.
->>>>       =20
->>> There's a huge difference in the probability of vmware getting cards =
-to
->>> their spec, or x86 vendors improving interrupt delivery to guests,
->>> compared to vbus being implemented in hardware.
->>>     =20
->> Thats not relevant, however.  I said in the original quote that you
->> snipped that I made it a software design on purpose, and you tried to
->> somehow paint that as a negative because vmware made theirs
->> "hardware-like" and you implied it could not be done with my approach
->> with the statement "try that with a pure software approach".  And the
->> bottom line is that the statement is incorrect and/or misleading.
->>   =20
->=20
-> It's not incorrect.
-
-At the very best it's misleading.
-
-> VMware stuck to the pci specs and as a result they
-> can have hardware implement their virtual NIC protocol.  For vbus this
-> is much harder
-
-Not really.
-
-> to do since you need a side-channel between different
-> cards to coordinate interrupt delivery.  In theory you can do eveything=
-
-> if you don't consider practicalities.
-
-pci based designs, such as vmware and virtio-pci arent free of this
-notion either.  They simply rely on APIC emulation for the irq-chip, and
-it just so happens that vbus implements a different irq-chip (more
-specifically, the connector that we employ between the guest and vbus
-does).  On one hand, you have the advantage of the guest already
-supporting the irq-chip ABI, and on other other, you have an optimized
-(e.g. shared memory based inject/ack) and feature enhanced ABI
-(interrupt priority, no IDT constraints, etc).  The are pros and cons to
-either direction, but the vbus project charter is to go for maximum
-performance and features, so that is acceptable to us.
-
-
->=20
-> That's a digression, though, I'm not suggesting we'll see virtio
-> hardware or that this is a virtio/pci advantage vs. vbus.  It's an
-> anecdote showing that sticking with specs has its advantages.
-
-It also has distinct disadvantages.  For instance, the PCI spec is
-gigantic, yet almost none of it is needed to do the job here.  When you
-are talking full-virt, you are left with no choice.  With para-virt, you
-do have a choice, and the vbus-connector for AlacrityVM capitalizes on th=
-is.
-
-As an example, think about all the work that went into emulating the PCI
-chipset, the APIC chipset, MSI-X support, irq-routing, etc, when all you
-needed was a simple event-queue to indicate that an event (e.g. an
-"interrupt") occurred.
-
-This is an example connector in vbus:
-
-http://git.kernel.org/?p=3Dlinux/kernel/git/ghaskins/alacrityvm/linux-2.6=
-=2Egit;a=3Dblob;f=3Dkernel/vbus/connectors/null.c;h=3Db6d16cb68b7e49e0752=
-8278bc9f5b73e1dac0c2f;hb=3DHEAD
-
-It encapsulates all of hotplug, signal (interrupt) routing, and memory
-routing for both sides of the "link" in 584 lines of code.  And that
-also implicitly brings in device discovery and configuration since that
-is covered by the vbus framework.  Try doing that with PCI, especially
-when you are not already under the qemu umbrella, and the "standards
-based" approach suddenly doesn't look very attractive.
-
->=20
-> wrt pci vs vbus, the difference is in the ability to use improvements i=
-n
-> interrupt delivery accelerations in virt hardware.
-
-Most of which will also apply to the current vbus design as well since
-at some point I have to have an underlying IDT mechanism too, btw.
-
->  If this happens,
-> virtio/pci can immediately take advantage of it, while vbus has to stic=
-k
-> with software delivery for backward compatibility, and all that code
-> becomes a useless support burden.
->
-
-The shared-memory path will always be the fastest anyway, so I am not
-too worried about it.  But vbus supports feature negotiation, so we can
-always phase that out if need be, same as anything else.
-
-> As an example of what hardware can do when it really sets its mind to
-> it, s390 can IPI from vcpu to vcpu without exiting to the host.
-
-Great!  I am just not in the practice of waiting for hardware to cover
-sloppy software.  There is a ton of impracticality in doing so, such as
-the fact that the hardware, even once available, will not be ubiquitous
-instantly.
-
->=20
->>>> The only motiviation is if you wanted to preserve
->>>> ABI etc, which is what vmware is presumably after.  However, I am no=
-t
->>>> advocating this as necessary at this juncture.
->>>>
->>>>       =20
->>> Maybe AlacrityVM users don't care about compatibility, but my users d=
-o.
->>>     =20
->> Again, not relevant to this thread.  Making your interface
->> "hardware-like" buys you nothing in the end, as you ultimately need to=
-
->> load drivers in the guest either way, and any major OS lets you extend=
-
->> both devices and buses with relative ease.  The only counter example
->> would be if you truly were "hardware-exactly" like e1000 emulation, bu=
-t
->> we already know that this means it is hardware centric and not
->> "exit-rate aware" and would perform poorly.  Otherwise "compatible" is=
-
->> purely a point on the time line (for instance, the moment virtio-pci A=
-BI
->> shipped), not an architectural description such as "hardware-like".
->>   =20
->=20
-> True, not related to the thread.  But it is a problem.
-
-Agreed.  It is a distinct disadvantage to switching.  Note that I am not
-advocating that we need to switch.  virtio-pci can coexist peacefully
-from my perspective, and AlacrityVM does exactly this.
-
--Greg
-
-
---------------enig6B874E28D1DB7129EFA76184
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAks3b1sACgkQP5K2CMvXmqF+SACeKHP0hftW5ptgrXqv0x5T1G48
-3zIAoIiUinXLlgpXQTsKrpSZ6sCaqPws
-=l0Qu
------END PGP SIGNATURE-----
-
---------------enig6B874E28D1DB7129EFA76184--
+diff --git a/drivers/block/paride/pcd.c b/drivers/block/paride/pcd.c
+index 8866ca3..5b9b40b 100644
+--- a/drivers/block/paride/pcd.c
++++ b/drivers/block/paride/pcd.c
+@@ -341,7 +341,7 @@ static int pcd_wait(struct pcd_unit *cd, int go, int stop, char *fun, char *msg)
+ 	       && (j++ < PCD_SPIN))
+ 		udelay(PCD_DELAY);
+ 
+-	if ((r & (IDE_ERR & stop)) || (j >= PCD_SPIN)) {
++	if ((r & (IDE_ERR & stop)) || (j > PCD_SPIN)) {
+ 		s = read_reg(cd, 7);
+ 		e = read_reg(cd, 1);
+ 		p = read_reg(cd, 2);
+diff --git a/drivers/block/paride/pf.c b/drivers/block/paride/pf.c
+index ea54ea3..8418a36 100644
+--- a/drivers/block/paride/pf.c
++++ b/drivers/block/paride/pf.c
+@@ -391,7 +391,7 @@ static int pf_wait(struct pf_unit *pf, int go, int stop, char *fun, char *msg)
+ 	       && (j++ < PF_SPIN))
+ 		udelay(PF_SPIN_DEL);
+ 
+-	if ((r & (STAT_ERR & stop)) || (j >= PF_SPIN)) {
++	if ((r & (STAT_ERR & stop)) || (j > PF_SPIN)) {
+ 		s = read_reg(pf, 7);
+ 		e = read_reg(pf, 1);
+ 		p = read_reg(pf, 2);
+diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
+index 1e4006e..4fd99d9 100644
+--- a/drivers/block/paride/pt.c
++++ b/drivers/block/paride/pt.c
+@@ -274,7 +274,7 @@ static int pt_wait(struct pt_unit *tape, int go, int stop, char *fun, char *msg)
+ 	       && (j++ < PT_SPIN))
+ 		udelay(PT_SPIN_DEL);
+ 
+-	if ((r & (STAT_ERR & stop)) || (j >= PT_SPIN)) {
++	if ((r & (STAT_ERR & stop)) || (j > PT_SPIN)) {
+ 		s = read_reg(pi, 7);
+ 		e = read_reg(pi, 1);
+ 		p = read_reg(pi, 2);
