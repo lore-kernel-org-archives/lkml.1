@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbZL0Oqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZL0OmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492AbZL0Oqe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 09:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZL0Oqc
+	id S1752504AbZL0OmL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 09:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZL0OmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 09:46:32 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:36378 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752190AbZL0Oqc (ORCPT
+	Sun, 27 Dec 2009 09:42:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33698 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751997AbZL0OmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 09:46:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=RYE4OliJuEYemBdgU9itSE6Siv6EfERhAq1Sb4sizrE1bJsY7YbEbwwkji+f1MZCLI
-         h3jYAwSKXVW80OIG0Gt6ZW4r9JkR95PjTJuCpDg+hqC84AQMS/TDQBb7Oy49Taj3NVmW
-         XDAL5VGXv2BhgY5QnOVaVgoOIR41nLTvnAFok=
-Message-ID: <4B3773F2.3010703@gmail.com>
-Date: Sun, 27 Dec 2009 15:49:22 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Sun, 27 Dec 2009 09:42:07 -0500
+X-Authority-Analysis: v=1.0 c=1 a=igne1qBhNWMA:10 a=7nvsQjodx8uHge9pvuoA:9 a=ytaUk97X-0edWnrSCDiLxVgxuOkA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 70.124.57.33
+Date: Sun, 27 Dec 2009 08:54:28 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, serue@us.ibm.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: A basic question about the security_* hooks
+Message-ID: <20091227145428.GA19414@hallyn.com>
+References: <20091225055034.GA374@us.ibm.com> <20091226195043.GA1945@heat> <20091227031631.GA17629@hallyn.com> <200912271302.JBH64754.JtLMFQVOSOFFHO@I-love.SAKURA.ne.jp> <22669.1261911374@localhost>
 MIME-Version: 1.0
-To: "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       linux-i2c@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i2c: test off by one in {piix4,vt596}_transaction()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <22669.1261911374@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With `while (timeout++ < MAX_TIMEOUT)' timeout reaches MAX_TIMEOUT + 1 after the loop
-This is probably unlikely to produce a problem.
+Quoting Valdis.Kletnieks@vt.edu (Valdis.Kletnieks@vt.edu):
+> On Sun, 27 Dec 2009 13:02:54 +0900, Tetsuo Handa said:
+> > I believe TOMOYO can safely coexist with other security modules.
+> > Why TOMOYO must not be used with SELinux or Smack or AppArmor?
+> > What interference are you worrying when enabling TOMOYO with SELinux or Smack
+> > or AppArmor?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/i2c/busses/i2c-piix4.c  |    2 +-
- drivers/i2c/busses/i2c-viapro.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+...
 
-diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
-index 1e245e9..d8e0df0 100644
---- a/drivers/i2c/busses/i2c-piix4.c
-+++ b/drivers/i2c/busses/i2c-piix4.c
-@@ -329,7 +329,7 @@ static int piix4_transaction(void)
- 		msleep(1);
- 
- 	/* If the SMBus is still busy, we give up */
--	if (timeout >= MAX_TIMEOUT) {
-+	if (timeout > MAX_TIMEOUT) {
- 		dev_err(&piix4_adapter.dev, "SMBus Timeout!\n");
- 		result = -ETIMEDOUT;
- 	}
-diff --git a/drivers/i2c/busses/i2c-viapro.c b/drivers/i2c/busses/i2c-viapro.c
-index e4b1543..8a2e0d5 100644
---- a/drivers/i2c/busses/i2c-viapro.c
-+++ b/drivers/i2c/busses/i2c-viapro.c
-@@ -168,7 +168,7 @@ static int vt596_transaction(u8 size)
- 	} while ((temp & 0x01) && (timeout++ < MAX_TIMEOUT));
- 
- 	/* If the SMBus is still busy, we give up */
--	if (timeout >= MAX_TIMEOUT) {
-+	if (timeout > MAX_TIMEOUT) {
- 		result = -ETIMEDOUT;
- 		dev_err(&vt596_adapter.dev, "SMBus timeout!\n");
- 	}
+> First, it's possible to totally screw up your box - consider 2 defective
+> policies where each prevents a reload of the other's policy.  Now note that it
+> doesn't even need to be the *policy* - if the Tomoyo policy files get
+> mislabeled with the wrong SELinux context, then an SELinux component will
+> probably prevent access to the policy and thus prevent the load.  Your system
+> is now *at best* running SELinux-only (and now vulnerable to to any attacks you
+> were depending on Tomoyo to stop). At worst, the wrecked Tomoyo policy will
+> mean that Tomoyo will then reject the SELinux 'restorecon' command to correct
+> the labels, leaving you in a situation where you can't recover your box.
+> 
+> Second, it's unclear what a combo of two different MAC systems would *mean*,
+> and whether it creates corner cases that can be exploited - the "two systems
+> block each other's reloads" mentioned above is but one example. If a system that
+> depends on inode labeling is active at the same time as a path-based system,
+> what happens if you manage to do an 'mv' command that changes the security
+> context in the path-based system while leaving the inode label the same, or
+> relabel an inode without rename it to match? The file has just experienced
+> a security transition for one system, but not the other. Are there any
+> files and transitions where the mismatch matters?
+> 
+> If the two systems load policies with the same semantics, why are you
+> bothering?  And if they load different semantics, can the difference be
+> leveraged by an attacker?
+
+Agree with everything Valdis said (including after this part, which I cut).
+
+Why do you compose the two?  I assume you went to the trouble because
+you have a specific use case, a definite advantage?
+
+-serge
