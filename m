@@ -1,52 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751604AbZL1UHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568AbZL0LU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751604AbZL1UHP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 15:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZL1UHN
+	id S1751568AbZL0LU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 06:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZL0LU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 15:07:13 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55282 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZL1UHM (ORCPT
+	Sun, 27 Dec 2009 06:20:26 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45845 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751401AbZL0LU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 15:07:12 -0500
-Date: Sun, 27 Dec 2009 12:10:27 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-       Jeff Garzik <jeff@garzik.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.33-rc0 regression: 256MB CF card no longer recognized in
-	PCMCIA slot
-Message-ID: <20091227111027.GB1398@ucw.cz>
-References: <20091219215459.GB9011@elf.ucw.cz> <4B2D54E7.9060508@garzik.org> <20091220095248.GC6029@comet.dominikbrodowski.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091220095248.GC6029@comet.dominikbrodowski.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 27 Dec 2009 06:20:26 -0500
+Subject: Re: [RFC PATCH] asynchronous page fault.
+From: Peter Zijlstra <peterz@infradead.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org
+In-Reply-To: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 27 Dec 2009 12:19:56 +0100
+Message-ID: <1261912796.15854.25.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-12-20 10:52:48, Dominik Brodowski wrote:
-> Hey,
-> 
-> On Sat, Dec 19, 2009 at 05:34:15PM -0500, Jeff Garzik wrote:
-> > On 12/19/2009 04:55 PM, Pavel Machek wrote:
-> > >Hi!
-> > >
-> > >Subject pretty much says it all... I do get some messages on the
-> > >console, I'll try to gather them.
-> > 
-> > Which driver(s) no longer see it?  Do you think it's the PCMCIA
-> > subsystem, IDE, libata or other?
-> 
-> My suspicion is that it might be kernel/resource.c -- Pavel, does this patch
-> fix the issue you're seeing?
+On Fri, 2009-12-25 at 10:51 +0900, KAMEZAWA Hiroyuki wrote:
+> Index: linux-2.6.33-rc2/lib/rbtree.c
+> ===================================================================
+> --- linux-2.6.33-rc2.orig/lib/rbtree.c
+> +++ linux-2.6.33-rc2/lib/rbtree.c
+> @@ -30,19 +30,19 @@ static void __rb_rotate_left(struct rb_n
+>  
+>         if ((node->rb_right = right->rb_left))
+>                 rb_set_parent(right->rb_left, node);
+> -       right->rb_left = node;
+> +       rcu_assign_pointer(right->rb_left, node);
+>  
+>         rb_set_parent(right, parent);
+>  
+>         if (parent)
+>         {
+>                 if (node == parent->rb_left)
+> -                       parent->rb_left = right;
+> +                       rcu_assign_pointer(parent->rb_left, right);
+>                 else
+> -                       parent->rb_right = right;
+> +                       rcu_assign_pointer(parent->rb_right, right);
+>         }
+>         else
+> -               root->rb_node = right;
+> +               rcu_assign_pointer(root->rb_node, right);
+>         rb_set_parent(node, right);
+>  }
+>  
+> @@ -53,19 +53,19 @@ static void __rb_rotate_right(struct rb_
+>  
+>         if ((node->rb_left = left->rb_right))
+>                 rb_set_parent(left->rb_right, node);
+> -       left->rb_right = node;
+> +       rcu_assign_pointer(left->rb_right, node);
+>  
+>         rb_set_parent(left, parent);
+>  
+>         if (parent)
+>         {
+>                 if (node == parent->rb_right)
+> -                       parent->rb_right = left;
+> +                       rcu_assign_pointer(parent->rb_right, left);
+>                 else
+> -                       parent->rb_left = left;
+> +                       rcu_assign_pointer(parent->rb_left, left);
+>         }
+>         else
+> -               root->rb_node = left;
+> +               rcu_assign_pointer(root->rb_node, left);
+>         rb_set_parent(node, left);
+>  }
 
-It seems fixed in -rc2, good.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Consider the tree rotation:
+
+
+           Q                        P
+         /   \                    /   \
+       P       C                A       Q
+     /   \                            /   \
+   A       B                        B       C
+
+
+Since this comprises of 3 assignments (assuming right rotation):
+
+  Q.left = B
+  P.right = Q
+  parent = P
+
+it is non-atomic. This in turn means that any lock-less decent into the
+tree will be able to miss a whole subtree or worse (imagine us being at
+Q, needing to go to A, then the rotation happens, and all we can choose
+from is B or C).
+
+Your changelog states as much.
+
+"Even if RB-tree rotation occurs while we walk tree for look-up, we just
+miss vma without oops."
+
+However, since this is the case, do we still need the
+rcu_assign_pointer() conversion your patch does? All I can see it do is
+slow down all RB-tree users, without any gain.
+
