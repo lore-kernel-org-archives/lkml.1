@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751222AbZL0UhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751195AbZL0Urp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751222AbZL0UhU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 15:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZL0UhT
+	id S1751195AbZL0Urp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 15:47:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZL0Uro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 15:37:19 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42993 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbZL0UhS (ORCPT
+	Sun, 27 Dec 2009 15:47:44 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34663 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbZL0Uro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 15:37:18 -0500
-Date: Sun, 27 Dec 2009 21:37:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Arve Hj?nnev?g <arve@android.com>, Daniel Walker <dwalker@codeaurora.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: tree with htc dream support
-Message-ID: <20091227203704.GK11737@elf.ucw.cz>
-References: <1260054737.23633.35.camel@desktop>
- <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
- <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
- <1260627482.20913.7.camel@desktop>
- <d6200be20912121434x1a247837w75c518ba20fe684f@mail.gmail.com>
- <20091213212504.GD5114@elf.ucw.cz>
- <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
- <20091227093537.GD11737@elf.ucw.cz>
- <20091227201514.GA29174@elf.ucw.cz>
- <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
+	Sun, 27 Dec 2009 15:47:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NbM/uZ9UJPXg4Ax67Xxg+SsYH8D1VgXq/q132SCk0nebDUqnqQwPhyU3K3cidFthT3
+         VpvtVpS01jerY/vQpJfy86QNbyVfvO5PT3DQMff/LMzO+WZQzmPuf/xXEF5EH4XMI1ms
+         RiRF8m3Akp2mMQySe+lEAubXsa3lX2j+CiWis=
+Message-ID: <4B37C89B.3030904@gmail.com>
+Date: Sun, 27 Dec 2009 21:50:35 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Tim Waugh <tim@cyberelk.net>, linux-parport@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] paride: test off by one
+References: <4B3772CA.80505@gmail.com>
+In-Reply-To: <4B3772CA.80505@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+With `while (j++ < PX_SPIN)' j reaches PX_SPIN + 1 after the loop. This is
+probably unlikely to produce a problem.
 
-> >> > I do plan to look at these, but I don't know when I'll get to it.
-> >>
-> >> So... this switches qdsp5 code from private version to version in
-> >> staging. It actually boots.
-> >
-> > And when I replace .c's in qdsp5 with -msm version, it also works,
-> > with diff being reasonably small.
-> >
-> > Now... how does camera driver work? I did not drivers/media/video/msm/
-> > driver into the kernel, but camera application seems to still
-> > work...?!
-> 
-> Depends which version of the camera userspace code you've got.  The
-> stuff for cupcake/donut talks directly to the DSP and the DSP
-> interacts with the VFE (video frontend, the camera data transport).  I
-> believe the new camera driver bypasses some (all?) of that and deals
-> with the VFE directly.  At least on 8k that's how it works (no DSP
-> involvement at all).
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+If you want this, this is probably better:
 
-I have 1.5 listed as "firmware version" under "about phone". I guess
-that means "cupcake". Ok, so that looks like I do not have easy way of
-testing camera driver, because my userland does not need it...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/drivers/block/paride/pcd.c b/drivers/block/paride/pcd.c
+index 8866ca3..71acf4e 100644
+--- a/drivers/block/paride/pcd.c
++++ b/drivers/block/paride/pcd.c
+@@ -341,11 +341,11 @@ static int pcd_wait(struct pcd_unit *cd, int go, int stop, char *fun, char *msg)
+ 	       && (j++ < PCD_SPIN))
+ 		udelay(PCD_DELAY);
+ 
+-	if ((r & (IDE_ERR & stop)) || (j >= PCD_SPIN)) {
++	if ((r & (IDE_ERR & stop)) || (j > PCD_SPIN)) {
+ 		s = read_reg(cd, 7);
+ 		e = read_reg(cd, 1);
+ 		p = read_reg(cd, 2);
+-		if (j >= PCD_SPIN)
++		if (j > PCD_SPIN)
+ 			e |= 0x100;
+ 		if (fun)
+ 			printk("%s: %s %s: alt=0x%x stat=0x%x err=0x%x"
+diff --git a/drivers/block/paride/pf.c b/drivers/block/paride/pf.c
+index ea54ea3..60fd50c 100644
+--- a/drivers/block/paride/pf.c
++++ b/drivers/block/paride/pf.c
+@@ -391,11 +391,11 @@ static int pf_wait(struct pf_unit *pf, int go, int stop, char *fun, char *msg)
+ 	       && (j++ < PF_SPIN))
+ 		udelay(PF_SPIN_DEL);
+ 
+-	if ((r & (STAT_ERR & stop)) || (j >= PF_SPIN)) {
++	if ((r & (STAT_ERR & stop)) || (j > PF_SPIN)) {
+ 		s = read_reg(pf, 7);
+ 		e = read_reg(pf, 1);
+ 		p = read_reg(pf, 2);
+-		if (j >= PF_SPIN)
++		if (j > PF_SPIN)
+ 			e |= 0x100;
+ 		if (fun)
+ 			printk("%s: %s %s: alt=0x%x stat=0x%x err=0x%x"
+diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
+index 1e4006e..bc5825f 100644
+--- a/drivers/block/paride/pt.c
++++ b/drivers/block/paride/pt.c
+@@ -274,11 +274,11 @@ static int pt_wait(struct pt_unit *tape, int go, int stop, char *fun, char *msg)
+ 	       && (j++ < PT_SPIN))
+ 		udelay(PT_SPIN_DEL);
+ 
+-	if ((r & (STAT_ERR & stop)) || (j >= PT_SPIN)) {
++	if ((r & (STAT_ERR & stop)) || (j > PT_SPIN)) {
+ 		s = read_reg(pi, 7);
+ 		e = read_reg(pi, 1);
+ 		p = read_reg(pi, 2);
+-		if (j >= PT_SPIN)
++		if (j > PT_SPIN)
+ 			e |= 0x100;
+ 		if (fun)
+ 			printk("%s: %s %s: alt=0x%x stat=0x%x err=0x%x"
