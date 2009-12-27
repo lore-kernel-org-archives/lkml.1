@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751462AbZL0Xic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZL0Xka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751462AbZL0Xic (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 18:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZL0XiV
+	id S1751282AbZL0Xka (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 18:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZL0Xk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 18:38:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59251 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbZL0XiR (ORCPT
+	Sun, 27 Dec 2009 18:40:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56062 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbZL0Xk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 18:38:17 -0500
-Date: Mon, 28 Dec 2009 00:38:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-Message-ID: <20091227233816.GC2399@basil.fritz.box>
-References: <200912271003.631128760@firstfloor.org> <1261949800.25298.18.camel@wall-e>
+	Sun, 27 Dec 2009 18:40:27 -0500
+Date: Sun, 27 Dec 2009 21:40:20 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 10/10] perf record: Introduce a symtab cache
+Message-ID: <20091227234020.GA29892@ghostprotocols.net>
+References: <1261957026-15580-1-git-send-email-acme@infradead.org> <1261957026-15580-10-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1261949800.25298.18.camel@wall-e>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1261957026-15580-10-git-send-email-acme@infradead.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 27, 2009 at 10:36:40PM +0100, Stefani Seibold wrote:
-> Am Sonntag, den 27.12.2009, 22:03 +0100 schrieb Andi Kleen:
-> > While porting some of my code to kfifo I found some issues, which
-> > are addressed in the following patch series.
-> > 
-> > Some of the problems were serious, particularly the non atomic kfifo_in()
-> > problem. That's probably 2.6.33 material at least. 
-> > 
+Em Sun, Dec 27, 2009 at 09:37:06PM -0200, Arnaldo Carvalho de Melo escreveu:
+> From: Arnaldo Carvalho de Melo <acme@redhat.com>
 > 
-> I am not happy to see you to take over my project. Especial as most of
+> Now a cache will be created in a ~/.debug debuginfo like hierarchy, so
+> that at the end of a 'perf record' session all the binaries (with
+> build-ids) involved get collected and indexed by their build-ids, so
+> that perf record can find them.
 
-I'm just trying to use kfifos and ran into lots of issues that
-I fixed. Especially the non atomic kfifo_in problem seemed pretty fatal
-BTW.
-
-> your fixes are part of my new macro based implementation. Have a look at
-> http://patchwork.kernel.org/patch/69093/
-
-Even if that was merged the older interfaces still need to be fixed.
-
-Or are you saying the new interface would completely replace kfifos?
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Gack, 'so that perf report' (and new tools, hopefully) can find them, of
+course :-\ If you notice this, please fix it up.
+ 
+- Arnaldo
