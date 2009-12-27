@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZL0A3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZL0Ade@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753755AbZL0A3j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 19:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZL0A3j
+	id S1753977AbZL0Ade (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 19:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZL0Add
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 19:29:39 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40466 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751812AbZL0A3i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 19:29:38 -0500
-X-Sasl-enc: VwmMCHhFxSfLrEocPlWynpr6bP71sg4u3QYxm7VOP+Nw 1261873777
-Date: Sat, 26 Dec 2009 22:29:35 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Joe Perches <joe@perches.com>
-Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
-       Len Brown <len.brown@intel.com>, ibm-acpi-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] thinkpad_acpi.c: Remove #define TPACPI_<level>s for
- printks
-Message-ID: <20091227002935.GC26593@khazad-dum.debian.net>
-References: <1261797801.2568.69.camel@Joe-Laptop.home>
- <20091226042017.GA14921@khazad-dum.debian.net>
- <1261802563.2568.75.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261802563.2568.75.camel@Joe-Laptop.home>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sat, 26 Dec 2009 19:33:33 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:51460 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752725AbZL0Adc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 19:33:32 -0500
+Subject: Re: A basic question about the security_* hooks
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>, Va@jasper.es
+In-Reply-To: <20091225055034.GA374@us.ibm.com>
+References: <20091225001422.GB22311@us.ibm.com> <20091225011128.GA5213@heat>
+	 <20091225055034.GA374@us.ibm.com>
+Content-Type: text/plain
+Date: Sat, 26 Dec 2009 19:33:29 -0500
+Message-Id: <1261874009.3684.58.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Dec 2009, Joe Perches wrote:
-> On Sat, 2009-12-26 at 02:20 -0200, Henrique de Moraes Holschuh wrote:
-> > Why would I want a parameter macro instead of a straightforward bunch of
-> > #defines ?
+On Thu, 2009-12-24 at 23:50 -0600, Serge E. Hallyn wrote:
+
+<snip>
+
+> Well, taking a step back - what exactly is the motivation for making this
+> an LSM?  Is it just to re-use the callsites?  Or to provide a way to turn
+> off the functionality?  I ask bc the API is in the prctl code, so the LSM
+> is conceptually always there, which is different from other LSMs.
 > 
-> To make grep a bit easier.
+> So if you (or your audience) really want this to be an LSM, then you should
+> probably put your prctl code in a security_task_prctl() hook.  Otherwise,
+> perhaps we should just explicitly call your hooks in wrappers - or whatever was
+> finally decided should be done with the security/integrity/ima hooks.
+> 
+> -serge
 
-Is greping for KERN_<priority> common?
+Any place that a security hook and the IMA call co-existed, the IMA call
+was moved to the security_ hook (security/security.c).
 
-Unfolding the printk messages to a single line _is_ useful for grep, though,
-and I plan to do just that (not high priority, though), and I would accept
-patches that do just that without any fuss :)
+Mimi
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
