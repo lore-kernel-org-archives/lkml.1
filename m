@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbZL0PVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZL0PaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbZL0PVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 10:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZL0PVU
+	id S1752291AbZL0PaN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 10:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZL0PaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 10:21:20 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:36220 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbZL0PVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 10:21:20 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] agpgart-amd64 not initialized in 2.6.33-rc2
-Date: Sun, 27 Dec 2009 17:19:39 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.33-rc2; KDE/4.2.4; x86_64; ; )
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Sun, 27 Dec 2009 10:30:11 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:44460 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752005AbZL0PaK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 10:30:10 -0500
+Subject: Re: [PATCH] parisc: test off by one in sgl_frem() and dbl_frem()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
+       "James E.J. Bottomley" <jejb@parisc-linux.org>,
+       linux-parisc@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B375F68.80301@gmail.com>
+References: <4B375F68.80301@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 27 Dec 2009 09:30:04 -0600
+Message-Id: <1261927804.2697.4.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912271719.39306.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, 2009-12-27 at 14:21 +0100, Roel Kluin wrote:
+> With `while (stepcount-- > 0)' stepcount reaches -1 after the loop.
 
-Recently (2.6.33-rc2 kernel, x86_64, 4GB RAM) I found (in dmesg):
+This is true, but seems to be by design
 
-[drm:mga_do_agp_dma_bootstrap] *ERROR* Unable to acquire AGP: -19
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  arch/parisc/math-emu/dfrem.c |    2 +-
+>  arch/parisc/math-emu/sfrem.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Unless I am missing something?
+> 
+> diff --git a/arch/parisc/math-emu/dfrem.c b/arch/parisc/math-emu/dfrem.c
+> index b983785..3283445 100644
+> --- a/arch/parisc/math-emu/dfrem.c
+> +++ b/arch/parisc/math-emu/dfrem.c
+> @@ -234,7 +234,7 @@ dbl_frem (dbl_floating_point * srcptr1, dbl_floating_point * srcptr2,
+>  		Dbl_subtract(opnd1p1,opnd1p2,opnd2p1,opnd2p2,opnd1p1,opnd1p2);
+>  		roundup = TRUE;
+>  	}
+> -	if (stepcount > 0 || Dbl_iszero(opnd1p1,opnd1p2)) {
+> +	if (stepcount >= 0 || Dbl_iszero(opnd1p1,opnd1p2)) {
+>  		/* division is exact, remainder is zero */
+>  		Dbl_setzero_exponentmantissa(resultp1,resultp2);
+>  		Dbl_copytoptr(resultp1,resultp2,dstptr);
+> diff --git a/arch/parisc/math-emu/sfrem.c b/arch/parisc/math-emu/sfrem.c
+> index 3a1b7a3..ad87832 100644
+> --- a/arch/parisc/math-emu/sfrem.c
+> +++ b/arch/parisc/math-emu/sfrem.c
+> @@ -229,7 +229,7 @@ sgl_frem (sgl_floating_point * srcptr1, sgl_floating_point * srcptr2,
+>  		Sgl_subtract(opnd1,opnd2,opnd1);
+>  		roundup = TRUE;
+>  	}
+> -	if (stepcount > 0 || Sgl_iszero(opnd1)) {
+> +	if (stepcount >= 0 || Sgl_iszero(opnd1)) {
+>  		/* division is exact, remainder is zero */
+>  		Sgl_setzero_exponentmantissa(result);
+>  		*dstptr = result;
 
-and there is no /dev/agpgart device on the machine while all is OK 
-if booting 2.6.32.2. 
+Your patch does nothing to the actual execution flow (Sgl_iszero is true
+if stepcount == 0) ... what's the point of applying it?
 
-In both kernels I have:
-
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-
-CONFIG_GART_IOMMU=y
-
-but nevertheless dmesg shows:
-
-PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-
-due to quirks in via K8T800Pro host bridge.
-
-Looking for the reason I found that agp_amd64_init() appears in:
-
-#ifndef CONFIG_GART_IOMMU
-module_init(agp_amd64_init);
-module_exit(agp_amd64_cleanup);
-#endif
-
- /*  so it is not invoked here due to CONFIG_GART_IOMMU=y   */
-
-and also appears in:
- 
-arch/x86/kernel/pci-gart_64.c, function: gart_iommu_init()
-
-The last one is part of the struct x86_init_ops(struct x86_init_iommu, as a function pointer) 
-only if gart-iommu is successfully detected, which is not the case here due to the quirk, 
-so agp_amd64_init() is not invoked here neither. 
-
-Sure, configuring the kernel without CONFIG_GART_IOMMU=y (which is not user selectable)
-
-should solve the problem, but usually users do not know about quirks, so it should
-work even as set here (and it works up to 2.6.32.2). I believe the bug is introduced
-with the changes in the order iommu detect/init works for 2.6.33.
-
-I am here for additional info/tests.
-
-Best regards
-
-Marin Mitov
+James
 
 
-
- 
