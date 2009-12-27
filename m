@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZL0Xka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZL0Xll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282AbZL0Xka (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 18:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZL0Xk2
+	id S1751432AbZL0Xll (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 18:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZL0Xlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 18:40:28 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56062 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZL0Xk1 (ORCPT
+	Sun, 27 Dec 2009 18:41:39 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58143 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbZL0Xlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 18:40:27 -0500
-Date: Sun, 27 Dec 2009 21:40:20 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 10/10] perf record: Introduce a symtab cache
-Message-ID: <20091227234020.GA29892@ghostprotocols.net>
-References: <1261957026-15580-1-git-send-email-acme@infradead.org> <1261957026-15580-10-git-send-email-acme@infradead.org>
+	Sun, 27 Dec 2009 18:41:39 -0500
+Date: Mon, 28 Dec 2009 00:41:37 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org
+Subject: Re: [PATCH] [4/6] kfifo: add kfifo_out_peek
+Message-ID: <20091227234137.GD2399@basil.fritz.box>
+References: <200912271003.631128760@firstfloor.org> <20091227210314.ABA04B17C3@basil.firstfloor.org> <1261950589.25298.32.camel@wall-e>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1261957026-15580-10-git-send-email-acme@infradead.org>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1261950589.25298.32.camel@wall-e>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sun, Dec 27, 2009 at 09:37:06PM -0200, Arnaldo Carvalho de Melo escreveu:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Sun, Dec 27, 2009 at 10:49:49PM +0100, Stefani Seibold wrote:
+> Am Sonntag, den 27.12.2009, 22:03 +0100 schrieb Andi Kleen:
+> > In some upcoming code it's useful to peek into a FIFO without
+> > permanentely removing data. This patch implements a new 
+> > kfifo_out_peek() to do this. 
+> > 
 > 
-> Now a cache will be created in a ~/.debug debuginfo like hierarchy, so
-> that at the end of a 'perf record' session all the binaries (with
-> build-ids) involved get collected and indexed by their build-ids, so
-> that perf record can find them.
+> Yes this function can be useful. I will implement it in the macro
+> version of the kfifo.
 
-Gack, 'so that perf report' (and new tools, hopefully) can find them, of
-course :-\ If you notice this, please fix it up.
- 
-- Arnaldo
+Well that doesn't help me -- I need a working kfifo on a 2.6.33
+base. Or do you want to abandon the old interface?
+
+I must say I'm a little surprised by the general tone of  
+your comments -- first you submit these patches all the time and when they 
+finally get reviewed and merged and people start to use them and make them 
+production ready you state it's all abandoned.
+
+I hope it's not all abandonware.
+
+Anyways Andrew could you please merge these fixes? Thanks.
+
+-Andi
