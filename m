@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZL0PaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZL0Ppm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752291AbZL0PaN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 10:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZL0PaL
+	id S1752473AbZL0Ppm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 10:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZL0Ppl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 10:30:11 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:44460 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752005AbZL0PaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 10:30:10 -0500
-Subject: Re: [PATCH] parisc: test off by one in sgl_frem() and dbl_frem()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
-       "James E.J. Bottomley" <jejb@parisc-linux.org>,
-       linux-parisc@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B375F68.80301@gmail.com>
-References: <4B375F68.80301@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 27 Dec 2009 09:30:04 -0600
-Message-Id: <1261927804.2697.4.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Dec 2009 10:45:41 -0500
+Received: from lists.laptop.org ([18.85.2.145]:59937 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752233AbZL0Ppj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 10:45:39 -0500
+Date: Sun, 27 Dec 2009 10:47:47 -0500
+From: Michael Stone <michael@laptop.org>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Michael Stone <michael@laptop.org>
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091227154747.GA12645@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20091227150300.GB19414@hallyn.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-27 at 14:21 +0100, Roel Kluin wrote:
-> With `while (stepcount-- > 0)' stepcount reaches -1 after the loop.
+Serge Hallyn writes:
 
-This is true, but seems to be by design
+> Michael Stone, without looking back over the patches, do you also
+> restrict opening netlink sockets?  
 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  arch/parisc/math-emu/dfrem.c |    2 +-
->  arch/parisc/math-emu/sfrem.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Unless I am missing something?
-> 
-> diff --git a/arch/parisc/math-emu/dfrem.c b/arch/parisc/math-emu/dfrem.c
-> index b983785..3283445 100644
-> --- a/arch/parisc/math-emu/dfrem.c
-> +++ b/arch/parisc/math-emu/dfrem.c
-> @@ -234,7 +234,7 @@ dbl_frem (dbl_floating_point * srcptr1, dbl_floating_point * srcptr2,
->  		Dbl_subtract(opnd1p1,opnd1p2,opnd2p1,opnd2p2,opnd1p1,opnd1p2);
->  		roundup = TRUE;
->  	}
-> -	if (stepcount > 0 || Dbl_iszero(opnd1p1,opnd1p2)) {
-> +	if (stepcount >= 0 || Dbl_iszero(opnd1p1,opnd1p2)) {
->  		/* division is exact, remainder is zero */
->  		Dbl_setzero_exponentmantissa(resultp1,resultp2);
->  		Dbl_copytoptr(resultp1,resultp2,dstptr);
-> diff --git a/arch/parisc/math-emu/sfrem.c b/arch/parisc/math-emu/sfrem.c
-> index 3a1b7a3..ad87832 100644
-> --- a/arch/parisc/math-emu/sfrem.c
-> +++ b/arch/parisc/math-emu/sfrem.c
-> @@ -229,7 +229,7 @@ sgl_frem (sgl_floating_point * srcptr1, sgl_floating_point * srcptr2,
->  		Sgl_subtract(opnd1,opnd2,opnd1);
->  		roundup = TRUE;
->  	}
-> -	if (stepcount > 0 || Sgl_iszero(opnd1)) {
-> +	if (stepcount >= 0 || Sgl_iszero(opnd1)) {
->  		/* division is exact, remainder is zero */
->  		Sgl_setzero_exponentmantissa(result);
->  		*dstptr = result;
+The current version of the patch restricts netlink sockets which were not bound
+to an address before calling disablenetwork(). It does so primarily on the
+grounds of "fail safe", due to the following sorts of discussions and
+observations:
 
-Your patch does nothing to the actual execution flow (Sgl_iszero is true
-if stepcount == 0) ... what's the point of applying it?
+   http://kerneltrap.org/mailarchive/linux-kernel/2007/12/7/493793/thread
+   http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5461
+   http://marc.info/?l=linux-kernel&m=125448727130301&w=2
 
-James
+I would be willing to entertain an argument that some kind of exemption for
+AF_NETLINK ought to be introduced but I'd need to hear some more details before
+I could implement it and before I could satisfy myself that the result was
+sound.
 
+> Should we worry about preventing an error message from being sent to the
+> audit daemon?
 
+I've considered the matter and I don't see much to worry about at this time. 
+
+The first reason why I'm not too worried is that anyone in a position to use
+disablenetwork for nefarious purposes is also probably able to use ptrace(),
+kill(), and/or LD_PRELOAD to similar ends.
+
+The second reason why I'm not too worried is that I believe it to be
+straightforward to use the pre-existing MAC frameworks to prevent individually
+important processes from dropping networking privileges.
+
+Do you have a specific concern in mind not addressed by either of these
+observations?
+
+Regards,
+
+Michael
