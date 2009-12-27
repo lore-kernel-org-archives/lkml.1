@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbZL0H4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751363AbZL0I22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751403AbZL0H4x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 02:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZL0H4w
+	id S1751363AbZL0I22 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 03:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZL0I21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 02:56:52 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:52586 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZL0H4w (ORCPT
+	Sun, 27 Dec 2009 03:28:27 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:8083 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbZL0I20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 02:56:52 -0500
+	Sun, 27 Dec 2009 03:28:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Q1ifXwnMkWNibE2kvzVlXNCs7ne0l8+ZZyRai2Lim+jbNV2SOrrr+cLmmurolXyJLZ
-         ZHZZWuNF2i1nDZjJgR/wSPygHHFrUSHPASdJqnsuJB8fN4wdCCXwKLmCM1GBtmaIcnBA
-         dlMlzIXy9AncjmGiEzU5PbWm7cUHlin53Ub50=
-Date: Sat, 26 Dec 2009 23:56:47 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: tytso@mit.edu
-Cc: Philip Wernersbach <philip.wernersbach@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext2/3 as ext4
-Message-ID: <20091227075647.GA3223@core.coreip.homeip.net>
-References: <1daf33050912011730l5def95brac3ce60647bc2040@mail.gmail.com>
- <20091207190947.GF27692@thunk.org>
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=avdeQUbBvkztKg9cLNr7RQdREL/EFvJDbX+GO9NaooGYxT5DADuAkDKKWXhw323u5/
+         5NuFB0IFZCFivyJFglECIOLmbfN1rvvWO/2a1IT84Kk+YXXoA1eT/WT303/EGNVlS3ql
+         ynQTG1/xNCCIlj0ke9Y5FkEc2u3dQY4ezcBxI=
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] wl1251: timeout one too soon in wl1251_boot_run_firmware()
+References: <4B3664AF.6090302@gmail.com>
+From: Kalle Valo <kalle.valo@iki.fi>
+Date: Sun, 27 Dec 2009 10:28:21 +0200
+In-Reply-To: <4B3664AF.6090302@gmail.com> (Roel Kluin's message of "Sat\, 26 Dec 2009 20\:31\:59 +0100")
+Message-ID: <87pr60yg62.fsf@purkki.valot.fi>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091207190947.GF27692@thunk.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted,
+Roel Kluin <roel.kluin@gmail.com> writes:
 
-On Mon, Dec 07, 2009 at 02:09:47PM -0500, tytso@mit.edu wrote:
-> On Tue, Dec 01, 2009 at 08:30:36PM -0500, Philip Wernersbach wrote:
-> > Hello Everyone,
-> >      Below is a small patch I wrote for kernel version 2.6.31.6. It
-> > causes ext2/3 filesystems to be mounted using the ext4 driver, in a
-> > way that is transparent to the userspace (and kernelspace for that
-> > matter, as long as the code uses the kernel's mounting API) and
-> > requires no change to the userspace (/kernelspace). This patch is
-> > useful because: 1) It allows minimalist kernel fanatics, like myself,
-> > to drop 2 drivers from their builds without any loss in functionality.
-> > 2) It allows the ext2/3 filesystems to take advantage of the
-> > performance/general improvements in the ext4 driver. 3) In the future,
-> > with this patch, the ext2/3 driver code could be dropped from the
-> > kernel without any loss in functionality.
-> 
-> Here's a much cleaner patch which achieves the same goal...
-> 
+> `loop' reaches INIT_LOOP + 1 after the loop. so if ACX_INTR_INIT_COMPLETE
+> occurs in the last iteration the write occurs but also the error out as if a
+> timeout occurred. This is probably very unlikely to ever occur.
 
-I experience regular crashes with 2.6.32-rc2 that seem to be related to
-this patch as thet seem to go away if I enable proper ext3 support.
+Thank you for fixing this.
 
-Kernel BUG()s out in ext4_da_update_reserve_space(); unofrtunately
-traces don't make it ot the disk but I managed to snatch a picture with
-my didgital camera:
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-	http://userweb.kernel.org/~dtor/ext4-oops.jpg
+Acked-by: Kalle Valo <kalle.valo@nokia.com>
 
-I also tried pulling your latest pull request for Linus but the behavior
-is the same.
-
-Thanks.
+I think John can take this. As Roel mentioned, this is nothing
+critical and, if needed, can wait until 2.6.34.
 
 -- 
-Dmitry
+Kalle Valo
