@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbZL0VX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751237AbZL0V07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751403AbZL0VX4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 16:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZL0VXz
+	id S1751237AbZL0V07 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 16:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZL0V06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 16:23:55 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:56903 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbZL0VXz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 16:23:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=S/MDJpljH0Cf4ooETyUUDbsKYVBmkxtpiAA2aPNtTVVbGMh8e+3aZKCn1T94nE4l0m
-         6ak13GH6G4uGwj1iPQ1ai5ilFLxUphodblz0w2+tDGnUVh66oPeZJmpdUL3uqPnhDVay
-         tt8sZWl5QBSXWxWU06p/4VCou0W8KrXZiXy4E=
-Message-ID: <4B37D117.3000700@gmail.com>
-Date: Sun, 27 Dec 2009 22:26:47 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Sun, 27 Dec 2009 16:26:58 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:47748 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750947AbZL0V05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 16:26:57 -0500
+Date: Sun, 27 Dec 2009 22:26:54 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] arch/arm: Correct NULL test
+Message-ID: <Pine.LNX.4.64.0912272226360.20548@ask.diku.dk>
 MIME-Version: 1.0
-To: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       alsa-devel@alsa-project.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ALSA: test off by one in setsamplerate()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With `while (i++ < MAX_WRITE_RETRY)' i reaches MAX_WRITE_RETRY + 1 after the loop
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Test the just-allocated value for NULL rather than some other value.
+
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+expression x,y;
+statement S;
+@@
+
+x = \(kmalloc\|kcalloc\|kzalloc\)(...);
+(
+if ((x) == NULL) S
+|
+if (
+-   y
++   x
+       == NULL)
+ S
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- sound/pci/riptide/riptide.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/arm/plat-pxa/dma.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/pci/riptide/riptide.c b/sound/pci/riptide/riptide.c
-index b5ca02e..e66ef2b 100644
---- a/sound/pci/riptide/riptide.c
-+++ b/sound/pci/riptide/riptide.c
-@@ -1058,7 +1058,7 @@ setsamplerate(struct cmdif *cif, unsigned char *intdec, unsigned int rate)
- 				 rptr.retwords[2] != M &&
- 				 rptr.retwords[3] != N &&
- 				 i++ < MAX_WRITE_RETRY);
--			if (i == MAX_WRITE_RETRY) {
-+			if (i > MAX_WRITE_RETRY) {
- 				snd_printdd("sent samplerate %d: %d failed\n",
- 					    *intdec, rate);
- 				return -EIO;
+diff -u -p a/arch/arm/plat-pxa/dma.c b/arch/arm/plat-pxa/dma.c
+--- a/arch/arm/plat-pxa/dma.c
++++ b/arch/arm/plat-pxa/dma.c
+@@ -244,7 +244,7 @@ static void pxa_dma_init_debugfs(void)
+ 
+ 	dbgfs_chan = kmalloc(sizeof(*dbgfs_state) * num_dma_channels,
+ 			     GFP_KERNEL);
+-	if (!dbgfs_state)
++	if (!dbgfs_chan)
+ 		goto err_alloc;
+ 
+ 	chandir = debugfs_create_dir("channels", dbgfs_root);
