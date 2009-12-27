@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZL0MpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbZL0Mrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbZL0MpM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 07:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbZL0MpK
+	id S1751975AbZL0Mrn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 07:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZL0Mrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 07:45:10 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45679 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbZL0MpJ (ORCPT
+	Sun, 27 Dec 2009 07:47:42 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:33225 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751704AbZL0Mrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 07:45:09 -0500
-Date: Sun, 27 Dec 2009 13:45:07 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: michael@laptop.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, andi@firstfloor.org,
-       david@lang.hm, socketcan@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       herbert@gondor.apana.org.au, Valdis.Kletnieks@vt.edu, bdonlan@gmail.com,
-       zbr@ioremap.net, cscott@cscott.net, jmorris@namei.org,
-       ebiederm@xmission.com, bernie@codewiz.org, mrs@mythic-beasts.com,
-       randy.dunlap@oracle.com, xiyou.wangcong@gmail.com, sam@synack.fr,
-       casey@schaufler-ca.com, serue@us.ibm.com, pavel@ucw.cz
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20091227124507.GB10661@basil.fritz.box>
-References: <20091227010441.GA12077@heat> <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
+	Sun, 27 Dec 2009 07:47:42 -0500
+Date: Sun, 27 Dec 2009 18:17:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 0/4] cgroup notifications API and memory thresholds
+Message-ID: <20091227124732.GA3601@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <cover.1261858972.git.kirill@shutemov.name>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <cover.1261858972.git.kirill@shutemov.name>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 27, 2009 at 05:36:48PM +0900, Tetsuo Handa wrote:
-> Michael Stone wrote:
-> > Further suggestions?
+* Kirill A. Shutemov <kirill@shutemov.name> [2009-12-27 04:08:58]:
+
+> This patchset introduces eventfd-based API for notifications in cgroups and
+> implements memory notifications on top of it.
 > 
-> I expect that the future figure of this "disablenetwork" functionality becomes
-> "disablesyscall" functionality.
+> It uses statistics in memory controler to track memory usage.
+> 
+> Output of time(1) on building kernel on tmpfs:
+> 
+> Root cgroup before changes:
+> 	make -j2  506.37 user 60.93s system 193% cpu 4:52.77 total
+> Non-root cgroup before changes:
+> 	make -j2  507.14 user 62.66s system 193% cpu 4:54.74 total
+> Root cgroup after changes (0 thresholds):
+> 	make -j2  507.13 user 62.20s system 193% cpu 4:53.55 total
+> Non-root cgroup after changes (0 thresholds):
+> 	make -j2  507.70 user 64.20s system 193% cpu 4:55.70 total
+> Root cgroup after changes (1 thresholds, never crossed):
+> 	make -j2  506.97 user 62.20s system 193% cpu 4:53.90 total
+> Non-root cgroup after changes (1 thresholds, never crossed):
+> 	make -j2  507.55 user 64.08s system 193% cpu 4:55.63 total
+> 
+> Any comments?
 
-That's basically apparmor. I believe it has been re-submitted 
-recently.
+Thanks for adding the documentation, now on to more critical questions
 
--Andi
+1. Any reasons for not using cgroupstats?
+2. Is there a user space test application to test this code. IIUC,
+I need to write a program that uses eventfd(2) and then passes
+the eventfd descriptor and thresold to cgroup.*event* file and
+then the program will get notified when the threshold is reached?
+
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+	Balbir
