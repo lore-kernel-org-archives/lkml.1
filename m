@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbZL0Vtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbZL0Vtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676AbZL0Vtb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 16:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZL0Vta
+	id S1751551AbZL0Vtz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 16:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZL0Vty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 16:49:30 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:54080 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbZL0Vt3 (ORCPT
+	Sun, 27 Dec 2009 16:49:54 -0500
+Received: from www84.your-server.de ([213.133.104.84]:42674 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbZL0Vty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 16:49:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=mt/5uthI71fdSHmDJZPasEbjlHh+wGpa3GIMy7G01ve3w2XkkZ4xgHH5MwmX/eWKtc
-         4bPeByRuyt1+YpcbaRPwj95N5AWUkVRrPw/7TEihZJoTpw254Yyj6njrqjo3gIY06Ckh
-         FqWVL/gr4RG4b8dDQc1k7ajr9cZDcrDTUp3PE=
-Date: Sun, 27 Dec 2009 13:49:24 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.33-rc2
-Message-ID: <20091227214924.GB16279@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Sun, 27 Dec 2009 16:49:54 -0500
+Subject: Re: [PATCH] [4/6] kfifo: add kfifo_out_peek
+From: Stefani Seibold <stefani@seibold.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+In-Reply-To: <20091227210314.ABA04B17C3@basil.firstfloor.org>
+References: <200912271003.631128760@firstfloor.org>
+	 <20091227210314.ABA04B17C3@basil.firstfloor.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Sun, 27 Dec 2009 22:49:49 +0100
+Message-ID: <1261950589.25298.32.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Am Sonntag, den 27.12.2009, 22:03 +0100 schrieb Andi Kleen:
+> In some upcoming code it's useful to peek into a FIFO without
+> permanentely removing data. This patch implements a new 
+> kfifo_out_peek() to do this. 
+> 
 
-Please pull from:
+Yes this function can be useful. I will implement it in the macro
+version of the kfifo.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  include/linux/kfifo.h |    3 +++
+>  kernel/kfifo.c        |   21 +++++++++++++++++++++
+>  2 files changed, 24 insertions(+)
+> 
+> Index: linux/include/linux/kfifo.h
+> ===================================================================
+> --- linux.orig/include/linux/kfifo.h
+> +++ linux/include/linux/kfifo.h
+> @@ -114,6 +114,9 @@ extern unsigned int kfifo_in(struct kfif
+>  				const void *from, unsigned int len);
+>  extern __must_check unsigned int kfifo_out(struct kfifo *fifo,
+>  				void *to, unsigned int len);
+> +extern __must_check unsigned int kfifo_out_peek(struct kfifo *fifo,
+> +				void *to, unsigned int len, unsigned offset);
+> +
+>  
+>  /**
+>   * kfifo_reset - removes the entire FIFO contents
+> Index: linux/kernel/kfifo.c
+> ===================================================================
+> --- linux.orig/kernel/kfifo.c
+> +++ linux/kernel/kfifo.c
+> @@ -301,6 +301,27 @@ unsigned int kfifo_out(struct kfifo *fif
+>  }
+>  EXPORT_SYMBOL(kfifo_out);
+>  
+> +/**
+> + * kfifo_out_peek - copy some data from the FIFO, but do not remove it
+> + * @fifo: the fifo to be used.
+> + * @to: where the data must be copied.
+> + * @len: the size of the destination buffer.
+> + * @offset: offset into the fifo
+> + *
+> + * This function copies at most @len bytes at @offset from the FIFO
+> + * into the @to buffer and returns the number of copied bytes.
+> + * The data is not removed from the FIFO.
+> + */
+> +unsigned int kfifo_out_peek(struct kfifo *fifo, void *to, unsigned int len,
+> +			    unsigned offset)
+> +{
+> +	len = min(kfifo_len(fifo), len + offset);
+> +
+> +	__kfifo_out_data(fifo, to, len, offset);
+> +	return len;
+> +}
+> +EXPORT_SYMBOL(kfifo_out_peek);
+> +
+>  unsigned int __kfifo_out_generic(struct kfifo *fifo,
+>  	void *to, unsigned int len, unsigned int recsize,
+>  	unsigned int *total)
 
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Dmitry Torokhov (5):
-      Input: speed up suspend/shutdown for PS/2 mice and keyboards
-      Input: serio - do not mark kseriod freezable anymore
-      Input: ff-memless - another fix for signed to unsigned overflow
-      Input: iforce - fix oops on device disconnect
-      Input: matrix-keypad - handle cases when GPIOs can't be wakeup sources
-
-Jari Vanhala (2):
-      Input: ff-memless - start playing FF effects immediately
-      Input: ff-memless - add notion of direction to for rumble effects
-
-
-Diffstat:
---------
-
- drivers/input/ff-memless.c                  |   48 +++++++++++++++++++++++----
- drivers/input/joystick/iforce/iforce-main.c |   26 +++------------
- drivers/input/joystick/iforce/iforce-usb.c  |   28 ++++------------
- drivers/input/joystick/iforce/iforce.h      |    2 -
- drivers/input/keyboard/atkbd.c              |    5 ++-
- drivers/input/keyboard/matrix_keypad.c      |   29 ++++++++++++----
- drivers/input/mouse/psmouse-base.c          |    5 ++-
- drivers/input/serio/serio.c                 |   11 +-----
- 8 files changed, 84 insertions(+), 70 deletions(-)
-
--- 
-Dmitry
 
