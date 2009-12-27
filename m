@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbZLZXhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZL0AYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbZLZXhb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 18:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZLZXha
+	id S1753252AbZL0AYo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 19:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZL0AYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 18:37:30 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:38206 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbZLZXh3 convert rfc822-to-8bit (ORCPT
+	Sat, 26 Dec 2009 19:24:43 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37767 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751093AbZL0AYn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 18:37:29 -0500
+	Sat, 26 Dec 2009 19:24:43 -0500
+X-Sasl-enc: 7hAmJesZmHA9QJmsektHJwhSh7y7evtiSqDiJrBciCiG 1261873482
+Date: Sat, 26 Dec 2009 22:24:39 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Myron Stowe <myron.stowe@hp.com>
+Subject: Re: -tip: origin tree build failure
+Message-ID: <20091227002439.GA26593@khazad-dum.debian.net>
+References: <20091217075025.GA314@elte.hu>
+ <alpine.LFD.2.00.0912261448100.4089@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20091226133011.GA10944@balbir.in.ibm.com>
-References: <cover.1261786326.git.kirill@shutemov.name>
-	 <20091226133011.GA10944@balbir.in.ibm.com>
-Date: Sun, 27 Dec 2009 01:37:28 +0200
-Message-ID: <cc557aab0912261537n2f2e798u4338b4d1f31067e6@mail.gmail.com>
-Subject: Re: [PATCH v3 0/4] cgroup notifications API and memory thresholds
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: balbir@linux.vnet.ibm.com
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912261448100.4089@localhost.localdomain>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 26, 2009 at 3:30 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> * Kirill A. Shutemov <kirill@shutemov.name> [2009-12-26 02:30:56]:
->
->> This patchset introduces eventfd-based API for notifications in cgroups and
->> implements memory notifications on top of it.
->>
->> It uses statistics in memory controler to track memory usage.
->>
->> Output of time(1) on building kernel on tmpfs:
->>
->> Root cgroup before changes:
->>       make -j2  506.37 user 60.93s system 193% cpu 4:52.77 total
->> Non-root cgroup before changes:
->>       make -j2  507.14 user 62.66s system 193% cpu 4:54.74 total
->> Root cgroup after changes (0 thresholds):
->>       make -j2  507.13 user 62.20s system 193% cpu 4:53.55 total
->> Non-root cgroup after changes (0 thresholds):
->>       make -j2  507.70 user 64.20s system 193% cpu 4:55.70 total
->> Root cgroup after changes (1 thresholds, never crossed):
->>       make -j2  506.97 user 62.20s system 193% cpu 4:53.90 total
->> Non-root cgroup after changes (1 thresholds, never crossed):
->>       make -j2  507.55 user 64.08s system 193% cpu 4:55.63 total
->>
->> Any comments?
->
-> Could you please add some documentation for end users.
+On Sat, 26 Dec 2009, Len Brown wrote:
+> As my tree inflicted this one and I don't see your patch upstream,
+> I'll include your fix with my "for -rc2" push.
 
-Sure. I'll send new version of patchset with documentation soon.
+I will be sending you an alternate patch in a few minutes, anyway.  If
+you already sent the pull request, just let me know as that means I need
+to adjust my tree.
 
-> I've just
-> compiled a kernel with your changes for test. Also, is there a reason
-> not to use cgroupstats?
+Instead of depending on ALSA, I made the entire feature that depends on
+ALSA optional.
 
-I'm not sure that understand you correctly. Could you explain the idea?
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
