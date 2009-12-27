@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbZL0LtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZL0MDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751704AbZL0LtX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 06:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZL0LtW
+	id S1751655AbZL0MDk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 07:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZL0MDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 06:49:22 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:57945 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbZL0LtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 06:49:21 -0500
-To: pavel@ucw.cz, viro@ZenIV.linux.org.uk
-Cc: michael@laptop.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, andi@firstfloor.org,
-       david@lang.hm, socketcan@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       herbert@gondor.apana.org.au, Valdis.Kletnieks@vt.edu, bdonlan@gmail.com,
-       zbr@ioremap.net, cscott@cscott.net, jmorris@namei.org,
-       ebiederm@xmission.com, bernie@codewiz.org, mrs@mythic-beasts.com,
-       randy.dunlap@oracle.com, xiyou.wangcong@gmail.com, sam@synack.fr,
-       casey@schaufler-ca.com, serue@us.ibm.com
-Subject: Re: RFC: disablenetwork facility. (v4)
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20091227010441.GA12077@heat>
-	<200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
-	<20091227083857.GC11737@elf.ucw.cz>
-In-Reply-To: <20091227083857.GC11737@elf.ucw.cz>
-Message-Id: <200912272049.FIB35755.OMFFOOJQtVLFSH@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sun, 27 Dec 2009 20:49:17 +0900
+	Sun, 27 Dec 2009 07:03:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37199 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbZL0MDj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 07:03:39 -0500
+Subject: Re: [RFC PATCH] asynchronous page fault.
+From: Peter Zijlstra <peterz@infradead.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org
+In-Reply-To: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 27 Dec 2009 13:03:11 +0100
+Message-ID: <1261915391.15854.31.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Syscalls are very wrong granularity for security system. But easy to
-> implement, see seccomp.
+On Fri, 2009-12-25 at 10:51 +0900, KAMEZAWA Hiroyuki wrote:
+>  /*
+> + * Returns vma which contains given address. This scans rb-tree in speculative
+> + * way and increment a reference count if found. Even if vma exists in rb-tree,
+> + * this function may return NULL in racy case. So, this function cannot be used
+> + * for checking whether given address is valid or not.
+> + */
+> +struct vm_area_struct *
+> +find_vma_speculative(struct mm_struct *mm, unsigned long addr)
+> +{
+> +       struct vm_area_struct *vma = NULL;
+> +       struct vm_area_struct *vma_tmp;
+> +       struct rb_node *rb_node;
+> +
+> +       if (unlikely(!mm))
+> +               return NULL;;
+> +
+> +       rcu_read_lock();
+> +       rb_node = rcu_dereference(mm->mm_rb.rb_node);
+> +       vma = NULL;
+> +       while (rb_node) {
+> +               vma_tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
+> +
+> +               if (vma_tmp->vm_end > addr) {
+> +                       vma = vma_tmp;
+> +                       if (vma_tmp->vm_start <= addr)
+> +                               break;
+> +                       rb_node = rcu_dereference(rb_node->rb_left);
+> +               } else
+> +                       rb_node = rcu_dereference(rb_node->rb_right);
+> +       }
+> +       if (vma) {
+> +               if ((vma->vm_start <= addr) && (addr < vma->vm_end)) {
+> +                       if (!atomic_inc_not_zero(&vma->refcnt))
 
-Quoting from http://en.wikipedia.org/wiki/Seccomp
-> It allows a process to make a one-way transition into a "secure" state where
-> it cannot make any system calls except exit(), read() and write() to
-> already-open file descriptors. 
+And here you destroy pretty much all advantage of having done the
+lockless lookup ;-)
 
-I think seccomp() is too much restricted to apply for general applications.
-Most applications will need some other syscalls in addition to exit(), read()
-and write(). Most applications cannot use seccomp().
+The idea is to let the RCU lock span whatever length you need the vma
+for, the easy way is to simply use PREEMPT_RCU=y for now, the hard way
+is to also incorporate the drop-mmap_sem on blocking patches from a
+while ago.
 
-What I want to do is similar to seccomp(), but allows userland process to
-forbid some syscalls like execve(), mount(), chroot(), link(), unlink(),
-socket(), bind(), listen() etc. selectively.
+> +                               vma = NULL;
+> +               } else
+> +                       vma = NULL;
+> +       }
+> +       rcu_read_unlock();
+> +       return vma;
+> +} 
 
-Al Viro wrote:
->> Application writers know better what syscalls the application will call than
->> application users.
-> 
-> Aren't you forgetting about libc?  Seriously, any interface along the
-> lines of "pass a set of syscall numbers to kernel" is DOA:
-
-We can determine what syscalls we need from application's code and libc's code,
-can't we?
-Otherwise, I think disablenetwork can't be used. If we simply forbid use of
-sendmsg() because application's code doesn't use UDP sockets, DNS requests (UDP
-port 53) by libc's code cannot be handled and applications will stop working.
-We must know what syscalls we need to allow when we forbid some syscalls.
-
-> 	* syscall numbers are architecture-dependent
-> 	* there are socketcall-style multiplexors (sys_ipc, anyone?)
-> 	* libc is free to substitute one for another
-> 	* libc is free to do so in arch-specific manner
-> 	* libc is free to do so in kernel-revision-specific manner
-> 	* libc is free to do so in libc-revision-specific manner
-> (... and does all of the above)
-> 	* new syscalls get added
-> 	* e.g. on sparc64 32bit task can issue 64bit syscalls
-
-I don't mean to tell the kernel by "syscall numbers".
-To be able to handle socketcall-style multiplexors, we will need a hook inside
-each syscall functions.
