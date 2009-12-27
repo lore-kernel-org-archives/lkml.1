@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZL0Xll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751322AbZL0Xou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751432AbZL0Xll (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 18:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZL0Xlj
+	id S1751322AbZL0Xou (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 18:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbZL0Xot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 18:41:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58143 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbZL0Xlj (ORCPT
+	Sun, 27 Dec 2009 18:44:49 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:57698 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750935AbZL0Xos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 18:41:39 -0500
-Date: Mon, 28 Dec 2009 00:41:37 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org
-Subject: Re: [PATCH] [4/6] kfifo: add kfifo_out_peek
-Message-ID: <20091227234137.GD2399@basil.fritz.box>
-References: <200912271003.631128760@firstfloor.org> <20091227210314.ABA04B17C3@basil.firstfloor.org> <1261950589.25298.32.camel@wall-e>
+	Sun, 27 Dec 2009 18:44:48 -0500
+Message-ID: <4B37F16D.1040000@blueyonder.co.uk>
+Date: Sun, 27 Dec 2009 23:44:45 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0 ThunderBrowse/3.2.6.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261950589.25298.32.camel@wall-e>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Len Brown <lenb@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: All kernels after 2.6.32-git10  show only 1 CPU ** Fixed in 2.6.33-rc2
+ **
+References: <4B324B76.9020901@blueyonder.co.uk> <4B33670C.7050503@blueyonder.co.uk> <4B341149.9010106@blueyonder.co.uk> <4B363EEE.8020108@blueyonder.co.uk> <alpine.LFD.2.00.0912261457550.4089@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912261457550.4089@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 27, 2009 at 10:49:49PM +0100, Stefani Seibold wrote:
-> Am Sonntag, den 27.12.2009, 22:03 +0100 schrieb Andi Kleen:
-> > In some upcoming code it's useful to peek into a FIFO without
-> > permanentely removing data. This patch implements a new 
-> > kfifo_out_peek() to do this. 
-> > 
+On 26/12/09 20:01, Len Brown wrote:
+> Sid,
+> If the kernel boots properly as of -rc2, then I would not worry
+> so much that it was broken at some point during the merge window.
 > 
-> Yes this function can be useful. I will implement it in the macro
-> version of the kfifo.
+> However, if it is still broken and you need to bisect back
+> into -merge to find out what caused it...  note that
+> booting with "acpi=ht" may be a useful tool.  For this
+> option will boot just enough of ACPI to enumerate processors,
+> but no more.  (Of course if this option doesn't boot with
+> the previous working kernels, then alas, it will not be useful here)
+> 
+> cheers,
+> Len Brown, Intel Open Source Technology Center
+> 
+> 
+> 
 
-Well that doesn't help me -- I need a working kfifo on a 2.6.33
-base. Or do you want to abandon the old interface?
+2.6.32-git1 boots OK with 2 CPU's.
+2.6.32-git2 boots with "acpi=ht" but only one CPU appears.
+With 2.6.32-git2 booted
+# git bisect bad
+tindog:/usr/src/GIT/linux-git # git bisect good v2.6.32
+Bisecting: 4685 revisions left to test after this (roughly 12 steps)
+[f6c4c8195b5e7878823caa1181be404d9e86d369] Merge branch 'for-linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid
 
-I must say I'm a little surprised by the general tone of  
-your comments -- first you submit these patches all the time and when they 
-finally get reviewed and merged and people start to use them and make them 
-production ready you state it's all abandoned.
+This is where I lose understanding of what I've done as v2.6.32-git1 and
+-git2 are not accepted as valid revisions needed by git bisect.
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-I hope it's not all abandonware.
-
-Anyways Andrew could you please merge these fixes? Thanks.
-
--Andi
