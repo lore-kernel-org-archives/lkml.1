@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751093AbZL0SvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751088AbZL0TIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751093AbZL0SvK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 13:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZL0SvH
+	id S1751088AbZL0TIT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 14:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZL0TIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 13:51:07 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:43162 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbZL0SvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 13:51:07 -0500
-Message-ID: <4B37AC87.1070607@knaff.lu>
-Date: Sun, 27 Dec 2009 19:50:47 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 27 Dec 2009 14:08:18 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54192 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbZL0TIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 14:08:17 -0500
+Date: Sun, 27 Dec 2009 20:08:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, viro@ZenIV.linux.org.uk,
+       michael@laptop.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       andi@firstfloor.org, david@lang.hm, socketcan@hartkopp.net,
+       alan@lxorguk.ukuu.org.uk, herbert@gondor.apana.org.au,
+       Valdis.Kletnieks@vt.edu, bdonlan@gmail.com, zbr@ioremap.net,
+       cscott@cscott.net, jmorris@namei.org, ebiederm@xmission.com,
+       bernie@codewiz.org, mrs@mythic-beasts.com, randy.dunlap@oracle.com,
+       xiyou.wangcong@gmail.com, sam@synack.fr, casey@schaufler-ca.com,
+       serue@us.ibm.com
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091227190802.GH11737@elf.ucw.cz>
+References: <20091227010441.GA12077@heat>
+ <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
+ <20091227083857.GC11737@elf.ucw.cz>
+ <200912272049.FIB35755.OMFFOOJQtVLFSH@I-love.SAKURA.ne.jp>
+ <20091227150300.GB19414@hallyn.com>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
-References: <200912211643.18173.tvrtko.ursulin@sophos.com> <4B2FEC10.6050900@msgid.tls.msk.ru>
-In-Reply-To: <4B2FEC10.6050900@msgid.tls.msk.ru>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------020208000104030209080007"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091227150300.GB19414@hallyn.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020208000104030209080007
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi!
 
-Michael Tokarev wrote:
-> Tvrtko Ursulin wrote:
->> Hi,
->>
->> When run under VMware, LZMA compressed 2.6.33-rc1 instantly reboots in the 
->> decompression stage. At least I suppose so, because switching to GZIP makes 
->> it work.
+> > I think seccomp() is too much restricted to apply for general applications.
+> > Most applications will need some other syscalls in addition to exit(), read()
+> > and write(). Most applications cannot use seccomp().
+> > 
+> > What I want to do is similar to seccomp(), but allows userland process to
+> > forbid some syscalls like execve(), mount(), chroot(), link(), unlink(),
+> > socket(), bind(), listen() etc. selectively.
 > 
-> Switch /bin/sh from dash to bash and recompile (actually relink) - it should work.
-> 
-> /mjt
+> The nice thing about the disablenetwork module is that (AFAICS so far)
+> it actually is safe for an unprivileged user to do.  I can't think of
+> any setuid-root software which, if started with restricted-network by
+> an unprivileged user, would become unsafe rather than simply
+> failing.
 
-I can confirm this. A similar issue used to exist for older kernels,
-which then got fixed by replacing "echo" with "/bin/echo" in the
-size_append command scripts/Makefile.lib . The reason why this was
-needed is that some shells (such as dash) have a defective built-in echo
-command. Specifying the full path forces to use the system echo command
-rather than the broken shell builtin.
+"I can't see" is not strong enough test, I'd say.
 
-In 2.6.33, for some reason, echo has been replaced with printf. With a
-_pathless_ printf! The fix is the same as in earlier kernels: add the path.
+For example, I can easily imagine something like pam falling back to
+local authentication when network is unavailable. If you disable
+network for su...
 
-With the attached patch applied, the kernel compiles correctly even if
-sh is linked to dash.
+It would be also extremely easy to DoS something like sendmail -- if
+it forks into background and then serves other users' requests.
 
-Regards,
-
-Alain
-
-
---------------020208000104030209080007
-Content-Type: text/x-diff;
- name="dash.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dash.patch"
-
-diff -ur linux-2.6.33-rc2/scripts/Makefile.lib linux-2.6.33-rc2.fixed/scripts/Makefile.lib
---- linux-2.6.33-rc2/scripts/Makefile.lib	2009-12-24 21:09:41.000000000 +0000
-+++ linux-2.6.33-rc2.fixed/scripts/Makefile.lib	2009-12-27 18:34:23.000000000 +0000
-@@ -213,7 +213,7 @@
- 
- # Bzip2 and LZMA do not include size in file... so we have to fake that;
- # append the size as a 32-bit littleendian number as gzip does.
--size_append = printf $(shell						\
-+size_append = /usr/bin/printf $(shell						\
- dec_size=0;								\
- for F in $1; do								\
- 	fsize=$$(stat -c "%s" $$F);					\
-
---------------020208000104030209080007--
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
