@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbZL0Hxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbZL0H4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751311AbZL0Hxu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 02:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZL0Hxt
+	id S1751403AbZL0H4x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 02:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZL0H4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 02:53:49 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46169 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbZL0Hxs (ORCPT
+	Sun, 27 Dec 2009 02:56:52 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:52586 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbZL0H4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 02:53:48 -0500
-Date: Sun, 27 Dec 2009 08:53:35 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 1/3] Security: Add disablenetwork interface. (v4)
-Message-ID: <20091227075335.GA11737@elf.ucw.cz>
-References: <20091227010441.GA12077@heat>
- <20091227010640.GA12173@heat>
+	Sun, 27 Dec 2009 02:56:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q1ifXwnMkWNibE2kvzVlXNCs7ne0l8+ZZyRai2Lim+jbNV2SOrrr+cLmmurolXyJLZ
+         ZHZZWuNF2i1nDZjJgR/wSPygHHFrUSHPASdJqnsuJB8fN4wdCCXwKLmCM1GBtmaIcnBA
+         dlMlzIXy9AncjmGiEzU5PbWm7cUHlin53Ub50=
+Date: Sat, 26 Dec 2009 23:56:47 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: tytso@mit.edu
+Cc: Philip Wernersbach <philip.wernersbach@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext2/3 as ext4
+Message-ID: <20091227075647.GA3223@core.coreip.homeip.net>
+References: <1daf33050912011730l5def95brac3ce60647bc2040@mail.gmail.com>
+ <20091207190947.GF27692@thunk.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091227010640.GA12173@heat>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091207190947.GF27692@thunk.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> index 26a6b73..b48f021 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -35,6 +35,7 @@
->   #include <linux/cpu.h>
->   #include <linux/ptrace.h>
->   #include <linux/fs_struct.h>
-> +#include <linux/prctl_network.h>
->   
->   #include <linux/compat.h>
->   #include <linux/syscalls.h>
+Hi Ted,
 
-Something seems to be wrong with whitespace here. Damaged patch?
+On Mon, Dec 07, 2009 at 02:09:47PM -0500, tytso@mit.edu wrote:
+> On Tue, Dec 01, 2009 at 08:30:36PM -0500, Philip Wernersbach wrote:
+> > Hello Everyone,
+> >      Below is a small patch I wrote for kernel version 2.6.31.6. It
+> > causes ext2/3 filesystems to be mounted using the ext4 driver, in a
+> > way that is transparent to the userspace (and kernelspace for that
+> > matter, as long as the code uses the kernel's mounting API) and
+> > requires no change to the userspace (/kernelspace). This patch is
+> > useful because: 1) It allows minimalist kernel fanatics, like myself,
+> > to drop 2 drivers from their builds without any loss in functionality.
+> > 2) It allows the ext2/3 filesystems to take advantage of the
+> > performance/general improvements in the ext4 driver. 3) In the future,
+> > with this patch, the ext2/3 driver code could be dropped from the
+> > kernel without any loss in functionality.
+> 
+> Here's a much cleaner patch which achieves the same goal...
+> 
+
+I experience regular crashes with 2.6.32-rc2 that seem to be related to
+this patch as thet seem to go away if I enable proper ext3 support.
+
+Kernel BUG()s out in ext4_da_update_reserve_space(); unofrtunately
+traces don't make it ot the disk but I managed to snatch a picture with
+my didgital camera:
+
+	http://userweb.kernel.org/~dtor/ext4-oops.jpg
+
+I also tried pulling your latest pull request for Linus but the behavior
+is the same.
+
+Thanks.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dmitry
