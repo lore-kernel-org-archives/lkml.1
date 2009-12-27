@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbZL0May@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbZL0MdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbZL0May (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 07:30:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZL0Max
+	id S1751899AbZL0MdS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 07:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZL0MdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 07:30:53 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:59223 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751515AbZL0Max (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 07:30:53 -0500
-Message-ID: <4B3752F5.3080205@knaff.lu>
-Date: Sun, 27 Dec 2009 13:28:37 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
+	Sun, 27 Dec 2009 07:33:17 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42526 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbZL0MdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 07:33:16 -0500
+Subject: Re: lockdep possible recursive lock in slab parent->list->rlock in
+ rc2
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: Andi Kleen <andi@firstfloor.org>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Hounschell <markh@compro.net>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       morgan@physics.ucla.edu, JONES@UINPLA.NPL.UIUC.EDU
-Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
-References: <4B3214EC.6020308@compro.net> <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com> <4B32386B.2060509@compro.net> <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain> <87bphpd4rt.fsf@basil.nowhere.org> <alpine.LFD.2.00.0912230845550.6879@localhost.localdomain> <20091223170832.GH20539@basil.fritz.box> <20091225132116.6c9089f2@infradead.org> <20091225203304.GA22306@basil.fritz.box> <20091226103835.68479100@infradead.org> <20091226164029.GA10256@basil.fritz.box>
-In-Reply-To: <20091226164029.GA10256@basil.fritz.box>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, a.p.zijlstra@chello.nl,
+       cl@linux-foundation.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+In-Reply-To: <20091227120622.GA480@basil.fritz.box>
+References: <20091227120622.GA480@basil.fritz.box>
+Date: Sun, 27 Dec 2009 14:33:14 +0200
+Message-Id: <1261917194.5933.2.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> Does pmqos work with apci=off etc.? 
->> yes
->>
->>> I didn't think it shut down
->>> the classic "HLT" idle, does it? 
->> it does if you specify a latency of 0; it will then go into the
->> spin-only state until you give up your latency requirement
+Hi Andi,
+
+On Sun, 2009-12-27 at 13:06 +0100, Andi Kleen wrote:
+> Get this on a NFS root system while booting
+> This must be a recent change in the last week, 
+> I didn't see it in a post rc1 git* from last week
+> (I haven't done a exact bisect)
 > 
-> I looked at it this evening, but it seems like pm_qos is not
-> interrupt safe (e.g. calls blocking notifiers) and floppy currently does 
-> enable/disable_hlt from interrupts and bottom halves.  
+> It's triggered by the r8169 driver close function, 
+> but looks more like a slab problem?
 > 
-> Would need some more infrastructure work or restructuring 
-> of the floppy driver.
-> 
-> -Andi
+> I haven't checked it in detail if the locks are 
+> really different or just lockdep not knowing 
+> enough classes.
 
-disable_hlt/enable_hlt was only needed to work around a bug on TM4000
-(Texas Instrument) Laptops which were popular around 1994 / 1995.
-Basically, as soon as the CPU went into hlt() state, so did the DMA
-controller, either causing a really slow transfer, or (worse) a buffer
-over/underrun which failed the operation.
+I broke the lockdep annotations in commit
+ce79ddc8e2376a9a93c7d42daf89bfcbb9187e62 ("SLAB: Fix lockdep annotations
+for CPU hotplug"). Does this fix things for you? Heiko, the following
+patch should fix it for you too.
 
-On hardware unaffected by this particular bug (which would be most
-hardware around now, 14 years after the fact...), these calls can safely
-be removed.
+			Pekka
 
-Regards,
+diff --git a/mm/slab.c b/mm/slab.c
+index 7d41f15..7451bda 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -654,7 +654,7 @@ static void init_node_lock_keys(int q)
+ 
+ 		l3 = s->cs_cachep->nodelists[q];
+ 		if (!l3 || OFF_SLAB(s->cs_cachep))
+-			return;
++			continue;
+ 		lockdep_set_class(&l3->list_lock, &on_slab_l3_key);
+ 		alc = l3->alien;
+ 		/*
+@@ -665,7 +665,7 @@ static void init_node_lock_keys(int q)
+ 		 * for alloc_alien_cache,
+ 		 */
+ 		if (!alc || (unsigned long)alc == BAD_ALIEN_MAGIC)
+-			return;
++			continue;
+ 		for_each_node(r) {
+ 			if (alc[r])
+ 				lockdep_set_class(&alc[r]->lock,
 
-Alain
 
