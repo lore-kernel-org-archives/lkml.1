@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751043AbZL0SXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751126AbZL0SbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751043AbZL0SXl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 13:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbZL0SXk
+	id S1751126AbZL0SbF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 13:31:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZL0SbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 13:23:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39359 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750819AbZL0SXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 13:23:39 -0500
-Date: Sun, 27 Dec 2009 10:22:38 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-Message-ID: <20091227102238.0df149f9@nehalam>
-In-Reply-To: <4B379378.4000102@majjas.com>
-References: <4B300A2A.8040305@gmail.com>
-	<4B300E30.9090707@majjas.com>
-	<4B3114E3.1070602@majjas.com>
-	<4B329FA3.9090904@majjas.com>
-	<20091223230102.4bb0100e.akpm@linux-foundation.org>
-	<4B34E847.8010809@majjas.com>
-	<20091225152200.1cf11dfe@nehalam>
-	<4B3581C7.8000702@majjas.com>
-	<20091226095723.7ac82b18@nehalam>
-	<4B367409.5060202@majjas.com>
-	<4B379378.4000102@majjas.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Dec 2009 13:31:04 -0500
+Received: from kroah.org ([198.145.64.141]:57668 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751001AbZL0SbB (ORCPT <rfc822;Linux-Kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 13:31:01 -0500
+Date: Sun, 27 Dec 2009 10:30:50 -0800
+From: Greg KH <greg@kroah.com>
+To: JD <jd1008@gmail.com>
+Cc: Linux Kernel List <Linux-Kernel@vger.kernel.org>
+Subject: Re: RT2860 driver
+Message-ID: <20091227183050.GA12428@kroah.com>
+References: <4B343611.6070206@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B343611.6070206@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Dec 2009 12:03:52 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
+On Thu, Dec 24, 2009 at 07:48:33PM -0800, JD wrote:
+> I have built and booted several kernel.org releases of
+> kernel 2.6, ever since rt2860 was added to the staging area.
+> I have an rt2860 mini-pci wifi card.
+> To make a long story short, the last kernel release I built
+> with rt2860 config enabled (module), that actually worked
+> (i.e. rt2860 driver worked) was (I think) kernel 2.6.28.
+>
+> I have not been able to get it working in 2.6.[29,30,31,32]
+>
+> So, what I have been doing is to copy full rt2860 directory
+> (which I had extracted and saved from the last working version)
+> into the latest kernel, and I make sure that
+>
+> rt2860/config.mk has
+>
+> HAS_WPA_SUPPLICANT=y
+>
+> HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
+>
+> This is the only way I can get my wireless working.
+>
+> So, if anyone on this list has it working in latest kernel,
+> without resorting to what I am doing, please share you "how-to".
 
-> Just an FYI - I left stuff running overnight and saw lots of this this 
-> AM... ans one from last night:
-> Dec 26 21:39:54 mail kernel: sky2 0000:06:00.0: error interrupt 
-> status=0x40000008
-> Dec 27 05:09:39 mail kernel: sky2 0000:06:00.0: error interrupt 
-> status=0x40000008
+Can you try using 'git bisect' to determine the exact change that caused
+your device to stop working?
 
-You have hardware/firmware problem, that is beyond the driver.
-That status indicates:
-  Parity Error/MAC - "This interrupt is intended to indicate a panic event (hardware fault)"
+thanks,
 
-What is your hardware configuration (lspci, kernel config, memory, cpu)?
-
-
+greg k-h
