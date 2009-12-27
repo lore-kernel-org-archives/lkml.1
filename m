@@ -1,103 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbZL0Njf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752208AbZL0NkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752194AbZL0Njf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 08:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZL0Nje
+	id S1752208AbZL0NkT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 08:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZL0NkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 08:39:34 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:4967 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751924AbZL0Njd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 08:39:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=SEN6HmU90KkD3++ZRzSey5NsAoNyxEXVnaUZXQZzvCxGaVne21TAb8HB5LTgmc8JKh
-         mpC2d00YAXJyAMeJKyPlS0WXoKfX6sRhfJ4fOnd6Rr7TJdarVJsakwQFzl7wtLqJa8nJ
-         kNaRiJstvwwxbhxWFC+VMe49kPyZJUorlDIFA=
-Message-ID: <4B376391.40706@gmail.com>
-Date: Sun, 27 Dec 2009 08:39:29 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, netdev@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org>	 <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com>	 <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu>	 <20091223101340.GC20539@basil.fritz.box> <4B31EF65.6070000@redhat.com>	 <4B325E33.8060407@gmail.com> <4B327B90.2050403@redhat.com> <b233dd490912231321p5e09946at5ea63cb0d0fa1489@mail.gmail.com> <4B3725CE.8040004@redhat.com> <4B375EAD.8050204@gmail.com> <4B3760D2.3080500@redhat.com>
-In-Reply-To: <4B3760D2.3080500@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF117C9F641F251BE6C75E095"
+	Sun, 27 Dec 2009 08:40:17 -0500
+Received: from doppler.zen.co.uk ([212.23.3.27]:51313 "EHLO doppler.zen.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751981AbZL0NkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 08:40:16 -0500
+Date: Sun, 27 Dec 2009 13:40:10 +0000
+From: Grant Wilson <grant.wilson@zen.co.uk>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: 2.6.33-rc2: BUG: unable to handle kernel paging request at
+ 00000000000013d8, IP=radeon_fence_signaled+0x16/0xc0
+Message-ID: <20091227134010.1f30210e@worthy.swandive.local>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Originating-Smarthost03-IP: [82.71.45.175]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF117C9F641F251BE6C75E095
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hit the following running 2.6.33-rc2.  Config available at http://swandive.no-ip.com/linux/config
 
-On 12/27/09 8:27 AM, Avi Kivity wrote:
-> On 12/27/2009 03:18 PM, Gregory Haskins wrote:
->> On 12/27/09 4:15 AM, Avi Kivity wrote:
->>  =20
->>> On 12/23/2009 11:21 PM, Gregory Haskins wrote:
->>>    =20
->>>> That said, you are still incorrect.  With what I proposed, the model=
+[  255.807852] BUG: unable to handle kernel paging request at 00000000000013d8
+[  255.807860] IP: [<ffffffff8135e656>] radeon_fence_signaled+0x16/0xc0
+[  255.807868] PGD 1bcb59067 PUD 1b6c89067 PMD 0
+[  255.807876] Oops: 0000 [#1] PREEMPT SMP
+[  255.807881] last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:08/ATK0110:00/hwmon/hwmon0/fan1_input
+[  255.807884] CPU 5
+[  255.807889] Pid: 2805, comm: X Not tainted 2.6.33-rc2 #2 Rampage II Extreme/System Product Name
+[  255.807891] RIP: 0010:[<ffffffff8135e656>]  [<ffffffff8135e656>] radeon_fence_signaled+0x16/0xc0
+[  255.807895] RSP: 0018:ffff8801b6f33b78  EFLAGS: 00010286
+[  255.807897] RAX: 0000000100400004 RBX: ffff8801b6faa380 RCX: 0000000000000006
+[  255.807899] RDX: 0000000000000006 RSI: ffff8801b8f98740 RDI: 0000000000000000
+[  255.807902] RBP: ffff8801b6f33b98 R08: 0000000000000000 R09: 0000000000000001
+[  255.807904] R10: 0000000000000001 R11: 0000000000000001 R12: ffff8801bf308000
+[  255.807906] R13: ffff8801b6f33be8 R14: ffff8801bf308be0 R15: 00000000000007bb
+[  255.807908] FS:  00007f6d95c97700(0000) GS:ffff88002e400000(0000) knlGS:0000000000000000
+[  255.807910] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  255.807912] CR2: 00000000000013d8 CR3: 00000001bae72000 CR4: 00000000000006e0
+[  255.807916] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  255.807918] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[  255.807921] Process X (pid: 2805, threadinfo ffff8801b6f32000, task ffff8801b8f98000)
+[  255.807923] Stack:
+[  255.807924]  ffff8801bf308000 ffff8801b6faa380 ffff8801b6faa380 ffff8801bf308000
+[  255.807932] <0> ffff8801b6f33c48 ffffffff8135e900 ffff8801b8f98000 ffff8801b8f98000
+[  255.807940] <0> ffff8801b6f33c00 00ffffff815fbeb5 ffff8801000007cc 00ff8801bf308d80
+[  255.807948] Call Trace:
+[  255.807951]  [<ffffffff8135e900>] radeon_fence_wait+0x200/0x3c0
+[  255.807956]  [<ffffffff81083e80>] ? autoremove_wake_function+0x0/0x40
+[  255.807960]  [<ffffffff8136f5cf>] radeon_ib_get+0xaf/0x210
+[  255.807964]  [<ffffffff8137046f>] radeon_cs_ioctl+0x8f/0x1c0
+[  255.807968]  [<ffffffff8131b893>] drm_ioctl+0x1c3/0x490
+[  255.807972]  [<ffffffff81098a17>] ? __lock_acquire+0x4f7/0xb30
+[  255.807975]  [<ffffffff813703e0>] ? radeon_cs_ioctl+0x0/0x1c0
+[  255.807979]  [<ffffffff8108a41d>] ? sched_clock_cpu+0xcd/0x110
+[  255.807982]  [<ffffffff810946ea>] ? get_lock_stats+0x2a/0x60
+[  255.807985]  [<ffffffff8109472e>] ? put_lock_stats+0xe/0x30
+[  255.807988]  [<ffffffff81094803>] ? lock_release_holdtime+0xb3/0x160
+[  255.807992]  [<ffffffff81106318>] vfs_ioctl+0x38/0xd0
+[  255.807995]  [<ffffffff811064ea>] do_vfs_ioctl+0x8a/0x5b0
+[  255.807999]  [<ffffffff8127a7f9>] ? __up_read+0x99/0xc0
+[  255.808002]  [<ffffffff81088ac6>] ? up_read+0x26/0x30
+[  255.808006]  [<ffffffff81028bba>] ? sysret_check+0x2e/0x69
+[  255.808009]  [<ffffffff81106a5a>] sys_ioctl+0x4a/0x80
+[  255.808012]  [<ffffffff81028b82>] system_call_fastpath+0x16/0x1b
+[  255.808014] Code: 08 48 8d 7f 08 e8 cb 93 f1 ff 48 89 d8 48 83 c4 08 5b c9 c3 90 55 48 89 e5 48 83 ec 20 48 89 5d f0 4c 89 65 f8 48 89 fb 48 8b 3f <80> bf d8 13 00 00 00 75 61 48 85 db 74 5c 48 81 c7 30 0c 00 00
+[  255.808088] RIP  [<ffffffff8135e656>] radeon_fence_signaled+0x16/0xc0
+[  255.808092]  RSP <ffff8801b6f33b78>
+[  255.808094] CR2: 00000000000013d8
 
->>>> will run as an in-kernel vbus device, and no longer run in userspace=
-=2E
->>>> It would therefore improve virtio-net as I stated, much in the same
->>>> way vhost-net or venet-tap do today.
->>>>
->>>>       =20
->>> That can't work.  virtio-net has its own ABI on top of virtio, for
->>> example it prepends a header for TSO information.  Maybe if you disab=
-le
->>> all features it becomes compatible with venet, but that cripples it.
->>>
->>>     =20
->> You are confused.  The backend would be virtio-net specific, and would=
-
->> therefore understand the virtio-net ABI.  It would support any feature=
-
->> of virtio-net as long as it was implemented and negotiated by both sid=
-es
->> of the link.
->>   =20
->=20
-> Then we're back to square one.  A nice demonstration of vbus
-> flexibility, but no help for virtio.
->=20
-
-No, where we are is at the point where we demonstrate that your original
-statement that I did nothing to improve virtio was wrong.
-
--Greg
-
-
---------------enigF117C9F641F251BE6C75E095
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAks3Y5EACgkQP5K2CMvXmqGYagCeJdZe15YaC5KQaxbRROtefzZI
-BjgAn0Z0X7XMjIbN2ihQ4MeEAzsW6sIy
-=W6N4
------END PGP SIGNATURE-----
-
---------------enigF117C9F641F251BE6C75E095--
+Cheers,
+Grant
+-- 
+Running Linux 2.6.33-rc2 on x86_64
