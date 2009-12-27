@@ -1,113 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752233AbZL0NnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbZL0Ntr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752233AbZL0NnW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 08:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZL0NnV
+	id S1752264AbZL0Ntr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 08:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZL0Ntr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 08:43:21 -0500
-Received: from mail.klingt.org ([86.59.21.178]:57367 "EHLO klingt.org"
+	Sun, 27 Dec 2009 08:49:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28667 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbZL0NnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 08:43:20 -0500
-Message-ID: <4B37646A.90108@klingt.org>
-Date: Sun, 27 Dec 2009 14:43:06 +0100
-From: Tim Blechmann <tim@klingt.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8pre) Gecko/20091226 Shredder/3.0.1pre
+	id S1751972AbZL0Ntp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 08:49:45 -0500
+Message-ID: <4B3765D2.5020805@redhat.com>
+Date: Sun, 27 Dec 2009 15:49:06 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] perf: rename perf_event_hw_event in design document
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE3F0FF6EC3B329D6D84C2B4F"
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [127.0.0.1]); Sun, 27 Dec 2009 14:43:12 +0100 (CET)
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com> <4B328535.5040105@redhat.com> <4B33361E.3000605@gmail.com> <4B3729ED.50006@redhat.com> <4B376276.3020105@gmail.com>
+In-Reply-To: <4B376276.3020105@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE3F0FF6EC3B329D6D84C2B4F
-Content-Type: multipart/mixed;
- boundary="------------060609040009030703010503"
+On 12/27/2009 03:34 PM, Gregory Haskins wrote:
+> On 12/27/09 4:33 AM, Avi Kivity wrote:
+>    
+>> On 12/24/2009 11:36 AM, Gregory Haskins wrote:
+>>      
+>>>> As a twist on this, the VMware paravirt driver interface is so
+>>>> hardware-like that they're getting hardware vendors to supply cards that
+>>>> implement it.  Try that with a pure software approach.
+>>>>
+>>>>          
+>>> Any hardware engineer (myself included) will tell you that, generally
+>>> speaking, what you can do in hardware you can do in software (think of
+>>> what QEMU does today, for instance).  It's purely a cost/performance
+>>> tradeoff.
+>>>
+>>> I can at least tell you that is true of vbus.  Anything on the vbus side
+>>> would be equally eligible for a hardware implementation, though there is
+>>> not reason to do this today since we have equivalent functionality in
+>>> baremetal already.
+>>>        
+>> There's a huge difference in the probability of vmware getting cards to
+>> their spec, or x86 vendors improving interrupt delivery to guests,
+>> compared to vbus being implemented in hardware.
+>>      
+> Thats not relevant, however.  I said in the original quote that you
+> snipped that I made it a software design on purpose, and you tried to
+> somehow paint that as a negative because vmware made theirs
+> "hardware-like" and you implied it could not be done with my approach
+> with the statement "try that with a pure software approach".  And the
+> bottom line is that the statement is incorrect and/or misleading.
+>    
 
-This is a multi-part message in MIME format.
---------------060609040009030703010503
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+It's not incorrect.  VMware stuck to the pci specs and as a result they 
+can have hardware implement their virtual NIC protocol.  For vbus this 
+is much harder to do since you need a side-channel between different 
+cards to coordinate interrupt delivery.  In theory you can do eveything 
+if you don't consider practicalities.
+
+That's a digression, though, I'm not suggesting we'll see virtio 
+hardware or that this is a virtio/pci advantage vs. vbus.  It's an 
+anecdote showing that sticking with specs has its advantages.
+
+wrt pci vs vbus, the difference is in the ability to use improvements in 
+interrupt delivery accelerations in virt hardware.  If this happens, 
+virtio/pci can immediately take advantage of it, while vbus has to stick 
+with software delivery for backward compatibility, and all that code 
+becomes a useless support burden.
+
+As an example of what hardware can do when it really sets its mind to 
+it, s390 can IPI from vcpu to vcpu without exiting to the host.
+
+>>> The only motiviation is if you wanted to preserve
+>>> ABI etc, which is what vmware is presumably after.  However, I am not
+>>> advocating this as necessary at this juncture.
+>>>
+>>>        
+>> Maybe AlacrityVM users don't care about compatibility, but my users do.
+>>      
+> Again, not relevant to this thread.  Making your interface
+> "hardware-like" buys you nothing in the end, as you ultimately need to
+> load drivers in the guest either way, and any major OS lets you extend
+> both devices and buses with relative ease.  The only counter example
+> would be if you truly were "hardware-exactly" like e1000 emulation, but
+> we already know that this means it is hardware centric and not
+> "exit-rate aware" and would perform poorly.  Otherwise "compatible" is
+> purely a point on the time line (for instance, the moment virtio-pci ABI
+> shipped), not an architectural description such as "hardware-like".
+>    
+
+True, not related to the thread.  But it is a problem.  The difference 
+between virtio and vbus here is that virtio is already deployed and its 
+users expect not to reinstall drivers [1].  Before virtio existed, 
+people could not deploy performance sensitive applications on kvm.  Now 
+that it exists, we have to support it without requiring users to touch 
+their guests.
+
+That means that without proof that virtio cannot be scaled, we'll keep 
+supporting and extending it.
 
 
-perf_event_hw_event has been renamed to perf_event_attr. the design
-document was still using the old name, though.
+[1] Another difference is the requirement for writing a "bus driver" for 
+every supported guest, which means dealing with icky bits like hotplug.
 
-Signed-off-by: Tim Blechmann <tim@klingt.org>
----
- tools/perf/design.txt |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+-- 
+error compiling committee.c: too many arguments to function
 
-
-
---------------060609040009030703010503
-Content-Type: text/x-patch;
- name="0001-perf-rename-perf_event_hw_event-in-design-document.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename*0="0001-perf-rename-perf_event_hw_event-in-design-document.patc";
- filename*1="h"
-
-diff --git a/tools/perf/design.txt b/tools/perf/design.txt
-index fdd42a8..a58cc9a 100644
---- a/tools/perf/design.txt
-+++ b/tools/perf/design.txt
-@@ -21,7 +21,7 @@ There's one file descriptor per virtual counter used.
- The special file descriptor is opened via the perf_event_open()
- system call:
-=20
--   int sys_perf_event_open(struct perf_event_hw_event *hw_event_uptr,
-+   int sys_perf_event_open(struct perf_event_attr *hw_event_uptr,
- 			     pid_t pid, int cpu, int group_fd,
- 			     unsigned long flags);
-=20
-@@ -32,9 +32,9 @@ can be used to set the blocking mode, etc.
- Multiple counters can be kept open at a time, and the counters
- can be poll()ed.
-=20
--When creating a new counter fd, 'perf_event_hw_event' is:
-+When creating a new counter fd, 'perf_event_attr' is:
-=20
--struct perf_event_hw_event {
-+struct perf_event_attr {
-         /*
-          * The MSB of the config word signifies if the rest contains cpu=
-
-          * specific (raw) counter configuration data, if unset, the next=
-
-@@ -397,7 +397,7 @@ Notification of new events is possible through poll()=
-/select()/epoll() and
- fcntl() managing signals.
-=20
- Normally a notification is generated for every page filled, however one =
-can
--additionally set perf_event_hw_event.wakeup_events to generate one every=
-
-+additionally set perf_event_attr.wakeup_events to generate one every
- so many counter overflow events.
-=20
- Future work will include a splice() interface to the ring-buffer.
-
-
---------------060609040009030703010503--
-
---------------enigE3F0FF6EC3B329D6D84C2B4F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAks3ZG0ACgkQdL+4qsZfVsvjmwCfYFMmoumUUXeNObZRG3vzLbsn
-uFIAn3PePnyg1bOh7uoNEPdLa4KFwr+x
-=PMXB
------END PGP SIGNATURE-----
-
---------------enigE3F0FF6EC3B329D6D84C2B4F--
