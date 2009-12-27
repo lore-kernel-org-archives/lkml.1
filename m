@@ -1,137 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZL0EUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751073AbZL0F5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753293AbZL0EUT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 23:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZL0EUR
+	id S1751073AbZL0F5L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 00:57:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbZL0F5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 23:20:17 -0500
-Received: from vms173011pub.verizon.net ([206.46.173.11]:41256 "EHLO
-	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbZL0EUQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 23:20:16 -0500
-Date: Sat, 26 Dec 2009 23:20:01 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Matthew Garrett <mjg@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -tip: origin tree boot crash
-In-reply-to: <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0912262316530.14053@localhost.localdomain>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
- <20091225102731.GA25513@elte.hu>
- <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 27 Dec 2009 00:57:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53766 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750762AbZL0F5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 00:57:07 -0500
+Date: Sun, 27 Dec 2009 06:56:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Valdis.Kletnieks@vt.edu
+Cc: Pavel Machek <pavel@ucw.cz>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, joe@perches.com,
+       torvalds@linux-foundation.org, peterz@infradead.org, efault@gmx.de,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [tip:sched/urgent] sched: Restore printk sanity
+Message-ID: <20091227055637.GA22315@elte.hu>
+References: <1261315437.4314.6.camel@laptop>
+ <tip-6c9a74afc5d95321e33a727b3c563f3e7d6c4a5c@git.kernel.org>
+ <20091225132642.GA1419@ucw.cz>
+ <20091225184514.GA381@elte.hu>
+ <5723.1261874741@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5723.1261874741@localhost>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Dec 2009, Len Brown wrote:
 
-> > [   28.643216] evbug.c: Connected device: input1 (Dell WMI hotkeys at wmi/input0)
-> > [   28.650449] BUG: unable to handle kernel NULL pointer dereference at 00000014
-> > [   28.654439] IP: [<c17f7f21>] wmi_install_notify_handler+0x31/0x70
+* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+
+> On Fri, 25 Dec 2009 19:45:14 +0100, Ingo Molnar said:
 > 
-> Rather than reverting the broken patch that caused wmi to load,
-> does applying this patch to deal with the broken error handling
-> cause the oops to go away?
-
-> Subject: [PATCH] Revert "wmi: Free the allocated acpi objects through wmi_get_event_data"
+> >  - in the last stable kernel, v2.6.32, still more new printk()s were 
+> >    introduced than pr_*() lines:
+> > 
+> >      $ git log -p v2.6.31..v2.6.32 | grep '^+.*\<pr_' | wc -l
+> >      2016
+> >      $ git log -p v2.6.31..v2.6.32 | grep '^+.*\<printk' | wc -l
+> >      3531
 > 
-> This reverts commit 3e9b988e4edf065d39c1343937f717319b1c1065.
+> Ahem. That's not introduced, that's 'added or modified'.
 
-These kfree's look correct, assuming we properly check
-the return status.  So perhaps instead you can test
-the patch below?
+'introduced or modified', yes. In those 5500 lines less than ~20% are 
+'modifications' (the rest is newly introduced).
 
-thanks,
--Len
+> % git log -p v2.6.31..v2.6.32 | grep -C 5 '^+.*\<pr_' | head
+> -        * In case of failure continue with no timer. */
+> +       /* Test if the external timer can be actually used.
+> +        * In case of failure continue without timer. */
+>         if (unlikely((stmmac_open_ext_timer(dev, priv->tm)) < 0)) {
+> -               pr_warning("stmmaceth: cannot attach the HW timer\n");
+> +               pr_warning("stmmaceth: cannot attach the external timer.\n");
+>                 tmrate = 0;
+>                 priv->tm->freq = 0;
+>                 priv->tm->timer_start = stmmac_no_timer_started;
+>                 priv->tm->timer_stop = stmmac_no_timer_stopped;
+> 
+> Meanwhile, the fact that there's only about a 2-to-1 difference in patches 
+> when there's a 6-to-1 difference in existing code tells me that 
+> proportionally, there is *more* activity with pr_foo variants than printk.
 
->From 5caa3ab36da77d59017cff9b9d1e910862b489e7 Mon Sep 17 00:00:00 2001
-Message-Id: <5caa3ab36da77d59017cff9b9d1e910862b489e7.1261887124.git.len.brown@intel.com>
-In-Reply-To: <51b0f1c2b8c32ee44ff01ef74599a1f17e4fc565.1261887124.git.len.brown@intel.com>
-References: <51b0f1c2b8c32ee44ff01ef74599a1f17e4fc565.1261887124.git.len.brown@intel.com>
-From: Len Brown <len.brown@intel.com>
-Date: Sat, 26 Dec 2009 23:02:24 -0500
-Subject: [PATCH 3/3] dell-wmi, hp-wmi, msi-wmi: check wmi_get_event_data() return value
-X-Patchwork-Hint: ignore
+Yet there's more printks in the kernel than a cycle ago, so without the trend 
+changing, we've got an infinite supply of future 'conversion' patches.
 
-When acpi_evaluate_object() is passed ACPI_ALLOCATE_BUFFER,
-the caller must kfree the returned buffer if AE_OK is returned.
+> printk:  3531 hits in 61126 uses = 5.7% churn
+> pr_foo: 2016 hits in 10861 uses = 18.5% churn
 
-The callers of wmi_get_event_data() pass ACPI_ALLOCATE_BUFFER,
-and thus must check its return value before accessing
-or kfree() on the buffer.
+Peter's complaint was precisely that there's a lot of 'churn' for pr_*().
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/platform/x86/dell-wmi.c |    7 ++++++-
- drivers/platform/x86/hp-wmi.c   |    7 ++++++-
- drivers/platform/x86/msi-wmi.c  |    7 ++++++-
- 3 files changed, 18 insertions(+), 3 deletions(-)
+> The numbers need much deeper analysis to make any sort of real statistical 
+> conclusion here...
 
-diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
-index 4c7e702..500af8c 100644
---- a/drivers/platform/x86/dell-wmi.c
-+++ b/drivers/platform/x86/dell-wmi.c
-@@ -202,8 +202,13 @@ static void dell_wmi_notify(u32 value, void *context)
- 	struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };
- 	static struct key_entry *key;
- 	union acpi_object *obj;
-+	acpi_status status;
- 
--	wmi_get_event_data(value, &response);
-+	status = wmi_get_event_data(value, &response);
-+	if (status != AE_OK) {
-+		printk(KERN_INFO "dell-wmi: bad event status 0x%x\n", status);
-+		return;
-+	}
- 
- 	obj = (union acpi_object *)response.pointer;
- 
-diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
-index 18bf741..5b648f0 100644
---- a/drivers/platform/x86/hp-wmi.c
-+++ b/drivers/platform/x86/hp-wmi.c
-@@ -338,8 +338,13 @@ static void hp_wmi_notify(u32 value, void *context)
- 	static struct key_entry *key;
- 	union acpi_object *obj;
- 	int eventcode;
-+	acpi_status status;
- 
--	wmi_get_event_data(value, &response);
-+	status = wmi_get_event_data(value, &response);
-+	if (status != AE_OK) {
-+		printk(KERN_INFO "hp-wmi: bad event status 0x%x\n", status);
-+		return;
-+	}
- 
- 	obj = (union acpi_object *)response.pointer;
- 
-diff --git a/drivers/platform/x86/msi-wmi.c b/drivers/platform/x86/msi-wmi.c
-index f746c67..f5f70d4 100644
---- a/drivers/platform/x86/msi-wmi.c
-+++ b/drivers/platform/x86/msi-wmi.c
-@@ -149,8 +149,13 @@ static void msi_wmi_notify(u32 value, void *context)
- 	static struct key_entry *key;
- 	union acpi_object *obj;
- 	ktime_t cur;
-+	acpi_status status;
- 
--	wmi_get_event_data(value, &response);
-+	status = wmi_get_event_data(value, &response);
-+	if (status != AE_OK) {
-+		printk(KERN_INFO DRV_PFX "bad event status 0x%x\n", status);
-+		return;
-+	}
- 
- 	obj = (union acpi_object *)response.pointer;
- 
--- 
-1.6.0.6
+If you are convinced that there's something else going on as well feel free to 
+do deeper analysis. So, until some contrary numbers are posted i stay by my 
+main conclusions.
 
+Thanks,
+
+	Ingo
