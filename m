@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752311AbZL0N4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbZL0Njf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752311AbZL0N4g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 08:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZL0N4f
+	id S1752194AbZL0Njf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 08:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZL0Nje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 08:56:35 -0500
-Received: from queue01.mail.zen.net.uk ([212.23.3.234]:60904 "EHLO
-	fizeau.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbZL0N4f (ORCPT
+	Sun, 27 Dec 2009 08:39:34 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:4967 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbZL0Njd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 08:56:35 -0500
-X-Greylist: delayed 1238 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Dec 2009 08:56:34 EST
-Date: Sun, 27 Dec 2009 13:35:52 +0000
-From: Grant Wilson <grant.wilson@zen.co.uk>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: 2.6.33-rc2: WARNING: at kernel/lockdep.c:2830
-Message-ID: <20091227133552.23ec12ef@worthy.swandive.local>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Originating-Smarthost03-IP: [82.71.45.175]
+	Sun, 27 Dec 2009 08:39:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=SEN6HmU90KkD3++ZRzSey5NsAoNyxEXVnaUZXQZzvCxGaVne21TAb8HB5LTgmc8JKh
+         mpC2d00YAXJyAMeJKyPlS0WXoKfX6sRhfJ4fOnd6Rr7TJdarVJsakwQFzl7wtLqJa8nJ
+         kNaRiJstvwwxbhxWFC+VMe49kPyZJUorlDIFA=
+Message-ID: <4B376391.40706@gmail.com>
+Date: Sun, 27 Dec 2009 08:39:29 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, netdev@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org>	 <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com>	 <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu>	 <20091223101340.GC20539@basil.fritz.box> <4B31EF65.6070000@redhat.com>	 <4B325E33.8060407@gmail.com> <4B327B90.2050403@redhat.com> <b233dd490912231321p5e09946at5ea63cb0d0fa1489@mail.gmail.com> <4B3725CE.8040004@redhat.com> <4B375EAD.8050204@gmail.com> <4B3760D2.3080500@redhat.com>
+In-Reply-To: <4B3760D2.3080500@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF117C9F641F251BE6C75E095"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hit the following running 2.6.33-rc2.  Config available at http://swandive.no-ip.com/linux/config
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF117C9F641F251BE6C75E095
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-[ 9675.476027] WARNING: at kernel/lockdep.c:2830 __lock_acquire+0x598/0xb30()
-[ 9675.476030] Hardware name: System Product Name
-[ 9675.476032] Modules linked in:
-[ 9675.476036] Pid: 2733, comm: X Tainted: G        W  2.6.33-rc2 #2
-[ 9675.476039] Call Trace:
-[ 9675.476045]  [<ffffffff8106b0c8>] warn_slowpath_common+0x78/0xb0
-[ 9675.476048]  [<ffffffff8106b10f>] warn_slowpath_null+0xf/0x20
-[ 9675.476051]  [<ffffffff81098ab8>] __lock_acquire+0x598/0xb30
-[ 9675.476056]  [<ffffffff81030e92>] ? native_sched_clock+0x22/0x70
-[ 9675.476060]  [<ffffffff81030d09>] ? sched_clock+0x9/0x10
-[ 9675.476064]  [<ffffffff8108a41d>] ? sched_clock_cpu+0xcd/0x110
-[ 9675.476067]  [<ffffffff810990b5>] lock_acquire+0x65/0x90
-[ 9675.476073]  [<ffffffff8135e670>] ? radeon_fence_signaled+0x30/0xc0
-[ 9675.476077]  [<ffffffff815fea0a>] _raw_write_lock_irqsave+0x5a/0xa0
-[ 9675.476080]  [<ffffffff8135e670>] ? radeon_fence_signaled+0x30/0xc0
-[ 9675.476083]  [<ffffffff815feff5>] ? _raw_spin_unlock_irqrestore+0x45/0x80
-[ 9675.476087]  [<ffffffff8135e670>] radeon_fence_signaled+0x30/0xc0
-[ 9675.476090]  [<ffffffff8135e900>] radeon_fence_wait+0x200/0x3c0
-[ 9675.476094]  [<ffffffff81083e80>] ? autoremove_wake_function+0x0/0x40
-[ 9675.476099]  [<ffffffff8136f5cf>] radeon_ib_get+0xaf/0x210
-[ 9675.476102]  [<ffffffff8137046f>] radeon_cs_ioctl+0x8f/0x1c0
-[ 9675.476107]  [<ffffffff8131b893>] drm_ioctl+0x1c3/0x490
-[ 9675.476110]  [<ffffffff81098a17>] ? __lock_acquire+0x4f7/0xb30
-[ 9675.476113]  [<ffffffff813703e0>] ? radeon_cs_ioctl+0x0/0x1c0
-[ 9675.476117]  [<ffffffff8108a41d>] ? sched_clock_cpu+0xcd/0x110
-[ 9675.476120]  [<ffffffff810946ea>] ? get_lock_stats+0x2a/0x60
-[ 9675.476123]  [<ffffffff8109472e>] ? put_lock_stats+0xe/0x30
-[ 9675.476126]  [<ffffffff81094803>] ? lock_release_holdtime+0xb3/0x160
-[ 9675.476130]  [<ffffffff81106318>] vfs_ioctl+0x38/0xd0
-[ 9675.476133]  [<ffffffff811064ea>] do_vfs_ioctl+0x8a/0x5b0
-[ 9675.476137]  [<ffffffff8127a7f9>] ? __up_read+0x99/0xc0
-[ 9675.476140]  [<ffffffff81088ac6>] ? up_read+0x26/0x30
-[ 9675.476144]  [<ffffffff81028bba>] ? sysret_check+0x2e/0x69
-[ 9675.476148]  [<ffffffff81106a5a>] sys_ioctl+0x4a/0x80
-[ 9675.476151]  [<ffffffff81028b82>] system_call_fastpath+0x16/0x1b
+On 12/27/09 8:27 AM, Avi Kivity wrote:
+> On 12/27/2009 03:18 PM, Gregory Haskins wrote:
+>> On 12/27/09 4:15 AM, Avi Kivity wrote:
+>>  =20
+>>> On 12/23/2009 11:21 PM, Gregory Haskins wrote:
+>>>    =20
+>>>> That said, you are still incorrect.  With what I proposed, the model=
 
-Cheers,
-Grant
--- 
-Running Linux 2.6.33-rc2 on x86_64
+>>>> will run as an in-kernel vbus device, and no longer run in userspace=
+=2E
+>>>> It would therefore improve virtio-net as I stated, much in the same
+>>>> way vhost-net or venet-tap do today.
+>>>>
+>>>>       =20
+>>> That can't work.  virtio-net has its own ABI on top of virtio, for
+>>> example it prepends a header for TSO information.  Maybe if you disab=
+le
+>>> all features it becomes compatible with venet, but that cripples it.
+>>>
+>>>     =20
+>> You are confused.  The backend would be virtio-net specific, and would=
+
+>> therefore understand the virtio-net ABI.  It would support any feature=
+
+>> of virtio-net as long as it was implemented and negotiated by both sid=
+es
+>> of the link.
+>>   =20
+>=20
+> Then we're back to square one.  A nice demonstration of vbus
+> flexibility, but no help for virtio.
+>=20
+
+No, where we are is at the point where we demonstrate that your original
+statement that I did nothing to improve virtio was wrong.
+
+-Greg
+
+
+--------------enigF117C9F641F251BE6C75E095
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAks3Y5EACgkQP5K2CMvXmqGYagCeJdZe15YaC5KQaxbRROtefzZI
+BjgAn0Z0X7XMjIbN2ihQ4MeEAzsW6sIy
+=W6N4
+-----END PGP SIGNATURE-----
+
+--------------enigF117C9F641F251BE6C75E095--
