@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbZL0V2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751540AbZL0V3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbZL0V2L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 16:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZL0V2H
+	id S1751540AbZL0V3m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 16:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbZL0V3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 16:28:07 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:60647 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbZL0V2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 16:28:03 -0500
-Date: Sun, 27 Dec 2009 22:28:00 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/5] drivers/staging/tm6000: Correct NULL test
-Message-ID: <Pine.LNX.4.64.0912272227450.20548@ask.diku.dk>
+	Sun, 27 Dec 2009 16:29:41 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:41019 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbZL0V3k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 16:29:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=jr6IuV2SwESJcMkjoqTjCVl16/kGlJaujqyWpz79Zve/3oXpZ9xaCFH508tMmIGy8W
+         CGz16rLUMTT47p2IK78Q9XjKziLX7t9mkfw08965Fu8t2JV1uT2P5MHy+F0cUk0cEGob
+         YQIpYxxRGCQazlq7GHkQo4F/z5/Ur3Qr/zOFk=
+Message-ID: <4B37D26F.4050002@gmail.com>
+Date: Sun, 27 Dec 2009 22:32:31 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] w1: fix test in ds2482_wait_1wire_idle()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+With `while (++retries < DS2482_WAIT_IDLE_TIMEOUT)' retries reaches
+DS2482_WAIT_IDLE_TIMEOUT after the loop
 
-Test the just-allocated value for NULL rather than some other value.
-
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression x,y;
-statement S;
-@@
-
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-(
-if ((x) == NULL) S
-|
-if (
--   y
-+   x
-       == NULL)
- S
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- drivers/staging/tm6000/tm6000-video.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/w1/masters/ds2482.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff -u -p a/drivers/staging/tm6000/tm6000-video.c b/drivers/staging/tm6000/tm6000-video.c
---- a/drivers/staging/tm6000/tm6000-video.c
-+++ b/drivers/staging/tm6000/tm6000-video.c
-@@ -642,7 +642,7 @@ static int tm6000_prepare_isoc(struct tm
+diff --git a/drivers/w1/masters/ds2482.c b/drivers/w1/masters/ds2482.c
+index 406caa6..e5f7441 100644
+--- a/drivers/w1/masters/ds2482.c
++++ b/drivers/w1/masters/ds2482.c
+@@ -214,7 +214,7 @@ static int ds2482_wait_1wire_idle(struct ds2482_data *pdev)
+ 			 (++retries < DS2482_WAIT_IDLE_TIMEOUT));
+ 	}
  
- 	dev->isoc_ctl.transfer_buffer = kmalloc(sizeof(void *)*num_bufs,
- 				   GFP_KERNEL);
--	if (!dev->isoc_ctl.urb) {
-+	if (!dev->isoc_ctl.transfer_buffer) {
- 		tm6000_err("cannot allocate memory for usbtransfer\n");
- 		kfree(dev->isoc_ctl.urb);
- 		return -ENOMEM;
+-	if (retries > DS2482_WAIT_IDLE_TIMEOUT)
++	if (retries >= DS2482_WAIT_IDLE_TIMEOUT)
+ 		printk(KERN_ERR "%s: timeout on channel %d\n",
+ 		       __func__, pdev->channel);
+ 
