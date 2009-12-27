@@ -1,326 +1,507 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbZL0UL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbZL0UPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751383AbZL0UL7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 15:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZL0UL4
+	id S1751197AbZL0UPf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 15:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbZL0UPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 15:11:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60474 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751335AbZL0ULw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 15:11:52 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 12/12] PM / r8169: Add simplified run-time PM support
-Date: Sun, 27 Dec 2009 21:11:41 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-References: <200912272057.10443.rjw@sisk.pl>
-In-Reply-To: <200912272057.10443.rjw@sisk.pl>
+	Sun, 27 Dec 2009 15:15:33 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59110 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZL0UPb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 15:15:31 -0500
+Date: Sun, 27 Dec 2009 21:15:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Daniel Walker <dwalker@codeaurora.org>,
+       Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: tree with htc dream support
+Message-ID: <20091227201514.GA29174@elf.ucw.cz>
+References: <20091205221100.GA32522@elf.ucw.cz>
+ <1260054737.23633.35.camel@desktop>
+ <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+ <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+ <1260627482.20913.7.camel@desktop>
+ <d6200be20912121434x1a247837w75c518ba20fe684f@mail.gmail.com>
+ <20091213212504.GD5114@elf.ucw.cz>
+ <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
+ <20091227093537.GD11737@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912272111.41728.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091227093537.GD11737@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun 2009-12-27 10:35:38, Pavel Machek wrote:
+> Hi!
+> 
+> > > One more wish list item: many drivers are now available in
+> > > drivers/staging/dream, and are being slowly cleaned up. Would it be
+> > > possible to start using those for android-msm-2.6.32 tree?
+> > >
+> > > You'll need to reapply some stuff I had to remove (like wakelocks),
+> > > but it should be still better/less work long term to patch those back
+> > > in than maintaining separate copy. Diff should get much smaller...
+> > 
+> > I do plan to look at these, but I don't know when I'll get to it.
+> 
+> So... this switches qdsp5 code from private version to version in
+> staging. It actually boots.
 
-Use the PCI run-time power management framework to add simplified
-run-time PM support to the r8169 driver.  Namely, make the driver
-suspend the device when the link is off and set it up for generating
-wake-up event after the link has been detected again.
+And when I replace .c's in qdsp5 with -msm version, it also works,
+with diff being reasonably small.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
-The patch is still missing an important part, which is that the driver should
-turn the power management on as soon as it's probed, not only after someone
-calls open() on it.  Nevertheless, the patch is fully functional in this form.
+Now... how does camera driver work? I did not drivers/media/video/msm/
+driver into the kernel, but camera application seems to still
+work...?!
+								Pavel
 
-Rafael
----
- drivers/net/r8169.c |  135 +++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 108 insertions(+), 27 deletions(-)
-
-Index: linux-2.6/drivers/net/r8169.c
-===================================================================
---- linux-2.6.orig/drivers/net/r8169.c
-+++ linux-2.6/drivers/net/r8169.c
-@@ -23,6 +23,7 @@
- #include <linux/tcp.h>
- #include <linux/init.h>
- #include <linux/dma-mapping.h>
-+#include <linux/pm_runtime.h>
+diff --git a/drivers/staging/dream/qdsp5/adsp.c b/drivers/staging/dream/qdsp5/adsp.c
+index d096456..b976f94 100644
+--- a/drivers/staging/dream/qdsp5/adsp.c
++++ b/drivers/staging/dream/qdsp5/adsp.c
+@@ -194,7 +194,7 @@ static int adsp_rpc_init(struct msm_adsp_module *adsp_module)
+ 	adsp_module->rpc_client = msm_rpc_connect(
+ 			RPC_ADSP_RTOS_ATOM_PROG,
+ 			RPC_ADSP_RTOS_ATOM_VERS,
+-			MSM_RPC_UNINTERRUPTIBLE);
++			MSM_RPC_UNINTERRUPTIBLE | MSM_RPC_ENABLE_RECEIVE);
  
- #include <asm/system.h>
- #include <asm/io.h>
-@@ -504,6 +505,8 @@ struct rtl8169_private {
+ 	if (IS_ERR(adsp_module->rpc_client)) {
+ 		int rc = PTR_ERR(adsp_module->rpc_client);
+@@ -219,7 +219,7 @@ static void  msm_get_init_info(void)
+ 	adsp_info.init_info_rpc_client = msm_rpc_connect(
+ 			RPC_ADSP_RTOS_ATOM_PROG,
+ 			RPC_ADSP_RTOS_ATOM_VERS,
+-			MSM_RPC_UNINTERRUPTIBLE);
++			MSM_RPC_UNINTERRUPTIBLE | MSM_RPC_ENABLE_RECEIVE);
+ 	if (IS_ERR(adsp_info.init_info_rpc_client)) {
+ 		rc = PTR_ERR(adsp_info.init_info_rpc_client);
+ 		adsp_info.init_info_rpc_client = 0;
+@@ -709,9 +709,11 @@ static void handle_adsp_rtos_mtoa_app(struct rpc_request_hdr *req)
+ 				     RPC_ACCEPTSTAT_SUCCESS);
+ 	mutex_unlock(&module->lock);
+ #ifdef CONFIG_MSM_ADSP_REPORT_EVENTS
+-	modem_event_addr = (uint32_t *)req;
+-	module->ops->event(module->driver_data, EVENT_MSG_ID,
+-				EVENT_LEN, read_modem_event);
++	if (module->ops != NULL && module->ops->event != NULL) {
++		modem_event_addr = (uint32_t *)req;
++		module->ops->event(module->driver_data, EVENT_MSG_ID,
++					EVENT_LEN, read_modem_event);
++	}
+ #endif
+ }
  
- 	struct mii_if_info mii;
- 	struct rtl8169_counters counters;
-+	u32 saved_wolopts;
-+	bool exiting;
+diff --git a/drivers/staging/dream/qdsp5/adsp_6210.c b/drivers/staging/dream/qdsp5/adsp_6210.c
+index 3cf4e99..628c247 100644
+--- a/drivers/staging/dream/qdsp5/adsp_6210.c
++++ b/drivers/staging/dream/qdsp5/adsp_6210.c
+@@ -16,7 +16,7 @@
+ #include "adsp.h"
+ 
+ /* Firmware modules */
+-typedef enum {
++typedef enum { 
+ 	QDSP_MODULE_KERNEL,
+ 	QDSP_MODULE_AFETASK,
+ 	QDSP_MODULE_AUDPLAY0TASK,
+diff --git a/drivers/staging/dream/qdsp5/adsp_6220.c b/drivers/staging/dream/qdsp5/adsp_6220.c
+index 02225cd..c4c5a55 100644
+--- a/drivers/staging/dream/qdsp5/adsp_6220.c
++++ b/drivers/staging/dream/qdsp5/adsp_6220.c
+@@ -16,7 +16,7 @@
+ #include "adsp.h"
+ 
+ /* Firmware modules */
+-typedef enum {
++typedef enum { 
+ 	QDSP_MODULE_KERNEL,
+ 	QDSP_MODULE_AFETASK,
+ 	QDSP_MODULE_AUDPLAY0TASK,
+diff --git a/drivers/staging/dream/qdsp5/adsp_vfe_patch_event.c b/drivers/staging/dream/qdsp5/adsp_vfe_patch_event.c
+index a56392b..8f09ed2 100644
+--- a/drivers/staging/dream/qdsp5/adsp_vfe_patch_event.c
++++ b/drivers/staging/dream/qdsp5/adsp_vfe_patch_event.c
+@@ -44,7 +44,7 @@ int adsp_vfe_patch_event(struct msm_adsp_module *module,
+ 	case VFE_MSG_OP2:
+ 		return patch_op_event(module, event);
+ 	case VFE_MSG_STATS_AF:
+-	case VFE_MSG_STATS_WB_EXP:
++	case VFE_MSG_STATS_WB_EXP:	
+ 		return patch_af_wb_event(module, event);
+ 	default:
+ 		break;
+diff --git a/drivers/staging/dream/qdsp5/adsp_vfe_verify_cmd.c b/drivers/staging/dream/qdsp5/adsp_vfe_verify_cmd.c
+index 927d50a..d1f3fa8 100644
+--- a/drivers/staging/dream/qdsp5/adsp_vfe_verify_cmd.c
++++ b/drivers/staging/dream/qdsp5/adsp_vfe_verify_cmd.c
+@@ -184,7 +184,7 @@ static int verify_vfe_command_table(struct msm_adsp_module *module,
+ 		vfe_cmd_axi_op_cfg *cmd = (vfe_cmd_axi_op_cfg *)cmd_data;
+ 		void **addr1_y, **addr2_y, **addr1_cbcr, **addr2_cbcr;
+ 
+-		if (cmd_size != sizeof(vfe_cmd_axi_op_cfg)) {
++		if (cmd_size != sizeof(vfe_cmd_axi_op_cfg)) { 
+ 			printk(KERN_ERR "adsp: module %s: invalid VFE TABLE (VFE_CMD_AXI_OP_CFG) command size %d\n",
+ 				module->name, cmd_size);
+ 			return -1;
+diff --git a/drivers/staging/dream/qdsp5/adsp_video_verify_cmd.c b/drivers/staging/dream/qdsp5/adsp_video_verify_cmd.c
+index 53aff77..fdad055 100644
+--- a/drivers/staging/dream/qdsp5/adsp_video_verify_cmd.c
++++ b/drivers/staging/dream/qdsp5/adsp_video_verify_cmd.c
+@@ -107,7 +107,7 @@ static int verify_vdec_pkt_cmd(struct msm_adsp_module *module,
+ 
+ 	/* deref those ptrs and check if they are a frame header packet */
+ 	frame_header_pkt = (viddec_cmd_frame_header_packet *)subframe_pkt_addr;
+-
++	
+ 	switch (frame_header_pkt->packet_id) {
+ 	case 0xB201: /* h.264 */
+ 		num_addr = skip = 8;
+diff --git a/drivers/staging/dream/qdsp5/audio_aac.c b/drivers/staging/dream/qdsp5/audio_aac.c
+index ad2390f..4232b9f 100644
+--- a/drivers/staging/dream/qdsp5/audio_aac.c
++++ b/drivers/staging/dream/qdsp5/audio_aac.c
+@@ -666,7 +666,6 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 			config.unused[0] = 0;
+ 			config.unused[1] = 0;
+ 			config.unused[2] = 0;
+-			config.unused[3] = 0;
+ 			if (copy_to_user((void *)arg, &config,
+ 					 sizeof(config)))
+ 				rc = -EFAULT;
+@@ -950,7 +949,7 @@ static int audio_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static struct audio the_aac_audio;
++struct audio the_aac_audio;
+ 
+ static int audio_open(struct inode *inode, struct file *file)
+ {
+diff --git a/drivers/staging/dream/qdsp5/audio_amrnb.c b/drivers/staging/dream/qdsp5/audio_amrnb.c
+index cd818a5..63fe2d0 100644
+--- a/drivers/staging/dream/qdsp5/audio_amrnb.c
++++ b/drivers/staging/dream/qdsp5/audio_amrnb.c
+@@ -551,7 +551,6 @@ static long audamrnb_ioctl(struct file *file, unsigned int cmd,
+ 			config.unused[0] = 0;
+ 			config.unused[1] = 0;
+ 			config.unused[2] = 0;
+-			config.unused[3] = 0;
+ 			if (copy_to_user((void *)arg, &config,
+ 					 sizeof(config)))
+ 				rc = -EFAULT;
+diff --git a/drivers/staging/dream/qdsp5/audio_evrc.c b/drivers/staging/dream/qdsp5/audio_evrc.c
+index 4b43e18..8ee8d53 100644
+--- a/drivers/staging/dream/qdsp5/audio_evrc.c
++++ b/drivers/staging/dream/qdsp5/audio_evrc.c
+@@ -517,7 +517,6 @@ static long audevrc_ioctl(struct file *file, unsigned int cmd,
+ 			config.unused[0] = 0;
+ 			config.unused[1] = 0;
+ 			config.unused[2] = 0;
+-			config.unused[3] = 0;
+ 			if (copy_to_user((void *)arg, &config, sizeof(config)))
+ 				rc = -EFAULT;
+ 			else
+diff --git a/drivers/staging/dream/qdsp5/audio_in.c b/drivers/staging/dream/qdsp5/audio_in.c
+index 3d950a2..35a7f7d 100644
+--- a/drivers/staging/dream/qdsp5/audio_in.c
++++ b/drivers/staging/dream/qdsp5/audio_in.c
+@@ -282,7 +282,7 @@ static void audio_in_get_dsp_frames(struct audio_in *audio)
+ 	/* XXX check for bogus frame size? */
+ 
+ 	frame = (void *) (((char *)audio->in[index].data) - sizeof(*frame));
+-
++		
+ 	spin_lock_irqsave(&audio->dsp_lock, flags);
+ 	audio->in[index].size = frame->bytes;
+ 
+@@ -524,7 +524,7 @@ static int audio_in_encoder_config(struct audio_in *audio)
+ 	cmd.samp_rate_index = audio->samp_rate_index;
+ 	cmd.stereo_mode = audio->channel_mode; /* 0 for mono, 1 for stereo */
+ 
+-	/* FIXME have no idea why cmd.rec_quality is fixed
++	/* FIXME have no idea why cmd.rec_quality is fixed 
+ 	 * as 0x1C00 from sample code
+ 	 */
+ 	cmd.rec_quality = 0x1C00;
+@@ -785,7 +785,7 @@ static int audio_in_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static struct audio_in the_audio_in;
++struct audio_in the_audio_in;
+ 
+ static int audio_in_open(struct inode *inode, struct file *file)
+ {
+diff --git a/drivers/staging/dream/qdsp5/audio_mp3.c b/drivers/staging/dream/qdsp5/audio_mp3.c
+index b95574f..f09bdcb 100644
+--- a/drivers/staging/dream/qdsp5/audio_mp3.c
++++ b/drivers/staging/dream/qdsp5/audio_mp3.c
+@@ -1,5 +1,5 @@
+ /* arch/arm/mach-msm/qdsp5/audio_mp3.c
+- *
++ * 
+  * mp3 audio output device
+  *
+  * Copyright (C) 2008 Google, Inc.
+@@ -469,7 +469,7 @@ static void audplay_send_data(struct audio *audio, unsigned needed)
+ 		 * so that it won't be recycled until the next buffer
+ 		 * is requested
+ 		 */
+-
++			
+ 		frame = audio->out + audio->out_tail;
+ 		if (frame->used) {
+ 		  BUG_ON(frame->used == 0xffffffff);
+@@ -604,7 +604,6 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 		config.unused[0] = 0;
+ 		config.unused[1] = 0;
+ 		config.unused[2] = 0;
+-		config.unused[3] = 0;
+ 		if (copy_to_user((void *) arg, &config, sizeof(config))) {
+ 			rc = -EFAULT;
+ 		} else {
+@@ -864,7 +863,7 @@ static int audio_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static struct audio the_mp3_audio;
++struct audio the_mp3_audio;
+ 
+ static int audio_open(struct inode *inode, struct file *file)
+ {
+diff --git a/drivers/staging/dream/qdsp5/audio_out.c b/drivers/staging/dream/qdsp5/audio_out.c
+index d1adcf6..fcb1f13 100644
+--- a/drivers/staging/dream/qdsp5/audio_out.c
++++ b/drivers/staging/dream/qdsp5/audio_out.c
+@@ -227,7 +227,7 @@ static int audio_enable(struct audio *audio)
+ 	pr_info("audio_enable()\n");
+ 
+ 	if (audio->enabled)
+-		return 0;
++		return 0;	
+ 
+ 	/* refuse to start if we're not ready */
+ 	if (!audio->out[0].used || !audio->out[1].used)
+@@ -245,7 +245,7 @@ static int audio_enable(struct audio *audio)
+ 	cfg.codec = RPC_AUD_DEF_CODEC_PCM;
+ 	cfg.snd_method = RPC_SND_METHOD_MIDI;
+ 
+-	audio_prevent_sleep(audio);
++	audio_prevent_sleep(audio);	
+ 	rc = audmgr_enable(&audio->audmgr, &cfg);
+ 	if (rc < 0) {
+ 		audio_allow_sleep(audio);
+@@ -355,7 +355,7 @@ static int audio_dsp_out_enable(struct audio *audio, int yes)
+ 	audpp_cmd_pcm_intf cmd;
+ 
+ 	memset(&cmd, 0, sizeof(cmd));
+-	cmd.cmd_id	= AUDPP_CMD_PCM_INTF_2;
++	cmd.cmd_id	= AUDPP_CMD_PCM_INTF_2; 
+ 	cmd.object_num	= AUDPP_CMD_PCM_INTF_OBJECT_NUM;
+ 	cmd.config	= AUDPP_CMD_PCM_INTF_CONFIG_CMD_V;
+ 	cmd.intf_type	= AUDPP_CMD_PCM_INTF_RX_ENA_ARMTODSP_V;
+@@ -374,14 +374,14 @@ static int audio_dsp_out_enable(struct audio *audio, int yes)
+ 		cmd.sample_rate		= audio->out_sample_rate;
+ 		cmd.channel_mode	= audio->out_channel_mode;
+ 	}
+-
++	
+ 	return audpp_send_queue2(&cmd, sizeof(cmd));
+ }
+ 
+ static int audio_dsp_send_buffer(struct audio *audio, unsigned idx, unsigned len)
+ {
+ 	audpp_cmd_pcm_intf_send_buffer cmd;
+-
++	
+ 	cmd.cmd_id		= AUDPP_CMD_PCM_INTF_2;
+ 	cmd.host_pcm_object	= AUDPP_CMD_PCM_INTF_OBJECT_NUM;
+ 	cmd.config		= AUDPP_CMD_PCM_INTF_BUFFER_CMD_V;
+@@ -573,7 +573,6 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 		config.unused[0] = 0;
+ 		config.unused[1] = 0;
+ 		config.unused[2] = 0;
+-		config.unused[3] = 0;
+ 		if (copy_to_user((void*) arg, &config, sizeof(config))) {
+ 			rc = -EFAULT;
+ 		} else {
+@@ -682,7 +681,7 @@ static ssize_t audio_write(struct file *file, const char __user *buf,
+ 	LOG(EV_RETURN,(buf > start) ? (buf - start) : rc);
+ 	if (buf > start)
+ 		return buf - start;
+-	return rc;
++	return rc;	
+ }
+ 
+ static int audio_release(struct inode *inode, struct file *file)
+@@ -699,7 +698,7 @@ static int audio_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static struct audio the_audio;
++struct audio the_audio;
+ 
+ static int audio_open(struct inode *inode, struct file *file)
+ {
+@@ -715,7 +714,7 @@ static int audio_open(struct inode *inode, struct file *file)
+ 	}
+ 
+ 	if (!audio->data) {
+-		audio->data = dma_alloc_coherent(NULL, DMASZ,
++		audio->data = dma_alloc_coherent(NULL, DMASZ, 
+ 						 &audio->phys, GFP_KERNEL);
+ 		if (!audio->data) {
+ 			pr_err("audio: could not allocate DMA buffers\n");
+@@ -736,7 +735,7 @@ static int audio_open(struct inode *inode, struct file *file)
+ 	audio->out[0].data = audio->data + 0;
+ 	audio->out[0].addr = audio->phys + 0;
+ 	audio->out[0].size = BUFSZ;
+-
++	
+ 	audio->out[1].data = audio->data + BUFSZ;
+ 	audio->out[1].addr = audio->phys + BUFSZ;
+ 	audio->out[1].size = BUFSZ;
+diff --git a/drivers/staging/dream/qdsp5/audio_qcelp.c b/drivers/staging/dream/qdsp5/audio_qcelp.c
+index f0f50e3..9571469 100644
+--- a/drivers/staging/dream/qdsp5/audio_qcelp.c
++++ b/drivers/staging/dream/qdsp5/audio_qcelp.c
+@@ -531,7 +531,6 @@ static long audqcelp_ioctl(struct file *file, unsigned int cmd,
+ 			config.unused[0] = 0;
+ 			config.unused[1] = 0;
+ 			config.unused[2] = 0;
+-			config.unused[3] = 0;
+ 			if (copy_to_user((void *)arg, &config,
+ 					 sizeof(config)))
+ 				rc = -EFAULT;
+diff --git a/drivers/staging/dream/qdsp5/audmgr.c b/drivers/staging/dream/qdsp5/audmgr.c
+index 1ad8b82..691ea8f 100644
+--- a/drivers/staging/dream/qdsp5/audmgr.c
++++ b/drivers/staging/dream/qdsp5/audmgr.c
+@@ -208,7 +208,7 @@ int audmgr_open(struct audmgr *am)
+ 
+ 	am->ept = msm_rpc_connect(AUDMGR_PROG,
+ 				AUDMGR_VERS,
+-				MSM_RPC_UNINTERRUPTIBLE);
++				MSM_RPC_UNINTERRUPTIBLE | MSM_RPC_ENABLE_RECEIVE);
+ 
+ 	init_waitqueue_head(&am->wait);
+ 
+diff --git a/drivers/staging/dream/qdsp5/audmgr.h b/drivers/staging/dream/qdsp5/audmgr.h
+index c07c36b..cd2d0c6 100644
+--- a/drivers/staging/dream/qdsp5/audmgr.h
++++ b/drivers/staging/dream/qdsp5/audmgr.h
+@@ -1,6 +1,6 @@
+ /* arch/arm/mach-msm/qdsp5/audmgr.h
+  *
+- * Copyright 2008 (c) QUALCOMM Incorporated.
++ * Copyright 2008 (c) QUALCOMM Incorporated. 
+  * Copyright (C) 2008 Google, Inc.
+  *
+  * This software is licensed under the terms of the GNU General Public
+@@ -131,7 +131,7 @@ struct rpc_audmgr_enable_client_args {
+ 	uint32_t cb_func;
+ 	uint32_t client_data;
+ };
+-
++	
+ #define AUDMGR_ENABLE_CLIENT			2
+ #define AUDMGR_DISABLE_CLIENT			3
+ #define AUDMGR_SUSPEND_EVENT_RSP		4
+@@ -159,7 +159,7 @@ struct rpc_audmgr_cb_func_ptr {
+ 	union {
+ 		uint32_t handle;
+ 		uint32_t volume;
+-
++		
+ 	} u;
  };
  
- MODULE_AUTHOR("Realtek and the Linux r8169 crew <netdev@vger.kernel.org>");
-@@ -743,6 +746,8 @@ static void rtl8169_check_link_status(st
- 
- 	spin_lock_irqsave(&tp->lock, flags);
- 	if (tp->link_ok(ioaddr)) {
-+		/* This is to cancel a scheduled suspend if there's one. */
-+		pm_request_resume(&tp->pci_dev->dev);
- 		netif_carrier_on(dev);
- 		if (netif_msg_ifup(tp))
- 			printk(KERN_INFO PFX "%s: link up\n", dev->name);
-@@ -750,48 +755,54 @@ static void rtl8169_check_link_status(st
- 		if (netif_msg_ifdown(tp))
- 			printk(KERN_INFO PFX "%s: link down\n", dev->name);
- 		netif_carrier_off(dev);
-+		pm_schedule_suspend(&tp->pci_dev->dev, 100);
+diff --git a/drivers/staging/dream/qdsp5/audmgr_new.h b/drivers/staging/dream/qdsp5/audmgr_new.h
+index 49670fe..4381242 100644
+--- a/drivers/staging/dream/qdsp5/audmgr_new.h
++++ b/drivers/staging/dream/qdsp5/audmgr_new.h
+@@ -1,6 +1,6 @@
+ /* arch/arm/mach-msm/qdsp5/audmgr.h
+  *
+- * Copyright 2008 (c) QUALCOMM Incorporated.
++ * Copyright 2008 (c) QUALCOMM Incorporated. 
+  * Copyright (C) 2008 Google, Inc.
+  *
+  * This software is licensed under the terms of the GNU General Public
+@@ -135,7 +135,7 @@ struct rpc_audmgr_enable_client_args {
+ 	uint32_t cb_func;
+ 	uint32_t client_data;
+ };
+-
++	
+ #define AUDMGR_ENABLE_CLIENT			2
+ #define AUDMGR_DISABLE_CLIENT			3
+ #define AUDMGR_SUSPEND_EVENT_RSP		4
+diff --git a/drivers/staging/dream/qdsp5/audpp.c b/drivers/staging/dream/qdsp5/audpp.c
+index d06556e..32c2847 100644
+--- a/drivers/staging/dream/qdsp5/audpp.c
++++ b/drivers/staging/dream/qdsp5/audpp.c
+@@ -251,7 +251,7 @@ int audpp_enable(int id, audpp_event_func func, void *private)
+ 					 AUDPP_MSG_CFG_MSG, AUDPP_MSG_ENA_ENA);
+ 		local_irq_restore(flags);
  	}
- 	spin_unlock_irqrestore(&tp->lock, flags);
- }
- 
--static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
-+
-+static u32 __rtl8169_get_wol(struct rtl8169_private *tp)
- {
--	struct rtl8169_private *tp = netdev_priv(dev);
- 	void __iomem *ioaddr = tp->mmio_addr;
- 	u8 options;
 -
--	wol->wolopts = 0;
--
--#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
--	wol->supported = WAKE_ANY;
--
--	spin_lock_irq(&tp->lock);
-+	u32 wolopts = 0;
- 
- 	options = RTL_R8(Config1);
- 	if (!(options & PMEnable))
--		goto out_unlock;
-+		return 0;
- 
- 	options = RTL_R8(Config3);
- 	if (options & LinkUp)
--		wol->wolopts |= WAKE_PHY;
-+		wolopts |= WAKE_PHY;
- 	if (options & MagicPacket)
--		wol->wolopts |= WAKE_MAGIC;
-+		wolopts |= WAKE_MAGIC;
- 
- 	options = RTL_R8(Config5);
- 	if (options & UWF)
--		wol->wolopts |= WAKE_UCAST;
-+		wolopts |= WAKE_UCAST;
- 	if (options & BWF)
--		wol->wolopts |= WAKE_BCAST;
-+		wolopts |= WAKE_BCAST;
- 	if (options & MWF)
--		wol->wolopts |= WAKE_MCAST;
-+		wolopts |= WAKE_MCAST;
- 
--out_unlock:
--	spin_unlock_irq(&tp->lock);
-+	return wolopts;
- }
- 
--static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- {
- 	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	spin_lock_irq(&tp->lock);
-+
-+	wol->supported = WAKE_ANY;
-+	wol->wolopts = __rtl8169_get_wol(tp);
-+
-+	spin_unlock_irq(&tp->lock);
-+}
-+
-+static void __rtl8169_set_wol(struct rtl8169_private *tp, u32 wolopts)
-+{
- 	void __iomem *ioaddr = tp->mmio_addr;
- 	unsigned int i;
- 	static const struct {
-@@ -808,23 +819,29 @@ static int rtl8169_set_wol(struct net_de
- 		{ WAKE_ANY,   Config5, LanWake }
- 	};
- 
--	spin_lock_irq(&tp->lock);
--
- 	RTL_W8(Cfg9346, Cfg9346_Unlock);
- 
- 	for (i = 0; i < ARRAY_SIZE(cfg); i++) {
- 		u8 options = RTL_R8(cfg[i].reg) & ~cfg[i].mask;
--		if (wol->wolopts & cfg[i].opt)
-+		if (wolopts & cfg[i].opt)
- 			options |= cfg[i].mask;
- 		RTL_W8(cfg[i].reg, options);
- 	}
- 
- 	RTL_W8(Cfg9346, Cfg9346_Lock);
-+}
-+
-+static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+{
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	spin_lock_irq(&tp->lock);
- 
- 	if (wol->wolopts)
- 		tp->features |= RTL_FEATURE_WOL;
- 	else
- 		tp->features &= ~RTL_FEATURE_WOL;
-+	__rtl8169_set_wol(tp, wol->wolopts);
- 	device_set_wakeup_enable(&tp->pci_dev->dev, wol->wolopts);
- 
- 	spin_unlock_irq(&tp->lock);
-@@ -3000,6 +3017,7 @@ rtl8169_init_one(struct pci_dev *pdev, c
- 	tp->dev = dev;
- 	tp->pci_dev = pdev;
- 	tp->msg_enable = netif_msg_init(debug.msg_enable, R8169_MSG_DEFAULT);
-+	tp->exiting = false;
- 
- 	mii = &tp->mii;
- 	mii->dev = dev;
-@@ -3232,6 +3250,8 @@ static void __devexit rtl8169_remove_one
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 
-+	tp->exiting = true;
-+
- 	flush_scheduled_work();
- 
- 	unregister_netdev(dev);
-@@ -3258,7 +3278,6 @@ static int rtl8169_open(struct net_devic
- 	struct pci_dev *pdev = tp->pci_dev;
- 	int retval = -ENOMEM;
- 
--
- 	rtl8169_set_rxbufsize(tp, dev);
- 
- 	/*
-@@ -3295,6 +3314,13 @@ static int rtl8169_open(struct net_devic
- 
- 	rtl8169_request_timer(dev);
- 
-+	tp->saved_wolopts = 0;
-+
-+	if (pci_dev_run_wake(pdev)) {
-+		pm_runtime_set_active(&pdev->dev);
-+		pm_runtime_enable(&pdev->dev);
-+	}
-+
- 	rtl8169_check_link_status(dev, tp, tp->mmio_addr);
++			
+ 	res = 0;
  out:
- 	return retval;
-@@ -4727,6 +4753,14 @@ static int rtl8169_close(struct net_devi
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 	struct pci_dev *pdev = tp->pci_dev;
+ 	mutex_unlock(audpp->lock);
+@@ -331,7 +331,7 @@ unsigned audpp_avsync_sample_count(int id)
  
-+	if (pci_dev_run_wake(pdev)) {
-+		pm_runtime_get_noresume(&pdev->dev);
-+		pm_runtime_resume(&pdev->dev);
-+		pm_runtime_disable(&pdev->dev);
-+		pm_runtime_set_suspended(&pdev->dev);
-+		pm_runtime_put_noidle(&pdev->dev);
-+	}
-+
- 	/* update counters before going down */
- 	rtl8169_update_counters(dev);
- 
-@@ -4844,21 +4878,65 @@ static int rtl8169_suspend(struct device
- 	return 0;
- }
- 
-+static void __rtl8169_resume(struct net_device *dev)
-+{
-+	netif_device_attach(dev);
-+	rtl8169_schedule_work(dev, rtl8169_reset_task);
-+}
-+
- static int rtl8169_resume(struct device *device)
+ 	if (BAD_ID(id))
+ 		return 0;
+-
++	
+ 	mask = 1 << id;
+ 	id = id * AUDPP_AVSYNC_INFO_SIZE + 2;
+ 	local_irq_save(flags);
+@@ -375,7 +375,7 @@ int audpp_set_volume_and_pan(unsigned id, unsigned volume, int pan)
  {
- 	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	/* cmd, obj_cfg[7], cmd_type, volume, pan */
+ 	uint16_t cmd[11];
+-
++	
+ 	if (id > 6)
+ 		return -EINVAL;
  
--	if (!netif_running(dev))
--		goto out;
-+	if (netif_running(dev))
-+		__rtl8169_resume(dev);
- 
--	netif_device_attach(dev);
-+	return 0;
-+}
-+
-+static int rtl8169_runtime_suspend(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	dev_dbg(&pdev->dev, "suspending\n");
-+
-+	spin_lock_irq(&tp->lock);
-+	tp->saved_wolopts = __rtl8169_get_wol(tp);
-+	__rtl8169_set_wol(tp, WAKE_ANY);
-+	spin_unlock_irq(&tp->lock);
-+
-+	rtl8169_net_suspend(dev);
-+
-+	return 0;
-+}
-+
-+static int rtl8169_runtime_resume(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	dev_dbg(&pdev->dev, "resuming\n");
-+
-+	spin_lock_irq(&tp->lock);
-+	__rtl8169_set_wol(tp, tp->saved_wolopts);
-+	tp->saved_wolopts = 0;
-+	spin_unlock_irq(&tp->lock);
-+
-+	if (!tp->exiting)
-+		__rtl8169_resume(dev);
- 
--	rtl8169_schedule_work(dev, rtl8169_reset_task);
--out:
- 	return 0;
- }
- 
-+static int rtl8169_runtime_idle(struct device *device)
-+{
-+	return -EBUSY;
-+}
-+
- static const struct dev_pm_ops rtl8169_pm_ops = {
- 	.suspend = rtl8169_suspend,
- 	.resume = rtl8169_resume,
-@@ -4866,6 +4944,9 @@ static const struct dev_pm_ops rtl8169_p
- 	.thaw = rtl8169_resume,
- 	.poweroff = rtl8169_suspend,
- 	.restore = rtl8169_resume,
-+	.runtime_suspend = rtl8169_runtime_suspend,
-+	.runtime_resume = rtl8169_runtime_resume,
-+	.runtime_idle = rtl8169_runtime_idle,
+diff --git a/drivers/staging/dream/qdsp5/evlog.h b/drivers/staging/dream/qdsp5/evlog.h
+index 922ce67..5c0edf1 100644
+--- a/drivers/staging/dream/qdsp5/evlog.h
++++ b/drivers/staging/dream/qdsp5/evlog.h
+@@ -36,7 +36,7 @@ struct ev_entry {
+ 	uint32_t id;
+ 	uint32_t arg;
  };
- 
- #define RTL8169_PM_OPS	(&rtl8169_pm_ops)
+-
++	
+ struct ev_log {
+ 	struct ev_entry *entry;
+ 	unsigned max;
+@@ -58,7 +58,7 @@ static ssize_t ev_log_read(struct file *file, char __user *buf,
+ 	int size = 0;
+ 	unsigned n, id, max;
+ 	ktime_t now, t;
+-
++	
+ 	max = log->max;
+ 	now = ktime_get();
+ 	local_irq_save(flags);
 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
