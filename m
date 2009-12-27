@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751507AbZL0V1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751522AbZL0V1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751507AbZL0V1W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 16:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZL0V1T
+	id S1751522AbZL0V1g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 16:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZL0V1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 16:27:19 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:60621 "EHLO mgw2.diku.dk"
+	Sun, 27 Dec 2009 16:27:34 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:47754 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbZL0V1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 16:27:14 -0500
-Date: Sun, 27 Dec 2009 22:27:11 +0100 (CET)
+	id S1751192AbZL0V1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 16:27:31 -0500
+Date: Sun, 27 Dec 2009 22:27:28 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: drbd-dev@lists.linbit.com, drbd-user@lists.linbit.com,
+To: airlied@linux.ie, dri-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/5] drivers/block: Correct NULL test
-Message-ID: <Pine.LNX.4.64.0912272226550.20548@ask.diku.dk>
+Subject: [PATCH 3/5] drivers/gpu: Correct NULL test
+Message-ID: <Pine.LNX.4.64.0912272227130.20548@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,18 +49,21 @@ if (
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/block/drbd/drbd_receiver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/nouveau/nouveau_grctx.c        |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -u -p a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -3944,7 +3944,7 @@ static int drbd_do_auth(struct drbd_conf
- 	}
+diff --git a/drivers/gpu/drm/nouveau/nouveau_grctx.c b/drivers/gpu/drm/nouveau/nouveau_grctx.c
+index 419f4c2..c7ebec6 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_grctx.c
++++ b/drivers/gpu/drm/nouveau/nouveau_grctx.c
+@@ -97,8 +97,8 @@ nouveau_grctx_prog_load(struct drm_device *dev)
+ 		}
  
- 	right_response = kmalloc(resp_size, GFP_NOIO);
--	if (response == NULL) {
-+	if (right_response == NULL) {
- 		dev_err(DEV, "kmalloc of right_response failed\n");
- 		rv = 0;
- 		goto fail;
+ 		pgraph->ctxvals = kmalloc(fw->size, GFP_KERNEL);
+-		if (!pgraph->ctxprog) {
+-			NV_ERROR(dev, "OOM copying ctxprog\n");
++		if (!pgraph->ctxvals) {
++			NV_ERROR(dev, "OOM copying ctxvals\n");
+ 			release_firmware(fw);
+ 			nouveau_grctx_fini(dev);
+ 			return -ENOMEM;
