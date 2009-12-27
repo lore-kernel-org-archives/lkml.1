@@ -1,142 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751100AbZL0Sh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751093AbZL0SvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751100AbZL0Sh7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 13:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbZL0Sh7
+	id S1751093AbZL0SvK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 13:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZL0SvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 13:37:59 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:35609 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbZL0Sh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 13:37:58 -0500
+	Sun, 27 Dec 2009 13:51:07 -0500
+Received: from crmm.lgl.lu ([158.64.72.228]:43162 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbZL0SvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 13:51:07 -0500
+Message-ID: <4B37AC87.1070607@knaff.lu>
+Date: Sun, 27 Dec 2009 19:50:47 +0100
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091227124732.GA3601@balbir.in.ibm.com>
-References: <cover.1261858972.git.kirill@shutemov.name>
-	 <20091227124732.GA3601@balbir.in.ibm.com>
-Date: Sun, 27 Dec 2009 20:37:57 +0200
-Message-ID: <cc557aab0912271037scb29fe1xcebe9adfaea97b24@mail.gmail.com>
-Subject: Re: [PATCH v4 0/4] cgroup notifications API and memory thresholds
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: balbir@linux.vnet.ibm.com
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0050450170486e6345047bba16b3
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
+References: <200912211643.18173.tvrtko.ursulin@sophos.com> <4B2FEC10.6050900@msgid.tls.msk.ru>
+In-Reply-To: <4B2FEC10.6050900@msgid.tls.msk.ru>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------020208000104030209080007"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0050450170486e6345047bba16b3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
+--------------020208000104030209080007
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Sun, Dec 27, 2009 at 2:47 PM, Balbir Singh <balbir@linux.vnet.ibm.com> w=
-rote:
-> * Kirill A. Shutemov <kirill@shutemov.name> [2009-12-27 04:08:58]:
->
->> This patchset introduces eventfd-based API for notifications in cgroups =
-and
->> implements memory notifications on top of it.
+Michael Tokarev wrote:
+> Tvrtko Ursulin wrote:
+>> Hi,
 >>
->> It uses statistics in memory controler to track memory usage.
->>
->> Output of time(1) on building kernel on tmpfs:
->>
->> Root cgroup before changes:
->> =C2=A0 =C2=A0 =C2=A0 make -j2 =C2=A0506.37 user 60.93s system 193% cpu 4=
-:52.77 total
->> Non-root cgroup before changes:
->> =C2=A0 =C2=A0 =C2=A0 make -j2 =C2=A0507.14 user 62.66s system 193% cpu 4=
-:54.74 total
->> Root cgroup after changes (0 thresholds):
->> =C2=A0 =C2=A0 =C2=A0 make -j2 =C2=A0507.13 user 62.20s system 193% cpu 4=
-:53.55 total
->> Non-root cgroup after changes (0 thresholds):
->> =C2=A0 =C2=A0 =C2=A0 make -j2 =C2=A0507.70 user 64.20s system 193% cpu 4=
-:55.70 total
->> Root cgroup after changes (1 thresholds, never crossed):
->> =C2=A0 =C2=A0 =C2=A0 make -j2 =C2=A0506.97 user 62.20s system 193% cpu 4=
-:53.90 total
->> Non-root cgroup after changes (1 thresholds, never crossed):
->> =C2=A0 =C2=A0 =C2=A0 make -j2 =C2=A0507.55 user 64.08s system 193% cpu 4=
-:55.63 total
->>
->> Any comments?
->
-> Thanks for adding the documentation, now on to more critical questions
->
-> 1. Any reasons for not using cgroupstats?
+>> When run under VMware, LZMA compressed 2.6.33-rc1 instantly reboots in the 
+>> decompression stage. At least I suppose so, because switching to GZIP makes 
+>> it work.
+> 
+> Switch /bin/sh from dash to bash and recompile (actually relink) - it should work.
+> 
+> /mjt
 
-Could you explain the idea? I don't see how cgroupstats applicable for
-the task.
+I can confirm this. A similar issue used to exist for older kernels,
+which then got fixed by replacing "echo" with "/bin/echo" in the
+size_append command scripts/Makefile.lib . The reason why this was
+needed is that some shells (such as dash) have a defective built-in echo
+command. Specifying the full path forces to use the system echo command
+rather than the broken shell builtin.
 
-> 2. Is there a user space test application to test this code.
+In 2.6.33, for some reason, echo has been replaced with printf. With a
+_pathless_ printf! The fix is the same as in earlier kernels: add the path.
 
-Attached. It's not very clean, but good enough for testing propose.
-Example of usage:
+With the attached patch applied, the kernel compiles correctly even if
+sh is linked to dash.
 
-$ echo '/cgroups/memory.usage_in_bytes 1G' | ./cgroup_event_monitor
+Regards,
 
-> =C2=A0IIUC,
-> I need to write a program that uses eventfd(2) and then passes
-> the eventfd descriptor and thresold to cgroup.*event* file and
-> then the program will get notified when the threshold is reached?
+Alain
 
-You need to pass eventfd descriptor, descriptor of control file to be
-monitored (memory.usage_in_bytes or memory.memsw.usage_in_bytes) and
-threshold.
 
-Do you want to rename cgroup.event_control to cgroup.event?
+--------------020208000104030209080007
+Content-Type: text/x-diff;
+ name="dash.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="dash.patch"
 
---0050450170486e6345047bba16b3
-Content-Type: application/octet-stream; name="cgroup_event_monitor.c"
-Content-Disposition: attachment; filename="cgroup_event_monitor.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g3q5oq4k0
+diff -ur linux-2.6.33-rc2/scripts/Makefile.lib linux-2.6.33-rc2.fixed/scripts/Makefile.lib
+--- linux-2.6.33-rc2/scripts/Makefile.lib	2009-12-24 21:09:41.000000000 +0000
++++ linux-2.6.33-rc2.fixed/scripts/Makefile.lib	2009-12-27 18:34:23.000000000 +0000
+@@ -213,7 +213,7 @@
+ 
+ # Bzip2 and LZMA do not include size in file... so we have to fake that;
+ # append the size as a 32-bit littleendian number as gzip does.
+-size_append = printf $(shell						\
++size_append = /usr/bin/printf $(shell						\
+ dec_size=0;								\
+ for F in $1; do								\
+ 	fsize=$$(stat -c "%s" $$F);					\
 
-I2RlZmluZSBfR05VX1NPVVJDRQoKI2luY2x1ZGUgPGFzc2VydC5oPgojaW5jbHVkZSA8ZXJybm8u
-aD4KI2luY2x1ZGUgPGZjbnRsLmg+CiNpbmNsdWRlIDxsaWJnZW4uaD4KI2luY2x1ZGUgPGxpbWl0
-cy5oPgojaW5jbHVkZSA8cG9sbC5oPgojaW5jbHVkZSA8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGxp
-Yi5oPgojaW5jbHVkZSA8c3RyaW5nLmg+CiNpbmNsdWRlIDx1bmlzdGQuaD4KI2luY2x1ZGUgPHN5
-cy9ldmVudGZkLmg+CgojZGVmaW5lIE1BWF9FRkQgMTAwCgpzdHJ1Y3QgZXZlbnQgewoJY2hhciAq
-cGF0aDsKCWNoYXIgKmFyZ3M7Cn07CgppbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKmFyZ3YpCnsK
-CXN0cnVjdCBldmVudCBldmVudHNbTUFYX0VGRF07CglzdHJ1Y3QgcG9sbGZkIHBvbGxmZHNbTUFY
-X0VGRF07CglpbnQgbiA9IDA7CgljaGFyIGxpbmVbUEFUSF9NQVhdOwoJaW50IHJldDsKCgl3aGls
-ZSAoZmdldHMobGluZSwgUEFUSF9NQVgsIHN0ZGluKSkgewoJCWludCBldmVudF9jb250cm9sLCBj
-ZmQ7CgkJY2hhciAqYXJncyA9IHN0cmNocm51bChsaW5lLCAnICcpOwoKCQlpZiAobiA+PSBNQVhf
-RUZEKSB7CgkJCWZwcmludGYoc3RkZXJyLCAiVG9vIG1hbnkgZXZlbnRzIHJlZ2lzdGVyZWRcbiIp
-OwoJCX0KCgkJaWYgKCphcmdzKQoJCQkqYXJncysrID0gJ1wwJzsKCgkJZXZlbnRzW25dLnBhdGgg
-PSBtYWxsb2Moc3RybGVuKGxpbmUpICsgMSk7CgkJYXNzZXJ0KGV2ZW50c1tuXS5wYXRoKTsKCQlz
-dHJjcHkoZXZlbnRzW25dLnBhdGgsIGxpbmUpOwoKCQlhcmdzW3N0cmxlbihhcmdzKSAtIDFdID0g
-J1wwJzsKCQlldmVudHNbbl0uYXJncyA9IG1hbGxvYyhzdHJsZW4oYXJncykgKyAxKTsKCQlhc3Nl
-cnQoZXZlbnRzW25dLmFyZ3MpOwoJCXN0cmNweShldmVudHNbbl0uYXJncywgYXJncyk7CgoJCWNm
-ZCA9IG9wZW4oZXZlbnRzW25dLnBhdGgsIE9fUkRPTkxZKTsKCQlpZiAoY2ZkIDwgMCkgewoJCQlm
-cHJpbnRmKHN0ZGVyciwgIkNhbm5vdCBvcGVuICVzOiAlc1xuIiwgZXZlbnRzW25dLnBhdGgsCgkJ
-CQkJc3RyZXJyb3IoZXJybm8pKTsKCQkJcmV0dXJuIDE7CgkJfQoKCQlwb2xsZmRzW25dLmV2ZW50
-cyA9IFBPTExJTjsKCQlwb2xsZmRzW25dLmZkID0gZXZlbnRmZCgwLCAwKTsKCgkJZGlybmFtZShs
-aW5lKTsKCQlzdHJjYXQobGluZSwgIi9jZ3JvdXAuZXZlbnRfY29udHJvbCIpOwoKCQlldmVudF9j
-b250cm9sID0gb3BlbihsaW5lLCBPX1dST05MWSk7CgkJaWYgKGV2ZW50X2NvbnRyb2wgPCAwKSB7
-CgkJCWZwcmludGYoc3RkZXJyLCAiQ2Fubm90IG9wZW4gJXM6ICVzXG4iLCBsaW5lLAoJCQkJCXN0
-cmVycm9yKGVycm5vKSk7CgkJCXJldHVybiAxOwoJCX0KCgkJc25wcmludGYobGluZSwgUEFUSF9N
-QVgsICIlZCAlZCAlc1xuIiwgcG9sbGZkc1tuXS5mZCwgY2ZkLAoJCQkJZXZlbnRzW25dLmFyZ3Mp
-OwoKCQlpZiAod3JpdGUoZXZlbnRfY29udHJvbCwgbGluZSwgc3RybGVuKGxpbmUpKSA8IDApIHsK
-CQkJZnByaW50ZihzdGRlcnIsICJDYW5ub3Qgd3JpdGUgdG8gY2dyb3VwLmV2ZW50X2NvbnRyb2w6
-ICVzXG4iLAoJCQkJCXN0cmVycm9yKGVycm5vKSk7CgkJCXJldHVybiAxOwoJCX0KCgkJY2xvc2Uo
-ZXZlbnRfY29udHJvbCk7CgkJY2xvc2UoY2ZkKTsKCgkJbisrOwoJfQoKCXdoaWxlKChyZXQgPSBw
-b2xsKHBvbGxmZHMsIG4sIC0xKSkgIT0gMCkgewoJCWludCBpOwoKCQlpZiAocmV0IDwgMCkgewoJ
-CQlwZXJyb3IoInBvbGwoKSIpOwoJCQlyZXR1cm4gMTsKCQl9CgoJCWZvcihpPTA7IChpIDwgbikg
-JiYgcmV0OyBpKyspIHsKCQkJaWYgKHBvbGxmZHNbaV0ucmV2ZW50cyAmIFBPTExJTikgewoJCQkJ
-cHJpbnRmKCIlcyAlc1xuIiwgZXZlbnRzW2ldLnBhdGgsCgkJCQkJCWV2ZW50c1tpXS5hcmdzKTsK
-CQkJCWlmIChyZWFkKHBvbGxmZHNbaV0uZmQsIGxpbmUsIDgpIDwgMCkgewoJCQkJCXBlcnJvcigi
-cmVhZCgpIik7CgkJCQkJcmV0dXJuIDE7CgkJCQl9CgkJCQlyZXQtLTsKCQkJfQoKCQkJaWYgKHBv
-bGxmZHNbaV0ucmV2ZW50cyAmIH4oUE9MTElOKSkgewoJCQkJcHJpbnRmKCIlcyglcyk6IHVuZXhw
-ZWN0ZWQgZXZlbnQ6ICUwOHhcbiIsCgkJCQkJCWV2ZW50c1tpXS5wYXRoLAoJCQkJCQlldmVudHNb
-aV0uYXJncywKCQkJCQkJcG9sbGZkc1tpXS5yZXZlbnRzKTsKCQkJCXJldHVybiAxOwoJCQl9CgkJ
-fQoJfQoKCXJldHVybiAwOwp9Cg==
---0050450170486e6345047bba16b3--
+--------------020208000104030209080007--
