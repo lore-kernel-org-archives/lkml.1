@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751407AbZL0UMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbZL0UL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751407AbZL0UMZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 15:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZL0UL6
+	id S1751383AbZL0UL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 15:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZL0UL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 15:11:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60504 "EHLO ogre.sisk.pl"
+	Sun, 27 Dec 2009 15:11:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60474 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbZL0ULz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 15:11:55 -0500
+	id S1751335AbZL0ULw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 15:11:52 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 11/12] PCI PM: Run-time callbacks for PCI bus type (rev. 2)
-Date: Sun, 27 Dec 2009 21:08:24 +0100
+Subject: [PATCH 12/12] PM / r8169: Add simplified run-time PM support
+Date: Sun, 27 Dec 2009 21:11:41 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
 Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
@@ -29,340 +29,298 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912272108.25145.rjw@sisk.pl>
+Message-Id: <200912272111.41728.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce run-time PM callbacks for the PCI bus type.  Make the new
-callbacks work in analogy with the existing system sleep PM
-callbacks, so that the drivers already converted to struct dev_pm_ops
-can use their suspend and resume routines for run-time PM without
-modifications.
+Use the PCI run-time power management framework to add simplified
+run-time PM support to the r8169 driver.  Namely, make the driver
+suspend the device when the link is off and set it up for generating
+wake-up event after the link has been detected again.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |  105 ++++++++++++++++++++++++++++++++++++++++++++---
- drivers/pci/pci.c        |   43 ++++++++++++++++---
- drivers/pci/pci.h        |    1 
- include/linux/pci.h      |    9 +++-
- kernel/power/Kconfig     |    5 ++
- 5 files changed, 151 insertions(+), 12 deletions(-)
+The patch is still missing an important part, which is that the driver should
+turn the power management on as soon as it's probed, not only after someone
+calls open() on it.  Nevertheless, the patch is fully functional in this form.
 
-Index: linux-2.6/kernel/power/Kconfig
+Rafael
+---
+ drivers/net/r8169.c |  135 +++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 108 insertions(+), 27 deletions(-)
+
+Index: linux-2.6/drivers/net/r8169.c
 ===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -241,3 +241,8 @@ config PM_WAKEUP
- 	bool
- 	depends on SUSPEND || HIBERNATION || PM_RUNTIME
- 	default y
-+
-+config PM_OPS
-+	bool
-+	depends on PM_SLEEP || PM_RUNTIME
-+	default y
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -17,6 +17,7 @@
- #include <linux/slab.h>
- #include <linux/sched.h>
- #include <linux/cpu.h>
+--- linux-2.6.orig/drivers/net/r8169.c
++++ linux-2.6/drivers/net/r8169.c
+@@ -23,6 +23,7 @@
+ #include <linux/tcp.h>
+ #include <linux/init.h>
+ #include <linux/dma-mapping.h>
 +#include <linux/pm_runtime.h>
- #include "pci.h"
  
- struct pci_dynid {
-@@ -537,7 +538,7 @@ static int pci_restore_standard_config(s
- 	return pci_restore_state(pci_dev);
- }
+ #include <asm/system.h>
+ #include <asm/io.h>
+@@ -504,6 +505,8 @@ struct rtl8169_private {
  
--static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
-+static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
- {
- 	pci_restore_standard_config(pci_dev);
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
-@@ -581,6 +582,17 @@ static int pci_pm_prepare(struct device 
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	/*
-+	 * PCI devices suspended at run time need to be resumed at this
-+	 * point, because in general it is necessary to reconfigure them for
-+	 * system suspend.  Namely, if the device is supposed to wake up the
-+	 * system from the sleep state, we may need to reconfigure it for this
-+	 * purpose.  In turn, if the device is not supposed to wake up the
-+	 * system from the sleep state, we'll have to prevent it from signaling
-+	 * wake-up.
-+	 */
-+	pm_runtime_resume(dev);
-+
- 	if (drv && drv->pm && drv->pm->prepare)
- 		error = drv->pm->prepare(dev);
- 
-@@ -681,7 +693,7 @@ static int pci_pm_resume_noirq(struct de
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
--	pci_pm_default_resume_noirq(pci_dev);
-+	pci_pm_default_resume_early(pci_dev);
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume_early(dev);
-@@ -879,7 +891,7 @@ static int pci_pm_restore_noirq(struct d
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
--	pci_pm_default_resume_noirq(pci_dev);
-+	pci_pm_default_resume_early(pci_dev);
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume_early(dev);
-@@ -931,6 +943,86 @@ static int pci_pm_restore(struct device 
- 
- #endif /* !CONFIG_HIBERNATION */
- 
-+#endif /* !CONFIG_PM_SLEEP */
-+
-+#ifdef CONFIG_PM_RUNTIME
-+
-+static int pci_pm_runtime_suspend(struct device *dev)
-+{
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	pci_power_t prev = pci_dev->current_state;
-+	int error;
-+
-+	if (!pm || !pm->runtime_suspend)
-+		return -ENOSYS;
-+
-+	error = pm->runtime_suspend(dev);
-+	suspend_report_result(pm->runtime_suspend, error);
-+	if (error)
-+		return error;
-+
-+	pci_fixup_device(pci_fixup_suspend, pci_dev);
-+
-+	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-+	    && pci_dev->current_state != PCI_UNKNOWN) {
-+		WARN_ONCE(pci_dev->current_state != prev,
-+			"PCI PM: State of device not saved by %pF\n",
-+			pm->runtime_suspend);
-+		return 0;
-+	}
-+
-+	if (!pci_dev->state_saved)
-+		pci_save_state(pci_dev);
-+
-+	pci_finish_runtime_suspend(pci_dev);
-+
-+	return 0;
-+}
-+
-+static int pci_pm_runtime_resume(struct device *dev)
-+{
-+	struct pci_dev *pci_dev = to_pci_dev(dev);
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+
-+	if (!pm || !pm->runtime_resume)
-+		return -ENOSYS;
-+
-+	pci_pm_default_resume_early(pci_dev);
-+	__pci_enable_wake(pci_dev, PCI_D0, true, false);
-+	pci_fixup_device(pci_fixup_resume, pci_dev);
-+
-+	return pm->runtime_resume(dev);
-+}
-+
-+static int pci_pm_runtime_idle(struct device *dev)
-+{
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+
-+	if (!pm)
-+		return -ENOSYS;
-+
-+	if (pm->runtime_idle) {
-+		int ret = pm->runtime_idle(dev);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	pm_runtime_suspend(dev);
-+
-+	return 0;
-+}
-+
-+#else /* !CONFIG_PM_RUNTIME */
-+
-+#define pci_pm_runtime_suspend	NULL
-+#define pci_pm_runtime_resume	NULL
-+#define pci_pm_runtime_idle	NULL
-+
-+#endif /* !CONFIG_PM_RUNTIME */
-+
-+#ifdef CONFIG_PM_OPS
-+
- const struct dev_pm_ops pci_dev_pm_ops = {
- 	.prepare = pci_pm_prepare,
- 	.complete = pci_pm_complete,
-@@ -946,15 +1038,18 @@ const struct dev_pm_ops pci_dev_pm_ops =
- 	.thaw_noirq = pci_pm_thaw_noirq,
- 	.poweroff_noirq = pci_pm_poweroff_noirq,
- 	.restore_noirq = pci_pm_restore_noirq,
-+	.runtime_suspend = pci_pm_runtime_suspend,
-+	.runtime_resume = pci_pm_runtime_resume,
-+	.runtime_idle = pci_pm_runtime_idle,
+ 	struct mii_if_info mii;
+ 	struct rtl8169_counters counters;
++	u32 saved_wolopts;
++	bool exiting;
  };
  
- #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
+ MODULE_AUTHOR("Realtek and the Linux r8169 crew <netdev@vger.kernel.org>");
+@@ -743,6 +746,8 @@ static void rtl8169_check_link_status(st
  
--#else /* !CONFIG_PM_SLEEP */
-+#else /* !COMFIG_PM_OPS */
- 
- #define PCI_PM_OPS_PTR	NULL
- 
--#endif /* !CONFIG_PM_SLEEP */
-+#endif /* !COMFIG_PM_OPS */
- 
- /**
-  * __pci_register_driver - register a new pci driver
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1287,9 +1287,10 @@ void pci_pme_active(struct pci_dev *dev,
+ 	spin_lock_irqsave(&tp->lock, flags);
+ 	if (tp->link_ok(ioaddr)) {
++		/* This is to cancel a scheduled suspend if there's one. */
++		pm_request_resume(&tp->pci_dev->dev);
+ 		netif_carrier_on(dev);
+ 		if (netif_msg_ifup(tp))
+ 			printk(KERN_INFO PFX "%s: link up\n", dev->name);
+@@ -750,48 +755,54 @@ static void rtl8169_check_link_status(st
+ 		if (netif_msg_ifdown(tp))
+ 			printk(KERN_INFO PFX "%s: link down\n", dev->name);
+ 		netif_carrier_off(dev);
++		pm_schedule_suspend(&tp->pci_dev->dev, 100);
+ 	}
+ 	spin_unlock_irqrestore(&tp->lock, flags);
  }
  
- /**
-- * pci_enable_wake - enable PCI device as wakeup event source
-+ * __pci_enable_wake - enable PCI device as wakeup event source
-  * @dev: PCI device affected
-  * @state: PCI state from which device will issue wakeup events
-+ * @runtime: True if the events are to be generated at run time
-  * @enable: True to enable event generation; false to disable
-  *
-  * This enables the device as a wakeup event source, or disables it.
-@@ -1305,11 +1306,12 @@ void pci_pme_active(struct pci_dev *dev,
-  * Error code depending on the platform is returned if both the platform and
-  * the native mechanism fail to enable the generation of wake-up events
-  */
--int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable)
-+int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
-+		      bool runtime, bool enable)
+-static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
++#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
++
++static u32 __rtl8169_get_wol(struct rtl8169_private *tp)
  {
- 	int ret = 0;
+-	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	u8 options;
+-
+-	wol->wolopts = 0;
+-
+-#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
+-	wol->supported = WAKE_ANY;
+-
+-	spin_lock_irq(&tp->lock);
++	u32 wolopts = 0;
  
--	if (enable && !device_may_wakeup(&dev->dev))
-+	if (enable && !runtime && !device_may_wakeup(&dev->dev))
- 		return -EINVAL;
+ 	options = RTL_R8(Config1);
+ 	if (!(options & PMEnable))
+-		goto out_unlock;
++		return 0;
  
- 	/* Don't do the same thing twice in a row for one device. */
-@@ -1329,19 +1331,24 @@ int pci_enable_wake(struct pci_dev *dev,
- 			pci_pme_active(dev, true);
- 		else
- 			ret = 1;
--		error = platform_pci_sleep_wake(dev, true);
-+		error = runtime ? platform_pci_run_wake(dev, true) :
-+					platform_pci_sleep_wake(dev, true);
- 		if (ret)
- 			ret = error;
- 		if (!ret)
- 			dev->wakeup_prepared = true;
- 	} else {
--		platform_pci_sleep_wake(dev, false);
-+		if (runtime)
-+			platform_pci_run_wake(dev, false);
-+		else
-+			platform_pci_sleep_wake(dev, false);
- 		pci_pme_active(dev, false);
- 		dev->wakeup_prepared = false;
+ 	options = RTL_R8(Config3);
+ 	if (options & LinkUp)
+-		wol->wolopts |= WAKE_PHY;
++		wolopts |= WAKE_PHY;
+ 	if (options & MagicPacket)
+-		wol->wolopts |= WAKE_MAGIC;
++		wolopts |= WAKE_MAGIC;
+ 
+ 	options = RTL_R8(Config5);
+ 	if (options & UWF)
+-		wol->wolopts |= WAKE_UCAST;
++		wolopts |= WAKE_UCAST;
+ 	if (options & BWF)
+-		wol->wolopts |= WAKE_BCAST;
++		wolopts |= WAKE_BCAST;
+ 	if (options & MWF)
+-		wol->wolopts |= WAKE_MCAST;
++		wolopts |= WAKE_MCAST;
+ 
+-out_unlock:
+-	spin_unlock_irq(&tp->lock);
++	return wolopts;
+ }
+ 
+-static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
++static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ {
+ 	struct rtl8169_private *tp = netdev_priv(dev);
++
++	spin_lock_irq(&tp->lock);
++
++	wol->supported = WAKE_ANY;
++	wol->wolopts = __rtl8169_get_wol(tp);
++
++	spin_unlock_irq(&tp->lock);
++}
++
++static void __rtl8169_set_wol(struct rtl8169_private *tp, u32 wolopts)
++{
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	unsigned int i;
+ 	static const struct {
+@@ -808,23 +819,29 @@ static int rtl8169_set_wol(struct net_de
+ 		{ WAKE_ANY,   Config5, LanWake }
+ 	};
+ 
+-	spin_lock_irq(&tp->lock);
+-
+ 	RTL_W8(Cfg9346, Cfg9346_Unlock);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(cfg); i++) {
+ 		u8 options = RTL_R8(cfg[i].reg) & ~cfg[i].mask;
+-		if (wol->wolopts & cfg[i].opt)
++		if (wolopts & cfg[i].opt)
+ 			options |= cfg[i].mask;
+ 		RTL_W8(cfg[i].reg, options);
  	}
  
- 	return ret;
- }
-+EXPORT_SYMBOL(__pci_enable_wake);
- 
- /**
-  * pci_wake_from_d3 - enable/disable device to wake up from D3_hot or D3_cold
-@@ -1451,6 +1458,31 @@ int pci_back_from_sleep(struct pci_dev *
- }
- 
- /**
-+ * pci_finish_runtime_suspend - Carry out PCI-specific part of runtime suspend.
-+ * @dev: PCI device being suspended.
-+ *
-+ * Prepare @dev to generate wake-up events at run time and put it into a low
-+ * power state.
-+ */
-+int pci_finish_runtime_suspend(struct pci_dev *dev)
-+{
-+	pci_power_t target_state = pci_target_state(dev);
-+	int error;
-+
-+	if (target_state == PCI_POWER_ERROR)
-+		return -EIO;
-+
-+	__pci_enable_wake(dev, target_state, true, pci_dev_run_wake(dev));
-+
-+	error = pci_set_power_state(dev, target_state);
-+
-+	if (error)
-+		__pci_enable_wake(dev, target_state, true, false);
-+
-+	return error;
+ 	RTL_W8(Cfg9346, Cfg9346_Lock);
 +}
 +
-+/**
-  * pci_dev_run_wake - Check if device can generate run-time wake-up events.
-  * @dev: Device to check.
-  *
-@@ -2954,7 +2986,6 @@ EXPORT_SYMBOL(pci_save_state);
- EXPORT_SYMBOL(pci_restore_state);
- EXPORT_SYMBOL(pci_pme_capable);
- EXPORT_SYMBOL(pci_pme_active);
--EXPORT_SYMBOL(pci_enable_wake);
- EXPORT_SYMBOL(pci_wake_from_d3);
- EXPORT_SYMBOL(pci_target_state);
- EXPORT_SYMBOL(pci_prepare_to_sleep);
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -747,13 +747,20 @@ int pci_set_power_state(struct pci_dev *
- pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
- bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
- void pci_pme_active(struct pci_dev *dev, bool enable);
--int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable);
-+int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
-+		      bool runtime, bool enable);
- int pci_wake_from_d3(struct pci_dev *dev, bool enable);
- pci_power_t pci_target_state(struct pci_dev *dev);
- int pci_prepare_to_sleep(struct pci_dev *dev);
- int pci_back_from_sleep(struct pci_dev *dev);
- bool pci_dev_run_wake(struct pci_dev *dev);
- 
-+static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
-+				  bool enable)
++static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
 +{
-+	return __pci_enable_wake(dev, state, false, enable);
++	struct rtl8169_private *tp = netdev_priv(dev);
++
++	spin_lock_irq(&tp->lock);
+ 
+ 	if (wol->wolopts)
+ 		tp->features |= RTL_FEATURE_WOL;
+ 	else
+ 		tp->features &= ~RTL_FEATURE_WOL;
++	__rtl8169_set_wol(tp, wol->wolopts);
+ 	device_set_wakeup_enable(&tp->pci_dev->dev, wol->wolopts);
+ 
+ 	spin_unlock_irq(&tp->lock);
+@@ -3000,6 +3017,7 @@ rtl8169_init_one(struct pci_dev *pdev, c
+ 	tp->dev = dev;
+ 	tp->pci_dev = pdev;
+ 	tp->msg_enable = netif_msg_init(debug.msg_enable, R8169_MSG_DEFAULT);
++	tp->exiting = false;
+ 
+ 	mii = &tp->mii;
+ 	mii->dev = dev;
+@@ -3232,6 +3250,8 @@ static void __devexit rtl8169_remove_one
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 
++	tp->exiting = true;
++
+ 	flush_scheduled_work();
+ 
+ 	unregister_netdev(dev);
+@@ -3258,7 +3278,6 @@ static int rtl8169_open(struct net_devic
+ 	struct pci_dev *pdev = tp->pci_dev;
+ 	int retval = -ENOMEM;
+ 
+-
+ 	rtl8169_set_rxbufsize(tp, dev);
+ 
+ 	/*
+@@ -3295,6 +3314,13 @@ static int rtl8169_open(struct net_devic
+ 
+ 	rtl8169_request_timer(dev);
+ 
++	tp->saved_wolopts = 0;
++
++	if (pci_dev_run_wake(pdev)) {
++		pm_runtime_set_active(&pdev->dev);
++		pm_runtime_enable(&pdev->dev);
++	}
++
+ 	rtl8169_check_link_status(dev, tp, tp->mmio_addr);
+ out:
+ 	return retval;
+@@ -4727,6 +4753,14 @@ static int rtl8169_close(struct net_devi
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	struct pci_dev *pdev = tp->pci_dev;
+ 
++	if (pci_dev_run_wake(pdev)) {
++		pm_runtime_get_noresume(&pdev->dev);
++		pm_runtime_resume(&pdev->dev);
++		pm_runtime_disable(&pdev->dev);
++		pm_runtime_set_suspended(&pdev->dev);
++		pm_runtime_put_noidle(&pdev->dev);
++	}
++
+ 	/* update counters before going down */
+ 	rtl8169_update_counters(dev);
+ 
+@@ -4844,21 +4878,65 @@ static int rtl8169_suspend(struct device
+ 	return 0;
+ }
+ 
++static void __rtl8169_resume(struct net_device *dev)
++{
++	netif_device_attach(dev);
++	rtl8169_schedule_work(dev, rtl8169_reset_task);
 +}
 +
- /* Functions for PCI Hotplug drivers to use */
- int pci_bus_find_capability(struct pci_bus *bus, unsigned int devfn, int cap);
- #ifdef CONFIG_HOTPLUG
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -55,6 +55,7 @@ extern int pci_set_platform_pm(struct pc
- extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
- extern void pci_disable_enabled_device(struct pci_dev *dev);
- extern bool pci_check_pme_status(struct pci_dev *dev);
-+extern int pci_finish_runtime_suspend(struct pci_dev *dev);
- extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
- extern void pci_pme_wakeup_bus(struct pci_bus *bus);
- extern void pci_pm_init(struct pci_dev *dev);
+ static int rtl8169_resume(struct device *device)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(device);
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 
+-	if (!netif_running(dev))
+-		goto out;
++	if (netif_running(dev))
++		__rtl8169_resume(dev);
+ 
+-	netif_device_attach(dev);
++	return 0;
++}
++
++static int rtl8169_runtime_suspend(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct net_device *dev = pci_get_drvdata(pdev);
++	struct rtl8169_private *tp = netdev_priv(dev);
++
++	dev_dbg(&pdev->dev, "suspending\n");
++
++	spin_lock_irq(&tp->lock);
++	tp->saved_wolopts = __rtl8169_get_wol(tp);
++	__rtl8169_set_wol(tp, WAKE_ANY);
++	spin_unlock_irq(&tp->lock);
++
++	rtl8169_net_suspend(dev);
++
++	return 0;
++}
++
++static int rtl8169_runtime_resume(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct net_device *dev = pci_get_drvdata(pdev);
++	struct rtl8169_private *tp = netdev_priv(dev);
++
++	dev_dbg(&pdev->dev, "resuming\n");
++
++	spin_lock_irq(&tp->lock);
++	__rtl8169_set_wol(tp, tp->saved_wolopts);
++	tp->saved_wolopts = 0;
++	spin_unlock_irq(&tp->lock);
++
++	if (!tp->exiting)
++		__rtl8169_resume(dev);
+ 
+-	rtl8169_schedule_work(dev, rtl8169_reset_task);
+-out:
+ 	return 0;
+ }
+ 
++static int rtl8169_runtime_idle(struct device *device)
++{
++	return -EBUSY;
++}
++
+ static const struct dev_pm_ops rtl8169_pm_ops = {
+ 	.suspend = rtl8169_suspend,
+ 	.resume = rtl8169_resume,
+@@ -4866,6 +4944,9 @@ static const struct dev_pm_ops rtl8169_p
+ 	.thaw = rtl8169_resume,
+ 	.poweroff = rtl8169_suspend,
+ 	.restore = rtl8169_resume,
++	.runtime_suspend = rtl8169_runtime_suspend,
++	.runtime_resume = rtl8169_runtime_resume,
++	.runtime_idle = rtl8169_runtime_idle,
+ };
+ 
+ #define RTL8169_PM_OPS	(&rtl8169_pm_ops)
 
