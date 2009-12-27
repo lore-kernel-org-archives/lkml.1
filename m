@@ -1,310 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbZL0REn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbZL0RPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbZL0REn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 12:04:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZL0REl
+	id S1752561AbZL0RPF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 12:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZL0RPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 12:04:41 -0500
-Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:65382 "EHLO
-	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbZL0REk (ORCPT
+	Sun, 27 Dec 2009 12:15:01 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:34857 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbZL0RPB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 12:04:40 -0500
-Date: Sun, 27 Dec 2009 12:03:52 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-In-reply-to: <4B367409.5060202@majjas.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B379378.4000102@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
- <4B367409.5060202@majjas.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Sun, 27 Dec 2009 12:15:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=iX9u5oCAAQkci/Sa9lgZ1jSUByPsIJkciPrZq69bQojFhGjLQ2eSGqv9D+T/TAgNni
+         bU2sFjqhbXM7vMuR0PT99GolY0X0EbK0ID2QiB+essY2g1Zk47IrjX4LNriACDBA2wHn
+         seaibUbDxQVdgFPxV5Hw7UVknPn5HS4d6fqzA=
+MIME-Version: 1.0
+In-Reply-To: <200912181455.34664.bzolnier@gmail.com>
+References: <Pine.LNX.4.64.0912151656010.29183@hs20-bc2-1.build.redhat.com>
+	 <200912171618.32882.bzolnier@gmail.com>
+	 <alpine.LRH.2.00.0912181400130.21496@twin.jikos.cz>
+	 <200912181455.34664.bzolnier@gmail.com>
+Date: Sun, 27 Dec 2009 12:15:00 -0500
+Message-ID: <9e4733910912270915k6299f6f4pc2bb81685eef29c6@mail.gmail.com>
+Subject: Re: [PATCH] Drop 80-character limit in checkpatch.pl
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/26/2009 3:37 PM, Michael Breuer wrote:
-> On 12/26/2009 12:57 PM, Stephen Hemminger wrote:
->> On Fri, 25 Dec 2009 22:23:51 -0500
->> Michael Breuer<mbreuer@majjas.com>  wrote:
+On Fri, Dec 18, 2009 at 8:55 AM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+> On Friday 18 December 2009 02:04:37 pm Jiri Kosina wrote:
+>> On Thu, 17 Dec 2009, Bartlomiej Zolnierkiewicz wrote:
 >>
->>> On 12/25/2009 6:22 PM, Stephen Hemminger wrote:
->>>> On Fri, 25 Dec 2009 11:28:55 -0500
->>>> Michael Breuer<mbreuer@majjas.com>   wrote:
->>>>
->>>>
->>>>>     More data points - I'm able to reliably recreate this now.
->>>>> While I thought it was coincidence, each and every time I hit this 
->>>>> issue
->>>>> there is a DHCP renew event immediately before the first error.
->>>>> The crash occurs while under load - in my case seems that the 
->>>>> traffic is
->>>>> actually IPV6 (hadn't noticed that before).
->>>>> I ran nethogs on a remote display - the reported rx rate on the 
->>>>> IPV6 smb
->>>>> connection at the time of the lockup was 33889.688 KB/sec on a 1gbit
->>>>> nic. I've got two events like this - don't recall if the earlier 
->>>>> one was
->>>>> the exact same # - but it was in the ballpark.
->>>>>
->>>>> On 12/24/2009 2:01 AM, Andrew Morton wrote:
->>>>>
->>>>>> cc's added again.
->>>>>>
->>>>>> On Wed, 23 Dec 2009 17:54:27 -0500 Michael 
->>>>>> Breuer<mbreuer@majjas.com>    wrote:
->>>>>>
->>>>>>
->>>>>>
->>>>>>> Ok - not the firmware.  Ran another Windows backup and sky2 went 
->>>>>>> down.
->>>>>>>
->>>>>>> Nothing in dmesg.old - have oops in syslog. System became 
->>>>>>> unresponsive
->>>>>>> and watchdog kicked in after a minute.
->>>>>>>
->>>>>>> Also note that I have a similar oops with VT-D disabled (posted 
->>>>>>> here on
->>>>>>> 12/5). I'm attaching the oops from that below this oops for 
->>>>>>> comparison.
->>>>>>> That also happened under similar load.
->>>>>>>
->>>>>>> On the assumption that I can recreate this (although it takes a 
->>>>>>> while)
->>>>>>> please let me know how I can help.
->>>>>>>
->>>>>>> What's in my log (starting with an smbd error about 2 min before 
->>>>>>> the
->>>>>>> oops (note: the dchpd is not the system doing the backup).
->>>>>>>
->>>>>>>
->>>>>> This (nastily wordwrapped) oops appers to be quite different from
->>>>>> Berck's one.
->>>>>>
->>>>>>
->>>>>>
->>>> What is the MTU?
->>>>
->>> 1500
->>>>>
->> It looks like the problem only shows up for packets generated by DHCP,
->> and these come through AF_PACKET. The problem maybe related to how this
->> packets are fragmented into header and page, in a different way than 
->> other
->> packets confusing the driver or DMA engine.
+>> > > > I like this patch, this is actually what I wanted to do.
+>> > >
+>> > > I have nothing against a switch, but it had better default to off.
+>> > >
+>> > > The whole 80-char limit is insane. It results in insane "fixes". Just
+>> > > about every time somebody "improves" a patch due to the warning, the
+>> > > result is worse than the original patch.
+>> >
+>> > Examples? :)
 >>
->> Does this help?
->> -----
+>> balance_leaf() in fs/reiserfs/do_balan.c
 >>
->> --- a/drivers/net/sky2.c    2009-12-26 09:50:20.869565022 -0800
->> +++ b/drivers/net/sky2.c    2009-12-26 09:55:54.620645355 -0800
->> @@ -1616,6 +1616,13 @@ static netdev_tx_t sky2_xmit_frame(struc
->>        if (unlikely(tx_avail(sky2)<  tx_le_req(skb)))
->>             return NETDEV_TX_BUSY;
+>> Example picked totally at random:
 >>
->> +    if (!pskb_may_pull(skb, ETH_HLEN)) {
->> +        if (net_ratelimit())
->> +            pr_info(PFX "%s: packet missing ether header (%d)?",
->> +                dev->name, skb->len);
->> +        goto drop;
->> +    }
->> +
->>       len = skb_headlen(skb);
->>       mapping = pci_map_single(hw->pdev, skb->data, len, 
->> PCI_DMA_TODEVICE);
+>>       set_le_ih_k_offset(ih,
+>>                          le_ih_k_offset(ih) +
+>>                          (tb->
+>>                           lbytes <<
+>>                           (is_indirect_le_ih
+>>                            (ih) ? tb->tb_sb->
+>>                            s_blocksize_bits -
+>>                            UNFM_P_SHIFT :
+>>                            0)));
 >>
->> @@ -1761,6 +1768,7 @@ mapping_unwind:
->>   mapping_error:
->>       if (net_ratelimit())
->>           dev_warn(&hw->pdev->dev, "%s: tx mapping error\n", dev->name);
->> +drop:
->>       dev_kfree_skb(skb);
->>       return NETDEV_TX_OK;
->>   }
->>
->>
->>
->>
-> That seems to have done the trick!
+>> See how everything is nicely aligned to 80 cols?
 >
-> Still one odd message sequence, but no hangs or crashes.
+> I see but the above code is an utter crap anyway.
 >
-> The first time I forced a DHCP renew while running at high throughput, 
-> I got the same SMB errors I saw in my original error log (pre-crash). 
-> This only happened once:
-> Dec 26 15:24:18 mail dhcpd: DHCPACK on 10.0.0.56 to 00:1c:cc:f3:9f:f6 
-> (BLACKBERRY-9542) via eth0
-> Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
-> lib/util_sock.c:1564(matchname)
-> Dec 26 15:24:25 mail smbd[8937]:   matchname: host name/address 
-> mismatch: ::ffff:10.0.0.11 != potter.majjas.com
-> Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
-> lib/util_sock.c:1685(get_peer_name)
-> Dec 26 15:24:25 mail smbd[8937]:   Matchname failed on 
-> potter.majjas.com ::ffff:10.0.0.11
-> Dec 26 15:24:25 mail smbd[8937]: [2009/12/26 15:24:25,  0] 
-> smbd/nttrans.c:2076(call_nt_transact_ioctl)
-> Dec 26 15:24:25 mail smbd[8937]:   call_nt_transact_ioctl(0x900eb): 
-> Currently not implemented.
+> Firstly what kind of a function parameter is that:
 >
-> I would discount this, but the same sequence was present in the logs 
-> pre-crash as well. I do not see this at all absent the preceding DHCP 
-> renew sequence. I also don't see this unless the adapter is under load.
+>   le_ih_k_offset(ih) + (tb->lbytes << (is_indirect_le_ih(ih) ? tb->tb_sb->s_blocksize_bits - UNFM_P_SHIFT : 0))
 >
+> ?
 >
+> [ BTW 'tb->tb_sb->s_blocksize_bits - UNFM_P_SHIFT' construct is used five
+>  times in balance_leaf() and is a likely candidate for helper / macro. ]
 >
-Just an FYI - I left stuff running overnight and saw lots of this this 
-AM... ans one from last night:
-Dec 26 21:39:54 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:39 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:39 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:39 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:39 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:41 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-Dec 27 05:09:41 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:41 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:41 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:42 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 27 05:09:44 mail kernel: __ratelimit: 7 callbacks suppressed
+> More importantly the whole balance_leaf() function is almost 1400 LOC (!)
+> big and impossible to read: code for handling particular 'switch' blocks
+> should be factored out into separate functions etc.
+>
+> The point I was making is that the once we remove the limit we don't have
+> other tool to _automatically_ point suspicious code areas (yes, I would
+> also prefer intelligent static code checker over dumb limit but it simply
 
-... repeats for a couple of minutes. Never saw this before, but then 
-again, the system didn't stay up before.
+A static code checker (like sparse) could do much more intelligent
+wrapping analysis.  Maybe someone will take this up as a thesis
+project and provide a replacement for indent. Post example
+reformattings to LKML until the formatting gods are satisfied.
 
-I've also got this in dmesg (command, not /var/log/dmesg):
+The problem I see is that C statements that over over 50 chars or so
+should be flagged if they aren't declarations or strings. That's an
+independent problem from excessive nesting. Tools like ident aren't
+smart enough to separate these problems and flags the combination of
+statement length and nesting.
 
-sky2 eth0: rx error, status 0x10660010 length 1518
-sky2 eth0: rx error, status 0x10c60010 length 1518
-sky2 eth0: rx error, status 0x14860010 length 1518
-sky2 eth0: rx error, status 0x19e60010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x10660010 length 1518
-sky2 eth0: rx error, status 0x10a60010 length 1518
-sky2 eth0: rx error, status 0x10a60010 length 1518
-sky2 eth0: rx error, status 0x11060010 length 1518
-sky2 eth0: rx error, status 0x11060010 length 1518
-DMA-API: debugging out of memory - disabling
-... then later ...
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-sky2 eth0: rx error, status 0x23360010 length 1518
-DRHD: handling fault status reg 2
-DMAR:[DMA Write] Request device [06:00.0] fault addr fff82da28000
-DMAR:[fault reason 05] PTE Write access is not set
-DRHD: handling fault status reg 102
-DMAR:[DMA Write] Request device [06:00.0] fault addr fff82da03000
-DMAR:[fault reason 05] PTE Write access is not set
-DRHD: handling fault status reg 202
-DMAR:[DMA Write] Request device [06:00.0] fault addr fff82d9ec000
-DMAR:[fault reason 05] PTE Write access is not set
-DRHD: handling fault status reg 302
-DMAR:[DMA Write] Request device [06:00.0] fault addr fff82d9a0000
-DMAR:[fault reason 05] PTE Write access is not set
-DRHD: handling fault status reg 402
-DMAR:[DMA Write] Request device [06:00.0] fault addr fff82d968000
-DMAR:[fault reason 05] PTE Write access is not set
-------------[ cut here ]------------
-WARNING: at net/sched/sch_generic.c:261 dev_watchdog+0xf3/0x164()
-Hardware name: System Product Name
-NETDEV WATCHDOG: eth0 (sky2): transmit queue 0 timed out
-Modules linked in: ip6table_mangle ip6table_filter ip6_tables 
-iptable_raw iptable_mangle ipt_MASQUERADE iptable_nat nf_nat bridge stp 
-appletalk psnap llc fbcon tileblit font bitblit softcursor nfsd lockd 
-nfs_acl auth_rpcgss exportfs sunrpc hwmon_vid coretemp acpi_cpufreq sit 
-tunnel4 ipt_LOG nf_conntrack_netbios_ns nf_conntrack_ftp 
-nf_conntrack_ipv6 xt_multiport xt_DSCP xt_dscp xt_MARK ipv6 dm_multipath 
-kvm_intel kvm snd_hda_codec_analog snd_ens1371 gameport snd_rawmidi 
-gspca_spca505 snd_hda_intel snd_ac97_codec gspca_main snd_hda_codec 
-videodev v4l1_compat snd_hwdep ac97_bus snd_seq v4l2_compat_ioctl32 
-snd_seq_device snd_pcm firewire_ohci pcspkr firewire_core snd_timer snd 
-soundcore snd_page_alloc wmi sky2 asus_atk0110 i2c_i801 crc_itu_t hwmon 
-iTCO_wdt iTCO_vendor_support raid456 async_raid6_recov async_pq raid6_pq 
-async_xor xor async_memcpy async_tx raid1 ata_generic pata_acpi 
-pata_marvell nouveau ttm drm_kms_helper drm agpgart fb i2c_algo_bit 
-cfbcopyarea i2c_core cfbimgblt cfbfillrect [last unloaded: ip6_tables]
-Pid: 25, comm: ksoftirqd/7 Tainted: G        W  
-2.6.32-00830-gca45ac4-dirty #3
-Call Trace:
-<IRQ>  [<ffffffff8105365a>] warn_slowpath_common+0x7c/0x94
-  [<ffffffff810536c9>] warn_slowpath_fmt+0x41/0x43
-  [<ffffffff813e2dd7>] ? netif_tx_lock+0x44/0x6c
-  [<ffffffff813e2f3f>] dev_watchdog+0xf3/0x164
-  [<ffffffff8146b76a>] ? _spin_unlock_irqrestore+0x29/0x41
-  [<ffffffff8103c62e>] ? check_preempt_curr_idle+0x15/0x17
-  [<ffffffff8104357d>] ? task_rq_unlock+0x11/0x13
-  [<ffffffff8104e050>] ? try_to_wake_up+0x2a2/0x2b4
-  [<ffffffff8106316b>] run_timer_softirq+0x1c8/0x270
-  [<ffffffff8105ae3b>] __do_softirq+0xf8/0x1cd
-  [<ffffffff81012e1c>] call_softirq+0x1c/0x30
-<EOI>  [<ffffffff810143a3>] do_softirq+0x4b/0xa6
-  [<ffffffff8105a730>] ksoftirqd+0x65/0xdc
-  [<ffffffff8105a6cb>] ? ksoftirqd+0x0/0xdc
-  [<ffffffff8107275c>] kthread+0x7f/0x87
-  [<ffffffff81012d1a>] child_rip+0xa/0x20
-  [<ffffffff8101267d>] ? restore_args+0x0/0x30
-  [<ffffffff810726dd>] ? kthread+0x0/0x87
-  [<ffffffff81012d10>] ? child_rip+0x0/0x20
----[ end trace 57f7151f6a5def07 ]---
-sky2 eth0: tx timeout
-sky2 eth0: transmit ring 27 .. 114 report=27 done=27
-sky2 eth0: disabling interface
-sky2 eth0: enabling interface
-sky2 eth0: Link is up at 1000 Mbps, full duplex, flow control both
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x8
-iint_free: readcount: 1
-iint_free: opencount: 1
-iint_free: readcount: 1
-iint_free: opencount: 1
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x40000008
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x8
-sky2 0000:06:00.0: error interrupt status=0x8
-... this repeats for a while
+I'd be a lot happier if someone simply patched out all of the trailing
+whitespace that has gotten in to the kernel tree over the years.
+jonsmirl@terra:~/fs$ grep -rI [[:space:]]$ * | wc
+  47804  231898 2888009
 
-I'm guessing that the dmesg and kernel messages correspond. System 
-stayed up and everything seems ok now. There were connections open at 
-the time of these events and they appear to have remained up.
+> not here as things are today and dumb limit works surprisingly well most
+> of the time -- please note how that the structural problem with the code
+> example given is immediately visible with the current limit).
+>
+>> Generally, don't look at this function after having a good lunch you want
+>> to keep. You have been warned.
+>
+> No worries, I visit dark places (ide, staging, ..) and come back alive.. ;)
+>
+> --
+> Bartlomiej Zolnierkiewicz
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
