@@ -1,261 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751394AbZL0Jre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751515AbZL0Jvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751394AbZL0Jre (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 04:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZL0Jrd
+	id S1751515AbZL0Jvx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 04:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZL0Jvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 04:47:33 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:45378 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbZL0Jrb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 04:47:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=BXtDJeN0kU4MTovyRDXCpkTZcciALATaAcX7wSpxSPD/rWT4agz7a0vtlE0fetIIKt
-         LeYb61dA+RTqKgZRDp1Cn6g3qWl0dx/vH2taJeYm8cLjhSmfwWEEw0vzGnHUNjuq7vdj
-         FxmwuSgas1OlU3OlG/XuOMRlCW99x11gCXSpM=
-Message-ID: <4B372D2D.60908@gmail.com>
-Date: Sun, 27 Dec 2009 18:47:25 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 27 Dec 2009 04:51:52 -0500
+Received: from mail.klingt.org ([86.59.21.178]:55082 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751302AbZL0Jvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 04:51:51 -0500
+Message-ID: <4B372E02.9050509@klingt.org>
+Date: Sun, 27 Dec 2009 10:50:58 +0100
+From: Tim Blechmann <tim@klingt.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.8pre) Gecko/20091226 Shredder/3.0.1pre
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org
-Subject: Re: [RFC PATCH] asynchronous page fault.
-References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Tejun Heo <tj@kernel.org>
+CC: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, x86@kernel.org
+Subject: Re: 2.6.32 regression: unable to handle kernel paging request
+References: <4B269765.1070703@klingt.org> <4B2A2A7D.1050506@klingt.org> <4B2A93F2.3070407@klingt.org> <4B2AFBB1.3040609@kernel.org> <4B2B4838.6080509@klingt.org> <4B2F20E0.30804@kernel.org> <4B2F40C0.5020407@klingt.org> <4B33592B.6000107@kernel.org> <4B335964.6040202@klingt.org> <4B335DE6.9030102@kernel.org> <4B336303.2090403@kernel.org>
+In-Reply-To: <4B336303.2090403@kernel.org>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig91515DAEF21BB849A0E5A343"
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [127.0.0.1]); Sun, 27 Dec 2009 10:51:02 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Kame. 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig91515DAEF21BB849A0E5A343
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-KAMEZAWA Hiroyuki wrote:
-> Speculative page fault v3.
-> 
-> This version is much simpler than old versions and doesn't use mm_accessor
-> but use RCU. This is based on linux-2.6.33-rc2.
-> 
-> This patch is just my toy but shows...
->  - Once RB-tree is RCU-aware and no-lock in readside, we can avoid mmap_sem
->    in page fault. 
-> So, what we need is not mm_accessor, but RCU-aware RB-tree, I think.
-> 
-> But yes, I may miss something critical ;)
-> 
-> After patch, statistics perf show is following. Test progam is attached.
->   
-> # Samples: 1331231315119
-> #
-> # Overhead          Command             Shared Object  Symbol
-> # ........  ...............  ........................  ......
-> #
->     28.41%  multi-fault-all  [kernel]                  [k] clear_page_c
->             |
->             --- clear_page_c
->                 __alloc_pages_nodemask
->                 handle_mm_fault
->                 do_page_fault
->                 page_fault
->                 0x400950
->                |
->                 --100.00%-- (nil)
-> 
->     21.69%  multi-fault-all  [kernel]                  [k] _raw_spin_lock
->             |
->             --- _raw_spin_lock
->                |
->                |--81.85%-- free_pcppages_bulk
->                |          free_hot_cold_page
->                |          __pagevec_free
->                |          release_pages
->                |          free_pages_and_swap_cache
-> 
-> 
-> I'll be almost offline in the next week. 
-> 
-> Minchan, in this version, I didn't add CONFIG and some others which was
-> recommended just for my laziness. Sorry.
+> I just tried 2.20 on openSUSE.
+>=20
+>  $ ld --version
+>  GNU ld (GNU Binutils; devel:gcc / openSUSE_11.2) 2.20.0.20091104-13.2
+>  Copyright 2009 Free Software Foundation, Inc.
+>  This program is free software; you may redistribute it under the terms=
+ of
+>  the GNU General Public License version 3 or (at your option) a later v=
+ersion.
+>  This program has absolutely no warranty.
+>=20
+> and it doesn't show such behavior.  Can you please report this to
+> ubuntu and let me know the bug#?
 
-No problem :)
-Thanks for X-mas present. 
+ah, back at that workstation, i found, that i was using a build of
+binutils, installed via the ubuntu-toolchain-r ppa:
 
-> 
-> =
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Asynchronous page fault.
-> 
-> This patch is for avoidng mmap_sem in usual page fault. At running highly
-> multi-threaded programs, mm->mmap_sem can use much CPU because of false
-> sharing when it causes page fault in parallel. (Run after fork() is a typical
-> case, I think.)
-> This patch uses a speculative vma lookup to reduce that cost.
-> 
-> Considering vma lookup, rb-tree lookup, the only operation we do is checking
-> node->rb_left,rb_right. And there are no complicated operation.
-> At page fault, there are no demands for accessing sorted-vma-list or access
-> prev or next in many case. Except for stack-expansion, we always need a vma
-> which contains page-fault address. Then, we can access vma's RB-tree in
-> speculative way.
-> Even if RB-tree rotation occurs while we walk tree for look-up, we just
-> miss vma without oops. In other words, we can _try_ to find vma in lockless
-> manner. If failed, retry is ok.... we take lock and access vma.
-> 
-> For lockess walking, this uses RCU and adds find_vma_speculative(). And
-> per-vma wait-queue and reference count. This refcnt+wait_queue guarantees that
-> there are no thread which access the vma when we call subsystem's unmap
-> functions.
-> 
-> Test result on my tiny test program on 8core/2socket machine is here.
-> This measures how many page fault can occur in 60sec in parallel.
-> 
-> [root@bluextal memory]# /root/bin/perf stat -e page-faults,cache-misses --repeat 5 ./multi-fault-all-split 8
-> 
->  Performance counter stats for './multi-fault-all-split 8' (5 runs):
-> 
->        17481387  page-faults                ( +-   0.409% )
->       509914595  cache-misses               ( +-   0.239% )
-> 
->    60.002277793  seconds time elapsed   ( +-   0.000% )
-> 
-> 
-> [root@bluextal memory]# /root/bin/perf stat -e page-faults,cache-misses --repeat 5 ./multi-fault-all-split 8
-> 
-> 
->  Performance counter stats for './multi-fault-all-split 8' (5 runs):
-> 
->        35949073  page-faults                ( +-   0.364% )
->       473091100  cache-misses               ( +-   0.304% )
-> 
->    60.005444117  seconds time elapsed   ( +-   0.004% )
-> 
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+ld -v
+GNU gold (GNU Binutils for Ubuntu 2.20) 1.9
 
-<snip>
+i am pretty sure, it is related to this, will try to compile an
+unpatched kernel now ...
+
+thanks, tim
+
+--=20
+tim@klingt.org
+http://tim.klingt.org
+
+The most wonderful opportunity which life offers is to be human.
+  Henry Miller
 
 
-> +/* called when vma is unlinked and wait for all racy access.*/
-> +static void invalidate_vma_before_free(struct vm_area_struct *vma)
-> +{
-> +	atomic_dec(&vma->refcnt);
-> +	wait_event(vma->wait_queue, !atomic_read(&vma->refcnt));
-> +}
+--------------enig91515DAEF21BB849A0E5A343
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-I think we have to make sure atomicity of both (atomic_dec and wait_event).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> +
->  /*
->   * Requires inode->i_mapping->i_mmap_lock
->   */
-> @@ -238,7 +256,7 @@ static struct vm_area_struct *remove_vma
->  			removed_exe_file_vma(vma->vm_mm);
->  	}
->  	mpol_put(vma_policy(vma));
-> -	kmem_cache_free(vm_area_cachep, vma);
-> +	free_vma_rcu(vma);
->  	return next;
->  }
->  
-> @@ -404,6 +422,8 @@ __vma_link_list(struct mm_struct *mm, st
->  void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
->  		struct rb_node **rb_link, struct rb_node *rb_parent)
->  {
-> +	atomic_set(&vma->refcnt, 1);
-> +	init_waitqueue_head(&vma->wait_queue);
->  	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
->  	rb_insert_color(&vma->vm_rb, &mm->mm_rb);
->  }
-> @@ -614,6 +634,7 @@ again:			remove_next = 1 + (end > next->
->  		 * us to remove next before dropping the locks.
->  		 */
->  		__vma_unlink(mm, next, vma);
-> +		invalidate_vma_before_free(next);
->  		if (file)
->  			__remove_shared_vm_struct(next, file, mapping);
->  		if (next->anon_vma)
-> @@ -640,7 +661,7 @@ again:			remove_next = 1 + (end > next->
->  		}
->  		mm->map_count--;
->  		mpol_put(vma_policy(next));
-> -		kmem_cache_free(vm_area_cachep, next);
-> +		free_vma_rcu(next);
->  		/*
->  		 * In mprotect's case 6 (see comments on vma_merge),
->  		 * we must remove another next too. It would clutter
-> @@ -1544,6 +1565,55 @@ out:
->  }
->  
->  /*
-> + * Returns vma which contains given address. This scans rb-tree in speculative
-> + * way and increment a reference count if found. Even if vma exists in rb-tree,
-> + * this function may return NULL in racy case. So, this function cannot be used
-> + * for checking whether given address is valid or not.
-> + */
-> +struct vm_area_struct *
-> +find_vma_speculative(struct mm_struct *mm, unsigned long addr)
-> +{
-> +	struct vm_area_struct *vma = NULL;
-> +	struct vm_area_struct *vma_tmp;
-> +	struct rb_node *rb_node;
-> +
-> +	if (unlikely(!mm))
-> +		return NULL;;
-> +
-> +	rcu_read_lock();
-> +	rb_node = rcu_dereference(mm->mm_rb.rb_node);
-> +	vma = NULL;
-> +	while (rb_node) {
-> +		vma_tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
-> +
-> +		if (vma_tmp->vm_end > addr) {
-> +			vma = vma_tmp;
-> +			if (vma_tmp->vm_start <= addr)
-> +				break;
-> +			rb_node = rcu_dereference(rb_node->rb_left);
-> +		} else
-> +			rb_node = rcu_dereference(rb_node->rb_right);
-> +	}
-> +	if (vma) {
-> +		if ((vma->vm_start <= addr) && (addr < vma->vm_end)) {
-> +			if (!atomic_inc_not_zero(&vma->refcnt))
-> +				vma = NULL;
-> +		} else
-> +			vma = NULL;
-> +	}
-> +	rcu_read_unlock();
-> +	return vma;
-> +}
-> +
-> +void vma_put(struct vm_area_struct *vma)
-> +{
-> +	if ((atomic_dec_return(&vma->refcnt) == 1) &&
-> +	    waitqueue_active(&vma->wait_queue))
-> +		wake_up(&vma->wait_queue);
-> +	return;
-> +}
-> +
+iEYEARECAAYFAks3LgIACgkQdL+4qsZfVssLmQCgitdKGMVlbEiyfbED3RbJCBnK
+f+cAnRLcLmCEEMwPJcIa+NnqdbpEWVek
+=xf9p
+-----END PGP SIGNATURE-----
 
-Let's consider following case. 
-
-CPU 0					CPU 1
-
-find_vma_speculative(refcnt = 2)
-					do_unmap 
-					invaliate_vma_before_free(refcount = 1)
-					wait_event
-vma_put
-refcnt = 0
-skip wakeup 
-
-Hmm.. 
-
-
+--------------enig91515DAEF21BB849A0E5A343--
