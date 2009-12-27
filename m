@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751412AbZL0JeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbZL0Jfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751412AbZL0JeW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 04:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZL0JeV
+	id S1751441AbZL0Jfx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 04:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbZL0Jfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 04:34:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60970 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbZL0JeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 04:34:19 -0500
-Message-ID: <4B3729ED.50006@redhat.com>
-Date: Sun, 27 Dec 2009 11:33:33 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Sun, 27 Dec 2009 04:35:52 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42947 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751156AbZL0Jfv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 04:35:51 -0500
+Date: Sun, 27 Dec 2009 10:35:38 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Daniel Walker <dwalker@codeaurora.org>,
+       Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: tree with htc dream support
+Message-ID: <20091227093537.GD11737@elf.ucw.cz>
+References: <20091205221100.GA32522@elf.ucw.cz>
+ <1260054737.23633.35.camel@desktop>
+ <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+ <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+ <1260627482.20913.7.camel@desktop>
+ <d6200be20912121434x1a247837w75c518ba20fe684f@mail.gmail.com>
+ <20091213212504.GD5114@elf.ucw.cz>
+ <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: [GIT PULL] AlacrityVM guest drivers for 2.6.33
-References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org> <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com> <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu> <4B3248F9.5030504@gmail.com> <4B327F3A.9020101@redhat.com> <4B328535.5040105@redhat.com> <4B33361E.3000605@gmail.com>
-In-Reply-To: <4B33361E.3000605@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/24/2009 11:36 AM, Gregory Haskins wrote:
->> As a twist on this, the VMware paravirt driver interface is so
->> hardware-like that they're getting hardware vendors to supply cards that
->> implement it.  Try that with a pure software approach.
->>      
-> Any hardware engineer (myself included) will tell you that, generally
-> speaking, what you can do in hardware you can do in software (think of
-> what QEMU does today, for instance).  It's purely a cost/performance
-> tradeoff.
->
-> I can at least tell you that is true of vbus.  Anything on the vbus side
-> would be equally eligible for a hardware implementation, though there is
-> not reason to do this today since we have equivalent functionality in
-> baremetal already.
+Hi!
 
-There's a huge difference in the probability of vmware getting cards to 
-their spec, or x86 vendors improving interrupt delivery to guests, 
-compared to vbus being implemented in hardware.
+> > One more wish list item: many drivers are now available in
+> > drivers/staging/dream, and are being slowly cleaned up. Would it be
+> > possible to start using those for android-msm-2.6.32 tree?
+> >
+> > You'll need to reapply some stuff I had to remove (like wakelocks),
+> > but it should be still better/less work long term to patch those back
+> > in than maintaining separate copy. Diff should get much smaller...
+> 
+> I do plan to look at these, but I don't know when I'll get to it.
 
-> The only motiviation is if you wanted to preserve
-> ABI etc, which is what vmware is presumably after.  However, I am not
-> advocating this as necessary at this juncture.
->    
+So... this switches qdsp5 code from private version to version in
+staging. It actually boots.
 
-Maybe AlacrityVM users don't care about compatibility, but my users do.
+It should be followed by git rm of around 12K lines of code from your
+patch... (And yes, it actually boots; I tested camera, it worked).
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+									Pavel
+diff --git a/arch/arm/mach-msm/Makefile b/arch/arm/mach-msm/Makefile
+index 49f85b4..94623a4 100644
+--- a/arch/arm/mach-msm/Makefile
++++ b/arch/arm/mach-msm/Makefile
+@@ -15,7 +15,7 @@ obj-$(CONFIG_MSM_ONCRPCROUTER) += smd_rpcrouter_device.o
+ obj-$(CONFIG_MSM_ONCRPCROUTER) += smd_rpcrouter_servers.o
+ obj-$(CONFIG_MSM_RPCSERVERS) += rpc_server_dog_keepalive.o
+ obj-$(CONFIG_MSM_RPCSERVERS) += rpc_server_time_remote.o
+-obj-$(CONFIG_MSM_ADSP) += qdsp5/
++obj-$(CONFIG_MSM_ADSP) += ../../../drivers/staging/dream/qdsp5/
+ obj-$(CONFIG_MSM_HW3D) += hw3d.o
+ obj-$(CONFIG_PM) += pm.o
+ obj-$(CONFIG_CPU_FREQ) += cpufreq.o
+
 
 -- 
-error compiling committee.c: too many arguments to function
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
