@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751181AbZL0VGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZL0VIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751181AbZL0VGX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 16:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbZL0VGW
+	id S1751353AbZL0VIR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 16:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZL0VIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 16:06:22 -0500
-Received: from n23b.bullet.mail.mud.yahoo.com ([68.142.206.142]:23980 "HELO
-	n23b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750823AbZL0VGV (ORCPT
+	Sun, 27 Dec 2009 16:08:16 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:36600 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbZL0VIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 16:06:21 -0500
-X-Yahoo-Newman-Id: 979686.86221.bm@omp402.mail.mud.yahoo.com
-X-Yahoo-SMTP: LRnWvK2swBBLo9OY5H0NQVPHD_u4VLt1qS0Z
-X-YMail-OSG: lYdP8E8VM1nqxqTN.FmB9GHgKpzXLa2ATjxosiFMcJQraO8NB5BZG7GEeSBrvESeanK4PHUKZ3T7.TAuPCy5d3iSJsUmhD78KPGvOHE3qB9AYCYeaI67NBbDzCjpIkdH9YL7nZZxOFHiGUGIYNc_9lsUTk8ERdmdS9LtyvolkFchzs9JvXv47QVpODyBtO66GQQxLCM55RaGzUUH0DbS8LW_fNVJj2kNb3SVAOQkJVARuD1hh2cthgmvwtB_U6t70v9CoadcxbquAUZ15vezCBhixWKoS3svZP8I
-X-Yahoo-Newman-Property: ymail-3
-From: Craig Dunwoody <cdunwoody@graphstream.com>
-To: linux-kernel@vger.kernel.org
-CC: cdunwoody@graphstream.com
-Re: [GIT PULL] Ceph distributed file system client for 2.6.33 
-X-Mailer: MH-E 8.0.2; nmh 1.1; GNU Emacs 21.4.1
-Date: Sun, 27 Dec 2009 13:06:19 -0800
-Message-ID: <24388.1261947979@n20.hq.graphstream.com>
+	Sun, 27 Dec 2009 16:08:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AzwbhHNO9o/mZzzf6lH0/Fe7GMfkTLQ+9laj29WRXvDZfSf28Qloi9KXZHjPBOHRMa
+         xrFD8w8Mga/TkalfquZfG3GFaT123l2bsTZg6L220+mH1ngOrsotkRypz8jdHdUC0ezD
+         dEyoytZg/HfSKd7U9PRVsS45u4nqTF1iOwXSk=
+Message-ID: <4B37CD6A.2000506@gmail.com>
+Date: Sun, 27 Dec 2009 22:11:06 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
+       "James E.J. Bottomley" <jejb@parisc-linux.org>,
+       John David Anglin <dave@hiauly1.hia.nrc.ca>,
+       linux-parisc@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] parisc: test off by one in sgl_frem() and dbl_frem()
+References: <4B375F68.80301@gmail.com> <1261927804.2697.4.camel@mulgrave.site>
+In-Reply-To: <1261927804.2697.4.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Op 27-12-09 16:30, James Bottomley schreef:
+> On Sun, 2009-12-27 at 14:21 +0100, Roel Kluin wrote:
+>> With `while (stepcount-- > 0)' stepcount reaches -1 after the loop.
+> 
+> This is true, but seems to be by design
 
-sage weil writes (2009/12/21):
->If you want stability, then it's probably too early to merge.  If you
->want active users, that essentially hinges on stability too.  But if
->it's interest in/demand for an alternative distributed fs, then the
->sooner it's merged the better.
+>> -	if (stepcount > 0 || Sgl_iszero(opnd1)) {
+>> +	if (stepcount >= 0 || Sgl_iszero(opnd1)) {
 
-I understand there are many considerations about when to merge something
-new, but in general would like to see the Ceph client merged sometime
-soon.
+> 
+> Your patch does nothing to the actual execution flow (Sgl_iszero is true
+> if stepcount == 0) ... what's the point of applying it?
+> 
+> James
 
-In my view, there is a wide range of applications for which Ceph has
-the potential to be significantly more efficient than the other
-distributed file systems that I know about.
+Ok, please ignore and thanks (also to Dave) for review.
 
-Ceph has a solid architecture and a small but strong dev team.  I
-believe that the project is now at a point where wider-scale testing
-can greatly accelerate progress toward production-level usability.
-Having the client in mainline will help reduce barriers to such
-testing.
-
-Craig Dunwoody
-GraphStream Incorporated
-
+Roel
