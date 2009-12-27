@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbZL0NXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZL0N2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752049AbZL0NXY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 08:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZL0NXX
+	id S1752092AbZL0N2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 08:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZL0N2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 08:23:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42066 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbZL0NXW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 08:23:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=oEGretqWeA6XffZ4muMB2gohcopDKgQxtShz7w42HofF13sReGHs8glRZpZfnYU+xk
-         pri3Fb3/indygkqL93GheJYb6/EzkKaZJbQU8x/W7KckOSRiMqZvqFeYDetXG6jZcDJO
-         fLo37Cr8yvPXQuA5kGZGEaWj5/oNUIsX6syJE=
-Message-ID: <4B376074.2060305@gmail.com>
-Date: Sun, 27 Dec 2009 14:26:12 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
+	Sun, 27 Dec 2009 08:28:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15630 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751874AbZL0N2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 08:28:21 -0500
+Message-ID: <4B3760D2.3080500@redhat.com>
+Date: Sun, 27 Dec 2009 15:27:46 +0200
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] atarilance: timeout ignored in lance_open()
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Andi Kleen <andi@firstfloor.org>, kvm@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, netdev@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Alacrityvm-devel] [GIT PULL] AlacrityVM guest drivers for 2.6.33
+References: <4B1D4F29.8020309@gmail.com> <87637zdy9g.fsf@basil.nowhere.org>	 <4B30E654.40702@codemonkey.ws> <200912221701.56840.bzolnier@gmail.com>	 <4B30F214.80206@codemonkey.ws> <20091223065129.GA19600@elte.hu>	 <20091223101340.GC20539@basil.fritz.box> <4B31EF65.6070000@redhat.com>	 <4B325E33.8060407@gmail.com> <4B327B90.2050403@redhat.com> <b233dd490912231321p5e09946at5ea63cb0d0fa1489@mail.gmail.com> <4B3725CE.8040004@redhat.com> <4B375EAD.8050204@gmail.com>
+In-Reply-To: <4B375EAD.8050204@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With `while (--i > 0)' i reaches 0 after the loop, so upon timeout the
-error was not issued.
+On 12/27/2009 03:18 PM, Gregory Haskins wrote:
+> On 12/27/09 4:15 AM, Avi Kivity wrote:
+>    
+>> On 12/23/2009 11:21 PM, Gregory Haskins wrote:
+>>      
+>>> That said, you are still incorrect.  With what I proposed, the model
+>>> will run as an in-kernel vbus device, and no longer run in userspace.
+>>> It would therefore improve virtio-net as I stated, much in the same
+>>> way vhost-net or venet-tap do today.
+>>>
+>>>        
+>> That can't work.  virtio-net has its own ABI on top of virtio, for
+>> example it prepends a header for TSO information.  Maybe if you disable
+>> all features it becomes compatible with venet, but that cripples it.
+>>
+>>      
+> You are confused.  The backend would be virtio-net specific, and would
+> therefore understand the virtio-net ABI.  It would support any feature
+> of virtio-net as long as it was implemented and negotiated by both sides
+> of the link.
+>    
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/net/atarilance.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Then we're back to square one.  A nice demonstration of vbus 
+flexibility, but no help for virtio.
 
-diff --git a/drivers/net/atarilance.c b/drivers/net/atarilance.c
-index c5721cb..cc9ed86 100644
---- a/drivers/net/atarilance.c
-+++ b/drivers/net/atarilance.c
-@@ -663,7 +663,7 @@ static int lance_open( struct net_device *dev )
- 	while (--i > 0)
- 		if (DREG & CSR0_IDON)
- 			break;
--	if (i < 0 || (DREG & CSR0_ERR)) {
-+	if (i <= 0 || (DREG & CSR0_ERR)) {
- 		DPRINTK( 2, ( "lance_open(): opening %s failed, i=%d, csr0=%04x\n",
- 					  dev->name, i, DREG ));
- 		DREG = CSR0_STOP;
+-- 
+error compiling committee.c: too many arguments to function
+
