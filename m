@@ -1,80 +1,1137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752208AbZL0NkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZL0Nm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752208AbZL0NkT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 08:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZL0NkR
+	id S1752217AbZL0Nm3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 08:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZL0Nm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 08:40:17 -0500
-Received: from doppler.zen.co.uk ([212.23.3.27]:51313 "EHLO doppler.zen.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751981AbZL0NkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 08:40:16 -0500
-Date: Sun, 27 Dec 2009 13:40:10 +0000
-From: Grant Wilson <grant.wilson@zen.co.uk>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: 2.6.33-rc2: BUG: unable to handle kernel paging request at
- 00000000000013d8, IP=radeon_fence_signaled+0x16/0xc0
-Message-ID: <20091227134010.1f30210e@worthy.swandive.local>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Originating-Smarthost03-IP: [82.71.45.175]
+	Sun, 27 Dec 2009 08:42:27 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:46084 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbZL0NmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 08:42:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=keYaHff412cJOIB6Sl9OstCst37PHy0q4WIoYBpgJlaG+CvCXF45X4QzDqAF9CDoZC
+         hLloi5vtgLHt5FgxNDi5UmYg4ktV531Wr57jqctKLqHoHCF7zaHToo1dCipmWcltRXZi
+         bra7QosLKEIZbrYlAdn3KjG8CEurn6sbLgM+M=
+Date: Sun, 27 Dec 2009 15:41:48 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: kernel-janitors@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: pointless assignments
+Message-ID: <20091227134148.GL6075@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hit the following running 2.6.33-rc2.  Config available at http://swandive.no-ip.com/linux/config
+I did an audit for pointless assignments like the following example.
 
-[  255.807852] BUG: unable to handle kernel paging request at 00000000000013d8
-[  255.807860] IP: [<ffffffff8135e656>] radeon_fence_signaled+0x16/0xc0
-[  255.807868] PGD 1bcb59067 PUD 1b6c89067 PMD 0
-[  255.807876] Oops: 0000 [#1] PREEMPT SMP
-[  255.807881] last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:08/ATK0110:00/hwmon/hwmon0/fan1_input
-[  255.807884] CPU 5
-[  255.807889] Pid: 2805, comm: X Not tainted 2.6.33-rc2 #2 Rampage II Extreme/System Product Name
-[  255.807891] RIP: 0010:[<ffffffff8135e656>]  [<ffffffff8135e656>] radeon_fence_signaled+0x16/0xc0
-[  255.807895] RSP: 0018:ffff8801b6f33b78  EFLAGS: 00010286
-[  255.807897] RAX: 0000000100400004 RBX: ffff8801b6faa380 RCX: 0000000000000006
-[  255.807899] RDX: 0000000000000006 RSI: ffff8801b8f98740 RDI: 0000000000000000
-[  255.807902] RBP: ffff8801b6f33b98 R08: 0000000000000000 R09: 0000000000000001
-[  255.807904] R10: 0000000000000001 R11: 0000000000000001 R12: ffff8801bf308000
-[  255.807906] R13: ffff8801b6f33be8 R14: ffff8801bf308be0 R15: 00000000000007bb
-[  255.807908] FS:  00007f6d95c97700(0000) GS:ffff88002e400000(0000) knlGS:0000000000000000
-[  255.807910] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  255.807912] CR2: 00000000000013d8 CR3: 00000001bae72000 CR4: 00000000000006e0
-[  255.807916] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[  255.807918] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[  255.807921] Process X (pid: 2805, threadinfo ffff8801b6f32000, task ffff8801b8f98000)
-[  255.807923] Stack:
-[  255.807924]  ffff8801bf308000 ffff8801b6faa380 ffff8801b6faa380 ffff8801bf308000
-[  255.807932] <0> ffff8801b6f33c48 ffffffff8135e900 ffff8801b8f98000 ffff8801b8f98000
-[  255.807940] <0> ffff8801b6f33c00 00ffffff815fbeb5 ffff8801000007cc 00ff8801bf308d80
-[  255.807948] Call Trace:
-[  255.807951]  [<ffffffff8135e900>] radeon_fence_wait+0x200/0x3c0
-[  255.807956]  [<ffffffff81083e80>] ? autoremove_wake_function+0x0/0x40
-[  255.807960]  [<ffffffff8136f5cf>] radeon_ib_get+0xaf/0x210
-[  255.807964]  [<ffffffff8137046f>] radeon_cs_ioctl+0x8f/0x1c0
-[  255.807968]  [<ffffffff8131b893>] drm_ioctl+0x1c3/0x490
-[  255.807972]  [<ffffffff81098a17>] ? __lock_acquire+0x4f7/0xb30
-[  255.807975]  [<ffffffff813703e0>] ? radeon_cs_ioctl+0x0/0x1c0
-[  255.807979]  [<ffffffff8108a41d>] ? sched_clock_cpu+0xcd/0x110
-[  255.807982]  [<ffffffff810946ea>] ? get_lock_stats+0x2a/0x60
-[  255.807985]  [<ffffffff8109472e>] ? put_lock_stats+0xe/0x30
-[  255.807988]  [<ffffffff81094803>] ? lock_release_holdtime+0xb3/0x160
-[  255.807992]  [<ffffffff81106318>] vfs_ioctl+0x38/0xd0
-[  255.807995]  [<ffffffff811064ea>] do_vfs_ioctl+0x8a/0x5b0
-[  255.807999]  [<ffffffff8127a7f9>] ? __up_read+0x99/0xc0
-[  255.808002]  [<ffffffff81088ac6>] ? up_read+0x26/0x30
-[  255.808006]  [<ffffffff81028bba>] ? sysret_check+0x2e/0x69
-[  255.808009]  [<ffffffff81106a5a>] sys_ioctl+0x4a/0x80
-[  255.808012]  [<ffffffff81028b82>] system_call_fastpath+0x16/0x1b
-[  255.808014] Code: 08 48 8d 7f 08 e8 cb 93 f1 ff 48 89 d8 48 83 c4 08 5b c9 c3 90 55 48 89 e5 48 83 ec 20 48 89 5d f0 4c 89 65 f8 48 89 fb 48 8b 3f <80> bf d8 13 00 00 00 75 61 48 85 db 74 5c 48 81 c7 30 0c 00 00
-[  255.808088] RIP  [<ffffffff8135e656>] radeon_fence_signaled+0x16/0xc0
-[  255.808092]  RSP <ffff8801b6f33b78>
-[  255.808094] CR2: 00000000000013d8
+fs/seq_file.c
+   229                  p = m->op->next(m, p, &next);
+   230                  if (!p || IS_ERR(p)) {
+   231                          err = PTR_ERR(p);  <-- This assignment is pointless
+   232                          break;
+   233                  }
+   234                  err = m->op->show(m, p);
+   235                  if (m->count == m->size || err) {
+   236                          m->count = offs;
+   237                          if (likely(err <= 0))
+   238                                  break;
+   239                  }
+   240                  pos = next;
+   241          }
+   242          m->op->stop(m, p);
+   243          n = min(m->count, size);
+   244          err = copy_to_user(buf, m->buf, n);  <-- err just gets reassigned
 
-Cheers,
-Grant
--- 
-Running Linux 2.6.33-rc2 on x86_64
+It turns out there are hundreds.  Mostly uninteresting.  There some are 
+falsitives because of assembly, defines, and smatch bugs.  Mostly it's 
+just people ignoring the returns for readl and friends.
+
+It's an awkward thing because these are not included in the default smatch
+output.  You need to do a seperate run with: "CHECK="smatch --two-passes"
+
+Here are the results for 2.6.33-rc1.
+
+regards,
+dan carpenter
+
+arch/x86/kernel/e820.c +625 e820_setup_gap warning: assignment to 'found' was never used
+arch/x86/kernel/cpu/perf_event.c +1321 x86_perf_event_set_period warning: assignment to 'err' was never used
+arch/x86/kernel/cpu/cpufreq/speedstep-smi.c +72 speedstep_smi_ownership warning: assignment to 'magic' was never used
+arch/x86/kernel/smpboot.c +572 wakeup_secondary_cpu_via_init warning: assignment to 'send_status' was never used
+arch/x86/kernel/kprobes.c +989 jprobe_return warning: assignment to 'kcb' was never used
+arch/x86/kernel/vmi_32.c +105 patch_internal warning: assignment to 'reloc' was never used
+arch/x86/kernel/vmi_32.c +589 vmi_get_function warning: assignment to 'reloc' was never used
+arch/x86/kvm/vmx.c +1130 hardware_enable warning: assignment to 'phys_addr' was never used
+arch/x86/kvm/mmu.c +435 paging64_page_fault warning: assignment to 'sptep' was never used
+arch/x86/kvm/mmu.c +435 paging32_page_fault warning: assignment to 'sptep' was never used
+kernel/sched.c +568 sched_rt_runtime_exceeded warning: assignment to 'runtime' was never used
+kernel/sched.c +600 update_curr_rt warning: assignment to 'rt_rq' was never used
+kernel/sched.c +2354 try_to_wake_up warning: assignment to 'orig_rq' was never used
+kernel/sched.c +2829 schedule_tail warning: assignment to '__pu_val' was never used
+kernel/sched.c +8864 __build_sched_domains warning: assignment to 'sd' was never used
+kernel/fork.c +332 dup_mmap warning: assignment to 'retval' was never used
+kernel/sysctl.c +1659 sysctl_init warning: assignment to 'err' was never used
+kernel/sys.c +1594 sys_getcpu warning: assignment to '__pu_val' was never used
+kernel/kmod.c +264 __call_usermodehelper warning: assignment to 'pid' was never used
+kernel/pid.c +181 alloc_pidmap warning: assignment to 'pid' was never used
+kernel/hrtimer.c +1103 hrtimer_get_remaining warning: assignment to 'base' was never used
+kernel/trace/ftrace.c +2763 ftrace_init warning: assignment to 'ret' was never used
+kernel/trace/ring_buffer.c +32 ring_buffer_print_entry_header warning: assignment to 'ret' was never used
+kernel/trace/ring_buffer.c +399 ring_buffer_print_page_header warning: assignment to 'ret' was never used
+kernel/trace/trace_output.c +483 seq_print_userip_objs warning: assignment to 'ret' was never used
+kernel/trace/trace_kprobe.c +1523 kprobe_trace_self_tests_init warning: assignment to 'ret' was never used
+kernel/lockdep.c +71 ftrace_define_fields_lock_acquired warning: assignment to 'ret' was never used
+kernel/module.c +537 use_module warning: assignment to 'no_warn' was never used
+kernel/cgroup.c +2963 cgroup_create warning: assignment to 'err' was never used
+kernel/test_kprobes.c +67 test_kprobe warning: assignment to 'ret' was never used
+kernel/test_kprobes.c +128 test_kprobes warning: assignment to 'ret' was never used
+kernel/test_kprobes.c +192 test_jprobe warning: assignment to 'ret' was never used
+kernel/test_kprobes.c +222 test_jprobes warning: assignment to 'ret' was never used
+kernel/test_kprobes.c +285 test_kretprobe warning: assignment to 'ret' was never used
+kernel/test_kprobes.c +335 test_kretprobes warning: assignment to 'ret' was never used
+kernel/rcutorture.c +667 rcu_torture_writer warning: assignment to 'oldbatch' was never used
+kernel/rcutorture.c +916 rcu_torture_stats_print warning: assignment to 'cnt' was never used
+mm/page_alloc.c +2449 find_next_best_node warning: assignment to 'tmp' was never used
+mm/migrate.c +317 migrate_page_copy warning: assignment to 'anon' was never used
+mm/memcontrol.c +2064 __mem_cgroup_uncharge_common warning: assignment to 'mz' was never used
+fs/seq_file.c +205 seq_read warning: assignment to 'p' was never used
+fs/seq_file.c +231 seq_read warning: assignment to 'err' was never used
+fs/bio-integrity.c +674 bio_integrity_trim warning: assignment to 'nr_sectors' was never used
+fs/9p/vfs_inode.c +442 v9fs_remove warning: assignment to 'v9ses' was never used
+fs/affs/file.c +831 affs_truncate warning: assignment to 'res' was never used
+fs/afs/main.c +113 afs_init warning: assignment to 'ret' was never used
+fs/afs/vlocation.c +317 afs_vlocation_fill_in_record warning: assignment to 'ret' was never used
+fs/autofs/root.c +215 autofs_root_lookup warning: assignment to 'oz_mode' was never used
+fs/befs/linuxvfs.c +260 befs_readdir warning: assignment to 'result' was never used
+fs/btrfs/super.c +61 btrfs_put_super warning: assignment to 'ret' was never used
+fs/btrfs/ctree.c +212 btrfs_copy_root warning: assignment to 'nritems' was never used
+fs/btrfs/ctree.c +1219 push_nodes_for_insert warning: assignment to 'orig_ptr' was never used
+fs/btrfs/ctree.c +3464 btrfs_insert_some_items warning: assignment to 'item' was never used
+fs/btrfs/extent-tree.c +3667 btrfs_finish_extent_commit warning: assignment to 'ret' was never used
+fs/btrfs/extent-tree.c +4604 btrfs_reserve_extent warning: assignment to 'ret' was never used
+fs/btrfs/root-tree.c +214 btrfs_find_dead_roots warning: assignment to 'nritems' was never used
+fs/btrfs/root-tree.c +217 btrfs_find_dead_roots warning: assignment to 'item' was never used
+fs/btrfs/dir-item.c +309 btrfs_search_dir_index_item warning: assignment to 'nritems' was never used
+fs/btrfs/dir-item.c +418 btrfs_delete_one_dir_name warning: assignment to 'ret' was never used
+fs/btrfs/disk-io.c +159 btree_get_extent warning: assignment to 'em' was never used
+fs/btrfs/disk-io.c +366 csum_dirty_buffer warning: assignment to 'found_level' was never used
+fs/btrfs/disk-io.c +1531 transaction_kthread warning: assignment to 'ret' was never used
+fs/btrfs/disk-io.c +2110 btrfs_read_dev_super warning: assignment to 'transid' was never used
+fs/btrfs/transaction.c +827 finish_pending_snapshot warning: assignment to 'ret' was never used
+fs/btrfs/inode.c +1410 btrfs_merge_bio_hook warning: assignment to 'ret' was never used
+fs/btrfs/inode.c +1729 btrfs_finish_ordered_io warning: assignment to 'ret' was never used
+fs/btrfs/inode.c +2177 btrfs_orphan_cleanup warning: assignment to 'item' was never used
+fs/btrfs/inode.c +2535 btrfs_unlink_inode warning: assignment to 'ret' was never used
+fs/btrfs/inode.c +3108 btrfs_truncate_inode_items warning: assignment to 'ret' was never used
+fs/btrfs/inode.c +3927 btrfs_real_readdir warning: assignment to 'nritems' was never used
+fs/btrfs/xattr.c +231 btrfs_listxattr warning: assignment to 'nritems' was never used
+fs/btrfs/xattr.c +243 btrfs_listxattr warning: assignment to 'item' was never used
+fs/btrfs/extent_io.c +2815 extent_prepare_write warning: assignment to 'ret' was never used
+fs/btrfs/volumes.c +3377 btrfs_read_chunk_tree warning: assignment to 'ret' was never used
+fs/btrfs/ioctl.c +318 create_subvol warning: assignment to 'ret' was never used
+fs/btrfs/ioctl.c +580 btrfs_ioctl_resize warning: assignment to 'namelen' was never used
+fs/btrfs/ioctl.c +1058 btrfs_ioctl_clone warning: assignment to 'nritems' was never used
+fs/btrfs/tree-log.c +579 replay_one_extent warning: assignment to 'ret' was never used
+fs/btrfs/tree-log.c +875 add_inode_ref warning: assignment to 'ret' was never used
+fs/btrfs/tree-log.c +1600 replay_one_buffer warning: assignment to 'item_size' was never used
+fs/btrfs/tree-log.c +1697 walk_down_log_tree warning: assignment to 'root_gen' was never used
+fs/btrfs/tree-log.c +1798 walk_up_log_tree warning: assignment to 'root_gen' was never used
+fs/btrfs/tree-log.c +2404 log_dir_items warning: assignment to 'ret' was never used
+fs/btrfs/tree-log.c +2758 btrfs_log_inode warning: assignment to 'size' was never used
+fs/btrfs/relocation.c +2796 add_tree_block warning: assignment to 'ret' was never used
+fs/btrfs/relocation.c +3107 add_data_references warning: assignment to 'ret' was never used
+fs/btrfs/relocation.c +3328 relocate_block_group warning: assignment to 'ret' was never used
+fs/btrfs/relocation.c +3791 btrfs_reloc_clone_csums warning: assignment to 'ret' was never used
+fs/cifs/dir.c +710 cifs_lookup warning: assignment to 'filp' was never used
+fs/cifs/inode.c +1008 cifs_unlink warning: assignment to 'cifs_inode' was never used
+fs/cifs/cifs_dfs_ref.c +344 cifs_dfs_follow_mountpoint warning: assignment to 'rc' was never used
+fs/coda/file.c +180 coda_release warning: assignment to 'err' was never used
+fs/dlm/debug_fs.c +161 print_format1 warning: assignment to 'rv' was never used
+fs/ecryptfs/file.c +161 ecryptfs_open warning: assignment to 'lower_dentry' was never used
+fs/ecryptfs/inode.c +156 grow_file warning: assignment to 'rc' was never used
+fs/ext2/dir.c +466 ext2_set_link warning: assignment to 'err' was never used
+fs/ext4/extents.c +3396 ext4_ext_truncate warning: assignment to 'err' was never used
+fs/ext4/mballoc.c +2053 ext4_mb_regular_allocator warning: assignment to 'desc' was never used
+fs/ext4/xattr.c +1304 ext4_expand_extra_isize_ea warning: assignment to 'error' was never used
+fs/fuse/file.c +1582 fuse_ioctl_copy_user warning: assignment to 'map' was never used
+fs/gfs2/dir.c +992 dir_split_leaf warning: assignment to 'error' was never used
+fs/gfs2/ops_fstype.c +716 init_journal warning: assignment to 'ip' was never used
+fs/gfs2/ops_fstype.c +848 init_inodes warning: assignment to 'ip' was never used
+fs/hfs/bnode.c +163 hfs_bnode_dump warning: assignment to 'tmp' was never used
+fs/hfsplus/bnode.c +323 hfsplus_bnode_dump warning: assignment to 'tmp' was never used
+fs/jfs/jfs_xtree.c +1102 xtSplitPage warning: assignment to 'tlck' was never used
+fs/jfs/jfs_xtree.c +3264 xtTruncate warning: assignment to 'tlck' was never used
+fs/jfs/jfs_imap.c +1281 diFree warning: assignment to 'rc' was never used
+fs/jfs/jfs_txnmgr.c +1313 txCommit warning: assignment to 'lsn' was never used
+fs/jfs/jfs_txnmgr.c +2964 jfs_sync warning: assignment to 'rc' was never used
+fs/lockd/xdr4.c +431 nlm4clt_decode_testres warning: assignment to 'p' was never used
+fs/minix/dir.c +451 minix_set_link warning: assignment to 'err' was never used
+fs/ncpfs/dir.c +255 ncp_force_rename warning: assignment to 'res2' was never used
+fs/nfs/dir.c +924 nfs_lookup warning: assignment to 'res' was never used
+fs/nfs/nfs3xdr.c +966 nfs3_xdr_createres warning: assignment to 'p' was never used
+fs/nfs/nfs3xdr.c +981 nfs3_xdr_renameres warning: assignment to 'p' was never used
+fs/nfs/nfs3xdr.c +996 nfs3_xdr_linkres warning: assignment to 'p' was never used
+fs/nfs/nfs3xdr.c +1019 nfs3_xdr_fsstatres warning: assignment to 'p' was never used
+fs/nfs/nfs3xdr.c +1046 nfs3_xdr_fsinfores warning: assignment to 'p' was never used
+fs/nfs/nfs4xdr.c +4660 decode_sequence warning: assignment to 'dummy' was never used
+fs/nfs/callback_xdr.c +403 encode_attr_change warning: assignment to 'p' was never used
+fs/nfs/callback_xdr.c +416 encode_attr_size warning: assignment to 'p' was never used
+fs/nfsd/nfsctl.c +1270 __write_recoverydir warning: assignment to 'status' was never used
+fs/nfsd/vfs.c +1678 nfsd_link warning: assignment to 'err' was never used
+fs/nfsd/nfs4callback.c +241 encode_cb_recall warning: assignment to 'p' was never used
+fs/nilfs2/btree.c +827 nilfs_btree_split warning: assignment to 'newkey' was never used
+fs/nilfs2/segment.c +2606 nilfs_segctor_do_immediate_flush warning: assignment to 'err' was never used
+fs/nilfs2/alloc.c +306 nilfs_palloc_prepare_alloc_entry warning: assignment to 'groups_per_desc_block' was never used
+fs/ntfs/namei.c +179 ntfs_lookup warning: assignment to 'ni' was never used
+fs/ntfs/super.c +1303 check_windows_hibernation_status warning: assignment to 'ni' was never used
+fs/ntfs/lcnalloc.c +288 ntfs_cluster_alloc warning: assignment to 'err' was never used
+fs/ocfs2/aops.c +567 ocfs2_direct_IO_get_blocks warning: assignment to 'inode_blocks' was never used
+fs/ocfs2/dir.c +741 ocfs2_find_entry_el warning: assignment to 'err' was never used
+fs/ocfs2/dir.c +1710 __ocfs2_add_entry warning: assignment to 'status' was never used
+fs/ocfs2/journal.c +329 ocfs2_commit_cache warning: assignment to 'old_id' was never used
+fs/ocfs2/namei.c +1327 ocfs2_rename warning: assignment to 'status' was never used
+fs/ocfs2/symlink.c +116 ocfs2_fast_follow_link warning: assignment to 'link' was never used
+fs/ocfs2/xattr.c +1140 ocfs2_xattr_block_get warning: assignment to 'ret' was never used
+fs/ocfs2/xattr.c +1830 ocfs2_remove_value_outside warning: assignment to 'ret' was never used
+fs/ocfs2/xattr.c +5502 ocfs2_delete_xattr_in_bucket warning: assignment to 'ret' was never used
+fs/ocfs2/dlm/dlmfs.c +340 dlmfs_get_root_inode warning: assignment to 'ip' was never used
+fs/partitions/acorn.c +288 adfspart_check_ADFS warning: assignment to 'slot' was never used
+fs/proc/root.c +113 proc_root_init warning: assignment to 'err' was never used
+fs/proc/base.c +2426 proc_base_instantiate warning: assignment to 'error' was never used
+fs/proc/base.c +2776 proc_pid_lookup warning: assignment to 'result' was never used
+fs/proc/kcore.c +416 elf_kcore_store_hdr warning: assignment to 'bufp' was never used
+fs/reiserfs/do_balan.c +810 balance_leaf warning: assignment to 'ret_val' was never used
+fs/reiserfs/inode.c +2992 reiserfs_invalidatepage warning: assignment to 'ret' was never used
+fs/reiserfs/journal.c +1888 flush_used_journal_lists warning: assignment to 'ret' was never used
+fs/reiserfs/journal.c +3070 do_journal_begin_r warning: assignment to 'now' was never used
+fs/reiserfs/journal.c +3769 journal_mark_freed warning: assignment to 'cleaned' was never used
+fs/smbfs/proc.c +1508 smb_proc_writeX warning: assignment to 'p' was never used
+fs/smbfs/proc.c +3422 smb_proc_query_cifsunix warning: assignment to 'major' was never used
+fs/smbfs/proc.c +3423 smb_proc_query_cifsunix warning: assignment to 'minor' was never used
+fs/smbfs/proc.c +3429 smb_proc_query_cifsunix warning: assignment to 'caps' was never used
+fs/smbfs/dir.c +540 smb_create warning: assignment to 'error' was never used
+fs/smbfs/dir.c +567 smb_mkdir warning: assignment to 'error' was never used
+fs/sysv/dir.c +355 sysv_set_link warning: assignment to 'err' was never used
+fs/ubifs/journal.c +387 make_reservation warning: assignment to 'cmt_retries' was never used
+fs/ubifs/super.c +1309 mount_ubifs warning: assignment to 'err' was never used
+fs/ubifs/sb.c +337 create_default_filesystem warning: assignment to 'err' was never used
+fs/ubifs/lpt_commit.c +1922 dump_lpt_leb warning: assignment to 'err' was never used
+fs/ubifs/debug.c +987 dbg_check_space_info warning: assignment to 'avail' was never used
+fs/udf/balloc.c +248 udf_bitmap_prealloc_blocks warning: assignment to 'nr_groups' was never used
+fs/udf/inode.c +550 inode_getblk warning: assignment to 'etype' was never used
+fs/udf/namei.c +356 udf_add_entry warning: assignment to 'block' was never used
+fs/udf/super.c +1583 udf_load_sequence warning: assignment to 'sbi' was never used
+fs/ufs/balloc.c +50 ufs_free_fragments warning: assignment to 'usb1' was never used
+fs/ufs/balloc.c +152 ufs_free_blocks warning: assignment to 'usb1' was never used
+fs/ufs/balloc.c +520 ufs_add_fragments warning: assignment to 'usb1' was never used
+fs/ufs/balloc.c +605 ufs_alloc_fragments warning: assignment to 'usb1' was never used
+fs/ufs/balloc.c +722 ufs_alloccg_block warning: assignment to 'usb1' was never used
+fs/ufs/balloc.c +831 ufs_bitmap_search warning: assignment to 'usb1' was never used
+fs/ufs/dir.c +105 ufs_set_link warning: assignment to 'err' was never used
+fs/ufs/ialloc.c +71 ufs_free_inode warning: assignment to 'usb1' was never used
+fs/ufs/ialloc.c +208 ufs_new_inode warning: assignment to 'usb1' was never used
+fs/ufs/inode.c +467 ufs_getfrag_block warning: assignment to 'bh' was never used
+fs/ufs/super.c +518 ufs_read_cylinder_structures warning: assignment to 'usb3' was never used
+fs/ufs/super.c +1367 ufs_statfs warning: assignment to 'usb1' was never used
+fs/ufs/super.c +1368 ufs_statfs warning: assignment to 'usb2' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1282 ftrace_define_fields_xfs_dir2_sf_addname warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1283 ftrace_define_fields_xfs_dir2_sf_create warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1284 ftrace_define_fields_xfs_dir2_sf_lookup warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1285 ftrace_define_fields_xfs_dir2_sf_replace warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1286 ftrace_define_fields_xfs_dir2_sf_removename warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1287 ftrace_define_fields_xfs_dir2_sf_toino4 warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1288 ftrace_define_fields_xfs_dir2_sf_toino8 warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1289 ftrace_define_fields_xfs_dir2_sf_to_block warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1290 ftrace_define_fields_xfs_dir2_block_addname warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1291 ftrace_define_fields_xfs_dir2_block_lookup warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1292 ftrace_define_fields_xfs_dir2_block_replace warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1293 ftrace_define_fields_xfs_dir2_block_removename warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1294 ftrace_define_fields_xfs_dir2_block_to_sf warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1295 ftrace_define_fields_xfs_dir2_block_to_leaf warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1296 ftrace_define_fields_xfs_dir2_leaf_addname warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1297 ftrace_define_fields_xfs_dir2_leaf_lookup warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1298 ftrace_define_fields_xfs_dir2_leaf_replace warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1299 ftrace_define_fields_xfs_dir2_leaf_removename warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1300 ftrace_define_fields_xfs_dir2_leaf_to_block warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1301 ftrace_define_fields_xfs_dir2_leaf_to_node warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1302 ftrace_define_fields_xfs_dir2_node_addname warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1303 ftrace_define_fields_xfs_dir2_node_lookup warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1304 ftrace_define_fields_xfs_dir2_node_replace warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1305 ftrace_define_fields_xfs_dir2_node_removename warning: assignment to 'ret' was never used
+fs/xfs/linux-2.6/xfs_trace.c +1306 ftrace_define_fields_xfs_dir2_node_to_leaf warning: assignment to 'ret' was never used
+fs/xfs/xfs_rtalloc.c +1518 xfs_rtfree_range warning: assignment to 'error' was never used
+fs/xfs/xfs_attr.c +1439 xfs_attr_node_addname warning: assignment to 'error' was never used
+fs/xfs/xfs_bmap.c +4284 xfs_bmap_read_extents warning: assignment to 'error' was never used
+fs/xfs/xfs_bmap.c +6015 xfs_bmap_check_leaf_extents warning: assignment to 'error' was never used
+fs/xfs/xfs_filestream.c +494 xfs_filestream_lookup_ag warning: assignment to 'ref' was never used
+fs/xfs/xfs_rw.c +86 xfs_write_clear_setuid warning: assignment to 'error' was never used
+fs/xfs/linux-2.6/xfs_sync.c +590 xfs_sync_worker warning: assignment to 'error' was never used
+fs/binfmt_elf.c +982 load_elf_binary warning: assignment to 'error' was never used
+security/integrity/ima/ima_main.c +262 ima_path_check warning: assignment to 'rc' was never used
+security/integrity/ima/ima_main.c +345 ima_file_mmap warning: assignment to 'rc' was never used
+security/integrity/ima/ima_main.c +367 ima_bprm_check warning: assignment to 'rc' was never used
+security/keys/keyctl.c +504 keyctl_describe_key warning: assignment to 'key' was never used
+security/keys/process_keys.c +512 lookup_user_key warning: assignment to 'key' was never used
+security/selinux/avc.c +753 avc_has_perm_noaudit warning: assignment to 'node' was never used
+security/smack/smack_lsm.c +1516 smack_set_catset warning: assignment to 'rc' was never used
+crypto/cts.c +106 cts_cbc_encrypt warning: assignment to 'err' was never used
+drivers/acpi/osl.c +150 acpi_request_region warning: assignment to 'res' was never used
+drivers/acpi/bus.c +880 acpi_bus_init warning: assignment to 'status' was never used
+drivers/acpi/glue.c +164 acpi_bind_one warning: assignment to 'ret' was never used
+drivers/acpi/pci_root.c +512 acpi_pci_root_add warning: assignment to 'result' was never used
+drivers/acpi/acpica/evmisc.c +594 acpi_ev_terminate warning: assignment to 'status' was never used
+drivers/acpi/acpica/evrgnini.c +614 acpi_ev_initialize_region warning: assignment to 'status' was never used
+drivers/acpi/acpica/evgpe.c +224 acpi_ev_enable_gpe warning: assignment to 'status' was never used
+drivers/acpi/acpica/evgpe.c +518 acpi_ev_asynch_execute_gpe_method warning: assignment to 'status' was never used
+drivers/acpi/acpica/evgpeblk.c +469 acpi_ev_match_prw_and_gpe warning: assignment to 'status' was never used
+drivers/acpi/acpica/evgpeblk.c +701 acpi_ev_delete_gpe_block warning: assignment to 'status' was never used
+drivers/acpi/acpica/evgpeblk.c +946 acpi_ev_create_gpe_block warning: assignment to 'status' was never used
+drivers/acpi/acpica/evgpeblk.c +1023 acpi_ev_initialize_gpe_block warning: assignment to 'status' was never used
+drivers/acpi/acpica/hwgpe.c +419 acpi_hw_disable_all_gpes warning: assignment to 'status' was never used
+drivers/acpi/acpica/hwsleep.c +444 acpi_enter_sleep_state_s4bios warning: assignment to 'status' was never used
+drivers/acpi/acpica/nsalloc.c +408 acpi_ns_delete_namespace_subtree warning: assignment to 'parent_node' was never used
+drivers/acpi/acpica/nsalloc.c +513 acpi_ns_delete_namespace_by_owner warning: assignment to 'parent_node' was never used
+drivers/acpi/acpica/nseval.c +425 acpi_ns_exec_module_code warning: assignment to 'status' was never used
+drivers/acpi/acpica/nswalk.c +358 acpi_ns_walk_namespace warning: assignment to 'parent_node' was never used
+drivers/acpi/acpica/psloop.c +739 acpi_ps_complete_op warning: assignment to 'status' was never used
+drivers/acpi/acpica/rscreate.c +308 acpi_rs_create_pci_routing_table warning: assignment to 'status' was never used
+drivers/acpi/video.c +2039 acpi_video_bus_put_one_device warning: assignment to 'status' was never used
+drivers/acpi/pci_slot.c +226 walk_p2p_bridge warning: assignment to 'status' was never used
+drivers/acpi/processor_thermal.c +509 acpi_processor_write_limit warning: assignment to 'result' was never used
+drivers/acpi/thermal.c +563 acpi_thermal_trips_update warning: assignment to 'status' was never used
+drivers/ata/libata-core.c +3542 ata_do_set_mode warning: assignment to 'dma_mask' was never used
+drivers/ata/libata-scsi.c +200 ata_scsi_park_show warning: assignment to 'flags' was never used
+drivers/ata/ahci.c +1114 ahci_disable_alpm warning: assignment to 'cmd' was never used
+drivers/ata/ahci.c +1212 ahci_enable_alpm warning: assignment to 'cmd' was never used
+drivers/ata/ahci.c +1653 ahci_init_controller warning: assignment to 'tmp' was never used
+drivers/ata/sata_nv.c +2356 nv_swncq_host_interrupt warning: assignment to 'rc' was never used
+drivers/ata/pdc_adma.c +376 adma_qc_prep warning: assignment to 'i' was never used
+drivers/atm/idt77252.c +2713 idt77252_collect_stat warning: assignment to 'cdc' was never used
+drivers/atm/idt77252.c +2714 idt77252_collect_stat warning: assignment to 'vpec' was never used
+drivers/atm/idt77252.c +2715 idt77252_collect_stat warning: assignment to 'icc' was never used
+drivers/atm/solos-pci.c +578 flash_upgrade warning: assignment to 'data32' was never used
+drivers/atm/solos-pci.c +1138 fpga_probe warning: assignment to 'data32' was never used
+drivers/base/node.c +507 register_one_node warning: assignment to 'error' was never used
+drivers/base/module.c +63 module_add_driver warning: assignment to 'no_warn' was never used
+drivers/block/floppy.c +2532 copy_buffer warning: assignment to 'size' was never used
+drivers/block/cciss.c +457 cciss_procinit warning: assignment to 'pde' was never used
+drivers/block/cciss.c +2208 rebuild_lun_table warning: assignment to 'return_code' was never used
+drivers/block/DAC960.c +6581 DAC960_CreateProcEntries warning: assignment to 'StatusProcEntry' was never used
+drivers/block/DAC960.c +6591 DAC960_CreateProcEntries warning: assignment to 'UserCommandProcEntry' was never used
+drivers/block/drbd/drbd_worker.c +1044 w_e_end_ov_reply warning: assignment to 'ok' was never used
+drivers/block/drbd/drbd_receiver.c +2167 drbd_asb_recover_1p warning: assignment to 'self' was never used
+drivers/block/drbd/drbd_receiver.c +3665 drbd_disconnect warning: assignment to 'rv' was never used
+drivers/block/paride/pd.c +634 pd_media_check warning: assignment to 'r' was never used
+drivers/bluetooth/btmrvl_debugfs.c +64 btmrvl_hscfgcmd_write warning: assignment to 'ret' was never used
+drivers/bluetooth/btmrvl_debugfs.c +107 btmrvl_psmode_write warning: assignment to 'ret' was never used
+drivers/bluetooth/btmrvl_debugfs.c +145 btmrvl_pscmd_write warning: assignment to 'ret' was never used
+drivers/bluetooth/btmrvl_debugfs.c +188 btmrvl_gpiogap_write warning: assignment to 'ret' was never used
+drivers/bluetooth/btmrvl_debugfs.c +226 btmrvl_hscmd_write warning: assignment to 'ret' was never used
+drivers/bluetooth/btmrvl_debugfs.c +267 btmrvl_hsmode_write warning: assignment to 'ret' was never used
+drivers/char/tty_io.c +2244 tiocgpgrp warning: assignment to '__pu_val' was never used
+drivers/char/tty_io.c +2320 tiocgsid warning: assignment to '__pu_val' was never used
+drivers/char/n_tty.c +2067 n_tty_ioctl warning: assignment to '__pu_val' was never used
+drivers/char/consolemap.c +335 con_get_trans_old warning: assignment to 'ch' was never used
+drivers/char/vt.c +2643 tioclinux warning: assignment to 'data' was never used
+drivers/char/agp/ati-agp.c +64 ati_create_page_map warning: assignment to 'err' was never used
+drivers/char/agp/nvidia-agp.c +286 nvidia_tlbflush warning: assignment to 'temp' was never used
+drivers/char/ip2/ip2main.c +633 ip2_loadmain warning: assignment to 'status' was never used
+drivers/char/ip2/ip2main.c +2903 ip2_ipl_ioctl warning: assignment to 'rc' was never used
+drivers/char/ipmi/ipmi_msghandler.c +2864 ipmi_register_smi warning: assignment to 'rv' was never used
+drivers/char/pcmcia/ipwireless/tty.c +378 set_control_lines warning: assignment to 'ret' was never used
+drivers/char/tpm/tpm.c +514 tpm_gen_interrupt warning: assignment to 'rc' was never used
+drivers/char/tpm/tpm_infineon.c +176 empty_fifo warning: assignment to 'status' was never used
+drivers/char/cyclades.c +404 detect_isa_irq warning: assignment to 'irq' was never used
+drivers/char/cyclades.c +468 cyy_chip_rx warning: assignment to 'data' was never used
+drivers/char/stallion.c +1603 stl_initports warning: assignment to 'chipmask' was never used
+drivers/char/epca.c +1500 doevent warning: assignment to 'lstat' was never used
+drivers/char/specialix.c +1465 sx_flush_buffer warning: assignment to 'bp' was never used
+drivers/char/specialix.c +1656 sx_put_char warning: assignment to 'bp' was never used
+drivers/char/specialix.c +2146 sx_set_termios warning: assignment to 'bp' was never used
+drivers/char/applicom.c +161 ac_register_board warning: assignment to 'byte_reset_it' was never used
+drivers/char/applicom.c +568 ac_read warning: assignment to 'ret' was never used
+drivers/char/applicom.c +768 ac_ioctl warning: assignment to 'byte_reset_it' was never used
+drivers/char/sonypi.c +656 sonypi_call1 warning: assignment to 'v1' was never used
+drivers/crypto/geode-aes.c +471 geode_ecb_encrypt warning: assignment to 'ret' was never used
+drivers/crypto/hifn_795x.c +2038 hifn_flush warning: assignment to 'ctx' was never used
+drivers/crypto/hifn_795x.c +2159 hifn_process_queue warning: assignment to 'ctx' was never used
+drivers/dma/ioat/dma_v3.c +955 ioat_xor_val_self_test warning: assignment to 'tmo' was never used
+drivers/edac/edac_mc.c +857 edac_mc_handle_fbd_ue warning: assignment to 'chars' was never used
+drivers/edac/i5100_edac.c +486 i5100_read_log warning: assignment to 'ecc_loc' was never used
+drivers/gpu/drm/i915/intel_display.c +3939 intel_increase_pllclock warning: assignment to 'dpll' was never used
+drivers/gpu/drm/i915/intel_display.c +3982 intel_decrease_pllclock warning: assignment to 'dpll' was never used
+drivers/gpu/drm/i915/intel_sdvo.c +1156 intel_sdvo_mode_set warning: assignment to 'status' was never used
+drivers/gpu/drm/i915/intel_sdvo.c +1476 intel_sdvo_supports_hotplug warning: assignment to 'status' was never used
+drivers/gpu/drm/i915/intel_sdvo.c +1495 intel_sdvo_set_hotplug warning: assignment to 'status' was never used
+drivers/gpu/drm/radeon/radeon_cp.c +924 radeon_set_igpgart warning: assignment to 'temp' was never used
+drivers/gpu/drm/radeon/radeon_cp.c +1050 rs600_set_igpgart warning: assignment to 'temp' was never used
+drivers/gpu/drm/radeon/radeon_ttm.c +286 radeon_move_blit warning: assignment to 'r' was never used
+drivers/gpu/drm/radeon/radeon_i2c.c +105 radeon_i2c_do_lock warning: assignment to 'temp' was never used
+drivers/gpu/drm/radeon/r100.c +650 r100_cp_init warning: assignment to 'tmp' was never used
+drivers/gpu/drm/radeon/r100.c +1984 r100_pll_errata_after_data warning: assignment to 'tmp' was never used
+drivers/gpu/drm/radeon/rs600.c +182 rs600_gart_tlb_flush warning: assignment to 'tmp' was never used
+drivers/gpu/drm/radeon/r600_blit_kms.c +606 r600_blit_done_copy warning: assignment to 'r' was never used
+drivers/gpu/drm/drm_edid.c +1095 add_detailed_info_eedid warning: assignment to 'timing_level' was never used
+drivers/hwmon/f75375s.c +299 set_pwm_enable_direct warning: assignment to 'fanmode' was never used
+drivers/hwmon/f75375s.c +351 set_pwm_mode warning: assignment to 'conf' was never used
+drivers/hwmon/lm75.c +251 lm75_detect warning: assignment to 'cur' was never used
+drivers/hwmon/sht15.c +549 sht15_probe warning: assignment to 'ret' was never used
+drivers/i2c/busses/i2c-piix4.c +416 piix4_access warning: assignment to 'i' was never used
+drivers/i2c/i2c-core.c +654 i2c_register_adapter warning: assignment to 'dummy' was never used
+drivers/i2c/i2c-core.c +839 i2c_del_adapter warning: assignment to 'res' was never used
+drivers/ide/ide-cd.c +466 ide_cd_queue_pc warning: assignment to 'error' was never used
+drivers/ide/ide-cd_ioctl.c +231 ide_cdrom_select_speed warning: assignment to 'stat' was never used
+drivers/ide/ide-probe.c +492 probe_for_drive warning: assignment to 'rc' was never used
+drivers/ide/ide-atapi.c +468 ide_pc_intr warning: assignment to 'done' was never used
+drivers/ide/ide-disk.c +483 set_multcount warning: assignment to 'error' was never used
+drivers/ide/siimage.c +317 sil_set_dma_mode warning: assignment to 'multi' was never used
+drivers/ieee1394/eth1394.c +1291 ether1394_iso warning: assignment to 'priv' was never used
+drivers/infiniband/core/iwcm.c +303 iw_cm_disconnect warning: assignment to 'ret' was never used
+drivers/infiniband/core/iwcm.c +344 destroy_cm_id warning: assignment to 'ret' was never used
+drivers/infiniband/core/cma.c +2119 rdma_bind_addr warning: assignment to 'ret' was never used
+drivers/infiniband/hw/cxgb3/iwch_cm.c +1805 iwch_reject_cr warning: assignment to 'err' was never used
+drivers/infiniband/hw/cxgb3/iwch_qp.c +544 iwch_bind_mw warning: assignment to 'mhp' was never used
+drivers/infiniband/hw/nes/nes.c +409 nes_interrupt warning: assignment to 'int_mask' was never used
+drivers/infiniband/hw/nes/nes.c +679 nes_probe warning: assignment to 'nesvnic' was never used
+drivers/infiniband/hw/nes/nes_hw.c +541 nes_init_adapter warning: assignment to 'pcs_control_status0' was never used
+drivers/infiniband/hw/nes/nes_hw.c +543 nes_init_adapter warning: assignment to 'pcs_control_status1' was never used
+drivers/infiniband/hw/nes/nes_hw.c +568 nes_init_adapter warning: assignment to 'pcs_control_status0' was never used
+drivers/infiniband/hw/nes/nes_hw.c +570 nes_init_adapter warning: assignment to 'pcs_control_status1' was never used
+drivers/infiniband/hw/nes/nes_hw.c +2443 nes_process_mac_intr warning: assignment to 'pcs_control_status' was never used
+drivers/infiniband/hw/nes/nes_utils.c +821 nes_mh_fix warning: assignment to 'serdes_status' was never used
+drivers/infiniband/hw/nes/nes_verbs.c +2311 nes_reg_user_mr warning: assignment to 'ibmr' was never used
+drivers/infiniband/hw/nes/nes_cm.c +3494 cm_event_reset warning: assignment to 'ret' was never used
+drivers/infiniband/ulp/ipoib/ipoib_main.c +849 ipoib_neigh_cleanup warning: assignment to 'priv' was never used
+drivers/input/joystick/adi.c +156 adi_read_packet warning: assignment to 'z' was never used
+drivers/input/keyboard/lm8323.c +628 lm8323_set_disable warning: assignment to 'ret' was never used
+drivers/input/misc/yealink.c +987 usb_probe warning: assignment to 'ret' was never used
+drivers/input/tablet/aiptek.c +682 aiptek_irq warning: assignment to 'z' was never used
+drivers/isdn/hardware/avm/t1isa.c +88 t1_detectandinit warning: assignment to 'dummy' was never used
+drivers/isdn/hardware/eicon/message.c +1343 connect_req warning: assignment to 'CIP' was never used
+drivers/isdn/hardware/mISDN/hfcpci.c +260 reset_hfcpci warning: assignment to 'val' was never used
+drivers/isdn/hardware/mISDN/hfcpci.c +984 ph_state_nt warning: assignment to 'val' was never used
+drivers/isdn/hardware/mISDN/hfcsusb.c +1745 setup_hfcsusb warning: assignment to 'err' was never used
+drivers/isdn/hardware/mISDN/mISDNipac.c +364 isac_mos_irq warning: assignment to 'ret' was never used
+drivers/isdn/hardware/mISDN/mISDNipac.c +1484 ipac_init warning: assignment to 'val' was never used
+drivers/isdn/hisax/arcofi.c +48 send_arcofi warning: assignment to 'val' was never used
+drivers/isdn/hisax/ipacx.c +165 dch_l2l1 warning: assignment to 'cda2_cr' was never used
+drivers/isdn/hisax/hfc_2bs0.c +162 hfc_empty_fifo warning: assignment to 'stat' was never used
+drivers/isdn/hisax/hfc_2bds0.c +677 receive_dmsg warning: assignment to 'stat' was never used
+drivers/isdn/hisax/isurf.c +233 setup_isurf warning: assignment to 'err' was never used
+drivers/isdn/hisax/hfc_usb.c +1114 hfc_usb_init warning: assignment to 'err' was never used
+drivers/isdn/i4l/isdn_net.c +1724 isdn_net_ciscohdlck_slarp_in warning: assignment to 'unused' was never used
+drivers/isdn/i4l/isdn_common.c +406 isdn_capi_rec_hl_msg warning: assignment to 'ch' was never used
+drivers/isdn/i4l/isdn_common.c +1341 isdn_ioctl warning: assignment to 'chidx' was never used
+drivers/isdn/icn/icn.c +1276 icn_command warning: assignment to 'i' was never used
+drivers/isdn/pcbit/layer2.c +363 pcbit_receive warning: assignment to 'proc' was never used
+drivers/leds/leds-pca9532.c +301 pca9532_probe warning: assignment to 'data' was never used
+drivers/leds/leds-ss4200.c +362 ich7_lpc_probe warning: assignment to 'status' was never used
+drivers/md/raid10.c +1929 sync_request warning: assignment to 'must_sync' was never used
+drivers/md/dm-log-userspace-base.c +219 userspace_dtr warning: assignment to 'r' was never used
+drivers/md/dm-log-userspace-base.c +519 userspace_set_region_sync warning: assignment to 'r' was never used
+drivers/md/raid5.c +1053 ops_run_reconstruct5 warning: assignment to 'tx' was never used
+drivers/md/raid5.c +1120 ops_run_check_p warning: assignment to 'tx' was never used
+drivers/md/dm-log.c +455 create_log_context warning: assignment to 'r' was never used
+drivers/media/common/tuners/mt20xx.c +253 mt2032_set_if_freq warning: assignment to 'ret' was never used
+drivers/media/common/tuners/mt20xx.c +383 mt2032_init warning: assignment to 'ret' was never used
+drivers/media/common/tuners/mt20xx.c +436 mt2050_set_antenna warning: assignment to 'ret' was never used
+drivers/media/common/tuners/mt20xx.c +580 mt2050_init warning: assignment to 'ret' was never used
+drivers/media/common/tuners/mxl5005s.c +2332 MXL_TuneRF warning: assignment to 'Xtal_Int' was never used
+drivers/media/common/saa7146_video.c +1401 video_close warning: assignment to 'err' was never used
+drivers/media/dvb/dvb-usb/af9005-fe.c +1406 af9005_fe_get_frontend warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/af9015.c +1127 af9015_af9013_frontend_attach warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/dw2102.c +139 dw2102_i2c_transfer warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/dw2102.c +212 dw2102_serit_i2c_transfer warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/dw2102.c +268 dw2102_earda_i2c_transfer warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/dw2102.c +338 dw2104_i2c_transfer warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/dw2102.c +424 dw3101_i2c_transfer warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/dw2102.c +484 s6x0_i2c_transfer warning: assignment to 'ret' was never used
+drivers/media/dvb/dvb-usb/vp702x.c +87 vp702x_usb_inout_op warning: assignment to 'ret' was never used
+drivers/media/dvb/frontends/s921_core.c +106 s921_isdb_set_parameters warning: assignment to 'ret' was never used
+drivers/media/dvb/frontends/s921_core.c +210 s921_isdb_get_status warning: assignment to 'ifagc_dt' was never used
+drivers/media/dvb/frontends/stb0899_drv.c +643 stb0899_init_calc warning: assignment to 'agc1cn' was never used
+drivers/media/dvb/frontends/stv0900_core.c +1348 stv0900_init_internal warning: assignment to 'temp_int' was never used
+drivers/media/dvb/frontends/stv0900_sw.c +938 stv0900_track_optimization warning: assignment to 'rolloff' was never used
+drivers/media/dvb/frontends/tda1004x.c +556 tda10046_fwupload warning: assignment to 'ret' was never used
+drivers/media/dvb/frontends/nxt6000.c +413 nxt6000_dump_status warning: assignment to 'val' was never used
+drivers/media/dvb/frontends/zl10353.c +589 zl10353_init warning: assignment to 'rc' was never used
+drivers/media/dvb/frontends/drx397xD.c +569 CorrectSysClockDeviation warning: assignment to 'rc' was never used
+drivers/media/dvb/frontends/drx397xD.c +684 drx_tune warning: assignment to 'rc' was never used
+drivers/media/dvb/frontends/drx397xD.c +1157 drx397x_init warning: assignment to 'rc' was never used
+drivers/media/dvb/frontends/lgdt330x.c +293 lgdt330x_read_ucblocks warning: assignment to 'err' was never used
+drivers/media/dvb/frontends/lgdt330x.c +361 lgdt330x_set_parameters warning: assignment to 'err' was never used
+drivers/media/dvb/frontends/lgs8gxx.c +337 lgs8gxx_set_mode_manual warning: assignment to 'ret' was never used
+drivers/media/dvb/frontends/stv090x.c +3291 stv090x_algo warning: assignment to 'no_signal' was never used
+drivers/media/dvb/siano/smscoreapi.c +467 smscore_init_ir warning: assignment to 'rc' was never used
+drivers/media/dvb/siano/smsusb.c +400 smsusb_probe warning: assignment to 'rc' was never used
+drivers/media/dvb/siano/smssdio.c +128 smssdio_interrupt warning: assignment to 'isr' was never used
+drivers/media/dvb/ttusb-dec/ttusb_dec.c +1365 ttusb_dec_boot_dsp warning: assignment to 'result' was never used
+drivers/media/radio/radio-si4713.c +95 radio_si4713_querycap warning: assignment to 'rsdev' was never used
+drivers/media/video/adv7170.c +311 adv7170_probe warning: assignment to 'i' was never used
+drivers/media/video/adv7175.c +350 adv7175_probe warning: assignment to 'i' was never used
+drivers/media/video/c-qcam.c +214 qc_detect warning: assignment to 'stat' was never used
+drivers/media/video/c-qcam.c +485 qc_capture warning: assignment to 'l' was never used
+drivers/media/video/pms.c +1012 init_mediavision warning: assignment to 'id' was never used
+drivers/media/video/meye.c +791 meye_irq warning: assignment to 'v' was never used
+drivers/media/video/videobuf-dvb.c +59 videobuf_dvb_thread warning: assignment to 'err' was never used
+drivers/media/video/dabusb.c +348 dabusb_loadmem warning: assignment to 'ret' was never used
+drivers/media/video/dabusb.c +423 dabusb_fpga_download warning: assignment to 'ret' was never used
+drivers/media/video/ov511.c +554 ov51x_reset warning: assignment to 'rc' was never used
+drivers/media/video/ov511.c +4315 ov51x_v4l1_ioctl_internal warning: assignment to 'rc' was never used
+drivers/media/video/se401.c +1267 se401_init warning: assignment to 'rc' was never used
+drivers/media/video/stv680.c +442 stv_init warning: assignment to 'i' was never used
+drivers/media/video/stv680.c +1379 stv680_read warning: assignment to 'ret' was never used
+drivers/media/video/w9968cf.c +3527 w9968cf_usb_probe warning: assignment to 'err' was never used
+drivers/media/video/s2255drv.c +1018 vidioc_s_fmt_vid_cap warning: assignment to 'norm' was never used
+drivers/media/video/soc_camera.c +940 soc_camera_probe warning: assignment to 'ret' was never used
+drivers/media/video/au0828/au0828-video.c +142 au0828_irq_callback warning: assignment to 'rc' was never used
+drivers/media/video/bt8xx/bttv-driver.c +1186 audio_mux warning: assignment to 'gpio_val' was never used
+drivers/media/video/cx18/cx18-mailbox.c +559 cx18_api_call warning: assignment to 'state' was never used
+drivers/media/video/cx231xx/cx231xx-audio.c +311 snd_cx231xx_capture_open warning: assignment to 'ret' was never used
+drivers/media/video/cx231xx/cx231xx-audio.c +343 snd_cx231xx_pcm_close warning: assignment to 'ret' was never used
+drivers/media/video/cx231xx/cx231xx-audio.c +368 snd_cx231xx_hw_capture_params warning: assignment to 'ret' was never used
+drivers/media/video/cx231xx/cx231xx-audio.c +370 snd_cx231xx_hw_capture_params warning: assignment to 'format' was never used
+drivers/media/video/cx231xx/cx231xx-video.c +606 cx231xx_reset_video_buffer warning: assignment to 'outp' was never used
+drivers/media/video/cx231xx/cx231xx-video.c +1350 vidioc_s_frequency warning: assignment to 'rc' was never used
+drivers/media/video/cx231xx/cx231xx-i2c.c +218 cx231xx_i2c_recv_bytes warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-i2c.c +297 cx231xx_i2c_recv_bytes_with_saddr warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-core.c +644 cx231xx_irq_callback warning: assignment to 'rc' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +148 cx231xx_afe_init_channels warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +197 cx231xx_afe_setup_AFE_for_baseband warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +222 cx231xx_afe_set_input_mux warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +422 cx231xx_afe_adjust_ref_count warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +567 cx231xx_set_decoder_video_input warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +856 cx231xx_do_mode_ctrl_overrides warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +925 cx231xx_set_audio_input warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +946 cx231xx_set_audio_decoder_input warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1072 cx231xx_init_ctrl_pin_status warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1085 cx231xx_set_agc_analog_digital_mux_select warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1138 cx231xx_dif_configure_C2HH_for_low_IF warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1230 cx231xx_dif_set_standard warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1607 cx231xx_tuner_pre_channel_change warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1623 cx231xx_tuner_post_channel_change warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1645 cx231xx_i2s_blk_initialize warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1665 cx231xx_i2s_blk_update_power_control warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1685 cx231xx_i2s_blk_set_audio_input warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +1736 cx231xx_set_power_mode warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2030 cx231xx_initialize_stream_xfer warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2209 cx231xx_set_gpio_value warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2314 cx231xx_gpio_i2c_write_byte warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2359 cx231xx_gpio_i2c_read_byte warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2402 cx231xx_gpio_i2c_read_ack warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2449 cx231xx_gpio_i2c_write_ack warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2478 cx231xx_gpio_i2c_write_nak warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2506 cx231xx_gpio_i2c_read warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-avcore.c +2550 cx231xx_gpio_i2c_write warning: assignment to 'status' was never used
+drivers/media/video/cx231xx/cx231xx-vbi.c +330 cx231xx_irq_vbi_callback warning: assignment to 'rc' was never used
+drivers/media/video/cx23885/cimax2.c +276 netup_ci_slot_reset warning: assignment to 'ret' was never used
+drivers/media/video/em28xx/em28xx-audio.c +314 snd_em28xx_capture_open warning: assignment to 'errCode' was never used
+drivers/media/video/em28xx/em28xx-audio.c +360 snd_em28xx_hw_capture_params warning: assignment to 'ret' was never used
+drivers/media/video/em28xx/em28xx-audio.c +362 snd_em28xx_hw_capture_params warning: assignment to 'format' was never used
+drivers/media/video/em28xx/em28xx-core.c +647 em28xx_capture_start warning: assignment to 'rc' was never used
+drivers/media/video/em28xx/em28xx-core.c +918 em28xx_irq_callback warning: assignment to 'rc' was never used
+drivers/media/video/et61x251/et61x251_core.c +512 et61x251_start_transfer warning: assignment to 'err' was never used
+drivers/media/video/gspca/mr97310a.c +330 zero_the_pointer warning: assignment to 'err_code' was never used
+drivers/media/video/gspca/pac7302.c +789 sd_stopN warning: assignment to 'ret' was never used
+drivers/media/video/gspca/pac7302.c +801 sd_stop0 warning: assignment to 'ret' was never used
+drivers/media/video/gspca/pac7311.c +592 sd_stopN warning: assignment to 'ret' was never used
+drivers/media/video/gspca/gl860/gl860-ov2640.c +283 ov2640_init_post_alt warning: assignment to 'n' was never used
+drivers/media/video/gspca/m5602/m5602_ov7660.c +219 ov7660_init warning: assignment to 'err' was never used
+drivers/media/video/gspca/m5602/m5602_po1030.c +354 po1030_start warning: assignment to 'err' was never used
+drivers/media/video/gspca/m5602/m5602_s5k4aa.c +323 s5k4aa_start warning: assignment to 'err' was never used
+drivers/media/video/hdpvr/hdpvr-control.c +103 get_input_lines_info warning: assignment to 'ret' was never used
+drivers/media/video/ivtv/ivtvfb.c +1240 ivtvfb_init warning: assignment to 'err' was never used
+drivers/media/video/ivtv/ivtvfb.c +1257 ivtvfb_cleanup warning: assignment to 'err' was never used
+drivers/media/video/pvrusb2/pvrusb2-sysfs.c +160 show_def warning: assignment to 'ret' was never used
+drivers/media/video/pvrusb2/pvrusb2-sysfs.c +179 show_val_norm warning: assignment to 'ret' was never used
+drivers/media/video/pvrusb2/pvrusb2-sysfs.c +198 show_val_custom warning: assignment to 'ret' was never used
+drivers/media/video/pvrusb2/pvrusb2-debugifc.c +295 pvr2_debugifc_do1cmd warning: assignment to 'scnt' was never used
+drivers/media/video/saa7164/saa7164-dvb.c +150 saa7164_dvb_stop_streaming warning: assignment to 'ret' was never used
+drivers/media/video/uvc/uvc_video.c +632 uvc_video_decode_bulk warning: assignment to 'buf' was never used
+drivers/message/fusion/mptscsih.c +1682 mptscsih_IssueTaskMgmt warning: assignment to 'timeleft' was never used
+drivers/message/fusion/mptscsih.c +1818 mptscsih_abort warning: assignment to 'retval' was never used
+drivers/message/fusion/mptsas.c +3871 mptsas_reprobe_lun warning: assignment to 'rc' was never used
+drivers/message/fusion/mptsas.c +4403 mptsas_issue_tm warning: assignment to 'timeleft' was never used
+drivers/message/fusion/mptctl.c +445 mptctl_bus_reset warning: assignment to 'ii' was never used
+drivers/mfd/sm501.c +521 sm501_set_clock warning: assignment to 'mode' was never used
+drivers/mfd/sm501.c +522 sm501_set_clock warning: assignment to 'gate' was never used
+drivers/mfd/sm501.c +523 sm501_set_clock warning: assignment to 'clock' was never used
+drivers/mfd/tps65010.c +430 tps65010_work warning: assignment to 'status' was never used
+drivers/mfd/mc13783-core.c +383 mc13783_irq_handle warning: assignment to 'ret' was never used
+drivers/misc/iwmc3200top/main.c +609 iwmct_remove warning: assignment to 'priv' was never used
+drivers/mtd/devices/doc2000.c +72 DoC_Delay warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2000.c +241 DoC_ReadBuf warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2000.c +348 DoC_IdentChip warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2000.c +686 doc_read warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2000.c +824 doc_write warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2000.c +1049 doc_write_oob_nolock warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2000.c +1149 doc_erase warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +50 DoC_Delay warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +196 DoC_IdentChip warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +426 doc_read warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +605 doc_write warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +662 doc_read_oob warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +742 doc_write_oob warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001.c +798 doc_erase warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001plus.c +297 DoC_IdentChip warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001plus.c +648 doc_read warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001plus.c +806 doc_write warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001plus.c +994 doc_write_oob warning: assignment to 'dummy' was never used
+drivers/mtd/devices/doc2001plus.c +1060 doc_erase warning: assignment to 'dummy' was never used
+drivers/mtd/nand/nand_base.c +1864 nand_write_page warning: assignment to 'status' was never used
+drivers/mtd/nand/cafe_nand.c +567 cafe_nand_write_page warning: assignment to 'status' was never used
+drivers/mtd/nand/diskonchip.c +229 DoC_Delay warning: assignment to 'dummy' was never used
+drivers/mtd/nand/diskonchip.c +975 doc200x_correct_data warning: assignment to 'dummy' was never used
+drivers/mtd/nand/diskonchip.c +1098 find_media_headers warning: assignment to 'ret' was never used
+drivers/mtd/onenand/onenand_base.c +3487 flexonenand_get_boundary warning: assignment to 'ret' was never used
+drivers/mtd/onenand/onenand_base.c +3681 flexonenand_set_boundary warning: assignment to 'ret' was never used
+drivers/mtd/onenand/generic.c +86 generic_onenand_probe warning: assignment to 'err' was never used
+drivers/mtd/ubi/vtbl.c +325 create_vtbl warning: assignment to 'old_seb' was never used
+drivers/net/benet/be_ethtool.c +323 be_get_settings warning: assignment to 'status' was never used
+drivers/net/benet/be_ethtool.c +423 be_phys_id warning: assignment to 'status' was never used
+drivers/net/bonding/bond_main.c +2585 bond_send_gratuitous_arp warning: assignment to 'vlan_dev' was never used
+drivers/net/chelsio/sge.c +1542 process_responses warning: assignment to 'flags' was never used
+drivers/net/chelsio/sge.c +1598 process_pure_responses warning: assignment to 'flags' was never used
+drivers/net/cxgb3/cxgb3_main.c +2959 t3_io_error_detected warning: assignment to 'ret' was never used
+drivers/net/cxgb3/cxgb3_main.c +3311 init_one warning: assignment to 'err' was never used
+drivers/net/cxgb3/cxgb3_offload.c +914 do_trace warning: assignment to 'p' was never used
+drivers/net/e1000/e1000_hw.c +162 e1000_phy_init_script warning: assignment to 'ret_val' was never used
+drivers/net/e1000/e1000_hw.c +523 e1000_reset_hw warning: assignment to 'icr' was never used
+drivers/net/e1000/e1000_hw.c +1003 e1000_copper_link_preconfig warning: assignment to 'ret_val' was never used
+drivers/net/e1000/e1000_hw.c +2317 e1000_check_for_link warning: assignment to 'ctrl' was never used
+drivers/net/e1000/e1000_hw.c +2326 e1000_check_for_link warning: assignment to 'rxcw' was never used
+drivers/net/e1000/e1000_hw.c +2376 e1000_check_for_link warning: assignment to 'ret_val' was never used
+drivers/net/e1000/e1000_hw.c +4546 e1000_clear_hw_cntrs warning: assignment to 'temp' was never used
+drivers/net/e1000/e1000_ethtool.c +534 e1000_set_eeprom warning: assignment to 'ret_val' was never used
+drivers/net/e1000/e1000_ethtool.c +1245 e1000_integrated_phy_loopback warning: assignment to 'ctrl_reg' was never used
+drivers/net/e1000e/82571.c +113 e1000_init_phy_params_82571 warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/82571.c +786 e1000_set_d0_lplu_state_82571 warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/82571.c +921 e1000_reset_hw_82571 warning: assignment to 'icr' was never used
+drivers/net/e1000e/82571.c +1620 e1000_fix_nvm_checksum_82571 warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +1108 e1000_hv_phy_workarounds_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +1202 e1000_phy_hw_reset_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +1280 e1000_set_d0_lplu_state_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +1406 e1000_set_d3_lplu_state_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +2486 e1000_reset_hw_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +2523 e1000_reset_hw_ich8lan warning: assignment to 'icr' was never used
+drivers/net/e1000e/ich8lan.c +2584 e1000_init_hw_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +2878 e1000_kmrn_lock_loss_workaround_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/ich8lan.c +3018 e1000e_gig_downshift_workaround_ich8lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/es2lan.c +477 e1000_read_phy_reg_gg82563_80003es2lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/es2lan.c +549 e1000_write_phy_reg_gg82563_80003es2lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/es2lan.c +801 e1000_reset_hw_80003es2lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/es2lan.c +813 e1000_reset_hw_80003es2lan warning: assignment to 'icr' was never used
+drivers/net/e1000e/es2lan.c +852 e1000_init_hw_80003es2lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/es2lan.c +1148 e1000_setup_copper_link_80003es2lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/es2lan.c +1226 e1000_cfg_kmrn_10_100_80003es2lan warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/lib.c +867 e1000e_setup_fiber_serdes_link warning: assignment to 'ret_val' was never used
+drivers/net/e1000e/phy.c +2676 e1000_access_phy_wakeup_reg_bm warning: assignment to 'ret_val' was never used
+drivers/net/igb/igb_main.c +3036 igb_has_link warning: assignment to 'ret_val' was never used
+drivers/net/igb/igb_main.c +5529 igb_hwtstamp_ioctl warning: assignment to 'regval' was never used
+drivers/net/igb/igb_ethtool.c +678 igb_set_eeprom warning: assignment to 'ret_val' was never used
+drivers/net/igb/igb_ethtool.c +1396 igb_integrated_phy_loopback warning: assignment to 'ctrl_reg' was never used
+drivers/net/igb/e1000_82575.c +504 igb_set_d0_lplu_state_82575 warning: assignment to 'ret_val' was never used
+drivers/net/igb/e1000_82575.c +889 igb_reset_hw_82575 warning: assignment to 'icr' was never used
+drivers/net/igb/e1000_82575.c +1556 igb_reset_hw_82580 warning: assignment to 'icr' was never used
+drivers/net/irda/via-ircc.c +637 Rd_Indx warning: assignment to 'bTmp' was never used
+drivers/net/irda/via-ircc.c +715 SI_SetMode warning: assignment to 'bTmp' was never used
+drivers/net/irda/mcs7780.c +803 mcs_receive_irq warning: assignment to 'ret' was never used
+drivers/net/irda/sir_dev.c +171 sirdev_config_fsm warning: assignment to 'ret' was never used
+drivers/net/irda/kingsun-sir.c +245 kingsun_rcv_irq warning: assignment to 'ret' was never used
+drivers/net/irda/ksdazzle-sir.c +619 ksdazzle_probe warning: assignment to 'maxp_out' was never used
+drivers/net/irda/ks959-sir.c +485 ks959_rcv_irq warning: assignment to 'ret' was never used
+drivers/net/ixgb/ixgb_hw.c +164 ixgb_adapter_stop warning: assignment to 'icr_reg' was never used
+drivers/net/ixgb/ixgb_hw.c +308 ixgb_init_hw warning: assignment to 'ctrl_reg' was never used
+drivers/net/ixgb/ixgb_hw.c +1013 ixgb_clear_hw_cntrs warning: assignment to 'temp_reg' was never used
+drivers/net/ixgb/ixgb_hw.c +1233 ixgb_optics_reset warning: assignment to 'mdio_reg' was never used
+drivers/net/ixgbe/ixgbe_82599.c +910 ixgbe_reset_hw_82599 warning: assignment to 'status' was never used
+drivers/net/ixgbe/ixgbe_phy.c +461 ixgbe_reset_phy_nl warning: assignment to 'ret_val' was never used
+drivers/net/myri10ge/myri10ge.c +1119 myri10ge_teardown_dca warning: assignment to 'err' was never used
+drivers/net/myri10ge/myri10ge.c +2335 myri10ge_set_stats warning: assignment to 'status' was never used
+drivers/net/netxen/netxen_nic_hw.c +349 netxen_pcie_sem_unlock warning: assignment to 'val' was never used
+drivers/net/netxen/netxen_nic_main.c +341 netxen_check_hw_init warning: assignment to 'first_boot' was never used
+drivers/net/netxen/netxen_nic_init.c +785 netxen_need_fw_reset warning: assignment to 'count' was never used
+drivers/net/pcmcia/fmvj18x_cs.c +600 fmvj18x_get_hwinfo warning: assignment to 'j' was never used
+drivers/net/pcmcia/fmvj18x_cs.c +667 fmvj18x_release warning: assignment to 'j' was never used
+drivers/net/pcmcia/pcnet_cs.c +339 get_hwinfo warning: assignment to 'j' was never used
+drivers/net/pcmcia/axnet_cs.c +1778 NS8390_trigger_send warning: assignment to 'ei_local' was never used
+drivers/net/pcmcia/ibmtr_cs.c +1716 tr_rx warning: assignment to 'dlc_hdr_len' was never used
+drivers/net/phy/marvell.c +292 m88e1118_config_aneg warning: assignment to 'err' was never used
+drivers/net/phy/icplus.c +51 ip175c_config_init warning: assignment to 'err' was never used
+drivers/net/skfp/smt.c +754 smt_received_pack warning: assignment to 'fs' was never used
+drivers/net/tokenring/ibmtr.c +1716 tr_rx warning: assignment to 'dlc_hdr_len' was never used
+drivers/net/tokenring/olympic.c +1392 olympic_arb_cmd warning: assignment to 'header_len' was never used
+drivers/net/tokenring/olympic.c +1467 olympic_arb_cmd warning: assignment to 'fdx_prot_error' was never used
+drivers/net/tokenring/lanstreamer.c +596 streamer_open warning: assignment to 'rc' was never used
+drivers/net/tokenring/smctr.c +495 smctr_chk_mca warning: assignment to 'r1' was never used
+drivers/net/tokenring/smctr.c +496 smctr_chk_mca warning: assignment to 'r2' was never used
+drivers/net/tulip/dmfe.c +1618 dmfe_sense_speed warning: assignment to 'phy_mode' was never used
+drivers/net/tulip/de4x5.c +5007 mii_get_oui warning: assignment to 'r3' was never used
+drivers/net/tulip/uli526x.c +1517 uli526x_sense_speed warning: assignment to 'phy_mode' was never used
+drivers/net/usb/hso.c +2319 hso_serial_common_create warning: assignment to 'i' was never used
+drivers/net/usb/asix.c +966 ax88772_bind warning: assignment to 'rx_ctl' was never used
+drivers/net/usb/asix.c +990 ax88772_bind warning: assignment to 'phyid' was never used
+drivers/net/usb/asix.c +1025 ax88772_bind warning: assignment to 'rx_ctl' was never used
+drivers/net/usb/asix.c +1064 marvell_phy_init warning: assignment to 'reg' was never used
+drivers/net/usb/asix.c +1289 ax88178_bind warning: assignment to 'phyid' was never used
+drivers/net/usb/smsc95xx.c +1056 smsc95xx_bind warning: assignment to 'ret' was never used
+drivers/net/vxge/vxge-config.c +1235 vxge_hw_ring_replenish warning: assignment to 'status' was never used
+drivers/net/vxge/vxge-config.c +3078 vxge_hw_vpath_rts_rth_set warning: assignment to 'status' was never used
+drivers/net/vxge/vxge-traffic.c +85 vxge_hw_vpath_intr_enable warning: assignment to 'val64' was never used
+drivers/net/vxge/vxge-traffic.c +331 vxge_hw_device_intr_enable warning: assignment to 'val64' was never used
+drivers/net/vxge/vxge-traffic.c +425 vxge_hw_device_flush_io warning: assignment to 'val32' was never used
+drivers/net/vxge/vxge-traffic.c +1387 vxge_hw_fifo_txdl_free warning: assignment to 'txdl_priv' was never used
+drivers/net/vxge/vxge-traffic.c +2491 vxge_hw_vpath_poll_rx warning: assignment to 'val64' was never used
+drivers/net/vxge/vxge-main.c +740 vxge_learn_mac warning: assignment to 'hldev' was never used
+drivers/net/vxge/vxge-main.c +1167 vxge_set_multicast warning: assignment to 'status' was never used
+drivers/net/vxge/vxge-main.c +2420 vxge_rem_isr warning: assignment to 'hldev' was never used
+drivers/net/vxge/vxge-main.c +2651 vxge_open warning: assignment to 'hldev' was never used
+drivers/net/vxge/vxge-main.c +2862 do_vxge_close warning: assignment to 'hldev' was never used
+drivers/net/vxge/vxge-main.c +2886 do_vxge_close warning: assignment to 'status' was never used
+drivers/net/wan/z85230.c +834 z8530_sync_close warning: assignment to 'chk' was never used
+drivers/net/wan/z85230.c +1027 z8530_sync_dma_close warning: assignment to 'chk' was never used
+drivers/net/wan/z85230.c +1191 z8530_sync_txdma_close warning: assignment to 'chk' was never used
+drivers/net/wan/dlci.c +77 dlci_header warning: assignment to 'dlp' was never used
+drivers/net/wan/dlci.c +113 dlci_receive warning: assignment to 'dlp' was never used
+drivers/net/wan/dlci.c +306 dlci_close warning: assignment to 'err' was never used
+drivers/net/wan/sdla.c +1325 sdla_change_mtu warning: assignment to 'flp' was never used
+drivers/net/wan/lmc/lmc_main.c +364 lmc_ioctl warning: assignment to 'mii' was never used
+drivers/net/wimax/i2400m/sdio-rx.c +182 i2400ms_rx warning: assignment to 'ret' was never used
+drivers/net/wimax/i2400m/control.c +549 i2400m_msg_ack_hook warning: assignment to 'dev' was never used
+drivers/net/wireless/airo.c +3920 setup_card warning: assignment to 'rc' was never used
+drivers/net/wireless/rndis_wlan.c +2733 rndis_wlan_bind warning: assignment to 'retval' was never used
+drivers/net/wireless/mwl8k.c +3069 mwl8k_bss_info_changed warning: assignment to 'rc' was never used
+drivers/net/wireless/mac80211_hwsim.c +593 mac80211_hwsim_beacon_tx warning: assignment to 'info' was never used
+drivers/net/wireless/ath/ar9170/usb.c +575 ar9170_usb_upload warning: assignment to 'err' was never used
+drivers/net/wireless/ath/ar9170/main.c +2402 ar9170_get_stats warning: assignment to 'err' was never used
+drivers/net/wireless/ath/ar9170/phy.c +470 ar9170_init_phy_from_eeprom warning: assignment to 'defval' was never used
+drivers/net/wireless/ath/ath9k/main.c +1943 ath_init_device warning: assignment to 'error' was never used
+drivers/net/wireless/ath/ath9k/xmit.c +1612 ath_tx_setup_buffer warning: assignment to 'hdrlen' was never used
+drivers/net/wireless/ath/ath9k/rc.c +933 ath_rc_update_ht warning: assignment to 'state_change' was never used
+drivers/net/wireless/ath/ath9k/eeprom_4k.c +948 ath9k_hw_4k_set_board_values warning: assignment to 'regVal' was never used
+drivers/net/wireless/b43/main.c +1181 drain_txstatus_queue warning: assignment to 'dummy' was never used
+drivers/net/wireless/b43/dma.c +752 alloc_initial_descbuffers warning: assignment to 'desc' was never used
+drivers/net/wireless/b43/dma.c +875 free_all_descbuffers warning: assignment to 'desc' was never used
+drivers/net/wireless/b43/dma.c +1527 b43_dma_handle_txstatus warning: assignment to 'desc' was never used
+drivers/net/wireless/b43/dma.c +1674 dma_rx warning: assignment to 'desc' was never used
+drivers/net/wireless/b43legacy/main.c +750 drain_txstatus_queue warning: assignment to 'dummy' was never used
+drivers/net/wireless/b43legacy/main.c +1544 b43legacy_request_firmware warning: assignment to 'tmshigh' was never used
+drivers/net/wireless/b43legacy/xmit.c +328 generate_txhdr_fw3 warning: assignment to 'rts_rate_ofdm' was never used
+drivers/net/wireless/b43legacy/dma.c +694 alloc_initial_descbuffers warning: assignment to 'desc' was never used
+drivers/net/wireless/b43legacy/dma.c +826 free_all_descbuffers warning: assignment to 'desc' was never used
+drivers/net/wireless/b43legacy/dma.c +1312 dma_tx_fragment warning: assignment to 'info' was never used
+drivers/net/wireless/b43legacy/dma.c +1373 b43legacy_dma_tx warning: assignment to 'info' was never used
+drivers/net/wireless/b43legacy/dma.c +1450 b43legacy_dma_handle_txstatus warning: assignment to 'desc' was never used
+drivers/net/wireless/b43legacy/dma.c +1613 dma_rx warning: assignment to 'desc' was never used
+drivers/net/wireless/hostap/hostap_main.c +746 hostap_set_multicast_list_queue warning: assignment to 'iface' was never used
+drivers/net/wireless/ipw2x00/ipw2200.c +1992 ipw_irq_tasklet warning: assignment to 'rc' was never used
+drivers/net/wireless/ipw2x00/ipw2200.c +3192 ipw_load_firmware warning: assignment to 'ret' was never used
+drivers/net/wireless/iwlwifi/iwl3945-base.c +2590 __iwl3945_down warning: assignment to 'conf' was never used
+drivers/net/wireless/iwlwifi/iwl3945-base.c +2843 iwl3945_bg_request_scan warning: assignment to 'conf' was never used
+drivers/net/wireless/iwlwifi/iwl3945-base.c +3110 iwl3945_post_associate warning: assignment to 'conf' was never used
+drivers/net/wireless/iwlwifi/iwl-3945.c +1778 iwl3945_hw_reg_set_txpower warning: assignment to 'a_band' was never used
+drivers/net/wireless/iwlwifi/iwl-3945.c +2572 iwl3945_verify_bsm warning: assignment to 'val' was never used
+drivers/net/wireless/iwlwifi/iwl-agn.c +2350 iwl_post_associate warning: assignment to 'conf' was never used
+drivers/net/wireless/iwlwifi/iwl-agn-rs.c +2025 rs_rate_scale_perform warning: assignment to 'rate' was never used
+drivers/net/wireless/iwlwifi/iwl-4965.c +82 iwl4965_verify_bsm warning: assignment to 'val' was never used
+drivers/net/wireless/iwlwifi/iwl-core.c +265 iwl_hw_nic_init warning: assignment to 'ret' was never used
+drivers/net/wireless/iwlwifi/iwl-eeprom.c +254 iwl_set_otp_access warning: assignment to 'otpgp' was never used
+drivers/net/wireless/iwlwifi/iwl-scan.c +586 iwl_bg_request_scan warning: assignment to 'conf' was never used
+drivers/net/wireless/iwmc3200wifi/sdio.c +160 iwm_sdio_isr warning: assignment to 'ret' was never used
+drivers/net/wireless/iwmc3200wifi/commands.c +234 iwm_store_rxiq_calib_result warning: assignment to 'eeprom_rxiq' was never used
+drivers/net/wireless/libertas/mesh.c +828 mesh_id_set warning: assignment to 'ret' was never used
+drivers/net/wireless/libertas/mesh.c +886 protocol_id_set warning: assignment to 'ret' was never used
+drivers/net/wireless/libertas/mesh.c +940 metric_id_set warning: assignment to 'ret' was never used
+drivers/net/wireless/libertas/mesh.c +994 capability_set warning: assignment to 'ret' was never used
+drivers/net/wireless/libertas/mesh.c +1049 lbs_persist_config_init warning: assignment to 'ret' was never used
+drivers/net/wireless/orinoco/hw.c +894 __orinoco_hw_setup_enc warning: assignment to 'err' was never used
+drivers/net/wireless/orinoco/wext.c +873 orinoco_ioctl_set_encodeext warning: assignment to 'err' was never used
+drivers/net/wireless/p54/p54usb.c +929 p54u_probe warning: assignment to 'err' was never used
+drivers/net/wireless/p54/p54spi.c +519 p54spi_work warning: assignment to 'ret' was never used
+drivers/net/wireless/prism54/isl_ioctl.c +189 prism54_update_stats warning: assignment to 'j' was never used
+drivers/net/wireless/prism54/isl_ioctl.c +1340 prism54_set_auth warning: assignment to 'ret' was never used
+drivers/net/wireless/prism54/isl_ioctl.c +1633 prism54_set_encodeext warning: assignment to 'ret' was never used
+drivers/net/wireless/prism54/isl_ioctl.c +1663 prism54_get_encodeext warning: assignment to 'ret' was never used
+drivers/net/wireless/wl12xx/wl1251_main.c +1129 wl1251_op_bss_info_changed warning: assignment to 'ret' was never used
+drivers/net/wireless/wl12xx/wl1271_main.c +861 wl1271_dev_notify warning: assignment to 'ret' was never used
+drivers/net/wireless/wl12xx/wl1271_boot.c +519 wl1271_boot warning: assignment to 'tmp' was never used
+drivers/net/ipg.c +488 ipg_config_autoneg warning: assignment to 'asicctrl' was never used
+drivers/net/cassini.c +918 cas_phy_init warning: assignment to 'val' was never used
+drivers/net/cassini.c +4215 cas_link_timer warning: assignment to 'bmsr' was never used
+drivers/net/3c59x.c +1584 vortex_up warning: assignment to 'mii_reg1' was never used
+drivers/net/3c59x.c +3238 vortex_eisa_cleanup warning: assignment to 'vp' was never used
+drivers/net/8390.c +553 ei_tx_err warning: assignment to 'ei_local' was never used
+drivers/net/8390.c +816 ei_rx_overrun warning: assignment to 'ei_local' was never used
+drivers/net/8390.c +1112 NS8390_trigger_send warning: assignment to 'ei_local' was never used
+drivers/net/pcnet32.c +2874 pcnet32_check_media warning: assignment to 'curr_link' was never used
+drivers/net/e100.c +1423 e100_phy_init warning: assignment to 'stat' was never used
+drivers/net/e100.c +2384 e100_get_regs_len warning: assignment to 'nic' was never used
+drivers/net/e100.c +2555 e100_diag_test warning: assignment to 'err' was never used
+drivers/net/tlan.c +808 TLan_EisaProbe warning: assignment to 'rc' was never used
+drivers/net/sis900.c +714 sis900_default_phy warning: assignment to 'status' was never used
+drivers/net/sis900.c +773 sis900_set_capability warning: assignment to 'status' was never used
+drivers/net/sis900.c +1301 sis900_timer warning: assignment to 'status' was never used
+drivers/net/ns83820.c +645 phy_intr warning: assignment to 'tbisr' was never used
+drivers/net/ns83820.c +1266 ns83820_get_settings warning: assignment to 'tanar' was never used
+drivers/net/tg3.c +860 tg3_writephy warning: assignment to 'frame_val' was never used
+drivers/net/bnx2.c +4681 bnx2_reset_chip warning: assignment to 'val' was never used
+drivers/net/bnx2x_main.c +4654 bnx2x_timer warning: assignment to 'rc' was never used
+drivers/net/bnx2x_main.c +6881 bnx2x_free_tx_skbs warning: assignment to 'bd_cons' was never used
+drivers/net/seeq8005.c +454 seeq8005_interrupt warning: assignment to 'lp' was never used
+drivers/net/8390p.c +553 ei_tx_err warning: assignment to 'ei_local' was never used
+drivers/net/8390p.c +816 ei_rx_overrun warning: assignment to 'ei_local' was never used
+drivers/net/8390p.c +1112 NS8390_trigger_send warning: assignment to 'ei_local' was never used
+drivers/net/smc-mca.c +237 ultramca_probe warning: assignment to 'pos4' was never used
+drivers/net/forcedeth.c +5483 nv_open warning: assignment to 'miistat' was never used
+drivers/net/qla3xxx.c +4087 ql3xxx_remove warning: assignment to 'qdev' was never used
+drivers/net/pppol2tp.c +2222 pppol2tp_setsockopt warning: assignment to 'err' was never used
+drivers/net/pppol2tp.c +2347 pppol2tp_getsockopt warning: assignment to 'err' was never used
+drivers/net/8139cp.c +1230 cp_tx_timeout warning: assignment to 'rc' was never used
+drivers/net/8139too.c +870 rtl8139_init_board warning: assignment to 'tmp8' was never used
+drivers/net/veth.c +204 veth_get_stats warning: assignment to 'priv' was never used
+drivers/net/amd8111e.c +596 amd8111e_init_hw_default warning: assignment to 'reg_val' was never used
+drivers/net/s2io.c +1283 init_nic warning: assignment to 'val64' was never used
+drivers/net/s2io.c +2257 fix_mac_address warning: assignment to 'val64' was never used
+drivers/net/s2io.c +2324 start_nic warning: assignment to 'val64' was never used
+drivers/net/s2io.c +2857 s2io_poll_msix warning: assignment to 'val8' was never used
+drivers/net/s2io.c +3338 s2io_updt_xpak_counter warning: assignment to 'val64' was never used
+drivers/net/s2io.c +3703 s2io_set_swapper warning: assignment to 'val64' was never used
+drivers/net/s2io.c +4332 s2io_msix_ring_handle warning: assignment to 'val8' was never used
+drivers/net/s2io.c +4401 s2io_txpic_intr_handle warning: assignment to 'val64' was never used
+drivers/net/s2io.c +5030 s2io_set_multicast warning: assignment to 'val64' was never used
+drivers/net/s2io.c +5534 s2io_ethtool_idnic warning: assignment to 'last_gpio_ctrl_val' was never used
+drivers/net/s2io.c +6822 s2io_set_link warning: assignment to 'val64' was never used
+drivers/net/s2io.c +8126 s2io_init_nic warning: assignment to 'val64' was never used
+drivers/net/dnet.c +553 dnet_start_xmit warning: assignment to 'tx_status' was never used
+drivers/net/dnet.c +649 dnet_init_hw warning: assignment to 'config' was never used
+drivers/net/niu.c +1673 xcvr_init_10g warning: assignment to 'err' was never used
+drivers/net/niu.c +1761 xcvr_init_1g_rgmii warning: assignment to 'bmcr' was never used
+drivers/net/niu.c +8195 niu_pci_vpd_scan_props warning: assignment to 'instance' was never used
+drivers/net/niu.c +8196 niu_pci_vpd_scan_props warning: assignment to 'type' was never used
+drivers/pci/bus.c +193 pci_enable_bridges warning: assignment to 'retval' was never used
+drivers/pci/slot.c +330 pci_hp_create_module_link warning: assignment to 'no_warn' was never used
+drivers/pci/hotplug/cpqphp_core.c +1338 unload_cpqphpd warning: assignment to 'rc' was never used
+drivers/pci/hotplug/cpqphp_ctrl.c +935 cpqhp_ctrl_intr warning: assignment to 'temp_dword' was never used
+drivers/pci/hotplug/cpqphp_ctrl.c +951 cpqhp_ctrl_intr warning: assignment to 'reset' was never used
+drivers/pci/hotplug/cpqphp_ctrl.c +1476 board_added warning: assignment to 'p_slot' was never used
+drivers/pci/hotplug/cpqphp_ctrl.c +1646 remove_board warning: assignment to 'rc' was never used
+drivers/pci/hotplug/cpqphp_ctrl.c +2526 configure_new_function warning: assignment to 'rc' was never used
+drivers/pci/hotplug/cpqphp_pci.c +334 cpqhp_save_config warning: assignment to 'rc' was never used
+drivers/pci/hotplug/cpqphp_nvram.c +217 load_HRT warning: assignment to 'rc' was never used
+drivers/pci/hotplug/ibmphp_ebda.c +322 ibmphp_access_ebda warning: assignment to 'rc' was never used
+drivers/pci/hotplug/ibmphp_res.c +1978 update_bridge_ranges warning: assignment to 'bus_sec' was never used
+drivers/pci/hotplug/ibmphp_hpc.c +847 poll_hpc warning: assignment to 'rc' was never used
+drivers/pci/pcie/portdrv_pci.c +137 pcie_portdrv_error_detected warning: assignment to 'retval' was never used
+drivers/pci/pcie/portdrv_pci.c +173 pcie_portdrv_mmio_enabled warning: assignment to 'retval' was never used
+drivers/pci/pcie/portdrv_pci.c +216 pcie_portdrv_slot_reset warning: assignment to 'retval' was never used
+drivers/pci/pcie/portdrv_pci.c +245 pcie_portdrv_err_resume warning: assignment to 'retval' was never used
+drivers/pci/pcie/aer/aerdrv_core.c +441 find_aer_service warning: assignment to 'retval' was never used
+drivers/pcmcia/ds.c +978 runtime_resume warning: assignment to 'rc' was never used
+drivers/platform/x86/hp-wmi.c +133 hp_wmi_perform_query warning: assignment to 'status' was never used
+drivers/platform/x86/fujitsu-laptop.c +832 acpi_fujitsu_hotkey_add warning: assignment to 'error' was never used
+drivers/platform/x86/msi-wmi.c +82 msi_wmi_query_block warning: assignment to 'status' was never used
+drivers/pnp/isapnp/core.c +653 isapnp_create_device warning: assignment to 'option_flags' was never used
+drivers/pnp/isapnp/core.c +809 isapnp_build_device_list warning: assignment to 'checksum' was never used
+drivers/pnp/isapnp/proc.c +78 isapnp_proc_bus_read warning: assignment to 'val' was never used
+drivers/pnp/pnpbios/core.c +145 pnp_dock_event warning: assignment to 'value' was never used
+drivers/power/pda_power.c +282 pda_power_probe warning: assignment to 'ret' was never used
+drivers/power/max17040_battery.c +130 max17040_get_soc warning: assignment to 'lsb' was never used
+drivers/regulator/bq24022.c +104 bq24022_probe warning: assignment to 'ret' was never used
+drivers/regulator/pcf50633-regulator.c +209 pcf50633_regulator_list_voltage warning: assignment to 'pcf' was never used
+drivers/regulator/pcf50633-regulator.c +264 pcf50633_regulator_is_enabled warning: assignment to 'regulator_id' was never used
+drivers/rtc/rtc-ab3100.c +234 ab3100_rtc_probe warning: assignment to 'err' was never used
+drivers/rtc/rtc-ds1286.c +279 ds1286_read_alarm warning: assignment to 'cmd' was never used
+drivers/rtc/rtc-v3020.c +327 rtc_probe warning: assignment to 'temp' was never used
+drivers/scsi/aic7xxx/aic79xx_core.c +2689 ahd_handle_transmission_error warning: assignment to 'lqistat2' was never used
+drivers/scsi/aic7xxx/aic79xx_core.c +4236 ahd_update_pending_scbs warning: assignment to 'tinfo' was never used
+drivers/scsi/aic7xxx/aic79xx_core.c +9063 ahd_handle_scsi_status warning: assignment to 'sg' was never used
+drivers/scsi/aic7xxx/aic79xx_pci.c +1018 ahd_aic790X_setup warning: assignment to 'devconfig1' was never used
+drivers/scsi/aic7xxx/aic79xx_osm.c +646 ahd_linux_target_alloc warning: assignment to 'tinfo' was never used
+drivers/scsi/aic7xxx/aic79xx_osm.c +2269 ahd_linux_queue_abort_cmd warning: assignment to 'saved_modes' was never used
+drivers/scsi/aic7xxx/aic79xx_osm.c +2287 ahd_linux_queue_abort_cmd warning: assignment to 'saved_scsiid' was never used
+drivers/scsi/aic7xxx/aic7xxx_osm.c +623 ahc_linux_target_alloc warning: assignment to 'tinfo' was never used
+drivers/scsi/aic7xxx/aic7xxx_osm.c +1672 ahc_send_async warning: assignment to 'targ' was never used
+drivers/scsi/arcmsr/arcmsr_hba.c +288 arcmsr_alloc_ccb_pool warning: assignment to 'intmask_org' was never used
+drivers/scsi/be2iscsi/be_main.c +506 beiscsi_init_irqs warning: assignment to 'ret' was never used
+drivers/scsi/bfa/bfad_im.c +246 bfad_im_target_reset_send warning: assignment to 'bfa_itnim' was never used
+drivers/scsi/bfa/bfa_ioc.c +840 bfa_ioc_fwver_get warning: assignment to 'pgoff' was never used
+drivers/scsi/bfa/bfa_ioc.c +1329 bfa_ioc_download_fw warning: assignment to 'pgoff' was never used
+drivers/scsi/bfa/ns.c +1163 bfa_fcs_port_ns_process_gidft_pids warning: assignment to 'rport' was never used
+drivers/scsi/bfa/scn.c +372 bfa_fcs_port_scn_portid_rscn warning: assignment to 'rport' was never used
+drivers/scsi/bfa/loop.c +105 bfa_fcs_port_loop_online warning: assignment to 'r_port' was never used
+drivers/scsi/bnx2i/bnx2i_hwi.c +2159 bnx2i_process_ofld_cmpl warning: assignment to 'cid_num' was never used
+drivers/scsi/device_handler/scsi_dh.c +266 scsi_dh_sysfs_attr_add warning: assignment to 'err' was never used
+drivers/scsi/fcoe/fcoe.c +1588 fcoe_recv_frame warning: assignment to 'port' was never used
+drivers/scsi/fcoe/fcoe.c +1598 fcoe_recv_frame warning: assignment to 'fh' was never used
+drivers/scsi/libfc/fc_rport.c +1453 fc_rport_recv_prli_req warning: assignment to 'fh' was never used
+drivers/scsi/libfc/fc_rport.c +1595 fc_rport_recv_prlo_req warning: assignment to 'fh' was never used
+drivers/scsi/lpfc/lpfc_sli.c +2634 lpfc_sli_sp_handle_rspiocb warning: assignment to 'rc' was never used
+drivers/scsi/lpfc/lpfc_sli.c +11494 lpfc_sli4_post_rpi_hdr warning: assignment to 'mbox_tmo' was never used
+drivers/scsi/lpfc/lpfc_els.c +1139 lpfc_more_plogi warning: assignment to 'sentplogi' was never used
+drivers/scsi/lpfc/lpfc_els.c +1404 lpfc_cmpl_els_plogi warning: assignment to 'rc' was never used
+drivers/scsi/lpfc/lpfc_els.c +1773 lpfc_more_adisc warning: assignment to 'sentadisc' was never used
+drivers/scsi/lpfc/lpfc_hbadisc.c +693 lpfc_cleanup_rpis warning: assignment to 'rc' was never used
+drivers/scsi/lpfc/lpfc_init.c +2696 lpfc_sli_remove_dflt_fcf warning: assignment to 'rc' was never used
+drivers/scsi/lpfc/lpfc_init.c +7520 lpfc_pci_probe_one_s4 warning: assignment to 'mcnt' was never used
+drivers/scsi/lpfc/lpfc_attr.c +2457 lpfc_stat_data_ctrl_store warning: assignment to 'v_shost' was never used
+drivers/scsi/mpt2sas/mpt2sas_base.c +2596 _base_handshake_req_reply_wait warning: assignment to 'dummy' was never used
+drivers/scsi/mpt2sas/mpt2sas_base.c +2694 mpt2sas_base_sas_iounit_control warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_base.c +2796 mpt2sas_base_scsi_enclosure_processor warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_base.c +3083 _base_send_port_enable warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_base.c +3183 _base_event_notification warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_config.c +390 _config_request warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_scsih.c +1889 mpt2sas_scsih_issue_tm warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_scsih.c +3280 _scsih_io_done warning: assignment to 'mpi_request' was never used
+drivers/scsi/mpt2sas/mpt2sas_scsih.c +4569 _scsih_reprobe_lun warning: assignment to 'rc' was never used
+drivers/scsi/mpt2sas/mpt2sas_transport.c +404 _transport_expander_report_manufacture warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_transport.c +1149 _transport_smp_handler warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_ctl.c +816 _ctl_do_mpt_command warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_ctl.c +1383 _ctl_diag_register_2 warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_ctl.c +1727 _ctl_send_release warning: assignment to 'timeleft' was never used
+drivers/scsi/mpt2sas/mpt2sas_ctl.c +1989 _ctl_diag_read_buffer warning: assignment to 'timeleft' was never used
+drivers/scsi/osd/osd_initiator.c +1435 osd_finalize_request warning: assignment to 'ret' was never used
+drivers/scsi/pcmcia/nsp_cs.c +702 nsp_fifo_count warning: assignment to 'dummy' was never used
+drivers/scsi/pcmcia/nsp_cs.c +1719 nsp_cs_config warning: assignment to 'ret' was never used
+drivers/scsi/pm8001/pm8001_sas.c +949 pm8001_I_T_nexus_reset warning: assignment to 'rc' was never used
+drivers/scsi/pm8001/pm8001_sas.c +975 pm8001_lu_reset warning: assignment to 'rc' was never used
+drivers/scsi/pm8001/pm8001_hwi.c +419 mpi_set_phys_g3_with_ssc warning: assignment to 'value' was never used
+drivers/scsi/pm8001/pm8001_hwi.c +517 check_fw_ready warning: assignment to 'value' was never used
+drivers/scsi/pm8001/pm8001_hwi.c +524 check_fw_ready warning: assignment to 'value1' was never used
+drivers/scsi/pm8001/pm8001_hwi.c +954 pm8001_chip_soft_rst warning: assignment to 'regVal' was never used
+drivers/scsi/pm8001/pm8001_hwi.c +2022 mpi_sata_completion warning: assignment to 'flags' was never used
+drivers/scsi/pm8001/pm8001_hwi.c +2293 mpi_sata_event warning: assignment to 'flags' was never used
+drivers/scsi/qla2xxx/qla_os.c +2934 qla2x00_do_dpc warning: assignment to 'rval' was never used
+drivers/scsi/qla2xxx/qla_dbg.c +1286 qla25xx_fw_dump warning: assignment to 'nxt' was never used
+drivers/scsi/qla2xxx/qla_dbg.c +1599 qla81xx_fw_dump warning: assignment to 'nxt' was never used
+drivers/scsi/qla2xxx/qla_sup.c +1515 qla24xx_beacon_blink warning: assignment to 'gpio_data' was never used
+drivers/scsi/qla2xxx/qla_mid.c +312 qla2x00_do_dpc_all_vps warning: assignment to 'ret' was never used
+drivers/scsi/qla4xxx/ql4_os.c +917 qla4xxx_recover_adapter warning: assignment to 'status' was never used
+drivers/scsi/qla4xxx/ql4_os.c +1393 qla4xxx_config_dma_addressing warning: assignment to 'retval' was never used
+drivers/scsi/qla4xxx/ql4_init.c +708 qla4xxx_devices_ready warning: assignment to 'error' was never used
+drivers/scsi/qla4xxx/ql4_init.c +898 qla4x00_pci_config warning: assignment to 'status' was never used
+drivers/scsi/sym53c8xx_2/sym_hipd.c +5415 sym_complete_error warning: assignment to 'i' was never used
+drivers/scsi/ncr53c8xx.c +7650 ncr_scatter warning: assignment to 'use_sg' was never used
+drivers/scsi/hosts.c +418 scsi_host_alloc warning: assignment to 'rval' was never used
+drivers/scsi/scsi_sysfs.c +905 scsi_sysfs_add_sdev warning: assignment to 'error' was never used
+drivers/scsi/sd.c +487 sd_prep_fn warning: assignment to 'ret' was never used
+drivers/scsi/scsi_transport_spi.c +1567 spi_transport_init warning: assignment to 'error' was never used
+drivers/scsi/sim710.c +347 sim710_init warning: assignment to 'err' was never used
+drivers/scsi/ips.c +1572 ips_make_passthru warning: assignment to 'sg' was never used
+drivers/scsi/fd_mcs.c +376 fd_mcs_detect warning: assignment to 'pos3' was never used
+drivers/scsi/in2000.c +1164 in2000_intr warning: assignment to 'sr' was never used
+drivers/scsi/in2000.c +1614 reset_hardware warning: assignment to 'x' was never used
+drivers/scsi/qla1280.c +2179 qla1280_nvram_config warning: assignment to 'ddma_conf' was never used
+drivers/scsi/qla1280.c +2461 qla1280_mailbox_command warning: assignment to 'data' was never used
+drivers/scsi/qla1280.c +4097 qla1280_setup warning: assignment to 'toke' was never used
+drivers/scsi/hpsa.c +3515 hpsa_init warning: assignment to 'err' was never used
+drivers/scsi/megaraid.c +907 mega_build_cmd warning: assignment to 'epthru' was never used
+drivers/scsi/megaraid.c +917 mega_build_cmd warning: assignment to 'pthru' was never used
+drivers/scsi/megaraid.c +3916 mega_is_bios_enabled warning: assignment to 'ret' was never used
+drivers/scsi/atp870u.c +2583 atp870u_probe warning: assignment to 'error' was never used
+drivers/scsi/gdth.c +3608 gdth_async_event warning: assignment to 'cmd_index' was never used
+drivers/scsi/a100u2w.c +1147 inia100_probe_one warning: assignment to 'bios_phys' was never used
+drivers/scsi/3w-9xxx.c +941 twa_empty_response_queue warning: assignment to 'response_que_value' was never used
+drivers/scsi/3w-9xxx.c +1822 twa_scsiop_execute_scsi warning: assignment to 'sglist' was never used
+drivers/scsi/3w-sas.c +338 twl_scsiop_execute_scsi warning: assignment to 'sglist' was never used
+drivers/scsi/nsp32.c +623 nsp32_selection_autoscsi warning: assignment to 'execph' was never used
+drivers/scsi/nsp32.c +2933 nsp32_do_bus_reset warning: assignment to 'intrdat' was never used
+drivers/scsi/nsp32.c +3007 nsp32_getprom_param warning: assignment to 'val' was never used
+drivers/scsi/ipr.c +569 ipr_mask_and_clear_interrupts warning: assignment to 'int_reg' was never used
+drivers/scsi/ipr.c +4174 ipr_handle_other_interrupt warning: assignment to 'int_reg' was never used
+drivers/scsi/ipr.c +6385 ipr_reset_enable_ioa warning: assignment to 'int_reg' was never used
+drivers/scsi/ipr.c +7501 ipr_test_msi warning: assignment to 'int_reg' was never used
+drivers/scsi/pmcraid.c +4042 pmcraid_isr_common warning: assignment to 'intrs' was never used
+drivers/scsi/pmcraid.c +4101 pmcraid_isr warning: assignment to 'intrs' was never used
+drivers/scsi/st.c +2747 st_int_ioctl warning: assignment to 'ioctl_result' was never used
+drivers/scsi/scsi_debug.c +1817 prot_verify_write warning: assignment to 'dsgl' was never used
+drivers/serial/8250.c +467 dwapb_serial_out warning: assignment to 'value' was never used
+drivers/serial/serial_cs.c +607 multi_config warning: assignment to 'err' was never used
+drivers/spi/spi.c +568 spi_unregister_master warning: assignment to 'dummy' was never used
+drivers/spi/spi_butterfly.c +325 butterfly_detach warning: assignment to 'status' was never used
+drivers/telephony/ixj.c +7692 ixj_probe_isa warning: assignment to 'probe' was never used
+drivers/uio/uio_aec.c +61 aectc_irq warning: assignment to 'status' was never used
+drivers/usb/atm/speedtch.c +535 speedtch_check_status warning: assignment to 'ret' was never used
+drivers/usb/atm/speedtch.c +677 speedtch_atm_start warning: assignment to 'ret' was never used
+drivers/usb/class/cdc-wdm.c +843 wdm_post_reset warning: assignment to 'rv' was never used
+drivers/usb/class/usbtmc.c +1059 usbtmc_probe warning: assignment to 'retcode' was never used
+drivers/usb/core/hub.c +732 hub_activate warning: assignment to 'status' was never used
+drivers/usb/core/driver.c +1483 usb_autosuspend_device warning: assignment to 'status' was never used
+drivers/usb/core/driver.c +1605 usb_autopm_put_interface warning: assignment to 'status' was never used
+drivers/usb/core/sysfs.c +838 usb_create_sysfs_intf_files warning: assignment to 'retval' was never used
+drivers/usb/early/ehci-dbgp.c +957 early_dbgp_write warning: assignment to 'ret' was never used
+drivers/usb/host/isp1760-hcd.c +404 isp1760_hc_setup warning: assignment to 'scratch' was never used
+drivers/usb/host/xhci-hcd.c +994 xhci_add_endpoint warning: assignment to 'ep_ctx' was never used
+drivers/usb/host/xhci-hub.c +220 xhci_hub_control warning: assignment to 'temp' was never used
+drivers/usb/host/xhci-dbg.c +528 xhci_dbg_ctx warning: assignment to 'slot_ctx' was never used
+drivers/usb/host/r8a66597-hcd.c +485 clear_all_buffer warning: assignment to 'tmp' was never used
+drivers/usb/serial/usb-serial.c +1118 usb_serial_disconnect warning: assignment to 'rc' was never used
+drivers/usb/serial/aircable.c +404 aircable_write warning: assignment to 'temp' was never used
+drivers/usb/serial/cp210x.c +316 cp210x_set_config warning: assignment to 'result' was never used
+drivers/usb/serial/cypress_m8.c +691 cypress_dtr_rts warning: assignment to 'priv' was never used
+drivers/usb/serial/io_edgeport.c +2960 load_application_firmware warning: assignment to 'response' was never used
+drivers/usb/serial/io_ti.c +2040 edge_close warning: assignment to 'status' was never used
+drivers/usb/serial/ftdi_sio.c +1624 ftdi_NDI_device_setup warning: assignment to 'rv' was never used
+drivers/usb/serial/iuu_phoenix.c +211 iuu_rxcmd warning: assignment to 'result' was never used
+drivers/usb/serial/iuu_phoenix.c +290 iuu_status_callback warning: assignment to 'result' was never used
+drivers/usb/serial/iuu_phoenix.c +415 iuu_led_activity_on warning: assignment to 'result' was never used
+drivers/usb/serial/iuu_phoenix.c +435 iuu_led_activity_off warning: assignment to 'result' was never used
+drivers/usb/serial/iuu_phoenix.c +735 iuu_uart_read_callback warning: assignment to 'status' was never used
+drivers/usb/serial/iuu_phoenix.c +1106 iuu_open warning: assignment to 'result' was never used
+drivers/usb/serial/keyspan.c +1223 keyspan_open warning: assignment to 's_priv' was never used
+drivers/usb/serial/keyspan.c +1317 keyspan_close warning: assignment to 's_priv' was never used
+drivers/usb/serial/keyspan.c +1430 keyspan_fake_startup warning: assignment to 'response' was never used
+drivers/usb/serial/keyspan_pda.c +746 keyspan_pda_fake_startup warning: assignment to 'response' was never used
+drivers/usb/serial/kobil_sct.c +672 kobil_set_termios warning: assignment to 'result' was never used
+drivers/usb/serial/mos7720.c +1166 change_port_settings warning: assignment to 'status' was never used
+drivers/usb/serial/mos7840.c +979 mos7840_open warning: assignment to 'status' was never used
+drivers/usb/serial/mos7840.c +1640 mos7840_tiocmget warning: assignment to 'status' was never used
+drivers/usb/serial/mos7840.c +1837 mos7840_send_cmd_write_baud_rate warning: assignment to 'status' was never used
+drivers/usb/serial/mos7840.c +2032 mos7840_change_port_settings warning: assignment to 'status' was never used
+drivers/usb/serial/sierra.c +479 sierra_write warning: assignment to 'portdata' was never used
+drivers/usb/serial/whiteheat.c +334 whiteheat_firmware_download warning: assignment to 'response' was never used
+drivers/usb/storage/alauda.c +469 alauda_check_media warning: assignment to 'rc' was never used
+drivers/usb/storage/freecom.c +434 init_freecom warning: assignment to 'result' was never used
+drivers/usb/storage/sddr55.c +550 sddr55_read_deviceID warning: assignment to 'result' was never used
+drivers/usb/storage/shuttle_usbat.c +421 usbat_wait_not_busy warning: assignment to 'result' was never used
+drivers/usb/storage/sierra_ms.c +140 sierra_ms_init warning: assignment to 'sd' was never used
+drivers/usb/storage/sierra_ms.c +203 sierra_ms_init warning: assignment to 'result' was never used
+drivers/usb/gadget/r8a66597-udc.c +1154 r8a66597_irq warning: assignment to 'nrdysts' was never used
+drivers/usb/gadget/r8a66597-udc.c +1157 r8a66597_irq warning: assignment to 'nrdyenb' was never used
+drivers/usb/gadget/r8a66597-udc.c +1200 r8a66597_timer warning: assignment to 'tmp' was never used
+drivers/usb/gadget/r8a66597-udc.c +1336 r8a66597_set_halt warning: assignment to 'req' was never used
+drivers/usb/gadget/cdc2.c +898 gs_write warning: assignment to 'status' was never used
+drivers/usb/gadget/ether.c +467 eem_unwrap warning: assignment to 'crc' was never used
+drivers/usb/gadget/file_storage.c +1450 invalidate_sub warning: assignment to 'rc' was never used
+drivers/usb/gadget/multi.c +898 gs_write warning: assignment to 'status' was never used
+drivers/usb/gadget/multi.c +1043 invalidate_sub warning: assignment to 'rc' was never used
+drivers/usb/gadget/serial.c +898 gs_write warning: assignment to 'status' was never used
+drivers/uwb/lc-rc.c +393 find_rc_grandpa warning: assignment to 'rc' was never used
+drivers/uwb/lc-rc.c +443 find_rc_dev warning: assignment to 'rc' was never used
+drivers/uwb/wlp/wss-lc.c +419 wlp_wss_create_activate warning: assignment to 'result' was never used
+drivers/video/aty/mach64_ct.c +492 aty_init_pll_ct warning: assignment to 'dsp_on_off' was never used
+drivers/video/aty/mach64_ct.c +493 aty_init_pll_ct warning: assignment to 'vga_dsp_config' was never used
+drivers/video/aty/mach64_ct.c +494 aty_init_pll_ct warning: assignment to 'vga_dsp_on_off' was never used
+drivers/video/aty/radeon_base.c +314 radeon_map_ROM warning: assignment to 'temp' was never used
+drivers/video/aty/radeon_base.c +473 radeon_probe_pll_params warning: assignment to 'tmp' was never used
+drivers/video/aty/aty128fb.c +796 aty128_map_ROM warning: assignment to 'temp' was never used
+drivers/video/console/fbcon.c +3473 fbcon_exit warning: assignment to 'pending' was never used
+drivers/video/kyro/STG4000InitDevice.c +285 SetCoreClockPLL warning: assignment to 'ulCoreClock' was never used
+drivers/video/matrox/g450_pll.c +423 __g450_setclk warning: assignment to 'pixel_vco' was never used
+drivers/video/nvidia/nv_setup.c +93 NVWriteAttr warning: assignment to 'tmp' was never used
+drivers/video/nvidia/nv_setup.c +105 NVReadAttr warning: assignment to 'tmp' was never used
+drivers/video/riva/riva_hw.c +586 nv3CalcArbitration warning: assignment to 'res_vid' was never used
+drivers/video/riva/riva_hw.c +595 nv3CalcArbitration warning: assignment to 'res_gr' was never used
+drivers/video/riva/riva_hw.c +1866 SetStartAddress3 warning: assignment to 'offset' was never used
+drivers/video/sis/init.c +2688 SiS_SetCRT1ModeRegs warning: assignment to 'resindex' was never used
+drivers/video/sis/init301.c +936 SiS_SetChrontelGPIO warning: assignment to 'temp' was never used
+drivers/video/sis/init301.c +8390 SiS_Chrontel701xOn warning: assignment to 'temp' was never used
+drivers/video/via/viafbdev.c +493 viafb_ioctl warning: assignment to '__pu_val' was never used
+drivers/video/via/viafbdev.c +1928 via_pci_probe warning: assignment to 'vmode_index' was never used
+drivers/video/via/lcd.c +829 load_lcd_patch_regs warning: assignment to 'vmode_index' was never used
+drivers/video/hgafb.c +300 hga_card_detect warning: assignment to 'q_save' was never used
+drivers/video/sstfb.c +940 sst_detect_ics warning: assignment to 'n_clk0_1' was never used
+drivers/video/sstfb.c +943 sst_detect_ics warning: assignment to 'n_clk0_7' was never used
+drivers/video/sstfb.c +946 sst_detect_ics warning: assignment to 'n_clk1_b' was never used
+drivers/video/cirrusfb.c +2501 WHDR warning: assignment to 'dummy' was never used
+drivers/video/uvesafb.c +566 uvesafb_vbe_getpmi warning: assignment to 'err' was never used
+drivers/video/intelfb/intelfb_i2c.c +63 intelfb_gpio_setscl warning: assignment to 'val' was never used
+drivers/video/intelfb/intelfb_i2c.c +74 intelfb_gpio_setsda warning: assignment to 'val' was never used
+drivers/watchdog/pcwd_usb.c +655 usb_pcwd_probe warning: assignment to 'maxp' was never used
+drivers/watchdog/sc520_wdt.c +169 wdt_config warning: assignment to 'dummy' was never used
+drivers/watchdog/sc1200wdt.c +205 sc1200wdt_ioctl warning: assignment to '__pu_val' was never used
+drivers/watchdog/pc87413_wdt.c +425 pc87413_ioctl warning: assignment to '__pu_val' was never used
+drivers/watchdog/smsc37b787_wdt.c +451 wb_smsc_wdt_ioctl warning: assignment to '__pu_val' was never used
+sound/core/seq/oss/seq_oss_midi.c +618 send_midi_event warning: assignment to 'len' was never used
+sound/core/vmaster.c +66 slave_update warning: assignment to 'err' was never used
+sound/isa/gus/gus_uart.c +44 snd_gf1_interrupt_midi_in warning: assignment to 'data' was never used
+sound/isa/wavefront/wavefront_synth.c +1041 wavefront_send_sample warning: assignment to 'shptr' was never used
+sound/oss/pas2_midi.c +109 dump_to_midi warning: assignment to 'x' was never used
+sound/pci/via82xx_modem.c +411 snd_via82xx_codec_wait warning: assignment to 'err' was never used
+sound/pci/ac97/ac97_codec.c +1069 snd_ac97_try_volume_mix warning: assignment to 'val' was never used
+sound/pci/ac97/ac97_codec.c +1103 check_volume_resolution warning: assignment to 'val' was never used
+sound/pci/aw2/aw2-saa7146.c +360 snd_aw2_saa7146_interrupt warning: assignment to 'iicsta' was never used
+sound/pci/ca0106/ca0106_main.c +381 snd_ca0106_spi_write warning: assignment to 'tmp' was never used
+sound/pci/emu10k1/io.c +164 snd_emu10k1_spi_write warning: assignment to 'tmp' was never used
+sound/pci/emu10k1/io.c +212 snd_emu10k1_i2c_write warning: assignment to 'tmp' was never used
+sound/pci/hda/patch_ca0110.c +255 ca0110_build_controls warning: assignment to 'err' was never used
+sound/pci/ice1712/revo.c +487 ap192_ak4114_init warning: assignment to 'err' was never used
+sound/pci/ice1712/quartet.c +598 qtet_ain12_sw_put warning: assignment to 'new' was never used
+sound/pci/lx6464es/lx6464es.c +446 lx_trigger_start warning: assignment to 'err' was never used
+sound/pci/lx6464es/lx6464es.c +852 lx_pcm_create warning: assignment to 'err' was never used
+sound/pci/lx6464es/lx_core.c +1179 lx_interrupt_request_new_buffer warning: assignment to 'err' was never used
+sound/pci/pcxhr/pcxhr.c +739 pcxhr_trigger_tasklet warning: assignment to 'err' was never used
+sound/soc/codecs/tpa6130a2.c +244 tpa6130a2_channel_enable warning: assignment to 'data' was never used
+sound/soc/codecs/wm8993.c +1583 wm8993_i2c_probe warning: assignment to 'ret' was never used
+sound/usb/usbmixer.c +977 build_feature_ctl warning: assignment to 'len' was never used
+sound/usb/usbmixer.c +1084 parse_audio_feature_unit warning: assignment to 'first_ch_bits' was never used
+sound/usb/usbmixer.c +1159 build_mixer_unit_ctl warning: assignment to 'len' was never used
+net/socket.c +954 sock_ioctl warning: assignment to '__pu_val' was never used
+net/9p/client.c +509 p9_client_rpc warning: assignment to 'err' was never used
+net/atm/lec.c +1223 lane_module_cleanup warning: assignment to 'priv' was never used
+net/core/dev.c +2497 netif_receive_skb warning: assignment to 'ret' was never used
+net/core/pktgen.c +2458 pktgen_output_ipsec warning: assignment to 'iph' was never used
+net/dcb/dcbnl.c +312 dcbnl_getperm_hwaddr warning: assignment to 'ret' was never used
+net/dccp/ipv6.c +507 dccp_v6_request_recv_sock warning: assignment to 'newdp' was never used
+net/econet/af_econet.c +945 aun_data_available warning: assignment to 'ip' was never used
+net/ipv4/tcp.c +632 tcp_splice_read warning: assignment to 'ret' was never used
+net/ipv4/tcp_ipv4.c +1613 tcp_v4_rcv warning: assignment to 'net' was never used
+net/ipv4/devinet.c +1053 inetdev_event warning: assignment to 'in_dev' was never used
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c +297 ct_cpu_seq_start warning: assignment to 'net' was never used
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c +315 ct_cpu_seq_next warning: assignment to 'net' was never used
+net/ipv4/cipso_ipv4.c +1998 cipso_v4_req_setattr warning: assignment to 'req_inet' was never used
+net/ipv6/af_inet6.c +410 inet6_destroy_sock warning: assignment to 'np' was never used
+net/ipv6/ip6_output.c +190 ip6_xmit warning: assignment to 'net' was never used
+net/ipv6/ip6_output.c +618 ip6_fragment warning: assignment to 'net' was never used
+net/ipv6/ip6_output.c +1450 ip6_push_pending_frames warning: assignment to 'net' was never used
+net/ipv6/ip6_input.c +167 ip6_input_finish warning: assignment to 'net' was never used
+net/ipv6/icmp.c +494 icmpv6_send warning: assignment to 'err' was never used
+net/ipv6/icmp.c +574 icmpv6_echo_reply warning: assignment to 'err' was never used
+net/ipv6/reassembly.c +272 ip6_frag_queue warning: assignment to 'net' was never used
+net/ipv6/tcp_ipv6.c +1672 tcp_v6_rcv warning: assignment to 'net' was never used
+net/ipv6/exthdrs.c +584 ipv6_hop_jumbo warning: assignment to 'net' was never used
+net/ipv6/ip6mr.c +768 ip6mr_cache_resolve warning: assignment to 'err' was never used
+net/ipv6/xfrm6_mode_beet.c +47 xfrm6_beet_output warning: assignment to 'iphv4' was never used
+net/ipv6/ip6_tunnel.c +855 ip6_tnl_xmit2 warning: assignment to 'ipv6h' was never used
+net/ipv6/ip6_tunnel.c +1247 ip6_tnl_ioctl warning: assignment to 'err' was never used
+net/irda/irlap_event.c +247 irlap_do_event warning: assignment to 'ret' was never used
+net/irda/irproc.c +75 irda_proc_register warning: assignment to 'd' was never used
+net/irda/ircomm/ircomm_lmp.c +102 ircomm_lmp_connect_response warning: assignment to 'ret' was never used
+net/irda/irlan/irlan_provider.c +143 irlan_provider_connect_indication warning: assignment to 'daddr' was never used
+net/irda/irlan/irlan_provider.c +144 irlan_provider_connect_indication warning: assignment to 'saddr' was never used
+net/key/af_key.c +2153 key_notify_policy warning: assignment to 'err' was never used
+net/llc/llc_core.c +166 llc_init warning: assignment to 'dev' was never used
+net/mac80211/status.c +45 ieee80211_handle_filtered_frame warning: assignment to 'info' was never used
+net/mac80211/tx.c +1967 ieee80211_tx_pending warning: assignment to 'sdata' was never used
+net/mac80211/util.c +1042 ieee80211_reconfig warning: assignment to 'res' was never used
+net/netfilter/nf_conntrack_core.c +180 destroy_conntrack warning: assignment to 'net' was never used
+net/netfilter/nf_conntrack_core.c +222 nf_ct_delete_from_lists warning: assignment to 'net' was never used
+net/netfilter/nf_conntrack_standalone.c +206 ct_cpu_seq_start warning: assignment to 'net' was never used
+net/netfilter/nf_conntrack_standalone.c +224 ct_cpu_seq_next warning: assignment to 'net' was never used
+net/netfilter/xt_osf.c +229 xt_osf_match_packet warning: assignment to 'optp' was never used
+net/netfilter/ipvs/ip_vs_core.c +482 ip_vs_leave warning: assignment to 'cs' was never used
+net/netfilter/ipvs/ip_vs_core.c +1345 ip_vs_in warning: assignment to 'restart' was never used
+net/rds/af_rds.c +459 rds_sock_inc_info warning: assignment to 'sk' was never used
+net/rds/iw_rdma.c +514 rds_iw_flush_mr_pool warning: assignment to 'free_goal' was never used
+net/rxrpc/ar-peer.c +193 rxrpc_get_peer warning: assignment to 'usage' was never used
+net/rxrpc/ar-recvmsg.c +103 rxrpc_recvmsg warning: assignment to 'timeo' was never used
+net/rxrpc/ar-transport.c +132 rxrpc_get_transport warning: assignment to 'usage' was never used
+net/sctp/ulpqueue.c +495 sctp_ulpq_retrieve_reassembled warning: assignment to 'cevent' was never used
+net/sctp/socket.c +6363 sctp_copy_sock warning: assignment to 'newinet' was never used
+net/sunrpc/auth.c +276 rpcauth_cache_shrinker warning: assignment to 'nr_to_scan' was never used
+net/sunrpc/xprtrdma/verbs.c +860 rpcrdma_ep_connect warning: assignment to 'rc' was never used
+net/sunrpc/xprtrdma/verbs.c +1799 rpcrdma_deregister_external warning: assignment to 'rc' was never used
+net/wimax/op-reset.c +127 wimax_gnl_doit_reset warning: assignment to 'dev' was never used
+net/wimax/op-state-get.c +70 wimax_gnl_doit_state_get warning: assignment to 'dev' was never used
+net/xfrm/xfrm_output.c +183 xfrm_output warning: assignment to 'net' was never used
+net/xfrm/xfrm_user.c +1827 xfrm_add_acquire warning: assignment to 'err' was never used
