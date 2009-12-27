@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751322AbZL0EC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbZL0ELL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751322AbZL0EC7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 23:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbZL0EC5
+	id S1751574AbZL0ELL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 23:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbZL0ELJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 23:02:57 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49543 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbZL0EC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 23:02:57 -0500
-To: serge@hallyn.com
-Cc: serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: A basic question about the security_* hooks
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20091225055034.GA374@us.ibm.com>
-	<20091226195043.GA1945@heat>
-	<20091227031631.GA17629@hallyn.com>
-In-Reply-To: <20091227031631.GA17629@hallyn.com>
-Message-Id: <200912271302.JBH64754.JtLMFQVOSOFFHO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sun, 27 Dec 2009 13:02:54 +0900
+	Sat, 26 Dec 2009 23:11:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34464
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750908AbZL0ELF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 23:11:05 -0500
+Date: Sat, 26 Dec 2009 20:11:07 -0800 (PST)
+Message-Id: <20091226.201107.35060733.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: mbreuer@majjas.com, akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sky2: make sure ethernet header is in transmit skb
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091226.194418.229766965.davem@davemloft.net>
+References: <4B367409.5060202@majjas.com>
+	<20091226140544.5600b3d1@nehalam>
+	<20091226.194418.229766965.davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Well, according to Mimi's email this is essentially what was
-> decided upon for IMA.  So I think workable guidelines would
-> be that anything which can't possibly be expected to interfere
-> with other LSMs can be added like that.
->
-> More generally, the flaw in the approach is that the hooks for
-> several permutations of LSMs might interfere with each other.
-> So for instance the cap_inode_setxattr() hook should always
-> be called if selinux is not enabled, but should not be called
-> for security.selinux namespace xattrs if selinux is enabled.
+From: David Miller <davem@davemloft.net>
+Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
 
-May I do opportunistic question regarding TOMOYO?
+> From: Stephen Hemminger <shemminger@linux-foundation.org>
+> Date: Sat, 26 Dec 2009 14:05:44 -0800
+> 
+>> Other drivers may have same problem, I really think this ought
+>> to be done at higher level.
+> 
+> I tend to agree with you, and I thought we had handled all
+> cases.  Let's simply make AF_PACKET linearize the link
+> level header before sending things out to the transmit path.
+> 
+> I can work on this if you want.
 
-I'm distributing SELinux+TOMOYO kernels (since Fedora Core 3) and
-AppArmor+TOMOYO kernels (since openSuSE 10.1), but I didn't encounter problems.
-TOMOYO can use similar approach which disablenetwork uses (i.e. adding
-dedicated variable to task_struct and not using "void *security" and not using
-LSM hooks for allocating/freeing "void *security" and not using xattr of
-filesystems).
+Actually Stephen, I took a look and I can't see how AF_PACKET
+can create this situation.
 
-@@ -1557,6 +1559,10 @@ struct task_struct {
- 		unsigned long memsw_bytes; /* uncharged mem+swap usage */
- 	} memcg_batch;
- #endif
-+#ifdef CONFIG_CCSECURITY
-+	struct ccs_domain_info *ccs_domain_info;
-+	u32 ccs_flags;
-+#endif
- };
+It always copies into the linear area of the SKB it allocates
+for sendmsg() processing.  Whether the data comes from sendmsg
+data or the mmap() ring buffer.
 
-I believe TOMOYO can safely coexist with other security modules.
-Why TOMOYO must not be used with SELinux or Smack or AppArmor?
-What interference are you worrying when enabling TOMOYO with SELinux or Smack
-or AppArmor?
-
-Regards.
