@@ -1,115 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568AbZL0LU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbZL0L0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751568AbZL0LU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 06:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZL0LU0
+	id S1751658AbZL0L0H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 06:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZL0L0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 06:20:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45845 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbZL0LU0 (ORCPT
+	Sun, 27 Dec 2009 06:26:05 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:42900 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbZL0L0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 06:20:26 -0500
-Subject: Re: [RFC PATCH] asynchronous page fault.
-From: Peter Zijlstra <peterz@infradead.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       cl@linux-foundation.org
-In-Reply-To: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 27 Dec 2009 12:19:56 +0100
-Message-ID: <1261912796.15854.25.camel@laptop>
+	Sun, 27 Dec 2009 06:26:01 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: michael@laptop.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, andi@firstfloor.org,
+       david@lang.hm, socketcan@hartkopp.net, alan@lxorguk.ukuu.org.uk,
+       herbert@gondor.apana.org.au, bdonlan@gmail.com, zbr@ioremap.net,
+       cscott@cscott.net, jmorris@namei.org, ebiederm@xmission.com,
+       bernie@codewiz.org, mrs@mythic-beasts.com, randy.dunlap@oracle.com,
+       xiyou.wangcong@gmail.com, sam@synack.fr, casey@schaufler-ca.com,
+       serue@us.ibm.com, pavel@ucw.cz
+Subject: Re: RFC: disablenetwork facility. (v4)
+In-Reply-To: Your message of "Sun, 27 Dec 2009 17:36:48 +0900."
+             <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
+From: Valdis.Kletnieks@vt.edu
+References: <20091227010441.GA12077@heat>
+            <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1261913020_3923P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 27 Dec 2009 06:23:40 -0500
+Message-ID: <23459.1261913020@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020201.4B3743BF.0083,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-25 at 10:51 +0900, KAMEZAWA Hiroyuki wrote:
-> Index: linux-2.6.33-rc2/lib/rbtree.c
-> ===================================================================
-> --- linux-2.6.33-rc2.orig/lib/rbtree.c
-> +++ linux-2.6.33-rc2/lib/rbtree.c
-> @@ -30,19 +30,19 @@ static void __rb_rotate_left(struct rb_n
->  
->         if ((node->rb_right = right->rb_left))
->                 rb_set_parent(right->rb_left, node);
-> -       right->rb_left = node;
-> +       rcu_assign_pointer(right->rb_left, node);
->  
->         rb_set_parent(right, parent);
->  
->         if (parent)
->         {
->                 if (node == parent->rb_left)
-> -                       parent->rb_left = right;
-> +                       rcu_assign_pointer(parent->rb_left, right);
->                 else
-> -                       parent->rb_right = right;
-> +                       rcu_assign_pointer(parent->rb_right, right);
->         }
->         else
-> -               root->rb_node = right;
-> +               rcu_assign_pointer(root->rb_node, right);
->         rb_set_parent(node, right);
->  }
->  
-> @@ -53,19 +53,19 @@ static void __rb_rotate_right(struct rb_
->  
->         if ((node->rb_left = left->rb_right))
->                 rb_set_parent(left->rb_right, node);
-> -       left->rb_right = node;
-> +       rcu_assign_pointer(left->rb_right, node);
->  
->         rb_set_parent(left, parent);
->  
->         if (parent)
->         {
->                 if (node == parent->rb_right)
-> -                       parent->rb_right = left;
-> +                       rcu_assign_pointer(parent->rb_right, left);
->                 else
-> -                       parent->rb_left = left;
-> +                       rcu_assign_pointer(parent->rb_left, left);
->         }
->         else
-> -               root->rb_node = left;
-> +               rcu_assign_pointer(root->rb_node, left);
->         rb_set_parent(node, left);
->  }
+--==_Exmh_1261913020_3923P
+Content-Type: text/plain; charset=us-ascii
 
+On Sun, 27 Dec 2009 17:36:48 +0900, Tetsuo Handa said:
 
-Consider the tree rotation:
+> What about defining two types of masks, one is applied throughout the rest of
+> the task_struct's lifetime (inheritable mask), the other is cleared when
+> execve() succeeds (local mask)?
 
+A mask of permitted syscalls. You've re-invented SECCOMP. ;)
 
-           Q                        P
-         /   \                    /   \
-       P       C                A       Q
-     /   \                            /   \
-   A       B                        B       C
+> When an application is sure that "I know I don't need to call execve()" or
 
+OK, you *might* know that. Or more likely you just *think* you know that - ever
+had a library routine do an execve() call behind your back?).  Or glibc
+decides to do a clone2() call behind your back instead of execve(),
+except on ARM where it does either a clone_nommu47() or clone_backflip() :)
 
-Since this comprises of 3 assignments (assuming right rotation):
+> "I know execve()d programs need not to call ...()"
 
-  Q.left = B
-  P.right = Q
-  parent = P
+Unless you've done a code review of the exec'ed program, you don't know.
 
-it is non-atomic. This in turn means that any lock-less decent into the
-tree will be able to miss a whole subtree or worse (imagine us being at
-Q, needing to go to A, then the rotation happens, and all we can choose
-from is B or C).
+The big problem is that it's *not* sufficient to just run an strace or two
+of normal runs and proclaim "this is the set of syscalls I need" - you need
+to check all the error paths in all the shared libraries too.  It's no fun
+when a program errors out, tries to do a syslog() of the fact - and then
+*that* errors out too, causing the program to go into an infinite loop trying
+to report the previous syslog() call just failed...
 
-Your changelog states as much.
+> "I want execve()d programs not to call ...()", 
 
-"Even if RB-tree rotation occurs while we walk tree for look-up, we just
-miss vma without oops."
+Congrats - you just re-invented the Sendmail capabilities bug. ;)
 
-However, since this is the case, do we still need the
-rcu_assign_pointer() conversion your patch does? All I can see it do is
-slow down all RB-tree users, without any gain.
+This stuff is harder than it looks, especially when you realize that
+syscall-granularity is almost certainly not the right security model.
+
+> Application writers know better what syscalls the application will call than
+> application users.
+
+But the application user will know better than the writer what *actual*
+security constraints need to be applied.  "I don't care *what* syscalls the
+program uses, it's not allowed to access resource XYZ".
+
+--==_Exmh_1261913020_3923P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLN0O8cC3lWbTT17ARApdcAKCbYH1wxDbBMnf92J5M+dErCGa9IQCaAr6c
+1kDgjnIe+3GW1XJwa6A4Zl8=
+=WCw8
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1261913020_3923P--
 
