@@ -1,148 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZL0BFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbZL0BHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbZL0BFP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 20:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbZL0BFL
+	id S1754273AbZL0BHw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 20:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZL0BHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 20:05:11 -0500
-Received: from lists.laptop.org ([18.85.2.145]:45164 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754437AbZL0BFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 20:05:04 -0500
-Date: Sat, 26 Dec 2009 20:07:08 -0500
-From: Michael Stone <michael@laptop.org>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-       Michael Stone <michael@laptop.org>
-Subject: [PATCH 3/3] Security: Document disablenetwork. (v4)
-Message-ID: <20091227010708.GA12216@heat>
-References: <20091227010441.GA12077@heat>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091227010441.GA12077@heat>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 26 Dec 2009 20:07:51 -0500
+Received: from mail.perches.com ([173.55.12.10]:1436 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753977AbZL0BHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 20:07:50 -0500
+Subject: Re: [PATCH] thinkpad_acpi.c: Remove #define TPACPI_<level>s for
+ printks
+From: Joe Perches <joe@perches.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       Len Brown <len.brown@intel.com>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091227002935.GC26593@khazad-dum.debian.net>
+References: <1261797801.2568.69.camel@Joe-Laptop.home>
+	 <20091226042017.GA14921@khazad-dum.debian.net>
+	 <1261802563.2568.75.camel@Joe-Laptop.home>
+	 <20091227002935.GC26593@khazad-dum.debian.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 26 Dec 2009 17:07:49 -0800
+Message-ID: <1261876069.2568.96.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Explain the purpose, implementation, and semantics of the disablenetwork
-facility.
+On Sat, 2009-12-26 at 22:29 -0200, Henrique de Moraes Holschuh wrote:
+> Unfolding the printk messages to a single line _is_ useful for grep, though,
+> and I plan to do just that (not high priority, though), and I would accept
+> patches that do just that without any fuss :)
 
-Also reference some example userland clients.
+perl -i -e 'local $/; while (<>) { s@\b(printk[^;]+)\"\s*\n\s*\"@$1@g ; print ; }' $file
 
-Signed-off-by: Michael Stone <michael@laptop.org>
----
-  Documentation/disablenetwork.txt |   84 ++++++++++++++++++++++++++++++++++++++
-  1 files changed, 84 insertions(+), 0 deletions(-)
-  create mode 100644 Documentation/disablenetwork.txt
 
-diff --git a/Documentation/disablenetwork.txt b/Documentation/disablenetwork.txt
-new file mode 100644
-index 0000000..c885502
---- /dev/null
-+++ b/Documentation/disablenetwork.txt
-@@ -0,0 +1,84 @@
-+Disablenetwork Purpose
-+----------------------
-+
-+Daniel Bernstein has observed [1] that security-conscious userland processes
-+may benefit from the ability to irrevocably remove their ability to create,
-+bind, connect to, or send messages except in the case of previously connected
-+sockets or AF_UNIX filesystem sockets.
-+
-+This facility is particularly attractive to security platforms like OLPC
-+Bitfrost [2] and to isolation programs like Rainbow [3] and Plash [4] because:
-+
-+  * it integrates well with standard techniques for writing privilege-separated
-+    Unix programs
-+
-+  * it integrates well with the need to perform limited socket I/O, e.g., when
-+    running X clients
-+
-+  * it's available to unprivileged programs
-+
-+  * it's a discretionary feature available to all of distributors,
-+    administrators, authors, and users
-+
-+  * its effect is entirely local, rather than global (like netfilter)
-+
-+  * it's simple enough to have some hope of being used correctly
-+
-+
-+Implementation
-+--------------
-+
-+The initial userland interface for accessing the disablenetwork functionality
-+is provided through the prctl() framework via a new pair of options named
-+PR_{GET,SET}_NETWORK and a new flag named PR_NETWORK_OFF.
-+
-+The PR_{GET,SET}_NETWORK options access and modify a new (conditionally
-+compiled) task_struct flags field named "network".
-+
-+Finally, the pre-existing
-+
-+  security_socket_create(),
-+  security_socket_bind(),
-+  security_socket_connect(),
-+  security_socket_sendmsg(), and
-+  security_ptrace_access_check()
-+
-+security hooks are modified to call the corresponding disablenetwork_*
-+discretionary access control functions. These functions return -EPERM or 0 as
-+described below.
-+
-+Semantics
-+---------
-+
-+current->network is a task_struct flags field which is preserved across all
-+variants of fork() and exec().
-+
-+Writes which attempt to clear bits in current->network return -EPERM.
-+
-+The default value for current->network is named PR_NETWORK_ON and is defined
-+to be 0.
-+
-+Presently, only one flag is defined: PR_NETWORK_OFF.
-+
-+More flags may be defined in the future if they become needed.
-+
-+Attempts to set undefined flags result in -EINVAL.
-+
-+When PR_NETWORK_OFF is set, the disablenetwork security hooks for socket(),
-+bind(), connect(), sendmsg(), and ptrace() will return -EPERM or 0.
-+
-+Exceptions are made for
-+
-+  * processes manipulating an AF_UNIX socket or,
-+  * processes calling sendmsg() on a previously connected socket
-+      (i.e. one with msg.msg_name == NULL && msg.msg_namelen == 0) or
-+  * processes calling ptrace() on a target process which shares every
-+    networking restriction flag set in current->network.
-+
-+References
-+----------
-+
-+[1]: http://cr.yp.to/unix/disablenetwork.html
-+[2]: http://wiki.laptop.org/go/OLPC_Bitfrost
-+[3]: http://wiki.laptop.org/go/Rainbow
-+[4]: http://plash.beasts.org/
--- 
-1.6.6.rc2
