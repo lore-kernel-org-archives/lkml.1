@@ -1,94 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751073AbZL0F5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZL0HMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751073AbZL0F5L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 00:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbZL0F5J
+	id S1751218AbZL0HMc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 02:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZL0HMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 00:57:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53766 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750762AbZL0F5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 00:57:07 -0500
-Date: Sun, 27 Dec 2009 06:56:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Valdis.Kletnieks@vt.edu
-Cc: Pavel Machek <pavel@ucw.cz>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, joe@perches.com,
-       torvalds@linux-foundation.org, peterz@infradead.org, efault@gmx.de,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [tip:sched/urgent] sched: Restore printk sanity
-Message-ID: <20091227055637.GA22315@elte.hu>
-References: <1261315437.4314.6.camel@laptop>
- <tip-6c9a74afc5d95321e33a727b3c563f3e7d6c4a5c@git.kernel.org>
- <20091225132642.GA1419@ucw.cz>
- <20091225184514.GA381@elte.hu>
- <5723.1261874741@localhost>
+	Sun, 27 Dec 2009 02:12:31 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:27140 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbZL0HMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 02:12:30 -0500
+Date: Sun, 27 Dec 2009 12:41:58 +0530 (IST)
+From: Rakesh Ranjan <rakesh@chelsio.com>
+X-X-Sender: rakesh@rakeshpc.asicdesigner.com
+To: LNDML <netdev@vger.kernel.org>, LSCSIML <linux-scsi@vger.kernel.org>,
+       OISCSIML <open-iscsi@googlegroups.com>
+cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       James Bottomley <james.bottomley@hansenpartnership.com>,
+       Karen Xie <kxie@chelsio.com>, Rakesh Ranjan <rakesh@chelsio.com>
+Subject: [RESEND PATCH 1/1]cxgb3i: Fix a login over vlan issue
+Message-ID: <alpine.LFD.2.00.0912271235370.12420@rakeshpc.asicdesigner.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5723.1261874741@localhost>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 27 Dec 2009 07:14:42.0109 (UTC) FILETIME=[42833ED0:01CA86C4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Rakesh Ranjan <rakesh@chelsio.com>
+Date: Sun, 27 Dec 2009 12:33:08 +0530
+Fix a target login issue, when parent interface is vlan and we are using cxgb3i sepecific
+private ip address in '/etc/iscsi/ifaces/' iface file.
 
-* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+Acked-by: Karen Xie <kxie@chelsio.com>
+Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
+---
+ drivers/scsi/cxgb3i/cxgb3i_offload.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
 
-> On Fri, 25 Dec 2009 19:45:14 +0100, Ingo Molnar said:
-> 
-> >  - in the last stable kernel, v2.6.32, still more new printk()s were 
-> >    introduced than pr_*() lines:
-> > 
-> >      $ git log -p v2.6.31..v2.6.32 | grep '^+.*\<pr_' | wc -l
-> >      2016
-> >      $ git log -p v2.6.31..v2.6.32 | grep '^+.*\<printk' | wc -l
-> >      3531
-> 
-> Ahem. That's not introduced, that's 'added or modified'.
+diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+index c1d5be4..4b8a513 100644
+--- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
++++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+@@ -1440,6 +1440,10 @@ void cxgb3i_c3cn_release(struct s3_conn *c3cn)
+ static int is_cxgb3_dev(struct net_device *dev)
+ {
+ 	struct cxgb3i_sdev_data *cdata;
++	struct net_device *ndev = dev;
++
++	if (dev->priv_flags && IFF_802_1Q_VLAN)
++		ndev = vlan_dev_real_dev(dev);
+ 
+ 	write_lock(&cdata_rwlock);
+ 	list_for_each_entry(cdata, &cdata_list, list) {
+@@ -1447,7 +1451,7 @@ static int is_cxgb3_dev(struct net_device *dev)
+ 		int i;
+ 
+ 		for (i = 0; i < ports->nports; i++)
+-			if (dev == ports->lldevs[i]) {
++			if (ndev == ports->lldevs[i]) {
+ 				write_unlock(&cdata_rwlock);
+ 				return 1;
+ 			}
+@@ -1566,6 +1570,26 @@ out_err:
+ 	return -1;
+ }
+ 
++/* *
++ * cxgb3i_find_dev - find the interface associated with the given address
++ * @ipaddr: ip address
++ */
++static struct net_device *
++cxgb3i_find_dev(struct net_device *dev, __be32 ipaddr)
++{
++	struct flowi fl;
++	int err;
++	struct rtable *rt;
++
++	memset(&fl, 0, sizeof(fl));
++	fl.nl_u.ip4_u.daddr = ipaddr;
++
++	err = ip_route_output_key(dev ? dev_net(dev) : &init_net, &rt, &fl);
++	if (!err)
++		return (&rt->u.dst)->dev;
++
++	return NULL;
++}
+ 
+ /**
+  * cxgb3i_c3cn_connect - initiates an iscsi tcp connection to a given address
+@@ -1581,6 +1605,7 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
+ 	struct cxgb3i_sdev_data *cdata;
+ 	struct t3cdev *cdev;
+ 	__be32 sipv4;
++	struct net_device *dstdev;
+ 	int err;
+ 
+ 	c3cn_conn_debug("c3cn 0x%p, dev 0x%p.\n", c3cn, dev);
+@@ -1591,6 +1616,13 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
+ 	c3cn->daddr.sin_port = usin->sin_port;
+ 	c3cn->daddr.sin_addr.s_addr = usin->sin_addr.s_addr;
+ 
++	dstdev = cxgb3i_find_dev(dev, usin->sin_addr.s_addr);
++	if (!dstdev || !is_cxgb3_dev(dstdev))
++		return -ENETUNREACH;
++
++	if (dstdev->priv_flags & IFF_802_1Q_VLAN)
++		dev = dstdev;
++
+ 	rt = find_route(dev, c3cn->saddr.sin_addr.s_addr,
+ 			c3cn->daddr.sin_addr.s_addr,
+ 			c3cn->saddr.sin_port,
+-- 
+1.6.0.6
 
-'introduced or modified', yes. In those 5500 lines less than ~20% are 
-'modifications' (the rest is newly introduced).
-
-> % git log -p v2.6.31..v2.6.32 | grep -C 5 '^+.*\<pr_' | head
-> -        * In case of failure continue with no timer. */
-> +       /* Test if the external timer can be actually used.
-> +        * In case of failure continue without timer. */
->         if (unlikely((stmmac_open_ext_timer(dev, priv->tm)) < 0)) {
-> -               pr_warning("stmmaceth: cannot attach the HW timer\n");
-> +               pr_warning("stmmaceth: cannot attach the external timer.\n");
->                 tmrate = 0;
->                 priv->tm->freq = 0;
->                 priv->tm->timer_start = stmmac_no_timer_started;
->                 priv->tm->timer_stop = stmmac_no_timer_stopped;
-> 
-> Meanwhile, the fact that there's only about a 2-to-1 difference in patches 
-> when there's a 6-to-1 difference in existing code tells me that 
-> proportionally, there is *more* activity with pr_foo variants than printk.
-
-Yet there's more printks in the kernel than a cycle ago, so without the trend 
-changing, we've got an infinite supply of future 'conversion' patches.
-
-> printk:  3531 hits in 61126 uses = 5.7% churn
-> pr_foo: 2016 hits in 10861 uses = 18.5% churn
-
-Peter's complaint was precisely that there's a lot of 'churn' for pr_*().
-
-> The numbers need much deeper analysis to make any sort of real statistical 
-> conclusion here...
-
-If you are convinced that there's something else going on as well feel free to 
-do deeper analysis. So, until some contrary numbers are posted i stay by my 
-main conclusions.
-
-Thanks,
-
-	Ingo
