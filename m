@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751522AbZL0V1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751543AbZL0V1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751522AbZL0V1g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 16:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZL0V1e
+	id S1751543AbZL0V1x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 16:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZL0V1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 16:27:34 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:47754 "EHLO mgw1.diku.dk"
+	Sun, 27 Dec 2009 16:27:50 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:47760 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbZL0V1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 16:27:31 -0500
-Date: Sun, 27 Dec 2009 22:27:28 +0100 (CET)
+	id S1751211AbZL0V1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 16:27:46 -0500
+Date: Sun, 27 Dec 2009 22:27:44 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+To: Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/5] drivers/gpu: Correct NULL test
-Message-ID: <Pine.LNX.4.64.0912272227130.20548@ask.diku.dk>
+Subject: [PATCH 4/5] drivers/net/can: Correct NULL test
+Message-ID: <Pine.LNX.4.64.0912272227290.20548@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,21 +50,18 @@ if (
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/gpu/drm/nouveau/nouveau_grctx.c        |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/can/mcp251x.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_grctx.c b/drivers/gpu/drm/nouveau/nouveau_grctx.c
-index 419f4c2..c7ebec6 100644
---- a/drivers/gpu/drm/nouveau/nouveau_grctx.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_grctx.c
-@@ -97,8 +97,8 @@ nouveau_grctx_prog_load(struct drm_device *dev)
+diff -u -p a/drivers/net/can/mcp251x.c b/drivers/net/can/mcp251x.c
+--- a/drivers/net/can/mcp251x.c
++++ b/drivers/net/can/mcp251x.c
+@@ -990,7 +990,7 @@ static int __devinit mcp251x_can_probe(s
+ 			goto error_tx_buf;
  		}
- 
- 		pgraph->ctxvals = kmalloc(fw->size, GFP_KERNEL);
--		if (!pgraph->ctxprog) {
--			NV_ERROR(dev, "OOM copying ctxprog\n");
-+		if (!pgraph->ctxvals) {
-+			NV_ERROR(dev, "OOM copying ctxvals\n");
- 			release_firmware(fw);
- 			nouveau_grctx_fini(dev);
- 			return -ENOMEM;
+ 		priv->spi_rx_buf = kmalloc(SPI_TRANSFER_BUF_LEN, GFP_KERNEL);
+-		if (!priv->spi_tx_buf) {
++		if (!priv->spi_rx_buf) {
+ 			ret = -ENOMEM;
+ 			goto error_rx_buf;
+ 		}
