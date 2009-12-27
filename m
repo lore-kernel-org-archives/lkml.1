@@ -1,94 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbZL0U2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751316AbZL0Uca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751258AbZL0U2Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 15:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbZL0U2Y
+	id S1751316AbZL0Uca (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 15:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZL0Uc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 15:28:24 -0500
-Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:33375 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbZL0U2Y (ORCPT
+	Sun, 27 Dec 2009 15:32:29 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:49503 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbZL0Uc1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 15:28:24 -0500
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: A basic question about the security_* hooks
-Date: Sun, 27 Dec 2009 20:28:23 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <hh8g17$qlu$1@taverner.cs.berkeley.edu>
-References: <20091225055034.GA374@us.ibm.com> <20091227031631.GA17629@hallyn.com> <200912271302.JBH64754.JtLMFQVOSOFFHO@I-love.SAKURA.ne.jp> <22669.1261911374@localhost>
-Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1261945703 27326 128.32.153.193 (27 Dec 2009 20:28:23 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Sun, 27 Dec 2009 20:28:23 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Sun, 27 Dec 2009 15:32:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AOuJhUWsV4Ln3FtM+hP/xNC0RwsOHWZue/tnivd7PketpPiyUWV5ZW612tNJO1+DGa
+         AWgCgDC084rRukzuaeA07T0SJxuRCf34UGhwSoPsmz4sATxH/6ErkNId7GBgvmUuJ1A/
+         X9RRqhg8fUsFfWp54F3NbrkvCP+N3JtStNEXw=
+MIME-Version: 1.0
+In-Reply-To: <87eimir4yk.fsf@openvz.org>
+References: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
+	 <a4423d670912241449y2da43d5fi3e5a18c114b84178@mail.gmail.com>
+	 <87hbrfdylc.fsf@openvz.org>
+	 <a4423d670912251133u795338a4wd32d5cdef8c36c75@mail.gmail.com>
+	 <87eimir4yk.fsf@openvz.org>
+Date: Sun, 27 Dec 2009 23:32:25 +0300
+Message-ID: <a4423d670912271232y5bb928f7wb667ca71f1a93f8a@mail.gmail.com>
+Subject: Re: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, dmitry.torokhov@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Sure, it's *possible* to create a system where you've loaded 2 security systems
->and have it work.  But the general consensus is that if you're running one
->system and want to run a second, it's easier to ask yourself *why* you want to
->run the second, and see if there's some way to get the added functionality
->supported in the first system.
+It seems Dmitry Torokhov has the same issue, Cc'ed.
 
-Read the thread, where you can find the answer *why*.  The question has
-already been answered.  As far as I can tell, the answer is not what you
-are presuming.  As far as I can tell, the answer is, the original poster
-wants a simple, fairly high-assurance, easy-to-configure way to disable
-network access for certain processes, to facilitate privilege-separated
-software architectures.  That's a great goal.  It's a goal that is not
-easily supported by, say, SELinux.
+2009/12/26 Dmitry Monakhov <dmonakhov@openvz.org>:
+> Alexander Beregalov <a.beregalov@gmail.com> writes:
+>
+>>>> It seems I can easily reproduce it.
+>>>> But I can't compile 2.6.33-rc2 :)
+> BTW what sha1 of the git-commit you have used to reproduce
+> the bug (2.6.33-rc1 HEAD has no this BUG_ON).
+> This is important to me to know it, or just post the
+> fs/ext4/inode.c file.
 
-So now suppose you are starting with a system that's running SELinux,
-and you want to add functionality to meet the original poster's goals.
-What do you do?  You've basically got two choices: (a) hardcode it in,
-ignoring the LSM hooks; or (b) build a little LSM that enforces this
-using the LSM hooks.
+It was in the first post - 2f99f5c
+There is only OCFS update between it and -rc2.
 
-If you go with approach (a), Alan Cox gives you a hard time and says
-"this ought to be done with a LSM".
+>>>>
+>>>> scripts/kconfig/conf -s arch/sparc/Kconfig
+>>>>   CHK     include/linux/version.h
+>>>>   CHK     include/generated/utsrelease.h
+>>>>   CALL    scripts/checksyscalls.sh
+>>>>   CHK     include/generated/compile.h
+>>>>   GZIP    kernel/config_data.gz
+>>>>   CC      fs/configfs/inode.o
+>>>>   IKCFG   kernel/config_data.h
+>>>>   LD [M]  fs/btrfs/btrfs.o
+>>>>   CC      kernel/configs.o
+>>>> fs/btrfs/sysfs.o: file not recognized: File truncated
+>>> This happens because of  delayed allocation. Each time BUG or
+>>> unexpected power off happens during object files usually becomes
+>>> broken. IMHO this is expected issue. Just recompile from beginning
+>>> # make clean; make -j4
+>>
+>> It does not help, it still fails.
+> Again strange, please run fsck. What about compile it from very
+> beginning (start from unpacking tar-ball from kernel.org)
+> Or may be compile it on another file-system(ext3 or
+> ext4 with nodelalloc option)
 
-If you go with approach (b), you're dead in the water: because people
-have a kneejerk reaction against ever allowing composition of LSMs,
-there's no way to use your own little LSM on your system (without
-turning off SELinux or whatever LSM was already installed -- and
-this cure is arguably worse than the disease).
+I tried fsck, it did not find any problem, kernel build still fails after it.
 
-It's a catch-22.  What are you supposed to do?  The poster has asked for
-your advice about the best way to accomplish his goals, and is open to
-any approach that meets these goals.  So far all I have heard is "No".
-I think folks could be more constructive.
+>> I will try to crosscompile the kernel with Ted's patch on another host.
 
-I think people have committed a logical fallacy here: they've reasoned
-that in the general case, composition is hard to reason about, therefore
-all composition must be bad.  The "therefore" does not follow.
+Here is output of 2.6.33-rc2 plus Ted's patch
 
->The basic problem is that large complete MAC systems like TOMOYO, SELinux,
->Smack, or AppArmor are complicated.  In addition, they are unable to look at
->each other's policies to detect potential conflicts. As a result, although
->it's probably *possible* to create a system that loads both a TOMOYO and
->an SELinux policy, it's hazardous:
+EXT4-fs (sda1): inode #1387643: mdb_free (1) < mdb_claim (2) BUG
 
-But that's irrelevant.  Re-read the thread.  The poster doesn't want
-to compose TOMOYO+SELinux.  He wants to compose SELinux+his little LSM.
-Or AppArmor+his little LSM.  Or (whatever LSM was already installed)+his
-little LSM.  TOMOYO+SELinux is a strawman.
+------------[ cut here ]------------
+WARNING: at fs/ext4/inode.c:1067 ext4_get_blocks+0x3f0/0x440()
+Modules linked in:
+Call Trace:
+ [0000000000456bb0] warn_slowpath_common+0x50/0xa0
+ [0000000000456c1c] warn_slowpath_null+0x1c/0x40
+ [0000000000545010] ext4_get_blocks+0x3f0/0x440
+ [0000000000545420] mpage_da_map_blocks+0x80/0x800
+ [0000000000546260] mpage_add_bh_to_extent+0x40/0x100
+ [00000000005464cc] __mpage_da_writepage+0x1ac/0x220
+ [00000000004a957c] write_cache_pages+0x19c/0x380
+ [0000000000545e1c] ext4_da_writepages+0x27c/0x680
+ [00000000004a97ec] do_writepages+0x2c/0x60
+ [00000000004f952c] writeback_single_inode+0xcc/0x3c0
+ [00000000004fa438] writeback_inodes_wb+0x338/0x500
+ [00000000004fa748] wb_writeback+0x148/0x220
+ [00000000004fab60] wb_do_writeback+0x240/0x260
+ [00000000004fabec] bdi_writeback_task+0x6c/0xc0
+ [00000000004b6fb0] bdi_start_fn+0x70/0xe0
+ [000000000047036c] kthread+0x6c/0x80
+---[ end trace 46a56c443941c84d ]---
 
-The fact that composing TOMOYO+SELinux is hazardous says little or nothing
-about the merits of composing SELinux+his little LSM.  His little LSM
-is, well, little, and as a result likely to be noticeably easier to
-reason about.  Sure, there may be tricky corner cases.  Sure, there
-could be subtle hazards lurking here.  But don't jump immediately to
-the worst case when the worst case isn't what's at issue here.
+>>
+> It is sad, but i still can not reproduce your bug.
+> At this time i've tested following configurations:
+> system   :    2.6.33-rc2, x86 two cores cpu with 2GB of ram
+> block dev: real sata drive, loopdev over tmpfs
+> mkfs     : 4k and 1k blocksize
+> mount    : w/o quota, quota, journaled quota
+> quota    : both ON and OFF states
+> fs-load  : - fsstress with 1,4,16,32 concurrent tasks
+>           - kernel compilation -j4, -j32
+>           - In fact currently my mail-dir is under quota control.
+> Please clarify your use-case:
+> 0) Your system speciffication: cpu_num, mem_size, page_size(i guess 8k)
+>   block device.
+UltraSparc IIe, UP, 2Gb, 8kb, real SCSI disk (sym53c8xx driver)
+> 1) mkfs options
+I do not remember.
+Perhaps dumpe2fs can help
 
-Yes, composition is hard.  Look, software is hard.  We suck it up
-and deal with it.  We make the best of it.  We choose architectures
-that minimize the likelihood of breakage.  (And in many ways that is
-the kind of thing the original poster has done, and is open to doing.)
-But we don't give up and say, oh forget about this software stuff,
-it's too hard, let's go to the beach instead.
+root@v120 ~ # dumpe2fs -h /dev/sda1
+dumpe2fs 1.41.9 (22-Aug-2009)
+Filesystem volume name:   <none>
+Last mounted on:          /
+Filesystem UUID:          b34f302e-78a3-4f80-bae6-31639456216c
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index
+filetype needs_recovery sparse_super large_file
+Filesystem flags:         signed_directory_hash
+Default mount options:    (none)
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              2113536
+Block count:              8448000
+Reserved block count:     422400
+Free blocks:              6661110
+Free inodes:              1861302
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Reserved GDT blocks:      1021
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         8192
+Inode blocks per group:   512
+Filesystem created:       Tue Nov 10 00:44:17 2009
+Last mount time:          Sun Dec 27 20:05:48 2009
+Last write time:          Sat Dec 26 10:59:00 2009
+Mount count:              3
+Maximum mount count:      21
+Last checked:             Sat Dec 26 06:07:50 2009
+Check interval:           15552000 (6 months)
+Next check after:         Thu Jun 24 07:07:50 2010
+Lifetime writes:          30 GB
+Reserved blocks uid:      0 (user root)
+Reserved blocks gid:      0 (group root)
+First inode:              11
+Inode size:               256
+Required extra isize:     28
+Desired extra isize:      28
+Journal inode:            8
+Default directory hash:   half_md4
+Directory Hash Seed:      ae1ec2f1-0f86-4f26-ace5-eb656fd25709
+Journal backup:           inode blocks
+Journal size:             128M
+
+
+> 2) mount options
+noatime
+> 3) quota options (if any)
+No
+> 4) your fs load test-case
+Have not tried to find a simpler testcase yet.
+make CROSS_COMPILE="ccache sparc64-unknown-linux-gnu-" -j4 zImage modules
+
+Hm, perhaps ccache is the real trigger of the problem.
+
+> 5) How long does it takes you to reproduce the bug.
+Few seconds (~5)
