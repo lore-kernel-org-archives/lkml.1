@@ -1,116 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZL0Ate@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbZL0BCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZL0Ate (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Dec 2009 19:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZL0Atd
+	id S1754122AbZL0BCi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Dec 2009 20:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZL0BCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Dec 2009 19:49:33 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:54766 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbZL0Atc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Dec 2009 19:49:32 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, joe@perches.com,
-       torvalds@linux-foundation.org, peterz@infradead.org, efault@gmx.de,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [tip:sched/urgent] sched: Restore printk sanity
-In-Reply-To: Your message of "Fri, 25 Dec 2009 19:45:14 +0100."
-             <20091225184514.GA381@elte.hu>
-From: Valdis.Kletnieks@vt.edu
-References: <1261315437.4314.6.camel@laptop> <tip-6c9a74afc5d95321e33a727b3c563f3e7d6c4a5c@git.kernel.org> <20091225132642.GA1419@ucw.cz>
-            <20091225184514.GA381@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1261874741_3923P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 26 Dec 2009 19:45:41 -0500
-Message-ID: <5723.1261874741@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020204.4B36AE36.019D,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Sat, 26 Dec 2009 20:02:37 -0500
+Received: from lists.laptop.org ([18.85.2.145]:35801 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753658AbZL0BCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Dec 2009 20:02:36 -0500
+Date: Sat, 26 Dec 2009 20:04:41 -0500
+From: Michael Stone <michael@laptop.org>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       Michael Stone <michael@laptop.org>
+Subject: RFC: disablenetwork facility. (v4)
+Message-ID: <20091227010441.GA12077@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1261874741_3923P
-Content-Type: text/plain; charset=us-ascii
+Here's version 4 of my disablenetwork facility and a recap of the significant
+design choices so far:
 
-On Fri, 25 Dec 2009 19:45:14 +0100, Ingo Molnar said:
+   1. Per Ulrich's request, we provide the initial userland interface through
+      prctl() rather than through *rlimit() (or through sys_disablenetwork()).
 
->  - in the last stable kernel, v2.6.32, still more new printk()s were 
->    introduced than pr_*() lines:
-> 
->      $ git log -p v2.6.31..v2.6.32 | grep '^+.*\<pr_' | wc -l
->      2016
->      $ git log -p v2.6.31..v2.6.32 | grep '^+.*\<printk' | wc -l
->      3531
+   2. Per Alan's request, we use the existing security_*() hook callsites to
+      integrate the access control logic into the networking subsystem.
 
-Ahem. That's not introduced, that's 'added or modified'.
+   3. The access control state and logic are now conditionally compiled under
+      the CONFIG_SECURITY_DISABLENETWORK option. The interface calls return
+      -ENOSYS when this symbol is not defined.
 
-% git log -p v2.6.31..v2.6.32 | grep -C 5 '^+.*\<pr_' | head
--        * In case of failure continue with no timer. */
-+       /* Test if the external timer can be actually used.
-+        * In case of failure continue without timer. */
-        if (unlikely((stmmac_open_ext_timer(dev, priv->tm)) < 0)) {
--               pr_warning("stmmaceth: cannot attach the HW timer\n");
-+               pr_warning("stmmaceth: cannot attach the external timer.\n");
-                tmrate = 0;
-                priv->tm->freq = 0;
-                priv->tm->timer_start = stmmac_no_timer_started;
-                priv->tm->timer_stop = stmmac_no_timer_stopped;
+   4. In order to interoperate with as easily as possible with existing LSMs, we
+      store our state in a new (conditionally compiled) task_struct field named
+      current->network rather than in current->security. The access control
+      logic is called directly from the appropriate security_*() hook
+      implementations in security/security.c, as was done for IMA.
 
-Meanwhile, the fact that there's only about a 2-to-1 difference in patches when
-there's a 6-to-1 difference in existing code tells me that proportionally,
-there is *more* activity with pr_foo variants than printk.
+   5. Per GeoffX's suggestion, the interface functions now take pointers to user
+      memory rather than passing the value of the flag field back and forth
+      directly. This permits prctl(PR_GET_NETWORK) to return an error code.
 
-printk:  3531 hits in 61126 uses = 5.7% churn
-pr_foo: 2016 hits in 10861 uses = 18.5% churn
+   6. At the moment, we exempt all local networking which requires action by
+      both the sender and receiver and which has discretionary access control
+      comparable to regular Unix filesystem DAC. 
 
-The numbers need much deeper analysis to make any sort of real statistical
-conclusion here...
+      In practice, this means that we leave all unix sockets, sysv IPC, and
+      kill()/killpg() alone. 
 
-> 
-> An estimated completion of the 'conversion' to pr_*() to be in infinite numbe
-r 
-> of years.
-> 
-> > [...] just removing the "sched:" would be better for consistency.
-> > 
-> > Or alternatively... deprecate pr_*?
-> 
-> Or alternatively, my favorite: let people who write the code use whichever 
-> variant they prefer.
-> 
-> 	Ingo
+      We intercept ptrace() because it's effect on the receiver is "involuntary"
+      and we intercept socket_create(), socket_bind(), socket_connect(), and
+      socket_sendmsg() because they're not otherwise access-controlled. 
+
+      sendmsg() on previously connected sockets is exempted.
+
+   7. The documentation, kconfig option, and access control logic are named
+      "disablenetwork" because that's the name of the functionality. The fact
+      that it's exposed through prctl is incidental to its purpose and semantics
+      and may become less exclusively true in the future, e.g., if we decide
+      that we want a /proc interface for reading the networking restrictions of
+      other processes.
+
+Further suggestions?
+
+Regards,
+
+Michael
 
 
---==_Exmh_1261874741_3923P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFLNq40cC3lWbTT17ARArDFAJ9l17o2ldMNtss2JYbbncKAQSps6gCg8mSJ
-5ChhTNcTdFozBD1TRg38Fp0=
-=p9cX
------END PGP SIGNATURE-----
 
---==_Exmh_1261874741_3923P--
+Michael Stone (3):
+   Security: Add disablenetwork interface. (v4)
+   Security: Implement disablenetwork semantics. (v4)
+   Security: Document disablenetwork. (v4)
 
+  Documentation/disablenetwork.txt |   84 ++++++++++++++++++++++++++++++++++++++
+  include/linux/disablenetwork.h   |   22 ++++++++++
+  include/linux/prctl.h            |    7 +++
+  include/linux/prctl_network.h    |    7 +++
+  include/linux/sched.h            |    4 ++
+  kernel/sys.c                     |   53 ++++++++++++++++++++++++
+  security/Kconfig                 |   11 +++++
+  security/Makefile                |    1 +
+  security/disablenetwork.c        |   73 +++++++++++++++++++++++++++++++++
+  security/security.c              |   76 ++++++++++++++++++++++++++++++++--
+  10 files changed, 333 insertions(+), 5 deletions(-)
+  create mode 100644 Documentation/disablenetwork.txt
+  create mode 100644 include/linux/disablenetwork.h
+  create mode 100644 include/linux/prctl_network.h
+  create mode 100644 security/disablenetwork.c
